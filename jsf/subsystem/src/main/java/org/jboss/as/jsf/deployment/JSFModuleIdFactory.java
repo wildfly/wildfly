@@ -47,12 +47,12 @@ public class JSFModuleIdFactory {
     // The default JSF impl slot.  This can be overridden by the management layer.
     private String defaultSlot = JSFResourceDefinition.DEFAULT_SLOT;
 
-    private Map<String, ModuleIdentifier> apiIds = new HashMap<String, ModuleIdentifier>();
-    private Map<String, ModuleIdentifier> implIds = new HashMap<String, ModuleIdentifier>();
-    private Map<String, ModuleIdentifier> injectionIds = new HashMap<String, ModuleIdentifier>();
+    private Map<String, ModuleIdentifier> apiIds = new HashMap<>();
+    private Map<String, ModuleIdentifier> implIds = new HashMap<>();
+    private Map<String, ModuleIdentifier> injectionIds = new HashMap<>();
 
-    private Set<String> allVersions = new HashSet<String>();
-    private List<String> activeVersions = new ArrayList<String>();
+    private Set<String> allVersions = new HashSet<>();
+    private List<String> activeVersions = new ArrayList<>();
 
     public static JSFModuleIdFactory getInstance() {
         return instance;

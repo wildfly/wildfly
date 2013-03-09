@@ -38,13 +38,13 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 class ResourceBuilderRoot implements ResourceBuilder {
     private final PathElement pathElement;
     private final StandardResourceDescriptionResolver resourceResolver;
-    private final List<AttributeBinding> attributes = new LinkedList<AttributeBinding>();
-    private final List<OperationBinding> operations = new LinkedList<OperationBinding>();
+    private final List<AttributeBinding> attributes = new LinkedList<>();
+    private final List<OperationBinding> operations = new LinkedList<>();
     private ResourceDescriptionResolver attributeResolver = null;
     private OperationStepHandler addHandler;
     private OperationStepHandler removeHandler;
     private final ResourceBuilderRoot parent;
-    private final List<ResourceBuilderRoot> children = new LinkedList<ResourceBuilderRoot>();
+    private final List<ResourceBuilderRoot> children = new LinkedList<>();
 
 
     private ResourceBuilderRoot(PathElement pathElement, StandardResourceDescriptionResolver resourceResolver,

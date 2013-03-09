@@ -76,7 +76,7 @@ public class HornetQSecurityManagerAS7 implements org.hornetq.spi.core.security.
 
         if (authenticated) {
             SecurityContext securityContext = pushSecurityContext(subject, new SimplePrincipal(username), password);
-            Set<Principal> principals = new HashSet<Principal>();
+            Set<Principal> principals = new HashSet<>();
             for (Role role : roles) {
                 if (checkType.hasRole(role)) {
                     principals.add(new SimplePrincipal(role.getName()));

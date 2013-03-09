@@ -194,7 +194,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         ServiceName plugInLoaderName = realmServiceName.append(PlugInLoaderService.SERVICE_SUFFIX);
 
         List<Property> plugIns = plugInModel.asPropertyList();
-        ArrayList<String> knownNames = new ArrayList<String>(plugIns.size());
+        ArrayList<String> knownNames = new ArrayList<>(plugIns.size());
         for (Property current : plugIns) {
             knownNames.add(current.getName());
         }
@@ -500,7 +500,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         Map<String, String> configurationProperties;
         if (model.hasDefined(PROPERTY)) {
             List<Property> propertyList = model.require(PROPERTY).asPropertyList();
-            configurationProperties = new HashMap<String, String>(propertyList.size());
+            configurationProperties = new HashMap<>(propertyList.size());
 
             for (Property current : propertyList) {
                 String propertyName = current.getName();
@@ -521,7 +521,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            final List<ServiceController<?>> newControllers = new ArrayList<ServiceController<?>>();
+            final List<ServiceController<?>> newControllers = new ArrayList<>();
             final String realmName = ManagementUtil.getSecurityRealmName(operation);
             final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
             SecurityRealmAddHandler.INSTANCE.installServices(context, realmName, model, new ServiceVerificationHandler(), newControllers);

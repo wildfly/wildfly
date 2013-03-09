@@ -73,7 +73,7 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
     protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ResourceInjectionTarget resourceInjectionTarget, final ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
         final RemoteEnvironment remoteEnvironment = environment.getEnvironment();
         final DeploymentClassIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
-        List<BindingConfiguration> bindingDescriptions = new ArrayList<BindingConfiguration>();
+        List<BindingConfiguration> bindingDescriptions = new ArrayList<>();
 
         EJBReferencesMetaData ejbRefs = remoteEnvironment.getEjbReferences();
         if (ejbRefs != null) {

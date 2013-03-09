@@ -55,7 +55,7 @@ public class SessionAttributeMarshallerImpl implements SessionAttributeMarshalle
         if (!(value instanceof Serializable)) {
             throw MESSAGES.interfaceNotImplemented(value, Serializable.class.getName());
         }
-        return new SimpleMarshalledValue<Object>(value, this.context);
+        return new SimpleMarshalledValue<>(value, this.context);
     }
 
     /**

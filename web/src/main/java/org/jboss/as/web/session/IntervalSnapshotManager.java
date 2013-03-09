@@ -44,7 +44,7 @@ public class IntervalSnapshotManager extends SnapshotManager implements Runnable
     private int interval = 1000;
 
     // the modified sessions
-    private Set<ClusteredSession<? extends OutgoingDistributableSessionData>> sessions = new LinkedHashSet<ClusteredSession<? extends OutgoingDistributableSessionData>>();
+    private Set<ClusteredSession<? extends OutgoingDistributableSessionData>> sessions = new LinkedHashSet<>();
 
     // the distribute thread
     private Thread thread = null;
@@ -85,7 +85,7 @@ public class IntervalSnapshotManager extends SnapshotManager implements Runnable
     protected void processSessions() {
         Set<ClusteredSession<? extends OutgoingDistributableSessionData>> toProcess = null;
         synchronized (sessions) {
-            toProcess = new HashSet<ClusteredSession<? extends OutgoingDistributableSessionData>>(sessions);
+            toProcess = new HashSet<>(sessions);
             sessions.clear();
         }
 

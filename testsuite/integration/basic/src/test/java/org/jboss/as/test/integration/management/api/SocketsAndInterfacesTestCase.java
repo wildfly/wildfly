@@ -137,7 +137,7 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
 
         // wait until the connector is available on the new port
         final String testUrl = new URL("http", testHost, TEST_PORT + 1, "/").toString();
-        RetryTaskExecutor<Boolean> rte = new RetryTaskExecutor<Boolean>();
+        RetryTaskExecutor<Boolean> rte = new RetryTaskExecutor<>();
         rte.retryTask(new Callable<Boolean>(){
             public Boolean call() throws Exception {
                 boolean available = WebUtil.testHttpURL(testUrl);

@@ -49,7 +49,7 @@ public class EjbDeploymentInformation {
     private final Map<String, InjectedValue<ComponentView>> componentViews;
 
     private final InjectedValue<EjbIIOPService> iorFactory;
-    private final Set<String> remoteViewClassNames = new HashSet<String>();
+    private final Set<String> remoteViewClassNames = new HashSet<>();
 
     /**
      * @param ejbName               The EJB name
@@ -80,7 +80,7 @@ public class EjbDeploymentInformation {
                                     final ClassLoader deploymentClassLoader, final InjectedValue<EjbIIOPService> iorFactory) {
         this.ejbName = ejbName;
         this.ejbComponent = ejbComponent;
-        this.componentViews = new HashMap<String, InjectedValue<ComponentView>>();
+        this.componentViews = new HashMap<>();
         if (remoteViews != null) {
             this.componentViews.putAll(remoteViews);
             this.remoteViewClassNames.addAll(remoteViews.keySet());

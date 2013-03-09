@@ -50,7 +50,7 @@ public class ComplexManagedBean {
         this.context = context;
     }
 
-    private List<PaymentProvider> providers = new ArrayList<PaymentProvider>();
+    private List<PaymentProvider> providers = new ArrayList<>();
 
     @PostConstruct
     public void start() {
@@ -74,7 +74,7 @@ public class ComplexManagedBean {
 
     @Produces
     public List<String> getPaymentProviders() {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (PaymentProvider prov : providers) {
             result.add(prov.getName());
         }

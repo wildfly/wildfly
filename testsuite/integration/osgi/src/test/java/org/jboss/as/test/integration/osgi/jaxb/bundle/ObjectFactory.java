@@ -75,7 +75,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "", name = "booking")
     public JAXBElement<CourseBooking> createBooking(CourseBooking value) {
-        return new JAXBElement<CourseBooking>(_Booking_QNAME, CourseBooking.class, null, value);
+        return new JAXBElement<>(_Booking_QNAME, CourseBooking.class, null, value);
     }
 
     /**
@@ -84,7 +84,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "", name = "student")
     public JAXBElement<StudentType> createStudent(StudentType value) {
-        return new JAXBElement<StudentType>(_Student_QNAME, StudentType.class, null, value);
+        return new JAXBElement<>(_Student_QNAME, StudentType.class, null, value);
     }
 
     /**
@@ -93,7 +93,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "", name = "company")
     public JAXBElement<CompanyType> createCompany(CompanyType value) {
-        return new JAXBElement<CompanyType>(_Company_QNAME, CompanyType.class, null, value);
+        return new JAXBElement<>(_Company_QNAME, CompanyType.class, null, value);
     }
 
     /**
@@ -102,7 +102,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "", name = "contact")
     public JAXBElement<ContactType> createContact(ContactType value) {
-        return new JAXBElement<ContactType>(_Contact_QNAME, ContactType.class, null, value);
+        return new JAXBElement<>(_Contact_QNAME, ContactType.class, null, value);
     }
 
 }

@@ -29,7 +29,7 @@ import org.apache.catalina.connector.Response;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 
 public final class SessionReplicationContext {
-    private static final ThreadLocal<SessionReplicationContext> replicationContext = new ThreadLocal<SessionReplicationContext>();
+    private static final ThreadLocal<SessionReplicationContext> replicationContext = new ThreadLocal<>();
 
     private static final SessionReplicationContext EMPTY = new SessionReplicationContext();
 
@@ -174,7 +174,7 @@ public final class SessionReplicationContext {
             soleSession = session;
         } else if (!mgr.equals(soleManager)) {
             // We have a cross-context call; need a Map for the sessions
-            crossCtxSessions = new HashMap<ClusteredSession<? extends OutgoingDistributableSessionData>, SnapshotManager>();
+            crossCtxSessions = new HashMap<>();
             crossCtxSessions.put(soleSession, soleManager);
             crossCtxSessions.put(session, mgr);
             soleManager = null;

@@ -92,7 +92,7 @@ public abstract class AbstractRemoveStepHandler implements OperationStepHandler 
     }
 
     private List<PathElement> getChildren(Resource resource) {
-        final List<PathElement> pes = new ArrayList<PathElement>();
+        final List<PathElement> pes = new ArrayList<>();
         for (String childType : resource.getChildTypes()) {
             for (Resource.ResourceEntry entry : resource.getChildren(childType)) {
                 pes.add(entry.getPathElement());

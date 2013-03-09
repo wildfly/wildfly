@@ -89,7 +89,7 @@ public class ModClusterSSLResourceDefinition extends SimpleResourceDefinition {
     public static final Map<String, SimpleAttributeDefinition> ATTRIBUTES_BY_NAME;
 
     static {
-        Map<String, SimpleAttributeDefinition> attrs = new HashMap<String, SimpleAttributeDefinition>();
+        Map<String, SimpleAttributeDefinition> attrs = new HashMap<>();
         for (AttributeDefinition attr : ATTRIBUTES) {
             attrs.put(attr.getName(), (SimpleAttributeDefinition) attr);
         }

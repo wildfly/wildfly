@@ -50,7 +50,7 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
      */
     private volatile Map<DeploymentModuleIdentifier, ModuleDeployment> modules;
 
-    private final List<DeploymentRepositoryListener> listeners = new ArrayList<DeploymentRepositoryListener>();
+    private final List<DeploymentRepositoryListener> listeners = new ArrayList<>();
 
 
     @Override
@@ -69,7 +69,7 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
     }
 
     public synchronized void add(DeploymentModuleIdentifier identifier, ModuleDeployment deployment) {
-        final Map<DeploymentModuleIdentifier, ModuleDeployment> modules = new HashMap<DeploymentModuleIdentifier, ModuleDeployment>(this.modules);
+        final Map<DeploymentModuleIdentifier, ModuleDeployment> modules = new HashMap<>(this.modules);
         modules.put(identifier, deployment);
         this.modules = Collections.unmodifiableMap(modules);
         for(final DeploymentRepositoryListener listener : listeners) {
@@ -91,7 +91,7 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
     }
 
     public synchronized void remove(DeploymentModuleIdentifier identifier) {
-        final Map<DeploymentModuleIdentifier, ModuleDeployment> modules = new HashMap<DeploymentModuleIdentifier, ModuleDeployment>(this.modules);
+        final Map<DeploymentModuleIdentifier, ModuleDeployment> modules = new HashMap<>(this.modules);
         modules.remove(identifier);
         this.modules = Collections.unmodifiableMap(modules);
         for(final DeploymentRepositoryListener listener : listeners) {

@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "RunRmiServlet", urlPatterns = {"/RunRmiServlet"})
 public class RunRmiServlet extends HttpServlet {
-	private List<Context> contexts = new ArrayList<Context>();
+	private List<Context> contexts = new ArrayList<>();
 
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		MyObject stub = lookup();

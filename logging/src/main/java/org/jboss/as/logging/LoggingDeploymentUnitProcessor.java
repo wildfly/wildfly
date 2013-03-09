@@ -322,7 +322,7 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
     }
 
     private static List<DeploymentUnit> getSubDeployments(final DeploymentUnit deploymentUnit) {
-        final List<DeploymentUnit> result = new ArrayList<DeploymentUnit>();
+        final List<DeploymentUnit> result = new ArrayList<>();
         if (deploymentUnit.hasAttachment(Attachments.SUB_DEPLOYMENTS)) {
             result.addAll(deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS));
         }
@@ -366,7 +366,7 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
     private static class ConfigFilter implements VirtualFileFilter {
 
         static final ConfigFilter INSTANCE = new ConfigFilter();
-        private final Set<String> configFiles = new HashSet<String>(Arrays.asList(LOG4J_PROPERTIES, LOG4J_XML, JBOSS_LOG4J_XML, JBOSS_PROPERTIES, DEFAULT_PROPERTIES));
+        private final Set<String> configFiles = new HashSet<>(Arrays.asList(LOG4J_PROPERTIES, LOG4J_XML, JBOSS_LOG4J_XML, JBOSS_PROPERTIES, DEFAULT_PROPERTIES));
 
         @Override
         public boolean accepts(final VirtualFile file) {

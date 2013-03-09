@@ -43,9 +43,9 @@ import org.jboss.remoting3.Endpoint;
  */
 public class RemoteNamingServerService implements Service<RemoteNamingService> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("naming", "remote");
-    private final InjectedValue<ExecutorService> executorService = new InjectedValue<ExecutorService>();
-    private final InjectedValue<Endpoint> endpoint = new InjectedValue<Endpoint>();
-    private final InjectedValue<NamingStore> namingStore = new InjectedValue<NamingStore>();
+    private final InjectedValue<ExecutorService> executorService = new InjectedValue<>();
+    private final InjectedValue<Endpoint> endpoint = new InjectedValue<>();
+    private final InjectedValue<NamingStore> namingStore = new InjectedValue<>();
     private RemoteNamingService remoteNamingService;
 
     public synchronized void start(StartContext context) throws StartException {

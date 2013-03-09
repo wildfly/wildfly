@@ -103,7 +103,7 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ModuleRegistrationTracker registrationTracker = new ModuleRegistrationTracker();
 
         // Collect the subsystem extensions
-        final List<SubsystemExtension> extensions = new ArrayList<SubsystemExtension>();
+        final List<SubsystemExtension> extensions = new ArrayList<>();
         final Iterator<SubsystemExtension> services = ServiceLoader.load(SubsystemExtension.class, getClass().getClassLoader()).iterator();
         while(services.hasNext()) {
             extensions.add(services.next());

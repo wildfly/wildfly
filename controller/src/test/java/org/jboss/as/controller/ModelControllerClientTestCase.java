@@ -116,7 +116,7 @@ public class ModelControllerClientTestCase {
             ModelNode operation = new ModelNode();
             operation.get("test").set("123");
 
-            final BlockingQueue<String> messages = new LinkedBlockingQueue<String>();
+            final BlockingQueue<String> messages = new LinkedBlockingQueue<>();
 
             ModelNode result = client.execute(operation,
                     new OperationMessageHandler() {
@@ -146,16 +146,16 @@ public class ModelControllerClientTestCase {
 
         final CountDownLatch executeLatch = new CountDownLatch(1);
         final AtomicInteger size = new AtomicInteger();
-        final AtomicReference<byte[]> firstResult = new AtomicReference<byte[]>();
-        final AtomicReference<byte[]> secondResult = new AtomicReference<byte[]>();
-        final AtomicReference<byte[]> thirdResult = new AtomicReference<byte[]>();
+        final AtomicReference<byte[]> firstResult = new AtomicReference<>();
+        final AtomicReference<byte[]> secondResult = new AtomicReference<>();
+        final AtomicReference<byte[]> thirdResult = new AtomicReference<>();
         MockModelController controller = new MockModelController() {
             @Override
             public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
                 int streamIndex = 0;
                 for (InputStream in : attachments.getInputStreams()) {
                     try {
-                        ArrayList<Integer> readBytes = new ArrayList<Integer>();
+                        ArrayList<Integer> readBytes = new ArrayList<>();
                         int b = in.read();
                         while (b != -1) {
                             readBytes.add(b);
@@ -231,7 +231,7 @@ public class ModelControllerClientTestCase {
             ModelNode operation = new ModelNode();
             operation.get("test").set("123");
 
-            final BlockingQueue<String> messages = new LinkedBlockingQueue<String>();
+            final BlockingQueue<String> messages = new LinkedBlockingQueue<>();
 
             AsyncFuture<ModelNode> resultFuture = client.executeAsync(operation,
                     new OperationMessageHandler() {
@@ -283,7 +283,7 @@ public class ModelControllerClientTestCase {
             ModelNode operation = new ModelNode();
             operation.get("test").set("123");
 
-            final BlockingQueue<String> messages = new LinkedBlockingQueue<String>();
+            final BlockingQueue<String> messages = new LinkedBlockingQueue<>();
 
             AsyncFuture<ModelNode> resultFuture = client.executeAsync(operation,
                     new OperationMessageHandler() {

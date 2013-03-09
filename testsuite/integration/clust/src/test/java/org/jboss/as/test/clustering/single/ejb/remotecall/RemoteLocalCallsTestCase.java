@@ -76,7 +76,7 @@ public class RemoteLocalCallsTestCase {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        final Hashtable<String, String> props = new Hashtable<String, String>();
+        final Hashtable<String, String> props = new Hashtable<>();
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
         ejbInitialContext = new InitialContext(props);
 

@@ -61,7 +61,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
     private static final Map<String, AttributeDefinition> ATTRIBUTES;
 
     static {
-        Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
+        Map<String, AttributeDefinition> map = new LinkedHashMap<>();
         map.put(CONNECTOR_REF.getName(), CONNECTOR_REF);
         map.put(THREAD_POOL_NAME.getName(), THREAD_POOL_NAME);
 

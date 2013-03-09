@@ -207,7 +207,7 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
 
     private void testAddAndRemove_1_1_0(KernelServices mainServices, ModelVersion modelVersion, ModelNode subsystemModel, PathAddress parentAddress, String attributeName, String resourceType) throws Exception {
         final ModelNode parentModel = ModelTestUtils.getSubModel(subsystemModel, parentAddress);
-        Set<String> originalKeys = new HashSet<String>(parentModel.get(resourceType).keys());
+        Set<String> originalKeys = new HashSet<>(parentModel.get(resourceType).keys());
 
 
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);

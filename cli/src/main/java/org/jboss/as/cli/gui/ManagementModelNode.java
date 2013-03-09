@@ -107,7 +107,7 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
     }
 
     private List<String> getChildrenTypes(String addressPath) throws Exception {
-        List<String> childrenTypes = new ArrayList<String>();
+        List<String> childrenTypes = new ArrayList<>();
         ModelNode readChildrenTypes = executor.doCommand(addressPath + ":read-children-types");
         for (ModelNode type : readChildrenTypes.get("result").asList()) {
             childrenTypes.add(type.asString());

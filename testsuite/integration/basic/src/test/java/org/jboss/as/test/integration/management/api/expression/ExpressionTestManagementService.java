@@ -72,7 +72,7 @@ public class ExpressionTestManagementService implements ServiceActivator {
 
        private class GetModelControllerService implements Service<Void> {
           private final Logger log = Logger.getLogger(GetModelControllerService.class);
-          private InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
+          private InjectedValue<ModelController> modelControllerValue = new InjectedValue<>();
 
 
           @Override

@@ -39,7 +39,7 @@ final class SecurityActions {
         List<Field> declaredAccessableFields = AccessController.doPrivileged(new PrivilegedAction<List<Field>>() {
             @Override
             public List<Field> run() {
-                List<Field> foundFields = new ArrayList<Field>();
+                List<Field> foundFields = new ArrayList<>();
                 Class<?> nextSource = source;
                 while (nextSource != Object.class) {
                     for (Field field : nextSource.getDeclaredFields()) {

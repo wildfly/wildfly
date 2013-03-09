@@ -42,7 +42,7 @@ public class DeploymentPlanImpl implements DeploymentPlan {
 
     private static final long serialVersionUID = -119621318892470668L;
     private final UUID uuid = UUID.randomUUID();
-    private final List<DeploymentActionImpl> deploymentActions = new ArrayList<DeploymentActionImpl>();
+    private final List<DeploymentActionImpl> deploymentActions = new ArrayList<>();
     private final boolean globalRollback;
     private final boolean shutdown;
     private final long gracefulShutdownPeriod;
@@ -93,7 +93,7 @@ public class DeploymentPlanImpl implements DeploymentPlan {
      * @return  the actions. Will not be <code>null</code>
      */
     public List<DeploymentActionImpl> getDeploymentActionImpls() {
-        return new ArrayList<DeploymentActionImpl>(deploymentActions);
+        return new ArrayList<>(deploymentActions);
     }
 
     void cleanup() {

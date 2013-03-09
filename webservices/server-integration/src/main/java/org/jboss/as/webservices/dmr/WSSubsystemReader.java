@@ -71,8 +71,8 @@ final class WSSubsystemReader implements XMLElementReader<List<ModelNode>> {
         final PathAddress address = PathAddress.pathAddress(WSExtension.SUBSYSTEM_PATH);
         final ModelNode subsystem = Util.createAddOperation(address);
 
-        final List<ModelNode> endpointConfigs = new ArrayList<ModelNode>();
-        final List<ModelNode> clientConfigs = new ArrayList<ModelNode>();
+        final List<ModelNode> endpointConfigs = new ArrayList<>();
+        final List<ModelNode> clientConfigs = new ArrayList<>();
 
         // elements
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
@@ -269,7 +269,7 @@ final class WSSubsystemReader implements XMLElementReader<List<ModelNode>> {
         PathAddress address = parentAddress.append(handlerChainType, handlerChainId);
         operation.get(OP_ADDR).set(address.toModelNode());
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
-        final List<ModelNode> addHandlerOperations = new LinkedList<ModelNode>();
+        final List<ModelNode> addHandlerOperations = new LinkedList<>();
         while (reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             if (element != Element.HANDLER && !encountered.add(element)) {

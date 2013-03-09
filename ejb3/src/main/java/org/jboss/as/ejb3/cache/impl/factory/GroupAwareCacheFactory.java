@@ -57,7 +57,7 @@ import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
  */
 public class GroupAwareCacheFactory<K extends Serializable, V extends Cacheable<K>> implements CacheFactory<K, V>, BackingCacheLifecycleListener, IdentifierFactory<UUID> {
 
-    private final AtomicReference<SerializationGroupContainer<K, V>> groupContainerRef = new AtomicReference<SerializationGroupContainer<K, V>>();
+    private final AtomicReference<SerializationGroupContainer<K, V>> groupContainerRef = new AtomicReference<>();
     private final AtomicInteger memberCounter = new AtomicInteger();
     private final BackingCacheEntryStoreSource<K, V, UUID> storeSource;
 
@@ -80,28 +80,28 @@ public class GroupAwareCacheFactory<K extends Serializable, V extends Cacheable<
         groupContainer.addMemberPassivationManager(passivationManager);
         PassivatingBackingCache<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>> groupCache = groupContainer.getGroupCache();
 
-        SerializationGroupMemberContainer<K, V, UUID> container = new SerializationGroupMemberContainer<K, V, UUID>(passivationManager, groupCache, this.storeSource);
+        SerializationGroupMemberContainer<K, V, UUID> container = new SerializationGroupMemberContainer<>(passivationManager, groupCache, this.storeSource);
 
         // Create the store for SerializationGroupMembers from the container
         BackingCacheEntryStore<K, V, SerializationGroupMember<K, V, UUID>> store = storeSource.createIntegratedObjectStore(beanName, identifierFactory, container, timeout);
         container.setBackingCacheEntryStore(store);
 
         // Set up the backing cache with the store and group cache
-        GroupAwareBackingCache<K, V, UUID, SerializationGroupMember<K, V, UUID>> backingCache = new GroupAwareBackingCacheImpl<K, V, UUID>(factory, container, groupCache, Executors.defaultThreadFactory());
+        GroupAwareBackingCache<K, V, UUID, SerializationGroupMember<K, V, UUID>> backingCache = new GroupAwareBackingCacheImpl<>(factory, container, groupCache, Executors.defaultThreadFactory());
 
         // Listen for backing cache lifecycle changes so we know when to start/stop groupCache
         backingCache.addLifecycleListener(this);
 
         // Finally, the front-end cache
-        return new GroupAwareCache<K, V, UUID, SerializationGroupMember<K, V, UUID>>(backingCache, true);
+        return new GroupAwareCache<>(backingCache, true);
     }
 
     private SerializationGroupContainer<K, V> createGroupContainer(PassivationManager<K, V> passivationManager, StatefulTimeoutInfo timeout) {
-        SerializationGroupContainer<K, V> container = new SerializationGroupContainer<K, V>(passivationManager);
+        SerializationGroupContainer<K, V> container = new SerializationGroupContainer<>(passivationManager);
 
         BackingCacheEntryStore<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>> store = storeSource.createGroupIntegratedObjectStore(this, container, timeout);
 
-        PassivatingBackingCache<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>> groupCache = new PassivatingBackingCacheImpl<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>>(container, container, container, store);
+        PassivatingBackingCache<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>> groupCache = new PassivatingBackingCacheImpl<>(container, container, container, store);
 
         container.setGroupCache(groupCache);
 

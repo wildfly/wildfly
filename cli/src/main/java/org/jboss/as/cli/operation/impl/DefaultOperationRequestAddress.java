@@ -34,7 +34,7 @@ import org.jboss.as.cli.operation.OperationRequestAddress;
  */
 public class DefaultOperationRequestAddress implements OperationRequestAddress {
 
-    private final List<NodeImpl> nodes = new ArrayList<NodeImpl>();
+    private final List<NodeImpl> nodes = new ArrayList<>();
 
     public DefaultOperationRequestAddress() {
     }

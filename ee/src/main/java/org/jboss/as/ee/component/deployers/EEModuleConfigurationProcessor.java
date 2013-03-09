@@ -61,7 +61,7 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        final Set<ServiceName> failed = new HashSet<ServiceName>();
+        final Set<ServiceName> failed = new HashSet<>();
 
         final EEModuleConfiguration moduleConfiguration = new EEModuleConfiguration(moduleDescription);
         deploymentUnit.putAttachment(Attachments.EE_MODULE_CONFIGURATION, moduleConfiguration);

@@ -14,11 +14,11 @@ public class AttributesTestBase {
 
     protected static void compare(String name1, SortedSet<String> set1,
             String name2, SortedSet<String> set2) {
-        Set<String> onlyInSet1 = new TreeSet<String>(set1);
+        Set<String> onlyInSet1 = new TreeSet<>(set1);
 
         onlyInSet1.removeAll(set2);
 
-        Set<String> onlyInSet2 = new TreeSet<String>(set2);
+        Set<String> onlyInSet2 = new TreeSet<>(set2);
         onlyInSet2.removeAll(set1);
 
         if (!onlyInSet1.isEmpty() || !onlyInSet2.isEmpty()) {
@@ -29,7 +29,7 @@ public class AttributesTestBase {
     }
 
     protected SortedSet<String> findAllPropertyNames(Class<?> clazz) throws Exception {
-        SortedSet<String> names = new TreeSet<String>();
+        SortedSet<String> names = new TreeSet<>();
         for (PropertyDescriptor propDesc : getBeanInfo(clazz).getPropertyDescriptors()) {
             if (propDesc == null
                     || propDesc.getWriteMethod() == null) {

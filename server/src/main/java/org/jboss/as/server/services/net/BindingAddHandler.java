@@ -134,7 +134,7 @@ public class BindingAddHandler extends SocketBindingAddHandler {
     }
 
     public static List<ClientMapping> parseClientMappings(ModelNode mappings) throws OperationFailedException {
-        List<ClientMapping> clientMappings = new ArrayList<ClientMapping>();
+        List<ClientMapping> clientMappings = new ArrayList<>();
         for (ModelNode mappingNode : mappings.asList()) {
             ModelNode sourceNode = mappingNode.get(SOURCE_NETWORK);
             final InetAddress sourceAddress;

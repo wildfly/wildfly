@@ -41,7 +41,7 @@ abstract class BaseOperation implements Operation, Comparable<Operation> {
         }
         this.name = name;
         this.priority = priority;
-        operands = new ArrayList<Operand>();
+        operands = new ArrayList<>();
     }
 
     @Override

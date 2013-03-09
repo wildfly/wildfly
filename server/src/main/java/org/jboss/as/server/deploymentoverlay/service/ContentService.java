@@ -38,8 +38,8 @@ public class ContentService implements Service<ContentService> {
 
     public static final ServiceName SERVICE_NAME = DeploymentOverlayService.SERVICE_NAME.append("contentService");
 
-    private final InjectedValue<ContentRepository> contentRepositoryInjectedValue = new InjectedValue<ContentRepository>();
-    private final InjectedValue<DeploymentOverlayService> deploymentOverlayServiceInjectedValue = new InjectedValue<DeploymentOverlayService>();
+    private final InjectedValue<ContentRepository> contentRepositoryInjectedValue = new InjectedValue<>();
+    private final InjectedValue<DeploymentOverlayService> deploymentOverlayServiceInjectedValue = new InjectedValue<>();
 
     private final String path;
     private final byte[] contentHash;

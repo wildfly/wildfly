@@ -83,7 +83,7 @@ public class SecurityAuditingTestCase extends AnnSBTest {
 
         @Override
         protected void doSetup(final ManagementClient managementClient) throws Exception {
-            final List<ModelNode> updates = new ArrayList<ModelNode>();
+            final List<ModelNode> updates = new ArrayList<>();
 
             ModelNode op = new ModelNode();
             op.get(OP).set(ADD);
@@ -112,7 +112,7 @@ public class SecurityAuditingTestCase extends AnnSBTest {
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            final List<ModelNode> updates = new ArrayList<ModelNode>();
+            final List<ModelNode> updates = new ArrayList<>();
 
             // /subsystem=logging/logger=org.jboss.security.audit:remove
             ModelNode op = new ModelNode();

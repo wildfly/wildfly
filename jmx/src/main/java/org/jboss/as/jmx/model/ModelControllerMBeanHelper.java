@@ -100,7 +100,7 @@ public class ModelControllerMBeanHelper {
     }
 
     int getMBeanCount() {
-        return new RootResourceIterator<Integer>(getRootResourceAndRegistration().getResource(), new ResourceAction<Integer>() {
+        return new RootResourceIterator<>(getRootResourceAndRegistration().getResource(), new ResourceAction<Integer>() {
             int count;
             public boolean onResource(PathAddress address) {
                 if (isExcludeAddress(address)) {
@@ -117,8 +117,8 @@ public class ModelControllerMBeanHelper {
     }
 
     Set<ObjectInstance> queryMBeans(final ObjectName name, final QueryExp query) {
-        return new RootResourceIterator<Set<ObjectInstance>>(getRootResourceAndRegistration().getResource(), new ResourceAction<Set<ObjectInstance>>() {
-            Set<ObjectInstance> set = new HashSet<ObjectInstance>();
+        return new RootResourceIterator<>(getRootResourceAndRegistration().getResource(), new ResourceAction<Set<ObjectInstance>>() {
+            Set<ObjectInstance> set = new HashSet<>();
 
             @Override
             public boolean onResource(PathAddress address) {
@@ -141,8 +141,8 @@ public class ModelControllerMBeanHelper {
     }
 
     Set<ObjectName> queryNames(final ObjectName name, final QueryExp query) {
-        return new RootResourceIterator<Set<ObjectName>>(getRootResourceAndRegistration().getResource(), new ResourceAction<Set<ObjectName>>() {
-            Set<ObjectName> set = new HashSet<ObjectName>();
+        return new RootResourceIterator<>(getRootResourceAndRegistration().getResource(), new ResourceAction<Set<ObjectName>>() {
+            Set<ObjectName> set = new HashSet<>();
 
             @Override
             public boolean onResource(PathAddress address) {

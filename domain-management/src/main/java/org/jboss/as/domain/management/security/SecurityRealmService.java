@@ -65,13 +65,13 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
 
     public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "security_realm");
 
-    private final InjectedValue<SubjectSupplementalService> subjectSupplemental = new InjectedValue<SubjectSupplementalService>();
-    private final InjectedValue<SSLIdentity> sslIdentity = new InjectedValue<SSLIdentity>();
-    private final InjectedValue<CallbackHandlerFactory> secretCallbackFactory = new InjectedValue<CallbackHandlerFactory>();
-    private final InjectedSetValue<CallbackHandlerService> callbackHandlerServices = new InjectedSetValue<CallbackHandlerService>();
+    private final InjectedValue<SubjectSupplementalService> subjectSupplemental = new InjectedValue<>();
+    private final InjectedValue<SSLIdentity> sslIdentity = new InjectedValue<>();
+    private final InjectedValue<CallbackHandlerFactory> secretCallbackFactory = new InjectedValue<>();
+    private final InjectedSetValue<CallbackHandlerService> callbackHandlerServices = new InjectedSetValue<>();
 
     private final String name;
-    private final Map<AuthMechanism, CallbackHandlerService> registeredServices = new HashMap<AuthMechanism, CallbackHandlerService>();
+    private final Map<AuthMechanism, CallbackHandlerService> registeredServices = new HashMap<>();
 
     public SecurityRealmService(String name) {
         this.name = name;
@@ -112,7 +112,7 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
      */
 
     public Set<AuthMechanism> getSupportedAuthenticationMechanisms() {
-        Set<AuthMechanism> response = new TreeSet<AuthMechanism>();
+        Set<AuthMechanism> response = new TreeSet<>();
         response.addAll(registeredServices.keySet());
         return response;
     }
@@ -139,7 +139,7 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
          * shared to combine the authentication step and the loading of authorization data.
          */
         final CallbackHandlerService handlerService = getCallbackHandlerService(mechanism);
-        final Map<String, Object> sharedState = new HashMap<String, Object>();
+        final Map<String, Object> sharedState = new HashMap<>();
         return new AuthorizingCallbackHandler() {
             CallbackHandler handler = handlerService.getCallbackHandler(sharedState);
             Map<String, String> options = handlerService.getConfigurationOptions();

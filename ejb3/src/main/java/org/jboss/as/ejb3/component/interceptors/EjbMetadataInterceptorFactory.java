@@ -38,7 +38,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class EjbMetadataInterceptorFactory implements InterceptorFactory {
 
-    private final InjectedValue<ComponentView> homeView = new InjectedValue<ComponentView>();
+    private final InjectedValue<ComponentView> homeView = new InjectedValue<>();
 
     private final Interceptor interceptor;
 

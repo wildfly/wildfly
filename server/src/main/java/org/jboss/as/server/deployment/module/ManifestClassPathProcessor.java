@@ -90,9 +90,9 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
 
         //These are resource roots that are already accessible by default
         //such as ear/lib jars an web-inf/lib jars
-        final Set<VirtualFile> existingAccessibleRoots = new HashSet<VirtualFile>();
+        final Set<VirtualFile> existingAccessibleRoots = new HashSet<>();
 
-        final Map<VirtualFile, ResourceRoot> subDeployments = new HashMap<VirtualFile, ResourceRoot>();
+        final Map<VirtualFile, ResourceRoot> subDeployments = new HashMap<>();
         for (ResourceRoot root : DeploymentUtils.allResourceRoots(topLevelDeployment)) {
             if (SubDeploymentMarker.isSubDeployment(root)) {
                 subDeployments.put(root.getRoot(), root);
@@ -103,7 +103,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
             }
         }
 
-        final ArrayDeque<RootEntry> resourceRoots = new ArrayDeque<RootEntry>();
+        final ArrayDeque<RootEntry> resourceRoots = new ArrayDeque<>();
         if (deploymentUnit.getParent() != null) {
             //top level deployments already had their exiting roots processed above
             for (ResourceRoot root : DeploymentUtils.allResourceRoots(deploymentUnit)) {
@@ -125,7 +125,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
         // build a map of the additional module locations
         // note that if a resource root has been added to two different additional modules
         // and is then referenced via a Class-Path entry the behaviour is undefined
-        final Map<VirtualFile, AdditionalModuleSpecification> additionalModules = new HashMap<VirtualFile, AdditionalModuleSpecification>();
+        final Map<VirtualFile, AdditionalModuleSpecification> additionalModules = new HashMap<>();
         for (AdditionalModuleSpecification module : topLevelDeployment.getAttachmentList(Attachments.ADDITIONAL_MODULES)) {
             for (ResourceRoot additionalModuleResourceRoot : module.getResourceRoots()) {
                 additionalModules.put(additionalModuleResourceRoot.getRoot(), module);

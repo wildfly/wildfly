@@ -35,7 +35,7 @@ import org.apache.catalina.connector.Response;
  * 
  */
 public class SetAttributesRequestHandler extends BasicRequestHandler {
-    private final Map<String, Object> toStore = new HashMap<String, Object>();
+    private final Map<String, Object> toStore = new HashMap<>();
 
     /**
      * Create a new EstablishSessionRequestHandler.

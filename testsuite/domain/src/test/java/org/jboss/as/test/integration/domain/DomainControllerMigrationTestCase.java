@@ -233,7 +233,7 @@ public class DomainControllerMigrationTestCase {
     }
 
     private void waitUntilHostControllerReady(final DomainLifecycleUtil dcUtil) throws TimeoutException {
-        RetryTaskExecutor<Object> executor = new RetryTaskExecutor<Object>();
+        RetryTaskExecutor<Object> executor = new RetryTaskExecutor<>();
         executor.retryTask(new Callable<Object>() {
 
             public Object call() throws Exception {

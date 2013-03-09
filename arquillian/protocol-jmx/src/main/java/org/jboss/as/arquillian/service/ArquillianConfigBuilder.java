@@ -114,7 +114,7 @@ public class ArquillianConfigBuilder {
         final Set<ClassInfo> testNgTests = compositeIndex.getAllKnownSubclasses(testNGClassName);
 
         // Get Test Class Names
-        final Set<String> testClasses = new HashSet<String>();
+        final Set<String> testClasses = new HashSet<>();
         // JUnit
         for (AnnotationInstance instance : runWithList) {
             final AnnotationTarget target = instance.target();

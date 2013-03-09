@@ -40,8 +40,8 @@ class ElementNode extends Node {
     private final ElementNode parent;
     private final String name;
     private final String namespace;
-    private final Map<String, AttributeValue> attributes = new LinkedHashMap<String, AttributeValue>();
-    private List<Node> children = new ArrayList<Node>();
+    private final Map<String, AttributeValue> attributes = new LinkedHashMap<>();
+    private List<Node> children = new ArrayList<>();
 
     ElementNode(final ElementNode parent, final String name) {
         this(parent, name, parent.getNamespace());

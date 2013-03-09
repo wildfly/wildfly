@@ -82,7 +82,7 @@ public class Krb5ConfServerSetupTask implements ServerSetupTask {
         FileUtils.deleteDirectory(WORK_DIR);
         WORK_DIR.mkdirs();
         final String cannonicalHost = NetworkUtils.formatPossibleIpv6Address(Utils.getCannonicalHost(managementClient));
-        final Map<String, String> map = new HashMap<String, String>();
+        final Map<String, String> map = new HashMap<>();
         map.put("hostname", cannonicalHost);
         FileUtils.write(KRB5_CONF_FILE,
                 StrSubstitutor.replace(IOUtils.toString(getClass().getResourceAsStream(KRB5_CONF), "UTF-8"), map), "UTF-8");
@@ -146,7 +146,7 @@ public class Krb5ConfServerSetupTask implements ServerSetupTask {
         final long principalType = 1L; //KRB5_NT_PRINCIPAL
 
         final Keytab keytab = Keytab.getInstance();
-        final List<KeytabEntry> entries = new ArrayList<KeytabEntry>();
+        final List<KeytabEntry> entries = new ArrayList<>();
         for (Map.Entry<EncryptionType, EncryptionKey> keyEntry : KerberosKeyFactory.getKerberosKeys(principalName, passPhrase)
                 .entrySet()) {
             final EncryptionKey key = keyEntry.getValue();

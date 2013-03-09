@@ -38,8 +38,8 @@ class RegisterMBeanServerDelegateService implements Service<Void>{
 
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(ServiceName.of(JSR77ManagementExtension.SUBSYSTEM_NAME, "mbeanwrapper"));
 
-    final InjectedValue<PluggableMBeanServer> injectedMbeanServer = new InjectedValue<PluggableMBeanServer>();
-    final InjectedValue<ModelController> injectedController = new InjectedValue<ModelController>();
+    final InjectedValue<PluggableMBeanServer> injectedMbeanServer = new InjectedValue<>();
+    final InjectedValue<ModelController> injectedController = new InjectedValue<>();
 
     volatile JSR77ManagementMBeanServer server;
 

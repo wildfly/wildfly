@@ -80,7 +80,7 @@ public class ReadChildrenNamesHandler implements OperationStepHandler {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.unknownChildType(childType)));
         }
         // Sort the result
-        childNames = new TreeSet<String>(childNames);
+        childNames = new TreeSet<>(childNames);
         ModelNode result = context.getResult();
         result.setEmptyList();
         for (String childName : childNames) {

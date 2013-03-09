@@ -108,7 +108,7 @@ class JSR77ManagementSubsystemAdd extends AbstractAddStepHandler {
                 //TODO null for source ok?
                 final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(JNDI_NAME);
                 final BinderService binderService = new BinderService(bindInfo.getBindName(), null);
-                final InjectedValue<ClassLoader> viewClassLoader = new InjectedValue<ClassLoader>();
+                final InjectedValue<ClassLoader> viewClassLoader = new InjectedValue<>();
                 viewClassLoader.setValue(Values.immediateValue(ManagementHome.class.getClassLoader()));
                 newControllers.add(target.addService(bindInfo.getBinderServiceName(), binderService)
                     .addInjection(binderService.getManagedObjectInjector(), new RemoteViewManagedReferenceFactory(APP_NAME, MODULE_NAME, DISTINCT_NAME, EJB_NAME, ManagementHome.class.getName(), false, viewClassLoader))

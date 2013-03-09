@@ -39,7 +39,7 @@ public final class ResourceRoot extends SimpleAttachable {
     private final String rootName;
     private final VirtualFile root;
     private final MountHandle mountHandle;
-    private final List<FilterSpecification> exportFilters = new ArrayList<FilterSpecification>();
+    private final List<FilterSpecification> exportFilters = new ArrayList<>();
     private boolean usePhysicalCodeSource;
 
     public ResourceRoot(final VirtualFile root, final MountHandle mountHandle) {

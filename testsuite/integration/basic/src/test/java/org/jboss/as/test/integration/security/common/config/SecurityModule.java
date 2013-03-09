@@ -47,7 +47,7 @@ public class SecurityModule {
         this.name = builder.name;
         this.flag = builder.flag;
         this.options = builder.options == null ? null : Collections
-                .unmodifiableMap(new HashMap<String, String>(builder.options));
+                .unmodifiableMap(new HashMap<>(builder.options));
     }
 
     // Public methods --------------------------------------------------------
@@ -103,7 +103,7 @@ public class SecurityModule {
 
         public Builder putOption(String name, String value) {
             if (options == null) {
-                options = new HashMap<String, String>();
+                options = new HashMap<>();
             }
             options.put(name, value);
             return this;

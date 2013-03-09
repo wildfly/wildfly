@@ -58,7 +58,7 @@ public class ActiveApplicationClientProcessor implements DeploymentUnitProcessor
         if (!DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
-        final List<DeploymentUnit> appClients = new ArrayList<DeploymentUnit>();
+        final List<DeploymentUnit> appClients = new ArrayList<>();
         for (DeploymentUnit subDeployment : deploymentUnit.getAttachmentList(org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS)) {
             if (DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, subDeployment)) {
                 if (deploymentName != null && deploymentName.equals(subDeployment.getName())) {

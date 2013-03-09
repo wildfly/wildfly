@@ -50,7 +50,7 @@ class OperationAttachmentsProxy implements OperationAttachments {
     private final List<ProxiedInputStream> proxiedStreams;
 
     private OperationAttachmentsProxy(final ManagementChannelAssociation channelAssociation, final int batchId, final int size) {
-        proxiedStreams = new ArrayList<ProxiedInputStream>(size);
+        proxiedStreams = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             proxiedStreams.add(new ProxiedInputStream(channelAssociation, batchId, i));
         }
@@ -67,7 +67,7 @@ class OperationAttachmentsProxy implements OperationAttachments {
 
     @Override
     public List<InputStream> getInputStreams() {
-        List<InputStream> result = new ArrayList<InputStream>();
+        List<InputStream> result = new ArrayList<>();
         result.addAll(proxiedStreams);
         return Collections.unmodifiableList(result);
     }

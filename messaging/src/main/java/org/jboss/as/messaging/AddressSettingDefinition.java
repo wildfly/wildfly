@@ -54,7 +54,7 @@ public class AddressSettingDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition ADDRESS_FULL_MESSAGE_POLICY = create("address-full-policy", ModelType.STRING)
             .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_ADDRESS_FULL_MESSAGE_POLICY.toString()))
-            .setValidator(new EnumValidator<AddressFullMessagePolicy>(AddressFullMessagePolicy.class, true, false))
+            .setValidator(new EnumValidator<>(AddressFullMessagePolicy.class, true, false))
             .setAllowNull(true)
             .setAllowExpression(true)
             .build();

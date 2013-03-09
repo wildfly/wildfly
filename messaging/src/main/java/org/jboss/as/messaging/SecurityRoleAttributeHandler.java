@@ -58,7 +58,7 @@ class SecurityRoleAttributeHandler extends AbstractWriteAttributeHandler<Set<Rol
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
             final String match = address.getElement(address.size() - 2).getValue();
             final String roleName = address.getLastElement().getValue();
-            final Set<Role> newRoles = new HashSet<Role>();
+            final Set<Role> newRoles = new HashSet<>();
             final Set<Role> roles = server.getSecurityRepository().getMatch(match);
             handbackHolder.setHandback(roles);
             for(final Role role : roles) {

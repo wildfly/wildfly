@@ -90,7 +90,7 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
         for (BundleRequirement req : brev.getDeclaredRequirements(PackageNamespace.PACKAGE_NAMESPACE)) {
             XPackageRequirement preq = (XPackageRequirement) req;
             if (preq.isOptional()) {
-                result = new HashSet<XBundleRevision>();
+                result = new HashSet<>();
                 for (XBundle bundle : bundleManager.getBundles(Bundle.INSTALLED)) {
                     result.add(bundle.getBundleRevision());
                 }

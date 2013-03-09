@@ -138,8 +138,8 @@ public class FailedOperationTransformationConfig {
     }
 
     private static class PathAddressConfigRegistry {
-        private final Map<PathElement,PathAddressConfigRegistry> children = new HashMap<PathElement, FailedOperationTransformationConfig.PathAddressConfigRegistry>();
-        private final Map<String, PathAddressConfigRegistry> wildcardChildren = new HashMap<String, FailedOperationTransformationConfig.PathAddressConfigRegistry>();
+        private final Map<PathElement,PathAddressConfigRegistry> children = new HashMap<>();
+        private final Map<String, PathAddressConfigRegistry> wildcardChildren = new HashMap<>();
         private PathAddressConfig config;
 
         void addConfig(Iterator<PathElement> address, PathAddressConfig config) {
@@ -260,12 +260,12 @@ public class FailedOperationTransformationConfig {
 
     public abstract static class AttributesPathAddressConfig<T extends AttributesPathAddressConfig<T>> implements PathAddressConfig {
         protected final Set<String> attributes;
-        protected final Map<String, AttributesPathAddressConfig<?>> complexAttributes = new HashMap<String, AttributesPathAddressConfig<?>>();
-        protected final Set<String> noWriteFailureAttributes = new HashSet<String>();
-        protected final Set<String> readOnlyAttributes = new HashSet<String>();
+        protected final Map<String, AttributesPathAddressConfig<?>> complexAttributes = new HashMap<>();
+        protected final Set<String> noWriteFailureAttributes = new HashSet<>();
+        protected final Set<String> readOnlyAttributes = new HashSet<>();
 
         protected AttributesPathAddressConfig(String...attributes) {
-            this.attributes = new HashSet<String>(Arrays.asList(attributes));
+            this.attributes = new HashSet<>(Arrays.asList(attributes));
         }
 
         public AttributesPathAddressConfig<T> configureComplexAttribute(String attribute, T childConfig) {
@@ -286,7 +286,7 @@ public class FailedOperationTransformationConfig {
 
 
         public List<ModelNode> createWriteAttributeOperations(ModelNode operation) {
-            List<ModelNode> list = new ArrayList<ModelNode>();
+            List<ModelNode> list = new ArrayList<>();
             for (String attr : attributes) {
                 if (operation.hasDefined(attr)) {
                     //TODO Should we also allow undefined here?
@@ -532,7 +532,7 @@ public class FailedOperationTransformationConfig {
      */
     public static class ChainedConfig extends AttributesPathAddressConfig<ChainedConfig> {
 
-        private final List<AttributesPathAddressConfig<?>> list = new ArrayList<FailedOperationTransformationConfig.AttributesPathAddressConfig<?>>();
+        private final List<AttributesPathAddressConfig<?>> list = new ArrayList<>();
 
         /**
          * Constructor
@@ -632,7 +632,7 @@ public class FailedOperationTransformationConfig {
 
         public static Builder createBuilder(final String...attributes) {
             return new Builder() {
-                ArrayList<AttributesPathAddressConfig<?>> list = new ArrayList<FailedOperationTransformationConfig.AttributesPathAddressConfig<?>>();
+                ArrayList<AttributesPathAddressConfig<?>> list = new ArrayList<>();
                 @Override
                 public ChainedConfig build() {
                     return new ChainedConfig(list, attributes);

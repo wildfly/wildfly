@@ -32,7 +32,7 @@ import org.jboss.as.server.deployment.SetupAction;
 public class ContextManagerBuilder {
 
 
-    private final List<SetupAction> setupActions = new ArrayList<SetupAction>();
+    private final List<SetupAction> setupActions = new ArrayList<>();
 
     /**
      * Adds a {@link SetupAction} to the builder. This action will be run by the {@link ContextManager} in the order it was

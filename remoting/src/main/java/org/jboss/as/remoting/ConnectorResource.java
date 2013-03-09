@@ -166,7 +166,7 @@ public class ConnectorResource extends SimpleResourceDefinition {
         if (sasl.hasDefined(PROPERTY)) {
             ModelNode property = sasl.get(PROPERTY);
             List<Property> props = property.asPropertyList();
-            List<org.xnio.Property> converted = new ArrayList<org.xnio.Property>(props.size());
+            List<org.xnio.Property> converted = new ArrayList<>(props.size());
             for (Property current : props) {
                 converted.add(org.xnio.Property.of(current.getName(), PropertyResource.VALUE.resolveModelAttribute(context, current.getValue()).asString()));
             }
@@ -188,7 +188,7 @@ public class ConnectorResource extends SimpleResourceDefinition {
     }
 
     private static Collection<String> asStringSet(final ModelNode node) {
-        final Set<String> set = new HashSet<String>();
+        final Set<String> set = new HashSet<>();
         for (final ModelNode element : node.asList()) {
             set.add(element.asString());
         }
@@ -196,7 +196,7 @@ public class ConnectorResource extends SimpleResourceDefinition {
     }
 
     private static Collection<SaslQop> asQopSet(final ModelNode node) {
-        final Set<SaslQop> set = new HashSet<SaslQop>();
+        final Set<SaslQop> set = new HashSet<>();
         for (final ModelNode element : node.asList()) {
             set.add(SaslQop.fromString(element.asString()));
         }

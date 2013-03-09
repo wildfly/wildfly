@@ -53,7 +53,7 @@ import org.jboss.osgi.resolver.XBundle;
  */
 final class FrameworkModuleIntegration extends FrameworkModuleProviderPlugin {
 
-    private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
+    private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<>();
     private final Map<String, String> props;
 
     FrameworkModuleIntegration(Map<String, String> props) {
@@ -90,11 +90,11 @@ final class FrameworkModuleIntegration extends FrameworkModuleProviderPlugin {
             ModuleSpec.Builder specBuilder = ModuleSpec.build(ModuleIdentifier.create(JBOSGI_PREFIX + ".framework"));
 
             // Add the framework module dependencies
-            String sysmodules = (String) props.get(PROP_JBOSS_OSGI_SYSTEM_MODULES);
+            String sysmodules = props.get(PROP_JBOSS_OSGI_SYSTEM_MODULES);
             if (sysmodules == null)
                 sysmodules = "";
 
-            String extramodules = (String) props.get(PROP_JBOSS_OSGI_SYSTEM_MODULES_EXTRA);
+            String extramodules = props.get(PROP_JBOSS_OSGI_SYSTEM_MODULES_EXTRA);
             if (extramodules != null)
                 sysmodules += "," + extramodules;
 
@@ -110,7 +110,7 @@ final class FrameworkModuleIntegration extends FrameworkModuleProviderPlugin {
             }
 
             XBundle systemBundle = injectedBundleManager.getValue().getSystemBundle();
-            specBuilder.setModuleClassLoaderFactory(new BundleReferenceClassLoader.Factory<XBundle>(systemBundle));
+            specBuilder.setModuleClassLoaderFactory(new BundleReferenceClassLoader.Factory<>(systemBundle));
 
             try {
                 final ModuleSpec moduleSpec = specBuilder.create();

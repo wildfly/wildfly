@@ -66,9 +66,9 @@ public class ConfigAdminServiceImpl implements ConfigAdminInternal, Service<Conf
 
     static final String TRANSIENT_PROPERTY_SKIP_MANAGEMENT_OPERATION = ".transient.skip.mgmnt.op";
 
-    private final InjectedValue<ModelController> injectedModelController = new InjectedValue<ModelController>();
+    private final InjectedValue<ModelController> injectedModelController = new InjectedValue<>();
 
-    private final Set<ConfigAdminListener> listeners = new CopyOnWriteArraySet<ConfigAdminListener>();
+    private final Set<ConfigAdminListener> listeners = new CopyOnWriteArraySet<>();
     private final ConfigAdminState configurations = new ConfigAdminState();
     private ModelControllerClient controllerClient;
     private ExecutorService mgmntOperationExecutor;
@@ -266,7 +266,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminInternal, Service<Conf
     }
 
     private Dictionary<String, String> getModifiableDictionary(Dictionary<String, String> source) {
-        Dictionary<String, String> result = new Hashtable<String, String>();
+        Dictionary<String, String> result = new Hashtable<>();
         if (source != null) {
             Enumeration<String> keys = source.keys();
             while (keys.hasMoreElements()) {
@@ -324,7 +324,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminInternal, Service<Conf
         private final Set<ConfigAdminListener> snapshot;
 
         private ConfigAdminListenerTask(String pid, Dictionary<String, String> dictionary) {
-            this(pid, dictionary, new HashSet<ConfigAdminListener>(listeners));
+            this(pid, dictionary, new HashSet<>(listeners));
         }
 
         private ConfigAdminListenerTask(String pid, Dictionary<String, String> dictionary, Set<ConfigAdminListener> snapshot) {
@@ -332,7 +332,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminInternal, Service<Conf
             this.snapshot = snapshot;
             if (dictionary != null) {
                 dictionary.put(TRANSIENT_PROPERTY_SKIP_MANAGEMENT_OPERATION, "true");
-                this.dictionary = new UnmodifiableDictionary<String, String>(dictionary);
+                this.dictionary = new UnmodifiableDictionary<>(dictionary);
             } else {
                 this.dictionary = null;
             }

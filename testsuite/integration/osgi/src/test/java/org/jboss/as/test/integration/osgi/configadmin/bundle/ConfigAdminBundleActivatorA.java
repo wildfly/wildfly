@@ -39,7 +39,7 @@ public class ConfigAdminBundleActivatorA implements BundleActivator {
 
     @Override
     public void start(BundleContext context) throws Exception {
-        Hashtable<String, String> props = new Hashtable<String, String>();
+        Hashtable<String, String> props = new Hashtable<>();
         props.put(Constants.SERVICE_PID, context.getBundle().getLocation());
         context.registerService(new String[] { ManagedService.class.getName(), ConfiguredService.class.getName() }, new ConfiguredService(), props);
     }

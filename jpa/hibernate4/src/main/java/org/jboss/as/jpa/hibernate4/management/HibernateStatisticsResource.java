@@ -170,7 +170,7 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
 
     @Override
     public Set<String> getChildTypes() {
-        Set<String> result = new HashSet<String>(super.getChildTypes());
+        Set<String> result = new HashSet<>(super.getChildTypes());
         result.add(ENTITYCACHE);
         result.add(ENTITY);
         result.add(COLLECTION);
@@ -196,25 +196,25 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
     @Override
     public Set<ResourceEntry> getChildren(String childType) {
         if (ENTITYCACHE.equals(childType)) {
-            Set<ResourceEntry> result = new HashSet<ResourceEntry>();
+            Set<ResourceEntry> result = new HashSet<>();
             for (String name : getCacheRegionNames()) {
                 result.add(new PlaceholderResource.PlaceholderResourceEntry(ENTITYCACHE, name));
             }
             return result;
         } else if (ENTITY.equals(childType)) {
-            Set<ResourceEntry> result = new HashSet<ResourceEntry>();
+            Set<ResourceEntry> result = new HashSet<>();
             for (String name : getEntityNames()) {
                 result.add(new PlaceholderResource.PlaceholderResourceEntry(ENTITY, name));
             }
             return result;
         } else if (COLLECTION.equals(childType)) {
-            Set<ResourceEntry> result = new HashSet<ResourceEntry>();
+            Set<ResourceEntry> result = new HashSet<>();
             for (String name : getCollectionNames()) {
                 result.add(new PlaceholderResource.PlaceholderResourceEntry(COLLECTION, name));
             }
             return result;
         } else if (QUERYCACHE.equals(childType)) {
-            Set<ResourceEntry> result = new HashSet<ResourceEntry>();
+            Set<ResourceEntry> result = new HashSet<>();
             for (String name : getQueryNames()) {
                 result.add(new PlaceholderResource.PlaceholderResourceEntry(QUERYCACHE, name));
             }
@@ -278,7 +278,7 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
         if (stats == null) {
             return Collections.emptySet();
         } else {
-            Set<String> result = new HashSet<String>();
+            Set<String> result = new HashSet<>();
             String[] entityNames = stats.getEntityNames();
             if (entityNames != null) {
                 for (String entity : entityNames) {
@@ -307,7 +307,7 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
         if (stats == null) {
             return Collections.emptySet();
         } else {
-            Set<String> result = new HashSet<String>();
+            Set<String> result = new HashSet<>();
             String[] cacheRegionNames = stats.getSecondLevelCacheRegionNames();
             if (cacheRegionNames != null) {
                 for (String region : cacheRegionNames) {
@@ -347,7 +347,7 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
         if (stats == null) {
             return Collections.emptySet();
         } else {
-            Set<String> result = new HashSet<String>();
+            Set<String> result = new HashSet<>();
             String[] queries = stats.getQueries();
             if (queries != null) {
                 for (String query : queries) {
@@ -373,7 +373,7 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
         if (stats == null) {
             return Collections.emptySet();
         } else {
-            Set<String> result = new HashSet<String>();
+            Set<String> result = new HashSet<>();
             String[] collectionNames = stats.getCollectionRoleNames();
             if (collectionNames != null) {
                 for (String entity : collectionNames) {

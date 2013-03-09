@@ -246,7 +246,7 @@ public class CalendarBasedTimeoutTestCase {
         Assert.assertEquals("Unexpected minute in first timeout " + firstTimeoutDate, 0, minute);
         Assert.assertEquals("Unexpected hour in first timeout " + firstTimeoutDate, 12, hour);
         Assert.assertEquals("Unexpected AM/PM in first timeout ", Calendar.PM, amOrPm);
-        List<Integer> validDays = new ArrayList<Integer>();
+        List<Integer> validDays = new ArrayList<>();
         validDays.add(Calendar.MONDAY);
         validDays.add(Calendar.WEDNESDAY);
         validDays.add(Calendar.FRIDAY);
@@ -413,7 +413,7 @@ public class CalendarBasedTimeoutTestCase {
         Assert.assertEquals("Unexpected hour in first timeout " + firstTimeoutDate, 21, hour);
         Assert.assertEquals("Unexpected AM/PM in first timeout ", Calendar.PM, amOrPm);
         Assert.assertEquals("Unexpected day of month in first timeout ", 31, dayOfMonth);
-        List<Integer> validMonths = new ArrayList<Integer>();
+        List<Integer> validMonths = new ArrayList<>();
         validMonths.add(Calendar.NOVEMBER);
         validMonths.add(Calendar.DECEMBER);
         validMonths.add(Calendar.JANUARY);
@@ -434,7 +434,7 @@ public class CalendarBasedTimeoutTestCase {
         int nextDayOfMonth = nextTimeoutFromNow.get(Calendar.DAY_OF_MONTH);
         int nextMonth = nextTimeoutFromNow.get(Calendar.MONTH);
 
-        List<Integer> validSeconds = new ArrayList<Integer>();
+        List<Integer> validSeconds = new ArrayList<>();
         validSeconds.add(0);
         validSeconds.add(15);
         validSeconds.add(30);

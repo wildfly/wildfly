@@ -60,8 +60,8 @@ public class RemoteOutboundConnectionService extends AbstractOutboundConnectionS
     private static final String REMOTE_URI_SCHEME = "remote://";
     private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
 
-    private final InjectedValue<OutboundSocketBinding> destinationOutboundSocketBindingInjectedValue = new InjectedValue<OutboundSocketBinding>();
-    private final InjectedValue<SecurityRealm> securityRealmInjectedValue = new InjectedValue<SecurityRealm>();
+    private final InjectedValue<OutboundSocketBinding> destinationOutboundSocketBindingInjectedValue = new InjectedValue<>();
+    private final InjectedValue<SecurityRealm> securityRealmInjectedValue = new InjectedValue<>();
 
     private final String username;
     private URI connectionURI;

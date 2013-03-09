@@ -54,7 +54,7 @@ public class AllowedMethodsInformation {
 
     protected AllowedMethodsInformation(boolean beanManagedTransaction) {
         this.beanManagedTransaction = beanManagedTransaction;
-        final Set<DeniedMethodKey> denied = new HashSet<DeniedMethodKey>();
+        final Set<DeniedMethodKey> denied = new HashSet<>();
         add(denied, InvocationType.SET_ENTITY_CONTEXT, MethodType.TIMER_SERVICE_METHOD);
         add(denied, InvocationType.SET_ENTITY_CONTEXT, MethodType.TIMER_SERVICE_METHOD);
         add(denied, InvocationType.SET_ENTITY_CONTEXT, MethodType.GET_PRIMARY_KEY);
@@ -71,7 +71,7 @@ public class AllowedMethodsInformation {
         setup(denied);
         this.denied = Collections.unmodifiableSet(denied);
 
-        final Set<DeniedSyncMethodKey> deniedSync = new HashSet<DeniedSyncMethodKey>();
+        final Set<DeniedSyncMethodKey> deniedSync = new HashSet<>();
         add(deniedSync, CurrentSynchronizationCallback.CallbackType.AFTER_COMPLETION, MethodType.TIMER_SERVICE_METHOD);
         add(deniedSync, CurrentSynchronizationCallback.CallbackType.AFTER_COMPLETION, MethodType.GET_ROLLBACK_ONLY);
         add(deniedSync, CurrentSynchronizationCallback.CallbackType.AFTER_COMPLETION, MethodType.SET_ROLLBACK_ONLY);

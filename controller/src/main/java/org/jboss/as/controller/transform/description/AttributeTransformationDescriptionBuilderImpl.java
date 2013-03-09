@@ -147,11 +147,11 @@ abstract class AttributeTransformationDescriptionBuilderImpl<T extends BaseAttri
     }
 
     static class AttributeTransformationDescriptionBuilderRegistry {
-        private final Set<String> allAttributes = new HashSet<String>();
-        private final Map<String, List<RejectAttributeChecker>> attributeRestrictions = new HashMap<String, List<RejectAttributeChecker>>();
-        private final Map<String, DiscardAttributeChecker> discardedAttributes = new HashMap<String, DiscardAttributeChecker>();
-        private final Map<String, String> renamedAttributes = new HashMap<String, String>();
-        private final Map<String, AttributeConverter> convertedAttributes = new HashMap<String, AttributeConverter>();
+        private final Set<String> allAttributes = new HashSet<>();
+        private final Map<String, List<RejectAttributeChecker>> attributeRestrictions = new HashMap<>();
+        private final Map<String, DiscardAttributeChecker> discardedAttributes = new HashMap<>();
+        private final Map<String, String> renamedAttributes = new HashMap<>();
+        private final Map<String, AttributeConverter> convertedAttributes = new HashMap<>();
 
 
         void addToAllAttributes(String attributeName) {
@@ -164,7 +164,7 @@ abstract class AttributeTransformationDescriptionBuilderImpl<T extends BaseAttri
             addToAllAttributes(attributeName);
             List<RejectAttributeChecker> checkers = attributeRestrictions.get(attributeName);
             if(checkers == null) {
-                checkers = new ArrayList<RejectAttributeChecker>();
+                checkers = new ArrayList<>();
                 attributeRestrictions.put(attributeName, checkers);
             }
             checkers.add(checker);
@@ -189,7 +189,7 @@ abstract class AttributeTransformationDescriptionBuilderImpl<T extends BaseAttri
         }
 
         Map<String, AttributeTransformationDescription> buildAttributes(){
-            Map<String, AttributeTransformationDescription> attributes = new HashMap<String, AttributeTransformationDescription>();
+            Map<String, AttributeTransformationDescription> attributes = new HashMap<>();
             for (String name : allAttributes) {
                 List<RejectAttributeChecker> checkers = attributeRestrictions.get(name);
                 String newName = renamedAttributes.get(name);

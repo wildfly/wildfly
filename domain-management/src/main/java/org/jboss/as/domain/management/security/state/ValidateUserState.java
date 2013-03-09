@@ -59,7 +59,7 @@ public class ValidateUserState extends AbstractValidationState {
 
     @Override
     protected Collection<State> getValidationStates() {
-        List<State> validationStates = new ArrayList<State>(3);
+        List<State> validationStates = new ArrayList<>(3);
         validationStates.add(getValidCharactersState());
         validationStates.add(getDuplicateCheckState());
         validationStates.add(getCommonNamesCheckState());

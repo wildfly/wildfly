@@ -42,7 +42,7 @@ public class BeanManagerService implements Service<BeanManager> {
 
     public static final ServiceName NAME = ServiceName.of("beanmanager");
 
-    private final InjectedValue<WeldBootstrapService> weldContainer = new InjectedValue<WeldBootstrapService>();
+    private final InjectedValue<WeldBootstrapService> weldContainer = new InjectedValue<>();
     private final String beanDeploymentArchiveId;
     private volatile BeanManager beanManager;
 

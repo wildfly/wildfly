@@ -70,7 +70,7 @@ public class JMSQueueManagementTestCase {
     private static HornetQConnectionFactory connectionFactory;
 
     @BeforeClass
-    public static void beforeClass() throws Exception {HashMap<String, Object> map = new HashMap<String, Object>();
+    public static void beforeClass() throws Exception {HashMap<String, Object> map = new HashMap<>();
         map.put("host", TestSuiteEnvironment.getServerAddress());
         TransportConfiguration transportConfiguration =
                      new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
@@ -295,7 +295,7 @@ public class JMSQueueManagementTestCase {
         producer.send(session.createTextMessage("B"));
         producer.send(session.createTextMessage("C"));
 
-        Set<Integer> priorities = new HashSet<Integer>();
+        Set<Integer> priorities = new HashSet<>();
         ModelNode result = execute(getQueueOperation("list-messages"), true);
         Assert.assertEquals(3, result.asInt());
         for (ModelNode node : result.asList()) {
@@ -346,7 +346,7 @@ public class JMSQueueManagementTestCase {
     public void testListConsumers() throws Exception {
 
 
-        HashMap<String, Object> map = new HashMap<String, Object>();
+        HashMap<String, Object> map = new HashMap<>();
         map.put("host", TestSuiteEnvironment.getServerAddress());
         TransportConfiguration transportConfiguration =
                 new TransportConfiguration(NettyConnectorFactory.class.getName(), map);

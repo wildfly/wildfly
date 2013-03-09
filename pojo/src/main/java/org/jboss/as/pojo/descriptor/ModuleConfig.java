@@ -40,7 +40,7 @@ public class ModuleConfig extends AbstractConfigVisitorNode implements Serializa
     private static final long serialVersionUID = 1L;
 
     private String moduleName;
-    private final InjectedValue<Module> injectedModule = new InjectedValue<Module>();
+    private final InjectedValue<Module> injectedModule = new InjectedValue<>();
 
     @Override
     public void visit(ConfigVisitor visitor) {
@@ -51,10 +51,10 @@ public class ModuleConfig extends AbstractConfigVisitorNode implements Serializa
                 visitor.addDependency(serviceName, getInjectedModule());
             } else {
                 Module dm = visitor.loadModule(identifier);
-                getInjectedModule().setValue(new ImmediateValue<Module>(dm));
+                getInjectedModule().setValue(new ImmediateValue<>(dm));
             }
         } else {
-            getInjectedModule().setValue(new ImmediateValue<Module>(visitor.getModule()));
+            getInjectedModule().setValue(new ImmediateValue<>(visitor.getModule()));
         }
         // no children, no need to visit
     }

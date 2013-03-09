@@ -153,9 +153,9 @@ public class NamingContext implements EventContext {
         }
         this.namingStore = namingStore;
         if(environment != null) {
-            this.environment = new Hashtable<String, Object>(environment);
+            this.environment = new Hashtable<>(environment);
         } else {
-            this.environment = new Hashtable<String, Object>();
+            this.environment = new Hashtable<>();
         }
     }
 

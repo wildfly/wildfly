@@ -32,12 +32,12 @@ import java.util.EmptyStackException;
  */
 public class ThreadLocalStack<E> {
 
-    private final ThreadLocal<Deque<E>> deque = new ThreadLocal<Deque<E>>();
+    private final ThreadLocal<Deque<E>> deque = new ThreadLocal<>();
 
     public void push(E item) {
         Deque<E> st = deque.get();
         if (st == null) {
-            st = new ArrayDeque<E>();
+            st = new ArrayDeque<>();
             deque.set(st);
         }
         st.push(item);

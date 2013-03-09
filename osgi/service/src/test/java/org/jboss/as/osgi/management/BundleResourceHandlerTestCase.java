@@ -123,7 +123,7 @@ public class BundleResourceHandlerTestCase {
         mockEnvironment();
         ModelNode readOp = getReadOperation("1", ModelConstants.TYPE);
 
-        Dictionary<String, String> headers = new Hashtable<String, String>();
+        Dictionary<String, String> headers = new Hashtable<>();
         headers.put(Constants.FRAGMENT_HOST, "somebundle");
         Bundle testBundle = Mockito.mock(Bundle.class);
         Mockito.when(bundleContext.getBundle(1)).thenReturn(testBundle);
@@ -138,7 +138,7 @@ public class BundleResourceHandlerTestCase {
         mockEnvironment();
         ModelNode readOp = getReadOperation("1", ModelConstants.TYPE);
 
-        Dictionary<String, String> headers = new Hashtable<String, String>();
+        Dictionary<String, String> headers = new Hashtable<>();
 
         Bundle testBundle = Mockito.mock(Bundle.class);
         Mockito.when(bundleContext.getBundle(1)).thenReturn(testBundle);

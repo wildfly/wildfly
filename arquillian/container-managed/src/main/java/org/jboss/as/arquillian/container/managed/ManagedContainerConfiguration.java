@@ -165,7 +165,7 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
 
     public void setWaitForPorts(String waitForPorts) {
         final Scanner scanner = new Scanner(waitForPorts);
-        final List<Integer> list = new ArrayList<Integer>();
+        final List<Integer> list = new ArrayList<>();
         while (scanner.hasNextInt()) {
             list.add(scanner.nextInt());
         }

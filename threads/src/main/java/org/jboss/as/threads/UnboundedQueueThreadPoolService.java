@@ -41,7 +41,7 @@ import org.jboss.threads.JBossThreadPoolExecutor;
  * @author John E. Bailey
  */
 public class UnboundedQueueThreadPoolService implements Service<ManagedJBossThreadPoolExecutorService> {
-    private final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<ThreadFactory>();
+    private final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<>();
 
     private ManagedJBossThreadPoolExecutorService executor;
 

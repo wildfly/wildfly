@@ -46,8 +46,8 @@ import static org.jboss.as.web.Constants.*;
  */
 class SharedWebMetaDataBuilder {
 
-    static final List<String> welcomeFiles = new ArrayList<String>();
-    static final List<MimeMappingMetaData> mimeMappings = new ArrayList<MimeMappingMetaData>();
+    static final List<String> welcomeFiles = new ArrayList<>();
+    static final List<MimeMappingMetaData> mimeMappings = new ArrayList<>();
 
     static {
         // Create the default mappings
@@ -126,7 +126,7 @@ class SharedWebMetaDataBuilder {
             servlet.setServletClass("org.apache.catalina.servlets.DefaultServlet");
         }
 
-        final List<ParamValueMetaData> initParams = new ArrayList<ParamValueMetaData>();
+        final List<ParamValueMetaData> initParams = new ArrayList<>();
         initParams.add(createParameter("listings", resourcesConfig.require(LISTINGS).asString()));
         initParams.add(createParameter("readonly", resourcesConfig.require(READ_ONLY).asString()));
         initParams.add(createParameter("sendfile", resourcesConfig.require(SENDFILE).asString()));
@@ -160,7 +160,7 @@ class SharedWebMetaDataBuilder {
         servlet.setLoadOnStartup("" + 3);
         servlet.setServletClass("org.apache.jasper.servlet.JspServlet");
 
-        final List<ParamValueMetaData> initParams = new ArrayList<ParamValueMetaData>();
+        final List<ParamValueMetaData> initParams = new ArrayList<>();
 
         initParams.add(createParameter("development", config.require(DEVELOPMENT).asString()));
         initParams.add(createParameter("keepgenerated", config.require(KEEP_GENERATED).asString()));
@@ -200,7 +200,7 @@ class SharedWebMetaDataBuilder {
     static void addServletMapping(final String servlet, final WebMetaData metadata, String... names) {
         List<ServletMappingMetaData> mappings = metadata.getServletMappings();
         if (mappings == null) {
-            mappings = new ArrayList<ServletMappingMetaData>();
+            mappings = new ArrayList<>();
             metadata.setServletMappings(mappings);
         }
         ServletMappingMetaData mapping = new ServletMappingMetaData();

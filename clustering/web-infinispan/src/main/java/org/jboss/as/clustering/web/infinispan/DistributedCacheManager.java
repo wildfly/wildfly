@@ -69,7 +69,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     private static Map<SharedLocalYieldingClusterLockManager.LockResult, LockResult> results = lockResultMap();
 
     private static Map<SharedLocalYieldingClusterLockManager.LockResult, LockResult> lockResultMap() {
-        Map<SharedLocalYieldingClusterLockManager.LockResult, LockResult> map = new EnumMap<SharedLocalYieldingClusterLockManager.LockResult, LockResult>(SharedLocalYieldingClusterLockManager.LockResult.class);
+        Map<SharedLocalYieldingClusterLockManager.LockResult, LockResult> map = new EnumMap<>(SharedLocalYieldingClusterLockManager.LockResult.class);
         map.put(SharedLocalYieldingClusterLockManager.LockResult.ACQUIRED_FROM_CLUSTER, LockResult.ACQUIRED_FROM_CLUSTER);
         map.put(SharedLocalYieldingClusterLockManager.LockResult.ALREADY_HELD, LockResult.ALREADY_HELD);
         map.put(SharedLocalYieldingClusterLockManager.LockResult.NEW_LOCK, LockResult.NEW_LOCK);
@@ -332,7 +332,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
      */
     @Override
     public Map<String, String> getSessionIds() {
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = new HashMap<>();
         Operation<Set<String>> operation = new Operation<Set<String>>() {
             @Override
             public Set<String> invoke(Cache<String, Map<Object, Object>> cache) {

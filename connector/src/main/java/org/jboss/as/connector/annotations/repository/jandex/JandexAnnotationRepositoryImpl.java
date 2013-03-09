@@ -71,13 +71,13 @@ public class JandexAnnotationRepositoryImpl implements AnnotationRepository {
     public Collection<Annotation> getAnnotation(Class<?> annotationClass) {
         List<AnnotationInstance> instances = backingRepository.getAnnotations(DotName.createSimple(annotationClass
                 .getName()));
-        ArrayList<Annotation> annotations = new ArrayList<Annotation>(instances.size());
+        ArrayList<Annotation> annotations = new ArrayList<>(instances.size());
         for (AnnotationInstance instance : instances) {
             AnnotationTarget target = instance.target();
             Annotation annotation = null;
             if (target instanceof MethodInfo) {
                 MethodInfo m = (MethodInfo) target;
-                List<String> parameterTypes = new ArrayList<String>(m.args().length);
+                List<String> parameterTypes = new ArrayList<>(m.args().length);
                 for (Type type : m.args()) {
                     parameterTypes.add(type.toString());
                 }

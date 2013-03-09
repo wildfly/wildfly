@@ -46,7 +46,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class EntityBeanHomeCreateInterceptorFactory implements InterceptorFactory {
 
-    private final InjectedValue<ComponentView> viewToCreate = new InjectedValue<ComponentView>();
+    private final InjectedValue<ComponentView> viewToCreate = new InjectedValue<>();
 
     public static final Object EJB_CREATE_METHOD_KEY = new Object();
     public static final Object EJB_POST_CREATE_METHOD_KEY = new Object();
@@ -68,7 +68,7 @@ public class EntityBeanHomeCreateInterceptorFactory implements InterceptorFactor
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
                 final ComponentView view = viewToCreate.getValue();
-                final HashMap<Object, Object> ctx = new HashMap<Object, Object>();
+                final HashMap<Object, Object> ctx = new HashMap<>();
                 ctx.put(EJB_CREATE_METHOD_KEY, ejbCreate);
                 ctx.put(EJB_POST_CREATE_METHOD_KEY, ejbPostCreate);
                 ctx.put(PARAMETERS_KEY, context.getParameters());

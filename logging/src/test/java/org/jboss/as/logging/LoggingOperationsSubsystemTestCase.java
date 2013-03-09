@@ -308,7 +308,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
                 org.jboss.logmanager.Level.DEBUG,
                 org.jboss.logmanager.Level.TRACE
         };
-        final Map<Level, Integer> levelOrd = new HashMap<Level, Integer>();
+        final Map<Level, Integer> levelOrd = new HashMap<>();
         levelOrd.put(org.jboss.logmanager.Level.FATAL, 0);
         levelOrd.put(org.jboss.logmanager.Level.ERROR, 1);
         levelOrd.put(org.jboss.logmanager.Level.WARN, 2);

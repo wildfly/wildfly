@@ -231,7 +231,7 @@ public class JBossWebRealm extends RealmBase {
                 }
                 RoleGroup roles = authorizationManager.getSubjectRoles(subject, scb);
                 List<Role> rolesAsList = roles.getRoles();
-                List<String> rolesAsStringList = new ArrayList<String>();
+                List<String> rolesAsStringList = new ArrayList<>();
                 for (Role role : rolesAsList) {
                     rolesAsStringList.add(role.getRoleName());
                 }
@@ -304,7 +304,7 @@ public class JBossWebRealm extends RealmBase {
                 }
                 RoleGroup roles = authorizationManager.getSubjectRoles(subject, scb);
                 List<Role> rolesAsList = roles.getRoles();
-                List<String> rolesAsStringList = new ArrayList<String>();
+                List<String> rolesAsStringList = new ArrayList<>();
                 for (Role role : rolesAsList) {
                     rolesAsStringList.add(role.getRoleName());
                 }
@@ -382,7 +382,7 @@ public class JBossWebRealm extends RealmBase {
                 }
                 RoleGroup roles = authorizationManager.getSubjectRoles(subject, scb);
                 List<Role> rolesAsList = roles.getRoles();
-                List<String> rolesAsStringList = new ArrayList<String>();
+                List<String> rolesAsStringList = new ArrayList<>();
                 for (Role role : rolesAsList) {
                     rolesAsStringList.add(role.getRoleName());
                 }
@@ -437,7 +437,7 @@ public class JBossWebRealm extends RealmBase {
 
     protected List<String> mapUserRoles(List<String> rolesList) {
         if (principalVersusRolesMap != null && principalVersusRolesMap.size() > 0) {
-            List<String> mappedRoles = new ArrayList<String>();
+            List<String> mappedRoles = new ArrayList<>();
             for (String role : rolesList) {
                 Set<String> roles = principalVersusRolesMap.get(role);
                 if (roles != null && roles.size() > 0) {
@@ -499,7 +499,7 @@ public class JBossWebRealm extends RealmBase {
             Subject caller = sc.getUtil().getSubject();
             if (caller == null)
                 caller = getSubjectFromRequestPrincipal(request.getPrincipal());
-            Map<String, Object> contextMap = new HashMap<String, Object>();
+            Map<String, Object> contextMap = new HashMap<>();
             contextMap.put(ResourceKeys.RESOURCE_PERM_CHECK, Boolean.TRUE);
             contextMap.put("securityConstraints", constraints);
 
@@ -519,14 +519,14 @@ public class JBossWebRealm extends RealmBase {
                 + ":final=" + finalDecision);
         if (!finalDecision) {
             if (!disableAudit) {
-                Map<String, Object> entries = new HashMap<String, Object>();
+                Map<String, Object> entries = new HashMap<>();
                 entries.put("Step", "hasResourcePermission");
                 failureAudit(request.getUserPrincipal(), entries);
             }
             response.sendError(HttpServletResponse.SC_FORBIDDEN, CatalinaMessages.MESSAGES.forbiddenAccess());
         } else {
             if (!disableAudit) {
-                Map<String, Object> entries = new HashMap<String, Object>();
+                Map<String, Object> entries = new HashMap<>();
                 entries.put("Step", "hasResourcePermission");
                 successAudit(request.getUserPrincipal(), entries);
             }
@@ -584,13 +584,13 @@ public class JBossWebRealm extends RealmBase {
                 + finalDecision);
         if (finalDecision) {
             if (!disableAudit) {
-                Map<String, Object> entries = new HashMap<String, Object>();
+                Map<String, Object> entries = new HashMap<>();
                 entries.put("Step", "hasRole");
                 successAudit(principal, entries);
             }
         } else {
             if (!disableAudit) {
-                Map<String, Object> entries = new HashMap<String, Object>();
+                Map<String, Object> entries = new HashMap<>();
                 entries.put("Step", "hasRole");
                 failureAudit(principal, entries);
             }
@@ -605,7 +605,7 @@ public class JBossWebRealm extends RealmBase {
         boolean ok = super.hasUserDataPermission(request, response, constraints);
         // if the RealmBase check has passed, then we can go to authz framework
         if (ok && useJBossAuthorization) {
-            Map<String, Object> map = new HashMap<String, Object>();
+            Map<String, Object> map = new HashMap<>();
             map.put("securityConstraints", constraints);
             map.put(ResourceKeys.USERDATA_PERM_CHECK, Boolean.TRUE);
 
@@ -655,7 +655,7 @@ public class JBossWebRealm extends RealmBase {
             throw MESSAGES.illegalPrincipalType(principal.getClass());
         GenericPrincipal gp = GenericPrincipal.class.cast(principal);
         String[] roleNames = gp.getRoles();
-        Set<Principal> userRoles = new HashSet<Principal>();
+        Set<Principal> userRoles = new HashSet<>();
         if (roleNames != null) {
             for (int n = 0; n < roleNames.length; n++) {
                 Principal sp = getPrincipal(roleNames[n]);
@@ -740,7 +740,7 @@ public class JBossWebRealm extends RealmBase {
         if (userPrincipal != null && !disableAudit) {
             if (auditManager != null) {
                 AuditEvent auditEvent = new AuditEvent(AuditLevel.SUCCESS);
-                Map<String, Object> ctxMap = new HashMap<String, Object>();
+                Map<String, Object> ctxMap = new HashMap<>();
                 ctxMap.put("principal", userPrincipal);
                 HttpServletRequest hsr = getServletRequest();
                 if (hsr != null) {
@@ -759,7 +759,7 @@ public class JBossWebRealm extends RealmBase {
     private void failureAudit(Principal userPrincipal, Map<String, Object> entries) {
         if (auditManager != null && !disableAudit) {
             AuditEvent auditEvent = new AuditEvent(AuditLevel.FAILURE);
-            Map<String, Object> ctxMap = new HashMap<String, Object>();
+            Map<String, Object> ctxMap = new HashMap<>();
             ctxMap.put("principal", userPrincipal);
             HttpServletRequest hsr = getServletRequest();
             if (hsr != null) {
@@ -777,7 +777,7 @@ public class JBossWebRealm extends RealmBase {
     private void exceptionAudit(Principal userPrincipal, Map<String, Object> entries, Exception e) {
         if (auditManager != null && !disableAudit) {
             AuditEvent auditEvent = new AuditEvent(AuditLevel.ERROR);
-            Map<String, Object> ctxMap = new HashMap<String, Object>();
+            Map<String, Object> ctxMap = new HashMap<>();
             ctxMap.put("principal", userPrincipal);
             ctxMap.putAll(entries);
             HttpServletRequest hsr = getServletRequest();

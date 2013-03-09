@@ -58,7 +58,7 @@ public class ReadChildrenTypesHandler implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
-        Set<String> childTypes = new TreeSet<String>(registry.getChildNames(PathAddress.EMPTY_ADDRESS));
+        Set<String> childTypes = new TreeSet<>(registry.getChildNames(PathAddress.EMPTY_ADDRESS));
         final ModelNode result = context.getResult();
         result.setEmptyList();
         for (final String key : childTypes) {

@@ -54,7 +54,7 @@ public class AbstractAddressCompleterTest {
     }
 
     protected List<String> fetchCandidates(String buffer) {
-        List<String> candidates = new ArrayList<String>();
+        List<String> candidates = new ArrayList<>();
         try {
             ctx.parseCommandLine(buffer);
         } catch (CommandFormatException e) {

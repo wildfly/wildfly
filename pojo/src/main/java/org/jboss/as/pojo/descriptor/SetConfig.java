@@ -35,6 +35,6 @@ public class SetConfig extends CollectionConfig {
 
     @Override
     protected Collection<Object> createDefaultInstance() {
-        return new HashSet<Object>();
+        return new HashSet<>();
     }
 }

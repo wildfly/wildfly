@@ -45,7 +45,7 @@ class ViewInterfaces {
         if (interfaces == null) {
             return Collections.emptySet();
         }
-        final Set<Class<?>> potentialBusinessInterfaces = new HashSet<Class<?>>();
+        final Set<Class<?>> potentialBusinessInterfaces = new HashSet<>();
         for (Class<?> klass : interfaces) {
             // EJB 3.1 FR 4.9.7 bullet 5.3
             if (klass.equals(Serializable.class) ||
@@ -69,7 +69,7 @@ class ViewInterfaces {
         if (interfaces == null) {
             return Collections.emptySet();
         }
-        final Set<DotName> names = new HashSet<DotName>();
+        final Set<DotName> names = new HashSet<>();
         for (DotName dotName : interfaces) {
             String name = dotName.toString();
             // EJB 3.1 FR 4.9.7 bullet 5.3

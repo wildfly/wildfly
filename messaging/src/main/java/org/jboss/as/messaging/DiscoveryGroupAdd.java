@@ -115,7 +115,7 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
 
                     final GroupBindingService bindingService = new GroupBindingService();
                     target.addService(GroupBindingService.getDiscoveryBaseServiceName(hqServiceName).append(name), bindingService)
-                            .addInjectionValue(bindingService.getBindingRef(), new ImmediateValue<SocketBinding>(socketBinding))
+                            .addInjectionValue(bindingService.getBindingRef(), new ImmediateValue<>(socketBinding))
                             .install();
 
                 } catch (Exception e) {
@@ -129,7 +129,7 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
         if (model.hasDefined(CommonAttributes.DISCOVERY_GROUP)) {
             Map<String, DiscoveryGroupConfiguration> configs = configuration.getDiscoveryGroupConfigurations();
             if (configs == null) {
-                configs = new HashMap<String, DiscoveryGroupConfiguration>();
+                configs = new HashMap<>();
                 configuration.setDiscoveryGroupConfigurations(configs);
             }
             for (Property prop : model.get(CommonAttributes.DISCOVERY_GROUP).asPropertyList()) {

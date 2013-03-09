@@ -29,7 +29,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.jpa.config.ExtendedPersistenceInheritance;
-import org.jboss.as.jpa.config.JPADeploymentSettings;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderResolverImpl;
 import org.jboss.as.jpa.processor.JPAAnnotationProcessor;
 import org.jboss.as.jpa.processor.JPAClassFileTransformerProcessor;
@@ -85,7 +84,7 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler {
                     PersistenceProviderResolverImpl.getInstance());
 
                 processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER,
-                        new JBossAllXmlParserRegisteringProcessor<JPADeploymentSettings>(JPAJarJBossAllParser.ROOT_ELEMENT, JpaAttachments.DEPLOYMENT_SETTINGS_KEY, new JPAJarJBossAllParser()));
+                        new JBossAllXmlParserRegisteringProcessor<>(JPAJarJBossAllParser.ROOT_ELEMENT, JpaAttachments.DEPLOYMENT_SETTINGS_KEY, new JPAJarJBossAllParser()));
 
                 // handles parsing of persistence.xml
                 processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_PERSISTENCE_UNIT, new PersistenceUnitParseProcessor());

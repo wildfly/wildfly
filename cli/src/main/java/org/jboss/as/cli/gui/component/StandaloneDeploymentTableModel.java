@@ -37,7 +37,7 @@ public class StandaloneDeploymentTableModel extends AbstractTableModel {
     private ButtonGroup deploymentsButtonGroup = new ButtonGroup();
 
     protected String[] colNames = new String[] {"Name", "Runtime Name", "Enabled"};
-    protected List<Object[]> data = new ArrayList<Object[]>();
+    protected List<Object[]> data = new ArrayList<>();
 
     public StandaloneDeploymentTableModel(CliGuiContext cliGuiCtx) {
         // for testing the table with lots of deployments

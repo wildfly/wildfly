@@ -105,6 +105,6 @@ public class RemoteViewManagedReferenceFactory implements ContextListAndJndiView
         }
         final Object proxy = EJBClient.createProxy(ejbLocator);
 
-        return new ValueManagedReference(new ImmediateValue<Object>(proxy));
+        return new ValueManagedReference(new ImmediateValue<>(proxy));
     }
 }

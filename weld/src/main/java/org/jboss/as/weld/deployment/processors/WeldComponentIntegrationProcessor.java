@@ -97,7 +97,7 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
                     final ModuleClassLoader classLoader = deploymentUnit.getAttachment(Attachments.MODULE).getClassLoader();
 
                     //get the interceptors so they can be injected as well
-                    final Set<Class<?>> interceptorClasses = new HashSet<Class<?>>();
+                    final Set<Class<?>> interceptorClasses = new HashSet<>();
                     for (InterceptorDescription interceptorDescription : description.getAllInterceptors()) {
                         try {
                             final ClassIndex index = classIndex.classIndex(interceptorDescription.getInterceptorClassName());

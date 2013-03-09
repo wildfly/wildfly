@@ -39,7 +39,7 @@ public class DoOperationActionListener extends AbstractAction {
 
     private CLIOutput output;
 
-    private LinkedList<String> cmdHistory = new LinkedList<String>();
+    private LinkedList<String> cmdHistory = new LinkedList<>();
 
     public DoOperationActionListener(CliGuiContext cliGuiCtx) {
         this.cliGuiCtx = cliGuiCtx;

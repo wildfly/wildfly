@@ -77,7 +77,7 @@ final class HttpServiceImpl implements HttpService {
     // This map holds the shared ApplicationContexts to be used with the associated HttpContext.
     // It is a WeakHashMap which means that the ApplicationContexts are remembered for as long
     // as the HttpContext exists.
-    private final Map<HttpContext, ApplicationContext> contexts = new WeakHashMap<HttpContext, ApplicationContext>();
+    private final Map<HttpContext, ApplicationContext> contexts = new WeakHashMap<>();
 
     HttpServiceImpl(ServerEnvironment serverEnvironment, WebServer webServer, Host virtualHost, Bundle bundle) {
         this.registry = GlobalRegistry.INSTANCE;

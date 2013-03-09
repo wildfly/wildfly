@@ -338,7 +338,7 @@ class HostControllerUpdateTask {
         @Override
         public List<InputStream> getInputStreams() {
             int count = context.getAttachmentStreamCount();
-            List<InputStream> result = new ArrayList<InputStream>(count);
+            List<InputStream> result = new ArrayList<>(count);
             for (int i = 0; i < count; i++) {
                 result.add(context.getAttachmentStream(i));
             }

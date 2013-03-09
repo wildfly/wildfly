@@ -65,12 +65,12 @@ public class JGroupsSubsystemTest extends AbstractSubsystemBaseTest {
                 "pbcast.STATE_TRANSFER", "pbcast.FLUSH"};
         PathAddress subsystem = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME));
         PathAddress stack = subsystem.append(PathElement.pathElement(ModelKeys.STACK, "maximal"));
-        List<PathAddress> addresses = new ArrayList<PathAddress>();
+        List<PathAddress> addresses = new ArrayList<>();
         for (String protocol : protocolList) {
             PathAddress ignoredChild = stack.append(PathElement.pathElement(ModelKeys.PROTOCOL, protocol));
             addresses.add(ignoredChild);
         }
-        return new HashSet<PathAddress>(addresses);
+        return new HashSet<>(addresses);
     }
 
     @Test
@@ -108,7 +108,7 @@ public class JGroupsSubsystemTest extends AbstractSubsystemBaseTest {
 
     @Test
     public void testLegacyOperations() throws Exception {
-        List<ModelNode> ops = new LinkedList<ModelNode>();
+        List<ModelNode> ops = new LinkedList<>();
         PathAddress subsystemAddress = PathAddress.EMPTY_ADDRESS.append(SUBSYSTEM, getMainSubsystemName());
         PathAddress udpAddress = subsystemAddress.append("stack", "udp");
         PathAddress tcpAddress = subsystemAddress.append("stack", "tcp");

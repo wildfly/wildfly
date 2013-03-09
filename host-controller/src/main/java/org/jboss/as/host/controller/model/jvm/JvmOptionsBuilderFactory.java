@@ -43,7 +43,7 @@ public class JvmOptionsBuilderFactory {
 
     private static final Map<JvmType, JvmOptionsBuilder> BUILDERS;
     static {
-        Map<JvmType, JvmOptionsBuilder> map = new HashMap<JvmType, JvmOptionsBuilder>();
+        Map<JvmType, JvmOptionsBuilder> map = new HashMap<>();
         map.put(JvmType.SUN, new SunJvmOptionsBuilder(JvmType.SUN));
         map.put(JvmType.IBM, new IbmJvmOptionsBuilder(JvmType.IBM));
         BUILDERS = Collections.unmodifiableMap(map);

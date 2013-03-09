@@ -119,7 +119,7 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
                 if(!result.isDefined()) {
                     return Collections.emptyList();
                 }
-                final List<String> names = new ArrayList<String>();
+                final List<String> names = new ArrayList<>();
                 for(ModelNode node : result.asList()) {
                     names.add(node.asString());
                 }
@@ -275,7 +275,7 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
                                 if(groups.length == 1) {
                                     return filterLinks(loadLinkResources(client, overlay, groups[0]));
                                 } else if(groups.length > 1) {
-                                    final Set<String> commonLinks = new HashSet<String>();
+                                    final Set<String> commonLinks = new HashSet<>();
                                     commonLinks.addAll(filterLinks(loadLinkResources(client, overlay, groups[0])));
                                     for(int i = 1; i < groups.length; ++i) {
                                         commonLinks.retainAll(filterLinks(loadLinkResources(client, overlay, groups[i])));
@@ -367,7 +367,7 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
                     ctx.printLine(node.asString());
                 }
             } else {
-                final List<String> names = new ArrayList<String>();
+                final List<String> names = new ArrayList<>();
                 for(ModelNode node : result.asList()) {
                     names.add(node.asString());
                 }
@@ -902,7 +902,7 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
         if(!result.isDefined()) {
             throw new CommandLineException("Failed to load the list of the existing content for overlay " + overlay + ": " + response);
         }
-        contentList = new ArrayList<String>();
+        contentList = new ArrayList<>();
         for(ModelNode node : result.asList()) {
             contentList.add(node.asString());
         }
@@ -934,7 +934,7 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
             }
             throw new CommandLineException("Failed to load the list of deployments for overlay " + overlay + ": " + response);
         }
-        final List<String> contentList = new ArrayList<String>();
+        final List<String> contentList = new ArrayList<>();
         for(ModelNode node : result.asList()) {
             contentList.add(node.asString());
         }
@@ -1149,7 +1149,7 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
     protected List<String> filterLinks(final ModelNode linkResources) {
         if(linkResources != null && !linkResources.keys().isEmpty()) {
             final List<Property> links = linkResources.asPropertyList();
-            final List<String> linkNames = new ArrayList<String>(links.size());
+            final List<String> linkNames = new ArrayList<>(links.size());
             for (Property link : links) {
                 linkNames.add(link.getName());
             }

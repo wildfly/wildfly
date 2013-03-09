@@ -39,14 +39,14 @@ import org.jboss.modules.ModuleIdentifier;
 class ModuleStructureSpec {
 
     private ModuleIdentifier moduleIdentifier;
-    private final List<ModuleDependency> moduleDependencies = new ArrayList<ModuleDependency>();
-    private final List<DependencySpec> systemDependencies = new ArrayList<DependencySpec>();
-    private final List<ResourceRoot> resourceRoots = new ArrayList<ResourceRoot>();
-    private final List<FilterSpecification> exportFilters = new ArrayList<FilterSpecification>();
-    private final List<ModuleIdentifier> exclusions = new ArrayList<ModuleIdentifier>();
-    private final List<String> classFileTransformers = new ArrayList<String>();
-    private final List<ModuleIdentifier> aliases = new ArrayList<ModuleIdentifier>();
-    private final List<ModuleIdentifier> annotationModules = new ArrayList<ModuleIdentifier>();
+    private final List<ModuleDependency> moduleDependencies = new ArrayList<>();
+    private final List<DependencySpec> systemDependencies = new ArrayList<>();
+    private final List<ResourceRoot> resourceRoots = new ArrayList<>();
+    private final List<FilterSpecification> exportFilters = new ArrayList<>();
+    private final List<ModuleIdentifier> exclusions = new ArrayList<>();
+    private final List<String> classFileTransformers = new ArrayList<>();
+    private final List<ModuleIdentifier> aliases = new ArrayList<>();
+    private final List<ModuleIdentifier> annotationModules = new ArrayList<>();
 
     /**
      * Note that this being null is different to an empty list.

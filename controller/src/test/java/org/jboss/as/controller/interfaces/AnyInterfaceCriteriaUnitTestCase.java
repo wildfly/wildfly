@@ -53,7 +53,7 @@ public class AnyInterfaceCriteriaUnitTestCase {
             return;
         }
 
-        Map<NetworkInterface, Set<InetAddress>> correct = new HashMap<NetworkInterface, Set<InetAddress>>();
+        Map<NetworkInterface, Set<InetAddress>> correct = new HashMap<>();
         for (NetworkInterface ni : loopbackInterfaces) {
             correct.put(ni, getRightTypeAddresses(allCandidates.get(ni)));
         }
@@ -71,7 +71,7 @@ public class AnyInterfaceCriteriaUnitTestCase {
             return;
         }
 
-        Set<InterfaceCriteria> criterias = new HashSet<InterfaceCriteria>();
+        Set<InterfaceCriteria> criterias = new HashSet<>();
         criterias.add(new NicInterfaceCriteria(target));
         criterias.add(LoopbackInterfaceCriteria.INSTANCE);
         AnyInterfaceCriteria testee = new AnyInterfaceCriteria(criterias);

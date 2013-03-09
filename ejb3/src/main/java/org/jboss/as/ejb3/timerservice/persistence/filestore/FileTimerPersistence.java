@@ -78,17 +78,17 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
     private final boolean createIfNotExists;
     private MarshallerFactory factory;
     private MarshallingConfiguration configuration;
-    private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
-    private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
-    private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<ModuleLoader>();
-    private final InjectedValue<PathManager> pathManager = new InjectedValue<PathManager>();
+    private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<>();
+    private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistry = new InjectedValue<>();
+    private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<>();
+    private final InjectedValue<PathManager> pathManager = new InjectedValue<>();
     private final String path;
     private final String pathRelativeTo;
     private File baseDir;
     private PathManager.Callback.Handle callbackHandle;
 
-    private final ConcurrentMap<String, Lock> locks = new ConcurrentHashMap<String, Lock>();
-    private final ConcurrentMap<String, String> directories = new ConcurrentHashMap<String, String>();
+    private final ConcurrentMap<String, Lock> locks = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, String> directories = new ConcurrentHashMap<>();
 
     public FileTimerPersistence(final boolean createIfNotExists, final String path, final String pathRelativeTo) {
         this.createIfNotExists = createIfNotExists;
@@ -224,7 +224,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
             lock.lock();
             final Map<String, TimerImpl> timers = getTimers(timedObjectId, timerService);
 
-            final List<TimerImpl> entities = new ArrayList<TimerImpl>();
+            final List<TimerImpl> entities = new ArrayList<>();
             for (Map.Entry<String, TimerImpl> entry : timers.entrySet()) {
                 entities.add(mostRecentEntityVersion(entry.getValue()));
             }
@@ -276,7 +276,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
     }
 
     private Map<String, TimerImpl> loadTimersFromFile(final String timedObjectId, final TimerServiceImpl timerService) {
-        final Map<String, TimerImpl> timers = new HashMap<String, TimerImpl>();
+        final Map<String, TimerImpl> timers = new HashMap<>();
         try {
             final File file = new File(getDirectory(timedObjectId));
             if (!file.exists()) {

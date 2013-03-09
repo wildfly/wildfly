@@ -43,7 +43,7 @@ public class EJB3UserTransactionAccessControlService implements Service<EJB3User
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "EJB3UserTransactionAccessControlService");
 
-    private final InjectedValue<UserTransactionAccessControlService> accessControlService = new InjectedValue<UserTransactionAccessControlService>();
+    private final InjectedValue<UserTransactionAccessControlService> accessControlService = new InjectedValue<>();
 
     @Override
     public void start(StartContext context) throws StartException {

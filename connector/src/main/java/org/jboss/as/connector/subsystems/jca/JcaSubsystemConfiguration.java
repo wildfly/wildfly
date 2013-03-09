@@ -52,7 +52,7 @@ public class JcaSubsystemConfiguration implements Configuration {
     private CloneableBootstrapContext defaultBootstrapContext;
 
     /** Bootstrap contexts */
-    private Map<String, CloneableBootstrapContext> bootstrapContexts = new HashMap<String, CloneableBootstrapContext>(0);
+    private Map<String, CloneableBootstrapContext> bootstrapContexts = new HashMap<>(0);
 
     /**
      * Create a new ConnectorSubsystemConfiguration.

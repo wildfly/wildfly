@@ -31,7 +31,7 @@ package org.jboss.as.web.common;
  */
 public class StartupContext {
 
-    private static final ThreadLocal<WebInjectionContainer> INJECTION_CONTAINER = new ThreadLocal<WebInjectionContainer>();
+    private static final ThreadLocal<WebInjectionContainer> INJECTION_CONTAINER = new ThreadLocal<>();
 
     public static void setInjectionContainer(final WebInjectionContainer injectionContainer) {
         INJECTION_CONTAINER.set(injectionContainer);

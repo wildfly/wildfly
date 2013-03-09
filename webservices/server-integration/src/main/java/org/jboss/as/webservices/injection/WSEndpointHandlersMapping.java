@@ -34,7 +34,7 @@ import java.util.Set;
  */
 public final class WSEndpointHandlersMapping {
 
-    private final Map<String, Set<String>> endpointHandlersMap = new HashMap<String, Set<String>>();
+    private final Map<String, Set<String>> endpointHandlersMap = new HashMap<>();
 
     /**
      * Registers endpoint and its associated WS handlers.

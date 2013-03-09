@@ -79,7 +79,7 @@ abstract class TransformationRule {
 
     abstract static class ChainedOperationContext extends AbstractChainedContext {
 
-        private final List<OperationTransformer.TransformedOperation> transformed = new ArrayList<OperationTransformer.TransformedOperation>();
+        private final List<OperationTransformer.TransformedOperation> transformed = new ArrayList<>();
         private ModelNode lastOperation;
         protected ChainedOperationContext(TransformationContext context) {
             super(context);
@@ -322,7 +322,7 @@ abstract class TransformationRule {
        public Set<ResourceEntry> getChildren(String childType) {
            Set<ResourceEntry> children = delegate.getChildren(childType);
            if (children != null) {
-               Set<ResourceEntry> protectedChildren = new LinkedHashSet<Resource.ResourceEntry>();
+               Set<ResourceEntry> protectedChildren = new LinkedHashSet<>();
                for (ResourceEntry entry : children) {
                    protectedChildren.add(new ProtectedModelResourceEntry(entry));
                }

@@ -79,7 +79,7 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
 
         @Override
         protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-            Map<String, Object> vaultOptions = new HashMap<String, Object>();
+            Map<String, Object> vaultOptions = new HashMap<>();
             ModelNode vaultClassNode = CODE.resolveModelAttribute(context, model);
             String vaultClass = vaultClassNode.getType() == ModelType.UNDEFINED ? null : vaultClassNode.asString();
 

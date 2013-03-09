@@ -41,8 +41,8 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class JMSTopicService implements Service<Void> {
 
-    private final InjectedValue<JMSServerManager> jmsServer = new InjectedValue<JMSServerManager>();
-    private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
+    private final InjectedValue<JMSServerManager> jmsServer = new InjectedValue<>();
+    private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<>();
 
 
     private final String name;

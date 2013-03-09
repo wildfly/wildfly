@@ -50,7 +50,7 @@ public final class EndpointRegistryService implements Service<EndpointRegistry> 
 
     private static final ServiceName MBEAN_SERVER_NAME = ServiceName.JBOSS.append("mbean", "server");
     private static final EndpointRegistryService INSTANCE = new EndpointRegistryService();
-    private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
+    private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<>();
     private volatile EndpointRegistry registry;
 
     private EndpointRegistryService() {

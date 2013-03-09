@@ -46,7 +46,7 @@ public class ArquillianServiceDeployer {
 
     private static final Logger log = Logger.getLogger(ArquillianServiceDeployer.class);
 
-    private Set<String> serviceArchiveDeployed = new HashSet<String>();
+    private Set<String> serviceArchiveDeployed = new HashSet<>();
 
     public synchronized void doServiceDeploy(@Observes BeforeDeploy event, Container container, ServiceArchiveHolder archiveHolder) {
         // already deployed?

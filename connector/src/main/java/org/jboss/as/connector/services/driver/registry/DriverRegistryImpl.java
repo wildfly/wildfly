@@ -38,7 +38,7 @@ import org.jboss.as.connector.services.driver.InstalledDriver;
  */
 public class DriverRegistryImpl implements DriverRegistry {
 
-    private Map<String, InstalledDriver> drivers = new HashMap<String, InstalledDriver>();
+    private Map<String, InstalledDriver> drivers = new HashMap<>();
 
     @Override
     public void registerInstalledDriver(InstalledDriver driver) throws IllegalArgumentException {
@@ -68,7 +68,7 @@ public class DriverRegistryImpl implements DriverRegistry {
 
     @Override
     public Set<InstalledDriver> getInstalledDrivers() {
-        return Collections.unmodifiableSet(Collections.synchronizedSet(new HashSet<InstalledDriver>(drivers.values())));
+        return Collections.unmodifiableSet(Collections.synchronizedSet(new HashSet<>(drivers.values())));
     }
 
     @Override

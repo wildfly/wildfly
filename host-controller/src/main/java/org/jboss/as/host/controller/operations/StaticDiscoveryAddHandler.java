@@ -86,7 +86,7 @@ public class StaticDiscoveryAddHandler extends AbstractAddStepHandler {
         ModelNode portNode = StaticDiscoveryResourceDefinition.PORT.resolveModelAttribute(context, model);
 
         // Create a StaticDiscovery option and add it to the host controller info
-        Map<String, ModelNode> properties = new HashMap<String, ModelNode>();
+        Map<String, ModelNode> properties = new HashMap<>();
         properties.put(HOST, hostNode);
         properties.put(PORT, portNode);
         StaticDiscovery staticDiscoveryOption = new StaticDiscovery(properties);

@@ -45,7 +45,7 @@ public class ManagementClientManualTestCase {
     @Test
     public void shouldBeAbleToGetDomain() throws Exception {
 
-        Map<String, String> rename = new HashMap<String, String>();
+        Map<String, String> rename = new HashMap<>();
         rename.put("master:server-one", "backend-1");
         rename.put("master:server-two", "backend-2");
         rename.put("master:server-three", "front-1");

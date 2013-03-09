@@ -82,7 +82,7 @@ public enum Namespace {
     private static final Map<String, Namespace> namespaces;
 
     static {
-        final Map<String, Namespace> map = new HashMap<String, Namespace>();
+        final Map<String, Namespace> map = new HashMap<>();
         for (Namespace namespace : values()) {
             final String name = namespace.getUri();
             if (name != null) map.put(name, namespace);

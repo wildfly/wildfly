@@ -217,8 +217,8 @@ public class DomainFinalResultHandler implements OperationStepHandler {
     }
 
     private void populateServerGroupResults(final OperationContext context) {
-        final Set<String> groupNames = new TreeSet<String>();
-        final Map<String, Set<HostServer>> groupToServerMap = new HashMap<String, Set<HostServer>>();
+        final Set<String> groupNames = new TreeSet<>();
+        final Map<String, Set<HostServer>> groupToServerMap = new HashMap<>();
         for (Map.Entry<ServerIdentity, ModelNode> entry : domainOperationContext.getServerResults().entrySet()) {
             final String serverGroup = entry.getKey().getServerGroupName();
             groupNames.add(serverGroup);
@@ -305,7 +305,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
 
             if (composite) {
                 if (operation.hasDefined(STEPS)) {
-                    children = new ArrayList<ModelNode>(operation.require(STEPS).asList());
+                    children = new ArrayList<>(operation.require(STEPS).asList());
                 } else {
                     // This shouldn't be possible
                     children = Collections.emptyList();

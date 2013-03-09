@@ -104,7 +104,7 @@ public enum EJB3SubsystemXMLElement {
     private static final Map<String, EJB3SubsystemXMLElement> MAP;
 
     static {
-        final Map<String, EJB3SubsystemXMLElement> map = new HashMap<String, EJB3SubsystemXMLElement>();
+        final Map<String, EJB3SubsystemXMLElement> map = new HashMap<>();
         for (EJB3SubsystemXMLElement element : values()) {
             final String name = element.getLocalName();
             if (name != null) map.put(name, element);

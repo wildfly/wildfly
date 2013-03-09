@@ -55,9 +55,9 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("remote-transactions-repository");
 
-    private final InjectedValue<TransactionManager> transactionManagerInjectedValue = new InjectedValue<TransactionManager>();
+    private final InjectedValue<TransactionManager> transactionManagerInjectedValue = new InjectedValue<>();
 
-    private final InjectedValue<UserTransaction> userTransactionInjectedValue = new InjectedValue<UserTransaction>();
+    private final InjectedValue<UserTransaction> userTransactionInjectedValue = new InjectedValue<>();
 
     private final Map<UserTransactionID, Uid> userTransactions = Collections.synchronizedMap(new HashMap<UserTransactionID, Uid>());
 

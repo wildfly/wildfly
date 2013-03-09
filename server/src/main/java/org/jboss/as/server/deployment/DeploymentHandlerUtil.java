@@ -145,7 +145,7 @@ public class DeploymentHandlerUtil {
     public static Collection<ServiceController<?>> doDeploy(final OperationContext context, final String deploymentUnitName, final String managementName, final ServiceVerificationHandler verificationHandler,
                                                              final Resource deploymentResource, final ImmutableManagementResourceRegistration registration, final ManagementResourceRegistration mutableRegistration, final AbstractVaultReader vaultReader, final ContentItem... contents) {
         final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
-        final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+        final List<ServiceController<?>> controllers = new ArrayList<>();
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
         final ServiceController<?> contentService;

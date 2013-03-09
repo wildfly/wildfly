@@ -107,7 +107,7 @@ public class WSDeploymentAspectParser {
     }
 
     private static List<DeploymentAspect> parseDeploymentAspects(XMLStreamReader reader, ClassLoader loader) throws XMLStreamException {
-        List<DeploymentAspect> deploymentAspects = new LinkedList<DeploymentAspect>();
+        List<DeploymentAspect> deploymentAspects = new LinkedList<>();
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case XMLStreamConstants.END_ELEMENT: {

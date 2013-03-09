@@ -93,7 +93,7 @@ public class SimpleDependentValueCompleter extends DefaultCompleter {
                     final ModelNode allowedNode = propDescr.get(Util.ALLOWED);
                     if(allowedNode.isDefined()) {
                         final List<ModelNode> nodeList = allowedNode.asList();
-                        final List<String> values = new ArrayList<String>(nodeList.size());
+                        final List<String> values = new ArrayList<>(nodeList.size());
                         for(ModelNode node : nodeList) {
                             values.add(node.asString());
                         }

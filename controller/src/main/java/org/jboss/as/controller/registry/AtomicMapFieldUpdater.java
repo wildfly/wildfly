@@ -37,7 +37,7 @@ final class AtomicMapFieldUpdater<C, K, V> {
 
     @SuppressWarnings( { "unchecked" })
     public static <C, K, V> AtomicMapFieldUpdater<C, K, V> newMapUpdater(AtomicReferenceFieldUpdater<C, Map> updater) {
-        return new AtomicMapFieldUpdater<C, K, V>(updater);
+        return new AtomicMapFieldUpdater<>(updater);
     }
 
     @SuppressWarnings( { "unchecked" })
@@ -72,11 +72,11 @@ final class AtomicMapFieldUpdater<C, K, V> {
                     newMap = Collections.singletonMap(key, value);
                     oldValue = entry.getValue();
                 } else {
-                    newMap = new FastCopyHashMap<K, V>(oldMap);
+                    newMap = new FastCopyHashMap<>(oldMap);
                     oldValue = newMap.put(key, value);
                 }
             } else {
-                newMap = new FastCopyHashMap<K, V>(oldMap);
+                newMap = new FastCopyHashMap<>(oldMap);
                 oldValue = newMap.put(key, value);
             }
             final boolean result = updater.compareAndSet(instance, oldMap, newMap);
@@ -109,11 +109,11 @@ final class AtomicMapFieldUpdater<C, K, V> {
             if (oldKey.equals(key)) {
                 return entry.getValue();
             } else {
-                newMap = new FastCopyHashMap<K, V>(snapshot);
+                newMap = new FastCopyHashMap<>(snapshot);
                 newMap.put(key, value);
             }
         } else {
-            newMap = new FastCopyHashMap<K, V>(snapshot);
+            newMap = new FastCopyHashMap<>(snapshot);
             newMap.put(key, value);
         }
         if (updater.compareAndSet(instance, snapshot, newMap)) {
@@ -139,14 +139,14 @@ final class AtomicMapFieldUpdater<C, K, V> {
                 if (oldKey.equals(key)) {
                     return entry.getValue();
                 } else {
-                    newMap = new FastCopyHashMap<K, V>(oldMap);
+                    newMap = new FastCopyHashMap<>(oldMap);
                     newMap.put(key, value);
                 }
             } else {
                 if (oldMap.containsKey(key)) {
                     return oldMap.get(key);
                 }
-                newMap = new FastCopyHashMap<K, V>(oldMap);
+                newMap = new FastCopyHashMap<>(oldMap);
                 newMap.put(key, value);
             }
             if (updater.compareAndSet(instance, oldMap, newMap)) {
@@ -191,7 +191,7 @@ final class AtomicMapFieldUpdater<C, K, V> {
                 if (! oldMap.containsKey(key)) {
                     return null;
                 }
-                newMap = new FastCopyHashMap<K, V>(oldMap);
+                newMap = new FastCopyHashMap<>(oldMap);
                 oldValue = newMap.remove(key);
             }
             if (updater.compareAndSet(instance, oldMap, newMap)) {

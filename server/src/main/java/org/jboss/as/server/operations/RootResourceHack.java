@@ -57,7 +57,7 @@ public class RootResourceHack implements OperationStepHandler {
         OPERATION.get(OP).set(NAME);
     }
 
-    private ThreadLocal<ResourceAndRegistration> resource = new ThreadLocal<ResourceAndRegistration>();
+    private ThreadLocal<ResourceAndRegistration> resource = new ThreadLocal<>();
 
     private RootResourceHack() {
     }

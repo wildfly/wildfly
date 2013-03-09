@@ -736,7 +736,7 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
     }
 
     static ResourceDescriptionResolver createResourceDescriptionResolver() {
-        final Map<String, String> strings = new HashMap<String, String>();
+        final Map<String, String> strings = new HashMap<>();
         strings.put("test", "The test resource");
         strings.put("test.ro", "R-O attr");
         strings.put("test.rw", "R-W attr");

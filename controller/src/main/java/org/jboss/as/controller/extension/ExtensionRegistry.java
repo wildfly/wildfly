@@ -92,13 +92,13 @@ public class ExtensionRegistry {
     private volatile ManagementResourceRegistration profileRegistration;
     private volatile ManagementResourceRegistration deploymentsRegistration;
 
-    private final ConcurrentMap<String, ExtensionInfo> extensions = new ConcurrentHashMap<String, ExtensionInfo>();
+    private final ConcurrentMap<String, ExtensionInfo> extensions = new ConcurrentHashMap<>();
     // subsystem -> extension
-    private final ConcurrentMap<String, String> reverseMap = new ConcurrentHashMap<String, String>();
+    private final ConcurrentMap<String, String> reverseMap = new ConcurrentHashMap<>();
     private final RunningModeControl runningModeControl;
     // protected by extensions
     private boolean unnamedMerged;
-    private final ConcurrentHashMap<String, SubsystemInformation> subsystemsInfo = new ConcurrentHashMap<String, SubsystemInformation>();
+    private final ConcurrentHashMap<String, SubsystemInformation> subsystemsInfo = new ConcurrentHashMap<>();
     private volatile TransformerRegistry transformerRegistry = TransformerRegistry.Factory.create(this);
 
     public ExtensionRegistry(ProcessType processType, RunningModeControl runningModeControl) {
@@ -189,7 +189,7 @@ public class ExtensionRegistry {
         final ExtensionInfo info = extensions.get(moduleName);
         if (info != null) {
             synchronized (info) {
-                return Collections.unmodifiableMap(new HashMap<String, SubsystemInformation>(info.subsystems));
+                return Collections.unmodifiableMap(new HashMap<>(info.subsystems));
             }
         }
         return result;
@@ -252,7 +252,7 @@ public class ExtensionRegistry {
         ExtensionInfo extension = extensions.get(moduleName);
         if (extension != null) {
             synchronized (extension) {
-                result = new HashSet<String>(extension.unnamedParsers);
+                result = new HashSet<>(extension.unnamedParsers);
             }
         } else {
             result = Collections.emptySet();
@@ -262,7 +262,7 @@ public class ExtensionRegistry {
     }
 
     public Set<ProfileParsingCompletionHandler> getProfileParsingCompletionHandlers() {
-        Set<ProfileParsingCompletionHandler> result = new HashSet<ProfileParsingCompletionHandler>();
+        Set<ProfileParsingCompletionHandler> result = new HashSet<>();
 
         for (ExtensionInfo extensionInfo : extensions.values()) {
             synchronized (extensionInfo) {
@@ -542,7 +542,7 @@ public class ExtensionRegistry {
         private Integer minorVersion;
         private Integer microVersion;
         private boolean deprecated = false;
-        private final List<String> parsingNamespaces = new ArrayList<String>();
+        private final List<String> parsingNamespaces = new ArrayList<>();
 
         @Override
         public List<String> getXMLNamespaces() {
@@ -668,8 +668,8 @@ public class ExtensionRegistry {
     }
 
     public class ExtensionInfo {
-        private final Map<String, SubsystemInformation> subsystems = new HashMap<String, SubsystemInformation>();
-        private final Set<String> unnamedParsers = new HashSet<String>();
+        private final Map<String, SubsystemInformation> subsystems = new HashMap<>();
+        private final Set<String> unnamedParsers = new HashSet<>();
         private final String extensionModuleName;
         private XMLMapper xmlMapper;
         private ProfileParsingCompletionHandler parsingCompletionHandler;

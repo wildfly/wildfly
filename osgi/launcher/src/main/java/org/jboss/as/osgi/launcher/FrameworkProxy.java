@@ -135,7 +135,7 @@ final class FrameworkProxy implements Framework {
             // The above implies that the subsystem is up when the operation is executed successfully
             // We still use {@link FutureServiceValue} to work around a rare race condition that causes to op to return prematurely
             ServiceController<BundleContext> controller = (ServiceController<BundleContext>) server.getService(Services.FRAMEWORK_INIT);
-            FutureServiceValue<BundleContext> future = new FutureServiceValue<BundleContext>(controller);
+            FutureServiceValue<BundleContext> future = new FutureServiceValue<>(controller);
             bundleContext = future.get(30, TimeUnit.SECONDS);
         } catch (Throwable th) {
             throw new BundleException("Cannot get bundle context", th);

@@ -53,9 +53,9 @@ public abstract class IntegerBasedExpression {
 
     protected abstract boolean accepts(ScheduleExpressionType scheduleExprType);
 
-    protected final SortedSet<Integer> absoluteValues = new TreeSet<Integer>();
+    protected final SortedSet<Integer> absoluteValues = new TreeSet<>();
 
-    protected final Set<ScheduleValue> relativeValues = new HashSet<ScheduleValue>();
+    protected final Set<ScheduleValue> relativeValues = new HashSet<>();
 
     protected final ScheduleExpressionType scheduleExpressionType;
 

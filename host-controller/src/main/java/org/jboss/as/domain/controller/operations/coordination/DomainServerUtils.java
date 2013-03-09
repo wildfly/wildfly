@@ -59,7 +59,7 @@ public class DomainServerUtils {
     public static Set<ServerIdentity> getServersForGroup(String groupName, ModelNode hostModel, final String localHostName, final Map<String, ProxyController> serverProxies) {
         Set<ServerIdentity> result;
         if (hostModel.hasDefined(SERVER_CONFIG)) {
-            result = new HashSet<ServerIdentity>();
+            result = new HashSet<>();
             for (Property prop : hostModel.get(SERVER_CONFIG).asPropertyList()) {
                 String serverName = prop.getName();
                 if (serverProxies.get(serverName) == null) {
@@ -82,7 +82,7 @@ public class DomainServerUtils {
 
     public static Set<ServerIdentity> getServersForType(String type, String ref, ModelNode domainModel, ModelNode hostModel, final String localHostName, final Map<String, ProxyController> serverProxies) {
         Set<String> groups = getGroupsForType(type, ref, domainModel);
-        Set<ServerIdentity> allServers = new HashSet<ServerIdentity>();
+        Set<ServerIdentity> allServers = new HashSet<>();
         for (String group : groups) {
             allServers.addAll(getServersForGroup(group, hostModel, localHostName, serverProxies));
         }
@@ -92,7 +92,7 @@ public class DomainServerUtils {
     public static Set<String> getGroupsForType(String type, String ref, ModelNode domainModel) {
         Set<String> groups;
         if (domainModel.hasDefined(SERVER_GROUP)) {
-            groups = new HashSet<String>();
+            groups = new HashSet<>();
             for (Property prop : domainModel.get(SERVER_GROUP).asPropertyList()) {
                 ModelNode serverGroup = prop.getValue();
                 if (ref.equals(serverGroup.get(type).asString())) {
@@ -106,9 +106,9 @@ public class DomainServerUtils {
     }
 
     public static Set<String> getRelatedElements(String containerType, String parent, ModelNode domainModel) {
-        Set<String> result = new HashSet<String>();
+        Set<String> result = new HashSet<>();
         result.add(parent);
-        Set<String> checked = new HashSet<String>();
+        Set<String> checked = new HashSet<>();
         checked.add(parent);
 
         // Ignore any peers the target element includes
@@ -151,7 +151,7 @@ public class DomainServerUtils {
 
     public static Map<String, ProxyController> getServerProxies(String localHostName, Resource domainRootResource, ImmutableManagementResourceRegistration domainRootResourceRegistration) {
         final Set<String> serverNames = domainRootResource.getChild(PathElement.pathElement(HOST, localHostName)).getChildrenNames(SERVER_CONFIG);
-        final Map<String, ProxyController> proxies = new HashMap<String, ProxyController>();
+        final Map<String, ProxyController> proxies = new HashMap<>();
         for(String serverName : serverNames) {
             final PathAddress serverAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, localHostName), PathElement.pathElement(SERVER, serverName));
             final ProxyController proxyController = domainRootResourceRegistration.getProxyController(serverAddress);

@@ -66,7 +66,7 @@ public class Client implements SetServiceBA {
          * Add client handler chain so that XTS can add the transaction context to the SOAP messages.
          */
         BindingProvider bindingProvider = (BindingProvider) set;
-        List<Handler> handlers = new ArrayList<Handler>(1);
+        List<Handler> handlers = new ArrayList<>(1);
         handlers.add(new JaxWSHeaderContextProcessor());
         bindingProvider.getBinding().setHandlerChain(handlers);
     }

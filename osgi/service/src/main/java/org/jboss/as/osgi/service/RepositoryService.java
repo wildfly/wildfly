@@ -57,8 +57,8 @@ import org.osgi.framework.BundleContext;
  */
 class RepositoryService extends AbstractService<XRepository> {
 
-    private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
-    private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
+    private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<>();
+    private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<>();
     private XRepository repository;
 
     static ServiceController<?> addService(final ServiceTarget target) {

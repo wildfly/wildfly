@@ -37,7 +37,7 @@ import org.jboss.stdio.StdioContextSelector;
  */
 public class LogContextStdioContextSelector implements StdioContextSelector {
 
-    public static final AttachmentKey<StdioContext> STDIO_CONTEXT_ATTACHMENT_KEY = new AttachmentKey<StdioContext>();
+    public static final AttachmentKey<StdioContext> STDIO_CONTEXT_ATTACHMENT_KEY = new AttachmentKey<>();
 
     public LogContextStdioContextSelector(final StdioContext defaultContext) {
         // Register the STDIO context on the default log context

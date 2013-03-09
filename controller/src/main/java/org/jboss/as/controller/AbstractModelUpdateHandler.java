@@ -45,7 +45,7 @@ public abstract class AbstractModelUpdateHandler implements OperationStepHandler
         if (requiresRuntime(context)) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+                    final List<ServiceController<?>> controllers = new ArrayList<>();
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     performRuntime(context, operation, model, verificationHandler, controllers);
 

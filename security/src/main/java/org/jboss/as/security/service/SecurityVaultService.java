@@ -45,7 +45,7 @@ public class SecurityVaultService implements Service<SecurityVault> {
     public static final ServiceName SERVICE_NAME = SecurityExtension.JBOSS_SECURITY.append("vault");
     protected volatile SecurityVault vault;
     private String vaultClass;
-    private Map<String, Object> options = new HashMap<String, Object>();
+    private Map<String, Object> options = new HashMap<>();
 
     public SecurityVaultService(String fqn, Map<String, Object> options) {
         this.vaultClass = fqn;

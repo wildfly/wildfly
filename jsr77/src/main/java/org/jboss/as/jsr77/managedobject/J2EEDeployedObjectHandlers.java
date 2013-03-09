@@ -65,7 +65,7 @@ public class J2EEDeployedObjectHandlers extends Handler {
         if (!deployments.isDefined()) {
             return Collections.emptySet();
         }
-        final Set<ObjectName> names = new HashSet<ObjectName>();
+        final Set<ObjectName> names = new HashSet<>();
         for (ModelNode deployment : deployments.asList()) {
             //TODO This is weird - look into this again when my internet is working again
             //There seems to be an additional result + outcome level

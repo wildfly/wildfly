@@ -314,7 +314,7 @@ public class SharedLocalYieldingClusterLockManagerUnitTestCase {
     }
 
     private List<ClusterNode> getView(ClusterNode member, int viewPos, int numMembers) {
-        List<ClusterNode> all = new ArrayList<ClusterNode>(Arrays.asList(node1, node2, node3));
+        List<ClusterNode> all = new ArrayList<>(Arrays.asList(node1, node2, node3));
         all.remove(member);
         while (all.size() > numMembers - 1) // -1 'cause we'll add one in a sec
         {
@@ -326,7 +326,7 @@ public class SharedLocalYieldingClusterLockManagerUnitTestCase {
     }
 
     private static List<RemoteLockResponse> getOKResponses(int numResponses) {
-        List<RemoteLockResponse> rspList = new ArrayList<RemoteLockResponse>();
+        List<RemoteLockResponse> rspList = new ArrayList<>();
         for (int i = 0; i < numResponses + 1; i++) {
             rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.OK));
         }
@@ -334,7 +334,7 @@ public class SharedLocalYieldingClusterLockManagerUnitTestCase {
     }
 
     private static List<RemoteLockResponse> getRejectionResponses(ClusterNode owner, int numResponses) {
-        List<RemoteLockResponse> rspList = new ArrayList<RemoteLockResponse>();
+        List<RemoteLockResponse> rspList = new ArrayList<>();
         rspList.add(new RemoteLockResponse(owner, RemoteLockResponse.Flag.FAIL));
         for (int i = 1; i < numResponses + 1; i++) {
             rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.OK));

@@ -124,9 +124,9 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     private volatile int maxUnreplicatedInterval;
 
     /** Id/timestamp of sessions in distributed cache that we haven't loaded locally */
-    private final Map<String, OwnedSessionUpdate> unloadedSessions = new ConcurrentHashMap<String, OwnedSessionUpdate>();
+    private final Map<String, OwnedSessionUpdate> unloadedSessions = new ConcurrentHashMap<>();
     /** Sessions that have been created but not yet loaded. Used to ensure concurrent threads trying to load the same session */
-    private final ConcurrentMap<String, ClusteredSession<O>> embryonicSessions = new ConcurrentHashMap<String, ClusteredSession<O>>();
+    private final ConcurrentMap<String, ClusteredSession<O>> embryonicSessions = new ConcurrentHashMap<>();
 
     public DistributableSessionManager(DistributedCacheManagerFactory factory, JBossWebMetaData metaData, ClassResolver resolver) throws ClusteringNotSupportedException {
         super(metaData);
@@ -722,7 +722,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                     // Need to load all the unloaded sessions
                     if (unloadedSessions.size() > 0) {
                         // Make a thread-safe copy of the new id list to work with
-                        Set<String> ids = new HashSet<String>(unloadedSessions.keySet());
+                        Set<String> ids = new HashSet<>(unloadedSessions.keySet());
 
                         log.tracef("findSessions: loading sessions from distributed cache: %s", ids);
 
@@ -962,7 +962,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
     @Override
     public String listLocalSessionIds() {
-        List<String> ids = new ArrayList<String>(sessions.size());
+        List<String> ids = new ArrayList<>(sessions.size());
         this.addLocal(ids, sessions.keySet());
         return reportSessionIds(ids);
     }
@@ -1164,7 +1164,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
         // Holder for sessions or OwnedSessionUpdates that survive expiration,
         // sorted by last accessed time
-        TreeSet<PassivationCheck> passivationChecks = new TreeSet<PassivationCheck>();
+        TreeSet<PassivationCheck> passivationChecks = new TreeSet<>();
 
         try {
             // Don't track sessions invalidated via this method as if they

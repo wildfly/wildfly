@@ -135,7 +135,7 @@ public class AdvancedLdapLoginModuleTestCase {
 
     private static final String QUERY_ROLES;
     static {
-        final List<NameValuePair> qparams = new ArrayList<NameValuePair>();
+        final List<NameValuePair> qparams = new ArrayList<>();
         for (final String role : ROLE_NAMES) {
             qparams.add(new BasicNameValuePair(RolePrintingServlet.PARAM_ROLE_NAME, role));
         }
@@ -385,7 +385,7 @@ public class AdvancedLdapLoginModuleTestCase {
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             directoryService = DSAnnotationProcessor.getDirectoryService();
             final String hostname = Utils.getCannonicalHost(managementClient);
-            final Map<String, String> map = new HashMap<String, String>();
+            final Map<String, String> map = new HashMap<>();
             map.put("hostname", NetworkUtils.formatPossibleIpv6Address(hostname));
             final String secondaryTestAddress = Utils.getSecondaryTestAddress(managementClient, true);
             map.put("ldaphost", secondaryTestAddress);
@@ -548,7 +548,7 @@ public class AdvancedLdapLoginModuleTestCase {
         }
 
         private Map<String, String> getCommonOptions() {
-            final Map<String, String> moduleOptions = new HashMap<String, String>();
+            final Map<String, String> moduleOptions = new HashMap<>();
             moduleOptions.put("password-stacking", "useFirstPass");
             moduleOptions.put("bindAuthentication", "GSSAPI");
             moduleOptions.put("jaasSecurityDomain", "host");
@@ -575,7 +575,7 @@ public class AdvancedLdapLoginModuleTestCase {
          */
         @Override
         protected SystemProperty[] getSystemProperties() {
-            final Map<String, String> map = new HashMap<String, String>();
+            final Map<String, String> map = new HashMap<>();
             map.put("java.security.krb5.conf", Krb5ConfServerSetupTask.getKrb5ConfFullPath());
             map.put("sun.security.krb5.debug", TRUE);
             map.put(SecurityConstants.DISABLE_SECDOMAIN_OPTION, TRUE);

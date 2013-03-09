@@ -43,7 +43,7 @@ public class SimplePasswordStrengthCheckerTestCase {
     
     @Test
     public void testLengthRestriction(){
-        List<PasswordRestriction> restrictions = new ArrayList<PasswordRestriction>();
+        List<PasswordRestriction> restrictions = new ArrayList<>();
         //one that will fail
         restrictions.add(SimplePasswordStrengthChecker.RESTRICTION_LENGTH);
         //one that will pass
@@ -66,7 +66,7 @@ public class SimplePasswordStrengthCheckerTestCase {
     
     @Test
     public void testDigitsRestriction(){
-        List<PasswordRestriction> restrictions = new ArrayList<PasswordRestriction>();
+        List<PasswordRestriction> restrictions = new ArrayList<>();
         //one that will fail
         restrictions.add(SimplePasswordStrengthChecker.RESTRICTION_DIGITS);
         //one that will pass
@@ -89,7 +89,7 @@ public class SimplePasswordStrengthCheckerTestCase {
     
     @Test
     public void testSymbolsRestriction(){
-        List<PasswordRestriction> restrictions = new ArrayList<PasswordRestriction>();
+        List<PasswordRestriction> restrictions = new ArrayList<>();
         //one that will fail
         restrictions.add(SimplePasswordStrengthChecker.RESTRICTION_SYMBOLS);
         //one that will pass
@@ -112,7 +112,7 @@ public class SimplePasswordStrengthCheckerTestCase {
     
     @Test
     public void testAlphaRestriction(){
-        List<PasswordRestriction> restrictions = new ArrayList<PasswordRestriction>();
+        List<PasswordRestriction> restrictions = new ArrayList<>();
         //one that will fail
         restrictions.add(SimplePasswordStrengthChecker.RESTRICTION_ALPHA);
         //one that will pass
@@ -135,12 +135,12 @@ public class SimplePasswordStrengthCheckerTestCase {
     
     @Test
     public void testAdHocRestriction(){
-        List<PasswordRestriction> restrictions = new ArrayList<PasswordRestriction>();
+        List<PasswordRestriction> restrictions = new ArrayList<>();
         restrictions.add(SimplePasswordStrengthChecker.RESTRICTION_ALPHA);
         restrictions.add(SimplePasswordStrengthChecker.RESTRICTION_SYMBOLS);
         SimplePasswordStrengthChecker checker = new SimplePasswordStrengthChecker(restrictions,this.dictionary,this.keyboard);
         String pwd = "!#*_3x";
-        List<PasswordRestriction> adHocRestrictions = new ArrayList<PasswordRestriction>();
+        List<PasswordRestriction> adHocRestrictions = new ArrayList<>();
         ValueRestriction restriction = new ValueRestriction(pwd);
         adHocRestrictions.add(restriction);
         

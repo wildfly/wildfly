@@ -128,7 +128,7 @@ public class UndeployWildcardDomainTestCase {
         ctx.handle("deploy --server-groups=" + sgTwo + ' ' + cliTestApp2War.getAbsolutePath());
         ctx.handle("deploy --server-groups=" + sgTwo + ',' + sgOne + ' ' + cliTestAppEar.getAbsolutePath());
 
-        afterTestDeployments = new HashSet<String>();
+        afterTestDeployments = new HashSet<>();
     }
 
     @After

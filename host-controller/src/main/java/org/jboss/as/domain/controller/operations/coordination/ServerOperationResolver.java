@@ -117,7 +117,7 @@ public class ServerOperationResolver {
         private static final Map<String, DomainKey> MAP;
 
         static {
-            final Map<String, DomainKey> map = new HashMap<String, DomainKey>();
+            final Map<String, DomainKey> map = new HashMap<>();
             for (DomainKey element : values()) {
                 final String name = element.name;
                 if (name != null) map.put(name, element);
@@ -152,7 +152,7 @@ public class ServerOperationResolver {
         private static final Map<String, HostKey> MAP;
 
         static {
-            final Map<String, HostKey> map = new HashMap<String, HostKey>();
+            final Map<String, HostKey> map = new HashMap<>();
             for (HostKey element : values()) {
                 final String name = element.name;
                 if (name != null) map.put(name, element);
@@ -182,7 +182,7 @@ public class ServerOperationResolver {
     public static synchronized void addToDontPropagateToServersAttachment(OperationContext context, ModelNode op) {
         Set<ModelNode> ops = context.getAttachment(DONT_PROPAGATE_TO_SERVERS_ATTACHMENT);
         if (ops == null) {
-            ops = new HashSet<ModelNode>();
+            ops = new HashSet<>();
             context.attach(DONT_PROPAGATE_TO_SERVERS_ATTACHMENT, ops);
         }
         ops.add(op);
@@ -261,7 +261,7 @@ public class ServerOperationResolver {
         }
         String profileName = address.getElement(0).getValue();
         Set<String> relatedProfiles = getRelatedElements(PROFILE, profileName, domain);
-        Set<ServerIdentity> allServers = new HashSet<ServerIdentity>();
+        Set<ServerIdentity> allServers = new HashSet<>();
         for (String profile : relatedProfiles) {
             allServers.addAll(getServersForType(PROFILE, profile, domain, host, localHostName, serverProxies));
         }
@@ -288,7 +288,7 @@ public class ServerOperationResolver {
             // don't create named interfaces
             result = Collections.emptyMap();
         } else if (hostModel.hasDefined(SERVER_CONFIG)) {
-            Set<ServerIdentity> servers = new HashSet<ServerIdentity>();
+            Set<ServerIdentity> servers = new HashSet<>();
             for (Property prop : hostModel.get(SERVER_CONFIG).asPropertyList()) {
 
                 String serverName = prop.getName();
@@ -323,7 +323,7 @@ public class ServerOperationResolver {
         final String pathName = address.getElement(0).getValue();
         final Map<Set<ServerIdentity>, ModelNode> result;
         if (hostModel.hasDefined(SERVER_CONFIG)) {
-            final Set<ServerIdentity> servers = new HashSet<ServerIdentity>();
+            final Set<ServerIdentity> servers = new HashSet<>();
             for (Property prop : hostModel.get(SERVER_CONFIG).asPropertyList()) {
                 final String serverName = prop.getName();
                 if (serverProxies.get(serverName) == null) {
@@ -355,7 +355,7 @@ public class ServerOperationResolver {
             // don't push named only paths
             result = Collections.emptyMap();
         } else if (hostModel.hasDefined(SERVER_CONFIG)) {
-            Set<ServerIdentity> servers = new HashSet<ServerIdentity>();
+            Set<ServerIdentity> servers = new HashSet<>();
             for (Property prop : hostModel.get(SERVER_CONFIG).asPropertyList()) {
 
                 String serverName = prop.getName();
@@ -389,7 +389,7 @@ public class ServerOperationResolver {
                                                                                       PathAddress address, ModelNode domain, ModelNode host) {
         String bindingGroupName = address.getElement(0).getValue();
         Set<String> relatedBindingGroups = getRelatedElements(SOCKET_BINDING_GROUP, bindingGroupName, domain);
-        Set<ServerIdentity> result = new HashSet<ServerIdentity>();
+        Set<ServerIdentity> result = new HashSet<>();
         for (String bindingGroup : relatedBindingGroups) {
             result.addAll(getServersForType(SOCKET_BINDING_GROUP, bindingGroup, domain, host, localHostName, serverProxies));
         }
@@ -470,7 +470,7 @@ public class ServerOperationResolver {
         if (DeploymentFullReplaceHandler.OPERATION_NAME.equals(opName)) {
             String propName = operation.require(NAME).asString();
             Set<String> groups = getServerGroupsForDeployment(propName, domain);
-            Set<ServerIdentity> allServers = new HashSet<ServerIdentity>();
+            Set<ServerIdentity> allServers = new HashSet<>();
             for (String group : groups) {
                 allServers.addAll(getServersForGroup(group, host, localHostName, serverProxies));
             }
@@ -492,7 +492,7 @@ public class ServerOperationResolver {
     private Set<String> getServerGroupsForDeployment(String deploymentName, ModelNode domainModel) {
         Set<String> groups;
         if (domainModel.hasDefined(SERVER_GROUP)) {
-            groups = new HashSet<String>();
+            groups = new HashSet<>();
             for (Property prop : domainModel.get(SERVER_GROUP).asPropertyList()) {
                 ModelNode serverGroup = prop.getValue();
                 if (serverGroup.hasDefined(DEPLOYMENT) && serverGroup.get(DEPLOYMENT).hasDefined(deploymentName)) {
@@ -590,7 +590,7 @@ public class ServerOperationResolver {
                     groups = Collections.singleton(affectedGroup);
                 } else if (domain.hasDefined(SERVER_GROUP)) {
                     // Top level domain update applies to all groups where it was not overridden
-                    groups = new HashSet<String>();
+                    groups = new HashSet<>();
                     for (Property groupProp : domain.get(SERVER_GROUP).asPropertyList()) {
                         String groupName = groupProp.getName();
                         if (!hasSystemProperty(groupProp.getValue(), propName)) {
@@ -602,7 +602,7 @@ public class ServerOperationResolver {
 
             Set<ServerIdentity> servers = null;
             if (!overridden && host.hasDefined(SERVER_CONFIG)) {
-                servers = new HashSet<ServerIdentity>();
+                servers = new HashSet<>();
                 for (Property serverProp : host.get(SERVER_CONFIG).asPropertyList()) {
 
                     String serverName = serverProp.getName();
@@ -621,17 +621,17 @@ public class ServerOperationResolver {
             }
 
             if (servers != null && servers.size() > 0) {
-                Map<ModelNode, Set<ServerIdentity>> ops = new HashMap<ModelNode, Set<ServerIdentity>>();
+                Map<ModelNode, Set<ServerIdentity>> ops = new HashMap<>();
                 for (ServerIdentity server : servers) {
                     ModelNode serverOp = getServerSystemPropertyOperation(operation, propName, server, level, domain, host);
                     Set<ServerIdentity> set = ops.get(serverOp);
                     if (set == null) {
-                        set = new HashSet<ServerIdentity>();
+                        set = new HashSet<>();
                         ops.put(serverOp, set);
                     }
                     set.add(server);
                 }
-                result = new HashMap<Set<ServerIdentity>, ModelNode>();
+                result = new HashMap<>();
                 for (Map.Entry<ModelNode, Set<ServerIdentity>> entry : ops.entrySet()) {
                     result.put(entry.getValue(), entry.getKey());
                 }

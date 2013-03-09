@@ -49,7 +49,7 @@ public class ConfiguredMSCService implements Service<ConfiguredMSCService> {
 
     public static String SERVICE_PID = ConfiguredMSCService.class.getName();
 
-    private final InjectedValue<ConfigAdmin> injectedConfigAdmin = new InjectedValue<ConfigAdmin>();
+    private final InjectedValue<ConfigAdmin> injectedConfigAdmin = new InjectedValue<>();
     private Dictionary<String, String> config;
     private ConfigAdminListener listener;
 

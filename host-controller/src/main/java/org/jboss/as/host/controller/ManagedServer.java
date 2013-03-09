@@ -776,7 +776,7 @@ class ManagedServer {
     }
 
     private static Map<String, String> parseLaunchProperties(final List<String> commands) {
-        final Map<String, String> result = new LinkedHashMap<String, String>();
+        final Map<String, String> result = new LinkedHashMap<>();
         for (String cmd : commands) {
             if (cmd.startsWith("-D")) {
                 final String[] parts = cmd.substring(2).split("=");

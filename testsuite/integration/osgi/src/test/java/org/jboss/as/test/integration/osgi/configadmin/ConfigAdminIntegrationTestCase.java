@@ -120,7 +120,7 @@ public class ConfigAdminIntegrationTestCase {
             ConfigurationAdmin configurationAdmin = FrameworkUtils.waitForService(context, ConfigurationAdmin.class);
 
             Configuration config = configurationAdmin.getConfiguration(CONFIG_ADMIN_PID_A);
-            Dictionary<String, Object> props = new Hashtable<String, Object>();
+            Dictionary<String, Object> props = new Hashtable<>();
             props.put("foo", "bar");
             config.update(props);
             try {
@@ -169,7 +169,7 @@ public class ConfigAdminIntegrationTestCase {
             };
             configAdmin.addListener(listener);
 
-            Dictionary<String, String> props = new Hashtable<String, String>();
+            Dictionary<String, String> props = new Hashtable<>();
             props.put("foo", "bar");
             configAdmin.putConfiguration(CONFIG_ADMIN_PID_B, props);
 
@@ -222,7 +222,7 @@ public class ConfigAdminIntegrationTestCase {
             };
             configAdmin.addListener(listener);
 
-            Dictionary<String, String> modelProps = new Hashtable<String, String>();
+            Dictionary<String, String> modelProps = new Hashtable<>();
             modelProps.put("foo", "bar");
             ConfigAdminManagement.updateConfiguration(getControllerClient(), CONFIG_ADMIN_PID_C, modelProps);
 

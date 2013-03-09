@@ -53,7 +53,7 @@ public class MockNode {
     public MockNode addChild(String name) {
         MockNode child = new MockNode(name);
         if(children == null) {
-            children = new HashMap<String, MockNode>();
+            children = new HashMap<>();
         }
         children.put(name, child);
         return child;
@@ -61,13 +61,13 @@ public class MockNode {
 
     public void addChild(MockNode child) {
         if(children == null) {
-            children = new HashMap<String, MockNode>();
+            children = new HashMap<>();
         }
         children.put(child.name, child);
     }
 
     public List<String> getChildNames() {
-        return children == null ? Collections.<String>emptyList() : new ArrayList<String>(children.keySet());
+        return children == null ? Collections.<String>emptyList() : new ArrayList<>(children.keySet());
     }
 
     public Set<String> getOperationNames() {
@@ -80,7 +80,7 @@ public class MockNode {
 
     public void addOperation(MockOperation operation) {
         if(operations == null) {
-            operations = new HashMap<String, MockOperation>();
+            operations = new HashMap<>();
         }
         operations.put(operation.getName(), operation);
     }

@@ -68,7 +68,7 @@ public abstract class AbstractDataSourceServerSetupTask implements ServerSetupTa
             return;
         }
 
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        final List<ModelNode> updates = new ArrayList<>();
         for (final DataSource config : dataSourceConfigurations) {
             final String name = config.getName();
             LOGGER.info("Adding datasource " + name);
@@ -110,7 +110,7 @@ public abstract class AbstractDataSourceServerSetupTask implements ServerSetupTa
             LOGGER.warn("Null DataSourceConfiguration array provided");
             return;
         }
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        final List<ModelNode> updates = new ArrayList<>();
         for (final DataSource config : dataSourceConfigurations) {
             final String name = config.getName();
             LOGGER.info("Removing datasource " + name);

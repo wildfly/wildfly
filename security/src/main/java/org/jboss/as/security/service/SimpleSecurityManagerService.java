@@ -40,7 +40,7 @@ public class SimpleSecurityManagerService implements Service<ServerSecurityManag
     public static final ServiceName SERVICE_NAME = SecurityExtension.JBOSS_SECURITY.append("simple-security-manager");
 
     private final SimpleSecurityManager securityManager = new SimpleSecurityManager();
-    private final InjectedValue<ISecurityManagement> securityManagementValue = new InjectedValue<ISecurityManagement>();
+    private final InjectedValue<ISecurityManagement> securityManagementValue = new InjectedValue<>();
 
     @Override
     public void start(StartContext context) throws StartException {

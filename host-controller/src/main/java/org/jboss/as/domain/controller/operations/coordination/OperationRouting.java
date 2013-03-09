@@ -93,7 +93,7 @@ public class OperationRouting {
         } else if (compositeOp) {
             // Recurse into the steps to see what's required
             if (operation.hasDefined(STEPS)) {
-                Set<String> allHosts = new HashSet<String>();
+                Set<String> allHosts = new HashSet<>();
                 boolean twoStep = false;
                 for (ModelNode step : operation.get(STEPS).asList()) {
                     ImmutableManagementResourceRegistration stepRegistry = registry.getSubModel(PathAddress.pathAddress(step.get(OP_ADDR)));
@@ -157,7 +157,7 @@ public class OperationRouting {
     }
 
     private final String singleHost;
-    private final Set<String> hosts = new HashSet<String>();
+    private final Set<String> hosts = new HashSet<>();
     private final boolean twoStep;
 
     /** Constructor for domain-level requests where we are not master */

@@ -61,12 +61,12 @@ import static org.jboss.as.web.WebMessages.MESSAGES;
 public class WebDeploymentService implements Service<StandardContext> {
 
     private final StandardContext context;
-    private final InjectedValue<Realm> realm = new InjectedValue<Realm>();
+    private final InjectedValue<Realm> realm = new InjectedValue<>();
     private final WebInjectionContainer injectionContainer;
     private final List<SetupAction> setupActions;
     final List<ServletContextAttribute> attributes;
     // used for blocking tasks in this Service's start/stop
-    private final InjectedValue<ExecutorService> serverExecutor = new InjectedValue<ExecutorService>();
+    private final InjectedValue<ExecutorService> serverExecutor = new InjectedValue<>();
 
     public WebDeploymentService(final StandardContext context, final WebInjectionContainer injectionContainer, final List<SetupAction> setupActions,
                                 final List<ServletContextAttribute> attributes) {
@@ -143,7 +143,7 @@ public class WebDeploymentService implements Service<StandardContext> {
 
             context.setRealm(realm.getValue());
 
-            final List<SetupAction> actions = new ArrayList<SetupAction>();
+            final List<SetupAction> actions = new ArrayList<>();
             actions.addAll(setupActions);
             context.setInstanceManager(new WebInstanceManager(injectionContainer));
             context.setThreadBindingListener(new ThreadSetupBindingListener(actions));

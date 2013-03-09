@@ -51,11 +51,11 @@ class SubsystemParser extends NodeParser {
     private final String supplementName;
     private String extensionModule;
     private Node subsystem;
-    private final Map<String, ElementNode> socketBindings = new HashMap<String, ElementNode>();
-    private final Map<String, ElementNode> outboundSocketBindings = new HashMap<String, ElementNode>();
-    private final Map<String, ProcessingInstructionNode> supplementPlaceholders = new HashMap<String, ProcessingInstructionNode>();
-    private final Map<String, Supplement> supplementReplacements = new HashMap<String, Supplement>();
-    private final Map<String, List<AttributeValue>> attributesForReplacement = new HashMap<String, List<AttributeValue>>();
+    private final Map<String, ElementNode> socketBindings = new HashMap<>();
+    private final Map<String, ElementNode> outboundSocketBindings = new HashMap<>();
+    private final Map<String, ProcessingInstructionNode> supplementPlaceholders = new HashMap<>();
+    private final Map<String, Supplement> supplementReplacements = new HashMap<>();
+    private final Map<String, List<AttributeValue>> attributesForReplacement = new HashMap<>();
 
     SubsystemParser(String socketBindingNamespace, String supplementName, File inputFile){
         this.socketBindingNamespace = socketBindingNamespace;
@@ -87,7 +87,7 @@ class SubsystemParser extends NodeParser {
             XMLStreamReader reader = factory.createXMLStreamReader(in);
 
             reader.require(START_DOCUMENT, null, null);
-            Map<String, String> configAttributes = new HashMap<String, String>();
+            Map<String, String> configAttributes = new HashMap<>();
             configAttributes.put("default-supplement", null);
             ParsingUtils.getNextElement(reader, "config", configAttributes, false);
             extensionModule = ParsingUtils.getNextElement(reader, "extension-module", null, true);
@@ -260,7 +260,7 @@ class SubsystemParser extends NodeParser {
         if (attributeValue.startsWith("@@")) {
             List<AttributeValue> attributeValues = attributesForReplacement.get(attributeValue);
             if (attributeValues == null) {
-                attributeValues = new ArrayList<AttributeValue>();
+                attributeValues = new ArrayList<>();
                 attributesForReplacement.put(attributeValue, attributeValues);
             }
             attributeValues.add(value);
@@ -270,8 +270,8 @@ class SubsystemParser extends NodeParser {
 
     private class Supplement {
         final String[] includes;
-        final Map<String, ElementNode> nodeReplacements = new HashMap<String, ElementNode>();
-        final Map<String, String> attributeReplacements = new HashMap<String, String>();
+        final Map<String, ElementNode> nodeReplacements = new HashMap<>();
+        final Map<String, String> attributeReplacements = new HashMap<>();
 
         Supplement(String[] includes){
             this.includes = includes;
@@ -286,7 +286,7 @@ class SubsystemParser extends NodeParser {
         }
 
         Map<String, ElementNode> getAllNodeReplacements() {
-            Map<String, ElementNode> result = new HashMap<String, ElementNode>();
+            Map<String, ElementNode> result = new HashMap<>();
             getAllNodeReplacements(result);
             return result;
         }
@@ -305,7 +305,7 @@ class SubsystemParser extends NodeParser {
         }
 
         Map<String, String> getAllAttributeReplacements() {
-            Map<String, String> result = new HashMap<String, String>();
+            Map<String, String> result = new HashMap<>();
             getAllAttributeReplacements(result);
             return result;
         }

@@ -197,7 +197,7 @@ public class Util {
         List<ModelNode> nodeList = operationResult.get(RESULT).asList();
         if(nodeList.isEmpty())
             return Collections.emptyList();
-        List<String> list = new ArrayList<String>(nodeList.size());
+        List<String> list = new ArrayList<>(nodeList.size());
         for(ModelNode node : nodeList) {
             list.add(node.asString());
         }
@@ -211,7 +211,7 @@ public class Util {
         if(nodeList.isEmpty()) {
             return Collections.emptyList();
         }
-        final List<String> list = new ArrayList<String>(nodeList.size());
+        final List<String> list = new ArrayList<>(nodeList.size());
         final Pattern pattern = Pattern.compile(wildcardToJavaRegex(wildcardExpr));
         for(ModelNode node : nodeList) {
             final String candidate = node.asString();
@@ -260,7 +260,7 @@ public class Util {
         if(nodeList.isEmpty())
             return Collections.emptyList();
 
-        List<String> list = new ArrayList<String>(nodeList.size());
+        List<String> list = new ArrayList<>(nodeList.size());
         for(Property node : nodeList) {
             list.add(node.getName());
         }
@@ -326,7 +326,7 @@ public class Util {
             return Collections.emptyList();
         }
 
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for(String serverGroup : serverGroups) {
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
             ModelNode request;
@@ -387,7 +387,7 @@ public class Util {
         if(serverGroups.isEmpty()) {
             return Collections.emptyList();
         }
-        final List<String> groupNames = new ArrayList<String>();
+        final List<String> groupNames = new ArrayList<>();
         for(String serverGroup : serverGroups) {
             final ModelNode request = new ModelNode();
             request.get(Util.OPERATION).set(Util.VALIDATE_ADDRESS);
@@ -424,7 +424,7 @@ public class Util {
         if(serverGroups.isEmpty()) {
             return Collections.emptyList();
         }
-        final List<String> groupNames = new ArrayList<String>();
+        final List<String> groupNames = new ArrayList<>();
         for(String serverGroup : serverGroups) {
             final ModelNode request = new ModelNode();
             request.get(Util.OPERATION).set(Util.VALIDATE_ADDRESS);
@@ -839,7 +839,7 @@ public class Util {
         return response.get(RESULT);
     }
 
-    private static final Map<Character,Character> wrappingPairs = new HashMap<Character, Character>();
+    private static final Map<Character,Character> wrappingPairs = new HashMap<>();
     static {
         wrappingPairs.put('(', ')');
         wrappingPairs.put('{', '}');
@@ -871,14 +871,14 @@ public class Util {
                         expectedClosing = matchingClosing;
                     } else {
                         if(expectedClosingStack == null) {
-                            expectedClosingStack = new ArrayDeque<Character>();
+                            expectedClosingStack = new ArrayDeque<>();
                         }
                         expectedClosingStack.push(expectedClosing);
                         expectedClosing = matchingClosing;
                     }
                 } else if(expectedClosing == null && ch == ',') {
                     if(commands == null) {
-                        commands = new ArrayList<String>();
+                        commands = new ArrayList<>();
                     }
                     commands.add(line.substring(nextOpIndex, i));
                     nextOpIndex = i + 1;

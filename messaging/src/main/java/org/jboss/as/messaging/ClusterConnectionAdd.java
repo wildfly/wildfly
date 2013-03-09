@@ -131,7 +131,7 @@ public class ClusterConnectionAdd extends AbstractAddStepHandler {
         if (!model.hasDefined(CommonAttributes.STATIC_CONNECTORS))
             return null;
 
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (ModelNode connector : model.require(CommonAttributes.STATIC_CONNECTORS).asList()) {
             result.add(connector.asString());
         }

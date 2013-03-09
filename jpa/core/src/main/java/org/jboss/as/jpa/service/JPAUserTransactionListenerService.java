@@ -44,7 +44,7 @@ import org.jboss.tm.usertx.UserTransactionRegistry;
 public class JPAUserTransactionListenerService implements Service<Void> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jpa-usertransactionlistener");
 
-    private final InjectedValue<UserTransactionRegistry> userTransactionRegistryInjectedValue = new InjectedValue<UserTransactionRegistry>();
+    private final InjectedValue<UserTransactionRegistry> userTransactionRegistryInjectedValue = new InjectedValue<>();
     private volatile JPAUserTransactionListener jpaUserTransactionListener = null;
 
     @Override
@@ -74,7 +74,7 @@ public class JPAUserTransactionListenerService implements Service<Void> {
 
         return target.addService(SERVICE_NAME, jpaUserTransactionListenerService)
                 .addListener(listeners)
-                .addDependency(UserTransactionRegistryService.SERVICE_NAME, new CastingInjector<UserTransactionRegistry>(jpaUserTransactionListenerService.getUserTransactionRegistryInjectedValue(), UserTransactionRegistry.class))
+                .addDependency(UserTransactionRegistryService.SERVICE_NAME, new CastingInjector<>(jpaUserTransactionListenerService.getUserTransactionRegistryInjectedValue(), UserTransactionRegistry.class))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
 

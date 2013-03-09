@@ -62,7 +62,7 @@ public final class ParsedInterfaceCriteria {
     private final boolean anyLocalV4;
     private final boolean anyLocalV6;
     private final boolean anyLocal;
-    private final Set<InterfaceCriteria> criteria = new HashSet<InterfaceCriteria>();
+    private final Set<InterfaceCriteria> criteria = new HashSet<>();
 
     private ParsedInterfaceCriteria(final String failureMessage) {
         this.failureMessage = failureMessage;
@@ -121,7 +121,7 @@ public final class ParsedInterfaceCriteria {
         } else {
             try {
                 final List<Property> nodes = subModel.asPropertyList();
-                final Set<InterfaceCriteria> criteriaSet = new HashSet<InterfaceCriteria>();
+                final Set<InterfaceCriteria> criteriaSet = new HashSet<>();
                 for (final Property property : nodes) {
                     final InterfaceCriteria criterion = parseCriteria(property, false, expressionResolver);
                     if (criterion instanceof WildcardInetAddressInterfaceCriteria) {
@@ -212,7 +212,7 @@ public final class ParsedInterfaceCriteria {
         if(!subModel.isDefined() || subModel.asInt() == 0) {
             return null;
         }
-        final Set<InterfaceCriteria> criteriaSet = new HashSet<InterfaceCriteria>();
+        final Set<InterfaceCriteria> criteriaSet = new HashSet<>();
         for(final Property nestedProperty :  subModel.asPropertyList()) {
             final Element element = Element.forName(nestedProperty.getName());
             switch (element) {

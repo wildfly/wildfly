@@ -205,7 +205,7 @@ public class Constants {
 
     static final SimpleAttributeDefinition BOOTSTRAP_CONTEXT = new SimpleAttributeDefinition(BOOTSTRAPCONTEXT_NAME, ResourceAdapter.Tag.BOOTSTRAP_CONTEXT.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static final SimpleAttributeDefinition TRANSACTION_SUPPORT = new SimpleAttributeDefinition(TRANSACTIONSUPPORT_NAME, ResourceAdapter.Tag.TRANSACTION_SUPPORT.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE, new EnumValidator<TransactionSupportEnum>(TransactionSupportEnum.class, true, true));
+    static final SimpleAttributeDefinition TRANSACTION_SUPPORT = new SimpleAttributeDefinition(TRANSACTIONSUPPORT_NAME, ResourceAdapter.Tag.TRANSACTION_SUPPORT.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE, new EnumValidator<>(TransactionSupportEnum.class, true, true));
 
     static final PrimitiveListAttributeDefinition BEANVALIDATION_GROUPS = PrimitiveListAttributeDefinition.Builder.of(BEANVALIDATIONGROUPS_NAME, ModelType.STRING)
             .setXmlName(ResourceAdapter.Tag.BEAN_VALIDATION_GROUP.getLocalName())

@@ -43,8 +43,8 @@ import org.jboss.msc.service.ServiceName;
  */
 public class AS7MetadataRepositoryImpl extends SimpleMetadataRepository implements AS7MetadataRepository {
 
-    private final Map<String, IronJacamar> ironJacamarMetaData = new HashMap<String, IronJacamar>();
-    private final List<ServiceName> jndiServices = new LinkedList<ServiceName>();
+    private final Map<String, IronJacamar> ironJacamarMetaData = new HashMap<>();
+    private final List<ServiceName> jndiServices = new LinkedList<>();
 
     /**
      * Constructor

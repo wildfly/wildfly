@@ -182,7 +182,7 @@ public abstract class SSOTestBase {
         HttpPost formPost = new HttpPost(warURL + "j_security_check");
         formPost.addHeader("Referer", warURL + "login.html");
 
-        List<NameValuePair> formparams = new ArrayList<NameValuePair>();
+        List<NameValuePair> formparams = new ArrayList<>();
         formparams.add(new BasicNameValuePair("j_username", "user1"));
         formparams.add(new BasicNameValuePair("j_password", "password1"));
         formPost.setEntity(new UrlEncodedFormEntity(formparams, "UTF-8"));
@@ -320,7 +320,7 @@ public abstract class SSOTestBase {
     }
 
     public static void addSso(ModelControllerClient client) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        final List<ModelNode> updates = new ArrayList<>();
 
         // SSO element name must be 'configuration'
         updates.add(createOpNode("subsystem=web/virtual-server=default-host/sso=configuration", ADD));
@@ -329,7 +329,7 @@ public abstract class SSOTestBase {
     }
 
     public static void addClusteredSso(ModelControllerClient client) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        final List<ModelNode> updates = new ArrayList<>();
 
         // SSO element name must be 'configuration'
         ModelNode addOp = createOpNode("subsystem=web/virtual-server=default-host/sso=configuration", ADD);
@@ -341,7 +341,7 @@ public abstract class SSOTestBase {
     }
 
     public static void removeSso(final ModelControllerClient client) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        final List<ModelNode> updates = new ArrayList<>();
 
         updates.add(createOpNode("subsystem=web/virtual-server=default-host/sso=configuration", REMOVE));
 
@@ -372,7 +372,7 @@ public abstract class SSOTestBase {
             throw new RuntimeException("Restart operation not successful. " + e.getMessage());
         }
         try {
-            RetryTaskExecutor<Boolean> rte = new RetryTaskExecutor<Boolean>();
+            RetryTaskExecutor<Boolean> rte = new RetryTaskExecutor<>();
             rte.retryTask(new Callable<Boolean>() {
                 public Boolean call() throws Exception {
                     ModelNode readOp = createOpNode(null, READ_ATTRIBUTE_OPERATION);

@@ -89,10 +89,10 @@ public class ModifiableConnDef implements CommonConnDef {
                              CommonValidation validation, CommonSecurity security, Recovery recovery) throws ValidateException {
         super();
         if (configProperties != null) {
-            this.configProperties = new ConcurrentHashMap<String, String>(configProperties.size());
+            this.configProperties = new ConcurrentHashMap<>(configProperties.size());
             this.configProperties.putAll(configProperties);
         } else {
-            this.configProperties = new ConcurrentHashMap<String, String>(0);
+            this.configProperties = new ConcurrentHashMap<>(0);
         }
         this.className = className;
         this.jndiName = jndiName;

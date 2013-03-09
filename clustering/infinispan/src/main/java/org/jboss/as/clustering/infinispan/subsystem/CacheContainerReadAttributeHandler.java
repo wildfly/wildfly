@@ -57,7 +57,7 @@ public class CacheContainerReadAttributeHandler implements OperationStepHandler 
         assert definitions != null : MESSAGES.nullVar("definitions").getLocalizedMessage();
 
         this.nameValidator.registerValidator(NAME, new StringLengthValidator(1));
-        this.attributeDefinitions = new HashMap<String, AttributeDefinition>();
+        this.attributeDefinitions = new HashMap<>();
         for (AttributeDefinition def : definitions) {
             this.attributeDefinitions.put(def.getName(), def);
         }

@@ -477,7 +477,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         connection.setAttribute(name, new Attribute("list", new Integer[] {110}));
         connection.setAttribute(name, new Attribute("long", 111L));
         connection.setAttribute(name, new Attribute("type", ModelType.STRING.toString()));
-        Map<String, Integer> map = new HashMap<String, Integer>();
+        Map<String, Integer> map = new HashMap<>();
         map.put("keyA", 112);
         map.put("keyB", 113);
         connection.setAttribute(name, new Attribute("map", map));
@@ -563,7 +563,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         } catch (Exception expected) {
         }
         try {
-            Map<String, Integer> map = new HashMap<String, Integer>();
+            Map<String, Integer> map = new HashMap<>();
             map.put("keyA", 112);
             map.put("keyB", 113);
             connection.setAttribute(name, new Attribute("map", map));
@@ -644,7 +644,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         connection.setAttribute(name, new Attribute("list", new String[] {"${should.not.exist!!!!!:110}"}));
         connection.setAttribute(name, new Attribute("long", "${should.not.exist!!!!!:111}"));
         connection.setAttribute(name, new Attribute("type", "${should.not.exist!!!!!:STRING}"));
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put("keyA", "${should.not.exist!!!!!:112}");
         map.put("keyB", "${should.not.exist!!!!!:113}");
         connection.setAttribute(name, new Attribute("map", map));
@@ -1102,7 +1102,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
     }
 
     private CompositeData createComplexData(MBeanServerConnection connection, CompositeType type, int intValue, BigDecimal bigDecimalValue) throws Exception {
-        Map<String, Object> items = new HashMap<String, Object>();
+        Map<String, Object> items = new HashMap<>();
         items.put("int-value", Integer.valueOf(intValue));
         //items.put("bigint-value", bigIntegerValue);
         items.put("bigdecimal-value", bigDecimalValue);
@@ -1111,7 +1111,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
     }
 
     private CompositeData createComplexData(MBeanServerConnection connection, CompositeType type, String intValue, String bigDecimalValue) throws Exception {
-        Map<String, Object> items = new HashMap<String, Object>();
+        Map<String, Object> items = new HashMap<>();
         items.put("int-value", intValue);
         //items.put("bigint-value", bigIntegerValue);
         items.put("bigdecimal-value", bigDecimalValue);

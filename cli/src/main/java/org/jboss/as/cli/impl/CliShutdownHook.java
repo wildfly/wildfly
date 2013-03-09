@@ -35,7 +35,7 @@ public class CliShutdownHook {
         void shutdown();
     }
 
-    private static final List<Handler> handlers = new ArrayList<Handler>();
+    private static final List<Handler> handlers = new ArrayList<>();
 
     static {
         SecurityActions.addShutdownHook(new Thread(new Runnable() {

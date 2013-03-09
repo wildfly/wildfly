@@ -43,7 +43,7 @@ class DeploymentActionResultImpl implements DeploymentActionResult {
 
     private final DeploymentAction deploymentAction;
     private final BasicDomainUpdateResult applierResponse;
-    private final Map<String, ServerGroupDeploymentActionResult> serverResults = new HashMap<String, ServerGroupDeploymentActionResult>();
+    private final Map<String, ServerGroupDeploymentActionResult> serverResults = new HashMap<>();
     private BasicDomainUpdateResult rollbackResponse;
 
     DeploymentActionResultImpl(final DeploymentAction deploymentAction,

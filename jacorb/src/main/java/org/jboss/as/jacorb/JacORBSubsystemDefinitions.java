@@ -53,9 +53,9 @@ class JacORBSubsystemDefinitions {
     private static final ModelNode DEFAULT_ENABLED_PROPERTY = new ModelNode().set("on");
 
     private static final ParameterValidator SSL_CONFIG_VALIDATOR =
-            new EnumValidator<SSLConfigValue>(SSLConfigValue.class, true, false);
+            new EnumValidator<>(SSLConfigValue.class, true, false);
 
-    private static final ParameterValidator ON_OFF_VALIDATOR = new EnumValidator<TransactionsAllowedValues>(
+    private static final ParameterValidator ON_OFF_VALIDATOR = new EnumValidator<>(
             TransactionsAllowedValues.class, true, false, TransactionsAllowedValues.ON, TransactionsAllowedValues.OFF);
 
     // orb attribute definitions.
@@ -195,7 +195,7 @@ class JacORBSubsystemDefinitions {
     public static final SimpleAttributeDefinition ORB_INIT_SECURITY = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_INIT_SECURITY, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setValidator(new EnumValidator<SecurityAllowedValues>(SecurityAllowedValues.class, true, false))
+            .setValidator(new EnumValidator<>(SecurityAllowedValues.class, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .build();
@@ -203,7 +203,7 @@ class JacORBSubsystemDefinitions {
     public static final SimpleAttributeDefinition ORB_INIT_TX = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_INIT_TRANSACTIONS, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setValidator(new EnumValidator<TransactionsAllowedValues>(TransactionsAllowedValues.class, true, false))
+            .setValidator(new EnumValidator<>(TransactionsAllowedValues.class, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .build();
@@ -437,7 +437,7 @@ class JacORBSubsystemDefinitions {
     static final Map<String, AttributeDefinition> ATTRIBUTES_BY_NAME;
 
     static {
-        SUBSYSTEM_ATTRIBUTES = new ArrayList<AttributeDefinition>();
+        SUBSYSTEM_ATTRIBUTES = new ArrayList<>();
         SUBSYSTEM_ATTRIBUTES.addAll(ORB_ATTRIBUTES);
         SUBSYSTEM_ATTRIBUTES.addAll(ORB_CONN_ATTRIBUTES);
         SUBSYSTEM_ATTRIBUTES.addAll(ORB_INIT_ATTRIBUTES);
@@ -448,7 +448,7 @@ class JacORBSubsystemDefinitions {
         SUBSYSTEM_ATTRIBUTES.addAll(SECURITY_ATTRIBUTES);
         SUBSYSTEM_ATTRIBUTES.add(PROPERTIES);
 
-        Map<String, AttributeDefinition> map = new HashMap<String, AttributeDefinition>();
+        Map<String, AttributeDefinition> map = new HashMap<>();
         for (AttributeDefinition attribute : SUBSYSTEM_ATTRIBUTES) {
             map.put(attribute.getName(), attribute);
         }

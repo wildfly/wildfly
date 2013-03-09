@@ -98,7 +98,7 @@ public class PropertiesSubjectSupplemental extends PropertiesFileLoader implemen
         String rolesString = properties.getProperty(user.getName(), "").trim();
         if (rolesString.length() > 0) {
             String[] roles = rolesString.split(COMMA);
-            response = new HashSet<RealmRole>(roles.length);
+            response = new HashSet<>(roles.length);
             for (String current : roles) {
                 String cleaned = current.trim();
                 if (cleaned.length() > 0) {

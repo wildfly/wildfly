@@ -66,7 +66,7 @@ public class JMSServices {
 
     public static String[] getJndiBindings(final ModelNode node) {
         if (node.isDefined()) {
-            final Set<String> bindings = new HashSet<String>();
+            final Set<String> bindings = new HashSet<>();
             for (final ModelNode entry : node.asList()) {
                 bindings.add(entry.asString());
             }

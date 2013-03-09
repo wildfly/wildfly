@@ -34,7 +34,7 @@ import java.util.Map;
  */
 public class ApplicationExceptions {
 
-    private final Map<Class<?>, org.jboss.as.ejb3.tx.ApplicationExceptionDetails> applicationExceptions = new HashMap<Class<?>, org.jboss.as.ejb3.tx.ApplicationExceptionDetails>();
+    private final Map<Class<?>, org.jboss.as.ejb3.tx.ApplicationExceptionDetails> applicationExceptions = new HashMap<>();
 
 
     public ApplicationExceptions() {

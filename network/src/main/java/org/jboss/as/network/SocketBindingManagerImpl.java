@@ -362,7 +362,7 @@ public abstract class SocketBindingManagerImpl implements SocketBindingManager {
     }
 
     static final class NamedRegistryImpl implements NamedManagedBindingRegistry {
-        private final Map<String, ManagedBinding> bindings = new ConcurrentHashMap<String, ManagedBinding>();
+        private final Map<String, ManagedBinding> bindings = new ConcurrentHashMap<>();
 
         /** {@inheritDoc} */
         @Override
@@ -399,7 +399,7 @@ public abstract class SocketBindingManagerImpl implements SocketBindingManager {
         /** {@inheritDoc} */
         @Override
         public Collection<ManagedBinding> listActiveBindings() {
-            return new HashSet<ManagedBinding>(bindings.values());
+            return new HashSet<>(bindings.values());
         }
 
         /** {@inheritDoc} */
@@ -461,7 +461,7 @@ public abstract class SocketBindingManagerImpl implements SocketBindingManager {
     }
 
     static final class UnnamedRegistryImpl implements UnnamedBindingRegistry {
-        private final Map<InetSocketAddress, ManagedBinding> bindings = new ConcurrentHashMap<InetSocketAddress, ManagedBinding>();
+        private final Map<InetSocketAddress, ManagedBinding> bindings = new ConcurrentHashMap<>();
 
         /** {@inheritDoc} */
         @Override
@@ -486,7 +486,7 @@ public abstract class SocketBindingManagerImpl implements SocketBindingManager {
         /** {@inheritDoc} */
         @Override
         public Collection<ManagedBinding> listActiveBindings() {
-            return new HashSet<ManagedBinding>(bindings.values());
+            return new HashSet<>(bindings.values());
         }
 
         /** {@inheritDoc} */

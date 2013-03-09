@@ -111,7 +111,7 @@ public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProce
     }
 
     private static PathAddress getComponentAddress(EJBComponentType type, ComponentConfiguration configuration, DeploymentUnit deploymentUnit) {
-        List<PathElement> elements = new ArrayList<PathElement>();
+        List<PathElement> elements = new ArrayList<>();
         if (deploymentUnit.getParent() == null) {
             elements.add(PathElement.pathElement(ModelDescriptionConstants.DEPLOYMENT, deploymentUnit.getName()));
         } else {

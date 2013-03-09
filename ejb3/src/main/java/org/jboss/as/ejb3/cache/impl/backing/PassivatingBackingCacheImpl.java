@@ -67,8 +67,8 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
 
     private final ThreadFactory threadFactory;
     private volatile ScheduledExecutorService executor;
-    private final Map<K, Future<?>> expirationFutures = new ConcurrentHashMap<K, Future<?>>();
-    private final Map<K, Future<?>> passivationFutures = new ConcurrentHashMap<K, Future<?>>();
+    private final Map<K, Future<?>> expirationFutures = new ConcurrentHashMap<>();
+    private final Map<K, Future<?>> passivationFutures = new ConcurrentHashMap<>();
 
     public PassivatingBackingCacheImpl(StatefulObjectFactory<V> factory, BackingCacheEntryFactory<K, V, E> entryFactory, ReplicationPassivationManager<K, E> passivationManager, BackingCacheEntryStore<K, V, E> store) {
         this(factory, entryFactory, passivationManager, store, null, null);
@@ -338,14 +338,14 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
     private TaskFactory<K> removeTaskFactory = new TaskFactory<K>() {
         @Override
         public Runnable createTask(K id) {
-            return new RemoveTask<K>(PassivatingBackingCacheImpl.this, id);
+            return new RemoveTask<>(PassivatingBackingCacheImpl.this, id);
         }
     };
 
     private TaskFactory<K> passivateTaskFactory = new TaskFactory<K>() {
         @Override
         public Runnable createTask(K id) {
-            return new PassivateTask<K>(PassivatingBackingCacheImpl.this, id);
+            return new PassivateTask<>(PassivatingBackingCacheImpl.this, id);
         }
     };
 

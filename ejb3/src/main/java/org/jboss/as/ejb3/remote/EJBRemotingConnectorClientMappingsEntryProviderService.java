@@ -53,7 +53,7 @@ public class EJBRemotingConnectorClientMappingsEntryProviderService implements S
     private final ServiceName remotingConnectorServiceName;
     private volatile InjectedSocketBindingStreamServerService remotingServer;
     private final Registry.RegistryEntryProvider<String, List<ClientMapping>> registryEntryProvider = new ClientMappingEntryProvider();
-    private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<ServerEnvironment>();
+    private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<>();
 
     public EJBRemotingConnectorClientMappingsEntryProviderService(final ServiceName remotingConnectorServiceName) {
         this.remotingConnectorServiceName = remotingConnectorServiceName;

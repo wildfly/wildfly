@@ -121,7 +121,7 @@ public class JaxrsCdiIntegrationProcessor implements DeploymentUnitProcessor {
         param.setParamValue(value);
         List<ParamValueMetaData> params = webdata.getContextParams();
         if (params == null) {
-            params = new ArrayList<ParamValueMetaData>();
+            params = new ArrayList<>();
             webdata.setContextParams(params);
         }
         params.add(param);

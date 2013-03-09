@@ -37,7 +37,7 @@ import static org.mockito.Mockito.mock;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class MockTransactionManager implements TransactionManager {
-    private ThreadLocal<Transaction> currentTx = new ThreadLocal<Transaction>();
+    private ThreadLocal<Transaction> currentTx = new ThreadLocal<>();
 
     @Override
     public void begin() throws NotSupportedException, SystemException {

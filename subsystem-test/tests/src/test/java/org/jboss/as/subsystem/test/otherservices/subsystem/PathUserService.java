@@ -35,7 +35,7 @@ import org.jboss.msc.value.InjectedValue;
 public class PathUserService implements Service<PathUserService> {
 
     public static final ServiceName NAME = ServiceName.of("test", "binding", "user");
-    public final InjectedValue<String> pathValue = new InjectedValue<String>();
+    public final InjectedValue<String> pathValue = new InjectedValue<>();
 
     @Override
     public PathUserService getValue() throws IllegalStateException, IllegalArgumentException {

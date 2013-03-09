@@ -229,7 +229,7 @@ public class LdapLoginModuleTestCase {
          */
         @Override
         protected SecurityDomain[] getSecurityDomains() throws Exception {
-            Map<String, String> moduleOptions = new HashMap<String, String>();
+            Map<String, String> moduleOptions = new HashMap<>();
 
             //InitialContextFactory implementation class name. This defaults to the Sun LDAP provider implementation com.sun.jndi.ldap.LdapCtxFactory.
             moduleOptions.put("java.naming.factory.initial", INITIAL_CONTEXT_FACTORY);

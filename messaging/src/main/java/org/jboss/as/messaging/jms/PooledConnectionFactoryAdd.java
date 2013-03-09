@@ -89,7 +89,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implement
         }
 
         // We validated that jndiName part of the model in populateModel
-        final List<String> jndiNames = new ArrayList<String>();
+        final List<String> jndiNames = new ArrayList<>();
         for (ModelNode node : resolvedModel.get(Common.ENTRIES.getName()).asList()) {
             jndiNames.add(node.asString());
         }
@@ -143,7 +143,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implement
     }
 
     static List<String> getConnectors(final ModelNode model) {
-        List<String> connectorNames = new ArrayList<String>();
+        List<String> connectorNames = new ArrayList<>();
         if (model.hasDefined(CONNECTOR)) {
             for (String connectorName : model.get(CONNECTOR).keys()) {
                 connectorNames.add(connectorName);
@@ -159,7 +159,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implement
         return null;
     }
     static List<PooledConnectionFactoryConfigProperties> getAdapterParams(ModelNode model, OperationContext context) throws OperationFailedException {
-        List<PooledConnectionFactoryConfigProperties> configs = new ArrayList<PooledConnectionFactoryConfigProperties>();
+        List<PooledConnectionFactoryConfigProperties> configs = new ArrayList<>();
         for (ConnectionFactoryAttribute nodeAttribute : PooledConnectionFactoryDefinition.ATTRIBUTES)
         {
             if (!nodeAttribute.isResourceAdapterProperty())

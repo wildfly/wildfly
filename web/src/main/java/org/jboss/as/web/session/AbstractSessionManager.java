@@ -305,7 +305,7 @@ public abstract class AbstractSessionManager extends ManagerBase implements Sess
                 jvmRoute = sessionId.substring(index + 1);
             }
         }
-        return new AbstractMap.SimpleImmutableEntry<String, String>(realId, jvmRoute);
+        return new AbstractMap.SimpleImmutableEntry<>(realId, jvmRoute);
     }
 
     @Override

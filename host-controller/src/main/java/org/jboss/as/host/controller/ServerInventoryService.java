@@ -52,15 +52,15 @@ class ServerInventoryService implements Service<ServerInventory> {
 
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "server-inventory");
 
-    private final InjectedValue<ProcessControllerConnectionService> client = new InjectedValue<ProcessControllerConnectionService>();
-    private final InjectedValue<NetworkInterfaceBinding> interfaceBinding = new InjectedValue<NetworkInterfaceBinding>();
-    private final InjectedValue<ServerInventoryCallbackService> serverCallback = new InjectedValue<ServerInventoryCallbackService>();
+    private final InjectedValue<ProcessControllerConnectionService> client = new InjectedValue<>();
+    private final InjectedValue<NetworkInterfaceBinding> interfaceBinding = new InjectedValue<>();
+    private final InjectedValue<ServerInventoryCallbackService> serverCallback = new InjectedValue<>();
     private final DomainController domainController;
     private final HostControllerEnvironment environment;
     private final HostRunningModeControl runningModeControl;
     private final ExtensionRegistry extensionRegistry;
     private final int port;
-    private final InjectedValue<ExecutorService> executorService = new InjectedValue<ExecutorService>();
+    private final InjectedValue<ExecutorService> executorService = new InjectedValue<>();
 
     private final FutureServerInventory futureInventory = new FutureServerInventory();
 

@@ -42,19 +42,19 @@ import org.jboss.msc.service.StartException;
  */
 public class ServiceContainerHelper {
     // Mapping of service controller mode changes that appropriate for toggling to a given controller state
-    private static final Map<State, Map<Mode, Mode>> modeToggle = new EnumMap<State, Map<Mode, Mode>>(State.class);
+    private static final Map<State, Map<Mode, Mode>> modeToggle = new EnumMap<>(State.class);
     static {
-        Map<Mode, Mode> map = new EnumMap<Mode, Mode>(Mode.class);
+        Map<Mode, Mode> map = new EnumMap<>(Mode.class);
         map.put(Mode.NEVER, Mode.ACTIVE);
         map.put(Mode.ON_DEMAND, Mode.PASSIVE);
         modeToggle.put(State.UP, map);
 
-        map = new EnumMap<Mode, Mode>(Mode.class);
+        map = new EnumMap<>(Mode.class);
         map.put(Mode.ACTIVE, Mode.NEVER);
         map.put(Mode.PASSIVE, Mode.ON_DEMAND);
         modeToggle.put(State.DOWN, map);
 
-        map = new EnumMap<Mode, Mode>(Mode.class);
+        map = new EnumMap<>(Mode.class);
         for (Mode mode: Mode.values()) {
             if (mode != Mode.REMOVE) {
                 map.put(mode, Mode.REMOVE);

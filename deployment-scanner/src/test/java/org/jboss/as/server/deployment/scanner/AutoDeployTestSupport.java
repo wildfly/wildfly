@@ -62,7 +62,7 @@ public class AutoDeployTestSupport {
     private final File tmpDir;
     private final File basicWar;
 
-    private final Set<Channel> channels = new HashSet<Channel>();
+    private final Set<Channel> channels = new HashSet<>();
 
     public AutoDeployTestSupport(String testId) {
 

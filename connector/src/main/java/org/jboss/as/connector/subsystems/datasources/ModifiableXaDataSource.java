@@ -101,10 +101,10 @@ public class ModifiableXaDataSource extends DataSourceAbstractImpl implements Xa
         super(transactionIsolation, timeOut, security, statement, validation, urlDelimiter,
                 urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy, useCcm);
         if (xaDataSourceProperty != null) {
-            this.xaDataSourceProperty = new HashMap<String, String>(xaDataSourceProperty.size());
+            this.xaDataSourceProperty = new HashMap<>(xaDataSourceProperty.size());
             this.xaDataSourceProperty.putAll(xaDataSourceProperty);
         } else {
-            this.xaDataSourceProperty = new HashMap<String, String>(0);
+            this.xaDataSourceProperty = new HashMap<>(0);
         }
         this.xaDataSourceClass = xaDataSourceClass;
         this.driver = driver;

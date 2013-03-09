@@ -70,7 +70,7 @@ public class SerializedStatefulSessionComponent implements Serializable {
         final InterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
 
         for(final Map.Entry<Object, Object> entry : serializableInterceptors.entrySet()) {
-            AtomicReference<ManagedReference> referenceReference = new AtomicReference<ManagedReference>(new ValueManagedReference(new ImmediateValue<Object>(entry.getValue())));
+            AtomicReference<ManagedReference> referenceReference = new AtomicReference<ManagedReference>(new ValueManagedReference(new ImmediateValue<>(entry.getValue())));
             context.getContextData().put(entry.getKey(), referenceReference);
         }
         context.getContextData().put(SessionID.class, sessionID);

@@ -36,7 +36,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 abstract class AbstractPlugInService {
 
-    private final InjectedValue<PlugInLoaderService> plugInLoader = new InjectedValue<PlugInLoaderService>();
+    private final InjectedValue<PlugInLoaderService> plugInLoader = new InjectedValue<>();
     private final String realmName;
     private final String pluginName;
     private final Map<String, String> configurationProperties;

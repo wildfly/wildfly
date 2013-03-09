@@ -59,7 +59,7 @@ public enum NamingSubsystemNamespace {
     private static final Map<String, NamingSubsystemNamespace> MAP;
 
     static {
-        final Map<String, NamingSubsystemNamespace> map = new HashMap<String, NamingSubsystemNamespace>();
+        final Map<String, NamingSubsystemNamespace> map = new HashMap<>();
         for (NamingSubsystemNamespace namespace : values()) {
             final String name = namespace.getUriString();
             if (name != null) map.put(name, namespace);

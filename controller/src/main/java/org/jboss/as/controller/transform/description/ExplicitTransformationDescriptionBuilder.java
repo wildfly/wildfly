@@ -42,7 +42,7 @@ import org.jboss.as.controller.transform.ResourceTransformer;
  */
 public final class ExplicitTransformationDescriptionBuilder extends AbstractTransformationDescriptionBuilder implements TransformationDescriptionBuilder {
 
-    private final List<String> discardedOperations = new LinkedList<String>();
+    private final List<String> discardedOperations = new LinkedList<>();
 
     // TODO operation and children
 
@@ -78,11 +78,11 @@ public final class ExplicitTransformationDescriptionBuilder extends AbstractTran
 
     @Override
     public TransformationDescription build() {
-        final Map<String, OperationTransformer> operations = new HashMap<String, OperationTransformer>();
+        final Map<String, OperationTransformer> operations = new HashMap<>();
         for(final Map.Entry<String, OperationTransformationEntry> entry : operationTransformers.entrySet()) {
             operations.put(entry.getKey(), entry.getValue().getOperationTransformer(null));
         }
-        final List<TransformationDescription> childDescriptions = new ArrayList<TransformationDescription>();
+        final List<TransformationDescription> childDescriptions = new ArrayList<>();
         for(final TransformationDescriptionBuilder builder : children) {
             childDescriptions.add(builder.build());
         }

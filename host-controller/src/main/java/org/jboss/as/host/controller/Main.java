@@ -533,7 +533,7 @@ public final class Main {
     }
 
     private static Map<String, String> getHostSystemProperties() {
-        final Map<String, String> hostSystemProperties = new HashMap<String, String>();
+        final Map<String, String> hostSystemProperties = new HashMap<>();
         try {
             RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
             for (String arg : runtime.getInputArguments()) {

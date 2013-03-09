@@ -48,7 +48,7 @@ public class IPv6ScopeIdMatchUnitTestCase {
 
     private static NetworkInterface loopbackInterface;
     private static Inet6Address loopbackAddress;
-    private static Map<NetworkInterface, Set<Inet6Address>> addresses = new HashMap<NetworkInterface, Set<Inet6Address>>();
+    private static Map<NetworkInterface, Set<Inet6Address>> addresses = new HashMap<>();
 
     @BeforeClass
     public static void setup() throws Exception {
@@ -80,7 +80,7 @@ public class IPv6ScopeIdMatchUnitTestCase {
                 } else if (addresses.containsKey(nif)) {
                     addresses.get(nif).add(inet6);
                 } else {
-                    Set<Inet6Address> set = new HashSet<Inet6Address>();
+                    Set<Inet6Address> set = new HashSet<>();
                     set.add(inet6);
                     addresses.put(nif, set);
                 }

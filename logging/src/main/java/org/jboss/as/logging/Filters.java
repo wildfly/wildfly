@@ -192,7 +192,7 @@ class Filters {
             expect(")", iterator);
         } else if (LEVELS.equals(token)) {
             expect("(", iterator);
-            final Set<String> levels = new HashSet<String>();
+            final Set<String> levels = new HashSet<>();
             do {
                 levels.add(expectName(iterator));
             } while (expect(",", ")", iterator));
@@ -294,7 +294,7 @@ class Filters {
 
 
     private static List<String> tokens(final String source) {
-        final List<String> tokens = new ArrayList<String>();
+        final List<String> tokens = new ArrayList<>();
         final int length = source.length();
         int idx = 0;
         while (idx < length) {

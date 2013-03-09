@@ -58,7 +58,7 @@ public class RaDeploymentActivator {
     private final MdrService mdrService = new MdrService();
 
     public Collection<ServiceController<?>> activateServices(final ServiceTarget serviceTarget, final ServiceListener<Object>... listeners) {
-        final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+        final List<ServiceController<?>> controllers = new ArrayList<>();
         // add resources here
 
         controllers.add(serviceTarget.addService(ConnectorServices.IRONJACAMAR_MDR, mdrService)

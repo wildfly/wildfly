@@ -54,11 +54,11 @@ import org.jboss.ejb.client.NodeAffinity;
  */
 public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Cacheable<K>> extends AbstractBackingCache<K, V, NonPassivatingBackingCacheEntry<K, V>> implements BackingCacheEntryFactory<K, V, NonPassivatingBackingCacheEntry<K, V>> {
     private final StatefulObjectFactory<V> factory;
-    private final Map<K, NonPassivatingBackingCacheEntry<K, V>> cache = new ConcurrentHashMap<K, NonPassivatingBackingCacheEntry<K, V>>();
+    private final Map<K, NonPassivatingBackingCacheEntry<K, V>> cache = new ConcurrentHashMap<>();
     private final StatefulTimeoutInfo timeout;
     private volatile ScheduledExecutorService executor;
     private final ThreadFactory threadFactory;
-    private final Map<K, Future<?>> expirationFutures = new ConcurrentHashMap<K, Future<?>>();
+    private final Map<K, Future<?>> expirationFutures = new ConcurrentHashMap<>();
     private final ServerEnvironment environment;
     private final IdentifierFactory<K> identifierFactory;
 
@@ -108,7 +108,7 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
 
     @Override
     public NonPassivatingBackingCacheEntry<K, V> createEntry(V item) {
-        return new NonPassivatingBackingCacheEntry<K, V>(item);
+        return new NonPassivatingBackingCacheEntry<>(item);
     }
 
     @Override
@@ -206,7 +206,7 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
 
     private void scheduleExpiration(K id, boolean cancel) {
         if (this.timeout != null && timeout.getValue() != -1) {
-            Future<?> future = cancel ? this.expirationFutures.remove(id) : this.expirationFutures.put(id, this.executor.schedule(new RemoveTask<K>(this, id), this.timeout.getValue(), this.timeout.getTimeUnit()));
+            Future<?> future = cancel ? this.expirationFutures.remove(id) : this.expirationFutures.put(id, this.executor.schedule(new RemoveTask<>(this, id), this.timeout.getValue(), this.timeout.getTimeUnit()));
             if (future != null) {
                 future.cancel(false);
             }

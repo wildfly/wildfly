@@ -41,7 +41,7 @@ public final class AlternativeAttributeCheckHandler implements OperationStepHand
     private final Map<String, AttributeDefinition> attributeDefinitions;
 
     public AlternativeAttributeCheckHandler(final AttributeDefinition... definitions) {
-        attributeDefinitions = new HashMap<String, AttributeDefinition>();
+        attributeDefinitions = new HashMap<>();
         for (AttributeDefinition def : definitions) {
             attributeDefinitions.put(def.getName(), def);
         }

@@ -42,7 +42,7 @@ import org.jboss.vfs.VirtualFile;
 class PathContentServitor extends AbstractService<VirtualFile> {
     private final String unresolvedPath;
     private final String relativeTo;
-    private final InjectedValue<PathManager> pathManagerValue = new InjectedValue<PathManager>();
+    private final InjectedValue<PathManager> pathManagerValue = new InjectedValue<>();
     private volatile PathManager.Callback.Handle callbackHandle;
 
     static ServiceController<VirtualFile> addService(final ServiceTarget serviceTarget, final ServiceName serviceName, final String path, final String relativeTo, final ServiceVerificationHandler verificationHandler) {

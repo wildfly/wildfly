@@ -49,13 +49,13 @@ public final class BootStrapContextService implements Service<CloneableBootstrap
 
     private final boolean usingDefaultWm;
 
-    private final InjectedValue<WorkManager> workManagerValue = new InjectedValue<WorkManager>();
+    private final InjectedValue<WorkManager> workManagerValue = new InjectedValue<>();
 
-    private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> txManager = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
+    private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> txManager = new InjectedValue<>();
 
-    private final InjectedValue<JBossXATerminator> xaTerminator = new InjectedValue<JBossXATerminator>();
+    private final InjectedValue<JBossXATerminator> xaTerminator = new InjectedValue<>();
 
-    private final InjectedValue<JcaSubsystemConfiguration> jcaConfig = new InjectedValue<JcaSubsystemConfiguration>();
+    private final InjectedValue<JcaSubsystemConfiguration> jcaConfig = new InjectedValue<>();
 
 
     public Value<WorkManager> getWorkManagerValue() {

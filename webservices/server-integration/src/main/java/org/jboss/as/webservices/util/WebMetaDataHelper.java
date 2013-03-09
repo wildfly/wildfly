@@ -65,16 +65,16 @@ public final class WebMetaDataHelper {
     private static List<String> allRoles;
 
     static {
-        final List<String> getAndPostList = new LinkedList<String>();
+        final List<String> getAndPostList = new LinkedList<>();
         getAndPostList.add(WebMetaDataHelper.GET_STRING);
         getAndPostList.add(WebMetaDataHelper.POST_STRING);
         WebMetaDataHelper.getAndPostMethods = Collections.unmodifiableList(getAndPostList);
 
-        final List<String> onlyPostList = new LinkedList<String>();
+        final List<String> onlyPostList = new LinkedList<>();
         onlyPostList.add(WebMetaDataHelper.POST_STRING);
         WebMetaDataHelper.onlyPostMethod = Collections.unmodifiableList(onlyPostList);
 
-        final List<String> roleNamesList = new LinkedList<String>();
+        final List<String> roleNamesList = new LinkedList<>();
         roleNamesList.add(WebMetaDataHelper.STAR_STRING);
         WebMetaDataHelper.allRoles = Collections.unmodifiableList(roleNamesList);
     }
@@ -93,7 +93,7 @@ public final class WebMetaDataHelper {
      * @return list wrapping passed parameter
      */
     public static List<String> getUrlPatterns(final String urlPattern) {
-        final List<String> linkedList = new LinkedList<String>();
+        final List<String> linkedList = new LinkedList<>();
 
         linkedList.add(urlPattern);
 
@@ -148,7 +148,7 @@ public final class WebMetaDataHelper {
         List<ServletMappingMetaData> servletMappingsMD = jbossWebMD.getServletMappings();
 
         if (servletMappingsMD == null) {
-            servletMappingsMD = new LinkedList<ServletMappingMetaData>();
+            servletMappingsMD = new LinkedList<>();
             jbossWebMD.setServletMappings(servletMappingsMD);
         }
 
@@ -166,7 +166,7 @@ public final class WebMetaDataHelper {
         List<SecurityConstraintMetaData> securityConstraintsMD = jbossWebMD.getSecurityConstraints();
 
         if (securityConstraintsMD == null) {
-            securityConstraintsMD = new LinkedList<SecurityConstraintMetaData>();
+            securityConstraintsMD = new LinkedList<>();
             jbossWebMD.setSecurityConstraints(securityConstraintsMD);
         }
 
@@ -202,7 +202,7 @@ public final class WebMetaDataHelper {
         List<ParamValueMetaData> contextParamsMD = jbossWebMD.getContextParams();
 
         if (contextParamsMD == null) {
-            contextParamsMD = new LinkedList<ParamValueMetaData>();
+            contextParamsMD = new LinkedList<>();
             jbossWebMD.setContextParams(contextParamsMD);
         }
 
@@ -238,7 +238,7 @@ public final class WebMetaDataHelper {
         List<ParamValueMetaData> initParamsMD = servletMD.getInitParam();
 
         if (initParamsMD == null) {
-            initParamsMD = new LinkedList<ParamValueMetaData>();
+            initParamsMD = new LinkedList<>();
             servletMD.setInitParam(initParamsMD);
         }
 

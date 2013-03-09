@@ -118,7 +118,7 @@ final class SubsystemTestDelegate {
     }
 
     private final Class<?> testClass;
-    private final List<KernelServices> kernelServices = new ArrayList<KernelServices>();
+    private final List<KernelServices> kernelServices = new ArrayList<>();
 
     protected final String mainSubsystemName;
     private final Extension mainExtension;
@@ -208,7 +208,7 @@ final class SubsystemTestDelegate {
                 "</test>";
         final XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new StringReader(xml));
         addAdditionalParsers(additionalParsers);
-        final List<ModelNode> operationList = new ArrayList<ModelNode>();
+        final List<ModelNode> operationList = new ArrayList<>();
         xmlMapper.parseDocument(operationList, reader);
         return operationList;
     }
@@ -337,7 +337,7 @@ final class SubsystemTestDelegate {
 
         Resource rootResource = ModelTestModelControllerService.grabRootResource(kernelServices);
 
-        List<PathAddress> addresses = new ArrayList<PathAddress>();
+        List<PathAddress> addresses = new ArrayList<>();
         PathAddress pathAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, mainSubsystemName));
         Resource subsystemResource = rootResource.getChild(pathAddress.getLastElement());
         Assert.assertNotNull(subsystemResource);
@@ -374,7 +374,7 @@ final class SubsystemTestDelegate {
     }
 
     private void getAllChildAddressesForRemove(PathAddress address, List<PathAddress> addresses, Resource resource) {
-        List<PathElement> childElements = new ArrayList<PathElement>();
+        List<PathElement> childElements = new ArrayList<>();
         for (String type : resource.getChildTypes()) {
             for (String childName : resource.getChildrenNames(type)) {
                 PathElement element = PathElement.pathElement(type, childName);
@@ -515,7 +515,7 @@ final class SubsystemTestDelegate {
     private class KernelServicesBuilderImpl implements KernelServicesBuilder, ModelTestBootOperationsBuilder.BootOperationParser {
         private final ModelTestBootOperationsBuilder bootOperationBuilder;
         private final AdditionalInitialization additionalInit;
-        private Map<ModelVersion, LegacyKernelServiceInitializerImpl> legacyControllerInitializers = new HashMap<ModelVersion, LegacyKernelServiceInitializerImpl>();
+        private Map<ModelVersion, LegacyKernelServiceInitializerImpl> legacyControllerInitializers = new HashMap<>();
 
         public KernelServicesBuilderImpl(AdditionalInitialization additionalInit) {
             this.additionalInit = additionalInit == null ? new AdditionalInitialization() : additionalInit;
@@ -575,7 +575,7 @@ final class SubsystemTestDelegate {
             for (Map.Entry<ModelVersion, LegacyKernelServiceInitializerImpl> entry : legacyControllerInitializers.entrySet()) {
                 LegacyKernelServiceInitializerImpl legacyInitializer = entry.getValue();
 
-                List<ModelNode> transformedBootOperations = new ArrayList<ModelNode>();
+                List<ModelNode> transformedBootOperations = new ArrayList<>();
                 for (ModelNode op : bootOperations) {
 
                     TransformedOperation transformedOp = kernelServices.transformOperation(entry.getKey(), op);
@@ -763,7 +763,7 @@ final class SubsystemTestDelegate {
 
         private KernelServices bootCurrentVersionWithLegacyBootOperations(List<ModelNode> bootOperations, KernelServices mainServices) throws Exception {
             //Clone the boot operations to avoid any pollution installing them in the main controller
-            List<ModelNode> clonedBootOperations = new ArrayList<ModelNode>();
+            List<ModelNode> clonedBootOperations = new ArrayList<>();
             for (ModelNode op : bootOperations) {
                 ModelNode cloned = reverseCheckOperationFixer.fixOperation(op.clone());
                 if (cloned!=null){

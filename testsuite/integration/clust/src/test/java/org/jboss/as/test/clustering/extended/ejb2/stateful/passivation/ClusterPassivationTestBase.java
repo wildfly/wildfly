@@ -74,8 +74,8 @@ public abstract class ClusterPassivationTestBase {
 
     // Properties pass amongst tests
     protected static ContextSelector<EJBClientContext> previousSelector;
-    protected static Map<String, String> node2deployment = new HashMap<String, String>();
-    protected static Map<String, String> node2container = new HashMap<String, String>();
+    protected static Map<String, String> node2deployment = new HashMap<>();
+    protected static Map<String, String> node2container = new HashMap<>();
 
     /**
      * Setting all passivation attributes.

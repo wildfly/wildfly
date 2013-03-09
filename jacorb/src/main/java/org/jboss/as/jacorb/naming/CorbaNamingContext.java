@@ -78,18 +78,18 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
     /**
      * table of all name bindings in this contexts, ie. name -> obj ref.
      */
-    private Map<Name, Object> names = new Hashtable<Name, Object>();
+    private Map<Name, Object> names = new Hashtable<>();
 
     /**
      * table of all subordinate naming contexts, ie. name -> obj ref.
      */
-    private Map<Name, Object> contexts = new Hashtable<Name, Object>();
+    private Map<Name, Object> contexts = new Hashtable<>();
 
     /**
      * cache of all active naming context implementations - used when resolving contexts recursively to avoid
      * unnecessary remote calls that may lead to thread pool depletion.
      */
-    private static Map<String, CorbaNamingContext> contextImpls = new Hashtable<String, CorbaNamingContext>();
+    private static Map<String, CorbaNamingContext> contextImpls = new Hashtable<>();
 
     /**
      * no tests of bound objects for existence

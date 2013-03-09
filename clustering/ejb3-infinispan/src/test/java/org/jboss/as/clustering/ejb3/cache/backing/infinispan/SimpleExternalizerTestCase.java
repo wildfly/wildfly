@@ -16,7 +16,7 @@ import org.junit.Test;
 public class SimpleExternalizerTestCase {
     @Test
     public void load() {
-        Set<Class<?>> classes = new HashSet<Class<?>>();
+        Set<Class<?>> classes = new HashSet<>();
         for (SimpleExternalizer<?> externalizer: ServiceLoader.load(SimpleExternalizer.class)) {
             classes.add(externalizer.getTargetClass());
         }

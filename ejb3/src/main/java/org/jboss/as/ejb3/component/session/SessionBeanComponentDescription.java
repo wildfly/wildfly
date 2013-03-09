@@ -77,32 +77,32 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     /**
      * Map of class name to default {@link LockType} for this bean.
      */
-    private final Map<String, LockType> beanLevelLockType = new HashMap<String, LockType>();
+    private final Map<String, LockType> beanLevelLockType = new HashMap<>();
 
     /**
      * Map of class name to default {@link AccessTimeoutDetails} for this component.
      */
-    private final Map<String, AccessTimeoutDetails> beanLevelAccessTimeout = new HashMap<String, AccessTimeoutDetails>();
+    private final Map<String, AccessTimeoutDetails> beanLevelAccessTimeout = new HashMap<>();
 
     /**
      * The {@link LockType} applicable for a specific bean methods.
      */
-    private final Map<MethodIdentifier, LockType> methodLockTypes = new HashMap<MethodIdentifier, LockType>();
+    private final Map<MethodIdentifier, LockType> methodLockTypes = new HashMap<>();
 
     /**
      * The {@link javax.ejb.AccessTimeout} applicable for a specific bean methods.
      */
-    private final Map<MethodIdentifier, AccessTimeoutDetails> methodAccessTimeouts = new HashMap<MethodIdentifier, AccessTimeoutDetails>();
+    private final Map<MethodIdentifier, AccessTimeoutDetails> methodAccessTimeouts = new HashMap<>();
 
     /**
      * Methods on the component marked as @Asynchronous
      */
-    private final Set<MethodIdentifier> asynchronousMethods = new HashSet<MethodIdentifier>();
+    private final Set<MethodIdentifier> asynchronousMethods = new HashSet<>();
 
     /**
      * Classes the component marked as @Asynchronous
      */
-    private final Set<String> asynchronousClasses = new HashSet<String>();
+    private final Set<String> asynchronousClasses = new HashSet<>();
 
     /**
      * mapped-name of the session bean

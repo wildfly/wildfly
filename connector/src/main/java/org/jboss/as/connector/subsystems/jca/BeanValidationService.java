@@ -38,7 +38,7 @@ final class BeanValidationService implements Service<BeanValidationService.BeanV
 
 
     private final BeanValidation value;
-        private final InjectedValue<JcaSubsystemConfiguration> jcaConfig = new InjectedValue<JcaSubsystemConfiguration>();
+        private final InjectedValue<JcaSubsystemConfiguration> jcaConfig = new InjectedValue<>();
 
 
         /** create an instance **/

@@ -51,7 +51,7 @@ public class WeldModuleResourceLoader implements ResourceLoader {
 
     public WeldModuleResourceLoader(Module module) {
         this.module = module;
-        this.classes = new ConcurrentHashMap<String, Class<?>>();
+        this.classes = new ConcurrentHashMap<>();
     }
 
     /**
@@ -99,7 +99,7 @@ public class WeldModuleResourceLoader implements ResourceLoader {
     @Override
     public Collection<URL> getResources(String name) {
         try {
-            final HashSet<URL> resources = new HashSet<URL>();
+            final HashSet<URL> resources = new HashSet<>();
             Enumeration<URL> urls = module.getClassLoader().getResources(name);
             while (urls.hasMoreElements()) {
                 resources.add(urls.nextElement());

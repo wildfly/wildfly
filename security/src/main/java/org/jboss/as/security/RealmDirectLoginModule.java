@@ -216,7 +216,7 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
 
     @Override
     protected Group[] getRoleSets() throws LoginException {
-        Collection<Principal> principalCol = new HashSet<Principal>();
+        Collection<Principal> principalCol = new HashSet<>();
         principalCol.add(new RealmUser(getUsername()));
         try {
             AuthorizingCallbackHandler callbackHandler = getCallbackHandler();

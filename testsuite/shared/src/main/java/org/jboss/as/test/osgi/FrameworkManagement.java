@@ -116,7 +116,7 @@ public final class FrameworkManagement {
         op.get(ModelDescriptionConstants.CHILD_TYPE).set(ModelConstants.BUNDLE);
         ModelNode result = executeOperation(client, op, true);
 
-        List<Long> ids = new ArrayList<Long>();
+        List<Long> ids = new ArrayList<>();
         for (ModelNode s : result.asList()) {
             ids.add(Long.parseLong(s.asString()));
         }
@@ -205,7 +205,7 @@ public final class FrameworkManagement {
         op.get(ModelDescriptionConstants.CHILD_TYPE).set(type);
         ModelNode result = executeOperation(client, op);
 
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         for (ModelNode n : result.asList()) {
             names.add(n.asString());
         }

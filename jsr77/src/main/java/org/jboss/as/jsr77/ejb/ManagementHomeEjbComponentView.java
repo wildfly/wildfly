@@ -50,7 +50,7 @@ public class ManagementHomeEjbComponentView extends BaseManagementEjbComponentVi
     @Override
     public Object invoke(InterceptorContext interceptorContext) throws Exception {
         if (interceptorContext.getMethod().equals(create)) {
-            return EJBClient.createProxy(new StatelessEJBLocator<Management>(Management.class, APP_NAME, MODULE_NAME, EJB_NAME, DISTINCT_NAME));
+            return EJBClient.createProxy(new StatelessEJBLocator<>(Management.class, APP_NAME, MODULE_NAME, EJB_NAME, DISTINCT_NAME));
         }
         throw new UnsupportedOperationException(interceptorContext.getMethod().toString());
     }
@@ -66,7 +66,7 @@ public class ManagementHomeEjbComponentView extends BaseManagementEjbComponentVi
         }
 
 
-        Map<String, Map<String, Method>> map = new HashMap<String, Map<String,Method>>();
+        Map<String, Map<String, Method>> map = new HashMap<>();
         addMethod(map, create);
         return map;
     }

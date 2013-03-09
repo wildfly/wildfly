@@ -115,7 +115,7 @@ public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor 
         if (deploymentRootName.endsWith("-ds.xml")) {
             return Collections.singleton(deploymentRoot);
         }
-        final Set<VirtualFile> ret = new HashSet<VirtualFile>();
+        final Set<VirtualFile> ret = new HashSet<>();
         for (String location : LOCATIONS) {
             final VirtualFile loc = deploymentRoot.getChild(location);
             if (loc.exists()) {

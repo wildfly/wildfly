@@ -54,7 +54,7 @@ import org.jboss.dmr.ModelNode;
  */
 public abstract class BaseOperationCommand extends CommandHandlerWithHelp implements OperationCommand, CliEventListener {
 
-    protected List<RequestParameterArgument> params = new ArrayList<RequestParameterArgument>();
+    protected List<RequestParameterArgument> params = new ArrayList<>();
     protected OperationRequestAddress requiredAddress;
 
     private boolean dependsOnProfile;

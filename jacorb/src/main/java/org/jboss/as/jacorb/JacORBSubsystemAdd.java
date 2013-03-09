@@ -258,7 +258,7 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
      * @param props the subsystem configuration properties.
      */
     private void setupInitializers(Properties props) {
-        List<String> orbInitializers = new ArrayList<String>();
+        List<String> orbInitializers = new ArrayList<>();
 
         // check which groups of initializers are to be installed.
         String installSecurity = (String) props.remove(JacORBSubsystemConstants.ORB_INIT_SECURITY);

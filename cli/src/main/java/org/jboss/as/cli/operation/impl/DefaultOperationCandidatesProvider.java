@@ -81,7 +81,7 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
 
     private static final Map<String, OperationRequestHeader> HEADERS;
     static {
-        HEADERS = new HashMap<String, OperationRequestHeader>();
+        HEADERS = new HashMap<>();
         HEADERS.put(RolloutPlanRequestHeader.INSTANCE.getName(), RolloutPlanRequestHeader.INSTANCE);
 
         addBooleanHeader(Util.ALLOW_RESOURCE_SERVICE_RESTART);
@@ -229,7 +229,7 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
                     return Collections.emptyList();
                 }
                 final List<Property> propList = reqProps.asPropertyList();
-                result = new ArrayList<CommandArgument>(propList.size());
+                result = new ArrayList<>(propList.size());
                 for(final Property prop : propList) {
                     final CommandLineCompleterFactory factory = globalOpProps == null ? null : globalOpProps.get(prop.getName());
                     CommandLineCompleter propCompleter = null;
@@ -347,11 +347,11 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
         return HEADERS;
     }
 
-    private static final Map<String, Map<String, CommandLineCompleterFactory>> globalOpPropCompleters = new HashMap<String, Map<String, CommandLineCompleterFactory>>();
+    private static final Map<String, Map<String, CommandLineCompleterFactory>> globalOpPropCompleters = new HashMap<>();
     static void addGlobalOpPropCompleter(String op, String prop, CommandLineCompleterFactory factory) {
         Map<String, CommandLineCompleterFactory> propMap = globalOpPropCompleters.get(op);
         if(propMap == null) {
-            propMap = new HashMap<String,CommandLineCompleterFactory>();
+            propMap = new HashMap<>();
             globalOpPropCompleters.put(op, propMap);
         }
         propMap.put(prop, factory);

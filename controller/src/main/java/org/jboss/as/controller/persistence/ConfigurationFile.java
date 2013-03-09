@@ -428,7 +428,7 @@ public class ConfigurationFile {
     }
 
     private File findSnapshotWithPrefix(final String prefix, boolean errorIfNoFiles) {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         if (snapshotsDirectory.exists() && snapshotsDirectory.isDirectory()) {
             for (String curr : snapshotsDirectory.list()) {
                 if (curr.startsWith(prefix)) {
@@ -575,7 +575,7 @@ public class ConfigurationFile {
     }
 
     private class BackupSnapshotInfo implements SnapshotInfo {
-        final ArrayList<String> names = new ArrayList<String>();
+        final ArrayList<String> names = new ArrayList<>();
 
         public BackupSnapshotInfo() {
             for (String name : snapshotsDirectory.list(new FilenameFilter() {

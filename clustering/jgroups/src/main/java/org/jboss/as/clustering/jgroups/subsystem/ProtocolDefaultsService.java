@@ -116,7 +116,7 @@ public class ProtocolDefaultsService implements Service<ProtocolDefaults> {
     }
 
     static class Defaults implements ProtocolDefaults {
-        private final Map<String, Map<String, String>> map = new HashMap<String, Map<String, String>>();
+        private final Map<String, Map<String, String>> map = new HashMap<>();
 
         void add(String protocol, Map<String, String> properties) {
             this.map.put(protocol, Collections.unmodifiableMap(properties));

@@ -133,7 +133,7 @@ public interface ContentRepository {
             protected static final String CONTENT = "content";
             private final File repoRoot;
             protected final MessageDigest messageDigest;
-            private final Map<String, Set<Object>> deploymentHashReferences = new HashMap<String, Set<Object>>();
+            private final Map<String, Set<Object>> deploymentHashReferences = new HashMap<>();
 
             protected ContentRepositoryImpl(final File repoRoot) {
                 if (repoRoot == null)
@@ -205,7 +205,7 @@ public interface ContentRepository {
                 synchronized (deploymentHashReferences) {
                     Set<Object> references = deploymentHashReferences.get(hashString);
                     if (references == null) {
-                        references = new HashSet<Object>();
+                        references = new HashSet<>();
                         deploymentHashReferences.put(hashString, references);
                     }
                     references.add(reference);

@@ -46,7 +46,7 @@ public class JBossWebRealmService implements Service<Realm> {
 
     private volatile Realm realm;
 
-    private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
+    private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<>();
 
     private final DeploymentUnit deploymentUnit;
 

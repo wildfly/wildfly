@@ -91,7 +91,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
         // Add internal resource roots
         final ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        final List<ResourceRoot> resourceRoots = new ArrayList<ResourceRoot>();
+        final List<ResourceRoot> resourceRoots = new ArrayList<>();
         if (ModuleRootMarker.isModuleRoot(mainRoot)) {
             resourceRoots.add(mainRoot);
         }
@@ -186,13 +186,13 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         deploymentUnit.putAttachment(DelegatingClassFileTransformer.ATTACHMENT_KEY, delegatingClassFileTransformer);
         final ModuleSpec moduleSpec = specBuilder.create();
         final ServiceName moduleSpecServiceName = ServiceModuleLoader.moduleSpecServiceName(moduleIdentifier);
-        final ValueService<ModuleSpec> moduleSpecService = new ValueService<ModuleSpec>(new ImmediateValue<ModuleSpec>(
+        final ValueService<ModuleSpec> moduleSpecService = new ValueService<>(new ImmediateValue<>(
                 moduleSpec));
         phaseContext.getServiceTarget().addService(moduleSpecServiceName, moduleSpecService).addDependencies(
                 deploymentUnit.getServiceName()).addDependencies(phaseContext.getPhaseServiceName()).setInitialMode(
                 Mode.ON_DEMAND).install();
 
-        final List<ModuleDependency> allDependencies = new ArrayList<ModuleDependency>();
+        final List<ModuleDependency> allDependencies = new ArrayList<>();
         allDependencies.addAll(dependencies);
         allDependencies.addAll(localDependencies);
         allDependencies.addAll(userDependencies);
@@ -220,7 +220,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         for (final ModuleIdentifier alias : moduleSpecification.getAliases()) {
             final ServiceName moduleSpecServiceName = ServiceModuleLoader.moduleSpecServiceName(alias);
             final ModuleSpec spec = ModuleSpec.buildAlias(alias, moduleIdentifier).create();
-            final ValueService<ModuleSpec> moduleSpecService = new ValueService<ModuleSpec>(new ImmediateValue<ModuleSpec>(spec));
+            final ValueService<ModuleSpec> moduleSpecService = new ValueService<>(new ImmediateValue<>(spec));
             phaseContext.getServiceTarget().addService(moduleSpecServiceName, moduleSpecService).addDependencies(
                     deploymentUnit.getServiceName()).addDependencies(phaseContext.getPhaseServiceName()).setInitialMode(
                     Mode.ON_DEMAND).install();

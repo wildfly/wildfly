@@ -50,7 +50,7 @@ import org.jboss.marshalling.reflect.SunReflectiveCreator;
 public class SessionAttributeMarshallerFactoryImpl implements SessionAttributeMarshallerFactory, ClassTable, VersionedMarshallingConfiguration {
     private static final int CURRENT_VERSION = 1;
     private final MarshallerFactory factory;
-    private final Map<Integer, MarshallingConfiguration> configurations = new ConcurrentHashMap<Integer, MarshallingConfiguration>();
+    private final Map<Integer, MarshallingConfiguration> configurations = new ConcurrentHashMap<>();
 
     public SessionAttributeMarshallerFactoryImpl() {
         this(Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader()));
@@ -98,7 +98,7 @@ public class SessionAttributeMarshallerFactoryImpl implements SessionAttributeMa
 
     private static final Map<Class<?>, Writer> writers = createWriters();
     private static Map<Class<?>, Writer> createWriters() {
-        Map<Class<?>, Writer> writers = new IdentityHashMap<Class<?>, Writer>();
+        Map<Class<?>, Writer> writers = new IdentityHashMap<>();
         for (int i = 0; i < classes.length; i++) {
             writers.put(classes[i], new ByteWriter((byte) i));
         }

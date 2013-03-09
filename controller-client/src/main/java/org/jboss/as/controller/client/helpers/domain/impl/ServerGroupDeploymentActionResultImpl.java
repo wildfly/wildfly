@@ -37,7 +37,7 @@ import org.jboss.as.controller.client.helpers.domain.ServerUpdateResult;
 class ServerGroupDeploymentActionResultImpl implements ServerGroupDeploymentActionResult {
 
     private final String serverGroupName;
-    private final Map<String, ServerUpdateResult> serverResults = new HashMap<String, ServerUpdateResult>();
+    private final Map<String, ServerUpdateResult> serverResults = new HashMap<>();
 
     ServerGroupDeploymentActionResultImpl(final String serverGroupName) {
         assert serverGroupName != null : "serverGroupName is null";

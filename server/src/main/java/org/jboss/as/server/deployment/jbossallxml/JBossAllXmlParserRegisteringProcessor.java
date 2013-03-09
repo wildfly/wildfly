@@ -41,7 +41,7 @@ public class JBossAllXmlParserRegisteringProcessor<T> implements DeploymentUnitP
     private final JBossAllXMLParserDescription<T> description;
 
     public JBossAllXmlParserRegisteringProcessor(final QName rootElement, final AttachmentKey<T> attachmentKey, final JBossAllXMLParser<T> parser) {
-        description = new JBossAllXMLParserDescription<T>(attachmentKey, parser, rootElement);
+        description = new JBossAllXMLParserDescription<>(attachmentKey, parser, rootElement);
     }
 
     @Override

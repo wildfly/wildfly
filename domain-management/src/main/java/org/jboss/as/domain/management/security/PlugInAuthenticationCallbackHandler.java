@@ -141,7 +141,7 @@ public class PlugInAuthenticationCallbackHandler extends AbstractPlugInService i
 
                 final String realmName = getRealmName();
 
-                List<Callback> toRespondTo = new LinkedList<Callback>();
+                List<Callback> toRespondTo = new LinkedList<>();
 
                 String userName = null;
                 Credential credential = null;

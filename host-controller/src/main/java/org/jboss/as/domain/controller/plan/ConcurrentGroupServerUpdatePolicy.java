@@ -36,7 +36,7 @@ import java.util.Set;
  */
 class ConcurrentGroupServerUpdatePolicy {
     private final ConcurrentGroupServerUpdatePolicy predecessor;
-    private final Set<String> groups = new HashSet<String>();
+    private final Set<String> groups = new HashSet<>();
     private int responseCount;
     private boolean failed;
 

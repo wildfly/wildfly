@@ -45,7 +45,7 @@ import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
  */
 public class TransactionLocalEntityCache implements ReadyEntityCache {
     private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
-    private final ConcurrentMap<Object, Map<Object, CacheEntry>> cache = new ConcurrentHashMap<Object, Map<Object, CacheEntry>>(Runtime.getRuntime().availableProcessors());
+    private final ConcurrentMap<Object, Map<Object, CacheEntry>> cache = new ConcurrentHashMap<>(Runtime.getRuntime().availableProcessors());
     private final EntityBeanComponent component;
 
     public TransactionLocalEntityCache(final EntityBeanComponent component) {

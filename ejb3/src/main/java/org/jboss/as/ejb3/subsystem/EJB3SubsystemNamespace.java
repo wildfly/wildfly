@@ -61,7 +61,7 @@ public enum EJB3SubsystemNamespace {
     private static final Map<String, EJB3SubsystemNamespace> MAP;
 
     static {
-        final Map<String, EJB3SubsystemNamespace> map = new HashMap<String, EJB3SubsystemNamespace>();
+        final Map<String, EJB3SubsystemNamespace> map = new HashMap<>();
         for (EJB3SubsystemNamespace namespace : values()) {
             final String name = namespace.getUriString();
             if (name != null) map.put(name, namespace);

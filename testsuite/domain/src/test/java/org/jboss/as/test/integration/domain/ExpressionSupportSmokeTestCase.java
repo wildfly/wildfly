@@ -115,7 +115,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
         // Add some extra resources to get some more coverage
         addTestResources();
 
-        Map<PathAddress, Map<String, ModelNode>> expectedValues = new HashMap<PathAddress, Map<String, ModelNode>>();
+        Map<PathAddress, Map<String, ModelNode>> expectedValues = new HashMap<>();
         setExpressions(PathAddress.EMPTY_ADDRESS, "master", expectedValues);
 
         System.out.println();
@@ -214,9 +214,9 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
         ModelNode resource = readResource(address, true);
         ModelNode resourceNoDefaults = readResource(address, false);
 
-        Map<String, ModelNode> expressionAttrs = new HashMap<String, ModelNode>();
-        Map<String, ModelNode> otherAttrs = new HashMap<String, ModelNode>();
-        Map<String, ModelNode> expectedAttrs = new HashMap<String, ModelNode>();
+        Map<String, ModelNode> expressionAttrs = new HashMap<>();
+        Map<String, ModelNode> otherAttrs = new HashMap<>();
+        Map<String, ModelNode> expectedAttrs = new HashMap<>();
         organizeAttributes(address, description, resource, resourceNoDefaults, expressionAttrs, otherAttrs, expectedAttrs);
 
 
@@ -272,7 +272,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
             if (!noDefaultValue.isDefined()) {
                 // We need to see if it's legal to set this attribute, or whether it's undefined
                 // because an alternative attribute is defined
-                Set<String> base = new HashSet<String>();
+                Set<String> base = new HashSet<>();
                 base.add(attrName);
                 if (attrDesc.hasDefined(REQUIRES)) {
                     for (ModelNode node : attrDesc.get(REQUIRES).asList()) {
@@ -650,7 +650,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
         ModelNode op = createOperation(READ_CHILDREN_NAMES_OPERATION, address);
         op.get(CHILD_TYPE).set(childType);
         ModelNode opResult = executeForResult(op, domainMasterLifecycleUtil.getDomainClient());
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (ModelNode child : opResult.asList()) {
             result.add(child.asString());
         }

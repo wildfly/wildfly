@@ -82,7 +82,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     protected final ArgumentWithoutValue helpCommands;
 
     // these are caching vars
-    private final Map<String, CommandArgument> staticArgs = new HashMap<String, CommandArgument>();
+    private final Map<String, CommandArgument> staticArgs = new HashMap<>();
 
     private Map<String, ArgumentValueConverter> propConverters;
     private Map<String, CommandLineCompleter> valueCompleters;
@@ -127,7 +127,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         this.idProperty = idProperty;
 
         if(excludeOperations != null) {
-            this.excludedOps = new HashSet<String>(Arrays.asList(excludeOperations));
+            this.excludedOps = new HashSet<>(Arrays.asList(excludeOperations));
         } else {
             excludedOps = Collections.emptySet();
         }
@@ -237,21 +237,21 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
     public void addValueConverter(String propertyName, ArgumentValueConverter converter) {
         if(propConverters == null) {
-            propConverters = new HashMap<String, ArgumentValueConverter>();
+            propConverters = new HashMap<>();
         }
         propConverters.put(propertyName, converter);
     }
 
     public void addValueCompleter(String propertyName, CommandLineCompleter completer) {
         if(valueCompleters == null) {
-            valueCompleters = new HashMap<String, CommandLineCompleter>();
+            valueCompleters = new HashMap<>();
         }
         valueCompleters.put(propertyName, completer);
     }
 
     public void addHandler(String name, OperationCommandWithDescription handler) {
         if(customHandlers == null) {
-            customHandlers = new HashMap<String, OperationCommandWithDescription>();
+            customHandlers = new HashMap<>();
         }
         customHandlers.put(name, handler);
     }
@@ -355,7 +355,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             }
 
             if(opHandlers == null) {
-                opHandlers = new HashMap<String, OperationCommand>();
+                opHandlers = new HashMap<>();
             }
             final OpHandler opHandler = new OpHandler(op);
             opHandlers.put(op, opHandler);
@@ -523,9 +523,9 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     }
 
     protected void printProperties(CommandContext ctx, List<Property> props) {
-        final Map<String, StringBuilder> requiredProps = new LinkedHashMap<String,StringBuilder>();
+        final Map<String, StringBuilder> requiredProps = new LinkedHashMap<>();
         requiredProps.put(this.name.getFullName(), new StringBuilder().append("Required argument in commands which identifies the instance to execute the command against."));
-        final Map<String, StringBuilder> optionalProps = new LinkedHashMap<String, StringBuilder>();
+        final Map<String, StringBuilder> optionalProps = new LinkedHashMap<>();
 
         String accessType = null;
         for (Property attr : props) {
@@ -830,7 +830,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             throw new CommandLineException("Operation names aren't available.");
         }
         final List<ModelNode> nodeList = result.get(Util.RESULT).asList();
-        final List<String> supportedCommands = new ArrayList<String>(nodeList.size());
+        final List<String> supportedCommands = new ArrayList<>(nodeList.size());
         if(!nodeList.isEmpty()) {
             for(ModelNode node : nodeList) {
                 final String opName = node.asString();
@@ -919,7 +919,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                 throw new IllegalArgumentException("Argument can't be null.");
             }
             if(args.isEmpty()) {
-                args = new HashMap<String, CommandArgument>();
+                args = new HashMap<>();
             }
             args.put(arg.getFullName(), arg);
         }

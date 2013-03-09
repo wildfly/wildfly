@@ -53,9 +53,9 @@ public class TCCLEJBClientContextSelectorService implements Service<TCCLEJBClien
     /**
      * EJB client contexts mapped against the classloader
      */
-    private final WeakHashMap<ClassLoader, EJBClientContext> ejbClientContexts = new WeakHashMap<ClassLoader, EJBClientContext>();
+    private final WeakHashMap<ClassLoader, EJBClientContext> ejbClientContexts = new WeakHashMap<>();
 
-    private final ConcurrentMap<EJBClientContextIdentifier, EJBClientContext> identifiableContexts = new ConcurrentHashMap<EJBClientContextIdentifier, org.jboss.ejb.client.EJBClientContext>();
+    private final ConcurrentMap<EJBClientContextIdentifier, EJBClientContext> identifiableContexts = new ConcurrentHashMap<>();
 
     @Override
     public EJBClientContext getCurrent() {

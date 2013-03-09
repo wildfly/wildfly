@@ -66,7 +66,7 @@ public class ClientModuleTwoActivator implements ServiceActivator
    {
       private static final Logger log = Logger.getLogger(EchoInvokerService.class);
 
-      private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
+      private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<>();
 
       static void addService(ServiceTarget serviceTarget)
       {

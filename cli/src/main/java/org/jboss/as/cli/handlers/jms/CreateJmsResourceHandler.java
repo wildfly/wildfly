@@ -103,7 +103,7 @@ public class CreateJmsResourceHandler extends BatchModeCommandHandler {
         String serverName = "default"; // TODO read server name from props
         final Map<String, String> props;
         if(propsStr != null) {
-            props = new HashMap<String, String>();
+            props = new HashMap<>();
             String[] propsArr = propsStr.split(":");
             for(String prop : propsArr) {
                 int equalsIndex = prop.indexOf('=');

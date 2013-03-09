@@ -273,7 +273,7 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
         }
 
         public static Builder of(final String name, final AttributeDefinition[] valueTypes, final AttributeDefinition[] moreValueTypes) {
-            ArrayList<AttributeDefinition> list = new ArrayList<AttributeDefinition>(Arrays.asList(valueTypes));
+            ArrayList<AttributeDefinition> list = new ArrayList<>(Arrays.asList(valueTypes));
             list.addAll(Arrays.asList(moreValueTypes));
             AttributeDefinition[] allValueTypes = new AttributeDefinition[list.size()];
             list.toArray(allValueTypes);

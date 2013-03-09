@@ -59,7 +59,7 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
     public Interceptor create(InterceptorFactoryContext context) {
         final Object existing = context.getContextData().get(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
 
-        final AtomicReference<Object> primaryKeyReference = new AtomicReference<Object>();
+        final AtomicReference<Object> primaryKeyReference = new AtomicReference<>();
         context.getContextData().put(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, primaryKeyReference);
 
         final Method ejbCreate = (Method) context.getContextData().get(EntityBeanHomeCreateInterceptorFactory.EJB_CREATE_METHOD_KEY);

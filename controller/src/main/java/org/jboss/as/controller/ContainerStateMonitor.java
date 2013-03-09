@@ -48,10 +48,10 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
     private final ServiceRegistry serviceRegistry;
     private final ServiceController<?> controllerController;
     private final StabilityMonitor monitor = new StabilityMonitor();
-    final Set<ServiceController<?>> failed = new HashSet<ServiceController<?>>();
-    final Set<ServiceController<?>> problems = new HashSet<ServiceController<?>>();
+    final Set<ServiceController<?>> failed = new HashSet<>();
+    final Set<ServiceController<?>> problems = new HashSet<>();
 
-    private Set<ServiceName> previousMissingDepSet = new HashSet<ServiceName>();
+    private Set<ServiceName> previousMissingDepSet = new HashSet<>();
 
     ContainerStateMonitor(final ServiceRegistry registry, final ServiceController<?> controller) {
         serviceRegistry = registry;
@@ -117,12 +117,12 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
      */
     private synchronized ContainerStateChangeReport createContainerStateChangeReport(boolean resetHistory) {
 
-        final Map<ServiceName, Set<ServiceName>> missingDeps = new HashMap<ServiceName, Set<ServiceName>>();
+        final Map<ServiceName, Set<ServiceName>> missingDeps = new HashMap<>();
         for (ServiceController<?> controller : problems) {
             for (ServiceName missing : controller.getImmediateUnavailableDependencies()) {
                 Set<ServiceName> dependents = missingDeps.get(missing);
                 if (dependents == null) {
-                    dependents = new HashSet<ServiceName>();
+                    dependents = new HashSet<>();
                     missingDeps.put(missing, dependents);
                 }
                 dependents.add(controller.getName());
@@ -132,7 +132,7 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
         final Set<ServiceName> previousMissing = previousMissingDepSet;
 
         // no longer missing deps...
-        final Map<ServiceName, Boolean> noLongerMissingServices = new TreeMap<ServiceName, Boolean>();
+        final Map<ServiceName, Boolean> noLongerMissingServices = new TreeMap<>();
         for (ServiceName name : previousMissing) {
             if (! missingDeps.containsKey(name)) {
                 ServiceController<?> controller = serviceRegistry.getService(name);
@@ -141,7 +141,7 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
         }
 
         // newly missing deps
-        final Map<ServiceName, MissingDependencyInfo> missingServices = new TreeMap<ServiceName, MissingDependencyInfo>();
+        final Map<ServiceName, MissingDependencyInfo> missingServices = new TreeMap<>();
         for (Map.Entry<ServiceName, Set<ServiceName>> entry : missingDeps.entrySet()) {
             final ServiceName name = entry.getKey();
             if (! previousMissing.contains(name)) {
@@ -151,10 +151,10 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
             }
         }
 
-        final Set<ServiceController<?>> currentFailedControllers = new HashSet<ServiceController<?>>(failed);
+        final Set<ServiceController<?>> currentFailedControllers = new HashSet<>(failed);
 
         if (resetHistory)  {
-            previousMissingDepSet = new HashSet<ServiceName>(missingDeps.keySet());
+            previousMissingDepSet = new HashSet<>(missingDeps.keySet());
             failed.clear();
         }
 

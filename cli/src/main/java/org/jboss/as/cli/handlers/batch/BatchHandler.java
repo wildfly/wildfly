@@ -116,7 +116,7 @@ public class BatchHandler extends CommandHandlerWithHelp {
 
             final Set<String> heldbackNames = batchManager.getHeldbackNames();
             if(!heldbackNames.isEmpty()) {
-                List<String> names = new ArrayList<String>(heldbackNames.size());
+                List<String> names = new ArrayList<>(heldbackNames.size());
                 for (String heldbackName : heldbackNames) {
                     names.add(heldbackName == null ? "<unnamed>" : heldbackName);
                 }

@@ -140,7 +140,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         final Locale locale = GlobalOperationHandlers.getLocale(context, operation);
 
         final ModelNode nodeDescription = descriptionProvider.getModelDescription(locale);
-        final Map<String, ModelNode> operations = new HashMap<String, ModelNode>();
+        final Map<String, ModelNode> operations = new HashMap<>();
         final Map<PathElement, ModelNode> childResources = recursive ? new HashMap<PathElement, ModelNode>() : Collections.<PathElement, ModelNode>emptyMap();
 
         // We're going to add a bunch of steps that should immediately follow this one. We are going to add them
@@ -272,7 +272,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             public void handleRollback(OperationContext context, ModelNode operation) {
                 if (!context.hasFailureDescription()) {
                     String op = operation.require(OP).asString();
-                    Map<PathAddress, ModelNode> failures = new HashMap<PathAddress, ModelNode>();
+                    Map<PathAddress, ModelNode> failures = new HashMap<>();
                     for (ModelNode resultItem : result.asList()) {
                         if (resultItem.hasDefined(FAILURE_DESCRIPTION)) {
                             final PathAddress failedAddress = PathAddress.pathAddress(operation.require(OP_ADDR));

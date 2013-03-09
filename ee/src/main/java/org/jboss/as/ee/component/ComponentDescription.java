@@ -94,22 +94,22 @@ public class ComponentDescription implements ResourceInjectionTarget {
     private final String componentName;
     private final String componentClassName;
     private final EEModuleDescription moduleDescription;
-    private final Set<ViewDescription> views = new HashSet<ViewDescription>();
+    private final Set<ViewDescription> views = new HashSet<>();
 
     /**
      * Interceptors methods that have been defined by the deployment descriptor
      */
-    private final Map<String, InterceptorClassDescription> interceptorClassOverrides = new HashMap<String, InterceptorClassDescription>();
+    private final Map<String, InterceptorClassDescription> interceptorClassOverrides = new HashMap<>();
 
-    private List<InterceptorDescription> classInterceptors = new ArrayList<InterceptorDescription>();
-    private List<InterceptorDescription> defaultInterceptors = new ArrayList<InterceptorDescription>();
-    private final Map<MethodIdentifier, List<InterceptorDescription>> methodInterceptors = new HashMap<MethodIdentifier, List<InterceptorDescription>>();
-    private final Set<MethodIdentifier> methodExcludeDefaultInterceptors = new HashSet<MethodIdentifier>();
-    private final Set<MethodIdentifier> methodExcludeClassInterceptors = new HashSet<MethodIdentifier>();
+    private List<InterceptorDescription> classInterceptors = new ArrayList<>();
+    private List<InterceptorDescription> defaultInterceptors = new ArrayList<>();
+    private final Map<MethodIdentifier, List<InterceptorDescription>> methodInterceptors = new HashMap<>();
+    private final Set<MethodIdentifier> methodExcludeDefaultInterceptors = new HashSet<>();
+    private final Set<MethodIdentifier> methodExcludeClassInterceptors = new HashSet<>();
     private Set<InterceptorDescription> allInterceptors;
     private boolean excludeDefaultInterceptors = false;
 
-    private final Map<ServiceName, ServiceBuilder.DependencyType> dependencies = new HashMap<ServiceName, ServiceBuilder.DependencyType>();
+    private final Map<ServiceName, ServiceBuilder.DependencyType> dependencies = new HashMap<>();
 
     private ComponentNamingMode namingMode = ComponentNamingMode.USE_MODULE;
 
@@ -117,11 +117,11 @@ public class ComponentDescription implements ResourceInjectionTarget {
 
 
     // Bindings
-    private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
+    private final List<BindingConfiguration> bindingConfigurations = new ArrayList<>();
     //injections that have been set in the components deployment descriptor
-    private final Map<String, Map<InjectionTarget, ResourceInjectionConfiguration>> resourceInjections = new HashMap<String, Map<InjectionTarget, ResourceInjectionConfiguration>>();
+    private final Map<String, Map<InjectionTarget, ResourceInjectionConfiguration>> resourceInjections = new HashMap<>();
 
-    private final Deque<ComponentConfigurator> configurators = new ArrayDeque<ComponentConfigurator>();
+    private final Deque<ComponentConfigurator> configurators = new ArrayDeque<>();
 
 
     /**
@@ -288,7 +288,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
      */
     public Set<InterceptorDescription> getAllInterceptors() {
         if (allInterceptors == null) {
-            allInterceptors = new HashSet<InterceptorDescription>();
+            allInterceptors = new HashSet<>();
             allInterceptors.addAll(classInterceptors);
             if (!excludeDefaultInterceptors) {
                 allInterceptors.addAll(defaultInterceptors);
@@ -381,7 +381,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
         //as their around invoke annotations
         List<InterceptorDescription> interceptors = methodInterceptors.get(method);
         if (interceptors == null) {
-            methodInterceptors.put(method, interceptors = new ArrayList<InterceptorDescription>());
+            methodInterceptors.put(method, interceptors = new ArrayList<>());
         }
         final String name = description.getInterceptorClassName();
         // add the interceptor class to the EEModuleDescription
@@ -580,27 +580,27 @@ public class ComponentDescription implements ResourceInjectionTarget {
 
             // Module stuff
 
-            final Deque<InterceptorFactory> instantiators = new ArrayDeque<InterceptorFactory>();
-            final Deque<InterceptorFactory> injectors = new ArrayDeque<InterceptorFactory>();
-            final Deque<InterceptorFactory> uninjectors = new ArrayDeque<InterceptorFactory>();
-            final Deque<InterceptorFactory> destructors = new ArrayDeque<InterceptorFactory>();
+            final Deque<InterceptorFactory> instantiators = new ArrayDeque<>();
+            final Deque<InterceptorFactory> injectors = new ArrayDeque<>();
+            final Deque<InterceptorFactory> uninjectors = new ArrayDeque<>();
+            final Deque<InterceptorFactory> destructors = new ArrayDeque<>();
 
             final ClassReflectionIndex<?> componentClassIndex = deploymentReflectionIndex.getClassIndex(configuration.getComponentClass());
-            final List<InterceptorFactory> componentUserAroundInvoke = new ArrayList<InterceptorFactory>();
+            final List<InterceptorFactory> componentUserAroundInvoke = new ArrayList<>();
             final List<InterceptorFactory> componentUserAroundTimeout;
 
-            final Map<String, List<InterceptorFactory>> userAroundInvokesByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
+            final Map<String, List<InterceptorFactory>> userAroundInvokesByInterceptorClass = new HashMap<>();
             final Map<String, List<InterceptorFactory>> userAroundTimeoutsByInterceptorClass;
             final Map<String, List<InterceptorFactory>> userPrePassivatesByInterceptorClass;
             final Map<String, List<InterceptorFactory>> userPostActivatesByInterceptorClass;
 
-            final Map<String, List<InterceptorFactory>> userPostConstructByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
-            final Map<String, List<InterceptorFactory>> userPreDestroyByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
+            final Map<String, List<InterceptorFactory>> userPostConstructByInterceptorClass = new HashMap<>();
+            final Map<String, List<InterceptorFactory>> userPreDestroyByInterceptorClass = new HashMap<>();
 
             final Set<MethodIdentifier> timeoutMethods = description.getTimerMethods();
             if (description.isTimerServiceRequired()) {
-                componentUserAroundTimeout = new ArrayList<InterceptorFactory>();
-                userAroundTimeoutsByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
+                componentUserAroundTimeout = new ArrayList<>();
+                userAroundTimeoutsByInterceptorClass = new HashMap<>();
             } else {
                 componentUserAroundTimeout = null;
                 userAroundTimeoutsByInterceptorClass = null;
@@ -608,8 +608,8 @@ public class ComponentDescription implements ResourceInjectionTarget {
 
 
             if (description.isPassivationApplicable()) {
-                userPrePassivatesByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
-                userPostActivatesByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
+                userPrePassivatesByInterceptorClass = new HashMap<>();
+                userPostActivatesByInterceptorClass = new HashMap<>();
             } else {
                 userPrePassivatesByInterceptorClass = null;
                 userPostActivatesByInterceptorClass = null;
@@ -626,7 +626,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
                 if (constructor == null) {
                     throw MESSAGES.defaultConstructorNotFound(configuration.getComponentClass());
                 }
-                ValueManagedReferenceFactory factory = new ValueManagedReferenceFactory(new ConstructedValue<Object>(constructor, Collections.<Value<?>>emptyList()));
+                ValueManagedReferenceFactory factory = new ValueManagedReferenceFactory(new ConstructedValue<>(constructor, Collections.<Value<?>>emptyList()));
                 instantiators.addFirst(new ManagedReferenceInterceptorFactory(factory, instanceKey));
             }
             destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(instanceKey));
@@ -640,7 +640,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
 
 
             //all interceptors with lifecycle callbacks, in the correct order
-            final List<InterceptorDescription> interceptorWithLifecycleCallbacks = new ArrayList<InterceptorDescription>();
+            final List<InterceptorDescription> interceptorWithLifecycleCallbacks = new ArrayList<>();
             if (!description.isExcludeDefaultInterceptors()) {
                 interceptorWithLifecycleCallbacks.addAll(description.getDefaultInterceptors());
             }
@@ -722,7 +722,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
                                 final InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, changeMethod, lifecycleMethod);
                                 List<InterceptorFactory> factories = classMap.get(interceptorClassName);
                                 if (factories == null) {
-                                    classMap.put(interceptorClassName, factories = new ArrayList<InterceptorFactory>());
+                                    classMap.put(interceptorClassName, factories = new ArrayList<>());
                                 }
                                 factories.add(interceptorFactory);
                             }
@@ -731,10 +731,10 @@ public class ComponentDescription implements ResourceInjectionTarget {
                 }.run();
             }
 
-            final List<InterceptorFactory> userPostConstruct = new ArrayList<InterceptorFactory>();
-            final List<InterceptorFactory> userPreDestroy = new ArrayList<InterceptorFactory>();
-            final List<InterceptorFactory> userPrePassivate = new ArrayList<InterceptorFactory>();
-            final List<InterceptorFactory> userPostActivate = new ArrayList<InterceptorFactory>();
+            final List<InterceptorFactory> userPostConstruct = new ArrayList<>();
+            final List<InterceptorFactory> userPreDestroy = new ArrayList<>();
+            final List<InterceptorFactory> userPrePassivate = new ArrayList<>();
+            final List<InterceptorFactory> userPostActivate = new ArrayList<>();
 
             //now add the lifecycle interceptors in the correct order
             for (final InterceptorDescription interceptorClass : interceptorWithLifecycleCallbacks) {
@@ -849,10 +849,10 @@ public class ComponentDescription implements ResourceInjectionTarget {
 
                     final MethodIdentifier identifier = MethodIdentifier.getIdentifier(method.getReturnType(), method.getName(), method.getParameterTypes());
 
-                    final List<InterceptorFactory> userAroundInvokes = new ArrayList<InterceptorFactory>();
-                    final List<InterceptorFactory> userAroundTimeouts = new ArrayList<InterceptorFactory>();
-                    final List<InterceptorFactory> userComponentAroundInvokes = new ArrayList<InterceptorFactory>();
-                    final List<InterceptorFactory> userComponentAroundTimeouts = new ArrayList<InterceptorFactory>();
+                    final List<InterceptorFactory> userAroundInvokes = new ArrayList<>();
+                    final List<InterceptorFactory> userAroundTimeouts = new ArrayList<>();
+                    final List<InterceptorFactory> userComponentAroundInvokes = new ArrayList<>();
+                    final List<InterceptorFactory> userComponentAroundTimeouts = new ArrayList<>();
                     // first add the default interceptors (if not excluded) to the deque
                     final boolean requiresTimerChain = description.isTimerServiceRequired() && timeoutMethods.contains(identifier);
                     if (!description.isExcludeDefaultInterceptors() && !description.isExcludeDefaultInterceptors(identifier)) {
@@ -988,7 +988,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
          *
          */
         private void mergeInjectionsForClass(final Class<?> clazz, final Class<?> actualClass, final EEModuleClassDescription classDescription, final EEModuleDescription moduleDescription, final DeploymentReflectionIndex deploymentReflectionIndex, final ComponentDescription description, final ComponentConfiguration configuration, final DeploymentPhaseContext context, final Deque<InterceptorFactory> injectors, final Object instanceKey, final Deque<InterceptorFactory> uninjectors, boolean metadataComplete) throws DeploymentUnitProcessingException {
-            final Map<InjectionTarget, ResourceInjectionConfiguration> mergedInjections = new HashMap<InjectionTarget, ResourceInjectionConfiguration>();
+            final Map<InjectionTarget, ResourceInjectionConfiguration> mergedInjections = new HashMap<>();
             if (classDescription != null && !metadataComplete) {
                 mergedInjections.putAll(classDescription.getInjectionConfigurations());
             }
@@ -1010,7 +1010,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
                 }
 
                 final Object valueContextKey = new Object();
-                final InjectedValue<ManagedReferenceFactory> managedReferenceFactoryValue = new InjectedValue<ManagedReferenceFactory>();
+                final InjectedValue<ManagedReferenceFactory> managedReferenceFactoryValue = new InjectedValue<>();
                 configuration.getStartDependencies().add(new InjectedConfigurator(injectionConfiguration, configuration, context, managedReferenceFactoryValue));
                 injectors.addFirst(injectionConfiguration.getTarget().createInjectionInterceptorFactory(instanceKey, valueContextKey, managedReferenceFactoryValue, context.getDeploymentUnit(), injectionConfiguration.isOptional()));
                 uninjectors.addLast(new ManagedReferenceReleaseInterceptorFactory(valueContextKey));
@@ -1059,7 +1059,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
         String className = injection.getTarget().getClassName();
         Map<InjectionTarget, ResourceInjectionConfiguration> map = resourceInjections.get(className);
         if (map == null) {
-            resourceInjections.put(className, map = new HashMap<InjectionTarget, ResourceInjectionConfiguration>());
+            resourceInjections.put(className, map = new HashMap<>());
         }
         map.put(injection.getTarget(), injection);
     }

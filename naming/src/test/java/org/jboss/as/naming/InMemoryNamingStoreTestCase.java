@@ -190,7 +190,7 @@ public class InMemoryNamingStoreTestCase {
 
         final List<NameClassPair> results = nameStore.list(new CompositeName());
         assertEquals(4, results.size());
-        final Set<String> expected = new HashSet<String>(Arrays.asList("test", "testTwo", "testThree", "testContext"));
+        final Set<String> expected = new HashSet<>(Arrays.asList("test", "testTwo", "testThree", "testContext"));
         for(NameClassPair result : results) {
             final String resultName = result.getName();
             if("test".equals(resultName) || "testTwo".equals(resultName) || "testThree".equals(resultName)) {
@@ -229,7 +229,7 @@ public class InMemoryNamingStoreTestCase {
 
         final List<Binding> results = nameStore.listBindings(new CompositeName());
         assertEquals(4, results.size());
-        final Set<String> expected = new HashSet<String>(Arrays.asList("test", "testTwo", "testThree", "testContext"));
+        final Set<String> expected = new HashSet<>(Arrays.asList("test", "testTwo", "testThree", "testContext"));
         for(Binding result : results) {
             final String resultName = result.getName();
             if("test".equals(resultName)) {

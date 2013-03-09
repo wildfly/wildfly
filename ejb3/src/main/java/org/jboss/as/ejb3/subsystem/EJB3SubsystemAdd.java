@@ -133,7 +133,6 @@ import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.naming.ejb.EjbNamingContextSetup;
 import org.jboss.ejb.client.naming.ejb.ejbURLContextFactory;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
-import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -203,7 +202,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             protected void execute(DeploymentProcessorTarget processorTarget) {
 
                 //DUP's that are used even for app client deployments
-                processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER, new JBossAllXmlParserRegisteringProcessor<EjbJarMetaData>(EjbJarJBossAllParser.ROOT_ELEMENT, EjbJarJBossAllParser.ATTACHMENT_KEY, new EjbJarJBossAllParser()));
+                processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER, new JBossAllXmlParserRegisteringProcessor<>(EjbJarJBossAllParser.ROOT_ELEMENT, EjbJarJBossAllParser.ATTACHMENT_KEY, new EjbJarJBossAllParser()));
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EJB_DEFAULT_DISTINCT_NAME, new EjbDefaultDistinctNameProcessor(defaultDistinctNameService));
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EJB_CONTEXT_BINDING, new EjbContextJndiBindingProcessor());
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EJB_DEPLOYMENT, new EjbJarParsingDeploymentUnitProcessor());
@@ -374,8 +373,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             // get the node name
             final String nodeName = SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME);
 
-            final ServiceLookupValue<Endpoint> endpointValue = new ServiceLookupValue<Endpoint>(context.getServiceRegistry(false), RemotingServices.SUBSYSTEM_ENDPOINT);
-            final ServiceLookupValue<EJBRemoteConnectorService> ejbRemoteConnectorServiceValue = new ServiceLookupValue<EJBRemoteConnectorService>(context.getServiceRegistry(false), EJBRemoteConnectorService.SERVICE_NAME);
+            final ServiceLookupValue<Endpoint> endpointValue = new ServiceLookupValue<>(context.getServiceRegistry(false), RemotingServices.SUBSYSTEM_ENDPOINT);
+            final ServiceLookupValue<EJBRemoteConnectorService> ejbRemoteConnectorServiceValue = new ServiceLookupValue<>(context.getServiceRegistry(false), EJBRemoteConnectorService.SERVICE_NAME);
 
             //the default spec compliant EJB receiver
             final LocalEjbReceiver byValueLocalEjbReceiver = new LocalEjbReceiver(nodeName, false, endpointValue, ejbRemoteConnectorServiceValue);
@@ -404,7 +403,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (appclient) {
             return;
         }
-        final RegistryCollectorService<String, List<ClientMapping>> registryCollectorService = new RegistryCollectorService<String, List<ClientMapping>>();
+        final RegistryCollectorService<String, List<ClientMapping>> registryCollectorService = new RegistryCollectorService<>();
         final ServiceController<RegistryCollector<String, List<ClientMapping>>> registryCollectorServiceController = context.getServiceTarget().addService(ClusteredBackingCacheEntryStoreSourceService.CLIENT_MAPPING_REGISTRY_COLLECTOR_SERVICE_NAME, registryCollectorService).install();
         newControllers.add(registryCollectorServiceController);
     }

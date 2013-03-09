@@ -110,7 +110,7 @@ public class SerializationGroupMemberContainer<K extends Serializable, V extends
 
     @Override
     public SerializationGroupMember<K, V, G> createEntry(V item) {
-        return new SerializationGroupMemberImpl<K, V, G>(item, delegate);
+        return new SerializationGroupMemberImpl<>(item, delegate);
     }
 
     @Override

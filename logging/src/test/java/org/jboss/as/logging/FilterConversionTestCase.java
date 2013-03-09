@@ -38,7 +38,7 @@ import org.junit.Test;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class FilterConversionTestCase {
-    static final Map<String, ModelNode> MAP = new HashMap<String, ModelNode>();
+    static final Map<String, ModelNode> MAP = new HashMap<>();
 
     static {
         final ModelNode anyFilter = new ModelNode().setEmptyObject();

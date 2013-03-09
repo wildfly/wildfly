@@ -37,7 +37,7 @@ class KnownVersions {
     static final Map<String, ModelVersion> AS_CORE_MODEL_VERSION_BY_AS_VERSION;
     private static final Map<String, Map<ModelVersion, ModelVersion>> KNOWN_SUBSYSTEM_VERSIONS;
     static {
-        Map<String, Map<ModelVersion, ModelVersion>> map = new HashMap<String, Map<ModelVersion,ModelVersion>>();
+        Map<String, Map<ModelVersion, ModelVersion>> map = new HashMap<>();
 
         //At the time of writing the main usage for this is to know if a given subsystem model version belongs to
         //the 7.1.x series or above. From 7.2.x the host registration process includes which resources are ignored,
@@ -86,7 +86,7 @@ class KnownVersions {
         KNOWN_SUBSYSTEM_VERSIONS = Collections.unmodifiableMap(map);
 
 
-        Map<String, ModelVersion> map2 = new HashMap<String, ModelVersion>();
+        Map<String, ModelVersion> map2 = new HashMap<>();
         map2.put("7.1.2", ModelVersion.create(1, 2, 0));
         map2.put("7.1.3", ModelVersion.create(1, 3, 0));
         AS_CORE_MODEL_VERSION_BY_AS_VERSION = Collections.unmodifiableMap(map2);
@@ -108,7 +108,7 @@ class KnownVersions {
         ModelVersion coreModelVersion = ModelVersion.fromString(coreVersion);
         Map<ModelVersion, ModelVersion> versionMap = map.get(subsystem);
         if (versionMap == null) {
-            versionMap = new HashMap<ModelVersion, ModelVersion>();
+            versionMap = new HashMap<>();
             map.put(subsystem, versionMap);
         }
         versionMap.put(subsystemModelVersion, coreModelVersion);

@@ -45,7 +45,7 @@ class AttachedDependency {
 
     public AttachedDependency(AttachmentKey<?> attachmentKey, boolean deploymentUnit) {
         this.attachmentKey = attachmentKey;
-        this.value = new InjectedValue<Object>();
+        this.value = new InjectedValue<>();
         this.deploymentUnit = deploymentUnit;
     }
 

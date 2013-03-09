@@ -51,9 +51,9 @@ public class SetParticipantBA implements BusinessAgreementWithCoordinatorComplet
     private String txID;
     // A list of values added to the set. These are removed from the set at
     // compensation time.
-    private List<String> values = new LinkedList<String>();
+    private List<String> values = new LinkedList<>();
     // table of currently active participants
-    private static HashMap<String, SetParticipantBA> participants = new HashMap<String, SetParticipantBA>();
+    private static HashMap<String, SetParticipantBA> participants = new HashMap<>();
 
     /**
      * Participant instances are related to business method calls in a one to one manner.

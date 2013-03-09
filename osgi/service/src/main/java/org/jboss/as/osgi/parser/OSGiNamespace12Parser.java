@@ -122,7 +122,7 @@ class OSGiNamespace12Parser implements Namespace12, XMLStreamConstants, XMLEleme
 
         requireNoAttributes(reader);
 
-        List<ModelNode> result = new ArrayList<ModelNode>();
+        List<ModelNode> result = new ArrayList<>();
 
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
@@ -171,7 +171,7 @@ class OSGiNamespace12Parser implements Namespace12, XMLStreamConstants, XMLEleme
     }
 
     private List<ModelNode> parseCapabilities(XMLExtendedStreamReader reader, ModelNode address) throws XMLStreamException {
-        List<ModelNode> nodes = new ArrayList<ModelNode>();
+        List<ModelNode> nodes = new ArrayList<>();
         requireNoAttributes(reader);
 
         // Handle elements

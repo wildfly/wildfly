@@ -43,7 +43,7 @@ public enum DirectoryGrouping {
     private static final Map<String, DirectoryGrouping> MAP;
 
     static {
-        final Map<String, DirectoryGrouping> map = new HashMap<String, DirectoryGrouping>();
+        final Map<String, DirectoryGrouping> map = new HashMap<>();
         for (DirectoryGrouping directoryGrouping : values()) {
             map.put(directoryGrouping.localName, directoryGrouping);
         }

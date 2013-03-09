@@ -100,13 +100,13 @@ public class ConfigurationAdminTestCase {
         Assert.assertNull("Config is empty, but was: " + config.getProperties(), config.getProperties());
 
         try {
-            Dictionary<String, String> configProps = new Hashtable<String, String>();
+            Dictionary<String, String> configProps = new Hashtable<>();
             configProps.put("foo", "bar");
             config.update(configProps);
 
             // Register a {@link ManagedService}
             ConfiguredService service = new ConfiguredService();
-            Dictionary<String, String> serviceProps = new Hashtable<String, String>();
+            Dictionary<String, String> serviceProps = new Hashtable<>();
             serviceProps.put(Constants.SERVICE_PID, PID_A);
             context.registerService(new String[] { ConfiguredService.class.getName(), ManagedService.class.getName() }, service, serviceProps);
 
@@ -127,7 +127,7 @@ public class ConfigurationAdminTestCase {
 
         // This configuration is present in the standalone.xml used for this test
         ConfiguredService service = new ConfiguredService();
-        Dictionary<String, Object> props = new Hashtable<String, Object>();
+        Dictionary<String, Object> props = new Hashtable<>();
         props.put(Constants.SERVICE_PID, PID_B);
         context.registerService(new String[] { ConfiguredService.class.getName(), ManagedService.class.getName() }, service, props);
 

@@ -45,7 +45,7 @@ public class AnyInterfaceCriteria implements InterfaceCriteria {
 
     private static final long serialVersionUID = 3384500068401101329L;
 
-    private final Set<InterfaceCriteria> criteria = new HashSet<InterfaceCriteria>();
+    private final Set<InterfaceCriteria> criteria = new HashSet<>();
 
     /**
      * Creates a new AnyInterfaceCriteria
@@ -63,7 +63,7 @@ public class AnyInterfaceCriteria implements InterfaceCriteria {
 
     @Override
     public Map<NetworkInterface, Set<InetAddress>> getAcceptableAddresses(Map<NetworkInterface, Set<InetAddress>> candidates) throws SocketException {
-        final Map<NetworkInterface, Set<InetAddress>> result = new HashMap<NetworkInterface, Set<InetAddress>>();
+        final Map<NetworkInterface, Set<InetAddress>> result = new HashMap<>();
         for (InterfaceCriteria ic : criteria) {
             final Map<NetworkInterface, Set<InetAddress>> testee = AbstractInterfaceCriteria.cloneCandidates(candidates);
             final Map<NetworkInterface, Set<InetAddress>> accepted = ic.getAcceptableAddresses(testee);
@@ -90,7 +90,7 @@ public class AnyInterfaceCriteria implements InterfaceCriteria {
         for (Map.Entry<NetworkInterface, Set<InetAddress>> entry : accepted.entrySet()) {
             Set<InetAddress> addresses = result.get(entry.getKey());
             if (addresses == null) {
-                result.put(entry.getKey(), new HashSet<InetAddress>(entry.getValue()));
+                result.put(entry.getKey(), new HashSet<>(entry.getValue()));
             } else {
                 addresses.addAll(entry.getValue());
             }

@@ -89,7 +89,7 @@ class TransformationUtils {
     private static Resource modelToResource(final PathAddress startAddress, final ImmutableManagementResourceRegistration reg, final ModelNode model, boolean includeUndefined, PathAddress fullPath) {
         Resource res = Resource.Factory.create();
         ModelNode value = new ModelNode();
-        Set<String> allFields = new HashSet<String>(model.keys());
+        Set<String> allFields = new HashSet<>(model.keys());
         for (String name : reg.getAttributeNames(PathAddress.EMPTY_ADDRESS)) {
             AttributeAccess aa = reg.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name);
             if (aa.getStorageType() == AttributeAccess.Storage.RUNTIME){

@@ -62,9 +62,9 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
 
     public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER;
 
-    private final InjectedValue<JBossXATerminator> xaTerminatorInjector = new InjectedValue<JBossXATerminator>();
-    private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
-    private final InjectedValue<UserTransactionRegistry> userTransactionRegistry = new InjectedValue<UserTransactionRegistry>();
+    private final InjectedValue<JBossXATerminator> xaTerminatorInjector = new InjectedValue<>();
+    private final InjectedValue<ORB> orbInjector = new InjectedValue<>();
+    private final InjectedValue<UserTransactionRegistry> userTransactionRegistry = new InjectedValue<>();
 
 
     private com.arjuna.ats.jbossatx.jta.TransactionManagerService value;
@@ -100,7 +100,7 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
         coordinatorEnvironmentBean.setTransactionStatusManagerEnable(transactionStatusManagerEnable);
 
         // Object Store Browser bean
-        Map<String, String> objStoreBrowserTypes = new HashMap<String, String>();
+        Map<String, String> objStoreBrowserTypes = new HashMap<>();
         objStoreBrowser = new ObjStoreBrowser();
         objStoreBrowserTypes.put("StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction",
                 "com.arjuna.ats.internal.jta.tools.osb.mbean.jta.JTAActionBean");

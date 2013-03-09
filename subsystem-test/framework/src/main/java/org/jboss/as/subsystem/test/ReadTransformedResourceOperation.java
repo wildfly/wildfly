@@ -70,7 +70,7 @@ class ReadTransformedResourceOperation implements OperationStepHandler {
     private ModelNode transformReadResourceResult(final OperationContext context, ModelNode original, String subsystem) throws OperationFailedException {
         ModelNode rootData = original.get(ModelDescriptionConstants.RESULT);
 
-        Map<PathAddress, ModelVersion> subsystemVersions = new HashMap<PathAddress, ModelVersion>();
+        Map<PathAddress, ModelVersion> subsystemVersions = new HashMap<>();
         subsystemVersions.put(PathAddress.EMPTY_ADDRESS.append(ModelDescriptionConstants.SUBSYSTEM, subsystem), subsystemModelVersion);
 
         final TransformationTarget target = TransformationTargetImpl.create(transformerRegistry, coreModelVersion, subsystemVersions, null, TransformationTarget.TransformationTargetType.SERVER);

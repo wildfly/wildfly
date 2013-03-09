@@ -186,24 +186,24 @@ public class CoreGroupCommunicationService implements Service<CoreGroupCommunica
     private long method_call_timeout = 60000;
     final short scopeId;
     private volatile RpcDispatcher dispatcher = null;
-    final Map<String, Object> rpcHandlers = new ConcurrentHashMap<String, Object>();
+    final Map<String, Object> rpcHandlers = new ConcurrentHashMap<>();
     private boolean directlyInvokeLocal;
 
     /** Do we send any membership change notifications synchronously? */
     private boolean allowSyncListeners = false;
     /** The asynchronously invoked GroupMembershipListeners */
-    final List<GroupMembershipListener> asyncMembershipListeners = new CopyOnWriteArrayList<GroupMembershipListener>();
+    final List<GroupMembershipListener> asyncMembershipListeners = new CopyOnWriteArrayList<>();
     /** The HAMembershipListener and HAMembershipExtendedListeners */
-    private final List<GroupMembershipListener> syncMembershipListeners = new CopyOnWriteArrayList<GroupMembershipListener>();
+    private final List<GroupMembershipListener> syncMembershipListeners = new CopyOnWriteArrayList<>();
     /** The handler used to send membership change notifications asynchronously */
     private final AsynchEventHandler asynchHandler = new AsynchEventHandler(new ViewChangeEventProcessor(), "AsynchViewChangeHandler");
 
     private long state_transfer_timeout = 60000;
     volatile String stateIdPrefix;
-    final Map<String, StateTransferProvider> stateProviders = new ConcurrentHashMap<String, StateTransferProvider>();
-    final Map<String, StateTransferTask<?, ?>> stateTransferTasks = new ConcurrentHashMap<String, StateTransferTask<?, ?>>();
+    final Map<String, StateTransferProvider> stateProviders = new ConcurrentHashMap<>();
+    final Map<String, StateTransferTask<?, ?>> stateTransferTasks = new ConcurrentHashMap<>();
 
-    private final List<String> history = new LinkedList<String>();
+    private final List<String> history = new LinkedList<>();
     private int maxHistoryLength = 100;
 
     /** Thread pool used to run state transfer requests */
@@ -236,7 +236,7 @@ public class CoreGroupCommunicationService implements Service<CoreGroupCommunica
 
     public List<String> getCurrentView() {
         GroupView curView = this.groupView;
-        List<String> result = new ArrayList<String>(curView.allMembers.size());
+        List<String> result = new ArrayList<>(curView.allMembers.size());
         for (ClusterNode member : curView.allMembers) {
             result.add(member.getName());
         }
@@ -250,7 +250,7 @@ public class CoreGroupCommunicationService implements Service<CoreGroupCommunica
 
     @Override
     public List<ClusterNode> getClusterNodes() {
-        return new ArrayList<ClusterNode>(this.groupView.allMembers);
+        return new ArrayList<>(this.groupView.allMembers);
     }
 
     @Override
@@ -662,11 +662,11 @@ public class CoreGroupCommunicationService implements Service<CoreGroupCommunica
         if (task == null || (task.result != null && !task.result.stateReceived())) {
             SerializableStateTransferTask newTask = new SerializableStateTransferTask(serviceName, classloader);
             stateTransferTasks.put(serviceName, newTask);
-            future = new FutureTask<SerializableStateTransferResult>(newTask);
+            future = new FutureTask<>(newTask);
         } else if (task instanceof SerializableStateTransferTask) {
             // Unlikely scenario
             ClusteringImplLogger.ROOT_LOGGER.receivedConcurrentStateRequests(serviceName);
-            future = new FutureTask<SerializableStateTransferResult>((SerializableStateTransferTask) task);
+            future = new FutureTask<>((SerializableStateTransferTask) task);
         } else {
             throw MESSAGES.stateTransferAlreadyPending(serviceName, "input stream");
         }
@@ -690,11 +690,11 @@ public class CoreGroupCommunicationService implements Service<CoreGroupCommunica
         if (task == null || (task.result != null && !task.result.stateReceived())) {
             StreamStateTransferTask newTask = new StreamStateTransferTask(serviceName);
             stateTransferTasks.put(serviceName, newTask);
-            future = new FutureTask<StreamStateTransferResult>(newTask);
+            future = new FutureTask<>(newTask);
         } else if (task instanceof StreamStateTransferTask) {
             // Unlikely scenario
             ClusteringImplLogger.ROOT_LOGGER.receivedConcurrentStateRequests(serviceName);
-            future = new FutureTask<StreamStateTransferResult>((StreamStateTransferTask) task);
+            future = new FutureTask<>((StreamStateTransferTask) task);
         } else {
             throw MESSAGES.stateTransferAlreadyPending(serviceName, "deserialized object");
         }
@@ -720,7 +720,7 @@ public class CoreGroupCommunicationService implements Service<CoreGroupCommunica
 
     public String showHistory() {
         StringBuffer buff = new StringBuffer();
-        Vector<String> data = new Vector<String>(this.history);
+        Vector<String> data = new Vector<>(this.history);
         for (java.util.Iterator<String> row = data.iterator(); row.hasNext();) {
             String info = row.next();
             buff.append(info).append("\n");
@@ -731,7 +731,7 @@ public class CoreGroupCommunicationService implements Service<CoreGroupCommunica
     public String showHistoryAsXML() {
         StringBuffer buff = new StringBuffer();
         buff.append("<events>\n");
-        Vector<String> data = new Vector<String>(this.history);
+        Vector<String> data = new Vector<>(this.history);
         for (java.util.Iterator<String> row = data.iterator(); row.hasNext();) {
             buff.append("   <event>\n      ");
             String info = row.next();
@@ -840,7 +840,7 @@ public class CoreGroupCommunicationService implements Service<CoreGroupCommunica
     protected void logHistory(String pattern, Object... args) {
         if (this.maxHistoryLength > 0) {
             try {
-                List<Object> list = new ArrayList<Object>(args.length + 1);
+                List<Object> list = new ArrayList<>(args.length + 1);
                 list.add(new Date());
                 list.addAll(Arrays.asList(args));
                 this.history.add(String.format("%c : " + pattern, list.toArray()));
@@ -923,7 +923,7 @@ public class CoreGroupCommunicationService implements Service<CoreGroupCommunica
     }
 
     private <T> List<T> processResponseList(RspList<T> rspList, String serviceName, String methodName, Object[] args, boolean trace) {
-        List<T> result = new ArrayList<T>(rspList.size());
+        List<T> result = new ArrayList<>(rspList.size());
         if (rspList != null) {
             for (Rsp<T> response : rspList.values()) {
                 // Only include successful received responses
@@ -1005,7 +1005,7 @@ public class CoreGroupCommunicationService implements Service<CoreGroupCommunica
             return null;
         }
 
-        List<ClusterNode> result = new ArrayList<ClusterNode>(addresses.size());
+        List<ClusterNode> result = new ArrayList<>(addresses.size());
         for (Address address : addresses) {
             result.add(factory.getClusterNode(address));
         }
@@ -1023,12 +1023,12 @@ public class CoreGroupCommunicationService implements Service<CoreGroupCommunica
      */
     static List<ClusterNode> getDeadMembers(List<ClusterNode> oldMembers, List<ClusterNode> newMembers) {
         if (oldMembers == null) {
-            oldMembers = new ArrayList<ClusterNode>();
+            oldMembers = new ArrayList<>();
         }
         if (newMembers == null) {
-            newMembers = new ArrayList<ClusterNode>();
+            newMembers = new ArrayList<>();
         }
-        List<ClusterNode> dead = new ArrayList<ClusterNode>(oldMembers);
+        List<ClusterNode> dead = new ArrayList<>(oldMembers);
         dead.removeAll(newMembers);
         return dead;
     }
@@ -1042,12 +1042,12 @@ public class CoreGroupCommunicationService implements Service<CoreGroupCommunica
      */
     static List<ClusterNode> getNewMembers(List<ClusterNode> oldMembers, List<ClusterNode> allMembers) {
         if (oldMembers == null) {
-            oldMembers = new ArrayList<ClusterNode>();
+            oldMembers = new ArrayList<>();
         }
         if (allMembers == null) {
-            allMembers = new ArrayList<ClusterNode>();
+            allMembers = new ArrayList<>();
         }
-        List<ClusterNode> newMembers = new ArrayList<ClusterNode>(allMembers);
+        List<ClusterNode> newMembers = new ArrayList<>(allMembers);
         newMembers.removeAll(oldMembers);
         return newMembers;
     }
@@ -1087,16 +1087,16 @@ public class CoreGroupCommunicationService implements Service<CoreGroupCommunica
 
         GroupView() {
             this.viewId = -1;
-            this.deadMembers = new ArrayList<ClusterNode>();
-            this.newMembers = this.allMembers = new ArrayList<ClusterNode>();
-            this.jgmembers = new ArrayList<Address>();
+            this.deadMembers = new ArrayList<>();
+            this.newMembers = this.allMembers = new ArrayList<>();
+            this.jgmembers = new ArrayList<>();
             this.coordinator = null;
             this.originatingGroups = null;
         }
 
         GroupView(View newView, GroupView previousView, ClusterNodeFactory factory) {
             this.viewId = newView.getVid().getId();
-            this.jgmembers = new ArrayList<Address>(newView.getMembers());
+            this.jgmembers = new ArrayList<>(newView.getMembers());
             this.coordinator = this.jgmembers.size() == 0 ? null : this.jgmembers.get(0);
             this.allMembers = translateAddresses(newView.getMembers(), factory);
             this.deadMembers = getDeadMembers(previousView.allMembers, allMembers);
@@ -1104,7 +1104,7 @@ public class CoreGroupCommunicationService implements Service<CoreGroupCommunica
             if (newView instanceof MergeView) {
                 MergeView mergeView = (MergeView) newView;
                 List<View> subgroups = mergeView.getSubgroups();
-                this.originatingGroups = new ArrayList<List<ClusterNode>>(subgroups.size());
+                this.originatingGroups = new ArrayList<>(subgroups.size());
                 for (View view : subgroups) {
                     this.originatingGroups.add(translateAddresses(view.getMembers(), factory));
                 }
@@ -1339,7 +1339,7 @@ public class CoreGroupCommunicationService implements Service<CoreGroupCommunica
      * Converts JGroups address objects into ClusterNode
      */
     class ClusterNodeFactoryImpl implements ClusterNodeFactory {
-        private final ConcurrentMap<Address, IpAddress> addressMap = new ConcurrentHashMap<Address, IpAddress>();
+        private final ConcurrentMap<Address, IpAddress> addressMap = new ConcurrentHashMap<>();
 
         @Override
         public ClusterNode getClusterNode(Address a) {
@@ -1565,7 +1565,7 @@ public class CoreGroupCommunicationService implements Service<CoreGroupCommunica
             if (cl != null) {
                 classloader = null;
             } else {
-                classloader = new WeakReference<ClassLoader>(cl);
+                classloader = new WeakReference<>(cl);
             }
         }
 

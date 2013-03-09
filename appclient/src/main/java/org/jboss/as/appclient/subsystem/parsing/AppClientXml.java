@@ -180,7 +180,7 @@ public class AppClientXml extends CommonXml {
         }
 
         // Interfaces
-        final Set<String> interfaceNames = new HashSet<String>();
+        final Set<String> interfaceNames = new HashSet<>();
         if (element == Element.INTERFACES) {
             parseInterfaces(reader, interfaceNames, address, DOMAIN_1_0, list, true);
             element = nextElement(reader, DOMAIN_1_0);
@@ -278,7 +278,7 @@ public class AppClientXml extends CommonXml {
         }
 
         // Interfaces
-        final Set<String> interfaceNames = new HashSet<String>();
+        final Set<String> interfaceNames = new HashSet<>();
         if (element == Element.INTERFACES) {
             parseInterfaces(reader, interfaceNames, address, namespace, list, true);
             element = nextElement(reader, namespace);
@@ -298,7 +298,7 @@ public class AppClientXml extends CommonXml {
             final ModelNode address, final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
 
         // unique names for both socket-binding and outbound-socket-binding(s)
-        final Set<String> uniqueBindingNames = new HashSet<String>();
+        final Set<String> uniqueBindingNames = new HashSet<>();
 
         ModelNode op = Util.getEmptyOperation(ADD, null);
         // Handle attributes
@@ -376,7 +376,7 @@ public class AppClientXml extends CommonXml {
         requireNoAttributes(reader);
 
         // Content
-        final Set<String> configuredSubsystemTypes = new HashSet<String>();
+        final Set<String> configuredSubsystemTypes = new HashSet<>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             if (Element.forName(reader.getLocalName()) != Element.SUBSYSTEM) {
                 throw unexpectedElement(reader);
@@ -385,7 +385,7 @@ public class AppClientXml extends CommonXml {
                 throw MESSAGES.duplicateSubsystemDeclaration(reader.getLocation());
             }
             // parse subsystem
-            final List<ModelNode> subsystems = new ArrayList<ModelNode>();
+            final List<ModelNode> subsystems = new ArrayList<>();
             reader.handleAny(subsystems);
 
             // Process subsystems

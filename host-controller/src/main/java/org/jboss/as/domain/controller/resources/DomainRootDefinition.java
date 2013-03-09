@@ -157,7 +157,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
             .setValidator(NOT_NULL_STRING_LENGTH_ONE_VALIDATOR)
             .build();
     public static final SimpleAttributeDefinition LAUNCH_TYPE = SimpleAttributeDefinitionBuilder.create(ServerDescriptionConstants.LAUNCH_TYPE, ModelType.STRING)
-            .setValidator(new EnumValidator<LaunchType>(LaunchType.class, false, false))
+            .setValidator(new EnumValidator<>(LaunchType.class, false, false))
             .setStorageRuntime()
             .build();
     public static final SimpleAttributeDefinition LOCAL_HOST_NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.LOCAL_HOST_NAME, ModelType.STRING, true)

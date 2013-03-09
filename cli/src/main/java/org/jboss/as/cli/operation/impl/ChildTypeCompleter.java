@@ -59,7 +59,7 @@ public class ChildTypeCompleter extends DefaultCompleter {
                     return Collections.emptyList();
                 }
                 final List<ModelNode> list = result.asList();
-                final List<String> names = new ArrayList<String>(list.size());
+                final List<String> names = new ArrayList<>(list.size());
                 for(ModelNode node : list) {
                     names.add(node.asString());
                 }

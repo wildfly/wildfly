@@ -149,7 +149,7 @@ public class ManagementModel extends JPanel {
             root.explore(); // refresh all children
 
             Enumeration nodes = root.children();
-            List<ManagementModelNode> removeList = new ArrayList<ManagementModelNode>();
+            List<ManagementModelNode> removeList = new ArrayList<>();
             while (nodes.hasMoreElements()) {
                 ManagementModelNode node = (ManagementModelNode)nodes.nextElement();
                 if (!node.getUserObject().toString().contains(fieldText)) {

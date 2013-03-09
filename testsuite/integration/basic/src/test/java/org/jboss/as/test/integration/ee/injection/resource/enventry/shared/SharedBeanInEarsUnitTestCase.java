@@ -94,7 +94,7 @@ public class SharedBeanInEarsUnitTestCase {
     }
     
     private InitialContext getInitialContext() throws NamingException {
-        final Hashtable<String,String> jndiProperties = new Hashtable<String,String>();
+        final Hashtable<String,String> jndiProperties = new Hashtable<>();
         jndiProperties.put(Context.INITIAL_CONTEXT_FACTORY,"org.jboss.as.naming.InitialContextFactory");
         jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
         return new InitialContext(jndiProperties);

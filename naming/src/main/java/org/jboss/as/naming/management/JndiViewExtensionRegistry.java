@@ -40,7 +40,7 @@ public class JndiViewExtensionRegistry implements Service<JndiViewExtensionRegis
     private List<JndiViewExtension> extensions;
 
     public synchronized void start(StartContext startContext) throws StartException {
-        this.extensions = new ArrayList<JndiViewExtension>();
+        this.extensions = new ArrayList<>();
     }
 
     public synchronized void stop(StopContext stopContext) {

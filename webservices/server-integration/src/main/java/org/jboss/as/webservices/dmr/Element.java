@@ -64,7 +64,7 @@ enum Element {
     private static final Map<String, Element> MAP;
 
     static {
-        final Map<String, Element> map = new HashMap<String, Element>();
+        final Map<String, Element> map = new HashMap<>();
         for (final Element element : values()) {
             final String name = element.getLocalName();
             if (name != null)

@@ -56,7 +56,7 @@ public class EjbExceptionTransformingInterceptorFactories {
      * Rather than forcing all create exceptions everywhere to propagate, and generally making a mess, we stash
      * the exception here, and then re-throw it from the exception transforming interceptor.
      */
-    private static final ThreadLocal<CreateException> CREATE_EXCEPTION = new ThreadLocal<CreateException>();
+    private static final ThreadLocal<CreateException> CREATE_EXCEPTION = new ThreadLocal<>();
 
     public static final InterceptorFactory REMOTE_INSTANCE = new ImmediateInterceptorFactory(new Interceptor() {
         @Override

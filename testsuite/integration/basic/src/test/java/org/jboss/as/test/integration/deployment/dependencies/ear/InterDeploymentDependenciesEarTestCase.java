@@ -141,7 +141,7 @@ public class InterDeploymentDependenciesEarTestCase {
      * @throws NamingException
      */
     private LogAccess lookupEJB(String appName) throws NamingException {
-        final Hashtable<String, String> jndiProperties = new Hashtable<String, String>();
+        final Hashtable<String, String> jndiProperties = new Hashtable<>();
         jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
         final Context context = new InitialContext(jndiProperties);
         return (LogAccess) context.lookup("ejb:" + appName + "/" + MODULE_EJB + "/" + LogAccessBean.class.getSimpleName() + "!"

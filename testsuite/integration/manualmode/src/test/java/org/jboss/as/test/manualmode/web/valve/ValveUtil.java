@@ -114,7 +114,7 @@ public class ValveUtil {
      * Adding valve via DMR operation for jboss config file (standalone.xml)
      */
     public static void addValve(final ManagementClient managementClient, String valveName, String modulename, String classname, Map<String,String> params) throws Exception {
-        List<ModelNode> updates = new ArrayList<ModelNode>();
+        List<ModelNode> updates = new ArrayList<>();
 
         ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
@@ -168,7 +168,7 @@ public class ValveUtil {
     }
 
     public static void applyUpdate(final ManagementClient client, final ModelNode update) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        final List<ModelNode> updates = new ArrayList<>();
         updates.add(update);
         applyUpdates(client.getControllerClient(), updates);
     }

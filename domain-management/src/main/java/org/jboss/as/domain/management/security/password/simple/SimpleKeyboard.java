@@ -40,7 +40,7 @@ import org.jboss.as.domain.management.security.password.Keyboard;
  */
 public class SimpleKeyboard implements Keyboard {
 
-    protected Map<Character, Set<Character>> keys = new TreeMap<Character, Set<Character>>();
+    protected Map<Character, Set<Character>> keys = new TreeMap<>();
 
     public SimpleKeyboard() {
         InputStream is = Keyboard.class.getResourceAsStream("keybord.properties");
@@ -70,7 +70,7 @@ public class SimpleKeyboard implements Keyboard {
                 } else {
                     key = ' ';
                 }
-                Set<Character> chars = new TreeSet<Character>();
+                Set<Character> chars = new TreeSet<>();
                 for (int index = 0; index < charsString.length(); index++) {
                     Character c = charsString.charAt(index);
                     chars.add(c);

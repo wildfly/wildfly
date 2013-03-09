@@ -129,7 +129,7 @@ public class OperationParamListStateTestCase extends BaseStateParserTest {
     }
 
     static class Param {
-        static final List<Param> all = new ArrayList<Param>();
+        static final List<Param> all = new ArrayList<>();
 
         static String allParams() {
             StringBuilder builder = new StringBuilder();

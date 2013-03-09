@@ -88,7 +88,7 @@ class LegacySupport {
         static {
             final ParametersValidator delegate = new ParametersValidator();
             delegate.registerValidator(CODE, new StringLengthValidator(1));
-            delegate.registerValidator(Constants.FLAG, new EnumValidator<ModuleFlag>(ModuleFlag.class, true, false));
+            delegate.registerValidator(Constants.FLAG, new EnumValidator<>(ModuleFlag.class, true, false));
             delegate.registerValidator(Constants.MODULE, new StringLengthValidator(1, true));
             delegate.registerValidator(Constants.MODULE_OPTIONS, new ModelTypeValidator(ModelType.OBJECT, true));
             delegate.registerValidator(Constants.LOGIN_MODULE_STACK_REF, new StringLengthValidator(1, true));
@@ -175,7 +175,7 @@ class LegacySupport {
         static {
             final ParametersValidator delegate = new ParametersValidator();
             delegate.registerValidator(CODE, new StringLengthValidator(1));
-            delegate.registerValidator(Constants.FLAG, new EnumValidator<ModuleFlag>(ModuleFlag.class, false, false));
+            delegate.registerValidator(Constants.FLAG, new EnumValidator<>(ModuleFlag.class, false, false));
             delegate.registerValidator(Constants.MODULE, new StringLengthValidator(1, true));
             delegate.registerValidator(Constants.MODULE_OPTIONS, new ModelTypeValidator(ModelType.OBJECT, true));
             validator = new ParametersOfValidator(delegate);
@@ -416,7 +416,7 @@ class LegacySupport {
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             Resource existing = context.readResource(PathAddress.EMPTY_ADDRESS);
             OperationStepHandler addHandler = context.getResourceRegistration().getSubModel(PathAddress.EMPTY_ADDRESS.append(newKeyName)).getOperationHandler(PathAddress.EMPTY_ADDRESS, "add");
-            List<ModelNode> modules = new ArrayList<ModelNode>(operation.get(VALUE).asList());
+            List<ModelNode> modules = new ArrayList<>(operation.get(VALUE).asList());
             Collections.reverse(modules); //need to reverse it to make sure they are added in proper order
             for (ModelNode module : modules) {
                 ModelNode addModuleOp = module.clone();
@@ -456,7 +456,7 @@ class LegacySupport {
             Resource existing = context.readResource(PathAddress.EMPTY_ADDRESS);
             OperationStepHandler addHandler = context.getResourceRegistration().getSubModel(PathAddress.EMPTY_ADDRESS.append(newKeyName)).getOperationHandler(PathAddress.EMPTY_ADDRESS, "add");
             oldAttribute.validateOperation(operation);
-            List<ModelNode> modules = new ArrayList<ModelNode>(operation.get(oldAttribute.getName()).asList());
+            List<ModelNode> modules = new ArrayList<>(operation.get(oldAttribute.getName()).asList());
             Collections.reverse(modules); //need to reverse it to make sure they are added in proper order
             for (ModelNode module : modules) {
                 ModelNode addModuleOp = module.clone();

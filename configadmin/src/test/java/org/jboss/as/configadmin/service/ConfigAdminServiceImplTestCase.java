@@ -82,7 +82,7 @@ public class ConfigAdminServiceImplTestCase {
         TestConfigAdminListener testListener = new TestConfigAdminListener();
         cas.addListener(testListener);
 
-        Hashtable<String, String> config = new Hashtable<String, String>();
+        Hashtable<String, String> config = new Hashtable<>();
         config.put("a.key", "A Value");
 
         assertEquals("Precondition", 0, testListener.pidList.size());
@@ -91,7 +91,7 @@ public class ConfigAdminServiceImplTestCase {
 
     @Test
     public void testUpdateConfiguration() throws Exception {
-        Dictionary<String, String> initial = new Hashtable<String, String>();
+        Dictionary<String, String> initial = new Hashtable<>();
         initial.put("some.key", "some value");
 
         ModelNode expectedAddr = new ModelNode();
@@ -117,7 +117,7 @@ public class ConfigAdminServiceImplTestCase {
         TestConfigAdminListener testListener = new TestConfigAdminListener();
         cas.addListener(testListener);
 
-        Hashtable<String, String> config = new Hashtable<String, String>();
+        Hashtable<String, String> config = new Hashtable<>();
         config.put("a.key", "A Value");
 
         assertEquals("Precondition", 0, testListener.pidList.size());
@@ -126,7 +126,7 @@ public class ConfigAdminServiceImplTestCase {
 
     @Test
     public void testRemoveConfiguration() throws Exception {
-        Hashtable<String, String> initialConfig = new Hashtable<String, String>();
+        Hashtable<String, String> initialConfig = new Hashtable<>();
         initialConfig.put("x", "y");
 
         ModelNode expectedAddr = new ModelNode();
@@ -161,7 +161,7 @@ public class ConfigAdminServiceImplTestCase {
         setSynchronousExecutor(cas);
 
         // Call the operation
-        Hashtable<String, String> config = new Hashtable<String, String>();
+        Hashtable<String, String> config = new Hashtable<>();
         config.put("a.b.c.d.e.f.g", "a value");
         cas.putConfigurationInternal("someconfig", config);
 
@@ -176,7 +176,7 @@ public class ConfigAdminServiceImplTestCase {
         ConfigAdminServiceImpl cas = createConfigAdminServiceImpl();
         setSynchronousExecutor(cas);
 
-        Hashtable<String, String> config = new Hashtable<String, String>();
+        Hashtable<String, String> config = new Hashtable<>();
         config.put("a.b.c.d.e.f.g", "a value");
         cas.putConfigurationInternal("xx.yy", config);
 
@@ -227,8 +227,8 @@ public class ConfigAdminServiceImplTestCase {
     }
 
     private static class TestConfigAdminListener implements ConfigAdminListener {
-        List<String> pidList = new ArrayList<String>();
-        List<Dictionary<String, String>> propList = new ArrayList<Dictionary<String, String>>();
+        List<String> pidList = new ArrayList<>();
+        List<Dictionary<String, String>> propList = new ArrayList<>();
 
         @Override
         public void configurationModified(String pid, Dictionary<String, String> props) {

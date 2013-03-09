@@ -143,7 +143,7 @@ public class OperationValidator {
     }
 
     private Map<String, ModelNode> getDescribedRequestProperties(final ModelNode operation, final ModelNode description){
-        final Map<String, ModelNode> requestProperties = new HashMap<String, ModelNode>();
+        final Map<String, ModelNode> requestProperties = new HashMap<>();
         if (description.hasDefined(REQUEST_PROPERTIES)) {
             for (String key : description.get(REQUEST_PROPERTIES).keys()) {
                 ModelNode desc = description.get(REQUEST_PROPERTIES, key);
@@ -157,7 +157,7 @@ public class OperationValidator {
     }
 
     private Map<String, ModelNode> getActualRequestProperties(final ModelNode operation) {
-        final Map<String, ModelNode> requestProperties = new HashMap<String, ModelNode>();
+        final Map<String, ModelNode> requestProperties = new HashMap<>();
         for (String key : operation.keys()) {
             if (key.equals(OP) || key.equals(OP_ADDR) || key.equals(OPERATION_HEADERS)) {
                 continue;

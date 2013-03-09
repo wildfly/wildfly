@@ -87,7 +87,7 @@ public class ReadAttributeHandler extends BaseOperationCommand {
                                     if(attributes.isEmpty()) {
                                         return Collections.emptyList();
                                     }
-                                    final List<String> candidates = new ArrayList<String>(attributes.size());
+                                    final List<String> candidates = new ArrayList<>(attributes.size());
                                     candidates.addAll(attributes);
                                     return candidates;
                                 } else {

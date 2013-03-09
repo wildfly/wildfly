@@ -91,7 +91,7 @@ public class BasicComponent implements Component {
      * @return The new ComponentInstance
      */
     public ComponentInstance createInstance(Object instance) {
-        BasicComponentInstance obj = constructComponentInstance(new ValueManagedReference(new ImmediateValue<Object>(instance)), true, new SimpleInterceptorFactoryContext());
+        BasicComponentInstance obj = constructComponentInstance(new ValueManagedReference(new ImmediateValue<>(instance)), true, new SimpleInterceptorFactoryContext());
         return obj;
     }
 
@@ -140,7 +140,7 @@ public class BasicComponent implements Component {
         final Map<Method, InterceptorFactory> interceptorFactoryMap = this.getInterceptorFactoryMap();
         // This is an identity map.  This means that only <b>certain</b> {@code Method} objects will
         // match - specifically, they must equal the objects provided to the proxy.
-        final IdentityHashMap<Method, Interceptor> interceptorMap = new IdentityHashMap<Method, Interceptor>();
+        final IdentityHashMap<Method, Interceptor> interceptorMap = new IdentityHashMap<>();
         for (Method method : interceptorFactoryMap.keySet()) {
             interceptorMap.put(method, interceptorFactoryMap.get(method).create(context));
         }

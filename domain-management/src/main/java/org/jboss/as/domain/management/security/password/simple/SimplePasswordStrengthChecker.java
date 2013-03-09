@@ -57,7 +57,7 @@ public class SimplePasswordStrengthChecker implements PasswordStrengthChecker {
 
     public static final List<PasswordRestriction> DEFAULT_RESTRICTIONS;
     static {
-        List<PasswordRestriction> list = new ArrayList<PasswordRestriction>();
+        List<PasswordRestriction> list = new ArrayList<>();
 
         list.add(RESTRICTION_LENGTH);
         list.add(RESTRICTION_ALPHA);

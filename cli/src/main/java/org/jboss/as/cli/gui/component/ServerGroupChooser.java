@@ -38,7 +38,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class ServerGroupChooser extends JPanel {
 
-    private List<JCheckBox> serverGroups = new ArrayList<JCheckBox>();
+    private List<JCheckBox> serverGroups = new ArrayList<>();
     private JPanel serverGroupsPanel = new JPanel(new FlowLayout());;
 
     public ServerGroupChooser(CliGuiContext cliGuiCtx) {
@@ -49,7 +49,7 @@ public class ServerGroupChooser extends JPanel {
     }
 
     private void setServerGroups(CliGuiContext cliGuiCtx) {
-        Set<String> serverGroupNames = new TreeSet<String>();
+        Set<String> serverGroupNames = new TreeSet<>();
         try {
             ModelNode serverGroupQuery = cliGuiCtx.getExecutor().doCommand("/:read-children-names(child-type=server-group)");
             if (serverGroupQuery.get("outcome").asString().equals("failed")) return;

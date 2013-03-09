@@ -188,7 +188,7 @@ public class SecurityTestCase {
     }
 
     static ClientSessionFactory createClientSessionFactory(String host, int port) throws Exception {
-        final Map<String, Object> properties = new HashMap<String, Object>();
+        final Map<String, Object> properties = new HashMap<>();
         properties.put("host", host);
         properties.put("port", port);
         final TransportConfiguration configuration = new TransportConfiguration(NettyConnectorFactory.class.getName(), properties);

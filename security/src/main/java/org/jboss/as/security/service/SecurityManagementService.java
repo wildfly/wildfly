@@ -62,7 +62,7 @@ public class SecurityManagementService implements Service<ISecurityManagement> {
 
     private volatile ISecurityManagement securityManagement;
 
-    private final InjectedValue<ServiceModuleLoader> serviceModuleLoaderValue = new InjectedValue<ServiceModuleLoader>();
+    private final InjectedValue<ServiceModuleLoader> serviceModuleLoaderValue = new InjectedValue<>();
 
     public SecurityManagementService(String authenticationManagerClassName, boolean deepCopySubjectMode,
             String callbackHandlerClassName, String authorizationManagerClassName, String auditManagerClassName,

@@ -56,7 +56,7 @@ public class MemoryManagerMXBeanResource extends AbstractPlatformMBeanResource {
 
     @Override
     Set<String> getChildrenNames() {
-        final Set<String> result = new HashSet<String>();
+        final Set<String> result = new HashSet<>();
         for (MemoryManagerMXBean mbean : ManagementFactory.getMemoryManagerMXBeans()) {
             result.add(escapeMBeanName(mbean.getName()));
         }

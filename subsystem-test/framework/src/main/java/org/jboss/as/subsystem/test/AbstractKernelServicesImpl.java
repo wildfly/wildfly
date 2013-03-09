@@ -66,7 +66,7 @@ public abstract class AbstractKernelServicesImpl extends ModelTestKernelServices
         ServiceContainer container = ServiceContainer.Factory.create("test" + counter.incrementAndGet());
         ServiceTarget target = container.subTarget();
         List<ModelNode> extraOps = controllerInitializer.initializeBootOperations();
-        List<ModelNode> allOps = new ArrayList<ModelNode>();
+        List<ModelNode> allOps = new ArrayList<>();
         if (extraOps != null) {
             allOps.addAll(extraOps);
         }

@@ -49,7 +49,7 @@ class SubsystemsParser {
     static String NAMESPACE = "urn:subsystems-config:1.0";
 
     private final File inputFile;
-    Map<String, SubsystemConfig[]> subsystemConfigs = new HashMap<String, SubsystemConfig[]>();
+    Map<String, SubsystemConfig[]> subsystemConfigs = new HashMap<>();
 
     SubsystemsParser(final File inputFile) {
         this.inputFile = inputFile;
@@ -106,7 +106,7 @@ class SubsystemsParser {
                     if (subsystemConfigs.containsKey(name)) {
                         throw new XMLStreamException("Already have a subsystems named " + name, reader.getLocation());
                     }
-                    List<SubsystemConfig> subsystems = new ArrayList<SubsystemConfig>();
+                    List<SubsystemConfig> subsystems = new ArrayList<>();
                     parseSubsystem(reader, subsystems);
                     this.subsystemConfigs.put(name, subsystems.toArray(new SubsystemConfig[subsystems.size()]));
                 } else {

@@ -988,7 +988,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
     private void parseSecurityRoles(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> operations) throws XMLStreamException {
 
-        final Map<String, Set<AttributeDefinition>> permsByRole = new HashMap<String, Set<AttributeDefinition>>();
+        final Map<String, Set<AttributeDefinition>> permsByRole = new HashMap<>();
         String localName = null;
         do {
             reader.nextTag();
@@ -1031,7 +1031,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 role = role.trim();
                 Set<AttributeDefinition> perms = permsByRole.get(role);
                 if (perms == null) {
-                    perms = new HashSet<AttributeDefinition>();
+                    perms = new HashSet<>();
                     permsByRole.put(role, perms);
                 }
                 perms.add(perm);

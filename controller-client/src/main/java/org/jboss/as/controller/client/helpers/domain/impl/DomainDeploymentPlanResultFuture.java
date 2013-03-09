@@ -95,7 +95,7 @@ class DomainDeploymentPlanResultFuture implements Future<DeploymentPlanResult> {
     }
 
     private DeploymentPlanResult getResultFromNode(ModelNode planResultNode) {
-        Map<UUID, DeploymentActionResult> actionResults = new HashMap<UUID, DeploymentActionResult>();
+        Map<UUID, DeploymentActionResult> actionResults = new HashMap<>();
         String outcome = planResultNode.get("outcome").asString();
         if ("cancelled".equals(outcome)) {
             createCancelledResults(actionResults);
@@ -138,7 +138,7 @@ class DomainDeploymentPlanResultFuture implements Future<DeploymentPlanResult> {
                     if (isDomainFailure) {
                         domainUpdateResult = new BasicDomainUpdateResult(updateFailedException, isRolledBack);
                     } else if (isHostFailure) {
-                        final Map<String, UpdateFailedException> hostExceptions = new HashMap<String, UpdateFailedException>();
+                        final Map<String, UpdateFailedException> hostExceptions = new HashMap<>();
                         for (ServerIdentity serverId : servers) {
                             hostExceptions.put(serverId.getHostName(), updateFailedException);
                         }

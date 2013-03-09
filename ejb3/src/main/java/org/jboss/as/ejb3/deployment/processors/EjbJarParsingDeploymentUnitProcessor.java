@@ -290,7 +290,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
     }
 
     static Map<String, AbstractMetaDataParser<?>> createJbossEjbJarParsers() {
-        Map<String, AbstractMetaDataParser<?>> parsers = new HashMap<String, AbstractMetaDataParser<?>>();
+        Map<String, AbstractMetaDataParser<?>> parsers = new HashMap<>();
         parsers.put(EJBBoundClusteringMetaDataParser.NAMESPACE_URI, new EJBBoundClusteringMetaDataParser());
         parsers.put(EJBBoundSecurityMetaDataParser.LEGACY_NAMESPACE_URI, EJBBoundSecurityMetaDataParser.INSTANCE);
         parsers.put(EJBBoundSecurityMetaDataParser.NAMESPACE_URI_1_0, EJBBoundSecurityMetaDataParser.INSTANCE);

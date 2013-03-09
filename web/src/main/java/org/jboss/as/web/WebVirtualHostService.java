@@ -55,9 +55,9 @@ public class WebVirtualHostService implements Service<VirtualHost> {
     private ModelNode rewrite;
     private ModelNode sso;
 
-    private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
-    private final InjectedValue<WebServer> webServer = new InjectedValue<WebServer>();
-    private final InjectedValue<SSOClusterManager> ssoManager = new InjectedValue<SSOClusterManager>();
+    private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<>();
+    private final InjectedValue<WebServer> webServer = new InjectedValue<>();
+    private final InjectedValue<SSOClusterManager> ssoManager = new InjectedValue<>();
 
     private VirtualHost host;
 

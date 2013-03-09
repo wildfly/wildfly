@@ -72,7 +72,7 @@ public class MessagingPathHandlers {
             .setRestartAllServices()
             .build();
 
-    public static final Map<String, SimpleAttributeDefinition> PATHS = new HashMap<String, SimpleAttributeDefinition>();
+    public static final Map<String, SimpleAttributeDefinition> PATHS = new HashMap<>();
 
     private static final String DEFAULT_PATH = "messaging";
     // all default paths dir are prepended with messaging

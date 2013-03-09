@@ -52,7 +52,7 @@ public class EvictionResource extends SimpleResourceDefinition {
                     .setXmlName(Attribute.STRATEGY.getLocalName())
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new EnumValidator<EvictionStrategy>(EvictionStrategy.class, true, false))
+                    .setValidator(new EnumValidator<>(EvictionStrategy.class, true, false))
                     .setDefaultValue(new ModelNode().set(EvictionStrategy.NONE.name()))
                     .build();
 

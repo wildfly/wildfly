@@ -38,7 +38,7 @@ public class ContextManager {
     private final List<SetupAction> setupActions;
 
     ContextManager(final List<SetupAction> setupActions) {
-        final List<SetupAction> actions = new ArrayList<SetupAction>(setupActions);
+        final List<SetupAction> actions = new ArrayList<>(setupActions);
         Collections.sort(actions, new Comparator<SetupAction>() {
 
             @Override
@@ -54,7 +54,7 @@ public class ContextManager {
      * wrapped and thrown
      */
     public void setup(final Map<String, Object> properties) {
-        final List<SetupAction> successfulActions = new ArrayList<SetupAction>();
+        final List<SetupAction> successfulActions = new ArrayList<>();
         for (final SetupAction action : setupActions) {
             try {
                 action.setup(properties);

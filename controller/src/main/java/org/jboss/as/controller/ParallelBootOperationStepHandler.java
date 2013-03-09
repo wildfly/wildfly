@@ -49,7 +49,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
     private final ImmutableManagementResourceRegistration rootRegistration;
     private final ControlledProcessState processState;
 
-    private final Map<String, List<ParsedBootOp>> opsBySubsystem = new LinkedHashMap<String, List<ParsedBootOp>>();
+    private final Map<String, List<ParsedBootOp>> opsBySubsystem = new LinkedHashMap<>();
 
     ParallelBootOperationStepHandler(final ExecutorService executorService, final ImmutableManagementResourceRegistration rootRegistration,
                                      final ControlledProcessState processState) {
@@ -63,7 +63,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         if (subsystemName != null) {
             List<ParsedBootOp> list = opsBySubsystem.get(subsystemName);
             if (list == null) {
-                list = new ArrayList<ParsedBootOp>();
+                list = new ArrayList<>();
                 opsBySubsystem.put(subsystemName, list);
             }
             list.add(parsedOp);
@@ -93,8 +93,8 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         final Resource rootResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         context.acquireControllerLock();
 
-        final Map<String, List<ParsedBootOp>> runtimeOpsBySubsystem = new LinkedHashMap<String, List<ParsedBootOp>>();
-        final Map<String, ParallelBootTransactionControl> transactionControls = new LinkedHashMap<String, ParallelBootTransactionControl>();
+        final Map<String, List<ParsedBootOp>> runtimeOpsBySubsystem = new LinkedHashMap<>();
+        final Map<String, ParallelBootTransactionControl> transactionControls = new LinkedHashMap<>();
 
         final CountDownLatch preparedLatch = new CountDownLatch(opsBySubsystem.size());
         final CountDownLatch committedLatch = new CountDownLatch(1);
@@ -103,7 +103,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
 
         for (Map.Entry<String, List<ParsedBootOp>> entry : opsBySubsystem.entrySet()) {
             String subsystemName = entry.getKey();
-            List<ParsedBootOp> subsystemRuntimeOps = new ArrayList<ParsedBootOp>();
+            List<ParsedBootOp> subsystemRuntimeOps = new ArrayList<>();
             runtimeOpsBySubsystem.put(subsystemName, subsystemRuntimeOps);
 
             final ParallelBootTransactionControl txControl = new ParallelBootTransactionControl(preparedLatch, committedLatch, completeLatch);
@@ -133,7 +133,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
             // AS7-2561
             // The parallel execution will have added the subsystems to their parent resource in random order.
             // We need to restore the order that came in the XML.
-            final Map<String, Resource> subsystemResources = new LinkedHashMap<String, Resource>();
+            final Map<String, Resource> subsystemResources = new LinkedHashMap<>();
             for (String subsystemName : opsBySubsystem.keySet()) {
                 final Resource resource = rootResource.removeChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystemName));
                 if (resource != null) {
@@ -227,7 +227,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                 // make sure the registry lock is held
                 context.getServiceRegistry(true);
 
-                final Map<String, ParallelBootTransactionControl> transactionControls = new LinkedHashMap<String, ParallelBootTransactionControl>();
+                final Map<String, ParallelBootTransactionControl> transactionControls = new LinkedHashMap<>();
 
                 final CountDownLatch preparedLatch = new CountDownLatch(runtimeOpsBySubsystem.size());
                 final CountDownLatch committedLatch = new CountDownLatch(1);

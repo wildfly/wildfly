@@ -42,7 +42,7 @@ public class EjbJarDescription {
 
     private final EEModuleDescription eeModuleDescription;
 
-    private final Set<String> applicationLevelSecurityRoles = new HashSet<String>();
+    private final Set<String> applicationLevelSecurityRoles = new HashSet<>();
 
     private final EEApplicationClasses applicationClassesDescription;
 
@@ -99,7 +99,7 @@ public class EjbJarDescription {
      * @return
      */
     public Collection<SessionBeanComponentDescription> getSessionBeans() {
-        Collection<SessionBeanComponentDescription> sessionBeans = new ArrayList<SessionBeanComponentDescription>();
+        Collection<SessionBeanComponentDescription> sessionBeans = new ArrayList<>();
         for (ComponentDescription componentDescription : this.eeModuleDescription.getComponentDescriptions()) {
             if (componentDescription instanceof SessionBeanComponentDescription) {
                 sessionBeans.add((SessionBeanComponentDescription) componentDescription);
@@ -109,7 +109,7 @@ public class EjbJarDescription {
     }
 
     public Collection<MessageDrivenComponentDescription> getMessageDrivenBeans() {
-        Collection<MessageDrivenComponentDescription> mdbs = new ArrayList<MessageDrivenComponentDescription>();
+        Collection<MessageDrivenComponentDescription> mdbs = new ArrayList<>();
         for (ComponentDescription componentDescription : this.eeModuleDescription.getComponentDescriptions()) {
             if (componentDescription instanceof MessageDrivenComponentDescription) {
                 mdbs.add((MessageDrivenComponentDescription) componentDescription);

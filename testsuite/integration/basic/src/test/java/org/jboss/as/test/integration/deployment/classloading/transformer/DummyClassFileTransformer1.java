@@ -35,7 +35,7 @@ public class DummyClassFileTransformer1 implements ClassFileTransformer {
 
     public static boolean wasActive = false;
 
-    public static Set<String> transformedClassNames = new ConcurrentSkipListSet<String>();
+    public static Set<String> transformedClassNames = new ConcurrentSkipListSet<>();
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {

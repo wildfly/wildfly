@@ -33,7 +33,7 @@ import org.hibernate.validator.group.DefaultGroupSequenceProvider;
 
 public class CarGroupSequenceProvider implements DefaultGroupSequenceProvider<Car> {
 
-    List<Class<?>> defaultGroupSequence = new ArrayList<Class<?>>();
+    List<Class<?>> defaultGroupSequence = new ArrayList<>();
 
     @Override
     public List<Class<?>> getValidationGroups(Car car) {

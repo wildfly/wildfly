@@ -52,7 +52,7 @@ public abstract class CommandHandlerWithArguments implements CommandHandler {
             throw new IllegalArgumentException("Full name can't be null");
         }
         if(args.isEmpty()) {
-            args = new HashMap<String, CommandArgument>();
+            args = new HashMap<>();
         }
         args.put(arg.getFullName(), arg);
     }
@@ -81,7 +81,7 @@ public abstract class CommandHandlerWithArguments implements CommandHandler {
     protected void recognizeArguments(CommandContext ctx) throws CommandFormatException {
         final Set<String> specifiedNames = ctx.getParsedCommandLine().getPropertyNames();
         if(!args.keySet().containsAll(specifiedNames)) {
-            Collection<String> unrecognized = new HashSet<String>(specifiedNames);
+            Collection<String> unrecognized = new HashSet<>(specifiedNames);
             unrecognized.removeAll(args.keySet());
             throw new CommandFormatException("Unrecognized arguments: " + unrecognized);
         }

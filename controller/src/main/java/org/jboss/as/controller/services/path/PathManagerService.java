@@ -61,13 +61,13 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
     private static final ServiceListener[] NO_LISTENERS = new ServiceListener[0];
 
     //@GuardedBy(pathEntries)
-    private final Map<String, PathEntry> pathEntries = new HashMap<String, PathEntry>();
+    private final Map<String, PathEntry> pathEntries = new HashMap<>();
 
     //@GuardedBy(pathEntries)
-    private final Map<String, Set<String>> dependenctRelativePaths = new HashMap<String, Set<String>>();
+    private final Map<String, Set<String>> dependenctRelativePaths = new HashMap<>();
 
     //@GuardedBy(callbacks)
-    private final Map<String, Map<Event, Set<Callback>>> callbacks = new HashMap<String, Map<Event, Set<Callback>>>();
+    private final Map<String, Map<Event, Set<Callback>>> callbacks = new HashMap<>();
 
     protected PathManagerService() {
     }
@@ -100,13 +100,13 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
         synchronized (callbacks) {
             Map<Event, Set<Callback>> callbacksByEvent = callbacks.get(name);
             if (callbacksByEvent == null) {
-                callbacksByEvent = new HashMap<PathManager.Event, Set<Callback>>();
+                callbacksByEvent = new HashMap<>();
                 callbacks.put(name, callbacksByEvent);
             }
             for (Event event : events) {
                 Set<Callback> callbackSet = callbacksByEvent.get(event);
                 if (callbackSet == null) {
-                    callbackSet = new HashSet<PathManager.Callback>();
+                    callbackSet = new HashSet<>();
                     callbacksByEvent.put(event, callbackSet);
                 }
                 callbackSet.add(callback);
@@ -168,7 +168,7 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
 
     final List<PathEntry> getPaths() {
         synchronized (pathEntries) {
-            return new ArrayList<PathEntry>(pathEntries.values());
+            return new ArrayList<>(pathEntries.values());
         }
     }
 
@@ -270,7 +270,7 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
         if (relativeTo != null) {
             Set<String> dependents = dependenctRelativePaths.get(relativeTo);
             if (dependents == null) {
-                dependents = new HashSet<String>();
+                dependents = new HashSet<>();
                 dependenctRelativePaths.put(relativeTo, dependents);
             }
             dependents.add(pathName);
@@ -293,7 +293,7 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
         Set<PathEntry> allEntries = null;
         synchronized (pathEntries) {
             if (event == Event.UPDATED) {
-                allEntries = new LinkedHashSet<PathEntry>();
+                allEntries = new LinkedHashSet<>();
                 allEntries.add(pathEntry);
                 getAllDependents(allEntries, pathEntry.getName());
             } else {
@@ -301,14 +301,14 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
             }
         }
 
-        Map<PathEntry, Set<Callback>> triggerCallbacks = new LinkedHashMap<PathEntry, Set<Callback>>();
+        Map<PathEntry, Set<Callback>> triggerCallbacks = new LinkedHashMap<>();
         synchronized (callbacks) {
             for (PathEntry pe : allEntries) {
                 Map<Event, Set<Callback>> callbacksByEvent = callbacks.get(pe.getName());
                 if (callbacksByEvent != null) {
                     Set<Callback> callbacksForEntry = callbacksByEvent.get(event);
                     if (callbacksForEntry != null) {
-                        triggerCallbacks.put(pe, new LinkedHashSet<Callback>(callbacksForEntry));
+                        triggerCallbacks.put(pe, new LinkedHashSet<>(callbacksForEntry));
                     }
                 }
             }
@@ -325,7 +325,7 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
         Set<String> allEntries = null;
         synchronized (pathEntries) {
             if (event == Event.UPDATED) {
-                allEntries = new LinkedHashSet<String>();
+                allEntries = new LinkedHashSet<>();
                 allEntries.add(name);
                 getAllDependentsForRestartCheck(allEntries, name);
             } else {
@@ -333,14 +333,14 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
             }
         }
 
-        Map<String, Set<Callback>> triggerCallbacks = new LinkedHashMap<String, Set<Callback>>();
+        Map<String, Set<Callback>> triggerCallbacks = new LinkedHashMap<>();
         synchronized (callbacks) {
             for (String pathName : allEntries) {
                 Map<Event, Set<Callback>> callbacksByEvent = callbacks.get(pathName);
                 if (callbacksByEvent != null) {
                     Set<Callback> callbacksForEntry = callbacksByEvent.get(event);
                     if (callbacksForEntry != null) {
-                        triggerCallbacks.put(pathName, new LinkedHashSet<Callback>(callbacksForEntry));
+                        triggerCallbacks.put(pathName, new LinkedHashSet<>(callbacksForEntry));
                     }
                 }
             }

@@ -53,14 +53,14 @@ public class ServerSetupObserver {
     @Inject
     private Instance<ClassContext> classContextInstance;
 
-    private final List<ServerSetupTask> current = new ArrayList<ServerSetupTask>();
-    private final Map<String, ManagementClient> active = new HashMap<String, ManagementClient>();
+    private final List<ServerSetupTask> current = new ArrayList<>();
+    private final Map<String, ManagementClient> active = new HashMap<>();
     private Map<String, Integer> deployed;
     boolean afterClassRun = false;
 
     public synchronized void handleBeforeDeployment(@Observes BeforeDeploy event, Container container) throws Throwable {
         if (deployed == null) {
-            deployed = new HashMap<String, Integer>();
+            deployed = new HashMap<>();
             current.clear();
             afterClassRun = false;
         }

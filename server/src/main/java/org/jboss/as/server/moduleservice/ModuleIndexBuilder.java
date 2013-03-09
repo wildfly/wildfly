@@ -48,7 +48,7 @@ public class ModuleIndexBuilder {
             if (!resources.hasMoreElements()) {
                 return null;
             }
-            final Set<Index> indexes = new HashSet<Index>();
+            final Set<Index> indexes = new HashSet<>();
             while (resources.hasMoreElements()) {
                 final URL url = resources.nextElement();
                 InputStream stream = url.openStream();

@@ -49,15 +49,15 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
 
     public SessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor) {
         ejbName = descriptor.getEjbName();
-        final Map<String, ServiceName> viewServices = new HashMap<String, ServiceName>();
+        final Map<String, ServiceName> viewServices = new HashMap<>();
         for (Map.Entry<Class<?>, ServiceName> entry : descriptor.getViewServices().entrySet()) {
             final Class<?> viewClass = entry.getKey();
             if (viewClass != null) {
                 //see WELD-921
                 //this is horrible, but until it is fixed there is not much that can be done
 
-                final Set<Class<?>> seen = new HashSet<Class<?>>();
-                final Set<Class<?>> toProcess = new HashSet<Class<?>>();
+                final Set<Class<?>> seen = new HashSet<>();
+                final Set<Class<?>> toProcess = new HashSet<>();
 
                 toProcess.add(viewClass);
 

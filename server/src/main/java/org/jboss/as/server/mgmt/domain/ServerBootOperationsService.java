@@ -49,9 +49,9 @@ import java.util.concurrent.TimeoutException;
  */
 public class ServerBootOperationsService implements Service<Void> {
 
-    final InjectedValue<ModelController> serverController = new InjectedValue<ModelController>();
-    final InjectedValue<HostControllerClient> clientInjector = new InjectedValue<HostControllerClient>();
-    final InjectedValue<Executor> executorInjector = new InjectedValue<Executor>();
+    final InjectedValue<ModelController> serverController = new InjectedValue<>();
+    final InjectedValue<HostControllerClient> clientInjector = new InjectedValue<>();
+    final InjectedValue<Executor> executorInjector = new InjectedValue<>();
 
     private FutureBootUpdates future = new FutureBootUpdates();
 

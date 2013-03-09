@@ -67,7 +67,7 @@ public class JaasCallbackHandler implements Service<CallbackHandlerService>, Cal
     private static final Map<String, String> configurationOptions;
 
     static {
-        Map<String, String> temp = new HashMap<String, String>(2);
+        Map<String, String> temp = new HashMap<>(2);
         temp.put(SUBJECT_CALLBACK_SUPPORTED, Boolean.TRUE.toString());
         temp.put(VERIFY_PASSWORD_CALLBACK_SUPPORTED, Boolean.TRUE.toString());
         configurationOptions = Collections.unmodifiableMap(temp);
@@ -75,7 +75,7 @@ public class JaasCallbackHandler implements Service<CallbackHandlerService>, Cal
 
     private final String name;
 
-    private final InjectedValue<ServerSecurityManager> securityManagerValue = new InjectedValue<ServerSecurityManager>();
+    private final InjectedValue<ServerSecurityManager> securityManagerValue = new InjectedValue<>();
 
     public JaasCallbackHandler(final String name) {
         this.name = name;

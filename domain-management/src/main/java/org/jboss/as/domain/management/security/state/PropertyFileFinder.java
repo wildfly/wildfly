@@ -69,13 +69,13 @@ public class PropertyFileFinder implements State {
             return new ErrorState(theConsole, MESSAGES.jbossHomeNotSet(), null, stateValues);
         }
 
-        List<File> foundFiles = new ArrayList<File>(2);
+        List<File> foundFiles = new ArrayList<>(2);
         final String fileName = stateValues.isManagement() ? MGMT_USERS_PROPERTIES : APPLICATION_USERS_PROPERTIES;
         if (!findFiles(jbossHome, foundFiles, fileName)) {
             return new ErrorState(theConsole, MESSAGES.propertiesFileNotFound(fileName), null, stateValues);
         }
         if (!stateValues.isManagement()) {
-            List<File> foundRoleFiles = new ArrayList<File>(2);
+            List<File> foundRoleFiles = new ArrayList<>(2);
             if (!findFiles(jbossHome, foundRoleFiles, APPLICATION_ROLES_PROPERTIES)) {
                 return new ErrorState(theConsole, MESSAGES.propertiesFileNotFound(APPLICATION_ROLES_PROPERTIES), null, stateValues);
             }
@@ -89,7 +89,7 @@ public class PropertyFileFinder implements State {
 
         stateValues.setPropertiesFiles(foundFiles);
 
-        Set<String> foundUsers = new HashSet<String>();
+        Set<String> foundUsers = new HashSet<>();
         for (File current : stateValues.getPropertiesFiles()) {
             try {
                 foundUsers.addAll(loadUserNames(current));
@@ -105,7 +105,7 @@ public class PropertyFileFinder implements State {
     }
 
     private Map<String, String> loadAllRoles(List<File> foundRoleFiles) throws StartException, IOException {
-        Map<String, String> loadedRoles = new HashMap<String, String>();
+        Map<String, String> loadedRoles = new HashMap<>();
         for (File file : foundRoleFiles) {
             PropertiesFileLoader propertiesLoad = null;
             try {

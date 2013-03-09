@@ -35,7 +35,7 @@ import org.jboss.as.naming.util.ThreadLocalStack;
  */
 public abstract class NamespaceContextSelector {
     /* Thread local maintaining the current context selector */
-    private static ThreadLocalStack<NamespaceContextSelector> currentSelector = new ThreadLocalStack<NamespaceContextSelector>();
+    private static ThreadLocalStack<NamespaceContextSelector> currentSelector = new ThreadLocalStack<>();
 
     private static NamespaceContextSelector defaultSelector;
 

@@ -38,7 +38,7 @@ import org.jboss.msc.value.InjectedValue;
 public class LocalDestinationOutboundSocketBindingService extends OutboundSocketBindingService {
 
 
-    private final InjectedValue<SocketBinding> localDestinationSocketBindingInjectedValue = new InjectedValue<SocketBinding>();
+    private final InjectedValue<SocketBinding> localDestinationSocketBindingInjectedValue = new InjectedValue<>();
 
     public LocalDestinationOutboundSocketBindingService(final String name, final Integer sourcePort, final boolean fixedSourcePort) {
         super(name, sourcePort, fixedSourcePort);

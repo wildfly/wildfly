@@ -29,7 +29,7 @@ import java.util.Set;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class TOwner {
-    private Set<TInjectee> injectees = new HashSet<TInjectee>();
+    private Set<TInjectee> injectees = new HashSet<>();
 
     public void addInjectee(TInjectee i) {
         System.out.println("add #i-b = " + injectees.size());

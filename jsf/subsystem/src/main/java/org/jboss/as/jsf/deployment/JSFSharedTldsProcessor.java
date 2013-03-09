@@ -52,7 +52,7 @@ public class JSFSharedTldsProcessor implements DeploymentUnitProcessor {
 
     private static final String[] JSF_TAGLIBS = { "html_basic.tld", "jsf_core.tld", "mojarra_ext.tld", "myfaces_core.tld", "myfaces_html.tld" };
 
-    private final Map<String, List<TldMetaData>> jsfTldMap = new HashMap<String, List<TldMetaData>>();
+    private final Map<String, List<TldMetaData>> jsfTldMap = new HashMap<>();
    // private final ArrayList<TldMetaData> jsfTlds = new ArrayList<TldMetaData>();
 
     public JSFSharedTldsProcessor() {
@@ -64,7 +64,7 @@ public class JSFSharedTldsProcessor implements DeploymentUnitProcessor {
         List<String> jsfSlotNames = moduleFactory.getActiveJSFVersions();
 
         for (String slot : jsfSlotNames) {
-            final List<TldMetaData> jsfTlds = new ArrayList<TldMetaData>();
+            final List<TldMetaData> jsfTlds = new ArrayList<>();
             try {
                 ModuleClassLoader jsf = Module.getModuleFromCallerModuleLoader(moduleFactory.getImplModId(slot)).getClassLoader();
                 for (String tld : JSF_TAGLIBS) {
@@ -112,7 +112,7 @@ public class JSFSharedTldsProcessor implements DeploymentUnitProcessor {
 
         // Add the shared TLDs metadata
         List<TldMetaData> tldsMetaData = deploymentUnit.getAttachment(SharedTldsMetaDataBuilder.ATTACHMENT_KEY);
-        if (tldsMetaData == null) tldsMetaData = new ArrayList<TldMetaData>();
+        if (tldsMetaData == null) tldsMetaData = new ArrayList<>();
 
         String slot = jsfVersion;
         if (!JSFModuleIdFactory.getInstance().isValidJSFSlot(slot)) {

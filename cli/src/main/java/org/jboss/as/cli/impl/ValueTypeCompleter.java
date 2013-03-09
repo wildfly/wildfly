@@ -47,7 +47,7 @@ import org.jboss.dmr.ModelType;
  */
 public class ValueTypeCompleter implements CommandLineCompleter {
 
-    private static final List<ModelNode> BOOLEAN_LIST = new ArrayList<ModelNode>(2);
+    private static final List<ModelNode> BOOLEAN_LIST = new ArrayList<>(2);
     static {
         BOOLEAN_LIST.add(new ModelNode(Boolean.FALSE));
         BOOLEAN_LIST.add(new ModelNode(Boolean.TRUE));
@@ -105,7 +105,7 @@ public class ValueTypeCompleter implements CommandLineCompleter {
 
         private String prop;
         private List<String> propStack;
-        private List<List<String>> mentionedPropStack = new ArrayList<List<String>>(2);
+        private List<List<String>> mentionedPropStack = new ArrayList<>(2);
         private String lastEnteredState;
         private int lastStateIndex;
         private char lastStateChar;
@@ -178,7 +178,7 @@ public class ValueTypeCompleter implements CommandLineCompleter {
                     }
                     final List<String> mentionedProps = getMentionedProps(mentionedIndex);
                     if (mentionedProps == null || mentionedProps.isEmpty() || lastEnteredState.equals(ListItemSeparatorState.ID)) {
-                        final List<String> candidates = new ArrayList<String>(propType.keys());
+                        final List<String> candidates = new ArrayList<>(propType.keys());
                         if (mentionedProps != null) {
                             candidates.removeAll(mentionedProps);
                         }
@@ -205,7 +205,7 @@ public class ValueTypeCompleter implements CommandLineCompleter {
                 } else {
                     allowed = propType.get(Util.ALLOWED).asList();
                 }
-                final List<String> candidates = new ArrayList<String>();
+                final List<String> candidates = new ArrayList<>();
                 if(propBuf.length() > 0) {
                     final String value = propBuf.toString();
                     for (ModelNode candidate : allowed) {
@@ -259,7 +259,7 @@ public class ValueTypeCompleter implements CommandLineCompleter {
                     allowed = propType.get(Util.ALLOWED).asList();
                 }
                 }
-                candidates = new ArrayList<String>();
+                candidates = new ArrayList<>();
                 for(ModelNode candidate : allowed) {
                     candidates.add(candidate.asString());
                 }
@@ -277,7 +277,7 @@ public class ValueTypeCompleter implements CommandLineCompleter {
                     return Collections.emptyList();
                 } catch(IllegalArgumentException e) {
                 }
-                candidates = new ArrayList<String>(propValueType.keys());
+                candidates = new ArrayList<>(propValueType.keys());
             } else {
                 if(propBuf.length() > 0) {
                     if(!propType.has(prop)) {
@@ -304,7 +304,7 @@ public class ValueTypeCompleter implements CommandLineCompleter {
                     prop = null;
                     ++mentionedIndex;
                 }
-                candidates = new ArrayList<String>();
+                candidates = new ArrayList<>();
                 final List<String> mentionedProps = getMentionedProps(mentionedIndex);
                 for (String candidate : propType.keys()) {
                     if (prop == null || candidate.startsWith(prop)) {
@@ -365,7 +365,7 @@ public class ValueTypeCompleter implements CommandLineCompleter {
             if(lastEnteredState.equals(EqualsState.ID)) {
                 if(prop != null) {
                     if(propStack == null) {
-                        propStack = new ArrayList<String>();
+                        propStack = new ArrayList<>();
                     }
                     propStack.add(prop);
                 }
@@ -408,7 +408,7 @@ public class ValueTypeCompleter implements CommandLineCompleter {
                     }
                     if(mentionedPropStack.size() < propStackSize + 1) {
                         final List<List<String>> tmp = mentionedPropStack;
-                        mentionedPropStack = new ArrayList<List<String>>(propStackSize + 1);
+                        mentionedPropStack = new ArrayList<>(propStackSize + 1);
                         mentionedPropStack.addAll(tmp);
                         for(int i = mentionedPropStack.size(); i <= propStackSize; ++i) {
                             mentionedPropStack.add(null);
@@ -422,7 +422,7 @@ public class ValueTypeCompleter implements CommandLineCompleter {
                         mentionedPropStack.set(propStackSize, mentionedProps);
                     } else if(mentionedProps.size() == 1) {
                         List<String> tmp = mentionedProps;
-                        mentionedProps = new ArrayList<String>();
+                        mentionedProps = new ArrayList<>();
                         mentionedProps.add(tmp.get(0));
                         mentionedProps.add(mentioned);
                         mentionedPropStack.set(propStackSize, mentionedProps);
@@ -431,7 +431,7 @@ public class ValueTypeCompleter implements CommandLineCompleter {
                     }
                 } else {
                     if(mentionedPropStack.size() == 0) {
-                        mentionedPropStack = new ArrayList<List<String>>(1);
+                        mentionedPropStack = new ArrayList<>(1);
                         mentionedPropStack.add(null);
                     }
                     List<String> mentionedProps = mentionedPropStack.get(0);
@@ -440,7 +440,7 @@ public class ValueTypeCompleter implements CommandLineCompleter {
                         mentionedPropStack.set(0, mentionedProps);
                     } else if(mentionedProps.size() == 1) {
                         List<String> tmp = mentionedProps;
-                        mentionedProps = new ArrayList<String>();
+                        mentionedProps = new ArrayList<>();
                         mentionedProps.add(tmp.get(0));
                         mentionedProps.add(prop);
                         mentionedPropStack.set(0, mentionedProps);
@@ -569,7 +569,7 @@ public class ValueTypeCompleter implements CommandLineCompleter {
 
     abstract static class ValueTypeCandidatesState extends DefaultParsingState implements ValueTypeCandidatesProvider {
 
-        private final Collection<String> candidates = new ArrayList<String>();
+        private final Collection<String> candidates = new ArrayList<>();
 
         ValueTypeCandidatesState(String id) {
             super(id);
@@ -590,7 +590,7 @@ public class ValueTypeCompleter implements CommandLineCompleter {
             if(chunk == null || chunk.length() == 0) {
                 return candidates;
             }
-            final List<String> filtered = new ArrayList<String>(candidates.size());
+            final List<String> filtered = new ArrayList<>(candidates.size());
             for(String candidate : candidates) {
                 if(candidate.startsWith(chunk)) {
                     filtered.add(candidate);
@@ -737,7 +737,7 @@ public class ValueTypeCompleter implements CommandLineCompleter {
 
         public static final PropertyState INSTANCE = new PropertyState();
 
-        private final Collection<String> candidates = new ArrayList<String>(2);
+        private final Collection<String> candidates = new ArrayList<>(2);
 
         public PropertyState() {
             super(ID);

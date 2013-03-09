@@ -54,8 +54,8 @@ public abstract class AbstractChannelOpenListenerService<T> implements Service<V
 
     protected final Logger log = Logger.getLogger("org.jboss.as.remoting");
 
-    private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
-    private final InjectedValue<ManagementChannelRegistryService> registry = new InjectedValue<ManagementChannelRegistryService>();
+    private final InjectedValue<Endpoint> endpointValue = new InjectedValue<>();
+    private final InjectedValue<ManagementChannelRegistryService> registry = new InjectedValue<>();
 
     protected final String channelName;
     private final OptionMap optionMap;
@@ -127,7 +127,7 @@ public abstract class AbstractChannelOpenListenerService<T> implements Service<V
         final Set<T> copy;
         synchronized (channels) {
             // Copy off the set to avoid ConcurrentModificationException
-            copy = new HashSet<T>(channels);
+            copy = new HashSet<>(channels);
         }
         for (final T channel : copy) {
             closeChannelOnShutdown(channel);

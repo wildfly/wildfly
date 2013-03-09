@@ -58,7 +58,7 @@ public class ContentOverrideDeploymentUnitProcessor implements DeploymentUnitPro
         }
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
-        final Set<String> paths = new HashSet<String>();
+        final Set<String> paths = new HashSet<>();
         for (final DeploymentOverlayService deploymentOverlay : indexService.getOverrides(deploymentUnit.getName())) {
             for (final ContentService override : deploymentOverlay.getContentServices()) {
                 if (!paths.contains(override.getPath())) {

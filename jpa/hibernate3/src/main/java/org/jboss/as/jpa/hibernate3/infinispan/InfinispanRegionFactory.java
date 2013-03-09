@@ -76,8 +76,8 @@ public class InfinispanRegionFactory extends org.hibernate.cache.infinispan.Infi
         this.serviceName = ServiceName.JBOSS.append(DEFAULT_CACHE_CONTAINER, (name != null) ? name : UUID.randomUUID().toString());
         String container = properties.getProperty(CACHE_CONTAINER, DEFAULT_CACHE_CONTAINER);
         ServiceContainer target = ServiceContainerHelper.getCurrentServiceContainer();
-        InjectedValue<EmbeddedCacheManager> manager = new InjectedValue<EmbeddedCacheManager>();
-        ServiceBuilder<EmbeddedCacheManager> builder = target.addService(this.serviceName, new ValueService<EmbeddedCacheManager>(manager))
+        InjectedValue<EmbeddedCacheManager> manager = new InjectedValue<>();
+        ServiceBuilder<EmbeddedCacheManager> builder = target.addService(this.serviceName, new ValueService<>(manager))
                 .addDependency(EmbeddedCacheManagerService.getServiceName(container), EmbeddedCacheManager.class, manager)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
         ;

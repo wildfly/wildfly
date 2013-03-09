@@ -41,8 +41,8 @@ public class TimerServiceAnnotationProcessor extends AbstractEEAnnotationProcess
     final List<ClassAnnotationInformationFactory> factories;
 
     public TimerServiceAnnotationProcessor() {
-        final List<ClassAnnotationInformationFactory> factories = new ArrayList<ClassAnnotationInformationFactory>();
-        factories.add(new BooleanAnnotationInformationFactory<Timeout>(Timeout.class));
+        final List<ClassAnnotationInformationFactory> factories = new ArrayList<>();
+        factories.add(new BooleanAnnotationInformationFactory<>(Timeout.class));
         factories.add(new ScheduleAnnotationInformationFactory());
         this.factories = Collections.unmodifiableList(factories);
     }

@@ -158,7 +158,7 @@ public class PoolConfigurationRWHandler {
         }
 
         protected List<PoolConfiguration> getMatchingPoolConfigs(String jndiName, ManagementRepository repository) {
-            ArrayList<PoolConfiguration> result = new ArrayList<PoolConfiguration>(repository.getDataSources().size());
+            ArrayList<PoolConfiguration> result = new ArrayList<>(repository.getDataSources().size());
             if (repository.getDataSources() != null) {
                 for (DataSource ds : repository.getDataSources()) {
                     if (jndiName.equalsIgnoreCase(ds.getJndiName())) {
@@ -182,7 +182,7 @@ public class PoolConfigurationRWHandler {
         }
 
         protected List<PoolConfiguration> getMatchingPoolConfigs(String jndiName, ManagementRepository repository) {
-            ArrayList<PoolConfiguration> result = new ArrayList<PoolConfiguration>(repository.getConnectors().size());
+            ArrayList<PoolConfiguration> result = new ArrayList<>(repository.getConnectors().size());
             if (repository.getConnectors() != null) {
                 for (Connector conn : repository.getConnectors()) {
                     if (jndiName.equalsIgnoreCase(conn.getUniqueId())) {

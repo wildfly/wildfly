@@ -93,12 +93,12 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         }
         Set<ServletContainerInitializer> scis = scisMetaData.getScis();
         if (scis == null) {
-            scis = new HashSet<ServletContainerInitializer>();
+            scis = new HashSet<>();
             scisMetaData.setScis(scis);
         }
         Map<ServletContainerInitializer, Set<Class<?>>> handlesTypes = scisMetaData.getHandlesTypes();
         if (handlesTypes == null) {
-            handlesTypes = new HashMap<ServletContainerInitializer, Set<Class<?>>>();
+            handlesTypes = new HashMap<>();
             scisMetaData.setHandlesTypes(handlesTypes);
         }
         // Find the SCIs from shared modules
@@ -130,7 +130,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
             }
         }
         // Process HandlesTypes for ServletContainerInitializer
-        Map<Class<?>, Set<ServletContainerInitializer>> typesMap = new HashMap<Class<?>, Set<ServletContainerInitializer>>();
+        Map<Class<?>, Set<ServletContainerInitializer>> typesMap = new HashMap<>();
         for (ServletContainerInitializer service : scis) {
             if (service.getClass().isAnnotationPresent(HandlesTypes.class)) {
                 HandlesTypes handlesTypesAnnotation = service.getClass().getAnnotation(HandlesTypes.class);
@@ -139,7 +139,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
                     for (Class<?> type : typesArray) {
                         Set<ServletContainerInitializer> servicesSet = typesMap.get(type);
                         if (servicesSet == null) {
-                            servicesSet = new HashSet<ServletContainerInitializer>();
+                            servicesSet = new HashSet<>();
                             typesMap.put(type, servicesSet);
                         }
                         servicesSet.add(service);
@@ -203,7 +203,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
     }
 
     private Set<ClassInfo> processHandlesType(DotName typeName, Class<?> type, CompositeIndex index) throws DeploymentUnitProcessingException {
-        Set<ClassInfo> classes = new HashSet<ClassInfo>();
+        Set<ClassInfo> classes = new HashSet<>();
         if (type.isAnnotation()) {
             List<AnnotationInstance> instances = index.getAnnotations(typeName);
             for (AnnotationInstance instance : instances) {
@@ -226,7 +226,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
     }
 
     private Set<Class<?>> loadClassInfoSet(Set<ClassInfo> classInfos, ClassLoader classLoader) throws DeploymentUnitProcessingException {
-        Set<Class<?>> classes = new HashSet<Class<?>>();
+        Set<Class<?>> classes = new HashSet<>();
         for (ClassInfo classInfo : classInfos) {
             Class<?> type;
             try {

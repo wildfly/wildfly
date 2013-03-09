@@ -290,7 +290,7 @@ public final class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         // set the cache mode to local
         // cache.get(ModelKeys.MODE).set(Configuration.CacheMode.LOCAL.name());
@@ -326,7 +326,7 @@ public final class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -387,7 +387,7 @@ public final class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -429,7 +429,7 @@ public final class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -726,7 +726,7 @@ public final class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<
         storeAddress.add(ModelKeys.STORE,ModelKeys.STORE_NAME) ;
         storeAddress.protect();
         ModelNode store = Util.getEmptyOperation(ModelDescriptionConstants.ADD, storeAddress);
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -757,7 +757,7 @@ public final class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<
         storeAddress.add(ModelKeys.FILE_STORE,ModelKeys.FILE_STORE_NAME) ;
         storeAddress.protect();
         ModelNode store = Util.getEmptyOperation(ModelDescriptionConstants.ADD, storeAddress);
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -788,7 +788,7 @@ public final class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<
         storeAddress.add(ModelKeys.REMOTE_STORE,ModelKeys.REMOTE_STORE_NAME) ;
         storeAddress.protect();
         ModelNode store = Util.getEmptyOperation(ModelDescriptionConstants.ADD, storeAddress);
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -855,7 +855,7 @@ public final class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<
         ModelNode storeAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
         // we can't determine the full address until we know which tables are present
         ModelNode store = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);

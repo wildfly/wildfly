@@ -72,8 +72,8 @@ import org.jboss.util.Base64;
  */
 public class DatabaseTimerPersistence implements TimerPersistence, Service<DatabaseTimerPersistence> {
 
-    private final InjectedValue<ManagedReferenceFactory> dataSourceInjectedValue = new InjectedValue<ManagedReferenceFactory>();
-    private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<ModuleLoader>();
+    private final InjectedValue<ManagedReferenceFactory> dataSourceInjectedValue = new InjectedValue<>();
+    private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<>();
     private final String name;
     private volatile ManagedReference managedReference;
     private volatile DataSource dataSource;
@@ -224,7 +224,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             statement = connection.prepareStatement(loadTimer);
             statement.setString(1, timedObjectId);
             resultSet = statement.executeQuery();
-            final List<TimerImpl> timers = new ArrayList<TimerImpl>();
+            final List<TimerImpl> timers = new ArrayList<>();
             while (resultSet.next()) {
                 try {
                     final TimerImpl timerImpl = timerFromResult(resultSet, timerService);

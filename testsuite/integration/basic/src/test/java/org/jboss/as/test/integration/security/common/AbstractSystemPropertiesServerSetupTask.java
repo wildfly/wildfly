@@ -60,7 +60,7 @@ public abstract class AbstractSystemPropertiesServerSetupTask implements ServerS
             return;
         }
 
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        final List<ModelNode> updates = new ArrayList<>();
 
         for (SystemProperty systemProperty : systemProperties) {
             final String propertyName = systemProperty.getName();
@@ -92,7 +92,7 @@ public abstract class AbstractSystemPropertiesServerSetupTask implements ServerS
             return;
         }
 
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        final List<ModelNode> updates = new ArrayList<>();
 
         for (SystemProperty systemProperty : systemProperties) {
             final String propertyName = systemProperty.getName();
@@ -112,7 +112,7 @@ public abstract class AbstractSystemPropertiesServerSetupTask implements ServerS
         if (map == null || map.isEmpty()) {
             return null;
         }
-        final List<SystemProperty> list = new ArrayList<SystemProperty>();
+        final List<SystemProperty> list = new ArrayList<>();
         for (Map.Entry<String, String> property : map.entrySet()) {
             list.add(new DefaultSystemProperty(property.getKey(), property.getValue()));
         }

@@ -70,7 +70,7 @@ class JSFSubsystemTransformers {
                         context.getLogger().logAttributeWarning(address, MESSAGES.invalidJSFSlotValue(slot.asString()), SLOT_ATTRIBUTE_NAME);
                     }
                 }
-                Set<String> attributes = new HashSet<String>();
+                Set<String> attributes = new HashSet<>();
                 for (Property prop : resource.getModel().asPropertyList()) {
                     attributes.add(prop.getName());
                 }
@@ -94,7 +94,7 @@ class JSFSubsystemTransformers {
                                 OperationResultTransformer.ORIGINAL_RESULT);
                     }
                 }
-                Set<String> attributes = new HashSet<String>();
+                Set<String> attributes = new HashSet<>();
                 for (Property prop : operation.asPropertyList()) {
                     attributes.add(prop.getName());
                 }

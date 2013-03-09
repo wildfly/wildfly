@@ -23,7 +23,7 @@ public class MockRuntimeVaultReader extends RuntimeVaultReader {
   protected SecurityVault vault;
 
   public void createVault(final String fqn, final Map<String, Object> options) throws VaultReaderException {
-    Map<String, Object> vaultOptions = new HashMap<String, Object>(options);
+    Map<String, Object> vaultOptions = new HashMap<>(options);
     SecurityVault vault = null;
     try {
       vault = AccessController.doPrivileged(new PrivilegedExceptionAction<SecurityVault>() {

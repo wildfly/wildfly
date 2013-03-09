@@ -215,7 +215,7 @@ public abstract class DiscardAttributesTransformer implements OperationTransform
     }
 
     private static Set<String> namesFromDefinitions(AttributeDefinition... attributes) {
-        final Set<String> names = new HashSet<String>();
+        final Set<String> names = new HashSet<>();
         for(final AttributeDefinition def : attributes) {
             names.add(def.getName());
         }
@@ -231,7 +231,7 @@ public abstract class DiscardAttributesTransformer implements OperationTransform
      */
     @Deprecated
     protected DiscardAttributesTransformer(String... attributeNames) {
-        this(LENIENT_DISCARD_APPROVER, new HashSet<String>(Arrays.asList(attributeNames)));
+        this(LENIENT_DISCARD_APPROVER, new HashSet<>(Arrays.asList(attributeNames)));
     }
 
     /**
@@ -240,7 +240,7 @@ public abstract class DiscardAttributesTransformer implements OperationTransform
      * @param attributeNames  the attributes to discard
      */
     protected DiscardAttributesTransformer(DiscardApprover discardApprover, String... attributeNames) {
-        this(discardApprover, new HashSet<String>(Arrays.asList(attributeNames)));
+        this(discardApprover, new HashSet<>(Arrays.asList(attributeNames)));
     }
 
     /**

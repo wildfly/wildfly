@@ -329,7 +329,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
     }
 
     private static PathAddress getDataSourceAddress(final String jndiName, DeploymentUnit deploymentUnit, boolean xa) {
-        List<PathElement> elements = new ArrayList<PathElement>();
+        List<PathElement> elements = new ArrayList<>();
         if (deploymentUnit.getParent() == null) {
             elements.add(PathElement.pathElement(ModelDescriptionConstants.DEPLOYMENT, deploymentUnit.getName()));
         } else {

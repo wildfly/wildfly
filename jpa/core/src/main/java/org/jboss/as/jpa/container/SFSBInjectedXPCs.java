@@ -71,7 +71,7 @@ class SFSBInjectedXPCs {
         }
 
         if (target.injectedXPCsByPuName == null) {
-            target.injectedXPCsByPuName = new HashMap<String, ExtendedEntityManager>();
+            target.injectedXPCsByPuName = new HashMap<>();
         }
         target.injectedXPCsByPuName.put(scopedPuName, entityManager);
 
@@ -81,7 +81,7 @@ class SFSBInjectedXPCs {
         SFSBInjectedXPCs target = this;
 
         if (target.injectedXPCsByPuName == null) {
-            target.injectedXPCsByPuName = new HashMap<String, ExtendedEntityManager>();
+            target.injectedXPCsByPuName = new HashMap<>();
         }
         target.injectedXPCsByPuName.put(scopedPuName, entityManager);
 

@@ -49,7 +49,7 @@ public class ValidResourceAdapter implements ResourceAdapter,Serializable {
     @Min(3)
     private Integer raProperty;
     /** The activations by activation spec */
-    private Map<ValidActivationSpec, ValidActivation> activations=new HashMap<ValidActivationSpec, ValidActivation>();
+    private Map<ValidActivationSpec, ValidActivation> activations=new HashMap<>();
 
     /**
      * Default constructor

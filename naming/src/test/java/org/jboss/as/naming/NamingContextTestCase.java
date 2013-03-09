@@ -447,7 +447,7 @@ public class NamingContextTestCase {
     }
     
     private void checkListResults(NamingEnumeration<? extends NameClassPair> results) throws NamingException {
-        final Set<String> expected = new HashSet<String>(Arrays.asList("test", "testTwo", "testThree", "testContext"));
+        final Set<String> expected = new HashSet<>(Arrays.asList("test", "testTwo", "testThree", "testContext"));
         
         while (results.hasMore()) {
             NameClassPair result = results.next();
@@ -465,7 +465,7 @@ public class NamingContextTestCase {
     }
         
     private void checkListWithContinuationsResults(NamingEnumeration<? extends NameClassPair> results) throws NamingException {
-        final Set<String> expected = new HashSet<String>(Arrays.asList("test", "testTwo", "testThree"));
+        final Set<String> expected = new HashSet<>(Arrays.asList("test", "testTwo", "testThree"));
         
         while (results.hasMore()) {
             NameClassPair result = results.next();

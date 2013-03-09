@@ -162,7 +162,7 @@ public class NamingEventCoordinatorTestCase {
     }
 
     private class CollectingListener implements ObjectChangeListener, NamespaceChangeListener {
-        private final List<NamingEvent> capturedEvents = new ArrayList<NamingEvent>();
+        private final List<NamingEvent> capturedEvents = new ArrayList<>();
 
         private final CountDownLatch latch;
 

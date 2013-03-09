@@ -50,8 +50,8 @@ public final class AsynchronousService<T> implements Service<T> {
     }
 
     public static <T> ServiceBuilder<T> addService(ServiceTarget target, ServiceName name, Service<T> service, boolean startAsynchronously, boolean stopAsynchronously) {
-        final InjectedValue<ExecutorService> executor = new InjectedValue<ExecutorService>();
-        final ServiceBuilder<T> builder = target.addService(name, new AsynchronousService<T>(service, executor, startAsynchronously, stopAsynchronously));
+        final InjectedValue<ExecutorService> executor = new InjectedValue<>();
+        final ServiceBuilder<T> builder = target.addService(name, new AsynchronousService<>(service, executor, startAsynchronously, stopAsynchronously));
         Services.addServerExecutorDependency(builder, executor, false);
         return builder;
     }

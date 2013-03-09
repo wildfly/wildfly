@@ -196,7 +196,7 @@ public class DomainDeploymentOverlayTransformersTestCase extends AbstractCoreMod
                         //Perhaps this should go into the model comparison itself?
                         ModelNode socketBindingGroup = modelNode.get(SOCKET_BINDING_GROUP, "test-sockets");
                         if (socketBindingGroup.isDefined()) {
-                            Set<String> names = new HashSet<String>();
+                            Set<String> names = new HashSet<>();
                             for (String key : socketBindingGroup.keys()) {
                                 if (!socketBindingGroup.get(key).isDefined()) {
                                     names.add(key);

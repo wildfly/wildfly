@@ -42,7 +42,7 @@ public class ModuleDeployment implements Service<ModuleDeployment> {
     public static final ServiceName SERVICE_NAME = ServiceName.of("moduleDeploymentRuntimeInformation");
 
     private final DeploymentModuleIdentifier identifier;
-    private final InjectedValue<DeploymentRepository> deploymentRepository = new InjectedValue<DeploymentRepository>();
+    private final InjectedValue<DeploymentRepository> deploymentRepository = new InjectedValue<>();
     private final Map<String, EjbDeploymentInformation> ejbs;
 
     public ModuleDeployment(DeploymentModuleIdentifier identifier, Map<String, EjbDeploymentInformation> ejbs) {

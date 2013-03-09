@@ -106,7 +106,7 @@ public class DescriptorValveAuthenticatorTestCase {
     @InSequence(2)
     public void testValveGlobal(@ArquillianResource URL url, @ArquillianResource ManagementClient client) throws Exception {
         // adding authenticator valve based on the created module
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         params.put(PARAM_NAME, GLOBAL_PARAM_VALUE);        
         ValveUtil.addValve(client, CUSTOM_AUTHENTICATOR_1, MODULENAME, AUTHENTICATOR.getName(), params);        
         ValveUtil.reload(client);

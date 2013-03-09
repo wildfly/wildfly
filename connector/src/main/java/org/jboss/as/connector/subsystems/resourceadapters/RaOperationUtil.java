@@ -128,15 +128,15 @@ public class RaOperationUtil {
 
 
     public static ModifiableResourceAdapter buildResourceAdaptersObject(final OperationContext context, ModelNode operation, String archiveOrModule) throws OperationFailedException {
-        Map<String, String> configProperties = new HashMap<String, String>(0);
-        List<CommonConnDef> connectionDefinitions = new ArrayList<CommonConnDef>(0);
-        List<CommonAdminObject> adminObjects = new ArrayList<CommonAdminObject>(0);
+        Map<String, String> configProperties = new HashMap<>(0);
+        List<CommonConnDef> connectionDefinitions = new ArrayList<>(0);
+        List<CommonAdminObject> adminObjects = new ArrayList<>(0);
         TransactionSupportEnum transactionSupport = operation.hasDefined(TRANSACTION_SUPPORT.getName()) ? TransactionSupportEnum
                 .valueOf(operation.get(TRANSACTION_SUPPORT.getName()).asString()) : null;
         String bootstrapContext = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, operation, BOOTSTRAP_CONTEXT);
         List<String> beanValidationGroups = null;
         if (operation.hasDefined(BEANVALIDATION_GROUPS.getName())) {
-            beanValidationGroups = new ArrayList<String>(operation.get(BEANVALIDATION_GROUPS.getName()).asList().size());
+            beanValidationGroups = new ArrayList<>(operation.get(BEANVALIDATION_GROUPS.getName()).asList().size());
             for (ModelNode beanValidation : operation.get(BEANVALIDATION_GROUPS.getName()).asList()) {
                 beanValidationGroups.add(beanValidation.asString());
             }
@@ -152,7 +152,7 @@ public class RaOperationUtil {
 
     public static ModifiableConnDef buildConnectionDefinitionObject(final OperationContext context, final ModelNode recoveryEnvModel, final String poolName,
                                                                     final boolean isXa) throws OperationFailedException, ValidateException {
-        Map<String, String> configProperties = new HashMap<String, String>(0);
+        Map<String, String> configProperties = new HashMap<>(0);
         String className = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, recoveryEnvModel, CLASS_NAME);
         String jndiName = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, recoveryEnvModel, JNDINAME);
         boolean enabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, ENABLED);
@@ -221,7 +221,7 @@ public class RaOperationUtil {
     }
 
     public static ModifiableAdminObject buildAdminObjects(final OperationContext context, ModelNode operation, final String poolName) throws OperationFailedException, ValidateException {
-        Map<String, String> configProperties = new HashMap<String, String>(0);
+        Map<String, String> configProperties = new HashMap<>(0);
         String className = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, operation, CLASS_NAME);
         String jndiName = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, operation, JNDINAME);
         boolean enabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, operation, ENABLED);
@@ -381,7 +381,7 @@ public class RaOperationUtil {
                 ConnectorXmlDescriptor connectorXmlDescriptor = RaDeploymentParsingProcessor.process(resolveProperties, deploymentRoot, null, name);
                 IronJacamarXmlDescriptor ironJacamarXmlDescriptor = IronJacamarDeploymentParsingProcessor.process(deploymentRoot, resolveProperties);
                 RaNativeProcessor.process(deploymentRoot);
-                Map<ResourceRoot, Index> annotationIndexes = new HashMap<ResourceRoot, Index>();
+                Map<ResourceRoot, Index> annotationIndexes = new HashMap<>();
                 ResourceRootIndexer.indexResourceRoot(resourceRoot);
                 Index index = resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX);
                 if (index != null) {

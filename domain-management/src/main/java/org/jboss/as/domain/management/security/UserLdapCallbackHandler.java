@@ -67,7 +67,7 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
 
     public static final String DEFAULT_USER_DN = "dn";
 
-    private final InjectedValue<ConnectionManager> connectionManager = new InjectedValue<ConnectionManager>();
+    private final InjectedValue<ConnectionManager> connectionManager = new InjectedValue<>();
 
     private final String baseDn;
     private final String usernameAttribute;

@@ -176,7 +176,7 @@ public class JSFFailoverTestCase {
     private static HttpUriRequest buildPostRequest(String url, String sessionId, String viewState, String guess) throws UnsupportedEncodingException {
         HttpPost post = new HttpPost(url);
 
-        List<NameValuePair> list = new LinkedList<NameValuePair> ();
+        List<NameValuePair> list = new LinkedList<>();
 
         list.add(new BasicNameValuePair("javax.faces.ViewState", viewState));
         list.add(new BasicNameValuePair("numberGuess", "numberGuess"));

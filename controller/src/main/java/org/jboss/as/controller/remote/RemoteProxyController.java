@@ -102,7 +102,7 @@ public class RemoteProxyController implements ProxyController {
     public void execute(final ModelNode original, final OperationMessageHandler messageHandler, final ProxyOperationControl control, final OperationAttachments attachments) {
         // Add blocking support to adhere to the proxy controller API contracts
         final CountDownLatch completed = new CountDownLatch(1);
-        final BlockingQueue<TransactionalProtocolClient.PreparedOperation<TransactionalProtocolClient.Operation>> queue = new ArrayBlockingQueue<TransactionalProtocolClient.PreparedOperation<TransactionalProtocolClient.Operation>>(1, true);
+        final BlockingQueue<TransactionalProtocolClient.PreparedOperation<TransactionalProtocolClient.Operation>> queue = new ArrayBlockingQueue<>(1, true);
         final TransactionalProtocolClient.TransactionalOperationListener<TransactionalProtocolClient.Operation> operationListener = new TransactionalProtocolClient.TransactionalOperationListener<TransactionalProtocolClient.Operation>() {
             @Override
             public void operationPrepared(TransactionalProtocolClient.PreparedOperation<TransactionalProtocolClient.Operation> prepared) {
@@ -114,7 +114,7 @@ public class RemoteProxyController implements ProxyController {
             @Override
             public void operationFailed(TransactionalProtocolClient.Operation operation, ModelNode result) {
                 try {
-                    queue.offer(new BlockingQueueOperationListener.FailedOperation<TransactionalProtocolClient.Operation>(operation, result));
+                    queue.offer(new BlockingQueueOperationListener.FailedOperation<>(operation, result));
                 } finally {
                     // This might not be needed?
                     completed.countDown();

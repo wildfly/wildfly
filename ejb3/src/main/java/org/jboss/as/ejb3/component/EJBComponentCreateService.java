@@ -87,7 +87,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     private final ShutDownInterceptorFactory shutDownInterceptorFactory;
 
-    private final InjectedValue<EJBRemoteTransactionsRepository> ejbRemoteTransactionsRepository = new InjectedValue<EJBRemoteTransactionsRepository>();
+    private final InjectedValue<EJBRemoteTransactionsRepository> ejbRemoteTransactionsRepository = new InjectedValue<>();
 
     /**
      * Construct a new instance.
@@ -105,8 +105,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
         // CMTTx
         if (transactionManagementType.equals(TransactionManagementType.CONTAINER)) {
-            this.txAttrs = new HashMap<MethodTransactionAttributeKey, TransactionAttributeType>();
-            this.txTimeouts = new HashMap<MethodTransactionAttributeKey, Integer>();
+            this.txAttrs = new HashMap<>();
+            this.txTimeouts = new HashMap<>();
         } else {
             this.txAttrs = null;
             this.txTimeouts = null;
@@ -115,7 +115,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         this.securityMetaData = new EJBSecurityMetaData(componentConfiguration);
 
         if (ejbComponentDescription.isTimerServiceRequired()) {
-            Map<Method, InterceptorFactory> timeoutInterceptors = new IdentityHashMap<Method, InterceptorFactory>();
+            Map<Method, InterceptorFactory> timeoutInterceptors = new IdentityHashMap<>();
             for (Method method : componentConfiguration.getDefinedComponentMethods()) {
                 if ((ejbComponentDescription.getTimeoutMethod() != null && ejbComponentDescription.getTimeoutMethod().equals(method)) ||
                         ejbComponentDescription.getScheduleMethods().containsKey(method)) {
@@ -158,7 +158,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         for (Method method : componentConfiguration.getComponentClass().getMethods()) {
             this.processTxAttr(ejbComponentDescription, MethodIntf.BEAN, method);
         }
-        final HashMap<String, ServiceName> viewServices = new HashMap<String, ServiceName>();
+        final HashMap<String, ServiceName> viewServices = new HashMap<>();
         for (ViewDescription view : componentConfiguration.getComponentDescription().getViews()) {
             viewServices.put(view.getViewClassName(), view.getServiceName());
         }

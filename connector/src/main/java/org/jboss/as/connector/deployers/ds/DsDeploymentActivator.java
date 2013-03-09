@@ -47,7 +47,7 @@ public class DsDeploymentActivator {
     public Collection<ServiceController<?>> activateServices(final ServiceTarget serviceTarget,
                                                              final ServiceListener<Object>... listeners) {
 
-        final Collection<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>(1);
+        final Collection<ServiceController<?>> controllers = new ArrayList<>(1);
 
         return controllers;
     }

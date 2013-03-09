@@ -46,16 +46,16 @@ import org.jboss.msc.service.ServiceName;
 public class ViewConfiguration {
     private final ComponentConfiguration componentConfiguration;
     private final ServiceName viewServiceName;
-    private final Map<Method, OrderedItemContainer<InterceptorFactory>> viewInterceptors = new IdentityHashMap<Method, OrderedItemContainer<InterceptorFactory>>();
-    private final Map<Method, OrderedItemContainer<InterceptorFactory>> clientInterceptors = new IdentityHashMap<Method, OrderedItemContainer<InterceptorFactory>>();
-    private final OrderedItemContainer<InterceptorFactory> clientPostConstructInterceptors = new OrderedItemContainer<InterceptorFactory>();
-    private final OrderedItemContainer<InterceptorFactory> clientPreDestroyInterceptors = new OrderedItemContainer<InterceptorFactory>();
+    private final Map<Method, OrderedItemContainer<InterceptorFactory>> viewInterceptors = new IdentityHashMap<>();
+    private final Map<Method, OrderedItemContainer<InterceptorFactory>> clientInterceptors = new IdentityHashMap<>();
+    private final OrderedItemContainer<InterceptorFactory> clientPostConstructInterceptors = new OrderedItemContainer<>();
+    private final OrderedItemContainer<InterceptorFactory> clientPreDestroyInterceptors = new OrderedItemContainer<>();
     private final ProxyFactory<?> proxyFactory;
-    private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
+    private final List<BindingConfiguration> bindingConfigurations = new ArrayList<>();
     private final Class<?> viewClass;
-    private final Set<Method> asyncMethods = new HashSet<Method>();
-    private final Map<Class<?>, Object> privateData = new HashMap<Class<?>, Object>();
-    private final List<DependencyConfigurator<ViewService>> dependencies = new ArrayList<DependencyConfigurator<ViewService>>();
+    private final Set<Method> asyncMethods = new HashSet<>();
+    private final Map<Class<?>, Object> privateData = new HashMap<>();
+    private final List<DependencyConfigurator<ViewService>> dependencies = new ArrayList<>();
     private ViewInstanceFactory viewInstanceFactory;
 
     /**
@@ -130,7 +130,7 @@ public class ViewConfiguration {
     public void addViewInterceptor(Method method, InterceptorFactory interceptorFactory, int priority) {
         OrderedItemContainer<InterceptorFactory> container = viewInterceptors.get(method);
         if (container == null) {
-            viewInterceptors.put(method, container = new OrderedItemContainer<InterceptorFactory>());
+            viewInterceptors.put(method, container = new OrderedItemContainer<>());
         }
         container.add(interceptorFactory, priority);
     }
@@ -174,7 +174,7 @@ public class ViewConfiguration {
     public void addClientInterceptor(Method method, InterceptorFactory interceptorFactory, int priority) {
         OrderedItemContainer<InterceptorFactory> container = clientInterceptors.get(method);
         if (container == null) {
-            clientInterceptors.put(method, container = new OrderedItemContainer<InterceptorFactory>());
+            clientInterceptors.put(method, container = new OrderedItemContainer<>());
         }
         container.add(interceptorFactory, priority);
     }

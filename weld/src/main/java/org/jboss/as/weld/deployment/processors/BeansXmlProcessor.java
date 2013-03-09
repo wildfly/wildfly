@@ -62,7 +62,7 @@ public class BeansXmlProcessor implements DeploymentUnitProcessor {
 
         BeansXmlParser parser = new BeansXmlParser();
 
-        Set<BeanArchiveMetadata> beanArchiveMetadata = new HashSet<BeanArchiveMetadata>();
+        Set<BeanArchiveMetadata> beanArchiveMetadata = new HashSet<>();
         ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         if (deploymentRoot == null) {
             return;

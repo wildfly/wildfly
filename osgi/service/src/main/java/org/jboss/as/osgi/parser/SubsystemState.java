@@ -56,8 +56,8 @@ public class SubsystemState  extends Observable implements Service<SubsystemStat
     public static final String PROP_JBOSS_OSGI_SYSTEM_MODULES = "org.jboss.osgi.system.modules";
     public static final String PROP_JBOSS_OSGI_SYSTEM_MODULES_EXTRA = "org.jboss.osgi.system.modules.extra";
 
-    private final Map<String, String> properties = new LinkedHashMap<String, String>();
-    private final List<OSGiCapability> capabilities = new ArrayList<OSGiCapability>();
+    private final Map<String, String> properties = new LinkedHashMap<>();
+    private final List<OSGiCapability> capabilities = new ArrayList<>();
     private volatile Activation activationPolicy = Activation.LAZY;
 
     static final Activation DEFAULT_ACTIVATION = Activation.LAZY;

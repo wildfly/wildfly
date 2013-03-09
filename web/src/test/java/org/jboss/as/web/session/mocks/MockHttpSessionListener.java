@@ -37,7 +37,7 @@ public class MockHttpSessionListener implements HttpSessionListener {
         CREATED, DESTROYED
     };
 
-    public final List<Type> invocations = new ArrayList<Type>();
+    public final List<Type> invocations = new ArrayList<>();
 
     /*
      * (non-Javadoc)

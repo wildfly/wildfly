@@ -38,7 +38,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 class ChildAddOperationFinder {
 
     static Map<PathElement, ChildAddOperationEntry> findAddChildOperations(ImmutableManagementResourceRegistration resourceRegistration){
-        Map<PathElement, ChildAddOperationEntry> operations = new HashMap<PathElement, ChildAddOperationEntry>();
+        Map<PathElement, ChildAddOperationEntry> operations = new HashMap<>();
         for(PathElement childElement : resourceRegistration.getChildAddresses(PathAddress.EMPTY_ADDRESS)) {
             final ImmutableManagementResourceRegistration childReg = resourceRegistration.getSubModel(PathAddress.pathAddress(childElement));
             final Map<String, OperationEntry> registeredOps = childReg.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, false);

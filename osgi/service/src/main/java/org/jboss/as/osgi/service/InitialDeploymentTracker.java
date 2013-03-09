@@ -148,7 +148,7 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
     }
 
     private Set<String> getDeploymentNames(OperationContext context) {
-        final Set<String> result = new HashSet<String>();
+        final Set<String> result = new HashSet<>();
         final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
         final ModelNode depmodel = model.get(ModelDescriptionConstants.DEPLOYMENT);
         if (depmodel.isDefined()) {
@@ -166,6 +166,6 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
     }
 
     private ServiceController<Object> addPhaseCompleteService(ServiceTarget serviceTarget, ServiceName serviceName) {
-        return serviceTarget.addService(serviceName, new ValueService<Object>(new ImmediateValue<Object>(new Object()))).install();
+        return serviceTarget.addService(serviceName, new ValueService<>(new ImmediateValue<>(new Object()))).install();
     }
 }

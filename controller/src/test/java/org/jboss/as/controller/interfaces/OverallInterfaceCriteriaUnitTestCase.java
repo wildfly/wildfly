@@ -78,7 +78,7 @@ public class OverallInterfaceCriteriaUnitTestCase {
             return;
         }
 
-        Map<NetworkInterface, Set<InetAddress>> correct = new HashMap<NetworkInterface, Set<InetAddress>>();
+        Map<NetworkInterface, Set<InetAddress>> correct = new HashMap<>();
         for (NetworkInterface ni : loopbackInterfaces) {
             if (ni.isUp()) {
                 correct.put(ni, getRightTypeAddresses(allCandidates.get(ni)));
@@ -89,7 +89,7 @@ public class OverallInterfaceCriteriaUnitTestCase {
             return;
         }
 
-        Set<InterfaceCriteria> criterias = new HashSet<InterfaceCriteria>();
+        Set<InterfaceCriteria> criterias = new HashSet<>();
         criterias.add(UpInterfaceCriteria.INSTANCE);
         criterias.add(LoopbackInterfaceCriteria.INSTANCE);
         OverallInterfaceCriteria testee = new OverallInterfaceCriteria("test", criterias);
@@ -111,7 +111,7 @@ public class OverallInterfaceCriteriaUnitTestCase {
             return;
         }
 
-        Map<NetworkInterface, Set<InetAddress>> correct = new HashMap<NetworkInterface, Set<InetAddress>>();
+        Map<NetworkInterface, Set<InetAddress>> correct = new HashMap<>();
         for (NetworkInterface ni : allInterfaces) {
             if (ni.isUp()) {
                 correct.put(ni, getRightTypeAddresses(allCandidates.get(ni)));
@@ -147,7 +147,7 @@ public class OverallInterfaceCriteriaUnitTestCase {
         }
 
 
-        Set<InterfaceCriteria> criterias = new LinkedHashSet<InterfaceCriteria>();
+        Set<InterfaceCriteria> criterias = new LinkedHashSet<>();
         criterias.add(LoopbackInterfaceCriteria.INSTANCE);
         criterias.add(new NicInterfaceCriteria("bogus"));
         OverallInterfaceCriteria testee = new OverallInterfaceCriteria("test", criterias);

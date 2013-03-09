@@ -58,7 +58,7 @@ class DeploymentPlanBuilderImpl
     private final boolean globalRollback;
     private volatile boolean cleanupInFinalize = true;
 
-    private final List<DeploymentActionImpl> deploymentActions = new ArrayList<DeploymentActionImpl>();
+    private final List<DeploymentActionImpl> deploymentActions = new ArrayList<>();
 
     DeploymentPlanBuilderImpl() {
         this.shutdown = false;

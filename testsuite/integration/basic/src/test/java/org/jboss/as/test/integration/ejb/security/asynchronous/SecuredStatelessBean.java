@@ -67,7 +67,7 @@ public class SecuredStatelessBean implements SecuredStatelessRemote, SecuredStat
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        return new AsyncResult<Boolean>(true);
+        return new AsyncResult<>(true);
     }
 
     @DenyAll
@@ -79,7 +79,7 @@ public class SecuredStatelessBean implements SecuredStatelessRemote, SecuredStat
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        return new AsyncResult<Boolean>(true);
+        return new AsyncResult<>(true);
     }
 
     @RolesAllowed("allowed")
@@ -107,13 +107,13 @@ public class SecuredStatelessBean implements SecuredStatelessRemote, SecuredStat
         boolean result = future.get();
         Assert.assertTrue(result);
 
-        return new AsyncResult<Boolean>(true);
+        return new AsyncResult<>(true);
     }
     
     @RolesAllowed("allowed")
     public Future<Boolean> localSecured(CountDownLatch latchLocal) throws InterruptedException {
         latchLocal.await(5, TimeUnit.SECONDS);
-        return new AsyncResult<Boolean>(true);
+        return new AsyncResult<>(true);
     }
 
 }

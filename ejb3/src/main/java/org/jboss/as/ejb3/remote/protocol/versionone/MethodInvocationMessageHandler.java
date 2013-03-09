@@ -267,7 +267,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
         interceptorContext.putPrivateData(ComponentView.class, componentView);
         interceptorContext.putPrivateData(InvocationType.class, InvocationType.REMOTE);
         // setup the contextData on the (spec specified) InvocationContext
-        final Map<String, Object> invocationContextData = new HashMap<String, Object>();
+        final Map<String, Object> invocationContextData = new HashMap<>();
         interceptorContext.setContextData(invocationContextData);
         if (attachments != null) {
             // attach the attachments which were passed from the remote client

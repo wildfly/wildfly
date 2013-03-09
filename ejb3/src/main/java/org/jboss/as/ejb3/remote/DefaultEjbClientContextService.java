@@ -68,9 +68,9 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
         AccessController.doPrivileged(new SetSelectorAction(DefaultEJBClientContextSelector.INSTANCE));
     }
 
-    private final InjectedValue<TCCLEJBClientContextSelectorService> tcclEJBClientContextSelector = new InjectedValue<TCCLEJBClientContextSelectorService>();
+    private final InjectedValue<TCCLEJBClientContextSelectorService> tcclEJBClientContextSelector = new InjectedValue<>();
 
-    private final InjectedValue<LocalEjbReceiver> defaultLocalEJBReceiver = new InjectedValue<LocalEjbReceiver>();
+    private final InjectedValue<LocalEjbReceiver> defaultLocalEJBReceiver = new InjectedValue<>();
 
     /**
      * The client context

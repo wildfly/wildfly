@@ -67,7 +67,7 @@ public class ConfigurationAdd extends AbstractAddStepHandler {
             List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CONFIGURATION).asString();
-        Dictionary<String, String> dictionary = new Hashtable<String, String>(ConfigurationResource.ENTRIES.unwrap(context, model));
+        Dictionary<String, String> dictionary = new Hashtable<>(ConfigurationResource.ENTRIES.unwrap(context, model));
 
         ConfigAdminInternal configAdmin = ConfigAdminExtension.getConfigAdminService(context);
         if (configAdmin != null) {
@@ -96,8 +96,8 @@ public class ConfigurationAdd extends AbstractAddStepHandler {
     }
 
     static class InitializeConfigAdminService implements Service<Object> {
-        private final Map<String, Dictionary<String, String>> configs = new ConcurrentHashMap<String, Dictionary<String,String>>();
-        private final InjectedValue<ConfigAdmin> injectedConfigAdminService = new InjectedValue<ConfigAdmin>();
+        private final Map<String, Dictionary<String, String>> configs = new ConcurrentHashMap<>();
+        private final InjectedValue<ConfigAdmin> injectedConfigAdminService = new InjectedValue<>();
 
         @Override
         public Object getValue() throws IllegalStateException, IllegalArgumentException {

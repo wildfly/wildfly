@@ -47,9 +47,9 @@ public class ServiceProviderRegistryServiceProvider implements ChannelDependentS
     public ServiceController<?> install(ServiceTarget target, String cluster) {
         final ServiceName name = this.getServiceName(cluster);
         @SuppressWarnings("rawtypes")
-        final InjectedValue<Cache> cache = new InjectedValue<Cache>();
-        final InjectedValue<GroupRpcDispatcher> dispatcher = new InjectedValue<GroupRpcDispatcher>();
-        final InjectedValue<GroupMembershipNotifier> notifier = new InjectedValue<GroupMembershipNotifier>();
+        final InjectedValue<Cache> cache = new InjectedValue<>();
+        final InjectedValue<GroupRpcDispatcher> dispatcher = new InjectedValue<>();
+        final InjectedValue<GroupMembershipNotifier> notifier = new InjectedValue<>();
         final ServiceName serviceName = CoreGroupCommunicationService.getServiceName(cluster);
         return target.addService(name, new ServiceProviderRegistryService(name, cache, dispatcher, notifier))
                 .addDependency(CacheService.getServiceName(cluster, null), Cache.class, cache)

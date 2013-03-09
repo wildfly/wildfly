@@ -46,7 +46,7 @@ import org.jboss.vfs.VirtualFile;
  */
 public class RemoteFileRepositoryService implements CompositeContentRepository, Service<CompositeContentRepository> {
 
-    private final InjectedValue<HostControllerClient> clientInjectedValue = new InjectedValue<HostControllerClient>();
+    private final InjectedValue<HostControllerClient> clientInjectedValue = new InjectedValue<>();
 
     private final File localDeploymentFolder;
     private final DeploymentFileRepository localRepository;

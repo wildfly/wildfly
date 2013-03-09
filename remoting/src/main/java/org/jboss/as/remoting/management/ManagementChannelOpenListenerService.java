@@ -36,7 +36,7 @@ import org.xnio.OptionMap;
  */
 class ManagementChannelOpenListenerService extends AbstractChannelOpenListenerService<Channel> {
 
-    private final InjectedValue<ManagementChannelInitialization> operationHandlerFactoryValue = new InjectedValue<ManagementChannelInitialization>();
+    private final InjectedValue<ManagementChannelInitialization> operationHandlerFactoryValue = new InjectedValue<>();
 
 
     ManagementChannelOpenListenerService(String channelName, OptionMap optionMap) {

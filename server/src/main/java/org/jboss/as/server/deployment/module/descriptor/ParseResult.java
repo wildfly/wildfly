@@ -40,8 +40,8 @@ class ParseResult {
 
     private Boolean earSubDeploymentsIsolated = null;
     private ModuleStructureSpec rootDeploymentSpecification;
-    private final Map<String, ModuleStructureSpec> subDeploymentSpecifications = new HashMap<String, ModuleStructureSpec>();
-    private final List<ModuleStructureSpec> additionalModules = new ArrayList<ModuleStructureSpec>();
+    private final Map<String, ModuleStructureSpec> subDeploymentSpecifications = new HashMap<>();
+    private final List<ModuleStructureSpec> additionalModules = new ArrayList<>();
 
     public ParseResult(final ModuleLoader moduleLoader, final DeploymentUnit deploymentUnit) {
         this.moduleLoader = moduleLoader;

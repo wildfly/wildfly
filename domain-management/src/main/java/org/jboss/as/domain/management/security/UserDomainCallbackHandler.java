@@ -118,7 +118,7 @@ public class UserDomainCallbackHandler implements Service<CallbackHandlerService
 
         final ModelNode userMap = this.userDomain;
 
-        List<Callback> toRespondTo = new LinkedList<Callback>();
+        List<Callback> toRespondTo = new LinkedList<>();
 
         String userName = null;
         ModelNode user = null;

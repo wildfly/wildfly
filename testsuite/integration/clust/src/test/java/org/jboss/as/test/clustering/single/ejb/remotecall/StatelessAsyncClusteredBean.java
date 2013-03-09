@@ -54,7 +54,7 @@ public class StatelessAsyncClusteredBean implements RemoteAsyncInterface {
     public Future<Integer> futureGetTest(Integer number) throws InterruptedException {
         synchro.waitForLatchNumber1();
         methodCalled = true;
-        return new AsyncResult<Integer>(number);
+        return new AsyncResult<>(number);
     }
 
     public void resetMethodCalled() {

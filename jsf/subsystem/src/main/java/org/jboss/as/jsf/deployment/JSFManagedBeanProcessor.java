@@ -89,7 +89,7 @@ public class JSFManagedBeanProcessor implements DeploymentUnitProcessor {
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             return;
         }
-        final Set<String> managedBeanClasses = new HashSet<String>();
+        final Set<String> managedBeanClasses = new HashSet<>();
         handleAnnotations(index, managedBeanClasses);
         processXmlManagedBeans(deploymentUnit, managedBeanClasses);
         for (String managedBean : managedBeanClasses) {
@@ -175,7 +175,7 @@ public class JSFManagedBeanProcessor implements DeploymentUnitProcessor {
     }
 
     public Set<VirtualFile> getConfigurationFiles(DeploymentUnit deploymentUnit) {
-        final Set<VirtualFile> ret = new HashSet<VirtualFile>();
+        final Set<VirtualFile> ret = new HashSet<>();
         final List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
         for (final ResourceRoot resourceRoot : resourceRoots) {
             final VirtualFile webInfFacesConfig = resourceRoot.getRoot().getChild(WEB_INF_FACES_CONFIG);

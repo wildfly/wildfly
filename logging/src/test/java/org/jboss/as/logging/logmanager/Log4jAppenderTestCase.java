@@ -107,7 +107,7 @@ public class Log4jAppenderTestCase {
     static class TestAppender extends AppenderSkeleton {
         static TestAppender INSTANCE = new TestAppender();
         int counter = 0;
-        final List<String> messages = new ArrayList<String>();
+        final List<String> messages = new ArrayList<>();
 
         @Override
         protected void append(final LoggingEvent event) {

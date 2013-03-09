@@ -125,7 +125,7 @@ class NodeParser {
             return Collections.emptyMap();
         }
 
-        Map<String, String> attributes = new HashMap<String, String>();
+        Map<String, String> attributes = new HashMap<>();
         StringBuilder builder = new StringBuilder();
         String name = null;
 

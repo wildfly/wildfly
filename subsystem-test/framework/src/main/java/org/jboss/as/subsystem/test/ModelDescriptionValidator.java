@@ -49,7 +49,7 @@ public class ModelDescriptionValidator extends ModelTestModelDescriptionValidato
     public List<ValidationFailure> validateResource() {
         List<org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationFailure> failures = super.validateResources();
 
-        List<ValidationFailure> converted = new ArrayList<ModelDescriptionValidator.ValidationFailure>();
+        List<ValidationFailure> converted = new ArrayList<>();
         for (org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationFailure failure : failures) {
             converted.add(new ValidationFailure(failure));
         }

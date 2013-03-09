@@ -57,7 +57,7 @@ class SecurityRoleRemove extends AbstractRemoveStepHandler {
     static void removeRole(HornetQServer server, String match, String roleName) {
         if (server != null) {
             final Set<Role> roles = server.getSecurityRepository().getMatch(match);
-            final Set<Role> newRoles = new HashSet<Role>();
+            final Set<Role> newRoles = new HashSet<>();
             for (final Role role : roles) {
                 if (!roleName.equals(role.getName())) {
                     newRoles.add(role);

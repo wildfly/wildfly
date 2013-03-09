@@ -53,7 +53,7 @@ public class TransactionResource extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(ModelKeys.LOCKING, ModelType.STRING, true)
                     .setXmlName(Attribute.LOCKING.getLocalName())
                     .setAllowExpression(true)
-                    .setValidator(new EnumValidator<LockingMode>(LockingMode.class, true, false))
+                    .setValidator(new EnumValidator<>(LockingMode.class, true, false))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(LockingMode.OPTIMISTIC.name()))
                     .build();
@@ -62,7 +62,7 @@ public class TransactionResource extends SimpleResourceDefinition {
                     .setXmlName(Attribute.MODE.getLocalName())
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new EnumValidator<TransactionMode>(TransactionMode.class, true, true))
+                    .setValidator(new EnumValidator<>(TransactionMode.class, true, true))
                     .setDefaultValue(new ModelNode().set(TransactionMode.NONE.name()))
                     .build();
     static final SimpleAttributeDefinition STOP_TIMEOUT =

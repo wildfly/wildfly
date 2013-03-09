@@ -139,7 +139,7 @@ public class Seam2Processor implements DeploymentUnitProcessor {
             return;
         }
 
-        final List<DeploymentUnit> deploymentUnits = new ArrayList<DeploymentUnit>();
+        final List<DeploymentUnit> deploymentUnits = new ArrayList<>();
         deploymentUnits.add(deploymentUnit);
         deploymentUnits.addAll(deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS));
 

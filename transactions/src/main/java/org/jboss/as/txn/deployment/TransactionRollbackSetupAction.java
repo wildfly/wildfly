@@ -45,9 +45,9 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class TransactionRollbackSetupAction implements SetupAction, Service<TransactionRollbackSetupAction> {
 
-    private static final ThreadLocal<Integer> depth = new ThreadLocal<Integer>();
+    private static final ThreadLocal<Integer> depth = new ThreadLocal<>();
 
-    private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
+    private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<>();
 
     private final ServiceName serviceName;
 

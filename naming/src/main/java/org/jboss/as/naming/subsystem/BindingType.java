@@ -42,7 +42,7 @@ public enum BindingType {
     private static final Map<String, BindingType> MAP;
 
     static {
-        final Map<String, BindingType> map = new HashMap<String, BindingType>();
+        final Map<String, BindingType> map = new HashMap<>();
         for (BindingType directoryGrouping : values()) {
             map.put(directoryGrouping.localName, directoryGrouping);
         }

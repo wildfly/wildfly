@@ -67,12 +67,12 @@ final class HttpServiceFactoryService implements Service<StandardContext> {
     // [TODO] Make these configurable
     static final String VIRTUAL_HOST = "default-host";
 
-    private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
-    private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
-    private final InjectedValue<PathManager> injectedPathManager = new InjectedValue<PathManager>();
-    private final InjectedValue<VirtualHost> injectedVirtualHost = new InjectedValue<VirtualHost>();
-    private final InjectedValue<HttpManagement> injectedHttpManagement = new InjectedValue<HttpManagement>();
-    private final InjectedValue<WebServer> injectedWebServer = new InjectedValue<WebServer>();
+    private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<>();
+    private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<>();
+    private final InjectedValue<PathManager> injectedPathManager = new InjectedValue<>();
+    private final InjectedValue<VirtualHost> injectedVirtualHost = new InjectedValue<>();
+    private final InjectedValue<HttpManagement> injectedHttpManagement = new InjectedValue<>();
+    private final InjectedValue<WebServer> injectedWebServer = new InjectedValue<>();
     private ServiceRegistration registration;
 
     static ServiceController<StandardContext> addService(ServiceTarget serviceTarget) {
@@ -97,7 +97,7 @@ final class HttpServiceFactoryService implements Service<StandardContext> {
         BundleContext syscontext = injectedSystemContext.getValue();
         WebServer webServer = injectedWebServer.getValue();
 
-        Hashtable<String, Object> props = new Hashtable<String, Object>();
+        Hashtable<String, Object> props = new Hashtable<>();
         props.put("provider", getClass().getPackage().getName());
 
         ServiceFactory serviceFactory = new HttpServiceFactory(webServer, virtualHost, serverEnvironment);

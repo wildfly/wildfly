@@ -37,11 +37,11 @@ import org.jboss.vfs.VirtualFile;
  */
 public class EEApplicationDescription {
     //these are only written to by a single top level processor, so do not need to be synchronized
-    private final Map<String, List<ViewInformation>> componentsByViewName = new HashMap<String, List<ViewInformation>>();
-    private final Map<String, List<Description>> componentsByName = new HashMap<String, List<Description>>();
+    private final Map<String, List<ViewInformation>> componentsByViewName = new HashMap<>();
+    private final Map<String, List<Description>> componentsByName = new HashMap<>();
 
     //this must be synchronized for writing
-    private final Map<String, List<MessageDestinationMapping>> messageDestinationJndiMapping = new HashMap<String, List<MessageDestinationMapping>>();
+    private final Map<String, List<MessageDestinationMapping>> messageDestinationJndiMapping = new HashMap<>();
 
     /**
      * Add a component to this application.
@@ -53,14 +53,14 @@ public class EEApplicationDescription {
         for (final ViewDescription viewDescription : description.getViews()) {
             List<ViewInformation> viewComponents = componentsByViewName.get(viewDescription.getViewClassName());
             if (viewComponents == null) {
-                viewComponents = new ArrayList<ViewInformation>(1);
+                viewComponents = new ArrayList<>(1);
                 componentsByViewName.put(viewDescription.getViewClassName(), viewComponents);
             }
             viewComponents.add(new ViewInformation(viewDescription, deploymentRoot, description.getComponentName()));
         }
         List<Description> components = componentsByName.get(description.getComponentName());
         if (components == null) {
-            componentsByName.put(description.getComponentName(), components = new ArrayList<Description>(1));
+            componentsByName.put(description.getComponentName(), components = new ArrayList<>(1));
         }
         components.add(new Description(description, deploymentRoot));
     }
@@ -75,7 +75,7 @@ public class EEApplicationDescription {
     public void addMessageDestination(final String name, final String resolvedName, final VirtualFile deploymentRoot) {
         List<MessageDestinationMapping> components = messageDestinationJndiMapping.get(name);
         if (components == null) {
-            messageDestinationJndiMapping.put(name, components = new ArrayList<MessageDestinationMapping>(1));
+            messageDestinationJndiMapping.put(name, components = new ArrayList<>(1));
         }
         components.add(new MessageDestinationMapping(resolvedName, deploymentRoot));
     }
@@ -92,8 +92,8 @@ public class EEApplicationDescription {
         if (info == null) {
             return Collections.<ViewDescription>emptySet();
         }
-        final Set<ViewDescription> ret = new HashSet<ViewDescription>();
-        final Set<ViewDescription> currentDep = new HashSet<ViewDescription>();
+        final Set<ViewDescription> ret = new HashSet<>();
+        final Set<ViewDescription> currentDep = new HashSet<>();
         for (ViewInformation i : info) {
             if (deploymentRoot.equals(i.deploymentRoot)) {
                 currentDep.add(i.viewDescription);
@@ -126,7 +126,7 @@ public class EEApplicationDescription {
             if (info == null) {
                 return Collections.emptySet();
             }
-            final Set<ComponentDescription> ret = new HashSet<ComponentDescription>();
+            final Set<ComponentDescription> ret = new HashSet<>();
             for (Description i : info) {
                 //now we need to check the path
                 if (virtualPath.equals(i.deploymentRoot)) {
@@ -139,8 +139,8 @@ public class EEApplicationDescription {
             if (info == null) {
                 return Collections.emptySet();
             }
-            final Set<ComponentDescription> all = new HashSet<ComponentDescription>();
-            final Set<ComponentDescription> thisDeployment = new HashSet<ComponentDescription>();
+            final Set<ComponentDescription> all = new HashSet<>();
+            final Set<ComponentDescription> thisDeployment = new HashSet<>();
             for (Description i : info) {
                 all.add(i.componentDescription);
                 if (i.deploymentRoot.equals(deploymentRoot)) {
@@ -176,7 +176,7 @@ public class EEApplicationDescription {
             }
             final VirtualFile virtualPath = deploymentRoot.getChild(path);
             final String name = parts[1];
-            final Set<ViewDescription> ret = new HashSet<ViewDescription>();
+            final Set<ViewDescription> ret = new HashSet<>();
             for (ViewInformation i : info) {
                 if (i.beanName.equals(name)) {
                     //now we need to check the path
@@ -187,8 +187,8 @@ public class EEApplicationDescription {
             }
             return ret;
         } else {
-            final Set<ViewDescription> all = new HashSet<ViewDescription>();
-            final Set<ViewDescription> thisDeployment = new HashSet<ViewDescription>();
+            final Set<ViewDescription> all = new HashSet<>();
+            final Set<ViewDescription> thisDeployment = new HashSet<>();
             for (ViewInformation i : info) {
                 if (i.beanName.equals(componentName)) {
                     all.add(i.viewDescription);
@@ -217,7 +217,7 @@ public class EEApplicationDescription {
             }
             final VirtualFile virtualPath = deploymentRoot.getChild(path);
             final String name = parts[1];
-            final Set<String> ret = new HashSet<String>();
+            final Set<String> ret = new HashSet<>();
             final List<MessageDestinationMapping> data = messageDestinationJndiMapping.get(name);
             if (data != null) {
                 for (final MessageDestinationMapping i : data) {
@@ -229,8 +229,8 @@ public class EEApplicationDescription {
             }
             return ret;
         } else {
-            final Set<String> all = new HashSet<String>();
-            final Set<String> thisDeployment = new HashSet<String>();
+            final Set<String> all = new HashSet<>();
+            final Set<String> thisDeployment = new HashSet<>();
             final List<MessageDestinationMapping> data = messageDestinationJndiMapping.get(messageDestName);
             if (data != null) {
                 for (final MessageDestinationMapping i : data) {

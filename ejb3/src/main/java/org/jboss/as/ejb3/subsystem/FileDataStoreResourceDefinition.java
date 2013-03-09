@@ -65,7 +65,7 @@ public class FileDataStoreResourceDefinition extends SimpleResourceDefinition {
     public static final Map<String, AttributeDefinition> ATTRIBUTES;
 
     static {
-        Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
+        Map<String, AttributeDefinition> map = new LinkedHashMap<>();
         map.put(PATH.getName(), PATH);
         map.put(RELATIVE_TO.getName(), RELATIVE_TO);
 

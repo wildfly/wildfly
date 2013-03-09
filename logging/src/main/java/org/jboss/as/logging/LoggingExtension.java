@@ -194,7 +194,7 @@ public class LoggingExtension implements Extension {
 
     private static class LoggingResourceDescriptionResolver extends StandardResourceDescriptionResolver {
 
-        private static final Map<String, String> COMMON_ATTRIBUTE_NAMES = new HashMap<String, String>();
+        private static final Map<String, String> COMMON_ATTRIBUTE_NAMES = new HashMap<>();
 
         static {
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.APPEND.getName(), "logging.common");

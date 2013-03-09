@@ -54,8 +54,8 @@ import static org.jboss.msc.service.ServiceBuilder.DependencyType.REQUIRED;
  */
 public class ModuleLoadService implements Service<Module> {
 
-    private final InjectedValue<ServiceModuleLoader> serviceModuleLoader = new InjectedValue<ServiceModuleLoader>();
-    private final InjectedValue<ModuleSpec> moduleSpec = new InjectedValue<ModuleSpec>();
+    private final InjectedValue<ServiceModuleLoader> serviceModuleLoader = new InjectedValue<>();
+    private final InjectedValue<ModuleSpec> moduleSpec = new InjectedValue<>();
     private final List<ModuleDependency> dependencies;
 
     private volatile Module module;
@@ -122,7 +122,7 @@ public class ModuleLoadService implements Service<Module> {
     }
 
     public static ServiceName installService(final ServiceTarget target, final ModuleIdentifier identifier, final List<ModuleIdentifier> identifiers) {
-        final ArrayList<ModuleDependency> dependencies = new ArrayList<ModuleDependency>(identifiers.size());
+        final ArrayList<ModuleDependency> dependencies = new ArrayList<>(identifiers.size());
         for (final ModuleIdentifier i : identifiers) {
             dependencies.add(new ModuleDependency(null, i, false, false, false, false));
         }

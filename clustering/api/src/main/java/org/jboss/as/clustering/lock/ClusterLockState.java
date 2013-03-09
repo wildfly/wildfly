@@ -53,7 +53,7 @@ public class ClusterLockState {
     }
 
     final Serializable lockId;
-    final AtomicReference<ClusterLockState.State> state = new AtomicReference<ClusterLockState.State>(State.UNLOCKED);
+    final AtomicReference<ClusterLockState.State> state = new AtomicReference<>(State.UNLOCKED);
     ClusterNode holder;
 
     ClusterLockState(Serializable lockId) {

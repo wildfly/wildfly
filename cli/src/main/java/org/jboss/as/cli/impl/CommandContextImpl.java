@@ -193,7 +193,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     /** The TrustManager in use by the SSLContext, a reference is kept to rejected certificates can be captured. */
     private LazyDelagatingTrustManager trustManager;
     /** various key/value pairs */
-    private Map<String, Object> map = new HashMap<String, Object>();
+    private Map<String, Object> map = new HashMap<>();
     /** operation request address prefix */
     private final OperationRequestAddress prefix = new DefaultOperationRequestAddress();
     /** the prefix formatter */
@@ -210,7 +210,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     /** output target */
     private BufferedWriter outputTarget;
 
-    private List<CliEventListener> listeners = new ArrayList<CliEventListener>();
+    private List<CliEventListener> listeners = new ArrayList<>();
 
     /** the value of this variable will be used as the exit code of the vm, it is reset by every command/operation executed */
     private int exitCode;
@@ -885,7 +885,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     private static final String[] FINGERPRINT_ALGORITHMS = new String[] { "MD5", "SHA1" };
 
     private Map<String, String> generateFingerprints(final X509Certificate cert) throws CommandLineException  {
-        Map<String, String> fingerprints = new HashMap<String, String>(FINGERPRINT_ALGORITHMS.length);
+        Map<String, String> fingerprints = new HashMap<>(FINGERPRINT_ALGORITHMS.length);
         for (String current : FINGERPRINT_ALGORITHMS) {
             try {
                 fingerprints.put(current, generateFingerPrint(current, cert.getEncoded()));
@@ -1340,7 +1340,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         private final String trustStorePassword;
         private final boolean modifyTrustStore;
 
-        private Set<X509Certificate> temporarilyTrusted = new HashSet<X509Certificate>();
+        private Set<X509Certificate> temporarilyTrusted = new HashSet<>();
         private Certificate[] lastFailedCert;
         private X509TrustManager delegate;
 

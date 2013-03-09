@@ -99,8 +99,8 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
     }
 
     protected ServiceController<ChannelFactory> installDefaultChannelFactoryService(ServiceTarget target, String stack, ServiceVerificationHandler verificationHandler) {
-        final InjectedValue<ChannelFactory> factory = new InjectedValue<ChannelFactory>();
-        return target.addService(ChannelFactoryService.getServiceName(null), new ValueService<ChannelFactory>(factory))
+        final InjectedValue<ChannelFactory> factory = new InjectedValue<>();
+        return target.addService(ChannelFactoryService.getServiceName(null), new ValueService<>(factory))
                 .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, factory)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()

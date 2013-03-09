@@ -154,7 +154,7 @@ public class RuntimeMXBeanAttributeHandler extends AbstractPlatformMBeanAttribut
             store.set(ManagementFactory.getRuntimeMXBean().getStartTime());
         } else if (PlatformMBeanConstants.SYSTEM_PROPERTIES.equals(name)) {
             store.setEmptyObject();
-            final TreeMap<String, String> sorted = new TreeMap<String, String>(ManagementFactory.getRuntimeMXBean().getSystemProperties());
+            final TreeMap<String, String> sorted = new TreeMap<>(ManagementFactory.getRuntimeMXBean().getSystemProperties());
             for (Map.Entry<String, String> prop : sorted.entrySet()) {
                 final ModelNode propNode = store.get(prop.getKey());
                 if (prop.getValue() != null) {

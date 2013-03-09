@@ -42,8 +42,8 @@ import java.util.concurrent.ExecutorService;
  */
 public class JMSQueueService implements Service<Void> {
 
-    private final InjectedValue<JMSServerManager> jmsServer = new InjectedValue<JMSServerManager>();
-    private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
+    private final InjectedValue<JMSServerManager> jmsServer = new InjectedValue<>();
+    private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<>();
 
 
     private final String queueName;

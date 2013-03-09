@@ -37,7 +37,7 @@ import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 public class PersistenceProviderDeploymentHolder {
 
 
-    private final List<PersistenceProvider> providerList = new ArrayList<PersistenceProvider>();
+    private final List<PersistenceProvider> providerList = new ArrayList<>();
     private final PersistenceProviderAdaptor adapter;
 
     public PersistenceProviderDeploymentHolder(final List<PersistenceProvider> providerList) {

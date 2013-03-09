@@ -49,7 +49,7 @@ public class ValidatePasswordState extends AbstractValidationState {
 
     @Override
     protected Collection<State> getValidationStates() {
-        List<State> validationStates = new ArrayList<State>(2);
+        List<State> validationStates = new ArrayList<>(2);
         validationStates.add(getUsernameMatchState());
         validationStates.add(getDetailedCheckState());
 

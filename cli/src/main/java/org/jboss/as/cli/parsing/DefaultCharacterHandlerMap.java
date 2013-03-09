@@ -41,7 +41,7 @@ public class DefaultCharacterHandlerMap implements CharacterHandlerMap {
     @Override
     public void putHandler(char ch, CharacterHandler handler) {
         if(handlers.isEmpty()) {
-            handlers = new HashMap<Character, CharacterHandler>();
+            handlers = new HashMap<>();
         }
         handlers.put(ch, handler);
     }

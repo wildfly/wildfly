@@ -41,7 +41,7 @@ import java.util.List;
  */
 @SuppressWarnings({"unchecked"})
 public class DefaultBeanInfo<T> implements BeanInfo<T> {
-    private final List<ClassReflectionIndex> indexes = new ArrayList<ClassReflectionIndex>();
+    private final List<ClassReflectionIndex> indexes = new ArrayList<>();
     private final Class beanClass;
     private DeploymentReflectionIndex index;
     private Class currentClass;

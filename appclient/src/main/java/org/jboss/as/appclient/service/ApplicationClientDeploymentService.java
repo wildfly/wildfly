@@ -64,7 +64,7 @@ public class ApplicationClientDeploymentService implements Service<ApplicationCl
 
     private final File path;
     private ModelControllerClient controllerClient;
-    private final InjectedValue<ModelController> controllerValue = new InjectedValue<ModelController>();
+    private final InjectedValue<ModelController> controllerValue = new InjectedValue<>();
     private final CountDownLatch deploymentCompleteLatch = new CountDownLatch(1);
 
 

@@ -47,7 +47,7 @@ public class SubjectFactoryService implements Service<SubjectFactory> {
 
     private static final SecurityLogger log = SecurityLogger.ROOT_LOGGER;
 
-    private final InjectedValue<ISecurityManagement> securityManagementValue = new InjectedValue<ISecurityManagement>();
+    private final InjectedValue<ISecurityManagement> securityManagementValue = new InjectedValue<>();
 
     private SubjectFactory subjectFactory;
 

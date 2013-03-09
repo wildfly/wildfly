@@ -88,7 +88,7 @@ public class DataSourceResourcesUnitTestCase extends DsMgmtTestBase {
                 result.get("attributes").get("installed-drivers").get("value-type"));
         Assert.assertFalse(children.isEmpty());
 
-        HashSet<String> keys = new HashSet<String>();
+        HashSet<String> keys = new HashSet<>();
         for (final Entry<String, ModelNode> child : children.entrySet()) {
             Assert.assertNotNull("Default driver description have no attributes", child.getKey());
             keys.add(child.getKey());

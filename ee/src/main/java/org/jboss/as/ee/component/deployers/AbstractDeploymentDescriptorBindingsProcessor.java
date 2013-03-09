@@ -65,7 +65,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
     private static final Map<Class<?>, Class<?>> BOXED_TYPES;
 
     static {
-        Map<Class<?>, Class<?>> types = new HashMap<Class<?>, Class<?>>();
+        Map<Class<?>, Class<?>> types = new HashMap<>();
         types.put(int.class, Integer.class);
         types.put(byte.class, Byte.class);
         types.put(short.class, Short.class);

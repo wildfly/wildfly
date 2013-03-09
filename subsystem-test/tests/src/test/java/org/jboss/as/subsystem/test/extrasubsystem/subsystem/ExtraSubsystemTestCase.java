@@ -172,7 +172,7 @@ public class ExtraSubsystemTestCase extends AbstractSubsystemTest {
         describeOp.get(OP_ADDR).set(
                 PathAddress.pathAddress(
                         PathElement.pathElement(SUBSYSTEM, DependencySubsystemExtension.SUBSYSTEM_NAME)).toModelNode());
-        ArrayList<ModelNode> allOps = new ArrayList<ModelNode>();
+        ArrayList<ModelNode> allOps = new ArrayList<>();
         allOps.addAll(checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList());
         describeOp.get(OP_ADDR).set(
                 PathAddress.pathAddress(

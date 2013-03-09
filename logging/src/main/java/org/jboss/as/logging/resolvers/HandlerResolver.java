@@ -46,7 +46,7 @@ public class HandlerResolver implements ModelNodeResolver<Set<String>> {
     public Set<String> resolveValue(final OperationContext context, final ModelNode value) throws OperationFailedException {
         if (value.isDefined()) {
             final List<ModelNode> handlers = value.asList();
-            final Set<String> names = new HashSet<String>(handlers.size());
+            final Set<String> names = new HashSet<>(handlers.size());
             for (ModelNode handler : handlers) {
                 names.add(handler.asString());
             }

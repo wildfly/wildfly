@@ -86,20 +86,20 @@ class HornetQService implements Service<HornetQServer> {
     private Configuration configuration;
 
     private HornetQServer server;
-    private Map<String, SocketBinding> socketBindings = new HashMap<String, SocketBinding>();
-    private Map<String, OutboundSocketBinding> outboundSocketBindings = new HashMap<String, OutboundSocketBinding>();
-    private Map<String, SocketBinding> groupBindings = new HashMap<String, SocketBinding>();
-    private final InjectedValue<PathManager> pathManager = new InjectedValue<PathManager>();
-    private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
-    private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
+    private Map<String, SocketBinding> socketBindings = new HashMap<>();
+    private Map<String, OutboundSocketBinding> outboundSocketBindings = new HashMap<>();
+    private Map<String, SocketBinding> groupBindings = new HashMap<>();
+    private final InjectedValue<PathManager> pathManager = new InjectedValue<>();
+    private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<>();
+    private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<>();
     private final PathConfig pathConfig;
     // mapping between the {broacast|discovery}-groups and the *names* of the JGroups channel they use
-    private final Map<String, String> jgroupsChannels = new HashMap<String, String>();
+    private final Map<String, String> jgroupsChannels = new HashMap<>();
     // mapping between the {broacast|discovery}-groups and the JGroups channel factory for the *stack* they use
-    private Map<String, ChannelFactory> jgroupFactories = new HashMap<String, ChannelFactory>();
+    private Map<String, ChannelFactory> jgroupFactories = new HashMap<>();
 
     // broadcast-group and discovery-groups configured with JGroups must share the same channel
-    private final Map<String, JChannel> channels = new HashMap<String, JChannel>();
+    private final Map<String, JChannel> channels = new HashMap<>();
 
     public HornetQService(PathConfig pathConfig) {
         this.pathConfig = pathConfig;
@@ -110,19 +110,19 @@ class HornetQService implements Service<HornetQServer> {
     }
 
     Injector<SocketBinding> getSocketBindingInjector(String name) {
-        return new MapInjector<String, SocketBinding>(socketBindings, name);
+        return new MapInjector<>(socketBindings, name);
     }
 
     Injector<ChannelFactory> getJGroupsInjector(String name) {
-        return new MapInjector<String, ChannelFactory>(jgroupFactories, name);
+        return new MapInjector<>(jgroupFactories, name);
     }
 
     Injector<OutboundSocketBinding> getOutboundSocketBindingInjector(String name) {
-        return new MapInjector<String, OutboundSocketBinding>(outboundSocketBindings, name);
+        return new MapInjector<>(outboundSocketBindings, name);
     }
 
     Injector<SocketBinding> getGroupBindingInjector(String name) {
-        return new MapInjector<String, SocketBinding>(groupBindings, name);
+        return new MapInjector<>(groupBindings, name);
     }
 
     InjectedValue<MBeanServer> getMBeanServer() {
@@ -216,7 +216,7 @@ class HornetQService implements Service<HornetQServer> {
 
 
             if(broadcastGroups != null) {
-                final List<BroadcastGroupConfiguration> newConfigs = new ArrayList<BroadcastGroupConfiguration>();
+                final List<BroadcastGroupConfiguration> newConfigs = new ArrayList<>();
                 for(final BroadcastGroupConfiguration config : broadcastGroups) {
                     final String name = config.getName();
                     final String key = "broadcast" + name;
@@ -349,7 +349,7 @@ class HornetQService implements Service<HornetQServer> {
         private final String largeMessageRelativeToPath;
         private final String pagingPath;
         private final String pagingRelativeToPath;
-        private final List<PathManager.Callback.Handle> callbackHandles = new ArrayList<PathManager.Callback.Handle>();
+        private final List<PathManager.Callback.Handle> callbackHandles = new ArrayList<>();
 
         public PathConfig(String bindingsPath, String bindingsRelativeToPath, String journalPath, String journalRelativeToPath,
                 String largeMessagePath, String largeMessageRelativeToPath, String pagingPath, String pagingRelativeToPath) {

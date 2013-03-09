@@ -45,8 +45,8 @@ abstract class AbstractTransformationDescriptionBuilder implements Transformatio
     protected ResourceTransformer resourceTransformer;
     protected OperationTransformer operationTransformer;
 
-    protected final Map<String, OperationTransformationEntry> operationTransformers = new HashMap<String, OperationTransformationEntry>();
-    protected final List<TransformationDescriptionBuilder> children = new ArrayList<TransformationDescriptionBuilder>();
+    protected final Map<String, OperationTransformationEntry> operationTransformers = new HashMap<>();
+    protected final List<TransformationDescriptionBuilder> children = new ArrayList<>();
 
     protected AbstractTransformationDescriptionBuilder(PathElement pathElement, PathAddressTransformer pathAddressTransformer,
                                              ResourceTransformer resourceTransformer, OperationTransformer operationTransformer) {
@@ -106,7 +106,7 @@ abstract class AbstractTransformationDescriptionBuilder implements Transformatio
      * @return the operation transformers
      */
     protected Map<String, OperationTransformer> buildOperationTransformers(AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry registry) {
-        final Map<String, OperationTransformer> operations = new HashMap<String, OperationTransformer>();
+        final Map<String, OperationTransformer> operations = new HashMap<>();
         for(final Map.Entry<String, OperationTransformationEntry> entry: operationTransformers.entrySet()) {
             final OperationTransformer transformer = entry.getValue().getOperationTransformer(registry);
             operations.put(entry.getKey(), transformer);
@@ -123,7 +123,7 @@ abstract class AbstractTransformationDescriptionBuilder implements Transformatio
         if(children.isEmpty()) {
             return Collections.emptyList();
         }
-        final List<TransformationDescription> children = new ArrayList<TransformationDescription>();
+        final List<TransformationDescription> children = new ArrayList<>();
         for(final TransformationDescriptionBuilder builder : this.children) {
             children.add(builder.build());
         }

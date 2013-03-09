@@ -51,7 +51,7 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
 
     public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "connection_manager");
 
-    private final InjectedValue<SSLIdentity> sslIdentity = new InjectedValue<SSLIdentity>();
+    private final InjectedValue<SSLIdentity> sslIdentity = new InjectedValue<>();
     private volatile ModelNode resolvedConfiguration;
 
     public LdapConnectionManagerService(final ModelNode resolvedConfiguration) {

@@ -114,10 +114,10 @@ public class ModifiableDataSource extends DataSourceAbstractImpl implements Data
         this.dataSourceClass = dataSourceClass;
         this.driver = driver;
         if (connectionProperties != null) {
-            this.connectionProperties = new HashMap<String, String>(connectionProperties.size());
+            this.connectionProperties = new HashMap<>(connectionProperties.size());
             this.connectionProperties.putAll(connectionProperties);
         } else {
-            this.connectionProperties = new HashMap<String, String>(0);
+            this.connectionProperties = new HashMap<>(0);
         }
         this.newConnectionSql = newConnectionSql;
         this.pool = pool;

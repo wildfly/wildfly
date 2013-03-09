@@ -69,7 +69,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
 
     public Map<String, ClassAnnotationInformation<A, T>> createAnnotationInformation(final CompositeIndex index) {
 
-        final List<TargetAnnotation> annotations = new ArrayList<TargetAnnotation>();
+        final List<TargetAnnotation> annotations = new ArrayList<>();
         if (multiAnnotationDotName != null) {
             for (AnnotationInstance multiInstance : index.getAnnotations(multiAnnotationDotName)) {
                 annotations.addAll(fromMultiAnnotation(multiInstance));
@@ -84,22 +84,22 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
         }
 
 
-        final Map<DotName, List<TargetAnnotation>> classLevel = new HashMap<DotName, List<TargetAnnotation>>();
-        final Map<DotName, List<TargetAnnotation>> methodLevel = new HashMap<DotName, List<TargetAnnotation>>();
-        final Map<DotName, List<TargetAnnotation>> fieldLevel = new HashMap<DotName, List<TargetAnnotation>>();
+        final Map<DotName, List<TargetAnnotation>> classLevel = new HashMap<>();
+        final Map<DotName, List<TargetAnnotation>> methodLevel = new HashMap<>();
+        final Map<DotName, List<TargetAnnotation>> fieldLevel = new HashMap<>();
         for (TargetAnnotation instance : annotations) {
             final DotName targetClass = getAnnotationClass(instance.target()).name();
             if (instance.target() instanceof ClassInfo) {
                 List<TargetAnnotation> data = classLevel.get(targetClass);
-                if (data == null) classLevel.put(targetClass, data = new ArrayList<TargetAnnotation>(1));
+                if (data == null) classLevel.put(targetClass, data = new ArrayList<>(1));
                 data.add(instance);
             } else if (instance.target() instanceof MethodInfo) {
                 List<TargetAnnotation> data = methodLevel.get(targetClass);
-                if (data == null) methodLevel.put(targetClass, data = new ArrayList<TargetAnnotation>(1));
+                if (data == null) methodLevel.put(targetClass, data = new ArrayList<>(1));
                 data.add(instance);
             } else if (instance.target() instanceof FieldInfo) {
                 List<TargetAnnotation> data = fieldLevel.get(targetClass);
-                if (data == null) fieldLevel.put(targetClass, data = new ArrayList<TargetAnnotation>(1));
+                if (data == null) fieldLevel.put(targetClass, data = new ArrayList<>(1));
                 data.add(instance);
             } else if (instance.target() instanceof MethodParameterInfo) {
                 //ignore for now
@@ -108,9 +108,9 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
             }
         }
 
-        final Map<String, ClassAnnotationInformation<A, T>> ret = new HashMap<String, ClassAnnotationInformation<A, T>>();
+        final Map<String, ClassAnnotationInformation<A, T>> ret = new HashMap<>();
 
-        final Set<DotName> allClasses = new HashSet<DotName>(classLevel.keySet());
+        final Set<DotName> allClasses = new HashSet<>(classLevel.keySet());
         allClasses.addAll(methodLevel.keySet());
         allClasses.addAll(fieldLevel.keySet());
 
@@ -122,7 +122,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
             if (classAnnotations == null) {
                 classData = Collections.emptyList();
             } else {
-                classData = new ArrayList<T>(classAnnotations.size());
+                classData = new ArrayList<>(classAnnotations.size());
                 for (TargetAnnotation instance : classAnnotations) {
                     classData.add(fromAnnotation(instance.instance()));
                 }
@@ -134,12 +134,12 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
             if (fieldAnnotations == null) {
                 fieldData = Collections.emptyMap();
             } else {
-                fieldData = new HashMap<String, List<T>>();
+                fieldData = new HashMap<>();
                 for (TargetAnnotation instance : fieldAnnotations) {
                     final String name = ((FieldInfo) instance.target()).name();
                     List<T> data = fieldData.get(name);
                     if (data == null) {
-                        fieldData.put(name, data = new ArrayList<T>(1));
+                        fieldData.put(name, data = new ArrayList<>(1));
                     }
                     data.add(fromAnnotation(instance.instance()));
                 }
@@ -151,17 +151,17 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
             if (methodAnnotations == null) {
                 methodData = Collections.emptyMap();
             } else {
-                methodData = new HashMap<MethodIdentifier, List<T>>();
+                methodData = new HashMap<>();
                 for (TargetAnnotation instance : methodAnnotations) {
                     final MethodIdentifier identifier = getMethodIdentifier(instance.target());
                     List<T> data = methodData.get(identifier);
                     if (data == null) {
-                        methodData.put(identifier, data = new ArrayList<T>(1));
+                        methodData.put(identifier, data = new ArrayList<>(1));
                     }
                     data.add(fromAnnotation(instance.instance()));
                 }
             }
-            ClassAnnotationInformation<A, T> information = new ClassAnnotationInformation<A, T>(annotationType, classData, methodData, fieldData);
+            ClassAnnotationInformation<A, T> information = new ClassAnnotationInformation<>(annotationType, classData, methodData, fieldData);
             ret.put(clazz.toString(), information);
         }
 
@@ -186,7 +186,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
     protected abstract T fromAnnotation(AnnotationInstance annotationInstance);
 
     protected List<TargetAnnotation> fromMultiAnnotation(AnnotationInstance multiAnnotationInstance) {
-        List<TargetAnnotation> instances = new ArrayList<TargetAnnotation>();
+        List<TargetAnnotation> instances = new ArrayList<>();
         final AnnotationInstance[] values = multiAnnotationInstance.value().asNestedArray();
         for(AnnotationInstance value : values) {
             instances.add(new TargetAnnotation(value, multiAnnotationInstance.target()));

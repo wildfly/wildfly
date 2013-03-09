@@ -89,9 +89,9 @@ public class RemoteStatelessFailoverTestCase {
     private static final String DEPLOYMENT_1_DD = DEPLOYMENT_1 + "-descriptor";
     private static final String DEPLOYMENT_2_DD = DEPLOYMENT_2 + "-descriptor";
     
-    private static final Map<String, Boolean> deployed = new HashMap<String, Boolean>();
-    private static final Map<String, Boolean> started = new HashMap<String, Boolean>();
-    private static final Map<String, List<String>> container2deployment = new HashMap<String, List<String>>();
+    private static final Map<String, Boolean> deployed = new HashMap<>();
+    private static final Map<String, Boolean> started = new HashMap<>();
+    private static final Map<String, List<String>> container2deployment = new HashMap<>();
     
     @BeforeClass
     public static void init() throws NamingException {
@@ -105,11 +105,11 @@ public class RemoteStatelessFailoverTestCase {
         started.put(CONTAINER_1, false);
         started.put(CONTAINER_2, false);
         
-        List<String> deployments1 = new ArrayList<String>();
+        List<String> deployments1 = new ArrayList<>();
         deployments1.add(DEPLOYMENT_1);
         deployments1.add(DEPLOYMENT_1_DD);
         container2deployment.put(CONTAINER_1, deployments1);
-        List<String> deployments2 = new ArrayList<String>();
+        List<String> deployments2 = new ArrayList<>();
         deployments2.add(DEPLOYMENT_2);
         deployments2.add(DEPLOYMENT_2_DD);
         container2deployment.put(CONTAINER_2, deployments2);
@@ -296,7 +296,7 @@ public class RemoteStatelessFailoverTestCase {
      * The necessary number of processed calls by each server is {minPercentage} of the number of all calls.
      */
     private void validateBalancing(StatelessRemote bean, int numCalls, int expectedServers, double minPercentage) {
-        Map<String, Integer> callCount = new HashMap<String, Integer>();
+        Map<String, Integer> callCount = new HashMap<>();
         int maxNumOfProcessedCalls = -1;
         int minNumOfProcessedCalls = Integer.MAX_VALUE;
 

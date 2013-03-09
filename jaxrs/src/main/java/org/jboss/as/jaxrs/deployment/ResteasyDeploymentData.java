@@ -38,12 +38,12 @@ public class ResteasyDeploymentData {
     private boolean scanResources;
     private boolean scanProviders;
     private boolean dispatcherCreated;
-    private final Set<String> scannedResourceClasses = new LinkedHashSet<String>();
-    private final Set<String> scannedProviderClasses = new LinkedHashSet<String>();
+    private final Set<String> scannedResourceClasses = new LinkedHashSet<>();
+    private final Set<String> scannedProviderClasses = new LinkedHashSet<>();
     private List<Class<? extends Application>> scannedApplicationClasses = new ArrayList<>();
     private boolean bootClasses;
     private boolean unwrappedExceptionsParameterSet;
-    private final Set<String> scannedJndiComponentResources = new LinkedHashSet<String>();
+    private final Set<String> scannedJndiComponentResources = new LinkedHashSet<>();
 
     /**
      * Merges a list of additional JAX-RS deployment data with this lot of deployment data.

@@ -48,7 +48,7 @@ public class EjbAnnotationProcessor extends AbstractEEAnnotationProcessor {
     final List<ClassAnnotationInformationFactory> factories;
 
     public EjbAnnotationProcessor() {
-        final List<ClassAnnotationInformationFactory> factories = new ArrayList<ClassAnnotationInformationFactory>();
+        final List<ClassAnnotationInformationFactory> factories = new ArrayList<>();
         factories.add(new LockAnnotationInformationFactory());
         factories.add(new ConcurrencyManagementAnnotationInformationFactory());
         factories.add(new AccessTimeoutAnnotationInformationFactory());
@@ -56,9 +56,9 @@ public class EjbAnnotationProcessor extends AbstractEEAnnotationProcessor {
         factories.add(new TransactionTimeoutAnnotationInformationFactory());
         factories.add(new TransactionManagementAnnotationInformationFactory());
         factories.add(new RemoveAnnotationInformationFactory());
-        factories.add(new BooleanAnnotationInformationFactory<Startup>(Startup.class));
+        factories.add(new BooleanAnnotationInformationFactory<>(Startup.class));
         factories.add(new StatefulTimeoutAnnotationInformationFactory());
-        factories.add(new BooleanAnnotationInformationFactory<Asynchronous>(Asynchronous.class));
+        factories.add(new BooleanAnnotationInformationFactory<>(Asynchronous.class));
         factories.add(new DependsOnAnnotationInformationFactory());
 
         factories.add(new ResourceAdaptorAnnotationInformationFactory());
@@ -68,9 +68,9 @@ public class EjbAnnotationProcessor extends AbstractEEAnnotationProcessor {
         factories.add(new PoolAnnotationInformationFactory());
 
         //session synchronization
-        factories.add(new BooleanAnnotationInformationFactory<AfterBegin>(AfterBegin.class));
-        factories.add(new BooleanAnnotationInformationFactory<BeforeCompletion>(BeforeCompletion.class));
-        factories.add(new BooleanAnnotationInformationFactory<AfterCompletion>(AfterCompletion.class));
+        factories.add(new BooleanAnnotationInformationFactory<>(AfterBegin.class));
+        factories.add(new BooleanAnnotationInformationFactory<>(BeforeCompletion.class));
+        factories.add(new BooleanAnnotationInformationFactory<>(AfterCompletion.class));
 
         //security annotations
         factories.add(new RunAsAnnotationInformationFactory());
@@ -78,8 +78,8 @@ public class EjbAnnotationProcessor extends AbstractEEAnnotationProcessor {
         factories.add(new SecurityDomainAnnotationInformationFactory());
         factories.add(new DeclareRolesAnnotationInformationFactory());
         factories.add(new RolesAllowedAnnotationInformationFactory());
-        factories.add(new BooleanAnnotationInformationFactory<DenyAll>(DenyAll.class));
-        factories.add(new BooleanAnnotationInformationFactory<PermitAll>(PermitAll.class));
+        factories.add(new BooleanAnnotationInformationFactory<>(DenyAll.class));
+        factories.add(new BooleanAnnotationInformationFactory<>(PermitAll.class));
 
         //view annotations
         factories.add(new LocalHomeAnnotationInformationFactory());

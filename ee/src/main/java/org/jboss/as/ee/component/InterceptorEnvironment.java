@@ -36,8 +36,8 @@ import java.util.List;
 public class InterceptorEnvironment implements ResourceInjectionTarget {
 
     private final DeploymentDescriptorEnvironment deploymentDescriptorEnvironment;
-    private final List<ResourceInjectionConfiguration> resourceInjections = new ArrayList<ResourceInjectionConfiguration>();
-    private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
+    private final List<ResourceInjectionConfiguration> resourceInjections = new ArrayList<>();
+    private final List<BindingConfiguration> bindingConfigurations = new ArrayList<>();
 
     public InterceptorEnvironment(final DeploymentDescriptorEnvironment deploymentDescriptorEnvironment) {
         this.deploymentDescriptorEnvironment = deploymentDescriptorEnvironment;

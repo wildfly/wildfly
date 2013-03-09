@@ -72,7 +72,7 @@ final class NodeSubregistry {
         if (snapshot == null) {
             return Collections.emptySet();
         }
-        return new HashSet<String>(snapshot.keySet());
+        return new HashSet<>(snapshot.keySet());
     }
 
     ManagementResourceRegistration register(final String elementValue, final ResourceDefinition provider, boolean runtimeOnly) {
@@ -190,7 +190,7 @@ final class NodeSubregistry {
                 result = wildCardChildren;
             } else if (wildCardChildren != null) {
                 // Merge
-                result = new HashSet<String>(result);
+                result = new HashSet<>(result);
                 result.addAll(wildCardChildren);
             }
         }
@@ -212,7 +212,7 @@ final class NodeSubregistry {
                 result = wildCardChildren;
             } else if (wildCardChildren != null) {
                 // Merge
-                result = new HashSet<String>(result);
+                result = new HashSet<>(result);
                 result.addAll(wildCardChildren);
             }
         }
@@ -253,7 +253,7 @@ final class NodeSubregistry {
                 result = wildCardChildren;
             } else if (wildCardChildren != null) {
                 // Merge
-                result = new HashSet<PathElement>(result);
+                result = new HashSet<>(result);
                 result.addAll(wildCardChildren);
             }
         }

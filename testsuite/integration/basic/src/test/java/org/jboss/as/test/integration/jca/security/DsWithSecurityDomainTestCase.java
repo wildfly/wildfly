@@ -91,7 +91,7 @@ public class DsWithSecurityDomainTestCase {
 
         @Override
         protected Map<String, String> getModuleOptions() {
-            Map<String, String> moduleOptions = new HashMap<String, String>();
+            Map<String, String> moduleOptions = new HashMap<>();
             moduleOptions.put("userName", "sa");
             moduleOptions.put("password", "sa");
             moduleOptions.put("principal", "sa");

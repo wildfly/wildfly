@@ -71,7 +71,7 @@ public abstract class TestProcessUtils {
 
     static final Map<String, TestCommand> COMMANDS;
     static {
-        Map<String, TestCommand> map = new HashMap<String, TestCommand>();
+        Map<String, TestCommand> map = new HashMap<>();
         StartCommand start = new StartCommand();
         map.put(start.cmd(), start);
         MessageCommand msg = new MessageCommand();
@@ -87,7 +87,7 @@ public abstract class TestProcessUtils {
 
     public static List<String> createCommand(String processName, String classname, int pmPort,
             int debugPort, boolean suspend) throws UnknownHostException {
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         cmd.add(getJava());
         cmd.add("-cp");
         cmd.add(System.getProperty("java.class.path"));
@@ -123,12 +123,12 @@ public abstract class TestProcessUtils {
     private static class ServerSocketThread extends Thread implements TestStreamManager {
         TestProcessController controller;
         ServerSocket server;
-        Set<ListenerSocketThread> listenerThreads = new HashSet<ListenerSocketThread>();
+        Set<ListenerSocketThread> listenerThreads = new HashSet<>();
         CountDownLatch latch = new CountDownLatch(1);
-        Map<String, ListenerSocketThread> listenerThreadsByProcessName = new HashMap<String, ListenerSocketThread>();
+        Map<String, ListenerSocketThread> listenerThreadsByProcessName = new HashMap<>();
 
-        Map<String, CountDownLatch> startProcessLatches = new HashMap<String, CountDownLatch>();
-        Map<String, CountDownLatch> stopProcessLatches = new HashMap<String, CountDownLatch>();
+        Map<String, CountDownLatch> startProcessLatches = new HashMap<>();
+        Map<String, CountDownLatch> stopProcessLatches = new HashMap<>();
 
         ServerSocketThread(TestProcessController controller) {
             super("Test Server Socket Thread");
@@ -347,7 +347,7 @@ public abstract class TestProcessUtils {
         volatile String processName;
         final ServerSocketThread serverSocketThread;
         final Socket socket;
-        final BlockingQueue<String> messages = new LinkedBlockingQueue<String>();
+        final BlockingQueue<String> messages = new LinkedBlockingQueue<>();
 
         public ListenerSocketThread(ServerSocketThread serverSocketThread,
                 Socket socket) {

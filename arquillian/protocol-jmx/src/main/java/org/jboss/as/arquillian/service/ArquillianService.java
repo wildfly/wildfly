@@ -74,8 +74,8 @@ public class ArquillianService implements Service<ArquillianService> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
 
-    private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
-    private final Set<ArquillianConfig> deployedTests = new HashSet<ArquillianConfig>();
+    private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<>();
+    private final Set<ArquillianConfig> deployedTests = new HashSet<>();
     private ServiceContainer serviceContainer;
     private ServiceTarget serviceTarget;
     private JMXTestRunner jmxTestRunner;
@@ -259,7 +259,7 @@ public class ArquillianService implements Service<ArquillianService> {
      * @author Stuart Douglas
      */
     private static final class TCCLSetupAction implements SetupAction {
-        private final ThreadLocal<ClassLoader> oldClassLoader = new ThreadLocal<ClassLoader>();
+        private final ThreadLocal<ClassLoader> oldClassLoader = new ThreadLocal<>();
 
         private final ClassLoader classLoader;
 

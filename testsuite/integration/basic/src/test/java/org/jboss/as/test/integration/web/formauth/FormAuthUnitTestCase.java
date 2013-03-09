@@ -93,7 +93,7 @@ public class FormAuthUnitTestCase {
 
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            final List<ModelNode> updates = new ArrayList<ModelNode>();
+            final List<ModelNode> updates = new ArrayList<>();
 
             ModelNode op = new ModelNode();
             op.get(OP).set(ADD);
@@ -211,7 +211,7 @@ public class FormAuthUnitTestCase {
         HttpPost formPost = new HttpPost(baseURLNoAuth + "j_security_check");
         formPost.addHeader("Referer", baseURLNoAuth + "restricted/login.html");
 
-        List<NameValuePair> formparams = new ArrayList<NameValuePair>();
+        List<NameValuePair> formparams = new ArrayList<>();
         formparams.add(new BasicNameValuePair("j_username", "baduser"));
         formparams.add(new BasicNameValuePair("j_password", "badpass"));
         formPost.setEntity(new UrlEncodedFormEntity(formparams, "UTF-8"));
@@ -261,7 +261,7 @@ public class FormAuthUnitTestCase {
         // Submit the form to /restricted/SecuredPostServlet
         HttpPost restrictedPost = new HttpPost(baseURLNoAuth + "restricted/SecuredPostServlet");
 
-        List<NameValuePair> restrictedParams = new ArrayList<NameValuePair>();
+        List<NameValuePair> restrictedParams = new ArrayList<>();
         restrictedParams.add(new BasicNameValuePair("checkParam", "123456"));
         restrictedPost.setEntity(new UrlEncodedFormEntity(restrictedParams, "UTF-8"));
 
@@ -292,7 +292,7 @@ public class FormAuthUnitTestCase {
         HttpPost formPost = new HttpPost(baseURLNoAuth + "j_security_check");
         formPost.addHeader("Referer", baseURLNoAuth + "restricted/login.html");
 
-        List<NameValuePair> formparams = new ArrayList<NameValuePair>();
+        List<NameValuePair> formparams = new ArrayList<>();
         formparams.add(new BasicNameValuePair("j_username", "user1"));
         formparams.add(new BasicNameValuePair("j_password", "password1"));
         formPost.setEntity(new UrlEncodedFormEntity(formparams, "UTF-8"));
@@ -406,7 +406,7 @@ public class FormAuthUnitTestCase {
         HttpPost formPost = new HttpPost(baseURLNoAuth + "j_security_check");
         formPost.addHeader("Referer", baseURLNoAuth + "restricted/login.html");
 
-        List<NameValuePair> formparams = new ArrayList<NameValuePair>();
+        List<NameValuePair> formparams = new ArrayList<>();
         formparams.add(new BasicNameValuePair("j_username", username));
         formparams.add(new BasicNameValuePair("j_password", password));
         formPost.setEntity(new UrlEncodedFormEntity(formparams, "UTF-8"));

@@ -159,7 +159,7 @@ public class SubsystemOperations extends Operations {
      */
     public static List<String> readResultAsList(final ModelNode result) {
         if (result.hasDefined(RESULT) && result.get(RESULT).getType() == ModelType.LIST) {
-            final List<String> list = new ArrayList<String>();
+            final List<String> list = new ArrayList<>();
             for (ModelNode n : result.get(RESULT).asList()) list.add(n.asString());
             return list;
         }

@@ -136,7 +136,7 @@ public class ModelTestUtils {
     public static void validateModelDescriptions(PathAddress address, ImmutableManagementResourceRegistration reg) {
         ModelNode attributes = reg.getModelDescription(PathAddress.EMPTY_ADDRESS).getModelDescription(Locale.getDefault()).get(ATTRIBUTES);
         Set<String> regAttributeNames = reg.getAttributeNames(PathAddress.EMPTY_ADDRESS);
-        Set<String> attributeNames = new HashSet<String>();
+        Set<String> attributeNames = new HashSet<>();
         if (attributes.isDefined()) {
             if (attributes.asList().size() != regAttributeNames.size()) {
                 for (Property p : attributes.asPropertyList()) {
@@ -154,10 +154,10 @@ public class ModelTestUtils {
                 for (Property p : attributes.asPropertyList()) {
                     attributeNames.add(p.getName());
                 }
-                Set<String> missDesc = new HashSet<String>(attributeNames);
+                Set<String> missDesc = new HashSet<>(attributeNames);
                 missDesc.removeAll(regAttributeNames);
 
-                Set<String> missReg = new HashSet<String>(regAttributeNames);
+                Set<String> missReg = new HashSet<>(regAttributeNames);
                 missReg.removeAll(attributeNames);
 
                 if (!missReg.isEmpty()) {
@@ -326,8 +326,8 @@ public class ModelTestUtils {
         if (node1.getType() == ModelType.OBJECT) {
             ModelNode model1 = ignoreUndefined ? trimUndefinedChildren(node1) : node1;
             ModelNode model2 = ignoreUndefined ? trimUndefinedChildren(node2) : node2;
-            final Set<String> keys1 = new TreeSet<String>(model1.keys());
-            final Set<String> keys2 = new TreeSet<String>(model2.keys());
+            final Set<String> keys1 = new TreeSet<>(model1.keys());
+            final Set<String> keys2 = new TreeSet<>(model2.keys());
 
             // compare string representations of the keys to help see the difference
             if (!keys1.toString().equals(keys2.toString())){
@@ -380,7 +380,7 @@ public class ModelTestUtils {
 
     private static ModelNode trimUndefinedChildren(ModelNode model) {
         ModelNode copy = model.clone();
-        for (String key : new HashSet<String>(copy.keys())) {
+        for (String key : new HashSet<>(copy.keys())) {
             if (!copy.hasDefined(key)) {
                 copy.remove(key);
             } else if (copy.get(key).getType() == ModelType.OBJECT) {
@@ -388,7 +388,7 @@ public class ModelTestUtils {
                 for (ModelNode mn : model.get(key).asList()) {
                     Property p = mn.asProperty();
                     if (p.getValue().getType() != ModelType.OBJECT) { continue; }
-                    for (String subKey : new HashSet<String>(p.getValue().keys())) {
+                    for (String subKey : new HashSet<>(p.getValue().keys())) {
                         if (copy.get(key, p.getName()).hasDefined(subKey)) {
                             undefined = false;
                             break;

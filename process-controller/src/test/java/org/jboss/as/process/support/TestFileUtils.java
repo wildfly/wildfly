@@ -66,7 +66,7 @@ public abstract class TestFileUtils {
 
     static File[] getOutputFiles() {
         String[] list = DIR.list();
-        List<File> result = new ArrayList<File>();
+        List<File> result = new ArrayList<>();
 
         for (String name : list) {
             File file = new File(DIR, name);
@@ -113,7 +113,7 @@ public abstract class TestFileUtils {
         }
 
         public List<String> readFile() {
-            List<String> lines = new ArrayList<String>();
+            List<String> lines = new ArrayList<>();
             BufferedReader reader = null;
             try {
                 reader = new BufferedReader(new FileReader(file));

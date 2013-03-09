@@ -156,7 +156,7 @@ public final class ProcessControllerServerHandler implements ConnectionHandler {
                                     command[i] = readUTFZBytes(dataStream);
                                 }
                                 final int envCount = readInt(dataStream);
-                                final Map<String, String> env = new HashMap<String, String>();
+                                final Map<String, String> env = new HashMap<>();
                                 for (int i = 0; i < envCount; i ++) {
                                     env.put(readUTFZBytes(dataStream), readUTFZBytes(dataStream));
                                 }

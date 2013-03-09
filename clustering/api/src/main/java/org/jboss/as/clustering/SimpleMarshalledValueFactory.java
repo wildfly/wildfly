@@ -40,6 +40,6 @@ public class SimpleMarshalledValueFactory implements MarshalledValueFactory<Mars
      */
     @Override
     public <T> SimpleMarshalledValue<T> createMarshalledValue(T object) throws IOException {
-        return new SimpleMarshalledValue<T>(object, this.context);
+        return new SimpleMarshalledValue<>(object, this.context);
     }
 }

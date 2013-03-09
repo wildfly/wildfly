@@ -54,11 +54,11 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
 
     private static final SecurityLogger log = SecurityLogger.ROOT_LOGGER;
 
-    private final InjectedValue<ISecurityManagement> securityManagementValue = new InjectedValue<ISecurityManagement>();
+    private final InjectedValue<ISecurityManagement> securityManagementValue = new InjectedValue<>();
 
-    private final InjectedValue<Configuration> configurationValue = new InjectedValue<Configuration>();
+    private final InjectedValue<Configuration> configurationValue = new InjectedValue<>();
 
-    private final InjectedValue<EmbeddedCacheManager> cacheManagerValue = new InjectedValue<EmbeddedCacheManager>();
+    private final InjectedValue<EmbeddedCacheManager> cacheManagerValue = new InjectedValue<>();
 
     private final String name;
 

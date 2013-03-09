@@ -135,7 +135,7 @@ public class RespawnTestCase {
         fos.close();
         final String address = System.getProperty("jboss.test.host.master.address", "127.0.0.1");
 
-        List<String> args = new ArrayList<String>();
+        List<String> args = new ArrayList<>();
         args.add("-jboss-home");
         args.add(jbossHome);
         args.add("-jvm");
@@ -198,7 +198,7 @@ public class RespawnTestCase {
         System.out.println("testReloadHc()");
 
         List<RunningProcess> original = waitForAllProcessesFullyStarted();
-        Set<String> serverIds = new HashSet<String>();
+        Set<String> serverIds = new HashSet<>();
         for (RunningProcess proc : original) {
             if (!proc.getProcess().equals(HOST_CONTROLLER)) {
                 serverIds.add(proc.getProcessId());
@@ -323,7 +323,7 @@ public class RespawnTestCase {
                 // both original servers still exist. The originalHC still existing
                 // is not a failure condition until we hit the deadline
                 origHCGone = true;
-                Set<RunningProcess> updated = new HashSet<RunningProcess>(waitForProcesses(SERVER_ONE, SERVER_TWO));
+                Set<RunningProcess> updated = new HashSet<>(waitForProcesses(SERVER_ONE, SERVER_TWO));
                 for (RunningProcess process : original) {
                     if (!process.getProcess().equals(HOST_CONTROLLER)) {
                         Assert.assertTrue(process.getProcess() + " is missing", updated.contains(process));
@@ -535,7 +535,7 @@ public class RespawnTestCase {
 
         List<String> getInitialProcessIds(){
             List<String> processes = listProcesses();
-            List<String> ids = new ArrayList<String>();
+            List<String> ids = new ArrayList<>();
             for (String proc : processes){
                 ids.add(parseProcessId(proc));
             }
@@ -548,7 +548,7 @@ public class RespawnTestCase {
         }
 
         List<RunningProcess> getRunningProcesses(){
-            List<RunningProcess> running = new ArrayList<RunningProcess>();
+            List<RunningProcess> running = new ArrayList<>();
             List<String> processes = listProcesses();
             for (String proc : processes){
                 String id = parseProcessId(proc);
@@ -573,7 +573,7 @@ public class RespawnTestCase {
                 throw new RuntimeException(e);
             }
 
-            List<String> processes = new ArrayList<String>();
+            List<String> processes = new ArrayList<>();
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             try {
                 String line;

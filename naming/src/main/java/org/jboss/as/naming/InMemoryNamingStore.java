@@ -489,7 +489,7 @@ public class InMemoryNamingStore implements WritableNamingStore {
         }
 
         protected List<NameClassPair> found(final ContextNode contextNode) throws NamingException {
-            final List<NameClassPair> nameClassPairs = new ArrayList<NameClassPair>();
+            final List<NameClassPair> nameClassPairs = new ArrayList<>();
             for (TreeNode childNode : contextNode.children.values()) {
                 final Binding binding = childNode.binding;
                 nameClassPairs.add(new NameClassPair(binding.getName(), binding.getClassName(), true));
@@ -509,7 +509,7 @@ public class InMemoryNamingStore implements WritableNamingStore {
         }
 
         protected List<Binding> found(final ContextNode contextNode) throws NamingException {
-            final List<Binding> bindings = new ArrayList<Binding>();
+            final List<Binding> bindings = new ArrayList<>();
             for (TreeNode childNode : contextNode.children.values()) {
                 bindings.add(childNode.binding);
             }

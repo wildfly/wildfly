@@ -88,18 +88,18 @@ public abstract class AbstractResourceAdapterDeploymentService {
     // Must be set by the start method
     protected ResourceAdapterDeployment value;
 
-    protected final InjectedValue<AS7MetadataRepository> mdr = new InjectedValue<AS7MetadataRepository>();
+    protected final InjectedValue<AS7MetadataRepository> mdr = new InjectedValue<>();
 
-    protected final InjectedValue<ResourceAdapterRepository> raRepository = new InjectedValue<ResourceAdapterRepository>();
+    protected final InjectedValue<ResourceAdapterRepository> raRepository = new InjectedValue<>();
 
-    protected final InjectedValue<ResourceAdapterDeploymentRegistry> registry = new InjectedValue<ResourceAdapterDeploymentRegistry>();
+    protected final InjectedValue<ResourceAdapterDeploymentRegistry> registry = new InjectedValue<>();
 
-    protected final InjectedValue<ManagementRepository> managementRepository = new InjectedValue<ManagementRepository>();
+    protected final InjectedValue<ManagementRepository> managementRepository = new InjectedValue<>();
 
-    protected final InjectedValue<JcaSubsystemConfiguration> config = new InjectedValue<JcaSubsystemConfiguration>();
-    protected final InjectedValue<TransactionIntegration> txInt = new InjectedValue<TransactionIntegration>();
-    protected final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
-    protected final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
+    protected final InjectedValue<JcaSubsystemConfiguration> config = new InjectedValue<>();
+    protected final InjectedValue<TransactionIntegration> txInt = new InjectedValue<>();
+    protected final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<>();
+    protected final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<>();
 
     public ResourceAdapterDeployment getValue() {
         return ConnectorServices.notNull(value);

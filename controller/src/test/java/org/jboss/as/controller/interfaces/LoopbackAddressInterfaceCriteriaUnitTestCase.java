@@ -68,7 +68,7 @@ public class LoopbackAddressInterfaceCriteriaUnitTestCase {
 
         InetAddress target = InetAddress.getByName("127.0.0.2");
         LoopbackAddressInterfaceCriteria testee = new LoopbackAddressInterfaceCriteria(target);
-        Map<NetworkInterface, Set<InetAddress>> candidates = new HashMap<NetworkInterface, Set<InetAddress>>();
+        Map<NetworkInterface, Set<InetAddress>> candidates = new HashMap<>();
         for (NetworkInterface ni : nonLoopBackInterfaces) {
             candidates.put(ni, allCandidates.get(ni));
         }

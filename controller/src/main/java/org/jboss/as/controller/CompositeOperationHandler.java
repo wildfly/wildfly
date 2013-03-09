@@ -70,7 +70,7 @@ public final class CompositeOperationHandler implements OperationStepHandler {
         ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
         final List<ModelNode> list = operation.get(ModelDescriptionConstants.STEPS).asList();
         final ModelNode responseMap = context.getResult().setEmptyObject();
-        Map<String, OperationStepHandler> stepHandlerMap = new HashMap<String, OperationStepHandler>();
+        Map<String, OperationStepHandler> stepHandlerMap = new HashMap<>();
         final int size = list.size();
         // Validate all needed handlers are available.
         for (int i = 0; i < size; i++) {

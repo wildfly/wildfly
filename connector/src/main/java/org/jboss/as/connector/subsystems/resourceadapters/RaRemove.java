@@ -108,7 +108,7 @@ public class RaRemove implements OperationStepHandler {
                     @Override
                     public void handleRollback(OperationContext context, ModelNode operation) {
                         if (resourceAdapter != null) {
-                            List<ServiceController<?>>  newControllers = new LinkedList<ServiceController<?>>();
+                            List<ServiceController<?>>  newControllers = new LinkedList<>();
                             if (model.get(ARCHIVE.getName()).isDefined()) {
                                 RaOperationUtil.installRaServices(context, new ServiceVerificationHandler(), name, resourceAdapter, newControllers);
                             } else {

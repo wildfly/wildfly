@@ -84,7 +84,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
     private final PathManager pathManager;
 
     static {
-        Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
+        Map<String, AttributeDefinition> map = new LinkedHashMap<>();
         map.put(THREAD_POOL_NAME.getName(), THREAD_POOL_NAME);
         map.put(DEFAULT_DATA_STORE.getName(), DEFAULT_DATA_STORE);
 

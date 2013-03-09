@@ -41,7 +41,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 class QueueService implements Service<Void> {
 
-    private final InjectedValue<HornetQServer> hornetQService = new InjectedValue<HornetQServer>();
+    private final InjectedValue<HornetQServer> hornetQService = new InjectedValue<>();
     private final CoreQueueConfiguration queueConfiguration;
     private final boolean temporary;
 

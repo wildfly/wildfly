@@ -85,7 +85,7 @@ public class Constants {
             .setXmlName(CommonPool.Tag.FLUSH_STRATEGY.getLocalName())
             .setAllowNull(true)
             .setAllowExpression(true)
-            .setValidator(new EnumValidator<FlushStrategy>(FlushStrategy.class, true, true))
+            .setValidator(new EnumValidator<>(FlushStrategy.class, true, true))
             .build();
 
     public static final SimpleAttributeDefinition[] POOL_ATTRIBUTES = {BLOCKING_TIMEOUT_WAIT_MILLIS, IDLETIMEOUTMINUTES, BACKGROUNDVALIDATIONMILLIS,

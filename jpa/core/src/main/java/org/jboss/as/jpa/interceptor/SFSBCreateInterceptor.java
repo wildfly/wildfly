@@ -73,7 +73,7 @@ public class SFSBCreateInterceptor implements Interceptor {
             if (context.getContextData().containsKey(SFSBInvocationInterceptor.CONTEXT_KEY)) {
                 entityManagers = (HashMap<String, ExtendedEntityManager>) ((AtomicReference<ManagedReference>) context.getContextData().get(SFSBInvocationInterceptor.CONTEXT_KEY)).get().getInstance();
             } else {
-                entityManagers = new HashMap<String, ExtendedEntityManager>();
+                entityManagers = new HashMap<>();
                 context.getContextData().put(SFSBInvocationInterceptor.CONTEXT_KEY, new AtomicReference<ManagedReference>(new ValueManagedReference(new ImmediateValue<Object>(entityManagers))));
             }
             return new SFSBCreateInterceptor(entityManagers);

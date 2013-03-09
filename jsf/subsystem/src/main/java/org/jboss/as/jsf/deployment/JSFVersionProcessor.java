@@ -68,7 +68,7 @@ public class JSFVersionProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        List<ParamValueMetaData> contextParams = new ArrayList<ParamValueMetaData>();
+        List<ParamValueMetaData> contextParams = new ArrayList<>();
 
         if ((metaData.getWebMetaData() != null) && (metaData.getWebMetaData().getContextParams() != null)) {
             contextParams.addAll(metaData.getWebMetaData().getContextParams());

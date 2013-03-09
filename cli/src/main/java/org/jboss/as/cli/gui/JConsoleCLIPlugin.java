@@ -69,7 +69,7 @@ public class JConsoleCLIPlugin extends JConsolePlugin {
 
     @Override
     public Map<String,JPanel> getTabs() {
-        Map<String, JPanel> panelMap = new HashMap<String, JPanel>();
+        Map<String, JPanel> panelMap = new HashMap<>();
 
         final CommandContext cmdCtx;
         try {

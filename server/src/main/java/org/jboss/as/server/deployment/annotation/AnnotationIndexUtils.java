@@ -43,10 +43,10 @@ import org.jboss.jandex.Index;
 public class AnnotationIndexUtils {
 
     public static Map<ResourceRoot, Index> getAnnotationIndexes(final DeploymentUnit deploymentUnit) {
-        final List<ResourceRoot> allResourceRoots = new ArrayList<ResourceRoot>();
+        final List<ResourceRoot> allResourceRoots = new ArrayList<>();
         allResourceRoots.addAll(deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS));
         allResourceRoots.add(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT));
-        Map<ResourceRoot, Index> indexes = new HashMap<ResourceRoot, Index>();
+        Map<ResourceRoot, Index> indexes = new HashMap<>();
         for (ResourceRoot resourceRoot : allResourceRoots) {
             if (resourceRoot == null)
                 continue;

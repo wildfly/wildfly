@@ -54,7 +54,7 @@ public class ValveUtil {
     private static Logger log = Logger.getLogger(ValveUtil.class);
 
     public static void createValveModule(ModelControllerClient client, String name, String modulename, String classname) throws Exception {
-        List<ModelNode> updates = new ArrayList<ModelNode>();
+        List<ModelNode> updates = new ArrayList<>();
 
         ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
@@ -71,7 +71,7 @@ public class ValveUtil {
     }
 
     public static void removeValve(final ModelControllerClient client, String name) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        final List<ModelNode> updates = new ArrayList<>();
 
         ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);

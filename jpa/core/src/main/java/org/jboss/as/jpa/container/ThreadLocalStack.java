@@ -34,12 +34,12 @@ import java.util.List;
  * @version $Revision$
  */
 public class ThreadLocalStack<T> {
-    private ThreadLocal<ArrayList<T>> stack = new ThreadLocal<ArrayList<T>>();
+    private ThreadLocal<ArrayList<T>> stack = new ThreadLocal<>();
 
     public void push(T obj) {
         ArrayList<T> list = stack.get();
         if (list == null) {
-            list = new ArrayList<T>(1);
+            list = new ArrayList<>(1);
             stack.set(list);
         }
         list.add(obj);

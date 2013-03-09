@@ -48,8 +48,8 @@ public class DeploymentOverlayLinkService implements Service<DeploymentOverlayLi
         return regex;
     }
 
-    private final InjectedValue<DeploymentOverlayIndexService> deploymentOverlayIndexServiceInjectedValue = new InjectedValue<DeploymentOverlayIndexService>();
-    private final InjectedValue<DeploymentOverlayService> deploymentOverlayServiceInjectedValue = new InjectedValue<DeploymentOverlayService>();
+    private final InjectedValue<DeploymentOverlayIndexService> deploymentOverlayIndexServiceInjectedValue = new InjectedValue<>();
+    private final InjectedValue<DeploymentOverlayService> deploymentOverlayServiceInjectedValue = new InjectedValue<>();
     private final String deployment;
     private final DeploymentOverlayPriority priority;
     private final Pattern pattern;

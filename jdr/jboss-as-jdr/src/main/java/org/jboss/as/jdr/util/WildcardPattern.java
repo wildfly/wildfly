@@ -43,7 +43,7 @@ public class WildcardPattern {
         }
 
         StringTokenizer st = new StringTokenizer(pattern, WILDCARDS, true);
-        List<String> t = new ArrayList<String>();
+        List<String> t = new ArrayList<>();
         while(st.hasMoreTokens()){
             t.add(st.nextToken());
         }

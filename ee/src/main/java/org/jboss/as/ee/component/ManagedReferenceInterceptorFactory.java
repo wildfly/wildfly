@@ -68,7 +68,7 @@ class ManagedReferenceInterceptorFactory implements InterceptorFactory {
     public Interceptor create(final InterceptorFactoryContext context) {
         AtomicReference<ManagedReference> referenceReference = (AtomicReference<ManagedReference>) context.getContextData().get(contextKey);
         if (referenceReference == null) {
-            referenceReference = new AtomicReference<ManagedReference>();
+            referenceReference = new AtomicReference<>();
             context.getContextData().put(contextKey, referenceReference);
         }
         return new ManagedReferenceInterceptor(componentInstantiation, referenceReference);

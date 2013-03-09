@@ -33,7 +33,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class LocalDataSourceService extends AbstractDataSourceService {
 
-    private final InjectedValue<ModifiableDataSource> dataSourceConfig = new InjectedValue<ModifiableDataSource>();
+    private final InjectedValue<ModifiableDataSource> dataSourceConfig = new InjectedValue<>();
 
     public LocalDataSourceService(final String jndiName, final ClassLoader classLoader) {
         super(jndiName, classLoader);

@@ -40,7 +40,7 @@ final class MetaDataBuilderJAXRPC_EJB extends AbstractMetaDataBuilderEJB {
 
     @Override
     protected void buildEnterpriseBeansMetaData(final Deployment dep, final EJBArchiveMetaData ejbArchiveMD) {
-        final List<EJBMetaData> wsEjbsMD = new LinkedList<EJBMetaData>();
+        final List<EJBMetaData> wsEjbsMD = new LinkedList<>();
         final JBossWebservicesMetaData jbossWebservicesMD = WSHelper.getOptionalAttachment(dep, JBossWebservicesMetaData.class);
         final JAXRPCDeployment jaxrpcDeployment = WSHelper.getRequiredAttachment(dep, JAXRPCDeployment.class);
 

@@ -146,10 +146,10 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
         List<ClusterNode> newView = getView(node1, 0, 3);
         newView.remove(dead);
 
-        List<ClusterNode> addedMembers = new ArrayList<ClusterNode>(newView);
+        List<ClusterNode> addedMembers = new ArrayList<>(newView);
         addedMembers.removeAll(members);
 
-        List<ClusterNode> deadMembers = new ArrayList<ClusterNode>();
+        List<ClusterNode> deadMembers = new ArrayList<>();
         deadMembers.add(dead);
 
         testee.membershipChanged(deadMembers, addedMembers, newView);
@@ -189,7 +189,7 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
         GroupRpcDispatcher rpcDispatcher = testee.getGroupRpcDispatcher();
         LocalLockHandler handler = testee.getLocalHandler();
 
-        List<RemoteLockResponse> rspList = new ArrayList<RemoteLockResponse>();
+        List<RemoteLockResponse> rspList = new ArrayList<>();
         for (int i = 0; i < viewSize - 1; i++) {
             rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.OK));
         }
@@ -213,7 +213,7 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
 */
         ClusterNode superior = testee.getCurrentView().get(0);
 
-        List<RemoteLockResponse> rspList = new ArrayList<RemoteLockResponse>();
+        List<RemoteLockResponse> rspList = new ArrayList<>();
         rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.OK));
         rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.REJECT, superior));
 
@@ -236,7 +236,7 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
 */
         ClusterNode inferior = testee.getCurrentView().get(2);
 
-        List<RemoteLockResponse> rspList = new ArrayList<RemoteLockResponse>();
+        List<RemoteLockResponse> rspList = new ArrayList<>();
         rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.OK));
         rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.REJECT, inferior));
 
@@ -245,9 +245,9 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
                         aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(true), eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
 
         when((List<Object>) rpcDispatcher.callMethodOnCluster(eq("test"), eq("releaseRemoteLock"), aryEq(new Object[] { "test", node1 }),
-                aryEq(AbstractClusterLockSupport.RELEASE_REMOTE_LOCK_TYPES), eq(true))).thenReturn(new ArrayList<Object>());
+                aryEq(AbstractClusterLockSupport.RELEASE_REMOTE_LOCK_TYPES), eq(true))).thenReturn(new ArrayList<>());
 
-        rspList = new ArrayList<RemoteLockResponse>();
+        rspList = new ArrayList<>();
         rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.OK));
         rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.OK));
 
@@ -276,7 +276,7 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
         resetToStrict(handler);
         makeThreadSafe(handler, true);
 */
-        List<RemoteLockResponse> rspList = new ArrayList<RemoteLockResponse>();
+        List<RemoteLockResponse> rspList = new ArrayList<>();
         rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.OK));
 
         when(rpcDispatcher.getMethodCallTimeout()).thenReturn(60000l);
@@ -287,7 +287,7 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
         CountDownLatch answerAwaitLatch = new CountDownLatch(1);
         CountDownLatch answerStartLatch = new CountDownLatch(1);
         CountDownLatch answerDoneLatch = new CountDownLatch(1);
-        BlockingAnswer<Boolean> caller1Answer = new BlockingAnswer<Boolean>(Boolean.TRUE, answerAwaitLatch, answerStartLatch, null);
+        BlockingAnswer<Boolean> caller1Answer = new BlockingAnswer<>(Boolean.TRUE, answerAwaitLatch, answerStartLatch, null);
         doAnswer(caller1Answer).when(handler).lockFromCluster(eq("test"), eq(node1), anyLong());
 
         LocalLockCaller winner = new LocalLockCaller(testee, null, null, answerDoneLatch, 500);
@@ -336,7 +336,7 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
         CountDownLatch answerAwaitLatch = new CountDownLatch(1);
         CountDownLatch answerStartLatch = new CountDownLatch(1);
 
-        ArrayList<RemoteLockResponse> rspList = new ArrayList<RemoteLockResponse>();
+        ArrayList<RemoteLockResponse> rspList = new ArrayList<>();
         rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.OK));
         rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.REJECT, superiorCaller));
 
@@ -351,7 +351,7 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
 
         when((List<Object>) rpcDispatcher.callMethodOnCluster(eq("test"), eq("releaseRemoteLock"), aryEq(new Object[] { "test",
                         node1 }), aryEq(AbstractClusterLockSupport.RELEASE_REMOTE_LOCK_TYPES), eq(true))).thenReturn(
-                new ArrayList<Object>());
+                new ArrayList<>());
 /*
         replay(partition);
         replay(handler);
@@ -405,13 +405,13 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
         CountDownLatch answerAwaitLatch = new CountDownLatch(1);
         CountDownLatch answerStartLatch = new CountDownLatch(1);
 
-        ArrayList<RemoteLockResponse> rspList = new ArrayList<RemoteLockResponse>();
+        ArrayList<RemoteLockResponse> rspList = new ArrayList<>();
         rspList.add(new RemoteLockResponse(superiorNode, RemoteLockResponse.Flag.OK));
         rspList.add(new RemoteLockResponse(inferiorNode, RemoteLockResponse.Flag.REJECT, inferiorNode));
 
         BlockingAnswer<List<RemoteLockResponse>> caller1Answer = new BlockingAnswer<List<RemoteLockResponse>>(rspList, answerAwaitLatch, answerStartLatch, null);
 
-        rspList = new ArrayList<RemoteLockResponse>();
+        rspList = new ArrayList<>();
         rspList.add(new RemoteLockResponse(superiorNode, RemoteLockResponse.Flag.OK));
         rspList.add(new RemoteLockResponse(inferiorNode, RemoteLockResponse.Flag.OK));
 
@@ -419,7 +419,7 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
         when(rpcDispatcher.<RemoteLockResponse>callMethodOnCluster(eq("test"), eq("remoteLock"), LockParamsMatcher.eqLockParams(node1, 200000),
                 AdditionalMatchers.aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(true), eq(NULL_FILTER), anyInt(), eq(false))).thenAnswer(caller1Answer).thenReturn(rspList);
 
-        when((List<Object>) rpcDispatcher.callMethodOnCluster(eq("test"), eq("releaseRemoteLock"), AdditionalMatchers.aryEq(new Object[] { "test", node1 }), AdditionalMatchers.aryEq(AbstractClusterLockSupport.RELEASE_REMOTE_LOCK_TYPES), eq(true))).thenReturn(new ArrayList<Object>());
+        when((List<Object>) rpcDispatcher.callMethodOnCluster(eq("test"), eq("releaseRemoteLock"), AdditionalMatchers.aryEq(new Object[] { "test", node1 }), AdditionalMatchers.aryEq(AbstractClusterLockSupport.RELEASE_REMOTE_LOCK_TYPES), eq(true))).thenReturn(new ArrayList<>());
 
         doNothing().when(handler).lockFromCluster(eq("test"), eq(node1), anyLong());
 
@@ -469,7 +469,7 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
 
         ClusterNode other = testee.getCurrentView().get(0);
 
-        ArrayList<RemoteLockResponse> rspList = new ArrayList<RemoteLockResponse>();
+        ArrayList<RemoteLockResponse> rspList = new ArrayList<>();
         rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.OK));
 
         when(rpcDispatcher.getMethodCallTimeout()).thenReturn(60000l);
@@ -509,13 +509,13 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
         verify(notifier).registerGroupMembershipListener(same(testee));
         verify(handler).setLocalNode(same(node));
         
-        return new TesteeSet<T>(testee, c.getValue());
+        return new TesteeSet<>(testee, c.getValue());
     }
 
     protected abstract T createClusteredLockManager(String serviceHAName, GroupRpcDispatcher rpcDispatcher, GroupMembershipNotifier notifier, LocalLockHandler handler);
 
     private List<ClusterNode> getView(ClusterNode member, int viewPos, int numMembers) {
-        List<ClusterNode> all = new ArrayList<ClusterNode>(Arrays.asList(node1, node2, node3));
+        List<ClusterNode> all = new ArrayList<>(Arrays.asList(node1, node2, node3));
         all.remove(member);
         while (all.size() > numMembers - 1) // -1 'cause we'll add one in a sec
         {

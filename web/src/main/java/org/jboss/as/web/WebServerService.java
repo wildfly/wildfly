@@ -55,10 +55,10 @@ public class WebServerService implements WebServer, Service<WebServer> {
     private Engine engine;
     private StandardServer server;
     private StandardService service;
-    private Map<String, AuthenticatorValve> authenvalves = new Hashtable<String, AuthenticatorValve>();
+    private Map<String, AuthenticatorValve> authenvalves = new Hashtable<>();
 
-    private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
-    private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
+    private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<>();
+    private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<>();
 
     public WebServerService(final String defaultHost, final boolean useNative, final String instanceId,
             final String tempPathName) {

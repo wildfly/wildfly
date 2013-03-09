@@ -81,7 +81,7 @@ public class DomainSocketBindingGroupRemoveHandler extends AbstractRemoveStepHan
                     String socketBindingGroupName = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
 
                     //Find all the server groups using the socket binding group
-                    Set<String> serverGroups = new HashSet<String>();
+                    Set<String> serverGroups = new HashSet<>();
                     for (ResourceEntry entry : context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS).getChildren(SERVER_GROUP)) {
                         if (entry.getModel().get(SOCKET_BINDING_GROUP).asString().equals(socketBindingGroupName)) {
                             serverGroups.add(entry.getName());
@@ -89,7 +89,7 @@ public class DomainSocketBindingGroupRemoveHandler extends AbstractRemoveStepHan
                     }
 
                     //Find all the server configs using the socket binding group
-                    Set<String> runningServers = new HashSet<String>();
+                    Set<String> runningServers = new HashSet<>();
                     for (ResourceEntry entry : context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS).getChildren(HOST).iterator().next().getChildren(SERVER_CONFIG)) {
                         ModelNode configModel = entry.getModel();
                         if (configModel.hasDefined(SOCKET_BINDING_GROUP)) {

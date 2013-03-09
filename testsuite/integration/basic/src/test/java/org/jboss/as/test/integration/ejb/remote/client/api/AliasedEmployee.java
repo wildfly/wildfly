@@ -31,7 +31,7 @@ import java.util.Set;
 public class AliasedEmployee extends Employee {
 
 
-    private Set<String> nickNames = new HashSet<String>();
+    private Set<String> nickNames = new HashSet<>();
 
 
     public AliasedEmployee(final int id, final String name) {

@@ -50,9 +50,9 @@ public class MyServiceActivator implements ServiceActivator {
     }
 
     private void install(ServiceName name, int quorum, ServiceActivatorContext context) {
-        InjectedValue<ServerEnvironment> env = new InjectedValue<ServerEnvironment>();
+        InjectedValue<ServerEnvironment> env = new InjectedValue<>();
         MyService service = new MyService(env);
-        SingletonService<Environment> singleton = new SingletonService<Environment>(service, name, quorum);
+        SingletonService<Environment> singleton = new SingletonService<>(service, name, quorum);
         singleton.setElectionPolicy(new PreferredSingletonElectionPolicy(new SimpleSingletonElectionPolicy(), new NamePreference(PREFERRED_NODE + "/" + SingletonService.DEFAULT_CONTAINER)));
         singleton.build(context.getServiceTarget())
             .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, env)

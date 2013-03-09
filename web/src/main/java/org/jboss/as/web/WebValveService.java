@@ -49,7 +49,7 @@ public class WebValveService implements Service<Valve> {
     private final String module;
     private ModelNode params;
 
-    private final InjectedValue<WebServer> webServer = new InjectedValue<WebServer>();
+    private final InjectedValue<WebServer> webServer = new InjectedValue<>();
     private Valve valve;
     private String name;
 
@@ -79,7 +79,7 @@ public class WebValveService implements Service<Valve> {
                 this.valve = valve;
             } else {
                 /* a context valve needs to be instanced per webapp */
-                Hashtable<String, String> properties = new Hashtable<String, String>();
+                Hashtable<String, String> properties = new Hashtable<>();
                 if (params != null) {
                     for (final Property param : params.asPropertyList()) {
                         properties.put(param.getName(), param.getValue().asString());

@@ -865,7 +865,7 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
                         }
                     }
                     if (propName == null || propValue == null) {
-                        Set<Attribute> missing = new HashSet<Attribute>();
+                        Set<Attribute> missing = new HashSet<>();
                         if (propName == null) {
                             missing.add(Attribute.NAME);
                         }

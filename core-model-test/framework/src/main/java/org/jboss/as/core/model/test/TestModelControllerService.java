@@ -87,7 +87,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 class TestModelControllerService extends ModelTestModelControllerService {
 
-    private final InjectedValue<ContentRepository> injectedContentRepository = new InjectedValue<ContentRepository>();
+    private final InjectedValue<ContentRepository> injectedContentRepository = new InjectedValue<>();
     private final TestModelType type;
     private final RunningModeControl runningModeControl;
     private final PathManagerService pathManagerService;
@@ -197,7 +197,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
     private HostControllerEnvironment createHostControllerEnvironment() {
         try {
-            Map<String, String> props = new HashMap<String, String>();
+            Map<String, String> props = new HashMap<>();
             File home = new File("target/jbossas");
             delete(home);
             home.mkdir();

@@ -120,7 +120,7 @@ public class ModuleConfigImpl implements ModuleConfig {
             throw new IllegalArgumentException("Resource cannot be null.");
         }
         if(resources == null) {
-            resources = new ArrayList<Resource>();
+            resources = new ArrayList<>();
         }
         resources.add(res);
     }
@@ -138,7 +138,7 @@ public class ModuleConfigImpl implements ModuleConfig {
             throw new IllegalArgumentException("Dependency cannot be null.");
         }
         if(dependencies == null) {
-            dependencies = new ArrayList<Dependency>();
+            dependencies = new ArrayList<>();
         }
         dependencies.add(dep);
     }
@@ -159,7 +159,7 @@ public class ModuleConfigImpl implements ModuleConfig {
             throw new IllegalArgumentException("Property value can't be null.");
         }
         if(properties == null) {
-            properties = new HashMap<String, String>();
+            properties = new HashMap<>();
         }
         properties.put(name, value);
     }

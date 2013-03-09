@@ -44,7 +44,7 @@ public final class ResourceAdapterDeploymentRegistryImpl implements ResourceAdap
      * Constructor
      */
     public ResourceAdapterDeploymentRegistryImpl() {
-        this.deployments = new HashSet<ResourceAdapterDeployment>();
+        this.deployments = new HashSet<>();
     }
 
     /**

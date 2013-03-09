@@ -217,7 +217,7 @@ public class AttributesTestCase {
         resourceModel.get("reject").set(object.clone());
 
         final RejectTwoChecker checker = new RejectTwoChecker();
-        Map<String, RejectAttributeChecker> mapChecker = new HashMap<String, RejectAttributeChecker>();
+        Map<String, RejectAttributeChecker> mapChecker = new HashMap<>();
         mapChecker.put("1", checker);
         mapChecker.put("2", checker);
 
@@ -504,7 +504,7 @@ public class AttributesTestCase {
         resourceModel.get("five");
         resourceModel.get("six");
 
-        Map<String,String> renames = new HashMap<String, String>();
+        Map<String,String> renames = new HashMap<>();
         renames.put("one", "uno");
         renames.put("two", "dos");
         renames.put("three", "TRES");

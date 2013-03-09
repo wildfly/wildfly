@@ -155,7 +155,7 @@ abstract class AbstractMetaDataBuilderPOJO {
      * @return universal JSE security meta data model
      */
     private List<JSESecurityMetaData> getSecurityMetaData(final List<SecurityConstraintMetaData> securityConstraintsMD) {
-        final List<JSESecurityMetaData> jseSecurityMDs = new LinkedList<JSESecurityMetaData>();
+        final List<JSESecurityMetaData> jseSecurityMDs = new LinkedList<>();
 
         if (securityConstraintsMD != null) {
             for (final SecurityConstraintMetaData securityConstraintMD : securityConstraintsMD) {
@@ -199,7 +199,7 @@ abstract class AbstractMetaDataBuilderPOJO {
      * @return servlet name to url pattern mappings
      */
     private Map<String, String> getServletUrlPatternsMappings(final JBossWebMetaData jbossWebMD, final List<POJOEndpoint> pojoEndpoints) {
-        final Map<String, String> mappings = new HashMap<String, String>();
+        final Map<String, String> mappings = new HashMap<>();
         final List<ServletMappingMetaData> servletMappings = WebMetaDataHelper.getServletMappings(jbossWebMD);
 
         for (final POJOEndpoint pojoEndpoint : pojoEndpoints) {
@@ -221,7 +221,7 @@ abstract class AbstractMetaDataBuilderPOJO {
      * @return servlet name to servlet mappings
      */
     private Map<String, String> getServletClassMappings(final JBossWebMetaData jbossWebMD, final List<POJOEndpoint> pojoEndpoints) {
-        final Map<String, String> mappings = new HashMap<String, String>();
+        final Map<String, String> mappings = new HashMap<>();
         final JBossServletsMetaData servlets = WebMetaDataHelper.getServlets(jbossWebMD);
 
         for (final POJOEndpoint pojoEndpoint : pojoEndpoints) {

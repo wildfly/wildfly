@@ -83,7 +83,7 @@ public class DomainLifecycleUtil {
     // A shared domain client
     private DomainTestClient domainClient;
 
-    private Map<ServerIdentity, ControlledProcessState.State> serverStatuses = new HashMap<ServerIdentity, ControlledProcessState.State>();
+    private Map<ServerIdentity, ControlledProcessState.State> serverStatuses = new HashMap<>();
     private ExecutorService executor;
 
     private final JBossAsManagedConfiguration configuration;
@@ -122,7 +122,7 @@ public class DomainLifecycleUtil {
 
             String jbossHomeDir = configuration.getJbossHome();
 
-            final List<String> additionalJavaOpts = new ArrayList<String>();
+            final List<String> additionalJavaOpts = new ArrayList<>();
             final String jbossOptions = System.getProperty("jboss.options");
             if (jbossOptions != null) {
                 Collections.addAll(additionalJavaOpts, jbossOptions.split("\\s+"));
@@ -168,7 +168,7 @@ public class DomainLifecycleUtil {
             pw.close();
             fos.close();
 
-            List<String> cmd = new ArrayList<String>();
+            List<String> cmd = new ArrayList<>();
             cmd.add(java);
             cmd.addAll(additionalJavaOpts);
             TestSuiteEnvironment.getIpv6Args(cmd);
@@ -505,13 +505,13 @@ public class DomainLifecycleUtil {
 
     private Map<ServerIdentity, ControlledProcessState.State> getServerStatuses() {
 
-        Map<ServerIdentity, ControlledProcessState.State> result = new HashMap<ServerIdentity, ControlledProcessState.State>();
+        Map<ServerIdentity, ControlledProcessState.State> result = new HashMap<>();
         ModelNode op = new ModelNode();
         op.get("operation").set("read-children-names");
         op.get("child-type").set("server-config");
         op.get("address").add("host", configuration.getHostName());
         ModelNode opResult = executeForResult(new OperationBuilder(op).build());
-        Set<String> servers = new HashSet<String>();
+        Set<String> servers = new HashSet<>();
         for (ModelNode server : opResult.asList()) {
             servers.add(server.asString());
         }

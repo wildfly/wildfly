@@ -38,10 +38,10 @@ import org.apache.catalina.connector.Response;
  * 
  */
 public class BasicRequestHandler implements RequestHandler {
-    private Set<String> namesToCheck = new HashSet<String>();
+    private Set<String> namesToCheck = new HashSet<>();
     private boolean checkAttributeNames;
-    private Map<String, Object> checkedAttributes = new HashMap<String, Object>();
-    private Set<String> attributeNames = new HashSet<String>();
+    private Map<String, Object> checkedAttributes = new HashMap<>();
+    private Set<String> attributeNames = new HashSet<>();
     private String sessionId;
     private long lastAccessedTime;
     private int maxInactiveInterval;

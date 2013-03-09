@@ -55,7 +55,7 @@ public class AnnotationMap {
     public static final String FACES_ANNOTATIONS_SC_ATTR =  "org.jboss.as.jsf.FACES_ANNOTATIONS";
     private static final String ANNOTATION_MAP_CONVERTED = "org.jboss.as.jsf.ANNOTATION_MAP_CONVERTED";
 
-    private static final Map<String, Class<? extends Annotation>> stringToAnnoMap = new HashMap<String, Class<? extends Annotation>>();
+    private static final Map<String, Class<? extends Annotation>> stringToAnnoMap = new HashMap<>();
 
     static {
         // These classes need to be loaded in order!  Some can't be loaded if the JSF version is too old.
@@ -100,7 +100,7 @@ public class AnnotationMap {
     }
 
     private static Map<Class<? extends Annotation>, Set<Class<?>>> convert(Map<Class<? extends Annotation>, Set<Class<?>>> annotations) {
-        final Map<Class<? extends Annotation>, Set<Class<?>>> convertedAnnotatedClasses = new HashMap<Class<? extends Annotation>, Set<Class<?>>>();
+        final Map<Class<? extends Annotation>, Set<Class<?>>> convertedAnnotatedClasses = new HashMap<>();
         for (Map.Entry<Class<? extends Annotation>, Set<Class<?>>> entry : annotations.entrySet()) {
             final Class<? extends Annotation> annotation = entry.getKey();
             final Set<Class<?>> annotated = entry.getValue();

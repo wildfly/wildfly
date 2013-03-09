@@ -40,7 +40,7 @@ public abstract class InfinispanCacheContainerTest {
     private String passivationDir;
     private boolean local;
     private Boolean totalReplication;
-    private final List<String> cleanupPaths = new ArrayList<String>();
+    private final List<String> cleanupPaths = new ArrayList<>();
 
     /**
      * Create a new CacheConfigTestSetup.

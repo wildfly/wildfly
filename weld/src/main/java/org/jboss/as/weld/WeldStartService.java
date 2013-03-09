@@ -41,7 +41,7 @@ public class WeldStartService implements Service<WeldStartService> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("WeldStartService");
 
-    private final InjectedValue<WeldBootstrapService> bootstrap = new InjectedValue<WeldBootstrapService>();
+    private final InjectedValue<WeldBootstrapService> bootstrap = new InjectedValue<>();
 
     private final List<SetupAction> setupActions;
     private final ClassLoader classLoader;

@@ -121,7 +121,7 @@ public class GenericSubsystemDescribeHandler implements OperationStepHandler, De
         if (comparator == null) {
             children = registration.getChildAddresses(PathAddress.EMPTY_ADDRESS);
         } else {
-            children = new TreeSet<PathElement>(comparator);
+            children = new TreeSet<>(comparator);
             children.addAll(registration.getChildAddresses(PathAddress.EMPTY_ADDRESS));
         }
         result.add(createAddOperation(address, resource.getModel(), children));

@@ -72,7 +72,7 @@ public class FineSessionAttributeStorage implements SessionAttributeStorage<Outg
      */
     @Override
     public Map<String, Object> load(Map<Object, Object> data) throws IOException, ClassNotFoundException {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
 
         for (Map.Entry<Object, Object> entry : data.entrySet()) {
             Object key = entry.getKey();

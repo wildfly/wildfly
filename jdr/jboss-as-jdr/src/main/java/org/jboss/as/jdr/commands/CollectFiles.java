@@ -40,7 +40,7 @@ public class CollectFiles extends JdrCommand {
 
     private VirtualFileFilter filter = Filters.TRUE;
     private Filters.BlacklistFilter blacklistFilter = Filters.wildcardBlackList();
-    private LinkedList<Sanitizer> sanitizers = new LinkedList<Sanitizer>();
+    private LinkedList<Sanitizer> sanitizers = new LinkedList<>();
     private Comparator<VirtualFile> sorter = new Comparator<VirtualFile>() {
         @Override
         public int compare(VirtualFile resource, VirtualFile resource1) {

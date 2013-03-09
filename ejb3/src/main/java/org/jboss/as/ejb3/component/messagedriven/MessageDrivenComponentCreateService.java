@@ -49,10 +49,10 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     private final Class<?> messageListenerInterface;
     private final Properties activationProps;
     private final String resourceAdapterName;
-    private final InjectedValue<ResourceAdapter> resourceAdapterInjectedValue = new InjectedValue<ResourceAdapter>();
-    private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<PoolConfig>();
-    private final InjectedValue<DefaultResourceAdapterService> defaultResourceAdapterServiceInjectedValue = new InjectedValue<DefaultResourceAdapterService>();
-    private final InjectedValue<EJBUtilities> ejbUtilitiesInjectedValue = new InjectedValue<EJBUtilities>();
+    private final InjectedValue<ResourceAdapter> resourceAdapterInjectedValue = new InjectedValue<>();
+    private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<>();
+    private final InjectedValue<DefaultResourceAdapterService> defaultResourceAdapterServiceInjectedValue = new InjectedValue<>();
+    private final InjectedValue<EJBUtilities> ejbUtilitiesInjectedValue = new InjectedValue<>();
     private final ClassLoader moduleClassLoader;
     /**
      * Construct a new instance.

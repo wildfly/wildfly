@@ -35,6 +35,6 @@ public class ListConfig extends CollectionConfig {
 
     @Override
     protected Collection<Object> createDefaultInstance() {
-        return new ArrayList<Object>();
+        return new ArrayList<>();
     }
 }

@@ -133,13 +133,13 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
 
         list.add(Util.createAddOperation(address));
 
-        final List<ModelNode> loggerOperations = new ArrayList<ModelNode>();
-        final List<ModelNode> asyncHandlerOperations = new ArrayList<ModelNode>();
-        final List<ModelNode> otherOperations = new ArrayList<ModelNode>();
+        final List<ModelNode> loggerOperations = new ArrayList<>();
+        final List<ModelNode> asyncHandlerOperations = new ArrayList<>();
+        final List<ModelNode> otherOperations = new ArrayList<>();
 
         // Elements
-        final Set<String> loggerNames = new HashSet<String>();
-        final Set<String> handlerNames = new HashSet<String>();
+        final Set<String> loggerNames = new HashSet<>();
+        final Set<String> handlerNames = new HashSet<>();
         boolean gotRoot = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Namespace namespace = Namespace.forUri(reader.getNamespaceURI());
@@ -1089,7 +1089,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
     }
 
     static void parseLoggingProfilesElement(final XMLExtendedStreamReader reader, final PathAddress address, final List<ModelNode> list) throws XMLStreamException {
-        final Set<String> profileNames = new HashSet<String>();
+        final Set<String> profileNames = new HashSet<>();
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
@@ -1134,12 +1134,12 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         final PathAddress profileAddress = address.append(LOGGING_PROFILE, name);
         list.add(Util.createAddOperation(profileAddress));
 
-        final List<ModelNode> loggerOperations = new ArrayList<ModelNode>();
-        final List<ModelNode> asyncHandlerOperations = new ArrayList<ModelNode>();
-        final List<ModelNode> otherOperations = new ArrayList<ModelNode>();
+        final List<ModelNode> loggerOperations = new ArrayList<>();
+        final List<ModelNode> asyncHandlerOperations = new ArrayList<>();
+        final List<ModelNode> otherOperations = new ArrayList<>();
 
-        final Set<String> loggerNames = new HashSet<String>();
-        final Set<String> handlerNames = new HashSet<String>();
+        final Set<String> loggerNames = new HashSet<>();
+        final Set<String> handlerNames = new HashSet<>();
         boolean gotRoot = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());

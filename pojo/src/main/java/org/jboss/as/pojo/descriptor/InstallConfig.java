@@ -36,8 +36,8 @@ import org.jboss.msc.value.InjectedValue;
 public class InstallConfig extends LifecycleConfig {
     private static final long serialVersionUID = 1L;
 
-    private final transient InjectedValue<BeanInfo> beanInfo = new InjectedValue<BeanInfo>();
-    private final transient InjectedValue<Object> bean = new InjectedValue<Object>();
+    private final transient InjectedValue<BeanInfo> beanInfo = new InjectedValue<>();
+    private final transient InjectedValue<Object> bean = new InjectedValue<>();
 
     private String dependency;
     private BeanState whenRequired = BeanState.INSTALLED;

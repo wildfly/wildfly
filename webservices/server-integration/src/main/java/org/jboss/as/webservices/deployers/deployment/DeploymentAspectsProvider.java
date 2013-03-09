@@ -48,7 +48,7 @@ public class DeploymentAspectsProvider {
 
     public static synchronized List<DeploymentAspect> getSortedDeploymentAspects() {
         if (aspects == null) {
-            final List<DeploymentAspect> deploymentAspects = new LinkedList<DeploymentAspect>();
+            final List<DeploymentAspect> deploymentAspects = new LinkedList<>();
             final ClassLoaderProvider provider = ClassLoaderProvider.getDefaultProvider();
             final ClassLoader cl = provider.getServerIntegrationClassLoader();
             deploymentAspects.addAll(getDeploymentAspects(cl, "/META-INF/stack-agnostic-deployment-aspects.xml"));

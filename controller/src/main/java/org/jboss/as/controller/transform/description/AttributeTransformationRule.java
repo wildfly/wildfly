@@ -84,10 +84,10 @@ class AttributeTransformationRule extends TransformationRule {
     }
 
     private void doTransform(PathAddress address, ModelNode modelOrOp, ModelNode operation, AbstractChainedContext context, RejectedAttributesLogContext rejectedAttributes) {
-        Map<String, String> renames = new HashMap<String, String>();
-        Map<String, ModelNode> adds = new HashMap<String, ModelNode>();
-        Set<String> newAttributes = new HashSet<String>();
-        Set<String> discardedAttributes = new HashSet<String>();
+        Map<String, String> renames = new HashMap<>();
+        Map<String, ModelNode> adds = new HashMap<>();
+        Set<String> newAttributes = new HashSet<>();
+        Set<String> discardedAttributes = new HashSet<>();
 
         //Make sure that context.readResourceXXX() returns an unmodifiable Resource
         context.setImmutableResource(true);

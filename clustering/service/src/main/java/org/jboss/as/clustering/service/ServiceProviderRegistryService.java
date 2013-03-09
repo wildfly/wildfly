@@ -65,7 +65,7 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
     private final Value<Cache> cacheRef;
     private final Value<GroupMembershipNotifier> notifierRef;
     private final Value<GroupRpcDispatcher> dispatcherRef;
-    private final Map<String, Listener> listeners = new ConcurrentHashMap<String, Listener>();
+    private final Map<String, Listener> listeners = new ConcurrentHashMap<>();
     private final CacheInvoker invoker = new BatchCacheInvoker();
 
     volatile GroupRpcDispatcher dispatcher;
@@ -122,7 +122,7 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
             @Override
             public List<String> invoke(Cache<String, Map<ClusterNode, Void>> cache) {
                 Set<String> services = cache.keySet();
-                List<String> result = new ArrayList<String>(services.size());
+                List<String> result = new ArrayList<>(services.size());
                 for (String service: services) {
                     if (cache.get(service).keySet().contains(node)) {
                         result.add(service);
@@ -147,7 +147,7 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
         this.notifier.registerGroupMembershipListener(this);
         @SuppressWarnings("unchecked")
         Cache<String, Map<ClusterNode, Void>> cache = this.cacheRef.getValue();
-        this.cache = new AtomicMapCache<String, ClusterNode, Void>(cache.getAdvancedCache());
+        this.cache = new AtomicMapCache<>(cache.getAdvancedCache());
         this.cache.addListener(this);
     }
 
@@ -164,7 +164,7 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
             @Override
             public Map<String, Set<ClusterNode>> invoke(Cache<String, Map<ClusterNode, Void>> cache) {
                 // Collect service provider updates
-                Map<String, Set<ClusterNode>> updates = new HashMap<String, Set<ClusterNode>>();
+                Map<String, Set<ClusterNode>> updates = new HashMap<>();
                 ServiceProviderRegistryService.this.purgeDeadMembers(deadMembers, updates);
                 return updates;
             }
@@ -178,7 +178,7 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
             @Override
             public Map<String, Set<ClusterNode>> invoke(Cache<String, Map<ClusterNode, Void>> cache) {
                 // Collect service provider updates
-                Map<String, Set<ClusterNode>> updates = new HashMap<String, Set<ClusterNode>>();
+                Map<String, Set<ClusterNode>> updates = new HashMap<>();
                 if (newMembers.isEmpty()) {
                     for (String service: cache.keySet()) {
                         updates.put(service, cache.get(service).keySet());

@@ -44,7 +44,7 @@ class AppClientServerConfiguration {
     }
 
     public static List<ModelNode> serverConfiguration(final String filePath, final String deploymentName, final String hostUrl, final String propertiesFileUrl, final List<String> parameters, List<ModelNode> xmlNodes) {
-        List<ModelNode> ret = new ArrayList<ModelNode>();
+        List<ModelNode> ret = new ArrayList<>();
 
         for (final ModelNode node : xmlNodes) {
             ret.add(node);

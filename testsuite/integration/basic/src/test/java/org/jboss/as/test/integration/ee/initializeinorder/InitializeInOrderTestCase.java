@@ -46,7 +46,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class InitializeInOrderTestCase {
 
-    private static final List<String> initOrder = new ArrayList<String>();
+    private static final List<String> initOrder = new ArrayList<>();
     
     @Deployment
     public static Archive<?> deployment() {

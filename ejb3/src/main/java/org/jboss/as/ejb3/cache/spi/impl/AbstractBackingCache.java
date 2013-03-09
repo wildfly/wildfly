@@ -42,7 +42,7 @@ import org.jboss.logging.Logger;
 public abstract class AbstractBackingCache<K extends Serializable, V extends Cacheable<K>, E extends BackingCacheEntry<K, V>> implements BackingCache<K, V, E> {
     protected Logger log = Logger.getLogger(getClass().getName());
 
-    private final Set<BackingCacheLifecycleListener> listeners = new HashSet<BackingCacheLifecycleListener>();
+    private final Set<BackingCacheLifecycleListener> listeners = new HashSet<>();
 
     @Override
     public void addLifecycleListener(BackingCacheLifecycleListener listener) {

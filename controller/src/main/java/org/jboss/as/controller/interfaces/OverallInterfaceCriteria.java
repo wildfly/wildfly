@@ -116,7 +116,7 @@ public final class OverallInterfaceCriteria implements InterfaceCriteria {
             return candidates;
         }
 
-        final Map<NetworkInterface, Set<InetAddress>> result = new HashMap<NetworkInterface, Set<InetAddress>>();
+        final Map<NetworkInterface, Set<InetAddress>> result = new HashMap<>();
 
         for (Map.Entry<NetworkInterface, Set<InetAddress>> entry : candidates.entrySet()) {
             Set<InetAddress> good = null;
@@ -124,7 +124,7 @@ public final class OverallInterfaceCriteria implements InterfaceCriteria {
                 if ((preferIPv4Stack != null && preferIPv4Stack.booleanValue() && address instanceof Inet4Address)
                         || (preferIPv6Stack != null && preferIPv6Stack.booleanValue() && address instanceof Inet6Address)) {
                     if (good == null) {
-                        good = new HashSet<InetAddress>();
+                        good = new HashSet<>();
                         result.put(entry.getKey(), good);
                     }
                     good.add(address);
@@ -135,13 +135,13 @@ public final class OverallInterfaceCriteria implements InterfaceCriteria {
     }
 
     static Map<NetworkInterface, Set<InetAddress>> pruneAliasDuplicates(Map<NetworkInterface, Set<InetAddress>> result) {
-        final Map<NetworkInterface, Set<InetAddress>> pruned = new HashMap<NetworkInterface, Set<InetAddress>>();
+        final Map<NetworkInterface, Set<InetAddress>> pruned = new HashMap<>();
         for (Map.Entry<NetworkInterface, Set<InetAddress>> entry : result.entrySet()) {
             NetworkInterface ni = entry.getKey();
             if (ni.getParent() != null) {
                 pruned.put(ni, entry.getValue());
             } else {
-                Set<InetAddress> retained = new HashSet<InetAddress>(entry.getValue());
+                Set<InetAddress> retained = new HashSet<>(entry.getValue());
                 Enumeration<NetworkInterface> subInterfaces = ni.getSubInterfaces();
                 while (subInterfaces.hasMoreElements()) {
                     NetworkInterface sub = subInterfaces.nextElement();
@@ -168,7 +168,7 @@ public final class OverallInterfaceCriteria implements InterfaceCriteria {
         // Give preference to NetworkInterfaces that are 1) up, 2) not loopback 3) not point-to-point.
         // If any of these criteria eliminate all interfaces, discard it.
         if (acceptable.size() > 1) {
-            Map<NetworkInterface, Set<InetAddress>> preferred = new HashMap<NetworkInterface, Set<InetAddress>>();
+            Map<NetworkInterface, Set<InetAddress>> preferred = new HashMap<>();
             for (NetworkInterface ni : acceptable.keySet()) {
                 if (ni.isUp()) {
                     preferred.put(ni, acceptable.get(ni));
@@ -179,7 +179,7 @@ public final class OverallInterfaceCriteria implements InterfaceCriteria {
             } // else this preference eliminates all interfaces, so ignore it
         }
         if (acceptable.size() > 1) {
-            Map<NetworkInterface, Set<InetAddress>> preferred = new HashMap<NetworkInterface, Set<InetAddress>>();
+            Map<NetworkInterface, Set<InetAddress>> preferred = new HashMap<>();
             for (NetworkInterface ni : acceptable.keySet()) {
                 if (!ni.isLoopback()) {
                     preferred.put(ni, acceptable.get(ni));
@@ -190,7 +190,7 @@ public final class OverallInterfaceCriteria implements InterfaceCriteria {
             }  // else this preference eliminates all interfaces, so ignore it
         }
         if (acceptable.size() > 1) {
-            Map<NetworkInterface, Set<InetAddress>> preferred = new HashMap<NetworkInterface, Set<InetAddress>>();
+            Map<NetworkInterface, Set<InetAddress>> preferred = new HashMap<>();
             for (NetworkInterface ni : acceptable.keySet()) {
                 if (!ni.isPointToPoint()) {
                     preferred.put(ni, acceptable.get(ni));
@@ -205,7 +205,7 @@ public final class OverallInterfaceCriteria implements InterfaceCriteria {
         if (hasMultipleMatches(acceptable)) {
 
             // Give preference to non-link-local addresses
-            Map<NetworkInterface, Set<InetAddress>> preferred = new HashMap<NetworkInterface, Set<InetAddress>>();
+            Map<NetworkInterface, Set<InetAddress>> preferred = new HashMap<>();
             for (Map.Entry<NetworkInterface, Set<InetAddress>> entry : acceptable.entrySet()) {
                 Set<InetAddress> acceptableAddresses = entry.getValue();
                 if (acceptableAddresses.size() > 1) {
@@ -213,7 +213,7 @@ public final class OverallInterfaceCriteria implements InterfaceCriteria {
                     for (InetAddress addr : acceptableAddresses) {
                         if (!addr.isLinkLocalAddress()) {
                             if (preferredAddresses == null) {
-                                preferredAddresses = new HashSet<InetAddress>();
+                                preferredAddresses = new HashSet<>();
                                 preferred.put(entry.getKey(), preferredAddresses);
                             }
                             preferredAddresses.add(addr);
@@ -240,8 +240,8 @@ public final class OverallInterfaceCriteria implements InterfaceCriteria {
 
     private static void warnMultipleValidInterfaces(String interfaceName, Map<NetworkInterface, Set<InetAddress>> acceptable,
                                                     NetworkInterface selectedInterface, InetAddress selectedAddress) {
-        Set<String> nis = new HashSet<String>();
-        Set<InetAddress> addresses = new HashSet<InetAddress>();
+        Set<String> nis = new HashSet<>();
+        Set<InetAddress> addresses = new HashSet<>();
         for (Map.Entry<NetworkInterface, Set<InetAddress>> entry : acceptable.entrySet()) {
             nis.add(entry.getKey().getName());
             addresses.addAll(entry.getValue());

@@ -54,9 +54,9 @@ public class PlugInLoaderService implements Service<PlugInLoaderService> {
     public static final String SERVICE_SUFFIX = "plug-in-loader";
 
     private final List<String> plugInNames;
-    private final Map<String, List<PlugInProvider>> cachedProviders = new HashMap<String, List<PlugInProvider>>();
-    private final Map<String, PlugInProvider> authenticationProviders = new HashMap<String, PlugInProvider>();
-    private final Map<String, PlugInProvider> authorizationProviders = new HashMap<String, PlugInProvider>();
+    private final Map<String, List<PlugInProvider>> cachedProviders = new HashMap<>();
+    private final Map<String, PlugInProvider> authenticationProviders = new HashMap<>();
+    private final Map<String, PlugInProvider> authorizationProviders = new HashMap<>();
 
     public PlugInLoaderService(final List<String> plugInNames) {
         this.plugInNames = plugInNames;
@@ -82,7 +82,7 @@ public class PlugInLoaderService implements Service<PlugInLoaderService> {
             if (cachedProviders.containsKey(name)) {
                 response = cachedProviders.get(name);
             } else {
-                List<PlugInProvider> providers = new LinkedList<PlugInProvider>();
+                List<PlugInProvider> providers = new LinkedList<>();
                 try {
                     for (PlugInProvider current : Module.loadServiceFromCallerModuleLoader(ModuleIdentifier.fromString(name),
                             PlugInProvider.class)) {

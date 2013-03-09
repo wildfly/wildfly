@@ -120,7 +120,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         int defaultProviderCount = 0;
-        Set<String> moduleDependencies = new HashSet<String>();
+        Set<String> moduleDependencies = new HashSet<>();
 
         // get the number of persistence units that use the default persistence provider module.
         // Dependencies for other persistence provider will be added to the passed

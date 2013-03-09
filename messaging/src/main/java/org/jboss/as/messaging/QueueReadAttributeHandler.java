@@ -141,7 +141,7 @@ public class QueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
     }
 
     private static List<String> getStorageAttributeNames() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         for (SimpleAttributeDefinition attr : QueueDefinition.ATTRIBUTES) {
           names.add(attr.getName());
         }

@@ -129,7 +129,7 @@ public class OperationTransformerRegistry {
      * @return a list of path transformations
      */
     public List<PathAddressTransformer> getPathTransformations(final PathAddress address) {
-        final List<PathAddressTransformer> list = new ArrayList<PathAddressTransformer>();
+        final List<PathAddressTransformer> list = new ArrayList<>();
         final Iterator<PathElement> iterator = address.iterator();
         resolvePathTransformers(iterator, list);
         if(iterator.hasNext()) {

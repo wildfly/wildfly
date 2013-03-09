@@ -42,7 +42,7 @@ public class CachedConnectionManagerService implements Service<CachedConnectionM
 
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("connector", "ccm");
 
-    private final InjectedValue<TransactionIntegration> transactionIntegration = new InjectedValue<TransactionIntegration>();
+    private final InjectedValue<TransactionIntegration> transactionIntegration = new InjectedValue<>();
 
     private volatile CachedConnectionManager value;
 

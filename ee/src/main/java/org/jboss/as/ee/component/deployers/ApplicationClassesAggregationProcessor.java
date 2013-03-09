@@ -42,7 +42,7 @@ public class ApplicationClassesAggregationProcessor implements DeploymentUnitPro
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final List<EEModuleDescription> descriptions = new ArrayList<EEModuleDescription>();
+        final List<EEModuleDescription> descriptions = new ArrayList<>();
         for (final DeploymentUnit visibleDeployment : deploymentUnit.getAttachmentList(org.jboss.as.server.deployment.Attachments.ACCESSIBLE_SUB_DEPLOYMENTS)) {
             final EEModuleDescription description = visibleDeployment.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
             if (description != null) {

@@ -97,13 +97,13 @@ import org.osgi.service.repository.ContentNamespace;
  */
 class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
 
-    private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
-    private final InjectedValue<BundleStorage> injectedStorageProvider = new InjectedValue<BundleStorage>();
-    private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
-    private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
-    private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
-    private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
-    private final InjectedValue<XRepository> injectedRepository = new InjectedValue<XRepository>();
+    private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<>();
+    private final InjectedValue<BundleStorage> injectedStorageProvider = new InjectedValue<>();
+    private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<>();
+    private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<>();
+    private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<>();
+    private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<>();
+    private final InjectedValue<XRepository> injectedRepository = new InjectedValue<>();
     private List<OSGiCapability> modulecaps;
     private List<File> bundlesPath;
 
@@ -125,14 +125,14 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
 
     @Override
     public synchronized void start(StartContext context) throws StartException {
-        List<Deployment> deployments = new ArrayList<Deployment>();
+        List<Deployment> deployments = new ArrayList<>();
         try {
             ServerEnvironment serverEnvironment = injectedServerEnvironment.getValue();
             bundlesPath = LayeredBundlePathFactory.resolveLayeredBundlePath(serverEnvironment);
 
-            modulecaps = new ArrayList<OSGiCapability>();
+            modulecaps = new ArrayList<>();
 
-            List<OSGiCapability> configcaps = new ArrayList<OSGiCapability>();
+            List<OSGiCapability> configcaps = new ArrayList<>();
             for (String capspec : SystemPackagesIntegration.DEFAULT_CAPABILITIES) {
                 configcaps.add(new OSGiCapability(capspec, null));
             }

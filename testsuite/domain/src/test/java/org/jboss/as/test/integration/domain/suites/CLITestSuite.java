@@ -60,12 +60,12 @@ import org.junit.runners.Suite;
 public class CLITestSuite {
 
     private static DomainTestSupport domainSupport;
-    public static final Map<String, String[]> hostServers = new HashMap<String, String[]>();
-    public static final Map<String, String> hostAddresses = new HashMap<String, String>();
-    public static final Map<String, String[]> serverGroups = new HashMap<String, String[]>();
-    public static final Map<String, Integer> portOffsets = new HashMap<String, Integer>();
-    public static final Map<String, String[]> serverProfiles = new HashMap<String, String[]>();
-    public static final Map<String, Boolean> serverStatus = new HashMap<String, Boolean>();
+    public static final Map<String, String[]> hostServers = new HashMap<>();
+    public static final Map<String, String> hostAddresses = new HashMap<>();
+    public static final Map<String, String[]> serverGroups = new HashMap<>();
+    public static final Map<String, Integer> portOffsets = new HashMap<>();
+    public static final Map<String, String[]> serverProfiles = new HashMap<>();
+    public static final Map<String, Boolean> serverStatus = new HashMap<>();
 
     @BeforeClass
     public static void initSuite() throws Exception {
@@ -107,18 +107,18 @@ public class CLITestSuite {
     }
 
     public static void addServer(String serverName, String hostName, String groupName, String profileName, int portOffset, boolean status) {
-        LinkedList<String> hservers = new LinkedList<String>(Arrays.asList(hostServers.get(hostName)));
+        LinkedList<String> hservers = new LinkedList<>(Arrays.asList(hostServers.get(hostName)));
         hservers.add(serverName);
         hostServers.put(hostName, hservers.toArray(new String[0]));
 
-        LinkedList<String> gservers = new LinkedList<String>();
+        LinkedList<String> gservers = new LinkedList<>();
         if (serverGroups.containsKey(groupName)) {
             gservers.addAll(Arrays.asList(serverGroups.get(groupName)));
         }
         gservers.add(serverName);
         serverGroups.put(groupName, gservers.toArray(new String[0]));
 
-        LinkedList<String> pgroups = new LinkedList<String>();
+        LinkedList<String> pgroups = new LinkedList<>();
         if (serverProfiles.containsKey(profileName)) {
             pgroups.addAll(Arrays.asList(serverProfiles.get(profileName)));
         }

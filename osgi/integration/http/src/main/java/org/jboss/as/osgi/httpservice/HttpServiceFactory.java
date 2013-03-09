@@ -85,7 +85,7 @@ final class HttpServiceFactory implements ServiceFactory {
 
         static GlobalRegistry INSTANCE = new GlobalRegistry();
 
-        private Map<String, Registration> registrations = new HashMap<String, Registration>();
+        private Map<String, Registration> registrations = new HashMap<>();
 
         private GlobalRegistry() {
         }
@@ -132,8 +132,8 @@ final class HttpServiceFactory implements ServiceFactory {
         }
 
         synchronized Set<Registration> unregister(Bundle bundle) {
-            Set<Registration> result = new HashSet<Registration>();
-            for (Registration reg : new HashSet<Registration>(registrations.values())) {
+            Set<Registration> result = new HashSet<>();
+            for (Registration reg : new HashSet<>(registrations.values())) {
                 if (bundle == reg.bundle) {
                     registrations.remove(reg.alias);
                     result.add(reg);

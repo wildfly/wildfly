@@ -128,10 +128,10 @@ public class ApacheDirectoryServiceBuilder {
      * @throws Exception If the instanciation failed
      */
     public static List<Interceptor> createInterceptors(List<InterceptorBean> interceptorBeans) throws LdapException {
-        List<Interceptor> interceptors = new ArrayList<Interceptor>(interceptorBeans.size());
+        List<Interceptor> interceptors = new ArrayList<>(interceptorBeans.size());
 
         // First order the interceptorBeans
-        Set<InterceptorBean> orderedInterceptorBeans = new TreeSet<InterceptorBean>();
+        Set<InterceptorBean> orderedInterceptorBeans = new TreeSet<>();
 
         for (InterceptorBean interceptorBean : interceptorBeans) {
             if (interceptorBean.isEnabled()) {
@@ -274,7 +274,7 @@ public class ApacheDirectoryServiceBuilder {
      * @throws ConfigurationException If we weren't able to read the entries
      */
     public static List<LdifEntry> readTestEntries(String entryFilePath) throws ConfigurationException {
-        List<LdifEntry> entries = new ArrayList<LdifEntry>();
+        List<LdifEntry> entries = new ArrayList<>();
 
         File file = new File(entryFilePath);
 
@@ -457,7 +457,7 @@ public class ApacheDirectoryServiceBuilder {
      * @return An arry of Transport instance
      */
     public static Transport[] createTransports(TransportBean[] transportBeans) {
-        List<Transport> transports = new ArrayList<Transport>();
+        List<Transport> transports = new ArrayList<>();
 
         for (TransportBean transportBean : transportBeans) {
             if (transportBean.isEnabled()) {
@@ -576,7 +576,7 @@ public class ApacheDirectoryServiceBuilder {
      */
     public static List<ReplicationConsumer> createReplConsumers(List<ReplConsumerBean> replConsumerBeans)
             throws ConfigurationException {
-        List<ReplicationConsumer> lst = new ArrayList<ReplicationConsumer>();
+        List<ReplicationConsumer> lst = new ArrayList<>();
 
         if (replConsumerBeans == null) {
             return lst;
@@ -650,7 +650,7 @@ public class ApacheDirectoryServiceBuilder {
             return null;
         }
 
-        JdbmIndex<String, Entry> index = new JdbmIndex<String, Entry>();
+        JdbmIndex<String, Entry> index = new JdbmIndex<>();
 
         index.setAttributeId(jdbmIndexBean.getIndexAttributeId());
         index.setCacheSize(jdbmIndexBean.getIndexCacheSize());
@@ -689,7 +689,7 @@ public class ApacheDirectoryServiceBuilder {
     private static Set<Index<?, Entry, Long>> createJdbmIndexes(JdbmPartition partition, List<IndexBean> indexesBeans,
             DirectoryService directoryService) //throws Exception
     {
-        Set<Index<?, Entry, Long>> indexes = new HashSet<Index<?, Entry, Long>>();
+        Set<Index<?, Entry, Long>> indexes = new HashSet<>();
 
         for (IndexBean indexBean : indexesBeans) {
             if (indexBean.isEnabled() && (indexBean instanceof JdbmIndexBean)) {
@@ -787,7 +787,7 @@ public class ApacheDirectoryServiceBuilder {
      */
     public static Map<String, Partition> createPartitions(DirectoryService directoryService, List<PartitionBean> partitionBeans)
             throws ConfigurationException {
-        Map<String, Partition> partitions = new HashMap<String, Partition>(partitionBeans.size());
+        Map<String, Partition> partitions = new HashMap<>(partitionBeans.size());
 
         for (PartitionBean partitionBean : partitionBeans) {
             if (partitionBean.isDisabled()) {
@@ -843,7 +843,7 @@ public class ApacheDirectoryServiceBuilder {
         }
 
         directoryService.setSystemPartition(systemPartition);
-        directoryService.setPartitions(new HashSet<Partition>(partitions.values()));
+        directoryService.setPartitions(new HashSet<>(partitions.values()));
 
         // MAY attributes
         // AccessControlEnabled

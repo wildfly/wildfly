@@ -179,7 +179,7 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
     /** {@inheritDoc} */
     @Override
     public List<String> getServerLaunchCommand() {
-        final List<String> command = new ArrayList<String>();
+        final List<String> command = new ArrayList<>();
 
         command.add(getJavaCommand());
 
@@ -269,7 +269,7 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
     /** {@inheritDoc} */
     @Override
     public Map<String, String> getServerLaunchEnvironment() {
-        final Map<String, String> env = new HashMap<String, String>();
+        final Map<String, String> env = new HashMap<>();
         for(final Entry<String, String> property : jvmElement.getEnvironmentVariables().entrySet()) {
             env.put(property.getKey(), property.getValue());
         }
@@ -277,7 +277,7 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
     }
 
     private Map<String, String> getAllSystemProperties(boolean boottimeOnly){
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
 
         addSystemProperties(domainModel, props, boottimeOnly);
         addSystemProperties(serverGroup, props, boottimeOnly);

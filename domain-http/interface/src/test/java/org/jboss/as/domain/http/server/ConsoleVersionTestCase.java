@@ -54,7 +54,7 @@ public class ConsoleVersionTestCase {
         ConsoleVersion version201 = new ConsoleVersion("2.0.1");
         ConsoleVersion version210 = new ConsoleVersion("2.1.0");
 
-        TreeSet<ConsoleVersion> set = new TreeSet<ConsoleVersion>();
+        TreeSet<ConsoleVersion> set = new TreeSet<>();
         set.add(versionMain);
         set.add(version001);
         set.add(version002);
@@ -89,7 +89,7 @@ public class ConsoleVersionTestCase {
         Assert.assertEquals(versionMain, it.next());
         Assert.assertFalse(it.hasNext());
 
-        ArrayList<ConsoleVersion> list = new ArrayList<ConsoleVersion>(set);
+        ArrayList<ConsoleVersion> list = new ArrayList<>(set);
         for (int i = 1 ; i < list.size() - 1; i++) {
             final ConsoleVersion current = list.get(i);
             for (int j = 0 ; j < i ;  j++) {

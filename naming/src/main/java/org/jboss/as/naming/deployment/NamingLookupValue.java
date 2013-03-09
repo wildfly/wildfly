@@ -37,7 +37,7 @@ import static org.jboss.as.naming.NamingMessages.MESSAGES;
  * @author John E. Bailey
  */
 public class NamingLookupValue<T> implements Value<T> {
-    private final InjectedValue<Context> contextValue = new InjectedValue<Context>();
+    private final InjectedValue<Context> contextValue = new InjectedValue<>();
     private final String contextName;
 
     /**

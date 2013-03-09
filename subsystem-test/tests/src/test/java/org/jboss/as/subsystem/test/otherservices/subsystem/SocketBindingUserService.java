@@ -36,7 +36,7 @@ import org.jboss.msc.value.InjectedValue;
 public class SocketBindingUserService implements Service<SocketBindingUserService> {
 
     public static final ServiceName NAME = ServiceName.of("test", "binding", "user");
-    public final InjectedValue<SocketBinding> socketBindingValue = new InjectedValue<SocketBinding>();
+    public final InjectedValue<SocketBinding> socketBindingValue = new InjectedValue<>();
 
     @Override
     public SocketBindingUserService getValue() throws IllegalStateException, IllegalArgumentException {

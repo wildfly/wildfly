@@ -61,9 +61,9 @@ public class ProxyStepHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
 
-        final AtomicReference<ModelController.OperationTransaction> txRef = new AtomicReference<ModelController.OperationTransaction>();
-        final AtomicReference<ModelNode> preparedResultRef = new AtomicReference<ModelNode>();
-        final AtomicReference<ModelNode> finalResultRef = new AtomicReference<ModelNode>();
+        final AtomicReference<ModelController.OperationTransaction> txRef = new AtomicReference<>();
+        final AtomicReference<ModelNode> preparedResultRef = new AtomicReference<>();
+        final AtomicReference<ModelNode> finalResultRef = new AtomicReference<>();
         final ProxyController.ProxyOperationControl proxyControl = new ProxyController.ProxyOperationControl() {
 
             @Override
@@ -265,7 +265,7 @@ public class ProxyStepHandler implements OperationStepHandler {
         @Override
         public List<InputStream> getInputStreams() {
             int count = context.getAttachmentStreamCount();
-            List<InputStream> result = new ArrayList<InputStream>(count);
+            List<InputStream> result = new ArrayList<>(count);
             for (int i = 0; i < count; i++) {
                 result.add(context.getAttachmentStream(i));
             }

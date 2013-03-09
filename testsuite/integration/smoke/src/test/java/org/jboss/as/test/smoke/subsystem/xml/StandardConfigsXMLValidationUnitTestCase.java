@@ -54,7 +54,7 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
 
     @BeforeClass
     public static void setUp() {
-        final List<Source> sources = new LinkedList<Source>();
+        final List<Source> sources = new LinkedList<>();
         for (File file : jbossSchemaFiles()) {
             sources.add(new StreamSource(file));
         }

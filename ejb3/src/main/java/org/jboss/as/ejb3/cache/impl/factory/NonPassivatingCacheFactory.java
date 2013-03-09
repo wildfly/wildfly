@@ -32,7 +32,6 @@ import org.jboss.as.ejb3.cache.IdentifierFactory;
 import org.jboss.as.ejb3.cache.PassivationManager;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
 import org.jboss.as.ejb3.cache.impl.SimpleCache;
-import org.jboss.as.ejb3.cache.impl.backing.NonPassivatingBackingCacheEntry;
 import org.jboss.as.ejb3.cache.impl.backing.NonPassivatingBackingCacheImpl;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
 import org.jboss.as.server.ServerEnvironment;
@@ -56,7 +55,7 @@ public class NonPassivatingCacheFactory<K extends Serializable, V extends Cachea
 
     @Override
     public Cache<K, V> createCache(String beanName, IdentifierFactory<K> identifierFactory, StatefulObjectFactory<V> factory, PassivationManager<K, V> passivationManager, StatefulTimeoutInfo timeout) {
-        NonPassivatingBackingCacheImpl<K, V> backingCache = new NonPassivatingBackingCacheImpl<K, V>(identifierFactory, factory, Executors.defaultThreadFactory(), timeout, this.environment);
-        return new SimpleCache<K, V, NonPassivatingBackingCacheEntry<K, V>>(backingCache, false);
+        NonPassivatingBackingCacheImpl<K, V> backingCache = new NonPassivatingBackingCacheImpl<>(identifierFactory, factory, Executors.defaultThreadFactory(), timeout, this.environment);
+        return new SimpleCache<>(backingCache, false);
     }
 }

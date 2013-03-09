@@ -85,7 +85,7 @@ public class NonExistingProfileTestCase extends AbstractLoggingTest {
 		@Override
 		protected void doSetup(ManagementClient managementClient)
 				throws Exception {
-			final List<ModelNode> updates = new ArrayList<ModelNode>();
+			final List<ModelNode> updates = new ArrayList<>();
 
 			// prepare log files
 			loggingTestLog = prepareLogFile(managementClient,
@@ -127,7 +127,7 @@ public class NonExistingProfileTestCase extends AbstractLoggingTest {
 		@Override
 		public void tearDown(ManagementClient managementClient,
 				String containerId) throws Exception {
-			final List<ModelNode> updates = new ArrayList<ModelNode>();
+			final List<ModelNode> updates = new ArrayList<>();
 
 			// delete log file
 			loggingTestLog.delete();

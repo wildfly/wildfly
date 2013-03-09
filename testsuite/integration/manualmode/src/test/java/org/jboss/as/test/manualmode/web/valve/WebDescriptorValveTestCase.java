@@ -101,7 +101,7 @@ public class WebDescriptorValveTestCase {
     @Test
     @InSequence(3)
     public void addValve(@ArquillianResource ManagementClient client) throws Exception {
-        Map<String,String> params = new HashMap<String, String>();
+        Map<String,String> params = new HashMap<>();
         params.put(PARAM_NAME, GLOBAL_PARAM_VALUE);
         ValveUtil.addValve(client, VALVE_NAME, STANDARD_VALVE_MODULE, VALVE_CLASS.getName(), params);
         container.stop(GlobalValveTestCase.CONTAINER);

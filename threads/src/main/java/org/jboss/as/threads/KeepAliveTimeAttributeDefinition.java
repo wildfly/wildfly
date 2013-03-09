@@ -63,14 +63,14 @@ class KeepAliveTimeAttributeDefinition extends ObjectTypeAttributeDefinition {
 
     static final SimpleAttributeDefinition KEEPALIVE_TIME_UNIT = new SimpleAttributeDefinitionBuilder(CommonAttributes.UNIT, ModelType.STRING, false)
             .setAllowExpression(true)
-            .setValidator(new EnumValidator<TimeUnit>(TimeUnit.class, false, true))
+            .setValidator(new EnumValidator<>(TimeUnit.class, false, true))
             .build();
 
 
     static final RejectAttributeChecker TRANSFORMATION_CHECKER;
     static {
 
-        Map<String, RejectAttributeChecker> fieldCheckers = new HashMap<String, RejectAttributeChecker>();
+        Map<String, RejectAttributeChecker> fieldCheckers = new HashMap<>();
         fieldCheckers.put(KeepAliveTimeAttributeDefinition.KEEPALIVE_TIME_TIME.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS);
         fieldCheckers.put(KeepAliveTimeAttributeDefinition.KEEPALIVE_TIME_UNIT.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS);
         TRANSFORMATION_CHECKER = new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(fieldCheckers);

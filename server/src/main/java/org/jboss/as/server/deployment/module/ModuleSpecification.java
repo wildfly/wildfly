@@ -45,13 +45,13 @@ public class ModuleSpecification extends SimpleAttachable {
     /**
      * System dependencies are dependencies that are added automatically by the container.
      */
-    private final List<ModuleDependency> systemDependencies = new ArrayList<ModuleDependency>();
+    private final List<ModuleDependency> systemDependencies = new ArrayList<>();
 
-    private final Set<ModuleIdentifier> systemDependenciesSet = new HashSet<ModuleIdentifier>();
+    private final Set<ModuleIdentifier> systemDependenciesSet = new HashSet<>();
     /**
      * Local dependencies are dependencies on other parts of the deployment, such as class-path entry
      */
-    private final List<ModuleDependency> localDependencies = new ArrayList<ModuleDependency>();
+    private final List<ModuleDependency> localDependencies = new ArrayList<>();
     /**
      * If set to true this indicates that a dependency on this module requires a dependency on all it's local
      * dependencies.
@@ -64,21 +64,21 @@ public class ModuleSpecification extends SimpleAttachable {
      * <p/>
      * User dependencies are not affected by exclusions.
      */
-    private final List<ModuleDependency> userDependencies = new ArrayList<ModuleDependency>();
+    private final List<ModuleDependency> userDependencies = new ArrayList<>();
 
-    private final List<ResourceLoaderSpec> resourceLoaders = new ArrayList<ResourceLoaderSpec>();
+    private final List<ResourceLoaderSpec> resourceLoaders = new ArrayList<>();
 
     /**
      * The class transformers
      */
-    private final List<String> classFileTransformers = new ArrayList<String>();
+    private final List<String> classFileTransformers = new ArrayList<>();
 
     private volatile List<ModuleDependency> allDependencies = null;
 
     /**
      * Modules that cannot be added as dependencies to the deployment, as the user has excluded them
      */
-    private final Set<ModuleIdentifier> exclusions = new HashSet<ModuleIdentifier>();
+    private final Set<ModuleIdentifier> exclusions = new HashSet<>();
 
     /**
      * Flag that is set to true if modules of non private sub deployments should be able to see each other
@@ -98,7 +98,7 @@ public class ModuleSpecification extends SimpleAttachable {
     /**
      * Module aliases
      */
-    private final List<ModuleIdentifier> aliases = new ArrayList<ModuleIdentifier>();
+    private final List<ModuleIdentifier> aliases = new ArrayList<>();
 
     /**
      * JBoss modules system dependencies, which allow you to specify dependencies on the app class loader
@@ -107,7 +107,7 @@ public class ModuleSpecification extends SimpleAttachable {
      * This is not
      *
      */
-    private final List<DependencySpec> moduleSystemDependencies = new ArrayList<DependencySpec>();
+    private final List<DependencySpec> moduleSystemDependencies = new ArrayList<>();
 
     public void addSystemDependency(final ModuleDependency dependency) {
         if (!exclusions.contains(dependency.getIdentifier()) && !systemDependenciesSet.contains(dependency.getIdentifier())) {
@@ -294,7 +294,7 @@ public class ModuleSpecification extends SimpleAttachable {
 
     public List<ModuleDependency> getAllDependencies() {
         if(allDependencies == null) {
-            allDependencies = new ArrayList<ModuleDependency>();
+            allDependencies = new ArrayList<>();
             allDependencies.addAll(systemDependencies);
             allDependencies.addAll(userDependencies);
             allDependencies.addAll(localDependencies);

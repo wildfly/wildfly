@@ -48,7 +48,7 @@ public final class EmbeddedFrameworkFactory implements FrameworkFactory {
     public Framework newFramework(final Map configuration) {
 
         // Make a defensive copy of the configuration
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
         if (configuration != null) {
             props.putAll(configuration);
         }
@@ -61,7 +61,7 @@ public final class EmbeddedFrameworkFactory implements FrameworkFactory {
 
         log.debugf("Config: " + props);
 
-        Set<String> syspackages = new HashSet<String>();
+        Set<String> syspackages = new HashSet<>();
         syspackages.add("org.osgi.framework");
         syspackages.add("org.osgi.resource");
         syspackages.add("org.osgi.util.tracker");

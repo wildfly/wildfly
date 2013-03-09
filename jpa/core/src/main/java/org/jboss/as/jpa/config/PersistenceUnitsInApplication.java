@@ -36,7 +36,7 @@ public class PersistenceUnitsInApplication {
     public static final AttachmentKey<PersistenceUnitsInApplication> PERSISTENCE_UNITS_IN_APPLICATION = AttachmentKey.create(PersistenceUnitsInApplication.class);
 
     private int count = 0;
-    private List<PersistenceUnitMetadataHolder> persistenceUnitMetadataHolderList = new ArrayList<PersistenceUnitMetadataHolder>(1);
+    private List<PersistenceUnitMetadataHolder> persistenceUnitMetadataHolderList = new ArrayList<>(1);
 
     /**
      * Gets the number of persistence units deployed with the applicatino

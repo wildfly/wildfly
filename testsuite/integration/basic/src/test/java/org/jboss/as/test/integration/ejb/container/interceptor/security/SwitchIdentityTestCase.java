@@ -109,7 +109,7 @@ public class SwitchIdentityTestCase {
 
         @Override
         public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
-            final Map<String, String> options = new HashMap<String, String>();
+            final Map<String, String> options = new HashMap<>();
             options.put("multi-threaded", "true");
             options.put("restore-login-identity", "true");
 
@@ -359,7 +359,7 @@ public class SwitchIdentityTestCase {
     static class RemotingSetup implements ServerSetupTask {
 
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            final List<ModelNode> updates = new LinkedList<ModelNode>();
+            final List<ModelNode> updates = new LinkedList<>();
             LOGGER.info("Adding socket binding");
             // /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=ejb-outbound:add(host=localhost,port=4447) {allow-resource-service-restart=true}
             ModelNode socketBindingModelNode = Util.createAddOperation(ADDR_SOCKET_BINDING);
@@ -394,7 +394,7 @@ public class SwitchIdentityTestCase {
         }
 
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            final List<ModelNode> updates = new ArrayList<ModelNode>();
+            final List<ModelNode> updates = new ArrayList<>();
 
             // /subsystem=remoting/remote-outbound-connection=ejb-outbound-connection:remove()
             ModelNode op = Util.createRemoveOperation(ADDR_REMOTING_CONNECTOR);

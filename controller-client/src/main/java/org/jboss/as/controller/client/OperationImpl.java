@@ -69,7 +69,7 @@ class OperationImpl implements Operation {
     @Override
     @Deprecated
     public Operation clone() {
-        List<InputStream> streamsCopy = inputStreams == null ? null : new ArrayList<InputStream>(inputStreams);
+        List<InputStream> streamsCopy = inputStreams == null ? null : new ArrayList<>(inputStreams);
         return new OperationImpl(operation.clone(), streamsCopy);
     }
 
@@ -79,7 +79,7 @@ class OperationImpl implements Operation {
         if (operation == null) {
             throw MESSAGES.nullVar("operation");
         }
-        List<InputStream> streamsCopy = inputStreams == null ? null : new ArrayList<InputStream>(inputStreams);
+        List<InputStream> streamsCopy = inputStreams == null ? null : new ArrayList<>(inputStreams);
         return new OperationImpl(operation, streamsCopy);
     }
 

@@ -51,7 +51,7 @@ import org.jboss.stdio.WriterOutputStream;
  */
 @WebServlet(name="SimpleServlet", urlPatterns={"/simple"})
 public class SimpleServlet extends HttpServlet {
-    static ThreadLocal<String> propagated = new ThreadLocal<String>();
+    static ThreadLocal<String> propagated = new ThreadLocal<>();
 
     @Inject
     private SimpleStatefulSessionBean bean;
@@ -84,8 +84,8 @@ public class SimpleServlet extends HttpServlet {
             });
         }
 
-        final List<String> results = new LinkedList<String>();
-        final List<Throwable> exceptions = new LinkedList<Throwable>();
+        final List<String> results = new LinkedList<>();
+        final List<Throwable> exceptions = new LinkedList<>();
         for (int i = 0; i < futures.length; i++) {
             try {
                 String result = futures[i].get(10, SECONDS);

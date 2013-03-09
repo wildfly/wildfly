@@ -153,7 +153,7 @@ public class VFSResourceLoader extends AbstractResourceLoader {
 
     /** {@inheritDoc} */
     public Collection<String> getPaths() {
-        final List<String> index = new ArrayList<String>();
+        final List<String> index = new ArrayList<>();
         // First check for an index file
         final VirtualFile indexFile = VFS.getChild(root.getPathName() + ".index");
         if (indexFile.exists()) {

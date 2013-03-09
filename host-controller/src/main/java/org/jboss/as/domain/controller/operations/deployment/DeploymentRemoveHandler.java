@@ -93,7 +93,7 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler {
         final Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
 
         if(root.hasChild(PathElement.pathElement(SERVER_GROUP))) {
-            final List<String> badGroups = new ArrayList<String>();
+            final List<String> badGroups = new ArrayList<>();
             for(final Resource.ResourceEntry entry : root.getChildren(SERVER_GROUP)) {
                 if(entry.hasChild(PathElement.pathElement(DEPLOYMENT, deploymentName))) {
                     badGroups.add(entry.getName());

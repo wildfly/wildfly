@@ -173,10 +173,10 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final ClassLoader loader = XTSService.class.getClassLoader();
         ServiceBuilder<Context> endpointBuilder;
-        ArrayList<ServiceController<Context>> controllers = new ArrayList<ServiceController<Context>>();
+        ArrayList<ServiceController<Context>> controllers = new ArrayList<>();
         for (ContextInfo contextInfo : contextDefinitions) {
             String contextName = contextInfo.contextPath;
-            Map<String, String> map = new HashMap<String, String>();
+            Map<String, String> map = new HashMap<>();
             for (EndpointInfo endpointInfo : contextInfo.endpointInfo) {
                 map.put(endpointInfo.URLPattern, endpointInfo.SEIClassname);
             }

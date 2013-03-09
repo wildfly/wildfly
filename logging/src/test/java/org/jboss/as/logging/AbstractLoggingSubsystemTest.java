@@ -213,9 +213,9 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
         final LogContextConfiguration logContextConfig = config.getLogContextConfiguration();
         final List<String> handlerNames = logContextConfig.getHandlerNames();
         final List<String> modelHandlerNames = getHandlerNames(currentModel);
-        final List<String> missingConfigHandlers = new ArrayList<String>(handlerNames);
+        final List<String> missingConfigHandlers = new ArrayList<>(handlerNames);
         missingConfigHandlers.removeAll(modelHandlerNames);
-        final List<String> missingModelHandlers = new ArrayList<String>(modelHandlerNames);
+        final List<String> missingModelHandlers = new ArrayList<>(modelHandlerNames);
         missingModelHandlers.removeAll(handlerNames);
 
         Assert.assertTrue("Configuration contains handlers not in the model: " + missingConfigHandlers, missingConfigHandlers.isEmpty());
@@ -265,13 +265,13 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
                         final List<String> handlerNames = loggerConfig.getHandlerNames();
                         final ModelNode handlers = loggerModel.get(attribute);
                         if (handlers.isDefined()) {
-                            final List<String> modelHandlerNames = new ArrayList<String>();
+                            final List<String> modelHandlerNames = new ArrayList<>();
                             for (ModelNode handler : handlers.asList()) {
                                 modelHandlerNames.add(handler.asString());
                             }
-                            final List<String> missingConfigHandlers = new ArrayList<String>(handlerNames);
+                            final List<String> missingConfigHandlers = new ArrayList<>(handlerNames);
                             missingConfigHandlers.removeAll(modelHandlerNames);
-                            final List<String> missingModelHandlers = new ArrayList<String>(modelHandlerNames);
+                            final List<String> missingModelHandlers = new ArrayList<>(modelHandlerNames);
                             missingModelHandlers.removeAll(handlerNames);
                             Assert.assertTrue("Logger in model contains handlers not in the configuration: " + missingConfigHandlers, missingConfigHandlers.isEmpty());
                             Assert.assertTrue("Logger in configuration contains handlers not in the model: " + missingModelHandlers, missingModelHandlers.isEmpty());
@@ -354,13 +354,13 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
                         final List<String> handlerHandlerNames = handlerConfig.getHandlerNames();
                         final ModelNode handlers = handlerModel.get(modelPropertyName);
                         if (handlers.isDefined()) {
-                            final List<String> modelHandlerNames = new ArrayList<String>();
+                            final List<String> modelHandlerNames = new ArrayList<>();
                             for (ModelNode handler : handlers.asList()) {
                                 modelHandlerNames.add(handler.asString());
                             }
-                            final List<String> missingConfigHandlers = new ArrayList<String>(handlerHandlerNames);
+                            final List<String> missingConfigHandlers = new ArrayList<>(handlerHandlerNames);
                             missingConfigHandlers.removeAll(modelHandlerNames);
-                            final List<String> missingModelHandlers = new ArrayList<String>(modelHandlerNames);
+                            final List<String> missingModelHandlers = new ArrayList<>(modelHandlerNames);
                             missingModelHandlers.removeAll(handlerHandlerNames);
                             Assert.assertTrue("Logger in model contains handlers not in the configuration: " + missingConfigHandlers, missingConfigHandlers.isEmpty());
                             Assert.assertTrue("Logger in configuration contains handlers not in the model: " + missingModelHandlers, missingModelHandlers.isEmpty());
@@ -404,7 +404,7 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
     }
 
     protected List<String> getHandlerNames(final ModelNode currentModel) {
-        final List<String> result = new ArrayList<String>();
+        final List<String> result = new ArrayList<>();
         for (String handler : HANDLER_RESOURCE_KEYS) {
             if (currentModel.hasDefined(handler)) {
                 result.addAll(currentModel.get(handler).keys());
@@ -415,7 +415,7 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
 
     static List<String> modelNodeAsStringList(final ModelNode node) {
         if (node.getType() == ModelType.LIST) {
-            final List<String> result = new ArrayList<String>();
+            final List<String> result = new ArrayList<>();
             for (ModelNode n : node.asList()) result.add(n.asString());
             return result;
         }

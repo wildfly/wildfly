@@ -89,7 +89,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         // setup the method specific security interceptor(s)
         boolean beanHasMethodLevelSecurityMetadata = false;
         final List<Method> viewMethods = viewConfiguration.getProxyFactory().getCachedMethods();
-        final List<Method> methodsWithoutExplicitSecurityConfiguration = new ArrayList<Method>();
+        final List<Method> methodsWithoutExplicitSecurityConfiguration = new ArrayList<>();
         for (final Method viewMethod : viewMethods) {
             // TODO: proxy factory exposes non-public methods, is this a bug in the no-interface view?
             if (!Modifier.isPublic(viewMethod.getModifiers())) {
@@ -140,7 +140,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
 
     private boolean handlePermissions(String contextID, ComponentConfiguration componentConfiguration, ViewConfiguration viewConfiguration, DeploymentReflectionIndex deploymentReflectionIndex, String viewClassName, EJBViewDescription ejbViewDescription, Method viewMethod, ApplicableMethodInformation<EJBMethodSecurityAttribute> permissions, boolean annotations) {
         EJBMethodSecurityAttribute ejbMethodSecurityMetaData = permissions.getViewAttribute(ejbViewDescription.getMethodIntf(), viewMethod.getName(), MethodIdentifier.getIdentifierForMethod(viewMethod).getParameterTypes());
-        final List<EJBMethodSecurityAttribute> allAttributes = new ArrayList<EJBMethodSecurityAttribute>();
+        final List<EJBMethodSecurityAttribute> allAttributes = new ArrayList<>();
         allAttributes.addAll(permissions.getAllAttributes(ejbViewDescription.getMethodIntf(), viewMethod.getDeclaringClass().getName(), viewMethod.getName(), MethodIdentifier.getIdentifierForMethod(viewMethod).getParameterTypes()));
 
         if (ejbMethodSecurityMetaData == null) {
@@ -172,7 +172,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
                     !ejbMethodSecurityMetaData.isDenyAll() &&
                     !ejbMethodSecurityMetaData.isPermitAll()) {
                 //roles are additive when defined in the deployment descriptor
-                final Set<String> rolesAllowed = new HashSet<String>();
+                final Set<String> rolesAllowed = new HashSet<>();
                 for (EJBMethodSecurityAttribute attr : allAttributes) {
                     rolesAllowed.addAll(attr.getRolesAllowed());
                 }

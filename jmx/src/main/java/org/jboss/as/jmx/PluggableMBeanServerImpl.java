@@ -63,7 +63,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
 
     private final MBeanServer rootMBeanServer;
 
-    private final Set<MBeanServerPlugin> delegates = new CopyOnWriteArraySet<MBeanServerPlugin>();
+    private final Set<MBeanServerPlugin> delegates = new CopyOnWriteArraySet<>();
 
     PluggableMBeanServerImpl(MBeanServer rootMBeanServer) {
         this.rootMBeanServer = new TcclMBeanServer(rootMBeanServer);
@@ -199,7 +199,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
 
     @Override
     public String[] getDomains() {
-        ArrayList<String> result = new ArrayList<String>();
+        ArrayList<String> result = new ArrayList<>();
         if (delegates.size() > 0) {
             for (MBeanServerPlugin delegate : delegates) {
                 String[] domains = delegate.getDomains();
@@ -287,7 +287,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
 
     @Override
     public Set<ObjectInstance> queryMBeans(ObjectName name, QueryExp query) {
-        Set<ObjectInstance> result = new HashSet<ObjectInstance>();
+        Set<ObjectInstance> result = new HashSet<>();
         if (delegates.size() > 0) {
             for (MBeanServerPlugin delegate : delegates) {
                 if (name == null || (name.getDomain() != null && delegate.accepts(name))) {
@@ -301,7 +301,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
 
     @Override
     public Set<ObjectName> queryNames(ObjectName name, QueryExp query) {
-        Set<ObjectName> result = new HashSet<ObjectName>();
+        Set<ObjectName> result = new HashSet<>();
         if (delegates.size() > 0) {
             for (MBeanServerPlugin delegate : delegates) {
                 if (name == null || (name.getDomain() != null && delegate.accepts(name))) {

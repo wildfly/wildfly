@@ -215,7 +215,7 @@ public abstract class ModelTestLegacyControllerKernelServicesProxy {
                         List.class);
             }
 
-            List<Object> convertedOps = new ArrayList<Object>();
+            List<Object> convertedOps = new ArrayList<>();
             for (ModelNode operation : operations) {
                 convertedOps.add(convertModelNodeToChildCl(operation));
             }

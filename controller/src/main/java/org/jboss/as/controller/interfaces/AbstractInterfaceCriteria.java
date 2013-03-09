@@ -60,7 +60,7 @@ public abstract class AbstractInterfaceCriteria implements InterfaceCriteria {
 
     public Map<NetworkInterface, Set<InetAddress>> getAcceptableAddresses(final Map<NetworkInterface, Set<InetAddress>> candidates) throws SocketException {
 
-        Map<NetworkInterface, Set<InetAddress>> result = new HashMap<NetworkInterface, Set<InetAddress>>();
+        Map<NetworkInterface, Set<InetAddress>> result = new HashMap<>();
         for (Map.Entry<NetworkInterface, Set<InetAddress>> entry : candidates.entrySet()) {
             NetworkInterface ni = entry.getKey();
             HashSet<InetAddress> addresses = null;
@@ -68,7 +68,7 @@ public abstract class AbstractInterfaceCriteria implements InterfaceCriteria {
                 InetAddress accepted = isAcceptable(ni, address);
                 if (accepted != null) {
                     if (addresses == null) {
-                        addresses = new HashSet<InetAddress>();
+                        addresses = new HashSet<>();
                         result.put(ni, addresses);
                     }
                     addresses.add(accepted);
@@ -80,10 +80,10 @@ public abstract class AbstractInterfaceCriteria implements InterfaceCriteria {
     }
 
     public static Map<NetworkInterface, Set<InetAddress>> cloneCandidates(final Map<NetworkInterface, Set<InetAddress>> candidates) {
-        final Map<NetworkInterface, Set<InetAddress>> clone = new LinkedHashMap<NetworkInterface, Set<InetAddress>>();
+        final Map<NetworkInterface, Set<InetAddress>> clone = new LinkedHashMap<>();
 
         for (Map.Entry<NetworkInterface, Set<InetAddress>> entry : candidates.entrySet()) {
-            clone.put(entry.getKey(), new LinkedHashSet<InetAddress>(entry.getValue()));
+            clone.put(entry.getKey(), new LinkedHashSet<>(entry.getValue()));
         }
         return clone;
     }

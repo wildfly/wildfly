@@ -105,7 +105,7 @@ public class DeploymentAttributes {
     public static final AttributeDefinition PERSISTENT = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.PERSISTENT, ModelType.BOOLEAN, false)
         .build();
     public static final AttributeDefinition STATUS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.STATUS, ModelType.STRING, false)
-        .setValidator(new EnumValidator<AbstractDeploymentUnitService.DeploymentStatus>(AbstractDeploymentUnitService.DeploymentStatus.class, false))
+        .setValidator(new EnumValidator<>(AbstractDeploymentUnitService.DeploymentStatus.class, false))
         .build();
 
     //Managed content value attributes
@@ -310,7 +310,7 @@ public class DeploymentAttributes {
     }
 
     private static Map<String, AttributeDefinition> createAttributeMap(AttributeDefinition...defs) {
-        Map<String, AttributeDefinition> map = new HashMap<String, AttributeDefinition>();
+        Map<String, AttributeDefinition> map = new HashMap<>();
         for (AttributeDefinition def : defs) {
             map.put(def.getName(), def);
         }
@@ -318,7 +318,7 @@ public class DeploymentAttributes {
     }
 
     private static Map<String, AttributeDefinition> createAttributeMap(Map<String, AttributeDefinition>...maps) {
-        Map<String, AttributeDefinition> map = new HashMap<String, AttributeDefinition>();
+        Map<String, AttributeDefinition> map = new HashMap<>();
         for (Map<String, AttributeDefinition> other : maps) {
             map.putAll(other);
         }
@@ -330,8 +330,8 @@ public class DeploymentAttributes {
         @Override
         public void validateParameter(String parameterName, ModelNode contentItemNode) throws OperationFailedException {
 
-            Set<String> managedNames = new HashSet<String>();
-            Set<String> unmanagedNames = new HashSet<String>();
+            Set<String> managedNames = new HashSet<>();
+            Set<String> unmanagedNames = new HashSet<>();
             for (String name : contentItemNode.keys()) {
                 if (contentItemNode.hasDefined(name)) {
                     if (MANAGED_CONTENT_ATTRIBUTES.containsKey(name)) {

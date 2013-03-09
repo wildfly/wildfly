@@ -60,7 +60,7 @@ public class ServiceBasedNamingStore implements NamingStore {
     private final ServiceRegistry serviceRegistry;
     private final ServiceName serviceNameBase;
 
-    private ConcurrentSkipListSet<ServiceName> boundServices = new ConcurrentSkipListSet<ServiceName>();
+    private ConcurrentSkipListSet<ServiceName> boundServices = new ConcurrentSkipListSet<>();
 
     public ServiceBasedNamingStore(final ServiceRegistry serviceRegistry, final ServiceName serviceNameBase) {
         this.serviceRegistry = serviceRegistry;
@@ -162,8 +162,8 @@ public class ServiceBasedNamingStore implements NamingStore {
 
         final List<ServiceName> children = listChildren(lookupName, isContextBinding);
         final String[] lookupParts = lookupName.toArray();
-        final Set<String> childContexts = new HashSet<String>();
-        final List<NameClassPair> results = new ArrayList<NameClassPair>();
+        final Set<String> childContexts = new HashSet<>();
+        final List<NameClassPair> results = new ArrayList<>();
         for (ServiceName child : children) {
             final String[] childParts = child.toArray();
             if (childParts.length > lookupParts.length + 1) {
@@ -205,8 +205,8 @@ public class ServiceBasedNamingStore implements NamingStore {
         }
         final List<ServiceName> children = listChildren(lookupName, isContextBinding);
         final String[] lookupParts = lookupName.toArray();
-        final Set<String> childContexts = new HashSet<String>();
-        final List<Binding> results = new ArrayList<Binding>();
+        final Set<String> childContexts = new HashSet<>();
+        final List<Binding> results = new ArrayList<>();
         for (ServiceName child : children) {
             final String[] childParts = child.toArray();
             if (childParts.length > lookupParts.length + 1) {
@@ -228,7 +228,7 @@ public class ServiceBasedNamingStore implements NamingStore {
             throw MESSAGES.cannotListNonContextBinding();
         }
         final NavigableSet<ServiceName> tail = boundServices.tailSet(name);
-        final List<ServiceName> children = new ArrayList<ServiceName>();
+        final List<ServiceName> children = new ArrayList<>();
         for (ServiceName next : tail) {
             if (name.isParentOf(next)) {
                 if (!name.equals(next)) {

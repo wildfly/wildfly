@@ -93,7 +93,7 @@ public class ChainedParameterValidator extends AbstractParameterValidator implem
                     if (allowed == null) {
                         allowed = val;
                     } else {
-                        List<ModelNode> copy = new ArrayList<ModelNode>();
+                        List<ModelNode> copy = new ArrayList<>();
                         for (ModelNode existing : allowed) {
                             if (val.contains(existing)) {
                                 copy.add(existing);

@@ -92,7 +92,7 @@ public class ReadChildrenResourcesHandler implements OperationStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String childType = operation.require(GlobalOperationHandlers.CHILD_TYPE.getName()).asString();
 
-        final Map<PathElement, ModelNode> resources = new HashMap<PathElement, ModelNode>();
+        final Map<PathElement, ModelNode> resources = new HashMap<>();
 
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS, false);
         final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
@@ -158,7 +158,7 @@ public class ReadChildrenResourcesHandler implements OperationStepHandler {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    Map<String, ModelNode> sortedChildren = new TreeMap<String, ModelNode>();
+                    Map<String, ModelNode> sortedChildren = new TreeMap<>();
                     boolean failed = false;
                     for (Map.Entry<PathElement, ModelNode> entry : resources.entrySet()) {
                         PathElement path = entry.getKey();

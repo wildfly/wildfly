@@ -55,7 +55,7 @@ public enum NamingSubsystemXMLAttribute {
     private static final Map<String, NamingSubsystemXMLAttribute> MAP;
 
     static {
-        final Map<String, NamingSubsystemXMLAttribute> map = new HashMap<String, NamingSubsystemXMLAttribute>();
+        final Map<String, NamingSubsystemXMLAttribute> map = new HashMap<>();
         for (NamingSubsystemXMLAttribute element : values()) {
             final String name = element.getLocalName();
             if (name != null)

@@ -87,12 +87,12 @@ public class TransactionalProtocolClientTestCase {
 
     private ChannelServer channelServer;
     private IoFuture<Connection> futureConnection;
-    private List<Channel> channels = new ArrayList<Channel>();
+    private List<Channel> channels = new ArrayList<>();
 
     // Only a single thread to be used on the client
     private final ExecutorService clientExecutor = Executors.newSingleThreadExecutor();
     private final ExecutorService remoteExecutors = Executors.newCachedThreadPool();
-    private final BlockingQueue<MockController> transferQueue = new LinkedBlockingQueue<MockController>();
+    private final BlockingQueue<MockController> transferQueue = new LinkedBlockingQueue<>();
 
     @Before
     public void startChannelServer() throws Exception {
@@ -200,7 +200,7 @@ public class TransactionalProtocolClientTestCase {
             client.execute(listener, update);
         }
         // Now wait for all operations to be prepared
-        final List<TransactionalProtocolClient.PreparedOperation<TestUpdateWrapper>> preparedOps = new ArrayList<TransactionalProtocolClient.PreparedOperation<TestUpdateWrapper>>();
+        final List<TransactionalProtocolClient.PreparedOperation<TestUpdateWrapper>> preparedOps = new ArrayList<>();
         for(int i = 0; i < CLIENTS; i++) {
             // Wait for 10 prepared results
             final TransactionalProtocolClient.PreparedOperation<TestUpdateWrapper> prepared = listener.retrievePreparedOperation();
@@ -273,7 +273,7 @@ public class TransactionalProtocolClientTestCase {
      * @throws Exception
      */
     List<TestUpdateWrapper> createTestClients(final int count) throws Exception {
-        final List<TestUpdateWrapper> wrappers = new ArrayList<TestUpdateWrapper>();
+        final List<TestUpdateWrapper> wrappers = new ArrayList<>();
         for(int j = 0; j < count; j++) {
             wrappers.add(createTestClient(j));
         }

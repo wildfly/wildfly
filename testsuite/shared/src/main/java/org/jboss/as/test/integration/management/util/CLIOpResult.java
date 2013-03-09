@@ -51,7 +51,7 @@ public class CLIOpResult {
 
     protected Map<String, Object> toMap(ModelNode node) {
         final Set<String> keys = node.keys();
-        Map<String,Object> map = new HashMap<String,Object>(keys.size());
+        Map<String,Object> map = new HashMap<>(keys.size());
         for(String key : keys) {
             map.put(key, toObject(node.get(key)));
         }
@@ -60,7 +60,7 @@ public class CLIOpResult {
 
     protected List<Object> toList(ModelNode node) {
         final List<ModelNode> nodeList = node.asList();
-        final List<Object> list = new ArrayList<Object>(nodeList.size());
+        final List<Object> list = new ArrayList<>(nodeList.size());
         for(ModelNode item : nodeList) {
             list.add(toObject(item));
         }

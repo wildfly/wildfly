@@ -63,7 +63,7 @@ public class ClientModuleOneActivator implements ServiceActivator
    {
       private static final Logger log = Logger.getLogger(EchoInvokerService.class);
 
-      private InjectedValue<Echo> injectedService = new InjectedValue<Echo>();
+      private InjectedValue<Echo> injectedService = new InjectedValue<>();
 
       static void addService(ServiceTarget serviceTarget)
       {

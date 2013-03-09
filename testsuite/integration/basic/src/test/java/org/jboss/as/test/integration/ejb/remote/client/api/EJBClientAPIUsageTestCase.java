@@ -210,7 +210,7 @@ public class EJBClientAPIUsageTestCase {
             "Need to think if there's a different way to test this. Else just remove this test")
     public void testSFSBAccessFailureWithoutSession() throws Exception {
         // create a locator without a session
-        final StatefulEJBLocator<Counter> locator = new StatefulEJBLocator<Counter>(Counter.class, APP_NAME, MODULE_NAME, CounterBean.class.getSimpleName(), "", null, Affinity.NONE);
+        final StatefulEJBLocator<Counter> locator = new StatefulEJBLocator<>(Counter.class, APP_NAME, MODULE_NAME, CounterBean.class.getSimpleName(), "", null, Affinity.NONE);
         final Counter counter = EJBClient.createProxy(locator);
         Assert.assertNotNull("Received a null proxy", counter);
         // invoke the bean without creating a session
@@ -232,7 +232,7 @@ public class EJBClientAPIUsageTestCase {
      */
     @Test
     public void testNonExistentEJBAccess() throws Exception {
-        final StatelessEJBLocator<NotAnEJBInterface> locator = new StatelessEJBLocator<NotAnEJBInterface>(NotAnEJBInterface.class, "non-existen-app-name", MODULE_NAME, "blah", "");
+        final StatelessEJBLocator<NotAnEJBInterface> locator = new StatelessEJBLocator<>(NotAnEJBInterface.class, "non-existen-app-name", MODULE_NAME, "blah", "");
         final NotAnEJBInterface nonExistentBean = EJBClient.createProxy(locator);
         Assert.assertNotNull("Received a null proxy", nonExistentBean);
         // invoke on the (non-existent) bean
@@ -252,7 +252,7 @@ public class EJBClientAPIUsageTestCase {
      */
     @Test
     public void testNonExistentViewForEJB() throws Exception {
-        final StatelessEJBLocator<NotAnEJBInterface> locator = new StatelessEJBLocator<NotAnEJBInterface>(NotAnEJBInterface.class, APP_NAME, MODULE_NAME, EchoBean.class.getSimpleName(), "");
+        final StatelessEJBLocator<NotAnEJBInterface> locator = new StatelessEJBLocator<>(NotAnEJBInterface.class, APP_NAME, MODULE_NAME, EchoBean.class.getSimpleName(), "");
         final NotAnEJBInterface nonExistentBean = EJBClient.createProxy(locator);
         Assert.assertNotNull("Received a null proxy", nonExistentBean);
         // invoke on the (non-existent) view of a bean
@@ -273,7 +273,7 @@ public class EJBClientAPIUsageTestCase {
      */
     @Test
     public void testApplicationExceptionOnSLSBMethod() throws Exception {
-        final StatelessEJBLocator<ExceptionThrowingRemote> locator = new StatelessEJBLocator<ExceptionThrowingRemote>(ExceptionThrowingRemote.class, APP_NAME, MODULE_NAME, ExceptionThrowingBean.class.getSimpleName(), "");
+        final StatelessEJBLocator<ExceptionThrowingRemote> locator = new StatelessEJBLocator<>(ExceptionThrowingRemote.class, APP_NAME, MODULE_NAME, ExceptionThrowingBean.class.getSimpleName(), "");
         final ExceptionThrowingRemote exceptionThrowingBean = EJBClient.createProxy(locator);
         Assert.assertNotNull("Received a null proxy", exceptionThrowingBean);
         final String exceptionState = "2342348723Dsbjlfjal#";
@@ -294,7 +294,7 @@ public class EJBClientAPIUsageTestCase {
      */
     @Test
     public void testSystemExceptionOnSLSBMethod() throws Exception {
-        final StatelessEJBLocator<ExceptionThrowingRemote> locator = new StatelessEJBLocator<ExceptionThrowingRemote>(ExceptionThrowingRemote.class, APP_NAME, MODULE_NAME, ExceptionThrowingBean.class.getSimpleName(), "");
+        final StatelessEJBLocator<ExceptionThrowingRemote> locator = new StatelessEJBLocator<>(ExceptionThrowingRemote.class, APP_NAME, MODULE_NAME, ExceptionThrowingBean.class.getSimpleName(), "");
         final ExceptionThrowingRemote exceptionThrowingBean = EJBClient.createProxy(locator);
         Assert.assertNotNull("Received a null proxy", exceptionThrowingBean);
         final String exceptionState = "bafasfaj;l";
@@ -318,7 +318,7 @@ public class EJBClientAPIUsageTestCase {
      */
     @Test
     public void testAsyncFutureMethodOnSLSB() throws Exception {
-        final StatelessEJBLocator<EchoRemote> locator = new StatelessEJBLocator<EchoRemote>(EchoRemote.class, APP_NAME, MODULE_NAME, EchoBean.class.getSimpleName(), "");
+        final StatelessEJBLocator<EchoRemote> locator = new StatelessEJBLocator<>(EchoRemote.class, APP_NAME, MODULE_NAME, EchoBean.class.getSimpleName(), "");
         final EchoRemote echoRemote = EJBClient.createProxy(locator);
         Assert.assertNotNull("Received a null proxy", echoRemote);
         final String message = "You are supposed to be an asynchronous method";
@@ -396,7 +396,7 @@ public class EJBClientAPIUsageTestCase {
         };
         final ExecutorService executor = Executors.newFixedThreadPool(10);
         try {
-            final List<Future> tasks = new ArrayList<Future>();
+            final List<Future> tasks = new ArrayList<>();
             for (int i = 0; i < 100; ++i) {
                 tasks.add(executor.submit(task));
             }

@@ -109,7 +109,7 @@ public class OperationDialog extends JDialog {
     }
 
     private void setProps(ModelNode requestProperties) throws Exception {
-        props = new TreeSet<RequestProp>();
+        props = new TreeSet<>();
         if (opName.equals("add")) {
             UserObject usrObj = (UserObject)node.getUserObject();
             props.add(new RequestProp("/" + usrObj.getName() + "=<name>/", "Resource name for the new " + usrObj.getName(), true, ModelType.STRING));
@@ -422,7 +422,7 @@ public class OperationDialog extends JDialog {
         }
 
         private JComboBox makeJComboBox(List<ModelNode> values) {
-            Vector<String> valueVector = new Vector<String>(values.size());
+            Vector<String> valueVector = new Vector<>(values.size());
             if (!isRequired) {
                 valueVector.add("");
             }

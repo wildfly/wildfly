@@ -43,7 +43,7 @@ public class DeploymentPropertyResolverProcessor implements DeploymentUnitProces
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         DeploymentUnit current = deploymentUnit;
-        final List<PropertyResolver> propertyResolvers = new ArrayList<PropertyResolver>();
+        final List<PropertyResolver> propertyResolvers = new ArrayList<>();
         do {
             final Properties deploymentProperties = current.getAttachment(Attachments.DEPLOYMENT_PROPERTIES);
             if (deploymentProperties != null) {

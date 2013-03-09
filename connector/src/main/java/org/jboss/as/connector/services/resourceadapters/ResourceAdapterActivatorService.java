@@ -160,8 +160,8 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
         @Override
         protected boolean checkActivation(Connector cmd, IronJacamar ijmd) {
             if (cmd != null) {
-                Set<String> raMcfClasses = new HashSet<String>();
-                Set<String> raAoClasses = new HashSet<String>();
+                Set<String> raMcfClasses = new HashSet<>();
+                Set<String> raAoClasses = new HashSet<>();
 
                 if (cmd.getVersion() == Version.V_10) {
                     ResourceAdapter10 ra10 = (ResourceAdapter10) cmd.getResourceadapter();
@@ -193,8 +193,8 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
                 }
 
                 if (ijmd != null) {
-                    Set<String> ijMcfClasses = new HashSet<String>();
-                    Set<String> ijAoClasses = new HashSet<String>();
+                    Set<String> ijMcfClasses = new HashSet<>();
+                    Set<String> ijAoClasses = new HashSet<>();
 
                     boolean mcfSingle = false;
                     boolean aoSingle = false;

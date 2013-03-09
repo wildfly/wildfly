@@ -122,7 +122,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         this.serialiableInterceptorContextKeys = ejbComponentCreateService.getSerializableInterceptorContextKeys();
 
         String beanName = ejbComponentCreateService.getComponentClass().getName();
-        StatefulObjectFactory<StatefulSessionComponentInstance> factory = new TransactionAwareObjectFactory<StatefulSessionComponentInstance>(this, this.getTransactionManager());
+        StatefulObjectFactory<StatefulSessionComponentInstance> factory = new TransactionAwareObjectFactory<>(this, this.getTransactionManager());
         StatefulTimeoutInfo timeout = ejbComponentCreateService.getStatefulTimeout();
         this.cache = ejbComponentCreateService.getCacheFactory().createCache(beanName, this, factory, this, timeout);
     }
@@ -201,7 +201,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         final ServiceController<?> serviceController = currentServiceContainer().getRequiredService(getEjbObjectViewServiceName());
         final ComponentView view = (ComponentView) serviceController.getValue();
         final String locatorAppName = getEarApplicationName() == null ? "" : getEarApplicationName();
-        return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), this.getCache().getStrictAffinity()));
+        return EJBClient.createProxy(new StatefulEJBLocator<>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), this.getCache().getStrictAffinity()));
     }
 
     @Override
@@ -259,7 +259,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     @Override
     protected void componentInstanceCreated(final BasicComponentInstance basicComponentInstance, final InterceptorFactoryContext context) {
         final StatefulSessionComponentInstance instance = (StatefulSessionComponentInstance) basicComponentInstance;
-        final Map<Object, Object> serializableInterceptors = new HashMap<Object, Object>();
+        final Map<Object, Object> serializableInterceptors = new HashMap<>();
         for (final Object key : serialiableInterceptorContextKeys) {
             @SuppressWarnings("unchecked")
             final AtomicReference<ManagedReference> data = (AtomicReference<ManagedReference>) context.getContextData().get(key);

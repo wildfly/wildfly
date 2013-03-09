@@ -89,16 +89,16 @@ final class OperationContextImpl extends AbstractOperationContext {
     private final EnumSet<ContextFlag> contextFlags;
     private final OperationMessageHandler messageHandler;
     private final ServiceTarget serviceTarget;
-    private final Map<ServiceName, ServiceController<?>> realRemovingControllers = new HashMap<ServiceName, ServiceController<?>>();
+    private final Map<ServiceName, ServiceController<?>> realRemovingControllers = new HashMap<>();
     // protected by "realRemovingControllers"
-    private final Map<ServiceName, Step> removalSteps = new HashMap<ServiceName, Step>();
+    private final Map<ServiceName, Step> removalSteps = new HashMap<>();
     private final OperationAttachments attachments;
     /** Tracks whether any steps have gotten write access to the model */
     private final Map<PathAddress, Object> affectsModel;
     /** Resources that have had their services restarted, used by ALLOW_RESOURCE_SERVICE_RESTART This should be confined to a thread, so no sync needed */
     private Map<PathAddress, Object> restartedResources = Collections.emptyMap();
     /** A concurrent map for the attachments. **/
-    private final ConcurrentMap<AttachmentKey<?>, Object> valueAttachments = new ConcurrentHashMap<AttachmentKey<?>, Object>();
+    private final ConcurrentMap<AttachmentKey<?>, Object> valueAttachments = new ConcurrentHashMap<>();
     /** Tracks whether any steps have gotten write access to the management resource registration*/
     private volatile boolean affectsResourceRegistration;
 
@@ -268,7 +268,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
 
         if (restartedResources == Collections.EMPTY_MAP) {
-            restartedResources = new HashMap<PathAddress, Object>();
+            restartedResources = new HashMap<>();
         }
 
         restartedResources.put(resource, owner);
@@ -781,11 +781,11 @@ final class OperationContextImpl extends AbstractOperationContext {
 
         public <T> ServiceBuilder<T> addServiceValue(final ServiceName name, final Value<? extends Service<T>> value) {
             final ServiceBuilder<T> realBuilder = modelController.getServiceTarget().addServiceValue(name, value);
-            return new ContextServiceBuilder<T>(realBuilder, name);
+            return new ContextServiceBuilder<>(realBuilder, name);
         }
 
         public <T> ServiceBuilder<T> addService(final ServiceName name, final Service<T> service) {
-            return addServiceValue(name, new ImmediateValue<Service<T>>(service));
+            return addServiceValue(name, new ImmediateValue<>(service));
         }
 
         public ServiceTarget addListener(final ServiceListener<Object> listener) {
@@ -1018,7 +1018,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
 
-            final Map<Step, Map<ServiceName, Set<ServiceName>>> missingByStep = new HashMap<Step, Map<ServiceName, Set<ServiceName>>>();
+            final Map<Step, Map<ServiceName, Set<ServiceName>>> missingByStep = new HashMap<>();
             // The realRemovingControllers map acts as the guard for the removalSteps map
             Object mutex = realRemovingControllers;
             synchronized (mutex) {
@@ -1028,7 +1028,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                     if (removalStep != null) {
                         Map<ServiceName, Set<ServiceName>> stepBadRemovals = missingByStep.get(removalStep);
                         if (stepBadRemovals == null) {
-                            stepBadRemovals = new HashMap<ServiceName, Set<ServiceName>>();
+                            stepBadRemovals = new HashMap<>();
                             missingByStep.put(removalStep, stepBadRemovals);
                         }
                         stepBadRemovals.put(entry.getKey(), missingDependencyInfo.getDependents());

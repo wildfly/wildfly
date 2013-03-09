@@ -80,15 +80,15 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
         }
 
         //default interceptors must be mentioned in the interceptors section
-        final Set<String> interceptorClasses = new HashSet<String>();
+        final Set<String> interceptorClasses = new HashSet<>();
         if (metaData.getInterceptors() != null) {
             for (final InterceptorMetaData interceptor : metaData.getInterceptors()) {
                 interceptorClasses.add(interceptor.getInterceptorClass());
             }
         }
 
-        final Map<String, List<InterceptorBindingMetaData>> bindingsPerComponent = new HashMap<String, List<InterceptorBindingMetaData>>();
-        final List<InterceptorBindingMetaData> defaultInterceptorBindings = new ArrayList<InterceptorBindingMetaData>();
+        final Map<String, List<InterceptorBindingMetaData>> bindingsPerComponent = new HashMap<>();
+        final List<InterceptorBindingMetaData> defaultInterceptorBindings = new ArrayList<>();
 
         for (final InterceptorBindingMetaData binding : metaData.getAssemblyDescriptor().getInterceptorBindings()) {
             if (binding.getEjbName().equals("*")) {
@@ -102,14 +102,14 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
             } else {
                 List<InterceptorBindingMetaData> bindings = bindingsPerComponent.get(binding.getEjbName());
                 if (bindings == null) {
-                    bindingsPerComponent.put(binding.getEjbName(), bindings = new ArrayList<InterceptorBindingMetaData>());
+                    bindingsPerComponent.put(binding.getEjbName(), bindings = new ArrayList<>());
                 }
                 bindings.add(binding);
             }
         }
 
 
-        final List<InterceptorDescription> defaultInterceptors = new ArrayList<InterceptorDescription>();
+        final List<InterceptorDescription> defaultInterceptors = new ArrayList<>();
 
         for (InterceptorBindingMetaData binding : defaultInterceptorBindings) {
             if (binding.getInterceptorClasses() != null) {
@@ -136,18 +136,18 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
             }
 
             final List<InterceptorBindingMetaData> bindings = bindingsPerComponent.get(componentDescription.getComponentName());
-            final Map<Method, List<InterceptorBindingMetaData>> methodInterceptors = new HashMap<Method, List<InterceptorBindingMetaData>>();
-            final List<InterceptorBindingMetaData> classLevelBindings = new ArrayList<InterceptorBindingMetaData>();
+            final Map<Method, List<InterceptorBindingMetaData>> methodInterceptors = new HashMap<>();
+            final List<InterceptorBindingMetaData> classLevelBindings = new ArrayList<>();
             //we only want to exclude default and class level interceptors if every binding
             //has the exclude element.
             boolean classLevelExcludeDefaultInterceptors = false;
-            Map<Method, Boolean> methodLevelExcludeDefaultInterceptors = new HashMap<Method, Boolean>();
-            Map<Method, Boolean> methodLevelExcludeClassInterceptors = new HashMap<Method, Boolean>();
+            Map<Method, Boolean> methodLevelExcludeDefaultInterceptors = new HashMap<>();
+            Map<Method, Boolean> methodLevelExcludeClassInterceptors = new HashMap<>();
 
             //if an absolute order has been defined at any level
             //absolute ordering takes precedence
             boolean classLevelAbsoluteOrder = false;
-            final Map<Method, Boolean> methodLevelAbsoluteOrder = new HashMap<Method, Boolean>();
+            final Map<Method, Boolean> methodLevelAbsoluteOrder = new HashMap<>();
 
 
             if (bindings != null) {
@@ -201,7 +201,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                         }
                         List<InterceptorBindingMetaData> list = methodInterceptors.get(resolvedMethod);
                         if (list == null) {
-                            methodInterceptors.put(resolvedMethod, list = new ArrayList<InterceptorBindingMetaData>());
+                            methodInterceptors.put(resolvedMethod, list = new ArrayList<>());
                         }
                         list.add(binding);
                         if (binding.isExcludeDefaultInterceptors()) {
@@ -231,7 +231,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                 componentDescription.setExcludeDefaultInterceptors(true);
             }
 
-            final List<InterceptorDescription> classLevelInterceptors = new ArrayList<InterceptorDescription>();
+            final List<InterceptorDescription> classLevelInterceptors = new ArrayList<>();
             if (classLevelAbsoluteOrder) {
                 //we have an absolute ordering for the class level interceptors
                 for (final InterceptorBindingMetaData binding : classLevelBindings) {
@@ -276,7 +276,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                     excludeClassInterceptors = componentDescription.isExcludeClassInterceptors(methodIdentifier);
                 }
 
-                final List<InterceptorDescription> methodLevelInterceptors = new ArrayList<InterceptorDescription>();
+                final List<InterceptorDescription> methodLevelInterceptors = new ArrayList<>();
 
                 if (totalOrder) {
                     //if there is a total order we just use it

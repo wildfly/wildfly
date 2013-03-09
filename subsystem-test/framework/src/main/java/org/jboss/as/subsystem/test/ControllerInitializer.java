@@ -71,10 +71,10 @@ public class ControllerInitializer {
     public static final String INTERFACE_NAME = "test-interface";
     public static final String SOCKET_BINDING_GROUP_NAME = "test-socket-binding-group";
     protected volatile String bindAddress = "localhost";
-    protected final Map<String, String> systemProperties = new HashMap<String, String>();
-    protected final Map<String, Integer> socketBindings = new HashMap<String, Integer>();
-    protected final Map<String, OutboundSocketBinding> outboundSocketBindings = new HashMap<String, OutboundSocketBinding>();
-    protected final Map<String, PathInfo> paths = new HashMap<String, PathInfo>();
+    protected final Map<String, String> systemProperties = new HashMap<>();
+    protected final Map<String, Integer> socketBindings = new HashMap<>();
+    protected final Map<String, OutboundSocketBinding> outboundSocketBindings = new HashMap<>();
+    protected final Map<String, PathInfo> paths = new HashMap<>();
     private volatile PathManagerService pathManager;
     private volatile TestModelControllerService testModelControllerService;
 
@@ -198,7 +198,7 @@ public class ControllerInitializer {
      * @return the additional boot operations
      */
     protected List<ModelNode> initializeBootOperations(){
-        List<ModelNode> ops = new ArrayList<ModelNode>();
+        List<ModelNode> ops = new ArrayList<>();
         initializeSystemPropertiesOperations(ops);
         initializePathsOperations(ops);
         initializeSocketBindingsOperations(ops);

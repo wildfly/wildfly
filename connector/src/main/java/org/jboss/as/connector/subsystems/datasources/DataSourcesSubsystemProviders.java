@@ -56,7 +56,7 @@ class DataSourcesSubsystemProviders {
         public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
-            Map<String, ModelNode> children = new HashMap<String, ModelNode>();
+            Map<String, ModelNode> children = new HashMap<>();
             ModelNode node = new ModelNode();
             node.get(DESCRIPTION).set(bundle.getString("statistics"));
             children.put(STATISTICS, node);

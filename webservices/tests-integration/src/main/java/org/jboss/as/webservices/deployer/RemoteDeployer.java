@@ -97,9 +97,9 @@ public final class RemoteDeployer implements Deployer {
     private static final CallbackHandler callbackHandler = getCallbackHandler();
     private static InetAddress address;
     private static Integer port;
-    private final Map<URL, String> url2Id = new HashMap<URL, String>();
-    private final Map<String, Integer> securityDomainUsers = new HashMap<String, Integer>(1);
-    private final Map<String, Integer> archiveCounters = new HashMap<String, Integer>();
+    private final Map<URL, String> url2Id = new HashMap<>();
+    private final Map<String, Integer> securityDomainUsers = new HashMap<>(1);
+    private final Map<String, Integer> archiveCounters = new HashMap<>();
     private final Semaphore httpsConnSemaphore = new Semaphore(1);
 
     static {
@@ -207,7 +207,7 @@ public final class RemoteDeployer implements Deployer {
                 securityDomainUsers.put(name, 1);
             }
 
-            final List<ModelNode> updates = new ArrayList<ModelNode>();
+            final List<ModelNode> updates = new ArrayList<>();
 
             final ModelNode compositeOp = new ModelNode();
             compositeOp.get(OP).set(COMPOSITE);

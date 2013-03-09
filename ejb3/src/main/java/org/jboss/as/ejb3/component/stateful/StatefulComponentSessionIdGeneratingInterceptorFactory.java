@@ -44,7 +44,7 @@ public class StatefulComponentSessionIdGeneratingInterceptorFactory implements I
 
     @Override
     public Interceptor create(InterceptorFactoryContext context) {
-        final AtomicReference<SessionID> sessionIdReference = new AtomicReference<SessionID>();
+        final AtomicReference<SessionID> sessionIdReference = new AtomicReference<>();
         context.getContextData().put(StatefulSessionComponent.SESSION_ID_REFERENCE_KEY, sessionIdReference);
 
         //if we are attaching to an existing instance this will not be null

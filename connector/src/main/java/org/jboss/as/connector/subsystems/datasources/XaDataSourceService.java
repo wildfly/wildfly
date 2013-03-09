@@ -36,7 +36,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class XaDataSourceService extends AbstractDataSourceService {
 
-    private final InjectedValue<ModifiableXaDataSource> dataSourceConfig = new InjectedValue<ModifiableXaDataSource>();
+    private final InjectedValue<ModifiableXaDataSource> dataSourceConfig = new InjectedValue<>();
 
     public XaDataSourceService(final String jndiName, final ClassLoader classLoader) {
         super(jndiName, classLoader);

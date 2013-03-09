@@ -46,7 +46,7 @@ public class Car {
 
     @NotEmpty
     @Valid
-    private List<UserBean> passengers = new ArrayList<UserBean>();
+    private List<UserBean> passengers = new ArrayList<>();
 
     @AssertTrue(message = "The rent for the Car has to be paid before being driven", groups = FinalInspection.class)
     public boolean hasBeenPaid;

@@ -60,7 +60,7 @@ public class DiscardUndefinedAttributesTransformer implements ResourceTransforme
     }
 
     private static Set<String> namesFromDefinitions(AttributeDefinition... attributes) {
-        final Set<String> names = new HashSet<String>();
+        final Set<String> names = new HashSet<>();
         for (final AttributeDefinition def : attributes) {
             names.add(def.getName());
         }
@@ -68,7 +68,7 @@ public class DiscardUndefinedAttributesTransformer implements ResourceTransforme
     }
 
     public DiscardUndefinedAttributesTransformer(String... attributeNames) {
-        this(new HashSet<String>(Arrays.asList(attributeNames)));
+        this(new HashSet<>(Arrays.asList(attributeNames)));
     }
 
     public DiscardUndefinedAttributesTransformer(Set<String> attributeNames) {
@@ -163,7 +163,7 @@ public class DiscardUndefinedAttributesTransformer implements ResourceTransforme
             if (modelNode.has(attr)) {
                 if (modelNode.hasDefined(attr)) {
                     if (problems == null) {
-                        problems = new HashSet<String>();
+                        problems = new HashSet<>();
                     }
                     problems.add(attr);
                 } else {

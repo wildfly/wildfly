@@ -33,7 +33,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.cache.Cacheable;
-import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreConfig;
+import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSource;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSourceService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -54,8 +54,8 @@ public class ClusterPassivationStoreAdd extends PassivationStoreAdd {
     @Override
     Collection<ServiceController<?>> installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
         final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-        ClusteredBackingCacheEntryStoreSourceService<?, ?, ?> service = new ClusteredBackingCacheEntryStoreSourceService<Serializable, Cacheable<Serializable>, Serializable>(name);
-        ClusteredBackingCacheEntryStoreConfig config = service.getValue();
+        ClusteredBackingCacheEntryStoreSourceService<Serializable, Cacheable<Serializable>, Serializable> service = new ClusteredBackingCacheEntryStoreSourceService<>(name);
+        ClusteredBackingCacheEntryStoreSource<Serializable,Cacheable<Serializable>,Serializable> config = service.getValue();
         config.setCacheContainer(ClusterPassivationStoreResourceDefinition.CACHE_CONTAINER.resolveModelAttribute(context, model).asString());
         ModelNode beanCacheNode = ClusterPassivationStoreResourceDefinition.BEAN_CACHE.resolveModelAttribute(context, model);
         if (beanCacheNode.isDefined()) {
@@ -69,8 +69,8 @@ public class ClusterPassivationStoreAdd extends PassivationStoreAdd {
         if (registry.getService(serviceName) != null) {
             context.removeService(serviceName);
         }
-        InjectedValue<String> clusterName = new InjectedValue<String>();
-        ServiceController<?> controller = context.getServiceTarget().addService(serviceName, new ValueService<String>(clusterName))
+        InjectedValue<String> clusterName = new InjectedValue<>();
+        ServiceController<?> controller = context.getServiceTarget().addService(serviceName, new ValueService<>(clusterName))
                 .addDependency(ClusteredBackingCacheEntryStoreSourceService.getCacheContainerClusterNameServiceName(config.getCacheContainer()), String.class, clusterName)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();

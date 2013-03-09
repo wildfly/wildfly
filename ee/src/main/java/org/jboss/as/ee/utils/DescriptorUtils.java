@@ -42,7 +42,7 @@ public class DescriptorUtils {
     private static final Map<Class<?>, String> primitives;
 
     static {
-        Map<Class<?>, String> p = new IdentityHashMap<Class<?>, String>();
+        Map<Class<?>, String> p = new IdentityHashMap<>();
         p.put(void.class, "V");
         p.put(byte.class, "B");
         p.put(char.class, "C");
@@ -92,7 +92,7 @@ public class DescriptorUtils {
      */
     public static String[] parameterDescriptors(String methodDescriptor) {
         int i = 1; // char 0 is a '('
-        List<String> ret = new ArrayList<String>();
+        List<String> ret = new ArrayList<>();
         int arrayStart = -1;
         while (methodDescriptor.charAt(i) != ')') {
             String type = null;

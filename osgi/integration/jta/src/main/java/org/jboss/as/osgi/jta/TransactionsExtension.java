@@ -43,8 +43,8 @@ import org.osgi.framework.BundleContext;
  */
 public class TransactionsExtension extends AbstractSubsystemExtension {
 
-    private final InjectedValue<TransactionManager> injectedTransactionManager = new InjectedValue<TransactionManager>();
-    private final InjectedValue<UserTransaction> injectedUserTransaction = new InjectedValue<UserTransaction>();
+    private final InjectedValue<TransactionManager> injectedTransactionManager = new InjectedValue<>();
+    private final InjectedValue<UserTransaction> injectedUserTransaction = new InjectedValue<>();
 
     @Override
     public void configureServiceDependencies(ServiceName serviceName, ServiceBuilder<?> builder) {

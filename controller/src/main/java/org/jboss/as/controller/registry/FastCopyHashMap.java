@@ -260,7 +260,7 @@ class FastCopyHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clon
                 break;
 
             if (e.hash == hash && eq(key, e.key)) {
-                table[index] = new Entry<K, V>(e.key, e.hash, value);
+                table[index] = new Entry<>(e.key, e.hash, value);
                 return e.value;
             }
 
@@ -270,7 +270,7 @@ class FastCopyHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clon
         }
 
         modCount++;
-        table[index] = new Entry<K, V>(key, hash, value);
+        table[index] = new Entry<>(key, hash, value);
         if (++size >= threshold)
             resize(length);
 
@@ -484,7 +484,7 @@ class FastCopyHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clon
             e = table[index];
         }
 
-        table[index] = new Entry<K, V>(key, hash, value);
+        table[index] = new Entry<>(key, hash, value);
     }
 
     private void writeObject(java.io.ObjectOutputStream s) throws IOException {

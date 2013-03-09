@@ -43,7 +43,7 @@ import java.util.Set;
 public abstract class AbstractModelResource implements Resource {
 
     /** The children. */
-    private final Map<String, ResourceProvider> children = new LinkedHashMap<String, ResourceProvider>();
+    private final Map<String, ResourceProvider> children = new LinkedHashMap<>();
 
     @Override
     public Resource getChild(final PathElement address) {
@@ -98,7 +98,7 @@ public abstract class AbstractModelResource implements Resource {
     @Override
     public Set<String> getChildTypes() {
         synchronized (children) {
-            return new LinkedHashSet<String>(children.keySet());
+            return new LinkedHashSet<>(children.keySet());
         }
     }
 
@@ -108,7 +108,7 @@ public abstract class AbstractModelResource implements Resource {
         if(provider == null) {
             return Collections.emptySet();
         }
-        final Set<ResourceEntry> children = new LinkedHashSet<ResourceEntry>();
+        final Set<ResourceEntry> children = new LinkedHashSet<>();
         for(final String name : provider.children()) {
             final Resource resource = provider.get(name);
             children.add(new DelegateResource(resource) {
@@ -186,7 +186,7 @@ public abstract class AbstractModelResource implements Resource {
 
     static class DefaultResourceProvider implements ResourceProvider {
 
-        private final Map<String, Resource> children = new LinkedHashMap<String, Resource>();
+        private final Map<String, Resource> children = new LinkedHashMap<>();
 
         protected DefaultResourceProvider() {
         }
@@ -194,7 +194,7 @@ public abstract class AbstractModelResource implements Resource {
         @Override
         public Set<String> children() {
             synchronized (children) {
-                return new LinkedHashSet<String>(children.keySet());
+                return new LinkedHashSet<>(children.keySet());
             }
         }
 

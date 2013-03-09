@@ -124,7 +124,7 @@ public enum AS7ResourceAdapterTags {
     private static final Map<String, AS7ResourceAdapterTags> MAP;
 
     static {
-        final Map<String, AS7ResourceAdapterTags> map = new HashMap<String, AS7ResourceAdapterTags>();
+        final Map<String, AS7ResourceAdapterTags> map = new HashMap<>();
         for (AS7ResourceAdapterTags element : values()) {
             final String name = element.getLocalName();
             if (name != null)

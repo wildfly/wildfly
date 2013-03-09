@@ -39,7 +39,7 @@ import org.jboss.msc.value.InjectedValue;
 final class ConnectionDefinitionService implements Service<ModifiableConnDef> {
 
     private final ModifiableConnDef value;
-    private final InjectedValue<ModifiableResourceAdapter> ra = new InjectedValue<ModifiableResourceAdapter>();
+    private final InjectedValue<ModifiableResourceAdapter> ra = new InjectedValue<>();
 
 
     /** create an instance **/

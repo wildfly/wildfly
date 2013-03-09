@@ -214,7 +214,7 @@ final class LoggerOperations {
             // Create a new handler list for the model
             boolean found = false;
             final List<ModelNode> handlers = model.get(HANDLERS.getName()).asList();
-            final List<ModelNode> newHandlers = new ArrayList<ModelNode>(handlers.size());
+            final List<ModelNode> newHandlers = new ArrayList<>(handlers.size());
             for (ModelNode handler : handlers) {
                 if (handlerName.equals(handler.asString())) {
                     found = true;

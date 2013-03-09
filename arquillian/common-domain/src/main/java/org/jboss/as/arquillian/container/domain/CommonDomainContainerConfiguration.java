@@ -95,7 +95,7 @@ public class CommonDomainContainerConfiguration implements ContainerConfiguratio
      */
     public Map<String, String> getContainerNameMap() {
         if (containerNameMap == null) {
-            return new HashMap<String, String>();
+            return new HashMap<>();
         }
         return containerNameMap;
     }
@@ -115,7 +115,7 @@ public class CommonDomainContainerConfiguration implements ContainerConfiguratio
      */
     public Map<String, String> getContainerModeMap() {
         if (containerModeMap == null) {
-            return new HashMap<String, String>();
+            return new HashMap<>();
         }
         return containerModeMap;
     }
@@ -164,7 +164,7 @@ public class CommonDomainContainerConfiguration implements ContainerConfiguratio
     }
 
     private Map<String, String> convertToMap(String data) {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         String[] values = data.split(",");
 
         for (String value : values) {

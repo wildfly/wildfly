@@ -57,7 +57,7 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("management", "server", "to", "host", "controller");
 
     private final ExecutorService executorService;
-    private final InjectedValue<ServerInventory> serverInventory = new InjectedValue<ServerInventory>();
+    private final InjectedValue<ServerInventory> serverInventory = new InjectedValue<>();
     private final ServerToHostProtocolHandler.OperationExecutor operationExecutor;
     private final DomainController domainController;
     private final ExpressionResolver expressionResolver;

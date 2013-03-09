@@ -109,7 +109,7 @@ public class BaseStateParserTest {
 
         void addChild(ParsedTerm child) {
             if (children.isEmpty()) {
-                children = new ArrayList<ParsedTerm>();
+                children = new ArrayList<>();
             }
             children.add(child);
             valueAsString.append(child.valueAsString());

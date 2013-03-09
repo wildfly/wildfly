@@ -37,12 +37,12 @@ public class ConfigAdminStateTestCase {
     public void testPutConfiguration() throws Exception {
         ConfigAdminState state = new ConfigAdminState();
 
-        Dictionary<String, String> configA = new Hashtable<String, String>();
+        Dictionary<String, String> configA = new Hashtable<>();
         configA.put("foo", "bar");
         Assert.assertTrue(state.put("pidA", configA, false));
         Assert.assertEquals("bar", state.get("pidA").get("foo"));
 
-        Dictionary<String, String> configB = new Hashtable<String, String>();
+        Dictionary<String, String> configB = new Hashtable<>();
         configB.put("foo", "baz");
         Assert.assertTrue(state.put("pidA", configB, false));
         Assert.assertEquals("baz", state.get("pidA").get("foo"));
@@ -55,7 +55,7 @@ public class ConfigAdminStateTestCase {
     public void testRemoveConfiguration() throws Exception {
         ConfigAdminState state = new ConfigAdminState();
 
-        Dictionary<String, String> configA = new Hashtable<String, String>();
+        Dictionary<String, String> configA = new Hashtable<>();
         configA.put("foo", "bar");
         Assert.assertTrue(state.put("pidA", configA, false));
         Assert.assertEquals("bar", state.get("pidA").get("foo"));
@@ -72,12 +72,12 @@ public class ConfigAdminStateTestCase {
     public void testRollbackConfiguration() throws Exception {
         ConfigAdminState state = new ConfigAdminState();
 
-        Dictionary<String, String> configA = new Hashtable<String, String>();
+        Dictionary<String, String> configA = new Hashtable<>();
         configA.put("foo", "bar");
         Assert.assertTrue(state.put("pidA", configA, false));
         Assert.assertEquals("bar", state.get("pidA").get("foo"));
 
-        Dictionary<String, String> configB = new Hashtable<String, String>();
+        Dictionary<String, String> configB = new Hashtable<>();
         configB.put("foo", "baz");
         Assert.assertTrue(state.put("pidA", configB, false));
         Assert.assertEquals("baz", state.get("pidA").get("foo"));

@@ -146,7 +146,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         String stack = null ;
         String transportExecutor = null ;
 
-        Collection<ServiceController<?>> controllers = new LinkedList<ServiceController<?>>();
+        Collection<ServiceController<?>> controllers = new LinkedList<>();
 
         if (transportConfig != null) {
             ModelNode transport = containerModel.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
@@ -221,7 +221,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
     ServiceController<?> installChannelService(ServiceTarget target, String containerName, String cluster, String stack, ServiceVerificationHandler verificationHandler) {
 
-        final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
+        final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<>();
         return AsynchronousService.addService(target, ChannelService.getServiceName(containerName), new ChannelService(cluster, channelFactory))
                 .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelFactory)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
@@ -266,7 +266,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
         final ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName);
         final ServiceName configServiceName = EmbeddedCacheManagerConfigurationService.getServiceName(containerName);
-        final InjectedValue<EmbeddedCacheManagerConfiguration> config = new InjectedValue<EmbeddedCacheManagerConfiguration>();
+        final InjectedValue<EmbeddedCacheManagerConfiguration> config = new InjectedValue<>();
         final Service<EmbeddedCacheManager> service = new EmbeddedCacheManagerService(config);
         ServiceBuilder<EmbeddedCacheManager> builder = target.addService(containerServiceName, service)
                 .addDependency(configServiceName, EmbeddedCacheManagerConfiguration.class, config)
@@ -307,12 +307,12 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
     }
 
     static class EmbeddedCacheManagerDependencies implements EmbeddedCacheManagerConfigurationService.Dependencies {
-        private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
-        private final InjectedValue<Executor> listenerExecutor = new InjectedValue<Executor>();
-        private final InjectedValue<ScheduledExecutorService> evictionExecutor = new InjectedValue<ScheduledExecutorService>();
-        private final InjectedValue<ScheduledExecutorService> replicationQueueExecutor = new InjectedValue<ScheduledExecutorService>();
+        private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<>();
+        private final InjectedValue<Executor> listenerExecutor = new InjectedValue<>();
+        private final InjectedValue<ScheduledExecutorService> evictionExecutor = new InjectedValue<>();
+        private final InjectedValue<ScheduledExecutorService> replicationQueueExecutor = new InjectedValue<>();
         private final EmbeddedCacheManagerConfigurationService.TransportConfiguration transport;
-        private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<ModuleLoader>();
+        private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<>();
 
         EmbeddedCacheManagerDependencies(EmbeddedCacheManagerConfigurationService.TransportConfiguration transport) {
             this.transport = transport;
@@ -370,8 +370,8 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
     }
 
     static class Transport implements EmbeddedCacheManagerConfigurationService.TransportConfiguration {
-        private final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
-        private final InjectedValue<Executor> executor = new InjectedValue<Executor>();
+        private final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<>();
+        private final InjectedValue<Executor> executor = new InjectedValue<>();
 
         private Long lockTimeout;
 

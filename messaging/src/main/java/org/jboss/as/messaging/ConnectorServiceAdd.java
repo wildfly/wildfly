@@ -66,7 +66,7 @@ public class ConnectorServiceAdd extends HornetQReloadRequiredHandlers.AddStepHa
     static ConnectorServiceConfiguration createConnectorServiceConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
         final String factoryClass = CommonAttributes.FACTORY_CLASS.resolveModelAttribute(context, model).asString();
-        final Map<String, Object> params = new HashMap<String, Object>();
+        final Map<String, Object> params = new HashMap<>();
         if (model.hasDefined(CommonAttributes.PARAM)) {
             for (Property property : model.get(CommonAttributes.PARAM).asPropertyList()) {
                 String value = ConnectorServiceParamDefinition.VALUE.resolveModelAttribute(context, property.getValue()).asString();

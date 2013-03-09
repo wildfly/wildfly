@@ -83,7 +83,7 @@ public class EJBClientDescriptorTestCase {
             EJBManagementUtil.createLocalOutboundSocket(managementClient.getControllerClient(), "standard-sockets", outboundSocketName, socketBindingRef, Authentication.getCallbackHandler());
             logger.info("Created local outbound socket " + outboundSocketName);
 
-            final Map<String, String> connectionCreationOptions = new HashMap<String, String>();
+            final Map<String, String> connectionCreationOptions = new HashMap<>();
             logger.info("Creatng remote outbound connection " + outboundConnectionName);
             EJBManagementUtil.createRemoteOutboundConnection(managementClient.getControllerClient(), outboundConnectionName, outboundSocketName, connectionCreationOptions, Authentication.getCallbackHandler());
             logger.info("Created remote outbound connection " + outboundConnectionName);

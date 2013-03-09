@@ -54,7 +54,7 @@ public class StrictMaxUnitTestCase {
 
     public void test1() {
         StatelessObjectFactory<MockBean> factory = new MockFactory();
-        Pool<MockBean> pool = new StrictMaxPool<MockBean>(factory, 10, 1, TimeUnit.SECONDS);
+        Pool<MockBean> pool = new StrictMaxPool<>(factory, 10, 1, TimeUnit.SECONDS);
         pool.start();
 
         MockBean beans[] = new MockBean[10];
@@ -78,7 +78,7 @@ public class StrictMaxUnitTestCase {
      */
     public void testMultiThread() throws Exception {
         StatelessObjectFactory<MockBean> factory = new MockFactory();
-        final Pool<MockBean> pool = new StrictMaxPool<MockBean>(factory, 10, 60, TimeUnit.SECONDS);
+        final Pool<MockBean> pool = new StrictMaxPool<>(factory, 10, 60, TimeUnit.SECONDS);
         pool.start();
 
         final CountDownLatch in = new CountDownLatch(1);
@@ -125,7 +125,7 @@ public class StrictMaxUnitTestCase {
 
     public void testTooMany() {
         StatelessObjectFactory<MockBean> factory = new MockFactory();
-        Pool<MockBean> pool = new StrictMaxPool<MockBean>(factory, 10, 1, TimeUnit.SECONDS);
+        Pool<MockBean> pool = new StrictMaxPool<>(factory, 10, 1, TimeUnit.SECONDS);
         pool.start();
 
         MockBean beans[] = new MockBean[10];

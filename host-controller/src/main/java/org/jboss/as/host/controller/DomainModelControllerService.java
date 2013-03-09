@@ -153,9 +153,9 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final LocalHostControllerInfoImpl hostControllerInfo;
     private final HostFileRepository localFileRepository;
     private final RemoteFileRepository remoteFileRepository;
-    private final InjectedValue<ProcessControllerConnectionService> injectedProcessControllerConnection = new InjectedValue<ProcessControllerConnectionService>();
+    private final InjectedValue<ProcessControllerConnectionService> injectedProcessControllerConnection = new InjectedValue<>();
     private final ConcurrentMap<String, ProxyController> hostProxies;
-    private final ConcurrentMap<String, HostRegistration> hostRegistrationMap = new ConcurrentHashMap<String, HostRegistration>();
+    private final ConcurrentMap<String, HostRegistration> hostRegistrationMap = new ConcurrentHashMap<>();
     private final Map<String, ProxyController> serverProxies;
     private final PrepareStepHandler prepareStepHandler;
     private final BootstrapListener bootstrapListener;
@@ -182,8 +182,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                                             final ControlledProcessState processState,
                                                             final BootstrapListener bootstrapListener,
                                                             final PathManagerService pathManager){
-        final ConcurrentMap<String, ProxyController> hostProxies = new ConcurrentHashMap<String, ProxyController>();
-        final Map<String, ProxyController> serverProxies = new ConcurrentHashMap<String, ProxyController>();
+        final ConcurrentMap<String, ProxyController> hostProxies = new ConcurrentHashMap<>();
+        final Map<String, ProxyController> serverProxies = new ConcurrentHashMap<>();
         final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(processState, environment);
         final AbstractVaultReader vaultReader = service(AbstractVaultReader.class);
         ROOT_LOGGER.debugf("Using VaultReader %s", vaultReader);

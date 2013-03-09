@@ -120,7 +120,7 @@ public class LdapExtLoginModuleTestCase {
 
     private static final String QUERY_ROLES;
     static {
-        final List<NameValuePair> qparams = new ArrayList<NameValuePair>();
+        final List<NameValuePair> qparams = new ArrayList<>();
         for (final String role : ROLE_NAMES) {
             qparams.add(new BasicNameValuePair(RolePrintingServlet.PARAM_ROLE_NAME, role));
         }
@@ -440,7 +440,7 @@ public class LdapExtLoginModuleTestCase {
         }
 
         private Map<String, String> getCommonOptions() {
-            final Map<String, String> moduleOptions = new HashMap<String, String>();
+            final Map<String, String> moduleOptions = new HashMap<>();
             moduleOptions.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
             moduleOptions.put("java.naming.security.authentication", "simple");
             moduleOptions.put("bindDN", SECURITY_PRINCIPAL);

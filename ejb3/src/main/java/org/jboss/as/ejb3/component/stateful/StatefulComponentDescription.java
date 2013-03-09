@@ -79,14 +79,14 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     private Method afterBegin;
     private Method afterCompletion;
     private Method beforeCompletion;
-    private final Map<MethodIdentifier, StatefulRemoveMethod> removeMethods = new HashMap<MethodIdentifier, StatefulRemoveMethod>();
+    private final Map<MethodIdentifier, StatefulRemoveMethod> removeMethods = new HashMap<>();
     private StatefulTimeoutInfo statefulTimeout;
     private CacheInfo cache;
 
     /**
      * Map of init method, to the corresponding home create method on the home interface
      */
-    private Map<Method, String> initMethods = new HashMap<Method, String>(0);
+    private Map<Method, String> initMethods = new HashMap<>(0);
 
     public class StatefulRemoveMethod {
         private final MethodIdentifier methodIdentifier;

@@ -49,7 +49,7 @@ public class EJBClientContextSelectorChangingBean {
 
     private void callSetSelector(final EJBClientContext clientContext) {
         try {
-            EJBClientContext.setSelector(new ConstantContextSelector<EJBClientContext>(clientContext));
+            EJBClientContext.setSelector(new ConstantContextSelector<>(clientContext));
         } catch (SecurityException se) {
             // expected
             logger.info("Got the expected " + se + " while trying to call EJBClientContext.setSelector() on the server, from an EJB");

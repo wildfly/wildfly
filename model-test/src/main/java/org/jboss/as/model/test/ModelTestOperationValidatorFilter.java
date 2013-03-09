@@ -119,7 +119,7 @@ public class ModelTestOperationValidatorFilter implements Serializable {
     }
 
     public static class Builder {
-        List<OperationEntry> entries = new ArrayList<ModelTestOperationValidatorFilter.OperationEntry>();
+        List<OperationEntry> entries = new ArrayList<>();
 
         private Builder() {
         }

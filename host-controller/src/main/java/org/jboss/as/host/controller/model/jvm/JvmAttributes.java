@@ -133,7 +133,7 @@ public class JvmAttributes {
     public static final SimpleAttributeDefinition TYPE =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_TYPE, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setValidator(new EnumValidator<JvmType>(JvmType.class, true, true))
+            .setValidator(new EnumValidator<>(JvmType.class, true, true))
             .build();
 
     public static final SimpleAttributeDefinition HEAP_SIZE =

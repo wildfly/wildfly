@@ -49,11 +49,11 @@ public class CorbaNamingService implements Service<NamingContextExt> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jacorb", "naming-service");
 
-    private final InjectedValue<POA> rootPOAInjector = new InjectedValue<POA>();
+    private final InjectedValue<POA> rootPOAInjector = new InjectedValue<>();
 
-    private final InjectedValue<POA> namingPOAInjector = new InjectedValue<POA>();
+    private final InjectedValue<POA> namingPOAInjector = new InjectedValue<>();
 
-    private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
+    private final InjectedValue<ORB> orbInjector = new InjectedValue<>();
 
     private volatile NamingContextExt namingService;
 

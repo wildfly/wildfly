@@ -43,12 +43,12 @@ import org.jboss.msc.value.InjectedValue;
 public class ConnectionFactoryReferenceFactoryService implements Service<ManagedReferenceFactory>, ManagedReferenceFactory {
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("connection-factory").append(
             "reference-factory");
-    private final InjectedValue<Object> connectionFactoryValue = new InjectedValue<Object>();
+    private final InjectedValue<Object> connectionFactoryValue = new InjectedValue<>();
 
     private ManagedReference reference;
 
     public synchronized void start(StartContext startContext) throws StartException {
-        reference = new ValueManagedReference(new ImmediateValue<Object>(connectionFactoryValue.getValue()));
+        reference = new ValueManagedReference(new ImmediateValue<>(connectionFactoryValue.getValue()));
     }
 
     public synchronized void stop(StopContext stopContext) {

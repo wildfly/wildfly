@@ -97,7 +97,7 @@ public class RemoteNamingEjbTestCase {
             assertNotNull(remote);
             assertEquals("Echo: test", remote.echo("test"));
 
-            final Set<String> expected = new HashSet<String>();
+            final Set<String> expected = new HashSet<>();
             expected.add(Bean.class.getSimpleName() + "!" + Remote.class.getName());
             expected.add(Singleton.class.getSimpleName() + "!" + BinderRemote.class.getName());
             expected.add(StatefulBean.class.getSimpleName() + "!" + Remote.class.getName());

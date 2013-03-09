@@ -186,7 +186,7 @@ public class SessionTestUtil {
                 return null;
             }
         };
-        final RegistryService<String, Void> registry = new RegistryService<String, Void>(new ImmediateValue<Cache<Address, Map.Entry<String, Void>>>(jvmRouteCache), new ImmediateValue<Registry.RegistryEntryProvider<String, Void>>(provider));
+        final RegistryService<String, Void> registry = new RegistryService<>(new ImmediateValue<>(jvmRouteCache), new ImmediateValue<>(provider));
         DistributedCacheManagerFactory factory = new DistributedCacheManagerFactory();
         factory.getCacheInjector().inject(cacheContainer.getCache(warName));
         factory.getRegistryInjector().inject(registry);

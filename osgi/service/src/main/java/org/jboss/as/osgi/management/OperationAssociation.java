@@ -33,7 +33,7 @@ import org.jboss.dmr.ModelNode;
 public final class OperationAssociation  {
 
     public static OperationAssociation INSTANCE = new OperationAssociation();
-    private final ThreadLocal<ModelNode> association = new ThreadLocal<ModelNode>();
+    private final ThreadLocal<ModelNode> association = new ThreadLocal<>();
 
     private OperationAssociation() {
     }

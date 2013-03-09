@@ -33,25 +33,25 @@ public abstract class CommandLineArgumentUsage {
     private static String USAGE;
     private static final String NEW_LINE = String.format("%n");
 
-    private static List<List<String>> arguments = new ArrayList<List<String>>();
+    private static List<List<String>> arguments = new ArrayList<>();
 
     protected static void addArguments( String... args){
-        ArrayList<String> tempArguments = new ArrayList<String>();
+        ArrayList<String> tempArguments = new ArrayList<>();
         for( String arg : args ){
             tempArguments.add(arg);
         }
         arguments.add(tempArguments);
     }
 
-    protected static List<String> instructions = new ArrayList<String>();
+    protected static List<String> instructions = new ArrayList<>();
 
     private static String getCommand(int i){
         // Segment Instructions
-        final List<String> segmentedInstructions = new ArrayList<String>();
+        final List<String> segmentedInstructions = new ArrayList<>();
         segmentInstructions(instructions.get(i), segmentedInstructions);
 
         // Segment Arguments
-        final List<String> segmentedArguments = new ArrayList<String>();
+        final List<String> segmentedArguments = new ArrayList<>();
         segmentArguments(arguments.get(i), segmentedArguments, 0);
 
         // First line

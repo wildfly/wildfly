@@ -64,7 +64,7 @@ public final class SSOClusterManager implements org.jboss.as.clustering.web.sso.
     private volatile Cache<CredentialKey, SSOCredentials> credentialCache;
     private volatile Cache<SessionKey, Map<FullyQualifiedSessionId, Void>> sessionCache;
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<Cache> cacheRef = new InjectedValue<Cache>();
+    private final InjectedValue<Cache> cacheRef = new InjectedValue<>();
     private volatile String cacheContainerName = "web";
     private volatile String cacheName = "sso";
     private final CacheInvoker invoker = new BatchCacheInvoker();

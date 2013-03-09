@@ -106,7 +106,7 @@ public class SecurityHelper {
         final CompositeName n = name == null ? new CompositeName() : new CompositeName(name);
         final String sn = name == null ? "" : name;
 
-        ArrayList<JndiPermission> allPerms = new ArrayList<JndiPermission>(additionalRequiredPerms);
+        ArrayList<JndiPermission> allPerms = new ArrayList<>(additionalRequiredPerms);
         allPerms.add(new JndiPermission(sn, action));
         
         return runWithSecurityManager(new Callable<Object>() {
@@ -124,7 +124,7 @@ public class SecurityHelper {
         final CompositeName n = name == null ? new CompositeName() : new CompositeName(name);
         final String sn = name == null ? "" : name;
 
-        ArrayList<JndiPermission> allPerms = new ArrayList<JndiPermission>(additionalRequiredPerms);
+        ArrayList<JndiPermission> allPerms = new ArrayList<>(additionalRequiredPerms);
         allPerms.add(new JndiPermission(sn, not(action)));
         
         try {

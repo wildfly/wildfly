@@ -68,7 +68,7 @@ public class ScopedKernelServicesBootstrap {
                     legacyChildFirstClassLoader.loadClass(ModelVersion.class.getName()),
                     Boolean.TYPE);
 
-            List<Object> convertedBootOps = new ArrayList<Object>();
+            List<Object> convertedBootOps = new ArrayList<>();
             for (int i = 0 ; i < bootOperations.size() ; i++) {
                 ModelNode node = bootOperations.get(i);
                 if (node != null) {

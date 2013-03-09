@@ -79,7 +79,7 @@ public class DefaultResourceDescriptionProvider implements DescriptionProvider {
         final ModelNode children = result.get(CHILDREN).setEmptyObject();
 
         Set<PathElement> childAddresses = registration.getChildAddresses(PathAddress.EMPTY_ADDRESS);
-        Set<String> childTypes = new HashSet<String>();
+        Set<String> childTypes = new HashSet<>();
         for (PathElement childAddress : childAddresses) {
             String key = childAddress.getKey();
             if (childTypes.add(key)) {

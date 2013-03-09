@@ -56,9 +56,9 @@ public class ChildFirstClassLoaderBuilder {
 
 
     private final File cache;
-    private final List<URL> classloaderURLs = new ArrayList<URL>();
-    private final List<Pattern> parentFirst = new ArrayList<Pattern>();
-    private final List<Pattern> childFirst = new ArrayList<Pattern>();
+    private final List<URL> classloaderURLs = new ArrayList<>();
+    private final List<Pattern> parentFirst = new ArrayList<>();
+    private final List<Pattern> childFirst = new ArrayList<>();
 
 
     public ChildFirstClassLoaderBuilder() {

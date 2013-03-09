@@ -42,8 +42,8 @@ import java.util.Map;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 public class LegacyResourceDefinition implements ResourceDefinition {
-    private Map<String, AttributeAccess> attributes = new HashMap<String, AttributeAccess>();
-    private List<ResourceDefinition> children = new LinkedList<ResourceDefinition>();
+    private Map<String, AttributeAccess> attributes = new HashMap<>();
+    private List<ResourceDefinition> children = new LinkedList<>();
     private final PathAddress address;
     private final ModelNode description;
 

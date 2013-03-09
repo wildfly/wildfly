@@ -119,7 +119,7 @@ public class HostInfo implements TransformationTarget.IgnoredTransformationRegis
                 ? hostInfo.get(RemoteDomainConnectionService.DOMAIN_CONNECTION_ID).asLong() : null;
 
         if (hostInfo.hasDefined(IGNORED_RESOURCES)) {
-            ignoredResources = new HashMap<String, IgnoredType>();
+            ignoredResources = new HashMap<>();
             for (Property prop : hostInfo.require(IGNORED_RESOURCES).asPropertyList()) {
                 String type = prop.getName();
                 ModelNode model = prop.getValue();
@@ -209,7 +209,7 @@ public class HostInfo implements TransformationTarget.IgnoredTransformationRegis
         private IgnoredType(ModelNode names) {
             wildcard = false;
             if (names.isDefined()) {
-                this.names = new HashSet<String>();
+                this.names = new HashSet<>();
                 for (ModelNode name : names.asList()) {
                     this.names.add(name.asString());
                 }

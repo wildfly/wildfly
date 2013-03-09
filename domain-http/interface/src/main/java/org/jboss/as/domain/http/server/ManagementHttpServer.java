@@ -227,7 +227,7 @@ public class ManagementHttpServer {
     private static HttpHandler secureDomainAccess(final HttpHandler domainHandler, final SecurityRealm securityRealm) {
         if (securityRealm != null) {
             Set<AuthMechanism> mechanisms = securityRealm.getSupportedAuthenticationMechanisms();
-            List<AuthenticationMechanism> undertowMechanisms = new ArrayList<AuthenticationMechanism>(mechanisms.size());
+            List<AuthenticationMechanism> undertowMechanisms = new ArrayList<>(mechanisms.size());
             undertowMechanisms.add(wrap(new CachedAuthenticatedSessionMechanism()));
             for (AuthMechanism current : mechanisms) {
                 switch (current) {

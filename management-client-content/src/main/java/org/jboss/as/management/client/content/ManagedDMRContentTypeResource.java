@@ -60,7 +60,7 @@ public class ManagedDMRContentTypeResource implements Resource.ResourceEntry {
     private final PathElement pathElement;
     private final String childType;
     private final ContentRepository contentRepository;
-    private final Map<String, ManagedContent> content = new HashMap<String, ManagedContent>();
+    private final Map<String, ManagedContent> content = new HashMap<>();
     private final ModelNode model = new ModelNode();
     private final MessageDigest messageDigest;
 
@@ -164,7 +164,7 @@ public class ManagedDMRContentTypeResource implements Resource.ResourceEntry {
         if (!hasChildren(childType)) {
             return Collections.emptySet();
         } else {
-            Set<Resource.ResourceEntry> result = new HashSet<ResourceEntry>();
+            Set<Resource.ResourceEntry> result = new HashSet<>();
             synchronized (content) {
                 for (String name : content.keySet()) {
                     result.add(getChildEntry(name));
@@ -188,7 +188,7 @@ public class ManagedDMRContentTypeResource implements Resource.ResourceEntry {
     public Set<String> getChildrenNames(String childType) {
         if (hasChildren(childType)) {
             synchronized (content) {
-                return new HashSet<String>(content.keySet());
+                return new HashSet<>(content.keySet());
             }
         } else {
             return Collections.emptySet();

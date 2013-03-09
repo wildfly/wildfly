@@ -86,7 +86,7 @@ public class Log4jXmlTestCase {
 
 	@Test
 	public void logsTest() throws IOException {
-		List<String> lines = new ArrayList<String>();
+		List<String> lines = new ArrayList<>();
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new InputStreamReader(new FileInputStream(

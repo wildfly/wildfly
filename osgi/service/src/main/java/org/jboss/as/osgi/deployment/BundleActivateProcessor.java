@@ -82,8 +82,8 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
 
     static class BundleActivateService implements Service<XBundle> {
 
-        private final InjectedValue<XBundle> injectedBundle = new InjectedValue<XBundle>();
-        private final InjectedValue<Component> injectedComponent = new InjectedValue<Component>();
+        private final InjectedValue<XBundle> injectedBundle = new InjectedValue<>();
+        private final InjectedValue<Component> injectedComponent = new InjectedValue<>();
         private final DeploymentUnit depUnit;
 
         static ServiceController<XBundle> addService(ServiceTarget serviceTarget, DeploymentUnit depUnit, XBundle bundle) {

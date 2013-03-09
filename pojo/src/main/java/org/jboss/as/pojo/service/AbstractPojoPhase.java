@@ -169,7 +169,7 @@ public abstract class AbstractPojoPhase implements Service<Object> {
     }
 
     private List<Joinpoint> toJoinpoints(List<InstallConfig> installs) {
-        List<Joinpoint> joinpoints = new ArrayList<Joinpoint>();
+        List<Joinpoint> joinpoints = new ArrayList<>();
         for (InstallConfig ic : installs) {
             if (ic.getWhenRequired() == getLifecycleState())
                 joinpoints.add(createJoinpoint(ic));
@@ -185,7 +185,7 @@ public abstract class AbstractPojoPhase implements Service<Object> {
         ValueConfig[] parameters = config.getParameters();
         String[] types = Configurator.getTypes(parameters);
         String dependency = config.getDependency();
-        Value<Object> target = (dependency != null) ? config.getBean() : new ImmediateValue<Object>(getBean());
+        Value<Object> target = (dependency != null) ? config.getBean() : new ImmediateValue<>(getBean());
         BeanInfo beanInfo = (dependency != null) ? config.getBeanInfo().getValue() : getBeanInfo();
         Method method = beanInfo.findMethod(methodName, types);
         MethodJoinpoint joinpoint = new MethodJoinpoint(method);

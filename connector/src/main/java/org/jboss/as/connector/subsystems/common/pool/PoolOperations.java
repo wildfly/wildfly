@@ -156,7 +156,7 @@ public abstract class PoolOperations implements OperationStepHandler {
 
     private static class DsPoolMatcher implements PoolMatcher {
         public List<Pool> match(String jndiName, ManagementRepository repository) {
-            ArrayList<org.jboss.jca.core.api.connectionmanager.pool.Pool> result = new ArrayList<Pool>(repository
+            ArrayList<org.jboss.jca.core.api.connectionmanager.pool.Pool> result = new ArrayList<>(repository
                     .getDataSources().size());
             if (repository.getDataSources() != null) {
                 for (DataSource ds : repository.getDataSources()) {
@@ -173,7 +173,7 @@ public abstract class PoolOperations implements OperationStepHandler {
 
     private static class RaPoolMatcher implements PoolMatcher {
         public List<Pool> match(String jndiName, ManagementRepository repository) {
-            ArrayList<Pool> result = new ArrayList<Pool>(repository.getConnectors().size());
+            ArrayList<Pool> result = new ArrayList<>(repository.getConnectors().size());
             if (repository.getConnectors() != null) {
                 for (Connector c : repository.getConnectors()) {
                     if (c.getConnectionFactories() == null || c.getConnectionFactories().size() == 0)

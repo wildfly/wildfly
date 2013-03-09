@@ -118,12 +118,12 @@ import org.jboss.threads.JBossThreadFactory;
  */
 public final class ServerService extends AbstractControllerService {
 
-    private final InjectedValue<DeploymentMountProvider> injectedDeploymentRepository = new InjectedValue<DeploymentMountProvider>();
-    private final InjectedValue<ContentRepository> injectedContentRepository = new InjectedValue<ContentRepository>();
-    private final InjectedValue<ServiceModuleLoader> injectedModuleLoader = new InjectedValue<ServiceModuleLoader>();
+    private final InjectedValue<DeploymentMountProvider> injectedDeploymentRepository = new InjectedValue<>();
+    private final InjectedValue<ContentRepository> injectedContentRepository = new InjectedValue<>();
+    private final InjectedValue<ServiceModuleLoader> injectedModuleLoader = new InjectedValue<>();
 
-    private final InjectedValue<ExternalModuleService> injectedExternalModuleService = new InjectedValue<ExternalModuleService>();
-    private final InjectedValue<PathManager> injectedPathManagerService = new InjectedValue<PathManager>();
+    private final InjectedValue<ExternalModuleService> injectedExternalModuleService = new InjectedValue<>();
+    private final InjectedValue<PathManager> injectedPathManagerService = new InjectedValue<>();
 
     private final Bootstrap.Configuration configuration;
     private final BootstrapListener bootstrapListener;
@@ -325,7 +325,7 @@ public final class ServerService extends AbstractControllerService {
     }
 
     protected boolean boot(List<ModelNode> bootOperations, boolean rollbackOnRuntimeFailure) throws ConfigurationPersistenceException {
-        final List<ModelNode> operations = new ArrayList<ModelNode>(bootOperations);
+        final List<ModelNode> operations = new ArrayList<>(bootOperations);
         operations.add(DeployerChainAddHandler.OPERATION);
         return super.boot(operations, rollbackOnRuntimeFailure);
     }

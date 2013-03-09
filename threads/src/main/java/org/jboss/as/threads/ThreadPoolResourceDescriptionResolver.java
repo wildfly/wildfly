@@ -42,7 +42,7 @@ class ThreadPoolResourceDescriptionResolver extends StandardResourceDescriptionR
     private static final Set<String> COMMON_ATTRIBUTE_NAMES;
 
     static {
-        COMMON_ATTRIBUTE_NAMES = new HashSet<String>(Arrays.asList(PoolAttributeDefinitions.NAME.getName(),
+        COMMON_ATTRIBUTE_NAMES = new HashSet<>(Arrays.asList(PoolAttributeDefinitions.NAME.getName(),
                 PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT.getName(), PoolAttributeDefinitions.CORE_THREADS.getName(),
                 PoolAttributeDefinitions.HANDOFF_EXECUTOR.getName(), PoolAttributeDefinitions.KEEPALIVE_TIME.getName(),
                 PoolAttributeDefinitions.MAX_THREADS.getName(), PoolAttributeDefinitions.QUEUE_LENGTH.getName(),

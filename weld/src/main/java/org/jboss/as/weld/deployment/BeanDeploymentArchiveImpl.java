@@ -64,15 +64,15 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     private final Set<EjbDescriptor<?>> ejbDescriptors;
 
     public BeanDeploymentArchiveImpl(Set<String> beanClasses, BeansXml beansXml, Module module, String id) {
-        this.beanClasses = new ConcurrentSkipListSet<String>(beanClasses);
-        this.beanDeploymentArchives = new CopyOnWriteArraySet<BeanDeploymentArchive>();
+        this.beanClasses = new ConcurrentSkipListSet<>(beanClasses);
+        this.beanDeploymentArchives = new CopyOnWriteArraySet<>();
         this.beansXml = beansXml;
         this.id = id;
         this.serviceRegistry = new SimpleServiceRegistry();
         this.resourceLoader = new WeldModuleResourceLoader(module);
         this.serviceRegistry.add(ResourceLoader.class, resourceLoader);
         this.module = module;
-        this.ejbDescriptors = new HashSet<EjbDescriptor<?>>();
+        this.ejbDescriptors = new HashSet<>();
     }
 
     /**
@@ -109,7 +109,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
      */
     @Override
     public Collection<String> getBeanClasses() {
-        return Collections.unmodifiableSet(new HashSet<String>(beanClasses));
+        return Collections.unmodifiableSet(new HashSet<>(beanClasses));
     }
 
     /**
@@ -117,7 +117,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
      */
     @Override
     public Collection<BeanDeploymentArchive> getBeanDeploymentArchives() {
-        return Collections.unmodifiableCollection(new HashSet<BeanDeploymentArchive>(beanDeploymentArchives));
+        return Collections.unmodifiableCollection(new HashSet<>(beanDeploymentArchives));
     }
 
     @Override

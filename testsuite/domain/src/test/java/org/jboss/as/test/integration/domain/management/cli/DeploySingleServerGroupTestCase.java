@@ -127,7 +127,7 @@ public class DeploySingleServerGroupTestCase extends AbstractCliTestBase {
     }
     private void checkURL(String path, String content, String serverGroup, boolean shouldFail) throws Exception {
 
-        ArrayList<String> groupServers  = new ArrayList<String>();
+        ArrayList<String> groupServers  = new ArrayList<>();
         for (String server : CLITestSuite.serverGroups.get(serverGroup)) groupServers.add(server);
 
         for (String host : CLITestSuite.hostAddresses.keySet()) {

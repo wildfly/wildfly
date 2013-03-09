@@ -91,7 +91,7 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
         try {
             xmlStream = serviceXmlFile.openStream();
             final XMLStreamReader reader = inputFactory.createXMLStreamReader(xmlStream);
-            final ParseResult<JBossServiceXmlDescriptor> result = new ParseResult<JBossServiceXmlDescriptor>();
+            final ParseResult<JBossServiceXmlDescriptor> result = new ParseResult<>();
             xmlMapper.parseDocument(result, reader);
             final JBossServiceXmlDescriptor xmlDescriptor = result.getResult();
             if(xmlDescriptor != null)

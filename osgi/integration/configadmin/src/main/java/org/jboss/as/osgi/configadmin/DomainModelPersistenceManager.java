@@ -89,7 +89,7 @@ public class DomainModelPersistenceManager implements PersistenceManager, Bundle
 
     @Override
     public Enumeration<Dictionary<String, String>> getDictionaries() throws IOException {
-        Vector<Dictionary<String, String>> result = new Vector<Dictionary<String, String>>();
+        Vector<Dictionary<String, String>> result = new Vector<>();
         for (String pid : configAdminService.getConfigurations()) {
             Dictionary<String, String> props = configAdminService.getConfiguration(pid);
             result.add(addStandardProperties(pid, props));
@@ -128,7 +128,7 @@ public class DomainModelPersistenceManager implements PersistenceManager, Bundle
     }
 
     private Dictionary<String, String> removeUnsupportedProperties(Dictionary<String, Object> source) {
-        Dictionary<String, String> copy = new Hashtable<String, String>();
+        Dictionary<String, String> copy = new Hashtable<>();
         Enumeration<String> keys = source.keys();
         while (keys.hasMoreElements()) {
             String key = keys.nextElement();
@@ -148,7 +148,7 @@ public class DomainModelPersistenceManager implements PersistenceManager, Bundle
     }
 
     private Dictionary<String, String> getModifiableDictionary(Dictionary<String, String> source) {
-        Dictionary<String, String> result = new Hashtable<String, String>();
+        Dictionary<String, String> result = new Hashtable<>();
         if (source != null) {
             Enumeration<String> keys = source.keys();
             while (keys.hasMoreElements()) {

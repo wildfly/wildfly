@@ -120,7 +120,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
 
         final BinderService binderService = new BinderService(name, bindValue);
-        binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(bindValue)));
+        binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<>(bindValue)));
 
         ServiceBuilder<ManagedReferenceFactory> builder = serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
@@ -179,7 +179,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
             public ManagedReference getReference() {
                 try {
                     final Object value = objectFactoryClassInstance.getObjectInstance(name, null, null, environment);
-                    return new ValueManagedReference(new ImmediateValue<Object>(value));
+                    return new ValueManagedReference(new ImmediateValue<>(value));
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -227,7 +227,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
     private Hashtable<String, String> getObjectFactoryEnvironment(OperationContext context, ModelNode model) throws OperationFailedException {
         Hashtable<String, String> environment;
         Map<String, String> resolvedModelAttribute = NamingBindingResourceDefinition.OBJECT_FACTORY_ENV.unwrap(context, model);
-        environment = new Hashtable<String, String>(resolvedModelAttribute);
+        environment = new Hashtable<>(resolvedModelAttribute);
         return environment;
     }
 
@@ -244,7 +244,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
             public ManagedReference getReference() {
                 try {
                     final Object value = new InitialContext().lookup(lookup);
-                    return new ValueManagedReference(new ImmediateValue<Object>(value));
+                    return new ValueManagedReference(new ImmediateValue<>(value));
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

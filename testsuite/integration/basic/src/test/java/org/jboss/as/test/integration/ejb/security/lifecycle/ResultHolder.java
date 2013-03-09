@@ -30,7 +30,7 @@ import java.util.Map;
  */
 public class ResultHolder {
 
-    private static final Map<String, String> results = new HashMap<String, String>();
+    private static final Map<String, String> results = new HashMap<>();
 
     static void reset() {
         results.clear();

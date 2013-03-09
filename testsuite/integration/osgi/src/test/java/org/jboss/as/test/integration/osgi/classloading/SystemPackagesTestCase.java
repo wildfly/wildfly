@@ -75,7 +75,7 @@ public class SystemPackagesTestCase {
         XBundleRevision revision = sysbundle.getBundleRevision();
         ModuleClassLoader moduleClassLoader = revision.getModuleClassLoader();
         ClassLoaderWrapper classLoader = new ClassLoaderWrapper(moduleClassLoader);
-        List<String> inaccessible = new ArrayList<String>();
+        List<String> inaccessible = new ArrayList<>();
         for (BundleCapability cap : revision.getDeclaredCapabilities(PackageNamespace.PACKAGE_NAMESPACE)) {
             XPackageCapability pcap = ((XCapability) cap).adapt(XPackageCapability.class);
             Package definedPackage = classLoader.getPackage(pcap.getPackageName());

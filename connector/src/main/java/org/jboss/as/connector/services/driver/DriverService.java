@@ -45,7 +45,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class DriverService implements Service<Driver> {
 
-    private final InjectedValue<DriverRegistry> injectedDriverRegistry = new InjectedValue<DriverRegistry>();
+    private final InjectedValue<DriverRegistry> injectedDriverRegistry = new InjectedValue<>();
 
     private final InstalledDriver driverMetaData;
     private final Driver driver;

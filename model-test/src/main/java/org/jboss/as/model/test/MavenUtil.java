@@ -152,7 +152,7 @@ class MavenUtil {
             throw new RuntimeException(e);
         }
 
-        List<URL> urls = new ArrayList<URL>();
+        List<URL> urls = new ArrayList<>();
         urls.add(artifactToUrl(artifactResult.getArtifact()));
 
         CollectRequest collectRequest = new CollectRequest();
@@ -334,7 +334,7 @@ class MavenUtil {
 
         private PrintStream out;
 
-        private Map<TransferResource, Long> downloads = new ConcurrentHashMap<TransferResource, Long>();
+        private Map<TransferResource, Long> downloads = new ConcurrentHashMap<>();
 
         private int lastLength;
 

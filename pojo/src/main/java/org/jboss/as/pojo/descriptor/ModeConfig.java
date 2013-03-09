@@ -40,7 +40,7 @@ public enum ModeConfig {
     ON_DEMAND("on demand", ServiceController.Mode.ON_DEMAND),
     NEVER("never", ServiceController.Mode.NEVER);
 
-    private static final Map<String, ModeConfig> MAP = new HashMap<String, ModeConfig>();
+    private static final Map<String, ModeConfig> MAP = new HashMap<>();
 
     static {
         for(ModeConfig mode : values()) {

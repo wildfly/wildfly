@@ -164,7 +164,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         if (value != null)
             return value.asClass().name().toString();
         final ClassInfo beanClass = (ClassInfo) messageBeanAnnotation.target();
-        final Set<DotName> interfaces = new HashSet<DotName>(getPotentialViewInterfaces(beanClass));
+        final Set<DotName> interfaces = new HashSet<>(getPotentialViewInterfaces(beanClass));
         // check super class(es) of the bean
         DotName superClassDotName = beanClass.superName();
         while (interfaces.isEmpty() && superClassDotName != null && !superClassDotName.toString().equals(Object.class.getName())) {

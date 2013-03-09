@@ -70,7 +70,7 @@ public class LockingResource extends SimpleResourceDefinition {
                     .setXmlName(Attribute.ISOLATION.getLocalName())
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new EnumValidator<IsolationLevel>(IsolationLevel.class, true, false))
+                    .setValidator(new EnumValidator<>(IsolationLevel.class, true, false))
                     .setDefaultValue(new ModelNode().set(IsolationLevel.REPEATABLE_READ.name()))
                     .build();
 

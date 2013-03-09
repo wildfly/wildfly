@@ -36,8 +36,8 @@ import org.apache.catalina.connector.Response;
  * @version $Revision: $
  */
 public class ConcurrentRequestHandler implements RequestHandler {
-    private final ThreadLocal<RequestHandler> threadHandler = new ThreadLocal<RequestHandler>();
-    private final Set<RequestHandler> handlers = new HashSet<RequestHandler>();
+    private final ThreadLocal<RequestHandler> threadHandler = new ThreadLocal<>();
+    private final Set<RequestHandler> handlers = new HashSet<>();
 
     public void registerHandler(RequestHandler handler) {
         threadHandler.set(handler);

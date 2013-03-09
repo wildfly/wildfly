@@ -49,8 +49,8 @@ public class PropertyTestHelper {
 
     @Before
     public void setUp() throws IOException {
-        ArrayList<File> usersPropertyFileList = new ArrayList<File>();
-        ArrayList<File> rolesPropertyFileList = new ArrayList<File>();
+        ArrayList<File> usersPropertyFileList = new ArrayList<>();
+        ArrayList<File> rolesPropertyFileList = new ArrayList<>();
 
         File usersPropertyFile = File.createTempFile("UpdateUser", null);
         usersPropertyFile.deleteOnExit();

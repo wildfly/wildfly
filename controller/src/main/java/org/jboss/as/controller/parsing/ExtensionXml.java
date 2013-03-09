@@ -96,7 +96,7 @@ public class ExtensionXml {
 
         requireNoAttributes(reader);
 
-        final Set<String> found = new HashSet<String>();
+        final Set<String> found = new HashSet<>();
 
         final XMLMapper xmlMapper = reader.getXMLMapper();
 

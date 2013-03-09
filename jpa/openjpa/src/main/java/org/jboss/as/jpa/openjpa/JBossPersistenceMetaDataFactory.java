@@ -48,9 +48,9 @@ import org.jboss.jandex.Index;
  */
 public class JBossPersistenceMetaDataFactory extends PersistenceMetaDataFactory {
 
-    private static final ThreadLocal<PersistenceUnitMetadata> PERSISTENCE_UNIT_METADATA = new ThreadLocal<PersistenceUnitMetadata>();
+    private static final ThreadLocal<PersistenceUnitMetadata> PERSISTENCE_UNIT_METADATA = new ThreadLocal<>();
     /** Cache of the type names, used when restarting the persistence unit service */
-    private static final Map<PersistenceUnitMetadata, Set<String>> CACHED_TYPENAMES = new HashMap<PersistenceUnitMetadata, Set<String>>();
+    private static final Map<PersistenceUnitMetadata, Set<String>> CACHED_TYPENAMES = new HashMap<>();
 
     @Override
     protected Set<String> parsePersistentTypeNames(ClassLoader loader) {
@@ -84,7 +84,7 @@ public class JBossPersistenceMetaDataFactory extends PersistenceMetaDataFactory 
             }
         }
 
-        Set<String> persistenceTypeNames = new HashSet<String>();
+        Set<String> persistenceTypeNames = new HashSet<>();
 
         for (Map.Entry<URL, Index> entry : pu.getAnnotationIndex().entrySet()) {
             List<AnnotationInstance> instances = entry.getValue().getAnnotations(DotName.createSimple(Entity.class.getName()));

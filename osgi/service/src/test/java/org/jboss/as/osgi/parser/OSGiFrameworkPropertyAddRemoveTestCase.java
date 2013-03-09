@@ -41,7 +41,7 @@ public class OSGiFrameworkPropertyAddRemoveTestCase extends ResourceAddRemoveTes
     @Test
     public void testOSGiPropertyAddRemove() throws Exception {
         SubsystemState stateService = new SubsystemState();
-        List<OperationStepHandler> addedSteps = new ArrayList<OperationStepHandler>();
+        List<OperationStepHandler> addedSteps = new ArrayList<>();
         OperationContext context = mockOperationContext(stateService, addedSteps, OperationContext.ResultAction.KEEP);
 
         ModelNode op = getAddOperation("PropertyX", "hi");
@@ -69,7 +69,7 @@ public class OSGiFrameworkPropertyAddRemoveTestCase extends ResourceAddRemoveTes
     @Test
     public void testOSGiPropertyAddRollback() throws Exception {
         SubsystemState stateService = new SubsystemState();
-        List<OperationStepHandler> addedSteps = new ArrayList<OperationStepHandler>();
+        List<OperationStepHandler> addedSteps = new ArrayList<>();
         OperationContext context = mockOperationContext(stateService, addedSteps, OperationContext.ResultAction.ROLLBACK);
 
         ModelNode op = getAddOperation("PropertyX", "hi");

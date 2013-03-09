@@ -58,7 +58,7 @@ public class ConfigAdminManagement {
         ModelNode op = createOpNode("subsystem=configadmin/configuration=" + pid, ModelDescriptionConstants.READ_RESOURCE_OPERATION);
         ModelNode result = executeOperation(client, op, true);
         ModelNode entries = result.get("entries");
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         for (String key : entries.keys()) {
             map.put(key, entries.get(key).asString());
         }
@@ -91,7 +91,7 @@ public class ConfigAdminManagement {
         ModelNode op = createOpNode("subsystem=configadmin", ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION);
         op.get(ModelDescriptionConstants.CHILD_TYPE).set(type);
         ModelNode result = executeOperation(client, op, true);
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         for (ModelNode n : result.asList()) {
             names.add(n.asString());
         }

@@ -60,10 +60,10 @@ public class RegisterManagementEJBService implements Service<Void>{
 
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(ServiceName.of(JSR77ManagementExtension.SUBSYSTEM_NAME, "ejb"));
 
-    final InjectedValue<DeploymentRepository> deploymentRepositoryValue = new InjectedValue<DeploymentRepository>();
-    final InjectedValue<TCCLEJBClientContextSelectorService> ejbClientContextSelectorValue = new InjectedValue<TCCLEJBClientContextSelectorService>();
-    final InjectedValue<EJBClientContext> ejbClientContextValue = new InjectedValue<EJBClientContext>();
-    final InjectedValue<MBeanServer> mbeanServerValue = new InjectedValue<MBeanServer>();
+    final InjectedValue<DeploymentRepository> deploymentRepositoryValue = new InjectedValue<>();
+    final InjectedValue<TCCLEJBClientContextSelectorService> ejbClientContextSelectorValue = new InjectedValue<>();
+    final InjectedValue<EJBClientContext> ejbClientContextValue = new InjectedValue<>();
+    final InjectedValue<MBeanServer> mbeanServerValue = new InjectedValue<>();
     private volatile DeploymentModuleIdentifier moduleIdentifier;
 
     @Override
@@ -77,13 +77,13 @@ public class RegisterManagementEJBService implements Service<Void>{
 
         moduleIdentifier = new DeploymentModuleIdentifier(APP_NAME, MODULE_NAME, DISTINCT_NAME);
 
-        final InjectedValue<ComponentView> injectedHomeView = new InjectedValue<ComponentView>();
+        final InjectedValue<ComponentView> injectedHomeView = new InjectedValue<>();
         injectedHomeView.setValue(new ImmediateValue<ComponentView>(new ManagementHomeEjbComponentView()));
 
-        final InjectedValue<ComponentView> injectedRemoteView = new InjectedValue<ComponentView>();
+        final InjectedValue<ComponentView> injectedRemoteView = new InjectedValue<>();
         injectedRemoteView.setValue(new ImmediateValue<ComponentView>(new ManagementRemoteEjbComponentView(mbeanServerValue.getValue())));
 
-        Map<String, InjectedValue<ComponentView>> views = new HashMap<String, InjectedValue<ComponentView>>();
+        Map<String, InjectedValue<ComponentView>> views = new HashMap<>();
         views.put(ManagementHome.class.getName(), injectedHomeView);
         views.put(Management.class.getName(), injectedRemoteView);
 

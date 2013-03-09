@@ -40,8 +40,8 @@ import org.apache.catalina.Manager;
  * @author Brian Stansberry
  */
 public class SessionInvalidationTracker {
-    private static final ThreadLocal<Map<Manager, String>> invalidatedSessions = new ThreadLocal<Map<Manager, String>>();
-    private static final ThreadLocal<Boolean> suspended = new ThreadLocal<Boolean>();
+    private static final ThreadLocal<Map<Manager, String>> invalidatedSessions = new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> suspended = new ThreadLocal<>();
 
     public static void suspend() {
         suspended.set(Boolean.TRUE);
@@ -55,7 +55,7 @@ public class SessionInvalidationTracker {
         if (Boolean.TRUE != suspended.get()) {
             Map<Manager, String> map = invalidatedSessions.get();
             if (map == null) {
-                map = new WeakHashMap<Manager, String>(2);
+                map = new WeakHashMap<>(2);
                 invalidatedSessions.set(map);
             }
             map.put(manager, id);

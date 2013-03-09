@@ -38,7 +38,7 @@ import org.jboss.as.controller.client.helpers.domain.ServerUpdateResult;
 class ServerDeploymentPlanResultImpl implements ServerDeploymentPlanResult {
 
     private final String serverName;
-    private final Map<UUID, ServerUpdateResult> serverResults = new HashMap<UUID, ServerUpdateResult>();
+    private final Map<UUID, ServerUpdateResult> serverResults = new HashMap<>();
 
     ServerDeploymentPlanResultImpl(final String serverName) {
         assert serverName != null : "serverName is null";

@@ -41,8 +41,8 @@ public abstract class OutboundSocketBindingService implements Service<OutboundSo
 
     protected final String outboundSocketName;
     protected final Integer sourcePort;
-    protected final InjectedValue<SocketBindingManager> socketBindingManagerInjectedValue = new InjectedValue<SocketBindingManager>();
-    protected final InjectedValue<NetworkInterfaceBinding> sourceInterfaceInjectedValue = new InjectedValue<NetworkInterfaceBinding>();
+    protected final InjectedValue<SocketBindingManager> socketBindingManagerInjectedValue = new InjectedValue<>();
+    protected final InjectedValue<NetworkInterfaceBinding> sourceInterfaceInjectedValue = new InjectedValue<>();
     protected final boolean fixedSourcePort;
 
     private volatile OutboundSocketBinding outboundSocketBinding;

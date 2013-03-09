@@ -97,7 +97,7 @@ public class DeploymentPlanImpl implements DeploymentPlan, Serializable {
 
     List<DeploymentActionImpl> getDeploymentActionImpls() {
         List<DeploymentAction> actions = delegate.getDeploymentActions();
-        List<DeploymentActionImpl> cast = new ArrayList<DeploymentActionImpl>(actions.size());
+        List<DeploymentActionImpl> cast = new ArrayList<>(actions.size());
         for (DeploymentAction action : actions) {
             cast.add(DeploymentActionImpl.class.cast(action));
         }

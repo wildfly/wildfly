@@ -70,7 +70,7 @@ public class ReplicationStatistics implements Serializable {
     }
 
     public ReplicationStatistics() {
-        ctxStats = new ConcurrentHashMap<String, TimeStatistic>(256, 0.75f, 32);
+        ctxStats = new ConcurrentHashMap<>(256, 0.75f, 32);
     }
 
     public void updatePassivationStats(String ctx, long elapsed) {

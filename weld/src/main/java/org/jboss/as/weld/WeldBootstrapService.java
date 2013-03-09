@@ -62,9 +62,9 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
     private final Map<String, BeanDeploymentArchive> beanDeploymentArchives;
     private final String deploymentName;
 
-    private final InjectedValue<WeldResourceInjectionServices> resourceInjectionServices = new InjectedValue<WeldResourceInjectionServices>();
-    private final InjectedValue<WeldSecurityServices> securityServices = new InjectedValue<WeldSecurityServices>();
-    private final InjectedValue<WeldTransactionServices> weldTransactionServices = new InjectedValue<WeldTransactionServices>();
+    private final InjectedValue<WeldResourceInjectionServices> resourceInjectionServices = new InjectedValue<>();
+    private final InjectedValue<WeldSecurityServices> securityServices = new InjectedValue<>();
+    private final InjectedValue<WeldTransactionServices> weldTransactionServices = new InjectedValue<>();
 
     private volatile boolean started;
 
@@ -73,7 +73,7 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
         this.environment = environment;
         this.deploymentName = deploymentName;
         this.bootstrap = new WeldBootstrap();
-        Map<String, BeanDeploymentArchive> bdas = new HashMap<String, BeanDeploymentArchive>();
+        Map<String, BeanDeploymentArchive> bdas = new HashMap<>();
         for (BeanDeploymentArchive archive : deployment.getBeanDeploymentArchives()) {
             bdas.put(archive.getId(), archive);
         }
@@ -175,7 +175,7 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
      * get all beans deployment archives in the deployment
      */
     public Set<BeanDeploymentArchive> getBeanDeploymentArchives() {
-        return new HashSet<BeanDeploymentArchive>(beanDeploymentArchives.values());
+        return new HashSet<>(beanDeploymentArchives.values());
     }
 
     public boolean isStarted() {

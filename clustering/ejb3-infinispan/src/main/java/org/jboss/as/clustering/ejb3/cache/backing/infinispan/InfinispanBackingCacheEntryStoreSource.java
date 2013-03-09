@@ -82,11 +82,11 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
     private final MarshallerFactory factory = Marshalling.getMarshallerFactory("river", MarshallerFactory.class.getClassLoader());
     private CacheInvoker invoker = new RetryingCacheInvoker(new BatchCacheInvoker(), 0, 0);
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<Cache> groupCache = new InjectedValue<Cache>();
-    private final InjectedValue<SharedLocalYieldingClusterLockManager> lockManager = new InjectedValue<SharedLocalYieldingClusterLockManager>();
+    private final InjectedValue<Cache> groupCache = new InjectedValue<>();
+    private final InjectedValue<SharedLocalYieldingClusterLockManager> lockManager = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<Registry> registry = new InjectedValue<Registry>();
-    private final InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<KeyAffinityServiceFactory>();
+    private final InjectedValue<Registry> registry = new InjectedValue<>();
+    private final InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<>();
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
@@ -98,15 +98,15 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
         builder.addDependency(ClusteredBackingCacheEntryStoreSourceService.getClientMappingRegistryServiceName(this.cacheContainerName), Registry.class, this.registry);
         builder.addDependency(KeyAffinityServiceFactoryService.getServiceName(this.cacheContainerName), KeyAffinityServiceFactory.class, this.affinityFactory);
 
-        InjectedValue<Cache> cache = new InjectedValue<Cache>();
-        InjectedValue<Registry.RegistryEntryProvider> provider = new InjectedValue<Registry.RegistryEntryProvider>();
+        InjectedValue<Cache> cache = new InjectedValue<>();
+        InjectedValue<Registry.RegistryEntryProvider> provider = new InjectedValue<>();
         AsynchronousService.addService(target, ClusteredBackingCacheEntryStoreSourceService.getClientMappingRegistryServiceName(this.cacheContainerName), new RegistryService(cache, provider))
                 .addDependency(EJBRemotingConnectorClientMappingsEntryProviderService.SERVICE_NAME, Registry.RegistryEntryProvider.class, provider)
                 .addDependency(CacheService.getServiceName(this.cacheContainerName, this.clientMappingsCacheName), Cache.class, cache)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
-        InjectedValue<EmbeddedCacheManager> container = new InjectedValue<EmbeddedCacheManager>();
+        InjectedValue<EmbeddedCacheManager> container = new InjectedValue<>();
         target.addService(ClusteredBackingCacheEntryStoreSourceService.getCacheContainerClusterNameServiceName(this.cacheContainerName), new ClusterNameService(container))
                 .addDependency(EmbeddedCacheManagerService.getServiceName(this.cacheContainerName), EmbeddedCacheManager.class, container)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
@@ -122,7 +122,7 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
         MarshalledValueFactory<MarshallingContext> valueFactory = new SimpleMarshalledValueFactory(context);
         @SuppressWarnings("unchecked")
         Registry<String, ?> registry = this.registry.getValue();
-        return new InfinispanBackingCacheEntryStore<G, Cacheable<G>, E, MarshallingContext>(cache, this.invoker, identifierFactory, this.affinityFactory.getValue(), null, timeout, this, false, valueFactory, context, null, null, registry);
+        return new InfinispanBackingCacheEntryStore<>(cache, this.invoker, identifierFactory, this.affinityFactory.getValue(), null, timeout, this, false, valueFactory, context, null, null, registry);
     }
 
     @Override
@@ -145,12 +145,12 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
         LockKeyFactory<K> lockKeyFactory = new LockKeyFactory<K>() {
             @Override
             public Serializable createLockKey(K key) {
-                return new AbstractMap.SimpleImmutableEntry<K, String>(key, beanName);
+                return new AbstractMap.SimpleImmutableEntry<>(key, beanName);
             }
         };
         @SuppressWarnings("unchecked")
         Registry<String, ?> registry = this.registry.getValue();
-        return new InfinispanBackingCacheEntryStore<K, V, E, MarshallingContext>(cache, this.invoker, identifierFactory, this.affinityFactory.getValue(), this.passivateEventsOnReplicate ? passivationManager : null, timeout, this, true, valueFactory, context, this.lockManager.getValue(), lockKeyFactory, registry);
+        return new InfinispanBackingCacheEntryStore<>(cache, this.invoker, identifierFactory, this.affinityFactory.getValue(), this.passivateEventsOnReplicate ? passivationManager : null, timeout, this, true, valueFactory, context, this.lockManager.getValue(), lockKeyFactory, registry);
     }
 
     public void setKeyAffinityServiceFactory(KeyAffinityServiceFactory affinityFactory) {

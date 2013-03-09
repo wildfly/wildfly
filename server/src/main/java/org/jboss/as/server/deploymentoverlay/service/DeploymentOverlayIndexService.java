@@ -40,7 +40,7 @@ import org.jboss.msc.service.StopContext;
  */
 public class DeploymentOverlayIndexService implements Service<DeploymentOverlayIndexService> {
 
-    private final List<DeploymentOverlayLinkService> services = new ArrayList<DeploymentOverlayLinkService>();
+    private final List<DeploymentOverlayLinkService> services = new ArrayList<>();
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deploymentOverlayIndexService");
 
@@ -70,7 +70,7 @@ public class DeploymentOverlayIndexService implements Service<DeploymentOverlayI
      */
     public synchronized List<DeploymentOverlayService> getOverrides(final String deploymentName) {
 
-        final List<DeploymentOverlayLinkService> matched = new ArrayList<DeploymentOverlayLinkService>();
+        final List<DeploymentOverlayLinkService> matched = new ArrayList<>();
         for (final DeploymentOverlayLinkService service : services) {
             if (service.isWildcard()) {
                 if (service.getPattern().matcher(deploymentName).matches()) {
@@ -96,7 +96,7 @@ public class DeploymentOverlayIndexService implements Service<DeploymentOverlayI
             }
         });
 
-        final List<DeploymentOverlayService> ret = new ArrayList<DeploymentOverlayService>();
+        final List<DeploymentOverlayService> ret = new ArrayList<>();
         for (final DeploymentOverlayLinkService i : matched) {
             ret.add(i.getDeploymentOverlayServiceInjectedValue().getValue());
         }

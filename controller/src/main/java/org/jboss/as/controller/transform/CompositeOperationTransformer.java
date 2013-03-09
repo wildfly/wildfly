@@ -56,7 +56,7 @@ class CompositeOperationTransformer implements OperationTransformer {
         final ModelNode composite = operation.clone();
         composite.get(STEPS).setEmptyList();
         final TransformationTarget target = context.getTarget();
-        final List<Step> steps = new ArrayList<Step>();
+        final List<Step> steps = new ArrayList<>();
         int stepIdx = 0, resultIdx  = 0;
         for(final ModelNode step : operation.require(STEPS).asList()) {
             stepIdx++;

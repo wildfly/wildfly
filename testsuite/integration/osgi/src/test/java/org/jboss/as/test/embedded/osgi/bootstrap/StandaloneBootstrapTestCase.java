@@ -99,7 +99,7 @@ public class StandaloneBootstrapTestCase {
     }
 
     private Map<String, String> getFrameworkProperties() {
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
         //props.put(Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT, Constants.FRAMEWORK_STORAGE_CLEAN);
         return props;
     }

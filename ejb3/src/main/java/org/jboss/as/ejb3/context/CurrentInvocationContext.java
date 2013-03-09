@@ -31,7 +31,7 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class CurrentInvocationContext {
-    private static final ThreadLocalStack<InterceptorContext> stack = new ThreadLocalStack<InterceptorContext>();
+    private static final ThreadLocalStack<InterceptorContext> stack = new ThreadLocalStack<>();
 
     public static InterceptorContext get() {
         InterceptorContext current = stack.get();

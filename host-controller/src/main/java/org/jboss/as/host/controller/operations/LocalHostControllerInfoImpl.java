@@ -48,7 +48,7 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
     private int remoteDcPort;
     private String remoteDCUser;
     private String remoteSecurityRealm;
-    private List<DiscoveryOption> remoteDiscoveryOptions = new ArrayList<DiscoveryOption>();
+    private List<DiscoveryOption> remoteDiscoveryOptions = new ArrayList<>();
     private String httpManagementInterface;
     private int httpManagementPort;
     private int httpManagementSecurePort;

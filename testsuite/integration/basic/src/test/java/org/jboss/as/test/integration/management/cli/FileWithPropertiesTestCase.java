@@ -235,7 +235,7 @@ public class FileWithPropertiesTestCase {
 
         final ProcessBuilder builder = new ProcessBuilder();
         builder.redirectErrorStream(true);
-        final List<String> command = new ArrayList<String>();
+        final List<String> command = new ArrayList<>();
         command.add("java");
         TestSuiteEnvironment.getIpv6Args(command);
         if(resolveProps) {

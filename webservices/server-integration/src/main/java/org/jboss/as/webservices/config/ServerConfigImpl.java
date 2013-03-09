@@ -39,8 +39,8 @@ import org.jboss.ws.common.management.AbstractServerConfigMBean;
  */
 public final class ServerConfigImpl extends AbstractServerConfig implements AbstractServerConfigMBean {
 
-    private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
-    private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
+    private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<>();
+    private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<>();
 
     private ServerConfigImpl() {
         // forbidden inheritance

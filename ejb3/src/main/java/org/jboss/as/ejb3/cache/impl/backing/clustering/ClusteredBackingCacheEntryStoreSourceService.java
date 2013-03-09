@@ -66,9 +66,9 @@ public class ClusteredBackingCacheEntryStoreSourceService<K extends Serializable
     }
 
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<RegistryCollector> collector = new InjectedValue<RegistryCollector>();
+    private final InjectedValue<RegistryCollector> collector = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<Registry> registry = new InjectedValue<Registry>();
+    private final InjectedValue<Registry> registry = new InjectedValue<>();
 
     private static <K extends Serializable, V extends Cacheable<K>, G extends Serializable> ClusteredBackingCacheEntryStoreSource<K, V, G> load() {
         for (ClusteredBackingCacheEntryStoreSource<K, V, G> source: ServiceLoader.load(ClusteredBackingCacheEntryStoreSource.class, ClusteredBackingCacheEntryStoreSourceService.class.getClassLoader())) {

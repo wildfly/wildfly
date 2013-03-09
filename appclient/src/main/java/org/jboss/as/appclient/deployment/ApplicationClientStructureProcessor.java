@@ -61,7 +61,7 @@ public class ApplicationClientStructureProcessor implements DeploymentUnitProces
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (deploymentUnit.getName().toLowerCase(Locale.ENGLISH).endsWith(".ear")) {
-            final Map<VirtualFile, ResourceRoot> existing = new HashMap<VirtualFile, ResourceRoot>();
+            final Map<VirtualFile, ResourceRoot> existing = new HashMap<>();
             for (final ResourceRoot additional : deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS)) {
                 existing.put(additional.getRoot(), additional);
             }

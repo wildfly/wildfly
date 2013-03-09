@@ -65,10 +65,10 @@ public class ProfileDescribeHandler implements OperationStepHandler {
         result.setEmptyList();
 
         final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
-        final AtomicReference<ModelNode> failureRef = new AtomicReference<ModelNode>();
+        final AtomicReference<ModelNode> failureRef = new AtomicReference<>();
 
         final ModelNode subsystemResults = new ModelNode().setEmptyList();
-        final Map<String, ModelNode> includeResults = new HashMap<String, ModelNode>();
+        final Map<String, ModelNode> includeResults = new HashMap<>();
 
         // Add a step at end to assemble all the data
         // Add steps in the reverse of expected order, as Stage.IMMEDIATE adds to the top of the list

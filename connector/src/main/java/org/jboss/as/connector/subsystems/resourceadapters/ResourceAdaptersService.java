@@ -62,7 +62,7 @@ public final class ResourceAdaptersService implements Service<ResourceAdaptersSe
     public static final class ModifiableResourceAdaptors implements ResourceAdapters {
 
         private static final long serialVersionUID = 9096011997958619051L;
-        private final List<ResourceAdapter> resourceAdapters = new CopyOnWriteArrayList<ResourceAdapter>();
+        private final List<ResourceAdapter> resourceAdapters = new CopyOnWriteArrayList<>();
 
         /**
          * Get the resourceAdapters.

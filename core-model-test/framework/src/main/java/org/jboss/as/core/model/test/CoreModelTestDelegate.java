@@ -108,8 +108,8 @@ import org.junit.Assert;
  */
 public class CoreModelTestDelegate {
 
-    private static final Set<PathAddress> EMPTY_RESOURCE_ADDRESSES = new HashSet<PathAddress>();
-    private static final Set<PathAddress> MISSING_NAME_ADDRESSES = new HashSet<PathAddress>();
+    private static final Set<PathAddress> EMPTY_RESOURCE_ADDRESSES = new HashSet<>();
+    private static final Set<PathAddress> MISSING_NAME_ADDRESSES = new HashSet<>();
 
     static {
         EMPTY_RESOURCE_ADDRESSES.add(PathAddress.pathAddress(PathElement.pathElement(PROFILE)));
@@ -123,7 +123,7 @@ public class CoreModelTestDelegate {
     }
 
     private final Class<?> testClass;
-    private final List<KernelServices> kernelServices = new ArrayList<KernelServices>();
+    private final List<KernelServices> kernelServices = new ArrayList<>();
 
     public CoreModelTestDelegate(Class<?> testClass) {
         this.testClass = testClass;
@@ -393,8 +393,8 @@ public class CoreModelTestDelegate {
         private boolean validateDescription;
         private boolean validateOperations = true;
         private XMLMapper xmlMapper = XMLMapper.Factory.create();
-        private Map<ModelVersion, LegacyKernelServicesInitializerImpl> legacyControllerInitializers = new HashMap<ModelVersion, LegacyKernelServicesInitializerImpl>();
-        private List<String> contentRepositoryContents = new ArrayList<String>();
+        private Map<ModelVersion, LegacyKernelServicesInitializerImpl> legacyControllerInitializers = new HashMap<>();
+        private List<String> contentRepositoryContents = new ArrayList<>();
         RunningModeControl runningModeControl;
         ExtensionRegistry extensionRegistry;
 
@@ -482,7 +482,7 @@ public class CoreModelTestDelegate {
                 if (legacyInitializer.isDontUseBootOperations()) {
                     transformedBootOperations = Collections.emptyList();
                 } else {
-                    transformedBootOperations = new ArrayList<ModelNode>();
+                    transformedBootOperations = new ArrayList<>();
                     for (ModelNode op : bootOperations) {
 
                         ModelNode transformed = kernelServices.transformOperation(entry.getKey(), op).getTransformedOperation();
@@ -502,7 +502,7 @@ public class CoreModelTestDelegate {
         @Override
         public List<ModelNode> parse(String xml) throws XMLStreamException {
             final XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new StringReader(xml));
-            final List<ModelNode> operationList = new ArrayList<ModelNode>();
+            final List<ModelNode> operationList = new ArrayList<>();
             xmlMapper.parseDocument(operationList, reader);
             return operationList;
         }
@@ -528,7 +528,7 @@ public class CoreModelTestDelegate {
     private class LegacyKernelServicesInitializerImpl implements LegacyKernelServicesInitializer {
         private final ChildFirstClassLoaderBuilder classLoaderBuilder = new ChildFirstClassLoaderBuilder();
         private final ModelVersion modelVersion;
-        private final List<LegacyModelInitializerEntry> modelInitializerEntries = new ArrayList<LegacyModelInitializerEntry>();
+        private final List<LegacyModelInitializerEntry> modelInitializerEntries = new ArrayList<>();
         private final ModelTestControllerVersion testControllerVersion;
         private boolean dontUseBootOperations = false;
         private boolean skipReverseCheck;

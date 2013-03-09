@@ -106,7 +106,7 @@ public class DistributedCacheManagerTest {
         when(this.cache.getCacheConfiguration()).thenReturn(builder.build());
         when(affinityFactory.createService(same(this.cache), capturedKeyGenerator.capture())).thenReturn(this.affinity);
 
-        this.manager = new DistributedCacheManager<OutgoingDistributableSessionData>(this.sessionManager, this.cache, this.registry, this.lockManager, this.storage, this.batchingManager, this.invoker, affinityFactory);
+        this.manager = new DistributedCacheManager<>(this.sessionManager, this.cache, this.registry, this.lockManager, this.storage, this.batchingManager, this.invoker, affinityFactory);
 
         assertSame(this.manager, capturedKeyGenerator.getValue());
         

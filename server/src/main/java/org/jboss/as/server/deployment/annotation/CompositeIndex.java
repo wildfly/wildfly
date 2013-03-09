@@ -49,7 +49,7 @@ public class CompositeIndex {
     }
 
     public CompositeIndex(final CompositeIndex... indexes) {
-        this.indexes = new ArrayList<Index>();
+        this.indexes = new ArrayList<>();
         for(CompositeIndex index : indexes) {
             this.indexes.addAll(index.indexes);
         }
@@ -59,7 +59,7 @@ public class CompositeIndex {
      * @see {@link Index#getAnnotations(org.jboss.jandex.DotName)}
      */
     public List<AnnotationInstance> getAnnotations(final DotName annotationName) {
-        final List<AnnotationInstance> allInstances = new ArrayList<AnnotationInstance>();
+        final List<AnnotationInstance> allInstances = new ArrayList<>();
         for (Index index : indexes) {
             final List<AnnotationInstance> list = index.getAnnotations(annotationName);
             if (list != null) {
@@ -73,7 +73,7 @@ public class CompositeIndex {
      * @see {@link Index#getKnownDirectSubclasses(org.jboss.jandex.DotName)}
      */
     public Set<ClassInfo> getKnownDirectSubclasses(final DotName className) {
-        final Set<ClassInfo> allKnown = new HashSet<ClassInfo>();
+        final Set<ClassInfo> allKnown = new HashSet<>();
         for (Index index : indexes) {
             final List<ClassInfo> list = index.getKnownDirectSubclasses(className);
             if (list != null) {
@@ -91,14 +91,14 @@ public class CompositeIndex {
      * @return All known subclasses
      */
     public Set<ClassInfo> getAllKnownSubclasses(final DotName className) {
-        final Set<ClassInfo> allKnown = new HashSet<ClassInfo>();
-        final Set<DotName> processedClasses = new HashSet<DotName>();
+        final Set<ClassInfo> allKnown = new HashSet<>();
+        final Set<DotName> processedClasses = new HashSet<>();
         getAllKnownSubClasses(className, allKnown, processedClasses);
         return allKnown;
     }
 
     private void getAllKnownSubClasses(DotName className, Set<ClassInfo> allKnown, Set<DotName> processedClasses) {
-        final Set<DotName> subClassesToProcess = new HashSet<DotName>();
+        final Set<DotName> subClassesToProcess = new HashSet<>();
         subClassesToProcess.add(className);
         while (!subClassesToProcess.isEmpty()) {
             final Iterator<DotName> toProcess = subClassesToProcess.iterator();
@@ -129,7 +129,7 @@ public class CompositeIndex {
      * @see {@link Index#getKnownDirectImplementors(DotName)}
      */
     public Set<ClassInfo> getKnownDirectImplementors(final DotName className) {
-        final Set<ClassInfo> allKnown = new HashSet<ClassInfo>();
+        final Set<ClassInfo> allKnown = new HashSet<>();
         for (Index index : indexes) {
             final List<ClassInfo> list = index.getKnownDirectImplementors(className);
             if (list != null) {
@@ -150,9 +150,9 @@ public class CompositeIndex {
      * @return All known implementors of the interface
      */
     public Set<ClassInfo> getAllKnownImplementors(final DotName interfaceName) {
-        final Set<ClassInfo> allKnown = new HashSet<ClassInfo>();
-        final Set<DotName> subInterfacesToProcess = new HashSet<DotName>();
-        final Set<DotName> processedClasses = new HashSet<DotName>();
+        final Set<ClassInfo> allKnown = new HashSet<>();
+        final Set<DotName> subInterfacesToProcess = new HashSet<>();
+        final Set<DotName> processedClasses = new HashSet<>();
         subInterfacesToProcess.add(interfaceName);
         while (!subInterfacesToProcess.isEmpty()) {
             final Iterator<DotName> toProcess = subInterfacesToProcess.iterator();
@@ -204,7 +204,7 @@ public class CompositeIndex {
      * @see {@link org.jboss.jandex.Index#getKnownClasses()}
      */
     public Collection<ClassInfo> getKnownClasses() {
-        final List<ClassInfo> allKnown = new ArrayList<ClassInfo>();
+        final List<ClassInfo> allKnown = new ArrayList<>();
         for (Index index : indexes) {
             final Collection<ClassInfo> list = index.getKnownClasses();
             if (list != null) {

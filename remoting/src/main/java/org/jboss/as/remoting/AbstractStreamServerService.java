@@ -55,9 +55,9 @@ public abstract class AbstractStreamServerService implements Service<AcceptingCh
     private final Logger log = Logger.getLogger("org.jboss.as.remoting");
 
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<RemotingSecurityProvider> securityProviderValue = new InjectedValue<RemotingSecurityProvider>();
-    private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
-    private final InjectedValue<SocketBindingManager> socketBindingManagerValue = new InjectedValue<SocketBindingManager>();
+    private final InjectedValue<RemotingSecurityProvider> securityProviderValue = new InjectedValue<>();
+    private final InjectedValue<Endpoint> endpointValue = new InjectedValue<>();
+    private final InjectedValue<SocketBindingManager> socketBindingManagerValue = new InjectedValue<>();
     private final OptionMap connectorPropertiesOptionMap;
 
     private volatile AcceptingChannel<? extends ConnectedStreamChannel> streamServer;

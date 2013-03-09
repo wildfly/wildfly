@@ -170,7 +170,7 @@ public abstract class RemoteFileRequestAndHandler {
     }
 
     private List<File> getChildFiles(final File base) {
-        final List<File> childFiles = new ArrayList<File>();
+        final List<File> childFiles = new ArrayList<>();
         getChildFiles(base, childFiles);
         return childFiles;
     }

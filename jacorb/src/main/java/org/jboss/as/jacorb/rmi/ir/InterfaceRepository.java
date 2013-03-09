@@ -157,7 +157,7 @@ public class InterfaceRepository {
         impl = new RepositoryImpl(orb, poa, name);
 
         // TypeCodes for primitive types
-        final HashMap<Class<?>, TypeCode> primitiveTypeCodeMap = new HashMap<Class<?>, TypeCode>();
+        final HashMap<Class<?>, TypeCode> primitiveTypeCodeMap = new HashMap<>();
         primitiveTypeCodeMap.put(Void.TYPE, orb.get_primitive_tc(TCKind.tk_void));
         primitiveTypeCodeMap.put(Boolean.TYPE,  orb.get_primitive_tc(TCKind.tk_boolean));
         primitiveTypeCodeMap.put(Character.TYPE,  orb.get_primitive_tc(TCKind.tk_wchar));
@@ -169,7 +169,7 @@ public class InterfaceRepository {
         primitiveTypeCodeMap.put(Double.TYPE, orb.get_primitive_tc(TCKind.tk_double));
         this.typeCodeMap = primitiveTypeCodeMap;
 
-        final HashMap<Class<?>, TypeCode> typeCodes = new HashMap<Class<?>, TypeCode>(primitiveTypeCodeMap);
+        final HashMap<Class<?>, TypeCode> typeCodes = new HashMap<>(primitiveTypeCodeMap);
         typeCodes.put(String.class, orb.create_wstring_tc(0));
         constantTypeCodeMap = typeCodes;
     }

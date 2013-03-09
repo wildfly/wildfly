@@ -168,7 +168,7 @@ public class FileArgumentTestCase {
 
         final ProcessBuilder builder = new ProcessBuilder();
         builder.redirectErrorStream(true);
-        final List<String> command = new ArrayList<String>();
+        final List<String> command = new ArrayList<>();
         command.add("java");
         TestSuiteEnvironment.getIpv6Args(command);
         command.add("-Djboss.cli.config=" + jbossDist + File.separator + "bin" + File.separator + "jboss-cli.xml");

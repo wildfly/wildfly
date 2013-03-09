@@ -79,7 +79,7 @@ public class InetAddressMatchInterfaceCriteriaTestCase {
             return;
         }
 
-        Map<NetworkInterface, Set<InetAddress>> candidates = new HashMap<NetworkInterface, Set<InetAddress>>();
+        Map<NetworkInterface, Set<InetAddress>> candidates = new HashMap<>();
         int i = 1;
         for (Iterator<NetworkInterface> iter = allInterfaces.iterator(); iter.hasNext(); i++) {
             Set<InetAddress> set = Collections.unmodifiableSet(Collections.singleton(InetAddress.getByName("::1%" + i)));

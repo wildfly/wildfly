@@ -150,7 +150,7 @@ public class MBeanInfoFactory {
     }
 
     private OpenMBeanAttributeInfo[] getAttributes() {
-        List<OpenMBeanAttributeInfo> infos = new ArrayList<OpenMBeanAttributeInfo>();
+        List<OpenMBeanAttributeInfo> infos = new ArrayList<>();
         if (providedDescription.hasDefined(ATTRIBUTES)) {
             for (final String name : providedDescription.require(ATTRIBUTES).keys()) {
                 infos.add(getAttribute(name));
@@ -184,7 +184,7 @@ public class MBeanInfoFactory {
         final boolean root = pathAddress.size() == 0;
 
         //TODO include inherited/global operations?
-        List<OpenMBeanOperationInfo> ops = new ArrayList<OpenMBeanOperationInfo>();
+        List<OpenMBeanOperationInfo> ops = new ArrayList<>();
         for (Map.Entry<String, OperationEntry> entry : resourceRegistration.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, false).entrySet()) {
             final String opName = entry.getKey();
             if (opName.equals(ADD) || opName.equals(DESCRIBE)) {
@@ -246,13 +246,13 @@ public class MBeanInfoFactory {
             return EMPTY_PARAMETERS;
         }
         List<Property> propertyList = opNode.get(REQUEST_PROPERTIES).asPropertyList();
-        List<OpenMBeanParameterInfo> params = new ArrayList<OpenMBeanParameterInfo>(propertyList.size());
+        List<OpenMBeanParameterInfo> params = new ArrayList<>(propertyList.size());
 
         for (Property prop : propertyList) {
             ModelNode value = prop.getValue();
             String paramName = NameConverter.convertToCamelCase(prop.getName());
 
-            Map<String, Object> descriptions = new HashMap<String, Object>(4);
+            Map<String, Object> descriptions = new HashMap<>(4);
 
             boolean expressionsAllowed = prop.getValue().hasDefined(EXPRESSIONS_ALLOWED) && prop.getValue().get(EXPRESSIONS_ALLOWED).asBoolean();
             descriptions.put(DESC_EXPRESSIONS_ALLOWED, String.valueOf(expressionsAllowed));
@@ -288,7 +288,7 @@ public class MBeanInfoFactory {
     }
 
     private Set<?> fromModelNodes(final List<ModelNode> nodes) {
-        Set<Object> values = new HashSet<Object>(nodes.size());
+        Set<Object> values = new HashSet<>(nodes.size());
         for (ModelNode node : nodes) {
             values.add(converters.getConverter(ModelType.STRING,null).fromModelNode(node));
         }
@@ -334,13 +334,13 @@ public class MBeanInfoFactory {
     }
 
     private Descriptor createMBeanDescriptor() {
-        Map<String, String> descriptions = new HashMap<String, String>();
+        Map<String, String> descriptions = new HashMap<>();
         addMBeanExpressionSupport(descriptions);
         return new ImmutableDescriptor(descriptions);
     }
 
     private Descriptor createAttributeDescriptor(ModelNode attribute) {
-        Map<String, String> descriptions = new HashMap<String, String>();
+        Map<String, String> descriptions = new HashMap<>();
         addMBeanExpressionSupport(descriptions);
         Boolean allowExpressions = attribute.hasDefined(EXPRESSIONS_ALLOWED) && attribute.get(EXPRESSIONS_ALLOWED).asBoolean();
         descriptions.put(DESC_EXPRESSIONS_ALLOWED, allowExpressions.toString());
@@ -350,7 +350,7 @@ public class MBeanInfoFactory {
     }
 
     private Descriptor createOperationDescriptor() {
-        Map<String, String> descriptions = new HashMap<String, String>();
+        Map<String, String> descriptions = new HashMap<>();
         addMBeanExpressionSupport(descriptions);
         return new ImmutableDescriptor(descriptions);
     }

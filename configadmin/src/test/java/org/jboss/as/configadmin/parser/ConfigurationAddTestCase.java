@@ -67,7 +67,7 @@ public class ConfigurationAddTestCase {
     public void testConfigAdminPresent() throws Exception {
 
         // Create the operation model node
-        Hashtable<String, String> dict = new Hashtable<String, String>();
+        Hashtable<String, String> dict = new Hashtable<>();
         dict.put("x.y", "a b");
         ModelNode operation = getOperationModelNode("some.config", dict);
         ModelNode model = new ModelNode();
@@ -102,7 +102,7 @@ public class ConfigurationAddTestCase {
     public void testConfigAdminArrivesLater() throws Exception {
 
         // Create the operation model node
-        Hashtable<String, String> values = new Hashtable<String, String>();
+        Hashtable<String, String> values = new Hashtable<>();
         values.put("a", "aa");
         values.put("b", "bb");
         ModelNode operation = getOperationModelNode("a.b.c", values);
@@ -150,7 +150,7 @@ public class ConfigurationAddTestCase {
         injectedCAS.setValue(new ImmediateValue<ConfigAdmin>(mockCAS));
 
         // Invoke the operation again
-        Hashtable<String, String> values2 = new Hashtable<String, String>();
+        Hashtable<String, String> values2 = new Hashtable<>();
         values2.put("x", "x");
         ModelNode op2 = getOperationModelNode("xx", values2);
         ModelNode mod2 = new ModelNode();

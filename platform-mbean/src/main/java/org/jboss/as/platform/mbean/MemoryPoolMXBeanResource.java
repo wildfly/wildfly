@@ -56,7 +56,7 @@ public class MemoryPoolMXBeanResource extends AbstractPlatformMBeanResource {
 
     @Override
     Set<String> getChildrenNames() {
-        final Set<String> result = new HashSet<String>();
+        final Set<String> result = new HashSet<>();
         for (MemoryPoolMXBean mbean : ManagementFactory.getMemoryPoolMXBeans()) {
             result.add(escapeMBeanName(mbean.getName()));
         }

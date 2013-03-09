@@ -38,7 +38,7 @@ import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
  * @author <a href="wfink@redhat.com">Wolf-Dieter Fink</a>
  */
 public class ReferenceCountingEntityCache implements ReadyEntityCache {
-    private final ConcurrentMap<Object, CacheEntry> cache = new ConcurrentHashMap<Object, CacheEntry>();
+    private final ConcurrentMap<Object, CacheEntry> cache = new ConcurrentHashMap<>();
     private final EntityBeanComponent component;
 
     public ReferenceCountingEntityCache(final EntityBeanComponent component) {

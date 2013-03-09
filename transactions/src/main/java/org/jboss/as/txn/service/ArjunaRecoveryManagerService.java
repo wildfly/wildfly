@@ -63,14 +63,14 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
 
     public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER;
 
-    private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
-    private final InjectedValue<SocketBinding> recoveryBindingInjector = new InjectedValue<SocketBinding>();
-    private final InjectedValue<SocketBinding> statusBindingInjector = new InjectedValue<SocketBinding>();
+    private final InjectedValue<ORB> orbInjector = new InjectedValue<>();
+    private final InjectedValue<SocketBinding> recoveryBindingInjector = new InjectedValue<>();
+    private final InjectedValue<SocketBinding> statusBindingInjector = new InjectedValue<>();
 
     private RecoveryManagerService recoveryManagerService;
     private boolean recoveryListener;
     private final boolean jts;
-    private InjectedValue<SocketBindingManager> bindingManager = new InjectedValue<SocketBindingManager>();
+    private InjectedValue<SocketBindingManager> bindingManager = new InjectedValue<>();
 
     public ArjunaRecoveryManagerService(final boolean recoveryListener, final boolean jts) {
         this.recoveryListener = recoveryListener;
@@ -94,11 +94,11 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
             bindingManager.getValue().getNamedRegistry().registerBinding(binding);
         }
 
-        final List<String> recoveryExtensions = new ArrayList<String>();
+        final List<String> recoveryExtensions = new ArrayList<>();
         recoveryExtensions.add(AtomicActionRecoveryModule.class.getName());
         recoveryExtensions.add(TORecoveryModule.class.getName());
 
-        final List<String> expiryScanners = new ArrayList<String>();
+        final List<String> expiryScanners = new ArrayList<>();
         expiryScanners.add(ExpiredTransactionStatusManagerScanner.class.getName());
 
 

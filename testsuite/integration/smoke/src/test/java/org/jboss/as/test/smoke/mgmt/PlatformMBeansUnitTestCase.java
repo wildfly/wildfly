@@ -56,7 +56,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class PlatformMBeansUnitTestCase {
 
-    private static final Set<String> ignored = new HashSet<String>();
+    private static final Set<String> ignored = new HashSet<>();
 
     static {
         // Only a few subsystems are NOT supposed to work in the domain mode

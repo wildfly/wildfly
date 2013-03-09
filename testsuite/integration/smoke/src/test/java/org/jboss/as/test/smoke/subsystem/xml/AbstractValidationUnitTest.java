@@ -58,9 +58,9 @@ public class AbstractValidationUnitTest {
     private static final String SCHEMAS_LOCATION = "docs/schema";
     private static final String JBOSS_DIST_PROP_NAME = "jboss.dist";
 
-    private static final Set<String> EXCLUDED_SCHEMA_FILES = new HashSet<String>();
-    private static final Map<String, File> JBOSS_SCHEMAS_MAP = new HashMap<String, File>();
-    private static Map<String, String> NAMESPACE_MAP = new HashMap<String, String>();
+    private static final Set<String> EXCLUDED_SCHEMA_FILES = new HashSet<>();
+    private static final Map<String, File> JBOSS_SCHEMAS_MAP = new HashMap<>();
+    private static Map<String, String> NAMESPACE_MAP = new HashMap<>();
 
 
     private static final File JBOSS_DIST_DIR;

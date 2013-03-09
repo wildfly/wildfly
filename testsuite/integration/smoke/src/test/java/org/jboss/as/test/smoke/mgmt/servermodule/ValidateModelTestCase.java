@@ -93,7 +93,7 @@ public class ValidateModelTestCase {
         //for them due to circular maven dependencies
 
         ModelNode subsystemDescriptions = description.get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION);
-        Set<String> removes = new HashSet<String>();
+        Set<String> removes = new HashSet<>();
         for (String key : subsystemDescriptions.keys()) {
             if (!key.equals(RemotingExtension.SUBSYSTEM_NAME) && !key.equals(ThreadsExtension.SUBSYSTEM_NAME)) {
                 removes.add(key);

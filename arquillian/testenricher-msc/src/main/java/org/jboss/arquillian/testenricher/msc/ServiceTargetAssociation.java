@@ -30,7 +30,7 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public final class ServiceTargetAssociation {
 
-    private static ConcurrentMap<String, ServiceTarget> association = new ConcurrentHashMap<String, ServiceTarget>();
+    private static ConcurrentMap<String, ServiceTarget> association = new ConcurrentHashMap<>();
 
     public static ServiceTarget getServiceTarget(final String className) {
         return association.get(className);

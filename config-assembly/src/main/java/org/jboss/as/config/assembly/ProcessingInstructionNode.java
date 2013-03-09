@@ -35,7 +35,7 @@ import javax.xml.stream.XMLStreamWriter;
 public class ProcessingInstructionNode extends Node {
     private final String name;
     private final Map<String, String> data;
-    private List<Node> delegates = new ArrayList<Node>();
+    private List<Node> delegates = new ArrayList<>();
 
     public ProcessingInstructionNode(final String name, final Map<String, String> data) {
         this.name = name;

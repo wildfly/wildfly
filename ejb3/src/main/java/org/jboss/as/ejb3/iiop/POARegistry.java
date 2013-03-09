@@ -62,7 +62,7 @@ public class POARegistry implements Service<POARegistry> {
     /**
      * The root POA. *
      */
-    private final InjectedValue<POA> rootPOA = new InjectedValue<POA>();
+    private final InjectedValue<POA> rootPOA = new InjectedValue<>();
 
     /**
      * A ServantRegistry with a transient POA per servant.

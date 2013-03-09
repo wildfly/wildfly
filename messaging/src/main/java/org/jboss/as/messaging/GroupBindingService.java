@@ -40,7 +40,7 @@ class GroupBindingService implements Service<SocketBinding> {
     private static final String BROADCAST = "broadcast";
     private static final String DISCOVERY = "discovery";
 
-    private final InjectedValue<SocketBinding> bindingRef = new InjectedValue<SocketBinding>();
+    private final InjectedValue<SocketBinding> bindingRef = new InjectedValue<>();
 
     @Override
     public void start(final StartContext context) throws StartException {

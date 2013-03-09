@@ -113,7 +113,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         assert warMetaData != null;
         Map<String, WebMetaData> annotationsMetaData = warMetaData.getAnnotationsMetaData();
         if (annotationsMetaData == null) {
-            annotationsMetaData = new HashMap<String, WebMetaData>();
+            annotationsMetaData = new HashMap<>();
             warMetaData.setAnnotationsMetaData(annotationsMetaData);
         }
         Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
@@ -142,7 +142,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         final List<AnnotationInstance> webServletAnnotations = index.getAnnotations(webServlet);
         if (webServletAnnotations != null && webServletAnnotations.size() > 0) {
             ServletsMetaData servlets = new ServletsMetaData();
-            List<ServletMappingMetaData> servletMappings = new ArrayList<ServletMappingMetaData>();
+            List<ServletMappingMetaData> servletMappings = new ArrayList<>();
             for (final AnnotationInstance annotation : webServletAnnotations) {
                 ServletMetaData servlet = new ServletMetaData();
                 AnnotationTarget target = annotation.target();
@@ -169,7 +169,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 if (initParamsValue != null) {
                     AnnotationInstance[] initParamsAnnotations = initParamsValue.asNestedArray();
                     if (initParamsAnnotations != null && initParamsAnnotations.length > 0) {
-                        List<ParamValueMetaData> initParams = new ArrayList<ParamValueMetaData>();
+                        List<ParamValueMetaData> initParams = new ArrayList<>();
                         for (AnnotationInstance initParamsAnnotation : initParamsAnnotations) {
                             ParamValueMetaData initParam = new ParamValueMetaData();
                             AnnotationValue initParamName = initParamsAnnotation.value("name");
@@ -205,7 +205,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 }
                 ServletMappingMetaData servletMapping = new ServletMappingMetaData();
                 servletMapping.setServletName(servlet.getName());
-                List<String> urlPatterns = new ArrayList<String>();
+                List<String> urlPatterns = new ArrayList<>();
                 AnnotationValue urlPatternsValue = annotation.value("urlPatterns");
                 if (urlPatternsValue != null) {
                     for (String urlPattern : urlPatternsValue.asStringArray()) {
@@ -231,7 +231,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         final List<AnnotationInstance> webFilterAnnotations = index.getAnnotations(webFilter);
         if (webFilterAnnotations != null && webFilterAnnotations.size() > 0) {
             FiltersMetaData filters = new FiltersMetaData();
-            List<FilterMappingMetaData> filterMappings = new ArrayList<FilterMappingMetaData>();
+            List<FilterMappingMetaData> filterMappings = new ArrayList<>();
             for (final AnnotationInstance annotation : webFilterAnnotations) {
                 FilterMetaData filter = new FilterMetaData();
                 AnnotationTarget target = annotation.target();
@@ -254,7 +254,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 if (initParamsValue != null) {
                     AnnotationInstance[] initParamsAnnotations = initParamsValue.asNestedArray();
                     if (initParamsAnnotations != null && initParamsAnnotations.length > 0) {
-                        List<ParamValueMetaData> initParams = new ArrayList<ParamValueMetaData>();
+                        List<ParamValueMetaData> initParams = new ArrayList<>();
                         for (AnnotationInstance initParamsAnnotation : initParamsAnnotations) {
                             ParamValueMetaData initParam = new ParamValueMetaData();
                             AnnotationValue initParamName = initParamsAnnotation.value("name");
@@ -291,9 +291,9 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 filters.add(filter);
                 FilterMappingMetaData filterMapping = new FilterMappingMetaData();
                 filterMapping.setFilterName(filter.getName());
-                List<String> urlPatterns = new ArrayList<String>();
-                List<String> servletNames = new ArrayList<String>();
-                List<DispatcherType> dispatchers = new ArrayList<DispatcherType>();
+                List<String> urlPatterns = new ArrayList<>();
+                List<String> servletNames = new ArrayList<>();
+                List<DispatcherType> dispatchers = new ArrayList<>();
                 AnnotationValue urlPatternsValue = annotation.value("urlPatterns");
                 if (urlPatternsValue != null) {
                     for (String urlPattern : urlPatternsValue.asStringArray()) {
@@ -337,7 +337,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         // @WebListener
         final List<AnnotationInstance> webListenerAnnotations = index.getAnnotations(webListener);
         if (webListenerAnnotations != null && webListenerAnnotations.size() > 0) {
-            List<ListenerMetaData> listeners = new ArrayList<ListenerMetaData>();
+            List<ListenerMetaData> listeners = new ArrayList<>();
             for (final AnnotationInstance annotation : webListenerAnnotations) {
                 ListenerMetaData listener = new ListenerMetaData();
                 AnnotationTarget target = annotation.target();
@@ -466,7 +466,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 }
                 ServletSecurityMetaData servletSecurity = new ServletSecurityMetaData();
                 AnnotationValue httpConstraintValue = annotation.value();
-                List<String> rolesAllowed = new ArrayList<String>();
+                List<String> rolesAllowed = new ArrayList<>();
                 if (httpConstraintValue != null) {
                     AnnotationInstance httpConstraint = httpConstraintValue.asNested();
                     AnnotationValue httpConstraintERSValue = httpConstraint.value();
@@ -489,7 +489,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 if (httpMethodConstraintsValue != null) {
                     AnnotationInstance[] httpMethodConstraints = httpMethodConstraintsValue.asNestedArray();
                     if (httpMethodConstraints.length > 0) {
-                        List<HttpMethodConstraintMetaData> methodConstraints = new ArrayList<HttpMethodConstraintMetaData>();
+                        List<HttpMethodConstraintMetaData> methodConstraints = new ArrayList<>();
                         for (AnnotationInstance httpMethodConstraint : httpMethodConstraints) {
                             HttpMethodConstraintMetaData methodConstraint = new HttpMethodConstraintMetaData();
                             AnnotationValue httpMethodConstraintValue = httpMethodConstraint.value();
@@ -505,7 +505,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                                 methodConstraint.setTransportGuarantee(TransportGuaranteeType.valueOf(httpMethodConstraintTGValue.asEnum()));
                             }
                             AnnotationValue rolesAllowedValue = httpMethodConstraint.value("rolesAllowed");
-                            rolesAllowed = new ArrayList<String>();
+                            rolesAllowed = new ArrayList<>();
                             if (rolesAllowedValue != null) {
                                 for (String role : rolesAllowedValue.asStringArray()) {
                                     rolesAllowed.add(role);

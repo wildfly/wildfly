@@ -53,7 +53,7 @@ import org.apache.naming.resources.WARDirContext;
  */
 public class AliasDirContext extends BaseDirContext {
 
-    protected Map<String, DirContext> aliases = new ConcurrentHashMap<String, DirContext>();
+    protected Map<String, DirContext> aliases = new ConcurrentHashMap<>();
 
     public AliasDirContext() {
         super();

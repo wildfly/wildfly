@@ -70,7 +70,7 @@ public class MultipleManagedConnection1 implements ManagedConnection
    {
       this.mcf = mcf;
       this.logwriter = null;
-      this.listeners = new ArrayList<ConnectionEventListener>(1);
+      this.listeners = new ArrayList<>(1);
       this.connection = null;
    }
 

@@ -154,7 +154,7 @@ public class WebDeploymentDefinition extends SimpleResourceDefinition {
         REJECTED_SESSIONS(new SimpleAttributeDefinition("rejected-sessions", ModelType.INT, false)),
         MAX_ACTIVE_SESSIONS(new SimpleAttributeDefinition("max-active-sessions", ModelType.INT, false));
 
-        private static final Map<String, SessionStat> MAP = new HashMap<String, SessionStat>();
+        private static final Map<String, SessionStat> MAP = new HashMap<>();
 
         static {
             for (SessionStat stat : EnumSet.allOf(SessionStat.class)) {

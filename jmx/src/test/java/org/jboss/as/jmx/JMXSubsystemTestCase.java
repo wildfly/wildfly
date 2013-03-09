@@ -659,7 +659,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     private List<FailedOperationTransformationConfig.AttributesPathAddressConfig<?>> createChainedConfigList(FailedOperationTransformationConfig.AttributesPathAddressConfig<?>...cfgs){
-        List<AttributesPathAddressConfig<?>> list = new ArrayList<FailedOperationTransformationConfig.AttributesPathAddressConfig<?>>();
+        List<AttributesPathAddressConfig<?>> list = new ArrayList<>();
         for (AttributesPathAddressConfig<?> cfg : cfgs) {
             list.add(cfg);
         }

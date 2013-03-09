@@ -43,7 +43,7 @@ public class AtomicMapCache<K, MK, MV> extends AbstractDelegatingAdvancedCache<K
         super(cache, new AdvancedCacheWrapper<K, Map<MK, MV>>() {
                 @Override
                 public AdvancedCache<K, Map<MK, MV>> wrap(AdvancedCache<K, Map<MK, MV>> cache) {
-                    return new AtomicMapCache<K, MK, MV>(cache);
+                    return new AtomicMapCache<>(cache);
                 }
             }
         );

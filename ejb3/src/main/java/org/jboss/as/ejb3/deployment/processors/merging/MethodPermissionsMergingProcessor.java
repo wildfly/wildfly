@@ -90,13 +90,13 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
         final RuntimeAnnotationInformation<String[]> data = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, RolesAllowed.class);
 
         for (Map.Entry<String, List<String[]>> entry : data.getClassAnnotations().entrySet()) {
-            description.getAnnotationMethodPermissions().setAttribute(null, entry.getKey(), EJBMethodSecurityAttribute.rolesAllowed(new HashSet<String>(Arrays.<String>asList(entry.getValue().get(0)))));
+            description.getAnnotationMethodPermissions().setAttribute(null, entry.getKey(), EJBMethodSecurityAttribute.rolesAllowed(new HashSet<>(Arrays.<String>asList(entry.getValue().get(0)))));
         }
 
         for (Map.Entry<Method, List<String[]>> entry : data.getMethodAnnotations().entrySet()) {
             final Method method = entry.getKey();
             final MethodIdentifier identifier = MethodIdentifier.getIdentifierForMethod(method);
-            description.getAnnotationMethodPermissions().setAttribute(null, EJBMethodSecurityAttribute.rolesAllowed(new HashSet<String>(Arrays.<String>asList(entry.getValue().get(0)))), method.getDeclaringClass().getName(), method.getName(), identifier.getParameterTypes());
+            description.getAnnotationMethodPermissions().setAttribute(null, EJBMethodSecurityAttribute.rolesAllowed(new HashSet<>(Arrays.<String>asList(entry.getValue().get(0)))), method.getDeclaringClass().getName(), method.getName(), identifier.getParameterTypes());
         }
 
         final RuntimeAnnotationInformation<Boolean> denyData = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, DenyAll.class);
@@ -195,7 +195,7 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
 
     private EJBMethodSecurityAttribute mergeExistingRoles(EJBMethodSecurityAttribute ejbMethodSecurityMetaData, final EJBMethodSecurityAttribute existingRoles) {
         if (existingRoles != null && !existingRoles.getRolesAllowed().isEmpty()) {
-            final Set<String> roles = new HashSet<String>(existingRoles.getRolesAllowed());
+            final Set<String> roles = new HashSet<>(existingRoles.getRolesAllowed());
             roles.addAll(ejbMethodSecurityMetaData.getRolesAllowed());
             ejbMethodSecurityMetaData = EJBMethodSecurityAttribute.rolesAllowed(roles);
         }

@@ -47,7 +47,7 @@ public class EchoService implements Echo, Service<Echo> {
     private static final Logger log = Logger.getLogger(EchoService.class);
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "example", "target", "service");
 
-    private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
+    private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<>();
     private ServiceRegistration registration;
 
     public static void addService(ServiceTarget serviceTarget) {

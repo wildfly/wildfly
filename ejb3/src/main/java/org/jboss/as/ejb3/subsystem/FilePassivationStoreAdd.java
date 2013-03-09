@@ -50,8 +50,8 @@ public class FilePassivationStoreAdd extends PassivationStoreAdd {
     @Override
     Collection<ServiceController<?>> installRuntimeServices(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
         final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-        NonClusteredBackingCacheEntryStoreSourceService<?, ?, ?> service = new NonClusteredBackingCacheEntryStoreSourceService<Serializable, Cacheable<Serializable>, Serializable>(name);
-        NonClusteredBackingCacheEntryStoreSource<?, ?, ?> source = service.getValue();
+        NonClusteredBackingCacheEntryStoreSourceService<Serializable, Cacheable<Serializable>, Serializable> service = new NonClusteredBackingCacheEntryStoreSourceService<>(name);
+        NonClusteredBackingCacheEntryStoreSource<Serializable, Cacheable<Serializable>, Serializable> source = service.getValue();
         ModelNode relativeToModel = FilePassivationStoreResourceDefinition.RELATIVE_TO.resolveModelAttribute(context, operation);
         ModelNode groupsPath = FilePassivationStoreResourceDefinition.GROUPS_PATH.resolveModelAttribute(context, operation);
         ModelNode sessionsPath = FilePassivationStoreResourceDefinition.SESSIONS_PATH.resolveModelAttribute(context, operation);

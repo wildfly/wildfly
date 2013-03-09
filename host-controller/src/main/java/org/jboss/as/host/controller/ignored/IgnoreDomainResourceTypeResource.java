@@ -40,7 +40,7 @@ public class IgnoreDomainResourceTypeResource extends PlaceholderResource.Placeh
 
     private IgnoredDomainResourceRoot parent;
     private Boolean hasWildcard;
-    private final LinkedHashSet<String> model = new LinkedHashSet<String>();
+    private final LinkedHashSet<String> model = new LinkedHashSet<>();
 
     /**
      * Constructor for use by operation step handlers.

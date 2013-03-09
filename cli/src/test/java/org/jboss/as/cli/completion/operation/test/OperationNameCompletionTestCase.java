@@ -88,7 +88,7 @@ public class OperationNameCompletionTestCase {
     }
 
     protected List<String> fetchCandidates(String buffer) {
-        ArrayList<String> candidates = new ArrayList<String>();
+        ArrayList<String> candidates = new ArrayList<>();
         try {
             ctx.parseCommandLine(buffer);
         } catch (CommandFormatException e) {

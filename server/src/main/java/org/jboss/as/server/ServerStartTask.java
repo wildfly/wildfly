@@ -128,7 +128,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         SecurityActions.getSystemEnvironment(), null, null, ServerEnvironment.LaunchType.DOMAIN, RunningMode.NORMAL, productConfig);
 
         // TODO perhaps have ConfigurationPersisterFactory as a Service
-        final List<ServiceActivator> services = new ArrayList<ServiceActivator>(startServices);
+        final List<ServiceActivator> services = new ArrayList<>(startServices);
         final ServerBootOperationsService service = new ServerBootOperationsService();
         // ModelController.boot() will block on this future in order to get the boot updates.
         final Future<ModelNode> bootOperations = service.getFutureResult();

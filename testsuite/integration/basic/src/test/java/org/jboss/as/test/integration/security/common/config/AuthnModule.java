@@ -132,7 +132,7 @@ public class AuthnModule {
          */
         public Builder putOption(String name, String value) {
             if (options == null) {
-                options = new HashMap<String, String>();
+                options = new HashMap<>();
             }
             options.put(name, value);
             return this;

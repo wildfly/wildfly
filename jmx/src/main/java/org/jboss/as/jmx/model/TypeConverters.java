@@ -317,7 +317,7 @@ class TypeConverters {
         Object fromSimpleModelNode(final ModelNode node) {
             final TabularType tabularType = (TabularType)getOpenType();
             final TabularDataSupport tabularData = new TabularDataSupport(tabularType);
-            final Map<String, ModelNode> values = new HashMap<String, ModelNode>();
+            final Map<String, ModelNode> values = new HashMap<>();
             final List<Property> properties = node.isDefined() ? node.asPropertyList() : null;
             if (properties != null) {
                 for (Property prop : properties) {
@@ -327,7 +327,7 @@ class TypeConverters {
 
             final TypeConverter converter = getConverter(valueTypeNode, null);
             for (Map.Entry<String, ModelNode> prop : values.entrySet()) {
-                Map<String, Object> rowData = new HashMap<String, Object>();
+                Map<String, Object> rowData = new HashMap<>();
                 rowData.put("key", prop.getKey());
                 rowData.put("value", converter.fromModelNode(prop.getValue()));
                 try {
@@ -437,7 +437,7 @@ class TypeConverters {
             if (node == null || !node.isDefined()) {
                 return null;
             }
-            final List<Object> list = new ArrayList<Object>();
+            final List<Object> list = new ArrayList<>();
             final TypeConverter converter = getConverter(valueTypeNode, null);
             for (ModelNode element : node.asList()) {
                 list.add(converter.fromModelNode(element));
@@ -473,9 +473,9 @@ class TypeConverters {
 
         @Override
         public OpenType<?> getOpenType() {
-            List<String> itemNames = new ArrayList<String>();
-            List<String> itemDescriptions = new ArrayList<String>();
-            List<OpenType<?>> itemTypes = new ArrayList<OpenType<?>>();
+            List<String> itemNames = new ArrayList<>();
+            List<String> itemDescriptions = new ArrayList<>();
+            List<OpenType<?>> itemTypes = new ArrayList<>();
 
             //Some of the common operation descriptions use value-types like "The type will be that of the attribute found".
             if (!typeNode.isDefined() || typeNode.getType() == ModelType.STRING) {
@@ -531,7 +531,7 @@ class TypeConverters {
             if (openType instanceof CompositeType) {
                 final CompositeType compositeType = (CompositeType)openType;
                 //Create a composite
-                final Map<String, Object> items = new HashMap<String, Object>();
+                final Map<String, Object> items = new HashMap<>();
                 for (String attrName : compositeType.keySet()) {
                     TypeConverter converter = getConverter(typeNode.get(attrName, TYPE), typeNode.get(attrName, VALUE_TYPE));
                     items.put(attrName, converter.fromModelNode(node.get(attrName)));
@@ -598,7 +598,7 @@ class TypeConverters {
         @Override
         public Object fromModelNode(ModelNode node) {
             Property prop = node.asProperty();
-            Map<String, Object> items = new HashMap<String, Object>();
+            Map<String, Object> items = new HashMap<>();
             items.put("name", prop.getName());
             items.put("value", getConverter().fromModelNode(prop.getValue()));
             try {

@@ -49,8 +49,8 @@ public class TemplateParser extends NodeParser {
     private final String rootElementName;
     private ElementNode root;
     private ProcessingInstructionNode extensionPlaceholder;
-    private final Map<String, ProcessingInstructionNode> subsystemPlaceHolders = new HashMap<String, ProcessingInstructionNode>();
-    private final Map<String, ProcessingInstructionNode> socketBindingsPlaceHolder = new HashMap<String, ProcessingInstructionNode>();
+    private final Map<String, ProcessingInstructionNode> subsystemPlaceHolders = new HashMap<>();
+    private final Map<String, ProcessingInstructionNode> socketBindingsPlaceHolder = new HashMap<>();
 
     public TemplateParser(File inputFile, String rootElementName) {
         this.inputFile = inputFile;

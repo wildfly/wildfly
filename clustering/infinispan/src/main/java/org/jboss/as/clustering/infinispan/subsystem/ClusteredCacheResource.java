@@ -59,7 +59,7 @@ public class ClusteredCacheResource extends CacheResource  {
                     .setXmlName(Attribute.MODE.getLocalName())
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new EnumValidator<Mode>(Mode.class, false, true))
+                    .setValidator(new EnumValidator<>(Mode.class, false, true))
                     .build();
 
     static final SimpleAttributeDefinition QUEUE_FLUSH_INTERVAL =

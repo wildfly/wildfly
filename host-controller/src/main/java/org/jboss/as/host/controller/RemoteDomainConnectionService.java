@@ -141,8 +141,8 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private volatile ModelControllerClient masterProxy;
 
     private final FutureClient futureClient = new FutureClient();
-    private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
-    private final InjectedValue<SecurityRealm> securityRealmInjector = new InjectedValue<SecurityRealm>();
+    private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<>();
+    private final InjectedValue<SecurityRealm> securityRealmInjector = new InjectedValue<>();
 
     private ExecutorService executor;
     private ScheduledExecutorService scheduledExecutorService;
@@ -361,7 +361,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
      */
     private ModelNode resolveSubsystems(final List<ModelNode> extensions) {
 
-        final List<ModelNode> bootOperations = new ArrayList<ModelNode>();
+        final List<ModelNode> bootOperations = new ArrayList<>();
         for (final ModelNode extension : extensions) {
             final ModelNode e = new ModelNode();
             e.get("domain-resource-address").add(EXTENSION, extension.asString());

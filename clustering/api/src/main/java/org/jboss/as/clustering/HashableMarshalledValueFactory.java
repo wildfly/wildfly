@@ -38,6 +38,6 @@ public class HashableMarshalledValueFactory extends SimpleMarshalledValueFactory
      */
     @Override
     public <T> SimpleMarshalledValue<T> createMarshalledValue(T object) throws IOException {
-        return new HashableMarshalledValue<T>(object, this.context);
+        return new HashableMarshalledValue<>(object, this.context);
     }
 }

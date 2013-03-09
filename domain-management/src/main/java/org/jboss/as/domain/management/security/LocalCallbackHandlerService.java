@@ -55,7 +55,7 @@ class LocalCallbackHandlerService implements Service<CallbackHandlerService>, Ca
     private final String defaultUser;
     private final String allowedUsers;
     private boolean allowAll;
-    private final Set<String> allowedUsersSet = new HashSet<String>();
+    private final Set<String> allowedUsersSet = new HashSet<>();
 
     LocalCallbackHandlerService(final String defaultUser, final String allowedUsers) {
         this.defaultUser = defaultUser;

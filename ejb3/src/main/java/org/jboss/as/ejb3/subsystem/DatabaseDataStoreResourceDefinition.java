@@ -56,7 +56,7 @@ public class DatabaseDataStoreResourceDefinition extends SimpleResourceDefinitio
     public static final Map<String, AttributeDefinition> ATTRIBUTES ;
 
     static {
-        Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
+        Map<String, AttributeDefinition> map = new LinkedHashMap<>();
         map.put(DATASOURCE_JNDI_NAME.getName(), DATASOURCE_JNDI_NAME);
 
         ATTRIBUTES = Collections.unmodifiableMap(map);

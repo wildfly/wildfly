@@ -46,7 +46,7 @@ class ConcurrentUpdateTask implements Runnable {
     public void run() {
 
         // Submit each task to the executor
-        List<Future<?>> futures = new ArrayList<Future<?>>();
+        List<Future<?>> futures = new ArrayList<>();
         for (Runnable r : concurrentTasks) {
             futures.add(executorService.submit(r));
         }

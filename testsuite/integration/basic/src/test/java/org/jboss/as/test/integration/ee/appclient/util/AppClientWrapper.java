@@ -52,7 +52,7 @@ public class AppClientWrapper implements Runnable {
     private PrintWriter writer;
     private BufferedReader outputReader;
     private BufferedReader errorReader;
-    private BlockingQueue<String> outputQueue = new LinkedBlockingQueue<String>();
+    private BlockingQueue<String> outputQueue = new LinkedBlockingQueue<>();
     private Thread shutdownThread;
     private final Archive<?> archive;
     private final String clientArchiveName;
@@ -85,7 +85,7 @@ public class AppClientWrapper implements Runnable {
      * @return array of App Client output lines
      */
     public String[] readAll(final long timeout) {
-        Vector<String> lines = new Vector<String>();
+        Vector<String> lines = new Vector<>();
         String line = null;
         do {
             try {

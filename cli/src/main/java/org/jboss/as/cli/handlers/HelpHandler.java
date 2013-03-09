@@ -71,7 +71,7 @@ public class HelpHandler extends CommandHandlerWithHelp {
         }
 
         if(printCommands) {
-            final List<String> commands = new ArrayList<String>();
+            final List<String> commands = new ArrayList<>();
             for(String cmd : cmdRegistry.getTabCompletionCommands()) {
                 CommandHandler handler = cmdRegistry.getCommandHandler(cmd);
                 if(handler.isAvailable(ctx)) {

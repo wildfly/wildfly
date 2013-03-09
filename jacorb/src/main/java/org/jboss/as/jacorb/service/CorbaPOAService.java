@@ -63,9 +63,9 @@ public class CorbaPOAService implements Service<POA> {
 
     private volatile POA poa;
 
-    private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
+    private final InjectedValue<ORB> orbInjector = new InjectedValue<>();
 
-    private final InjectedValue<POA> parentPOAInjector = new InjectedValue<POA>();
+    private final InjectedValue<POA> parentPOAInjector = new InjectedValue<>();
 
     private final String poaName;
 
@@ -212,7 +212,7 @@ public class CorbaPOAService implements Service<POA> {
      * @return the constructed {@code Policy} array.
      */
     private Policy[] createPolicies(POA poa) {
-        List<Policy> policies = new ArrayList<Policy>();
+        List<Policy> policies = new ArrayList<>();
 
         if (this.idAssignmentPolicyValue != null)
             policies.add(poa.create_id_assignment_policy(this.idAssignmentPolicyValue));

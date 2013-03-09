@@ -54,7 +54,7 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker, Serializable,
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("TimedObjectInvoker");
 
-    private final InjectedValue<EJBComponent> ejbComponent = new InjectedValue<EJBComponent>();
+    private final InjectedValue<EJBComponent> ejbComponent = new InjectedValue<>();
     private final Module module;
     private boolean started = false;
 
@@ -124,7 +124,7 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker, Serializable,
     public synchronized void start(final StartContext context) throws StartException {
         SimpleInterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
         factoryContext.getContextData().put(Component.class, ejbComponent.getValue());
-        Map<Method, Interceptor> interceptors = new HashMap<Method, Interceptor>();
+        Map<Method, Interceptor> interceptors = new HashMap<>();
         for(Map.Entry<Method, InterceptorFactory> entry : ejbComponent.getValue().getTimeoutInterceptors().entrySet()) {
             interceptors.put(entry.getKey(), entry.getValue().create(factoryContext));
         }

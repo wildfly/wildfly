@@ -67,12 +67,12 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
     /**
      * The outbound connection references from which the remoting EJB receivers will be created
      */
-    private final Map<ServiceName, InjectedValue<AbstractOutboundConnectionService>> remotingOutboundConnections = new HashMap<ServiceName, InjectedValue<AbstractOutboundConnectionService>>();
+    private final Map<ServiceName, InjectedValue<AbstractOutboundConnectionService>> remotingOutboundConnections = new HashMap<>();
 
     /**
      * (optional) local EJB receiver for the EJB client context
      */
-    private final InjectedValue<LocalEjbReceiver> localEjbReceiverInjectedValue = new InjectedValue<LocalEjbReceiver>();
+    private final InjectedValue<LocalEjbReceiver> localEjbReceiverInjectedValue = new InjectedValue<>();
 
     private final EJBClientConfiguration ejbClientConfiguration;
     private final ClassLoader clientContextClassloader;
@@ -133,7 +133,7 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
     }
 
     public void addRemotingConnectionDependency(final ServiceBuilder<EJBClientContext> serviceBuilder, final ServiceName serviceName) {
-        final InjectedValue<AbstractOutboundConnectionService> value = new InjectedValue<AbstractOutboundConnectionService>();
+        final InjectedValue<AbstractOutboundConnectionService> value = new InjectedValue<>();
         serviceBuilder.addDependency(serviceName, AbstractOutboundConnectionService.class, value);
         remotingOutboundConnections.put(serviceName, value);
     }

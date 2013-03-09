@@ -36,7 +36,7 @@ import org.jboss.modules.Module;
  */
 public class DeploymentClassIndex {
 
-    private final Map<String, ClassIndex> index = new HashMap<String, ClassIndex>();
+    private final Map<String, ClassIndex> index = new HashMap<>();
     private final DeploymentReflectionIndex deploymentReflectionIndex;
     private final Module module;
 

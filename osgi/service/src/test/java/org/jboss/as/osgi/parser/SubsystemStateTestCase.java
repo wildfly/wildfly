@@ -39,8 +39,8 @@ public class SubsystemStateTestCase {
     public void testProperties() {
         SubsystemState state = new SubsystemState();
 
-        final List<Observable> observables = new ArrayList<Observable>();
-        final List<Object> arguments = new ArrayList<Object>();
+        final List<Observable> observables = new ArrayList<>();
+        final List<Object> arguments = new ArrayList<>();
         Observer o = new Observer() {
             @Override
             public void update(Observable o, Object arg) {
@@ -86,8 +86,8 @@ public class SubsystemStateTestCase {
     public void testModules() {
         SubsystemState state = new SubsystemState();
 
-        final List<Observable> observables = new ArrayList<Observable>();
-        final List<Object> arguments = new ArrayList<Object>();
+        final List<Observable> observables = new ArrayList<>();
+        final List<Object> arguments = new ArrayList<>();
         Observer o = new Observer() {
             @Override
             public void update(Observable o, Object arg) {
@@ -125,8 +125,8 @@ public class SubsystemStateTestCase {
     public void testActivation() {
         SubsystemState state = new SubsystemState();
 
-        final List<Observable> observables = new ArrayList<Observable>();
-        final List<Object> arguments = new ArrayList<Object>();
+        final List<Observable> observables = new ArrayList<>();
+        final List<Object> arguments = new ArrayList<>();
         Observer o = new Observer() {
             @Override
             public void update(Observable o, Object arg) {

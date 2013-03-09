@@ -133,7 +133,7 @@ public class PersistenceUnitServiceHandler {
             if (deploymentRoot != null &&
                 (holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
                 holder.getPersistenceUnits().size() > 0) {
-                ArrayList<PersistenceUnitMetadataHolder> puList = new ArrayList<PersistenceUnitMetadataHolder>(1);
+                ArrayList<PersistenceUnitMetadataHolder> puList = new ArrayList<>(1);
                 puList.add(holder);
                 JPA_LOGGER.tracef("install persistence unit definition for jar %s", deploymentRoot.getRootName());
                 // assemble and install the PU service
@@ -147,7 +147,7 @@ public class PersistenceUnitServiceHandler {
         if (isWarDeployment(deploymentUnit) && JPADeploymentMarker.isJPADeployment(deploymentUnit)) {
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
             PersistenceUnitMetadataHolder holder;
-            ArrayList<PersistenceUnitMetadataHolder> puList = new ArrayList<PersistenceUnitMetadataHolder>(1);
+            ArrayList<PersistenceUnitMetadataHolder> puList = new ArrayList<>(1);
 
             // handle persistence.xml definition in the root of the war
             if (deploymentRoot != null &&
@@ -187,7 +187,7 @@ public class PersistenceUnitServiceHandler {
             for (final ResourceRoot root : deploymentRoots) {
                 if (!SubDeploymentMarker.isSubDeployment(root)) {
                     PersistenceUnitMetadataHolder holder;
-                    ArrayList<PersistenceUnitMetadataHolder> puList = new ArrayList<PersistenceUnitMetadataHolder>(1);
+                    ArrayList<PersistenceUnitMetadataHolder> puList = new ArrayList<>(1);
 
                     if (root != null &&
                         (holder = root.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
@@ -276,7 +276,7 @@ public class PersistenceUnitServiceHandler {
         pu.setClassLoader(classLoader);
         try {
             SerializableValidatorFactory validatorFactory = null;
-            final HashMap<String, ValidatorFactory> properties = new HashMap<String, ValidatorFactory>();
+            final HashMap<String, ValidatorFactory> properties = new HashMap<>();
             if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
                 validatorFactory = SerializableValidatorFactory.validatorFactory();
                 properties.put("javax.persistence.validation.factory", validatorFactory);
@@ -332,7 +332,7 @@ public class PersistenceUnitServiceHandler {
                     builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
                     useDefaultDataSource = false;
                 } else {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(jtaDataSource), new CastingInjector<DataSource>(service.getJtaDataSourceInjector(), DataSource.class));
+                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(jtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
                     useDefaultDataSource = false;
                 }
             }
@@ -341,7 +341,7 @@ public class PersistenceUnitServiceHandler {
                     builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, nonJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getNonJtaDataSourceInjector()));
                     useDefaultDataSource = false;
                 } else {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(nonJtaDataSource), new CastingInjector<DataSource>(service.getNonJtaDataSourceInjector(), DataSource.class));
+                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(nonJtaDataSource), new CastingInjector<>(service.getNonJtaDataSourceInjector(), DataSource.class));
                     useDefaultDataSource = false;
                 }
             }
@@ -350,7 +350,7 @@ public class PersistenceUnitServiceHandler {
                 final String defaultJtaDataSource = adjustJndi(JPAService.getDefaultDataSourceName());
                 if (defaultJtaDataSource != null &&
                     defaultJtaDataSource.length() > 0) {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<DataSource>(service.getJtaDataSourceInjector(), DataSource.class));
+                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
                     JPA_LOGGER.tracef("%s is using the default data source '%s'", puServiceName, defaultJtaDataSource);
                 }
             }
@@ -410,7 +410,7 @@ public class PersistenceUnitServiceHandler {
             final PersistenceUnitMetadataHolder puHolder,
             DeploymentUnit deploymentUnit ) {
 
-        final Map<URL, Index> annotationIndexes = new HashMap<URL, Index>();
+        final Map<URL, Index> annotationIndexes = new HashMap<>();
 
         do {
             for (ResourceRoot root : DeploymentUtils.allResourceRoots(deploymentUnit)) {
@@ -525,7 +525,7 @@ public class PersistenceUnitServiceHandler {
         synchronized (deploymentUnit) {
             Map<String,PersistenceProviderAdaptor> map = deploymentUnit.getAttachment(providerAdaptorMapKey);
             if( map == null) {
-                map = new HashMap<String,PersistenceProviderAdaptor>();
+                map = new HashMap<>();
                 deploymentUnit.putAttachment(providerAdaptorMapKey, map);
             }
             return map.get(adaptorModule);

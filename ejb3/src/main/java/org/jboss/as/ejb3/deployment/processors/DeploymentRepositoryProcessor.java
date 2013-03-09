@@ -75,18 +75,18 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
         final DeploymentModuleIdentifier identifier = new DeploymentModuleIdentifier(applicationName, eeModuleDescription.getModuleName(), eeModuleDescription.getDistinctName());
 
         final Collection<ComponentDescription> componentDescriptions = eeModuleDescription.getComponentDescriptions();
-        final Map<String, EjbDeploymentInformation> deploymentInformationMap = new HashMap<String, EjbDeploymentInformation>();
+        final Map<String, EjbDeploymentInformation> deploymentInformationMap = new HashMap<>();
 
-        final Map<ServiceName, InjectedValue<?>> injectedValues = new HashMap<ServiceName, InjectedValue<?>>();
+        final Map<ServiceName, InjectedValue<?>> injectedValues = new HashMap<>();
 
         for (final ComponentDescription component : componentDescriptions) {
             if (component instanceof EJBComponentDescription) {
                 final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) component;
 
-                final InjectedValue<EJBComponent> componentInjectedValue = new InjectedValue<EJBComponent>();
+                final InjectedValue<EJBComponent> componentInjectedValue = new InjectedValue<>();
                 injectedValues.put(component.getCreateServiceName(), componentInjectedValue);
-                final Map<String, InjectedValue<ComponentView>> remoteViews = new HashMap<String, InjectedValue<ComponentView>>();
-                final Map<String, InjectedValue<ComponentView>> localViews = new HashMap<String, InjectedValue<ComponentView>>();
+                final Map<String, InjectedValue<ComponentView>> remoteViews = new HashMap<>();
+                final Map<String, InjectedValue<ComponentView>> localViews = new HashMap<>();
                 for (final ViewDescription view : ejbComponentDescription.getViews()) {
                     boolean remoteView = false;
                     if (view instanceof EJBViewDescription) {
@@ -95,7 +95,7 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
                             remoteView = true;
                         }
                     }
-                    final InjectedValue<ComponentView> componentViewInjectedValue = new InjectedValue<ComponentView>();
+                    final InjectedValue<ComponentView> componentViewInjectedValue = new InjectedValue<>();
                     if (remoteView) {
                         remoteViews.put(view.getViewClassName(), componentViewInjectedValue);
                     } else {
@@ -103,7 +103,7 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
                     }
                     injectedValues.put(view.getServiceName(), componentViewInjectedValue);
                 }
-                final InjectedValue<EjbIIOPService> iorFactory = new InjectedValue<EjbIIOPService>();
+                final InjectedValue<EjbIIOPService> iorFactory = new InjectedValue<>();
                 if (ejbComponentDescription.isExposedViaIiop()) {
                     injectedValues.put(ejbComponentDescription.getServiceName().append(EjbIIOPService.SERVICE_NAME), iorFactory);
                 }

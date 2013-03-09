@@ -81,7 +81,7 @@ public class StatefulSessionSynchronizationInterceptorTestCase {
         final TransactionSynchronizationRegistry transactionSynchronizationRegistry = mock(TransactionSynchronizationRegistry.class);
         when(component.getTransactionSynchronizationRegistry()).thenReturn(transactionSynchronizationRegistry);
         when(transactionSynchronizationRegistry.getTransactionKey()).thenReturn("TX1");
-        final List<Synchronization> synchronizations = new LinkedList<Synchronization>();
+        final List<Synchronization> synchronizations = new LinkedList<>();
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {

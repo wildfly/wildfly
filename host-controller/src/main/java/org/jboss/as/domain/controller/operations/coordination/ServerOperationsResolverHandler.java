@@ -161,11 +161,11 @@ public class ServerOperationsResolverHandler implements OperationStepHandler {
         ModelNode serverOpsNode = overallResult.get(SERVER_OPERATIONS);
 
         // Group servers with the same ops together to save bandwidth
-        final Map<ModelNode, Set<ServerIdentity>> bundled = new HashMap<ModelNode, Set<ServerIdentity>>();
+        final Map<ModelNode, Set<ServerIdentity>> bundled = new HashMap<>();
         for (Map.Entry<ServerIdentity, ModelNode> entry : serverOps.entrySet()) {
             Set<ServerIdentity> idSet = bundled.get(entry.getValue());
             if (idSet == null) {
-                idSet = new HashSet<ServerIdentity>();
+                idSet = new HashSet<>();
                 bundled.put(entry.getValue(), idSet);
             }
             idSet.add(entry.getKey());

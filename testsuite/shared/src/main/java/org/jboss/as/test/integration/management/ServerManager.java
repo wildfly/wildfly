@@ -130,7 +130,7 @@ public class ServerManager extends AbstractMgmtTestBase {
         op.get("child-type").set("connector");
         ModelNode result = executeOperation(op);
         List<ModelNode> connectors = result.asList();
-        HashSet<String> connNames = new HashSet<String>();
+        HashSet<String> connNames = new HashSet<>();
         for (ModelNode n : connectors) {
             connNames.add(n.asString());
         }

@@ -66,7 +66,7 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
             return Collections.<BindingConfiguration> emptyList();
         }
 
-        final List<BindingConfiguration> bindingDescriptions = new LinkedList<BindingConfiguration>();
+        final List<BindingConfiguration> bindingDescriptions = new LinkedList<>();
         for (final ServiceReferenceMetaData serviceRefMD : serviceRefsMD) {
             final UnifiedServiceRefMetaData serviceRefUMDM = getServiceRef(unit, componentDescription, serviceRefMD);
             final Module module = unit.getAttachment(Attachments.MODULE);

@@ -140,7 +140,7 @@ public abstract class AbstractMgmtTestBase {
 
     protected Map<String, ModelNode> getChildren(final ModelNode result) {
         assert result.isDefined();
-        final Map<String, ModelNode> steps = new HashMap<String, ModelNode>();
+        final Map<String, ModelNode> steps = new HashMap<>();
         for (final Property property : result.asPropertyList()) {
             steps.put(property.getName(), property.getValue());
         }
@@ -191,7 +191,7 @@ public abstract class AbstractMgmtTestBase {
         StringReader strReader = new StringReader(xml);
 
         XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new StreamSource(strReader));
-        List<ModelNode> newList = new ArrayList<ModelNode>();
+        List<ModelNode> newList = new ArrayList<>();
         mapper.parseDocument(newList, reader);
 
         return newList;

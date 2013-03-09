@@ -54,16 +54,16 @@ public class _UndertowHttpManagementService implements Service<HttpManagement>{
     //TODO get rid of "undertow" when we make the switch
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("serverManagement", "controller", "management", "http", "undertow");
 
-    private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
-    private final InjectedValue<SocketBinding> injectedSocketBindingValue = new InjectedValue<SocketBinding>();
-    private final InjectedValue<SocketBinding> injectedSecureSocketBindingValue = new InjectedValue<SocketBinding>();
-    private final InjectedValue<NetworkInterfaceBinding> interfaceBindingValue = new InjectedValue<NetworkInterfaceBinding>();
-    private final InjectedValue<SocketBindingManager> injectedSocketBindingManager = new InjectedValue<SocketBindingManager>();
-    private final InjectedValue<Integer> portValue = new InjectedValue<Integer>();
-    private final InjectedValue<Integer> securePortValue = new InjectedValue<Integer>();
-    private final InjectedValue<ExecutorService> executorServiceValue = new InjectedValue<ExecutorService>();
-    private final InjectedValue<SecurityRealmService> securityRealmServiceValue = new InjectedValue<SecurityRealmService>();
-    private final InjectedValue<ControlledProcessStateService> controlledProcessStateServiceValue = new InjectedValue<ControlledProcessStateService>();
+    private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<>();
+    private final InjectedValue<SocketBinding> injectedSocketBindingValue = new InjectedValue<>();
+    private final InjectedValue<SocketBinding> injectedSecureSocketBindingValue = new InjectedValue<>();
+    private final InjectedValue<NetworkInterfaceBinding> interfaceBindingValue = new InjectedValue<>();
+    private final InjectedValue<SocketBindingManager> injectedSocketBindingManager = new InjectedValue<>();
+    private final InjectedValue<Integer> portValue = new InjectedValue<>();
+    private final InjectedValue<Integer> securePortValue = new InjectedValue<>();
+    private final InjectedValue<ExecutorService> executorServiceValue = new InjectedValue<>();
+    private final InjectedValue<SecurityRealmService> securityRealmServiceValue = new InjectedValue<>();
+    private final InjectedValue<ControlledProcessStateService> controlledProcessStateServiceValue = new InjectedValue<>();
     private final ConsoleMode consoleMode;
     private final String consoleSlot;
     private ManagementHttpServer serverManagement;

@@ -35,7 +35,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class DelegatingClassFileTransformer implements ClassFileTransformer {
 
-    private final List<ClassFileTransformer> delegateTransformers = new CopyOnWriteArrayList<ClassFileTransformer>();
+    private final List<ClassFileTransformer> delegateTransformers = new CopyOnWriteArrayList<>();
 
     public static final AttachmentKey<DelegatingClassFileTransformer> ATTACHMENT_KEY = AttachmentKey.create(DelegatingClassFileTransformer.class);
 

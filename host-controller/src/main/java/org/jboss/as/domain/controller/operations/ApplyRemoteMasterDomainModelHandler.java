@@ -113,9 +113,9 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         final ModelNode startRoot = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS));
 
         final Set<String> ourServerGroups = getOurServerGroups(context);
-        final Map<String, Set<byte[]>> deploymentHashes = new HashMap<String, Set<byte[]>>();
-        final Set<String> relevantDeployments = new HashSet<String>();
-        final Set<byte[]> requiredContent = new HashSet<byte[]>();
+        final Map<String, Set<byte[]>> deploymentHashes = new HashMap<>();
+        final Set<String> relevantDeployments = new HashSet<>();
+        final Set<byte[]> requiredContent = new HashSet<>();
 
         final Resource rootResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         clearDomain(rootResource);
@@ -146,7 +146,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
                             if (contentItem.hasDefined(HASH)) {
                                 Set<byte[]> hashes = deploymentHashes.get(id);
                                 if (hashes == null) {
-                                    hashes = new HashSet<byte[]>();
+                                    hashes = new HashSet<>();
                                     deploymentHashes.put(id, hashes);
                                 }
                                 hashes.add(contentItem.get(HASH).asBytes());
@@ -183,7 +183,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         if (!context.isBooting()) {
             final Resource domainRootResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
             final ModelNode endRoot = Resource.Tools.readModel(domainRootResource);
-            final Set<ServerIdentity> affectedServers = new HashSet<ServerIdentity>();
+            final Set<ServerIdentity> affectedServers = new HashSet<>();
             final ModelNode hostModel = endRoot.require(HOST).asPropertyList().iterator().next().getValue();
             final ModelNode existingHostModel = startRoot.require(HOST).asPropertyList().iterator().next().getValue();
 
@@ -193,7 +193,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
 
             final ModelNode startPaths = startRoot.get(PATH);
             final ModelNode endPaths = endRoot.get(PATH);
-            final Map<String, ModelNode> existingPaths = new HashMap<String, ModelNode>();
+            final Map<String, ModelNode> existingPaths = new HashMap<>();
             if (startPaths.isDefined()) for (Property property : startPaths.asPropertyList()) {
                 existingPaths.put(property.getName(), property.getValue());
             }
@@ -214,7 +214,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
 
             final ModelNode startSysProps = startRoot.get(SYSTEM_PROPERTY);
             final ModelNode endSysProps = endRoot.get(SYSTEM_PROPERTY);
-            final Map<String, ModelNode> existingProps = new HashMap<String, ModelNode>();
+            final Map<String, ModelNode> existingProps = new HashMap<>();
             if (startSysProps.isDefined()) for (Property property : startSysProps.asPropertyList()) {
                 existingProps.put(property.getName(), property.getValue());
             }
@@ -234,7 +234,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
 
             final ModelNode startProfiles = startRoot.get(PROFILE);
             final ModelNode endProfiles = endRoot.get(PROFILE);
-            final Map<String, ModelNode> existingProfiles = new HashMap<String, ModelNode>();
+            final Map<String, ModelNode> existingProfiles = new HashMap<>();
             if (startProfiles.isDefined()) for (Property profile : startProfiles.asPropertyList()) {
                 existingProfiles.put(profile.getName(), profile.getValue());
             }
@@ -254,7 +254,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
 
             final ModelNode startInterfaces = startRoot.get(INTERFACE);
             final ModelNode endInterfaces = endRoot.get(INTERFACE);
-            final Map<String, ModelNode> existingInterfaces = new HashMap<String, ModelNode>();
+            final Map<String, ModelNode> existingInterfaces = new HashMap<>();
             if (startInterfaces.isDefined()) for (Property interfaceProp : startInterfaces.asPropertyList()) {
                 existingInterfaces.put(interfaceProp.getName(), interfaceProp.getValue());
             }
@@ -274,7 +274,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
 
             final ModelNode startBindingGroups = startRoot.get(SOCKET_BINDING_GROUP);
             final ModelNode endBindingGroups = endRoot.get(SOCKET_BINDING_GROUP);
-            final Map<String, ModelNode> existingBindingGroups = new HashMap<String, ModelNode>();
+            final Map<String, ModelNode> existingBindingGroups = new HashMap<>();
             if (startBindingGroups.isDefined()) for (Property bindingGroup : startBindingGroups.asPropertyList()) {
                 existingBindingGroups.put(bindingGroup.getName(), bindingGroup.getValue());
             }
@@ -294,7 +294,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
 
             final ModelNode startServerGroups = startRoot.get(SERVER_GROUP);
             final ModelNode endServerGroups = endRoot.get(SERVER_GROUP);
-            final Map<String, ModelNode> existingServerGroups = new HashMap<String, ModelNode>();
+            final Map<String, ModelNode> existingServerGroups = new HashMap<>();
             if (startServerGroups.isDefined()) for (Property serverGroup : startServerGroups.asPropertyList()) {
                 existingServerGroups.put(serverGroup.getName(), serverGroup.getValue());
             }
@@ -392,7 +392,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
             // Host will take precedence; ignore the domain
             return Collections.emptySet();
         } else if (hostModel.hasDefined(SERVER_CONFIG)) {
-            Set<ServerIdentity> servers = new HashSet<ServerIdentity>();
+            Set<ServerIdentity> servers = new HashSet<>();
             for (Property prop : hostModel.get(SERVER_CONFIG).asPropertyList()) {
 
                 String serverName = prop.getName();
@@ -424,7 +424,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
                 groups = Collections.singleton(affectedGroup);
             } else if (domain.hasDefined(SERVER_GROUP)) {
                 // Top level domain update applies to all groups where it was not overridden
-                groups = new HashSet<String>();
+                groups = new HashSet<>();
                 for (Property groupProp : domain.get(SERVER_GROUP).asPropertyList()) {
                     String groupName = groupProp.getName();
                     if (!hasSystemProperty(groupProp.getValue(), propName)) {
@@ -435,7 +435,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         }
         Set<ServerIdentity> servers = null;
         if (!overridden && host.hasDefined(SERVER_CONFIG)) {
-            servers = new HashSet<ServerIdentity>();
+            servers = new HashSet<>();
             for (Property serverProp : host.get(SERVER_CONFIG).asPropertyList()) {
                 String serverName = serverProp.getName();
                 ModelNode server = serverProp.getValue();
@@ -459,7 +459,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
 
     private Collection<ServerIdentity> getServerAffectedByProfile(final String profileName, final ModelNode domain, final ModelNode host, final Map<String, ProxyController> serverProxies) {
         Set<String> relatedProfiles = getRelatedElements(PROFILE, profileName, domain);
-        Set<ServerIdentity> allServers = new HashSet<ServerIdentity>();
+        Set<ServerIdentity> allServers = new HashSet<>();
         for (String profile : relatedProfiles) {
             allServers.addAll(getServersForType(PROFILE, profile, domain, host, localHostInfo.getLocalHostName(), serverProxies));
         }
@@ -471,7 +471,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
             // Host will take precedence; ignore the domain
             return Collections.emptySet();
         } else if (hostModel.hasDefined(SERVER_CONFIG)) {
-            Set<ServerIdentity> servers = new HashSet<ServerIdentity>();
+            Set<ServerIdentity> servers = new HashSet<>();
             for (Property prop : hostModel.get(SERVER_CONFIG).asPropertyList()) {
                 String serverName = prop.getName();
                 ModelNode server = prop.getValue();
@@ -492,7 +492,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
 
     private Collection<ServerIdentity> getServersAffectedBySocketBindingGroup(final String bindingGroupName, final ModelNode domain, final ModelNode host, final Map<String, ProxyController> serverProxies) {
         Set<String> relatedBindingGroups = getRelatedElements(SOCKET_BINDING_GROUP, bindingGroupName, domain);
-        Set<ServerIdentity> result = new HashSet<ServerIdentity>();
+        Set<ServerIdentity> result = new HashSet<>();
         for (String bindingGroup : relatedBindingGroups) {
             result.addAll(getServersForType(SOCKET_BINDING_GROUP, bindingGroup, domain, host, localHostInfo.getLocalHostName(), serverProxies));
         }
@@ -507,7 +507,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
     }
 
     private Set<String> getOurServerGroups(OperationContext context) {
-        Set<String> result = new HashSet<String>();
+        Set<String> result = new HashSet<>();
 
         Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
         Resource host = root.getChildren(HOST).iterator().next();

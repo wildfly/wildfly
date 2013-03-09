@@ -45,11 +45,11 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
     private static final long serialVersionUID = -7652253540766375101L;
 
     private final UUID uuid;
-    private final List<DeploymentAction> deploymentActions = new ArrayList<DeploymentAction>();
+    private final List<DeploymentAction> deploymentActions = new ArrayList<>();
     private final boolean rollback;
     private final boolean shutdown;
     private final long gracefulShutdownPeriod;
-    private final List<Set<ServerGroupDeploymentPlan>> serverGroupPlans = new ArrayList<Set<ServerGroupDeploymentPlan>>();
+    private final List<Set<ServerGroupDeploymentPlan>> serverGroupPlans = new ArrayList<>();
 
     DeploymentSetPlanImpl() {
         this.uuid = UUID.randomUUID();
@@ -72,7 +72,7 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
         this.gracefulShutdownPeriod = gracefulTimeout;
         this.serverGroupPlans.addAll(serverGroupPlans);
         LinkedHashSet<ServerGroupDeploymentPlan> last = (LinkedHashSet<ServerGroupDeploymentPlan>) serverGroupPlans.get(serverGroupPlans.size() -1);
-        this.serverGroupPlans.set(serverGroupPlans.size() - 1, new LinkedHashSet<ServerGroupDeploymentPlan>(last));
+        this.serverGroupPlans.set(serverGroupPlans.size() - 1, new LinkedHashSet<>(last));
     }
 
     @Override
@@ -86,7 +86,7 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
 
     @Override
     public List<DeploymentAction> getDeploymentActions() {
-        return new ArrayList<DeploymentAction>(deploymentActions);
+        return new ArrayList<>(deploymentActions);
     }
 
     @Override
@@ -113,9 +113,9 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
     public List<Set<ServerGroupDeploymentPlan>> getServerGroupDeploymentPlans() {
         List<Set<ServerGroupDeploymentPlan>> copy = null;
         if (serverGroupPlans != null) {
-            copy = new ArrayList<Set<ServerGroupDeploymentPlan>>(serverGroupPlans.size());
+            copy = new ArrayList<>(serverGroupPlans.size());
             for (Set<ServerGroupDeploymentPlan> set : serverGroupPlans) {
-                copy.add(Collections.unmodifiableSet(new LinkedHashSet<ServerGroupDeploymentPlan>(set)));
+                copy.add(Collections.unmodifiableSet(new LinkedHashSet<>(set)));
             }
         }
         else {
@@ -175,7 +175,7 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
         DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, this.rollback, this.shutdown, this.gracefulShutdownPeriod);
         Set<ServerGroupDeploymentPlan> set = result.serverGroupPlans.get(result.serverGroupPlans.size() - 1);
         result.serverGroupPlans.set(result.serverGroupPlans.size() - 1, Collections.unmodifiableSet(set));
-        set = new LinkedHashSet<ServerGroupDeploymentPlan>();
+        set = new LinkedHashSet<>();
         set.add(groupPlan);
         result.serverGroupPlans.add(set);
         return result;

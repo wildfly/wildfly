@@ -52,7 +52,7 @@ enum SSLConfigValue {
     private static Map<String, SSLConfigValue> MAP;
 
     static {
-        final Map<String, SSLConfigValue> map = new HashMap<String, SSLConfigValue>();
+        final Map<String, SSLConfigValue> map = new HashMap<>();
         for (SSLConfigValue configValue : values()) {
             map.put(configValue.getJacorbValue(), configValue);
         }

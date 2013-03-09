@@ -45,8 +45,8 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 public abstract class AbstractConfigurationPersister implements ExtensibleConfigurationPersister {
 
     private final XMLElementWriter<ModelMarshallingContext> rootDeparser;
-    private final Map<String, XMLElementWriter<SubsystemMarshallingContext>> subsystemWriters = new HashMap<String, XMLElementWriter<SubsystemMarshallingContext>>();
-    private final Map<String, XMLElementWriter<SubsystemMarshallingContext>> subsystemDeploymentWriters = new HashMap<String, XMLElementWriter<SubsystemMarshallingContext>>();
+    private final Map<String, XMLElementWriter<SubsystemMarshallingContext>> subsystemWriters = new HashMap<>();
+    private final Map<String, XMLElementWriter<SubsystemMarshallingContext>> subsystemDeploymentWriters = new HashMap<>();
 
     /**
      * Construct a new instance.

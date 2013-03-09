@@ -57,7 +57,7 @@ public enum EJBComponentType {
     private static final Map<Class<?>, EJBComponentType> typeByDescriptionClass;
 
     static {
-        typeByDescriptionClass = new HashMap<Class<?>, EJBComponentType>();
+        typeByDescriptionClass = new HashMap<>();
         for (EJBComponentType type : values()) {
             typeByDescriptionClass.put(type.componentDescriptionClass, type);
         }

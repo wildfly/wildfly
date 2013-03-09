@@ -88,7 +88,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
 
     @Override
     public <T extends Operation> AsyncFuture<ModelNode> execute(TransactionalOperationListener<T> listener, T operation) throws IOException {
-        final ExecuteRequestContext context = new ExecuteRequestContext(new OperationWrapper<T>(listener, operation));
+        final ExecuteRequestContext context = new ExecuteRequestContext(new OperationWrapper<>(listener, operation));
         final ActiveOperation<ModelNode, ExecuteRequestContext> op = channelAssociation.initializeOperation(context, context);
         final AsyncFuture<ModelNode> result = new AbstractDelegatingAsyncFuture<ModelNode>(op.getResult()) {
             @Override
@@ -370,7 +370,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
         }
 
         void prepared(final ModelController.OperationTransaction transaction, final ModelNode result) {
-            final PreparedOperation<T> preparedOperation = new PreparedOperationImpl<T>(operation, result, future, transaction);
+            final PreparedOperation<T> preparedOperation = new PreparedOperationImpl<>(operation, result, future, transaction);
             listener.operationPrepared(preparedOperation);
         }
 

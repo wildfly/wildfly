@@ -35,9 +35,9 @@ import java.util.Map;
  */
 public class EjbJaccConfig {
 
-    private final List<Map.Entry<String, Permission>> roles = new ArrayList<Map.Entry<String, Permission>>();
-    private final List<Permission> permit = new ArrayList<Permission>();
-    private final List<Permission> deny = new ArrayList<Permission>();
+    private final List<Map.Entry<String, Permission>> roles = new ArrayList<>();
+    private final List<Permission> permit = new ArrayList<>();
+    private final List<Permission> deny = new ArrayList<>();
 
     public void addRole(String role, Permission permission) {
         roles.add(new Entry(role, permission));

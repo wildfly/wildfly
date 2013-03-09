@@ -103,7 +103,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         }
 
         // a bean-name -> IIOPMetaData map, reflecting the assembly descriptor IIOP configuration.
-        Map<String, IIOPMetaData> iiopMetaDataMap = new HashMap<String, IIOPMetaData>();
+        Map<String, IIOPMetaData> iiopMetaDataMap = new HashMap<>();
         final EjbJarMetaData ejbMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         if (ejbMetaData != null && ejbMetaData.getAssemblyDescriptor() != null) {
             List<IIOPMetaData> iiopMetaDatas = ejbMetaData.getAssemblyDescriptor().getAny(IIOPMetaData.class);
@@ -179,7 +179,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
             throw MESSAGES.failedToAnalyzeRemoteInterface(e, componentDescription.getComponentName());
         }
 
-        final Map<String, SkeletonStrategy> beanMethodMap = new HashMap<String, SkeletonStrategy>();
+        final Map<String, SkeletonStrategy> beanMethodMap = new HashMap<>();
 
         final AttributeAnalysis[] remoteAttrs = remoteInterfaceAnalysis.getAttributes();
         for (int i = 0; i < remoteAttrs.length; i++) {
@@ -220,7 +220,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
             throw MESSAGES.failedToAnalyzeRemoteInterface(e, componentDescription.getComponentName());
         }
 
-        final Map<String, SkeletonStrategy> homeMethodMap = new HashMap<String, SkeletonStrategy>();
+        final Map<String, SkeletonStrategy> homeMethodMap = new HashMap<>();
 
         final AttributeAnalysis[] attrs = homeInterfaceAnalysis.getAttributes();
         for (int i = 0; i < attrs.length; i++) {

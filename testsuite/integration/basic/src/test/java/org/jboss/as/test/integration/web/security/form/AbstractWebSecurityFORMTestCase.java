@@ -100,7 +100,7 @@ public abstract class AbstractWebSecurityFORMTestCase extends WebSecurityPasswor
             // We should now login with the user name and password
             HttpPost httpPost = new HttpPost(req);
 
-            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+            List<NameValuePair> nvps = new ArrayList<>();
             nvps.add(new BasicNameValuePair("j_username", user));
             nvps.add(new BasicNameValuePair("j_password", pass));
 

@@ -47,7 +47,7 @@ import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
  * @author Emanuel Muckenhuber
  */
 public class JMSService implements Service<JMSServerManager> {
-    private final InjectedValue<HornetQServer> hornetQServer = new InjectedValue<HornetQServer>();
+    private final InjectedValue<HornetQServer> hornetQServer = new InjectedValue<>();
     private JMSServerManager jmsServer;
 
     public static ServiceController<?> addService(final ServiceTarget target, ServiceName hqServiceName, final ServiceListener<Object>... listeners) {

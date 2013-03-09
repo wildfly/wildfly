@@ -188,7 +188,7 @@ public class CustomLoginModuleTestCase {
             // We should now login with the user name and password
             HttpPost httpost = new HttpPost(getURL() + "j_security_check");
 
-            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+            List<NameValuePair> nvps = new ArrayList<>();
             nvps.add(new BasicNameValuePair("j_username", user));
             nvps.add(new BasicNameValuePair("j_password", pass));
 

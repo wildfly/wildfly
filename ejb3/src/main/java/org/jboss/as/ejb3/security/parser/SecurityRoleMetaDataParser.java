@@ -65,7 +65,7 @@ public class SecurityRoleMetaDataParser extends AbstractMetaDataParser<SecurityR
             else if (localName.equals(Element.PRINCIPAL_NAME.getLocalName())) {
                 Set<String> principalNames = metaData.getPrincipals();
                 if (principalNames == null) {
-                    principalNames = new HashSet<String>();
+                    principalNames = new HashSet<>();
                     metaData.setPrincipals(principalNames);
                 }
                 principalNames.add(getElementText(reader, propertyReplacer));

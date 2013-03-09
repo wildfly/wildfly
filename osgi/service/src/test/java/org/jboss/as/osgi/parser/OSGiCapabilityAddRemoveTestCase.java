@@ -41,7 +41,7 @@ public class OSGiCapabilityAddRemoveTestCase extends ResourceAddRemoveTestBase {
     @Test
     public void testOSGiCapabilityAddRemove() throws Exception {
         SubsystemState stateService = new SubsystemState();
-        List<OperationStepHandler> addedSteps = new ArrayList<OperationStepHandler>();
+        List<OperationStepHandler> addedSteps = new ArrayList<>();
         OperationContext context = mockOperationContext(stateService, addedSteps, OperationContext.ResultAction.KEEP);
 
         ModelNode op = getAddOperation("org.acme.module1", 4);
@@ -72,7 +72,7 @@ public class OSGiCapabilityAddRemoveTestCase extends ResourceAddRemoveTestBase {
     @Test
     public void testOSGiCapabilityAddRollback() throws Exception {
         SubsystemState stateService = new SubsystemState();
-        List<OperationStepHandler> addedSteps = new ArrayList<OperationStepHandler>();
+        List<OperationStepHandler> addedSteps = new ArrayList<>();
         OperationContext context = mockOperationContext(stateService, addedSteps, OperationContext.ResultAction.ROLLBACK);
 
         ModelNode op = getAddOperation("org.acme.module1", 4);

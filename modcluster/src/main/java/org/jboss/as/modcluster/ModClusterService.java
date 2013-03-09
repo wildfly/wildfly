@@ -64,10 +64,10 @@ class ModClusterService implements Service<ModCluster>, ModCluster {
     private LoadBalanceFactorProvider load;
     private ModClusterConfig config;
 
-    private final InjectedValue<WebServer> webServer = new InjectedValue<WebServer>();
-    private final InjectedValue<SocketBindingManager> bindingManager = new InjectedValue<SocketBindingManager>();
-    private final InjectedValue<SocketBinding> binding = new InjectedValue<SocketBinding>();
-    private final InjectedValue<Connector> connector = new InjectedValue<Connector>();
+    private final InjectedValue<WebServer> webServer = new InjectedValue<>();
+    private final InjectedValue<SocketBindingManager> bindingManager = new InjectedValue<>();
+    private final InjectedValue<SocketBinding> binding = new InjectedValue<>();
+    private final InjectedValue<Connector> connector = new InjectedValue<>();
 
     /* Depending on configuration we use one of the other */
     private org.jboss.modcluster.ModClusterService service;

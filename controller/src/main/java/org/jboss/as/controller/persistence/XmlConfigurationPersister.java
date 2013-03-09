@@ -70,7 +70,7 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
         this.fileName = fileName;
         this.rootElement = rootElement;
         this.rootParser = rootParser;
-        additionalParsers = new HashMap<QName, XMLElementReader<List<ModelNode>>>();
+        additionalParsers = new HashMap<>();
     }
 
     public void registerAdditionalRootElement(final QName anotherRoot, final XMLElementReader<List<ModelNode>> parser){
@@ -95,7 +95,7 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
                 mapper.registerRootElement(entry.getKey(), entry.getValue());
             }
         }
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        final List<ModelNode> updates = new ArrayList<>();
         try {
             final FileInputStream fis = new FileInputStream(fileName);
             try {

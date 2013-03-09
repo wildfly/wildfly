@@ -42,7 +42,7 @@ public class Month extends IntegerBasedExpression {
 
     public static final Integer MIN_MONTH = 1;
 
-    private static final Map<String, Integer> MONTH_ALIAS = new HashMap<String, Integer>();
+    private static final Map<String, Integer> MONTH_ALIAS = new HashMap<>();
 
     static {
         MONTH_ALIAS.put("jan", 1);
@@ -62,7 +62,7 @@ public class Month extends IntegerBasedExpression {
 
     private static final int OFFSET = MONTH_ALIAS.get("jan") - Calendar.JANUARY;
 
-    private SortedSet<Integer> offsetAdjustedMonths = new TreeSet<Integer>();
+    private SortedSet<Integer> offsetAdjustedMonths = new TreeSet<>();
 
     public Month(String value) {
         super(value);

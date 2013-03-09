@@ -41,7 +41,7 @@ public class ScriptMenu extends JMenu {
 
     private CliGuiContext cliGuiCtx;
 
-    private LinkedList<File> previouslyRun = new LinkedList<File>();
+    private LinkedList<File> previouslyRun = new LinkedList<>();
 
     public ScriptMenu(CliGuiContext cliGuiCtx) {
         super("Scripts");

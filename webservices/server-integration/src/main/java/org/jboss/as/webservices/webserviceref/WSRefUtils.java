@@ -359,7 +359,7 @@ final class WSRefUtils {
           }
 
           // Build the list of @WebServiceRef relevant annotations
-          final List<WebServiceRef> wsrefList = new ArrayList<WebServiceRef>();
+          final List<WebServiceRef> wsrefList = new ArrayList<>();
 
           if (webServiceRefAnnotation != null) {
               wsrefList.add(webServiceRefAnnotation);

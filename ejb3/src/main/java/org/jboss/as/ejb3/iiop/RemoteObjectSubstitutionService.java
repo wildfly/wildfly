@@ -48,7 +48,7 @@ import javax.ejb.HomeHandle;
  */
 public class RemoteObjectSubstitutionService implements RemoteObjectSubstitution, Service<RemoteObjectSubstitution> {
 
-    private final InjectedValue<DeploymentRepository> deploymentRepositoryInjectedValue = new InjectedValue<DeploymentRepository>();
+    private final InjectedValue<DeploymentRepository> deploymentRepositoryInjectedValue = new InjectedValue<>();
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "iiop", "remoteObjectSubstitution");
 

@@ -394,7 +394,7 @@ public class SPNEGOLoginModuleTestCase {
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             directoryService = DSAnnotationProcessor.getDirectoryService();
             final String hostname = Utils.getCannonicalHost(managementClient);
-            final Map<String, String> map = new HashMap<String, String>();
+            final Map<String, String> map = new HashMap<>();
             map.put("hostname", NetworkUtils.formatPossibleIpv6Address(hostname));
             final String ldifContent = StrSubstitutor.replace(
                     IOUtils.toString(
@@ -514,7 +514,7 @@ public class SPNEGOLoginModuleTestCase {
          */
         @Override
         protected SystemProperty[] getSystemProperties() {
-            final Map<String, String> map = new HashMap<String, String>();
+            final Map<String, String> map = new HashMap<>();
             map.put("java.security.krb5.conf", Krb5ConfServerSetupTask.getKrb5ConfFullPath());
             map.put("sun.security.krb5.debug", TRUE);
             map.put(SecurityConstants.DISABLE_SECDOMAIN_OPTION, TRUE);

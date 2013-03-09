@@ -131,7 +131,7 @@ class DeploymentScannerAdd implements OperationStepHandler {
 
             context.addStep(new OperationStepHandler() {
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                    final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+                    final List<ServiceController<?>> controllers = new ArrayList<>();
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     performRuntime(context, operation, model, verificationHandler, controllers, scheduledExecutorService, bootTimeScanner);
                     context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
@@ -147,8 +147,8 @@ class DeploymentScannerAdd implements OperationStepHandler {
 
 
             if (bootTimeScan) {
-                final AtomicReference<ModelNode> deploymentOperation = new AtomicReference<ModelNode>();
-                final AtomicReference<ModelNode> deploymentResults = new AtomicReference<ModelNode>(new ModelNode());
+                final AtomicReference<ModelNode> deploymentOperation = new AtomicReference<>();
+                final AtomicReference<ModelNode> deploymentResults = new AtomicReference<>(new ModelNode());
                 final CountDownLatch scanDoneLatch = new CountDownLatch(1);
                 final CountDownLatch deploymentDoneLatch = new CountDownLatch(1);
                 final DeploymentOperations deploymentOps = new BootTimeScannerDeployment(deploymentOperation, deploymentDoneLatch, deploymentResults, scanDoneLatch);
@@ -276,7 +276,7 @@ class DeploymentScannerAdd implements OperationStepHandler {
         public Future<ModelNode> deploy(final ModelNode operation, final ScheduledExecutorService scheduledExecutor) {
             try {
                 deploymentOperation.set(operation);
-                final FutureTask<ModelNode> task = new FutureTask<ModelNode>(new Callable<ModelNode>() {
+                final FutureTask<ModelNode> task = new FutureTask<>(new Callable<ModelNode>() {
                     @Override
                     public ModelNode call() throws Exception {
                         deploymentDoneLatch.await();

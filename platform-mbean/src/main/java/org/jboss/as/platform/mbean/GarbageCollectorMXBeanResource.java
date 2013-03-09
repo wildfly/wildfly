@@ -56,7 +56,7 @@ public class GarbageCollectorMXBeanResource extends AbstractPlatformMBeanResourc
 
     @Override
     Set<String> getChildrenNames() {
-        final Set<String> result = new HashSet<String>();
+        final Set<String> result = new HashSet<>();
         for (GarbageCollectorMXBean mbean : ManagementFactory.getGarbageCollectorMXBeans()) {
             result.add(escapeMBeanName(mbean.getName()));
         }

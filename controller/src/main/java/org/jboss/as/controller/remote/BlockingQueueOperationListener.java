@@ -66,7 +66,7 @@ public class BlockingQueueOperationListener<T extends TransactionalProtocolClien
 
     @Override
     public void operationFailed(T operation, ModelNode result) {
-        queue.offer(new FailedOperation<T>(operation, result));
+        queue.offer(new FailedOperation<>(operation, result));
     }
 
     @Override
@@ -132,7 +132,7 @@ public class BlockingQueueOperationListener<T extends TransactionalProtocolClien
             final ModelNode failedResult = new ModelNode();
             failedResult.get(ModelDescriptionConstants.OUTCOME).set(ModelDescriptionConstants.FAILED);
             failedResult.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).set(failureDescription);
-            return new FailedOperation<T>(operation, failedResult);
+            return new FailedOperation<>(operation, failedResult);
         }
 
         public FailedOperation(final T operation, final ModelNode finalResult) {
@@ -162,7 +162,7 @@ public class BlockingQueueOperationListener<T extends TransactionalProtocolClien
 
         @Override
         public AsyncFuture<ModelNode> getFinalResult() {
-            return new CompletedResult<ModelNode>(finalResult);
+            return new CompletedResult<>(finalResult);
         }
 
         @Override

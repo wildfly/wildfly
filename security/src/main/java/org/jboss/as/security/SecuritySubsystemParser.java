@@ -406,7 +406,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             throws XMLStreamException {
         requireNoAttributes(reader);
 
-        List<ModelNode> list = new ArrayList<ModelNode>();
+        List<ModelNode> list = new ArrayList<>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
@@ -457,7 +457,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         final PathAddress address = parentAddress.append(secDomainPath);
         op.get(OP_ADDR).set(address.toModelNode());
         final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
-        moduleNames = new HashMap<String, Integer>();
+        moduleNames = new HashMap<>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             if (!visited.add(element)) {

@@ -344,7 +344,7 @@ public class ManagementClient {
     private MBeanServerConnection getConnection() {
         if (connection == null) {
             try {
-                final HashMap<String, Object> env = new HashMap<String, Object>();
+                final HashMap<String, Object> env = new HashMap<>();
                 env.put(CallbackHandler.class.getName(), Authentication.getCallbackHandler());
                 connection = new MBeanConnectionProxy(JMXConnectorFactory.connect(getRemoteJMXURL(), env).getMBeanServerConnection());
             } catch (IOException e) {
@@ -674,7 +674,7 @@ public class ManagementClient {
 
         private MBeanServerConnection getConnection() {
                 try {
-                    final HashMap<String, Object> env = new HashMap<String, Object>();
+                    final HashMap<String, Object> env = new HashMap<>();
                     env.put(CallbackHandler.class.getName(), Authentication.getCallbackHandler());
                     connector = JMXConnectorFactory.connect(getRemoteJMXURL(), env);
                     connection = connector.getMBeanServerConnection();

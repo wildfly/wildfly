@@ -30,7 +30,7 @@ import java.util.List;
 public class TelnetActivationSpec implements ActivationSpec {
 
     private ResourceAdapter resourceAdapter;
-    private final List<Cmd> cmds = new ArrayList<Cmd>();
+    private final List<Cmd> cmds = new ArrayList<>();
     private String prompt;
     // JCA 1.6 doesn't allow Class as a valid property type
     private String beanClassName;

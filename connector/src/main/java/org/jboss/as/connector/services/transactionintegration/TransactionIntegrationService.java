@@ -48,15 +48,15 @@ public final class TransactionIntegrationService implements Service<TransactionI
 
     private volatile TransactionIntegration value;
 
-    private final InjectedValue<TransactionManager> tm = new InjectedValue<TransactionManager>();
+    private final InjectedValue<TransactionManager> tm = new InjectedValue<>();
 
-    private final InjectedValue<TransactionSynchronizationRegistry> tsr = new InjectedValue<TransactionSynchronizationRegistry>();
+    private final InjectedValue<TransactionSynchronizationRegistry> tsr = new InjectedValue<>();
 
-    private final InjectedValue<UserTransactionRegistry> utr = new InjectedValue<UserTransactionRegistry>();
+    private final InjectedValue<UserTransactionRegistry> utr = new InjectedValue<>();
 
-    private final InjectedValue<JBossXATerminator> terminator = new InjectedValue<JBossXATerminator>();
+    private final InjectedValue<JBossXATerminator> terminator = new InjectedValue<>();
 
-    private final InjectedValue<XAResourceRecoveryRegistry> rr = new InjectedValue<XAResourceRecoveryRegistry>();
+    private final InjectedValue<XAResourceRecoveryRegistry> rr = new InjectedValue<>();
 
     /** create an instance **/
     public TransactionIntegrationService() {

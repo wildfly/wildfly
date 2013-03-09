@@ -47,7 +47,7 @@ public class ComponentRegistry {
 
     public static ServiceName SERVICE_NAME = ServiceName.of("ee", "ComponentRegistry");
 
-    private final Map<Class<?>, ComponentManagedReferenceFactory> componentsByClass = new ConcurrentHashMap<Class<?>, ComponentManagedReferenceFactory>();
+    private final Map<Class<?>, ComponentManagedReferenceFactory> componentsByClass = new ConcurrentHashMap<>();
     private final ServiceRegistry serviceRegistry;
 
     public ComponentRegistry(final ServiceRegistry serviceRegistry) {

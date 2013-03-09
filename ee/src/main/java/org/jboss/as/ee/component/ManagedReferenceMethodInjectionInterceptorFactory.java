@@ -61,7 +61,7 @@ final class ManagedReferenceMethodInjectionInterceptorFactory implements Interce
         final Map<Object, Object> contextData = context.getContextData();
         @SuppressWarnings("unchecked")
         final AtomicReference<ManagedReference> targetReference = (AtomicReference<ManagedReference>) contextData.get(targetContextKey);
-        final AtomicReference<ManagedReference> valueReference = new AtomicReference<ManagedReference>();
+        final AtomicReference<ManagedReference> valueReference = new AtomicReference<>();
         contextData.put(valueContextKey, valueReference);
         return new ManagedReferenceMethodInjectionInterceptor(targetReference, valueReference, factoryValue.getValue(), method, optional);
     }

@@ -52,11 +52,11 @@ import java.util.Set;
 @SuppressWarnings({"SynchronizationOnLocalVariableOrMethodParameter"})
 final class InstancesService implements Service<Set<Object>> {
     private final Class<?> type;
-    private final Set<Object> instances = new HashSet<Object>(); // we do own locking, per type (service is also per type)
+    private final Set<Object> instances = new HashSet<>(); // we do own locking, per type (service is also per type)
 
-    private static Map<TypeBeanStateKey, Set<Object>> beans = new HashMap<TypeBeanStateKey, Set<Object>>();
-    private static Map<TypeBeanStateKey, List<Callback>> incallbacks = new HashMap<TypeBeanStateKey, List<Callback>>();
-    private static Map<TypeBeanStateKey, List<Callback>> uncallbacks = new HashMap<TypeBeanStateKey, List<Callback>>();
+    private static Map<TypeBeanStateKey, Set<Object>> beans = new HashMap<>();
+    private static Map<TypeBeanStateKey, List<Callback>> incallbacks = new HashMap<>();
+    private static Map<TypeBeanStateKey, List<Callback>> uncallbacks = new HashMap<>();
 
     private InstancesService(Class<?> type) {
         this.type = type;
@@ -136,7 +136,7 @@ final class InstancesService implements Service<Set<Object>> {
             TypeBeanStateKey key = new TypeBeanStateKey(type, callback.getState());
             List<Callback> callbacks = map.get(key);
             if (callbacks == null) {
-                callbacks = new ArrayList<Callback>();
+                callbacks = new ArrayList<>();
                 map.put(key, callbacks);
             }
             callbacks.add(callback);

@@ -41,7 +41,7 @@ public abstract class CollectionConfig extends ValueConfig implements Serializab
 
     /** The element type */
     protected String elementType;
-    private List<ValueConfig> values = new ArrayList<ValueConfig>();
+    private List<ValueConfig> values = new ArrayList<>();
     private Class<?> collectionType;
     private Class<?> componentType;
 

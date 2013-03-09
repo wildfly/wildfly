@@ -46,7 +46,7 @@ import org.jboss.msc.value.InjectedValue;
 public class RelativePathService extends AbstractPathService {
 
     private final String relativePath;
-    private final InjectedValue<String> injectedPath = new InjectedValue<String>();
+    private final InjectedValue<String> injectedPath = new InjectedValue<>();
 
     public static ServiceController<String> addService(final String name, final String relativePath,
             final String relativeTo, final ServiceTarget serviceTarget) {

@@ -45,7 +45,7 @@ public class NotInterfaceCriteria implements InterfaceCriteria {
 
     private static final long serialVersionUID = -2037624198837453203L;
 
-    private final Set<InterfaceCriteria> criteria = new HashSet<InterfaceCriteria>();
+    private final Set<InterfaceCriteria> criteria = new HashSet<>();
 
     /**
      * Creates a new NotInterfaceCriteria
@@ -93,9 +93,9 @@ public class NotInterfaceCriteria implements InterfaceCriteria {
     private Map<NetworkInterface, Set<InetAddress>> removeMatches(Map<NetworkInterface, Set<InetAddress>> candidates,
                                                                   Map<NetworkInterface, Set<InetAddress>> toRemove) {
 
-        Map<NetworkInterface, Set<InetAddress>> result = new HashMap<NetworkInterface, Set<InetAddress>>();
+        Map<NetworkInterface, Set<InetAddress>> result = new HashMap<>();
         for (Map.Entry<NetworkInterface, Set<InetAddress>> entry : candidates.entrySet()) {
-            Set<InetAddress> retained = new HashSet<InetAddress>(entry.getValue());
+            Set<InetAddress> retained = new HashSet<>(entry.getValue());
             Set<InetAddress> badAddresses = toRemove.get(entry.getKey());
             if (badAddresses != null && badAddresses.size() > 0) {
                 retained.removeAll(badAddresses);

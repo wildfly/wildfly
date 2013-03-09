@@ -94,7 +94,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
             final Properties properties = System.getProperties();
             final StringBuilder b = new StringBuilder(8192);
             b.append(ServerMessages.MESSAGES.configuredSystemPropertiesLabel());
-            for (String property : new TreeSet<String>(properties.stringPropertyNames())) {
+            for (String property : new TreeSet<>(properties.stringPropertyNames())) {
                 b.append("\n\t").append(property).append(" = ").append(properties.getProperty(property, "<undefined>"));
             }
             CONFIG_LOGGER.debug(b);
@@ -103,7 +103,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
                 b.setLength(0);
                 final Map<String,String> env = System.getenv();
                 b.append(ServerMessages.MESSAGES.configuredSystemEnvironmentLabel());
-                for (String key : new TreeSet<String>(env.keySet())) {
+                for (String key : new TreeSet<>(env.keySet())) {
                     b.append("\n\t").append(key).append(" = ").append(env.get(key));
                 }
                 CONFIG_LOGGER.trace(b);

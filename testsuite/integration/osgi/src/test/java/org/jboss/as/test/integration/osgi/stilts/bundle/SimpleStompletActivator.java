@@ -30,7 +30,7 @@ public class SimpleStompletActivator implements BundleActivator {
 
     @Override
     public void start(BundleContext context) throws Exception {
-        Dictionary<String, String> props = new Hashtable<String, String>();
+        Dictionary<String, String> props = new Hashtable<>();
         props.put("destinationPattern", DESTINATION_QUEUE_ONE);
         context.registerService(Stomplet.class.getName(), new SimpleStomplet(), props);
     }

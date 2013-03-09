@@ -356,7 +356,7 @@ public class AddPropertiesUser {
 
         @Override
         public String toString() {
-            final List<String> instructions = new ArrayList<String>();
+            final List<String> instructions = new ArrayList<>();
             segmentInstructions(instructions(), instructions);
             StringBuilder sb = new StringBuilder(String.format("    %-35s %s", argumentExample(), instructions.get(0)));
             for (int i = 1; i < instructions.size(); i++) {

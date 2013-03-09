@@ -58,7 +58,7 @@ public class TxStatsHandler extends AbstractRuntimeOnlyHandler {
         NUMBER_OF_APPLICATION_ROLLBACKS(new SimpleAttributeDefinition(CommonAttributes.NUMBER_OF_APPLICATION_ROLLBACKS, ModelType.LONG, true)),
         NUMBER_OF_RESOURCE_ROLLBACKS(new SimpleAttributeDefinition(CommonAttributes.NUMBER_OF_RESOURCE_ROLLBACKS, ModelType.LONG, true));
 
-        private static final Map<String, TxStat> MAP = new HashMap<String, TxStat>();
+        private static final Map<String, TxStat> MAP = new HashMap<>();
         static {
             for (TxStat stat : EnumSet.allOf(TxStat.class)) {
                 MAP.put(stat.toString(), stat);

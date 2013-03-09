@@ -115,7 +115,7 @@ public class CacheContainerResource extends SimpleResourceDefinition {
                     .setXmlName(Attribute.START.getLocalName())
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new EnumValidator<StartMode>(StartMode.class, true, false))
+                    .setValidator(new EnumValidator<>(StartMode.class, true, false))
                     .setDefaultValue(new ModelNode().set(StartMode.LAZY.name()))
                     .build();
 

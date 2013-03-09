@@ -63,8 +63,8 @@ public class NonClusteredBackingCacheEntryStoreSource<K extends Serializable, V 
     public static final String DEFAULT_RELATIVE_TO = ServerEnvironment.SERVER_DATA_DIR;
     public static final int DEFAULT_SUBDIRECTORY_COUNT = 100;
 
-    private final InjectedValue<PathManager> pathManager = new InjectedValue<PathManager>();
-    private final InjectedValue<ServerEnvironment> environment = new InjectedValue<ServerEnvironment>();
+    private final InjectedValue<PathManager> pathManager = new InjectedValue<>();
+    private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
     private String sessionDirectoryName = DEFAULT_SESSION_DIRECTORY_NAME;
     private String groupDirectoryName = DEFAULT_GROUP_DIRECTORY_NAME;
     private String relativeToRef = DEFAULT_RELATIVE_TO;
@@ -73,18 +73,18 @@ public class NonClusteredBackingCacheEntryStoreSource<K extends Serializable, V 
 
     @Override
     public <E extends SerializationGroup<K, V, G>> BackingCacheEntryStore<G, Cacheable<G>, E> createGroupIntegratedObjectStore(IdentifierFactory<G> identifierFactory, PassivationManager<G, E> passivationManager, StatefulTimeoutInfo timeout) {
-        FilePersistentObjectStore<G, E> objectStore = new FilePersistentObjectStore<G, E>(passivationManager, this.getStoragePath(null, this.groupDirectoryName), subdirectoryCount);
+        FilePersistentObjectStore<G, E> objectStore = new FilePersistentObjectStore<>(passivationManager, this.getStoragePath(null, this.groupDirectoryName), subdirectoryCount);
 
-        SimpleBackingCacheEntryStore<G, Cacheable<G>, E> store = new SimpleBackingCacheEntryStore<G, Cacheable<G>, E>(identifierFactory, objectStore, this.environment.getValue(), timeout, this);
+        SimpleBackingCacheEntryStore<G, Cacheable<G>, E> store = new SimpleBackingCacheEntryStore<>(identifierFactory, objectStore, this.environment.getValue(), timeout, this);
 
         return store;
     }
 
     @Override
     public <E extends SerializationGroupMember<K, V, G>> BackingCacheEntryStore<K, V, E> createIntegratedObjectStore(String beanName, IdentifierFactory<K> identifierFactory, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout) {
-        FilePersistentObjectStore<K, E> objectStore = new FilePersistentObjectStore<K, E>(passivationManager, this.getStoragePath(beanName, this.sessionDirectoryName), subdirectoryCount);
+        FilePersistentObjectStore<K, E> objectStore = new FilePersistentObjectStore<>(passivationManager, this.getStoragePath(beanName, this.sessionDirectoryName), subdirectoryCount);
 
-        SimpleBackingCacheEntryStore<K, V, E> store = new SimpleBackingCacheEntryStore<K, V, E>(identifierFactory, objectStore, this.environment.getValue(), timeout, this);
+        SimpleBackingCacheEntryStore<K, V, E> store = new SimpleBackingCacheEntryStore<>(identifierFactory, objectStore, this.environment.getValue(), timeout, this);
 
         return store;
     }

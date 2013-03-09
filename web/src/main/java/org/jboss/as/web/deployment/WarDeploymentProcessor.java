@@ -204,7 +204,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         // Hook for post processing the web context (e.g. for SIP)
         contextFactory.postProcessContext(deploymentUnit, webContext);
 
-        final Set<ServiceName> dependentComponents = new HashSet<ServiceName>();
+        final Set<ServiceName> dependentComponents = new HashSet<>();
         // see AS7-2077
         // basically we want to ignore components that have failed for whatever reason
         // if they are important they will be picked up when the web deployment actually starts
@@ -225,7 +225,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         // Valves
         List<ValveMetaData> valves = metaData.getValves();
         if (valves == null) {
-            metaData.setValves(valves = new ArrayList<ValveMetaData>());
+            metaData.setValves(valves = new ArrayList<>());
         }
         for (ValveMetaData valve : valves) {
             Valve valveInstance = (Valve) getInstance(module, valve.getModule(), valve.getValveClass(), valve.getParams());

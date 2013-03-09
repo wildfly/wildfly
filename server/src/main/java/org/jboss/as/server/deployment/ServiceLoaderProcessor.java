@@ -52,7 +52,7 @@ public final class ServiceLoaderProcessor implements DeploymentUnitProcessor {
      * {@inheritDoc}
      */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final Map<String, List<String>> foundServices = new HashMap<String, List<String>>();
+        final Map<String, List<String>> foundServices = new HashMap<>();
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         if (deploymentRoot != null) {
@@ -74,7 +74,7 @@ public final class ServiceLoaderProcessor implements DeploymentUnitProcessor {
             if (VALID_NAME.matcher(name).matches()) try {
                 List<String> list = foundServices.get(name);
                 if (list == null) {
-                    foundServices.put(name, list = new ArrayList<String>());
+                    foundServices.put(name, list = new ArrayList<>());
                 }
                 final InputStream stream = serviceType.openStream();
                 try {

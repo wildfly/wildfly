@@ -39,8 +39,8 @@ import org.jboss.msc.value.InjectedValue;
  */
 public final class ComponentStartService implements Service<Component> {
 
-    private final InjectedValue<BasicComponent> component = new InjectedValue<BasicComponent>();
-    private final InjectedValue<ExecutorService> executor = new InjectedValue<ExecutorService>();
+    private final InjectedValue<BasicComponent> component = new InjectedValue<>();
+    private final InjectedValue<ExecutorService> executor = new InjectedValue<>();
 
     /**
      * {@inheritDoc}

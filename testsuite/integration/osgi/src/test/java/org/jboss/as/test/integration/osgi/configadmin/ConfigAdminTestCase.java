@@ -89,7 +89,7 @@ public class ConfigAdminTestCase {
         Assert.assertFalse("Precondition: null config", hasconfig);
 
         // Register a new config for the given PID
-        Dictionary<String, String> config = new Hashtable<String, String>();
+        Dictionary<String, String> config = new Hashtable<>();
         config.put("foo", "bar");
         Dictionary<String, String> oldConfig = configAdmin.putConfiguration(PID_A, config);
 
@@ -152,7 +152,7 @@ public class ConfigAdminTestCase {
         Assert.assertNull("First invocation with null, but was: " + dictionaries[0], dictionaries[0]);
 
         // Register a new config for the given PID
-        Dictionary<String, String> config = new Hashtable<String, String>();
+        Dictionary<String, String> config = new Hashtable<>();
         config.put("foo", "bar");
         configAdmin.putConfiguration(PID_B, config);
 
@@ -169,7 +169,7 @@ public class ConfigAdminTestCase {
     @Test
     public void testConfiguredService() throws Exception {
 
-        Dictionary<String, String> config = new Hashtable<String, String>();
+        Dictionary<String, String> config = new Hashtable<>();
         config.put("foo", "bar");
 
         // Register a new config for the given PID

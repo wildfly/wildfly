@@ -41,7 +41,7 @@ public class SimpleSFSB implements RemoteSFSB {
     @Override
     public Map<String, Object> getInvocationData(final String... keys) {
         // return the data that was requested for the passed keys
-        final Map<String, Object> subset = new HashMap<String, Object>();
+        final Map<String, Object> subset = new HashMap<>();
         for (final String key : keys) {
             subset.put(key, invocationData.get(key));
         }

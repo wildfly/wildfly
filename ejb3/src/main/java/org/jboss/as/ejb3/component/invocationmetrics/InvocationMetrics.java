@@ -60,11 +60,11 @@ public class InvocationMetrics {
         }
     }
 
-    private final AtomicReference<Values> values = new AtomicReference<Values>(new Values(0, 0, 0));
+    private final AtomicReference<Values> values = new AtomicReference<>(new Values(0, 0, 0));
     private final AtomicLong concurrent = new AtomicLong(0);
     private final AtomicLong peakConcurrent = new AtomicLong(0);
 
-    private final ConcurrentMap<String, AtomicReference<Values>> methods = new ConcurrentHashMap<String, AtomicReference<Values>>();
+    private final ConcurrentMap<String, AtomicReference<Values>> methods = new ConcurrentHashMap<>();
 
     void finishInvocation(final Method method, final long invocationWaitTime, final long invocationExecutionTime) {
         concurrent.decrementAndGet();
@@ -86,7 +86,7 @@ public class InvocationMetrics {
     private static AtomicReference<Values> ref(final ConcurrentMap<String, AtomicReference<Values>> map, final String key) {
         AtomicReference<Values> ref = map.get(key);
         if (ref == null) {
-            ref = new AtomicReference<Values>(new Values(0, 0, 0));
+            ref = new AtomicReference<>(new Values(0, 0, 0));
             final AtomicReference<Values> prevRef = map.putIfAbsent(key, ref);
             if (prevRef != null)
                 ref = prevRef;

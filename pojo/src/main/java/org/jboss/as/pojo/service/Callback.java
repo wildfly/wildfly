@@ -72,7 +72,7 @@ public class Callback {
 
     public void dispatch(final Object dependency) throws Throwable {
         MethodJoinpoint joinpoint = new MethodJoinpoint(getMethod());
-        joinpoint.setTarget(new ImmediateValue<Object>(bean));
+        joinpoint.setTarget(new ImmediateValue<>(bean));
         ValueConfig param = new ValueConfig() {
             protected Object getClassValue(Class<?> type) {
                 return dependency;

@@ -249,7 +249,7 @@ public interface RejectAttributeChecker {
      */
     public class ObjectFieldsRejectAttributeChecker implements RejectAttributeChecker {
 
-        private final Map<String, RejectAttributeChecker> fields = new HashMap<String, RejectAttributeChecker>();
+        private final Map<String, RejectAttributeChecker> fields = new HashMap<>();
 
         /**
          * Constructor

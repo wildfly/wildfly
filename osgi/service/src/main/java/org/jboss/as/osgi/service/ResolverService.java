@@ -48,7 +48,7 @@ import org.osgi.service.resolver.Resolver;
  */
 class ResolverService extends AbstractService<Resolver> {
 
-    private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
+    private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<>();
     private XResolver resolver;
 
     static ServiceController<?> addService(final ServiceTarget target) {

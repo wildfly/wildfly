@@ -63,7 +63,7 @@ public class TransactionAwareObjectFactory<T> implements StatefulObjectFactory<T
         if ((tx != null) && TxUtils.isActive(tx)) {
             try {
                 // A transaction is in progress, so register a Synchronization so that the session can be destroyed on tx completion.
-                tx.registerSynchronization(new DestroySynchronization<T>(this.factory, instance));
+                tx.registerSynchronization(new DestroySynchronization<>(this.factory, instance));
             } catch (RollbackException e) {
                 throw EjbMessages.MESSAGES.failedToRegisterTransactionSynchronization(e);
             } catch (SystemException e) {

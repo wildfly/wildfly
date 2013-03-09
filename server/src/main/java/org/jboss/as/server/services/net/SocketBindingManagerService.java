@@ -37,7 +37,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class SocketBindingManagerService extends SocketBindingManagerImpl implements Service<SocketBindingManager> {
 
-    private final InjectedValue<NetworkInterfaceBinding> defaultInterfaceBinding = new InjectedValue<NetworkInterfaceBinding>();
+    private final InjectedValue<NetworkInterfaceBinding> defaultInterfaceBinding = new InjectedValue<>();
     private final int portOffSet;
 
     public SocketBindingManagerService(int portOffSet) {

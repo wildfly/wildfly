@@ -62,7 +62,7 @@ class PersistentBundlesIntegration extends BootstrapBundlesInstall<Void> {
         Set<Deployment> deployments = deploymentTracker.getDeployments();
 
         // Collect the Bundle.INSTALLED services
-        Set<ServiceName> installedServices = new HashSet<ServiceName>();
+        Set<ServiceName> installedServices = new HashSet<>();
         for (Deployment dep : deployments) {
             ServiceName serviceName = dep.getAttachment(ServiceName.class);
             installedServices.add(serviceName);

@@ -42,6 +42,6 @@ public class StatefulBean implements  StatefulBeanRemote {
     @Override
     @Asynchronous
     public Future<String> sayHelloAsync() {
-        return new AsyncResult<String>(ANSWER);
+        return new AsyncResult<>(ANSWER);
     }
 }

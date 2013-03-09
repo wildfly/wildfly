@@ -168,7 +168,7 @@ public class InterfaceDefinition extends SimpleResourceDefinition {
      * The nested attributes for any, not.
      */
 
-    public static final Set<AttributeDefinition> NESTED_LIST_ATTRIBUTES = new HashSet<AttributeDefinition>(
+    public static final Set<AttributeDefinition> NESTED_LIST_ATTRIBUTES = new HashSet<>(
             Arrays.asList(INET_ADDRESS, NIC, NIC_MATCH, SUBNET_MATCH)
     );
     /**

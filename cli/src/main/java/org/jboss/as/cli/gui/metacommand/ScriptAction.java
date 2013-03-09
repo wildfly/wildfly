@@ -85,7 +85,7 @@ public abstract class ScriptAction extends AbstractAction {
 
     // read the file as a list of text lines
     private List<String> getCommandLines(File file) {
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new FileReader(file));

@@ -94,6 +94,6 @@ public class JBossPDPServiceBean {
         final LocatorsType locators = new LocatorsType();
         locators.getLocator().add(locator);
         pdp.setLocators(locators);
-        return new JBossPDP(new JAXBElement<PDP>(new QName("urn:jboss:xacml:2.0", "jbosspdp"), PDP.class, pdp));
+        return new JBossPDP(new JAXBElement<>(new QName("urn:jboss:xacml:2.0", "jbosspdp"), PDP.class, pdp));
     }
 }

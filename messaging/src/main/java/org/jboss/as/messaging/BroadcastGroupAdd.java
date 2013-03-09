@@ -114,7 +114,7 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
 
                     final GroupBindingService bindingService = new GroupBindingService();
                     target.addService(GroupBindingService.getBroadcastBaseServiceName(hqServiceName).append(name), bindingService)
-                            .addInjectionValue(bindingService.getBindingRef(), new ImmediateValue<SocketBinding>(socketBinding))
+                            .addInjectionValue(bindingService.getBindingRef(), new ImmediateValue<>(socketBinding))
                             .install();
 
                 } catch (Exception e) {
@@ -137,7 +137,7 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
     static BroadcastGroupConfiguration createBroadcastGroupConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
         final long broadcastPeriod = BroadcastGroupDefinition.BROADCAST_PERIOD.resolveModelAttribute(context, model).asLong();
-        final List<String> connectorRefs = new ArrayList<String>();
+        final List<String> connectorRefs = new ArrayList<>();
         if (model.hasDefined(CommonAttributes.CONNECTORS)) {
             for (ModelNode ref : model.get(CommonAttributes.CONNECTORS).asList()) {
                 connectorRefs.add(ref.asString());
