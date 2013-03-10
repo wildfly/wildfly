@@ -21,7 +21,13 @@
 */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.io.IOException;
 import java.util.List;
@@ -30,6 +36,8 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -122,6 +130,49 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_3_0, xmlOps, getConfig());
     }
+
+    @Test
+    public void testVirtualNodesTo140() throws Exception {
+        ModelVersion version140 = ModelVersion.create(1, 4);
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        builder.createLegacyKernelServicesBuilder(null, version140)
+                .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:" + "7.2.0.Final");
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(version140);
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME),
+                PathElement.pathElement(CacheContainerResource.CONTAINER_PATH.getKey(), "container"),
+                PathElement.pathElement(DistributedCacheResource.DISTRIBUTED_CACHE_PATH.getKey(), "cache"));
+        ModelNode addOp = Util.createAddOperation(pa);
+        addOp.get(DistributedCacheResource.VIRTUAL_NODES.getName()).set(1);
+
+        OperationTransformer.TransformedOperation transformedOperation = mainServices.transformOperation(version140, addOp);
+        Assert.assertFalse(transformedOperation.getTransformedOperation().has(DistributedCacheResource.VIRTUAL_NODES.getName()));
+        Assert.assertEquals(6, transformedOperation.getTransformedOperation().get(DistributedCacheResource.SEGMENTS.getName()).asInt());
+
+        ModelNode result = new ModelNode();
+        result.get(OUTCOME).set(SUCCESS);
+        result.get(RESULT);
+        Assert.assertFalse(transformedOperation.rejectOperation(result));
+        Assert.assertEquals(result, transformedOperation.transformResult(result));
+
+        ModelNode writeOp = Util.createEmptyOperation(WRITE_ATTRIBUTE_OPERATION, pa);
+        writeOp.get(NAME).set(DistributedCacheResource.VIRTUAL_NODES.getName());
+        writeOp.get(VALUE).set(1);
+
+        transformedOperation = mainServices.transformOperation(version140, writeOp);
+        Assert.assertEquals(DistributedCacheResource.SEGMENTS.getName(), transformedOperation.getTransformedOperation().get(NAME).asString());
+        Assert.assertEquals(6, transformedOperation.getTransformedOperation().get(VALUE).asInt());
+        Assert.assertFalse(transformedOperation.rejectOperation(result));
+        Assert.assertEquals(result, transformedOperation.transformResult(result));
+
+    }
+
 
     /**
      * Constructs a FailedOperationTransformationConfig which describes all attributes which should accept expressions

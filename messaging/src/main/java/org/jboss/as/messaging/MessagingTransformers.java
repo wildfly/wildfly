@@ -23,8 +23,8 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.transform.OperationResultTransformer.ORIGINAL_RESULT;
 import static org.jboss.as.controller.transform.description.DiscardAttributeChecker.UNDEFINED;
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.DEFINED;
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.SIMPLE_EXPRESSIONS;
@@ -33,15 +33,17 @@ import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.RUNTIME_QUEUE;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
-import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.*;
+import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_0;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 
-import org.jboss.as.controller.OperationFailedException;
+import java.util.Set;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
@@ -61,6 +63,7 @@ public class MessagingTransformers {
 
     static void registerTransformers(final SubsystemRegistration subsystem) {
         registerTransformers_1_1_0(subsystem);
+        registerTransformers_1_2_0(subsystem);
     }
 
     private static void registerTransformers_1_1_0(final SubsystemRegistration subsystem) {
@@ -195,5 +198,55 @@ public class MessagingTransformers {
                 .end();
 
         TransformationDescription.Tools.register(subsystemRoot.build(), subsystem, VERSION_1_1_0);
+    }
+
+    private static void registerTransformers_1_2_0(final SubsystemRegistration subsystem) {
+
+        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(PathElement.pathElement(HORNETQ_SERVER));
+        hornetqServer.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker() {
+                    @Override
+                    public boolean isDiscardExpressions() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean isDiscardUndefined() {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isOperationParameterDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
+
+                        // The 'clustered' attribute is not recognized on 1.4.0. It's only supported for compatibility
+                        // with 1.3 or earlier servers, so we discard it for 1.4. For 1.4 servers, see if the desired
+                        // value conflicts with the actual configuration, and if so log a transformation warning
+                        // before discarding
+
+                        // the real clustered HornetQ state
+                        Set<String> clusterConnectionNames = context.readResource(PathAddress.EMPTY_ADDRESS).getChildrenNames(ClusterConnectionDefinition.PATH.getKey());
+                        boolean clustered = !clusterConnectionNames.isEmpty();
+                        // whether the user wants the server to be clustered
+                        // We use a short-cut vs AD.resolveModelValue to avoid having to hack in an OperationContext
+                        // This is ok since the attribute doesn't support expressions
+                        // Treat 'undefined' as 'ignore this and match the actual config' instead of the legacy default 'false'
+                        boolean wantsClustered = attributeValue.asBoolean(clustered);
+                        if (clustered && !wantsClustered) {
+                            PathAddress serverAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
+                            String msg = MessagingMessages.MESSAGES.canNotChangeClusteredAttribute(serverAddress);
+                            context.getLogger().logAttributeWarning(serverAddress, operation, msg, CLUSTERED.getName());
+                        }
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isResourceAttributeDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                        return true;
+                    }
+
+                }, CommonAttributes.CLUSTERED)
+                .end();
+        TransformationDescription.Tools.register(subsystemRoot.build(), subsystem, VERSION_1_2_0);
     }
 }

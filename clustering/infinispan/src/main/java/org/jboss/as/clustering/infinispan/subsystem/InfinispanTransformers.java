@@ -42,8 +42,19 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class InfinispanTransformers {
+
     /**
-     * Register the transformers for transforming from 1.4.0 to 1.3.0 management api versions, in which:
+     * Register the transformers for transforming from current to earlier management api versions.
+     *
+     * @param subsystem the subsystem registration
+     */
+    static void registerTransformers(final SubsystemRegistration subsystem) {
+        registerTransformers130(subsystem);
+        registerTransformers140(subsystem);
+    }
+
+    /**
+     * Register the transformers for transforming from current to 1.3.0 management api version, in which:
      * - attributes INDEXING_PROPERTIES, SEGMENTS were added in 1.4
      * - attribute VIRTUAL_NODES was deprecated in 1.4
      * - expression support was added to most attributes in 1.4, except for CLUSTER, DEFAULT_CACHE and MODE
@@ -53,7 +64,7 @@ public class InfinispanTransformers {
      *
      * @param subsystem the subsystems registration
      */
-    static void registerTransformers(final SubsystemRegistration subsystem) {
+    private static void registerTransformers130(final SubsystemRegistration subsystem) {
         final ModelVersion version = ModelVersion.create(1, 3);
 
         final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
@@ -261,4 +272,36 @@ public class InfinispanTransformers {
         for (AttributeDefinition def : defs) {
             map.put(def.getName(), checker);
         }
-    }}
+    }
+
+
+    /**
+     * Register the transformers for transforming from current to 1.4.0 management api version, including:
+     * * use of the VIRTUAL_NODES attribute was again allowed in 1.4.1, with a value conversion applied
+     *
+     * @param subsystem the subsystems registration
+     */
+    private static void registerTransformers140(final SubsystemRegistration subsystem) {
+        final ModelVersion version = ModelVersion.create(1, 4, 0);
+
+        final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        subsystemBuilder.addChildResource(CacheContainerResource.CONTAINER_PATH)
+                .addChildResource(DistributedCacheResource.DISTRIBUTED_CACHE_PATH)
+                    .getAttributeBuilder()
+                        //Convert virtual-nodes to segments if it is set
+                        .setDiscard(DiscardAttributeChecker.UNDEFINED, DistributedCacheResource.VIRTUAL_NODES)
+                        .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
+                            @Override
+                            protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                                                            TransformationContext context) {
+                                if (attributeValue.isDefined()) {
+                                    attributeValue.set(SegmentsAndVirtualNodeConverter.virtualNodesToSegments(attributeValue));
+                                }
+                            }
+                        }, DistributedCacheResource.VIRTUAL_NODES)
+                        .addRename(DistributedCacheResource.VIRTUAL_NODES, DistributedCacheResource.SEGMENTS.getName())
+                    .end();
+
+        TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, version);
+    }
+}

@@ -23,6 +23,7 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
@@ -163,8 +164,7 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
         static final OperationStepHandler READ_HANDLER = new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                Set<String> clusterConnectionNames = context.getResourceRegistration().getChildNames(PathAddress.pathAddress(ClusterConnectionDefinition.PATH));
-                boolean clustered = !clusterConnectionNames.isEmpty();
+                boolean clustered = isClustered(context);
                 context.getResult().set(clustered);
                 context.stepCompleted();
             }
@@ -174,10 +174,11 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 // the real clustered HornetQ state
-                Set<String> clusterConnectionNames = context.getResourceRegistration().getChildNames(PathAddress.pathAddress(ClusterConnectionDefinition.PATH));
-                boolean clustered = !clusterConnectionNames.isEmpty();
+                boolean clustered = isClustered(context);
                 // whether the user wants the server to be clustered
-                boolean wantsClustered = CLUSTERED.resolveModelAttribute(context, operation).asBoolean();
+                ModelNode mock = new ModelNode();
+                mock.get(CLUSTERED.getName()).set(operation.get(VALUE));
+                boolean wantsClustered = CLUSTERED.resolveModelAttribute(context, mock).asBoolean();
                 if (clustered && !wantsClustered) {
                     PathAddress serverAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
                     MessagingLogger.MESSAGING_LOGGER.canNotChangeClusteredAttribute(serverAddress);
@@ -186,5 +187,10 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
                 context.stepCompleted();
             }
         };
+
+        private static boolean isClustered(OperationContext context) {
+            Set<String> clusterConnectionNames = context.readResource(PathAddress.EMPTY_ADDRESS).getChildrenNames(ClusterConnectionDefinition.PATH.getKey());
+            return !clusterConnectionNames.isEmpty();
+        }
     }
 }
