@@ -6107,12 +6107,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.enterprise</artifactId>
-                <version>${version.osgi}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.picketbox</groupId>
                 <artifactId>picketbox</artifactId>
                 <version>${version.org.picketbox}</version>

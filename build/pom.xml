@@ -1718,11 +1718,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.osgi</groupId>
-                    <artifactId>org.osgi.enterprise</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.picketlink</groupId>
                     <artifactId>picketlink-core</artifactId>
                 </dependency>
