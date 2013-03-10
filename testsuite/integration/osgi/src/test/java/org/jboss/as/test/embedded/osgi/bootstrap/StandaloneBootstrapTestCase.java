@@ -44,7 +44,6 @@ import org.osgi.framework.launch.FrameworkFactory;
  * @author Thomas.Diesler@jboss.com
  * @since 12-Dec-2012
  */
-@org.junit.Ignore("AS7-6511")
 public class StandaloneBootstrapTestCase {
 
     private static final String BUNDLE_A = "bundleA";

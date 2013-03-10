@@ -60,7 +60,6 @@ import org.osgi.framework.BundleException;
  * @since 30-Aug-2012
  */
 @RunWith(Arquillian.class)
-@Ignore("AS7-6647")
 public class RestEndpointTestCase {
 
     private static final String SIMPLE_WAR = "simple.war";

@@ -42,7 +42,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @author thomas.diesler@jboss.com
  */
 @RunWith(Arquillian.class)
-@org.junit.Ignore("AS7-6511")
 public class LogServiceStaticImportTestCase {
 
     private static final String BUNDLE_A = "bundleA";
