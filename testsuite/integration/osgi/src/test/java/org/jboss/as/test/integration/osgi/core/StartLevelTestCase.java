@@ -46,7 +46,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @since 07-Jun-2011
  */
 @RunWith(Arquillian.class)
-@org.junit.Ignore("AS7-6511")
 public class StartLevelTestCase {
 
     private static final String BUNDLE_A = "osgi-startlevel-a";
@@ -69,7 +68,7 @@ public class StartLevelTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(ServiceTracker.class);
+                builder.addImportPackages(FrameworkStartLevel.class, ServiceTracker.class);
                 return builder.openStream();
             }
         });

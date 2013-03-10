@@ -31,7 +31,6 @@ import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -45,7 +44,6 @@ import org.osgi.framework.BundleContext;
  * @since 09-Sep-2010
  */
 @RunWith(Arquillian.class)
-@Ignore("AS7-6647")
 public class ArquillianDeployerTestCase {
 
     private static final String DEPLOYMENT_NAME = "arquillian-deployer-test-bundle";

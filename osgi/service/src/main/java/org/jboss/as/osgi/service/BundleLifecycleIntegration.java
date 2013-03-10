@@ -72,9 +72,11 @@ import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResolveContext;
 import org.jboss.osgi.resolver.XResolver;
 import org.jboss.vfs.VFSUtils;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.startlevel.BundleStartLevel;
+import org.osgi.framework.startlevel.FrameworkStartLevel;
 import org.osgi.service.resolver.ResolutionException;
 
 /**
@@ -253,9 +255,11 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
         private void activateDeferredPhase(XBundle bundle, int options, DeploymentUnit depUnit, ServiceController<Phase> phaseService) throws BundleException {
 
             // If the Framework's current start level is less than this bundle's start level
+            BundleManager bundleManager = injectedBundleManager.getValue();
+            FrameworkStartLevel frameworkStartLevel = bundleManager.getSystemBundle().adapt(FrameworkStartLevel.class);
             BundleStartLevel bundleStartLevel = bundle.adapt(BundleStartLevel.class);
             int startlevel = bundleStartLevel.getStartLevel();
-            if (startlevel > bundleStartLevel.getStartLevel()) {
+            if (startlevel > frameworkStartLevel.getStartLevel()) {
                 LOGGER.debugf("Start level [%d] not valid for: %s", startlevel, bundle);
                 return;
             }
@@ -287,8 +291,20 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
             }
 
             // In case of failure we go back to NEVER
-            if (failed.size() > 0) {
 
+            if (failed.size() == 0) {
+                // The Bundle.ACTIVE service is not tracked by the {@link StabilityMonitor}
+                // Wait for it to come up explicitly
+                ServiceName activeName = bundleManager.getServiceName(bundle, Bundle.ACTIVE);
+                ServiceContainer serviceContainer = bundleManager.getServiceContainer();
+                ServiceController<?> activeService = serviceContainer.getRequiredService(activeName);
+                try {
+                    FutureServiceValue<?> future = new FutureServiceValue<>(activeService, State.UP);
+                    future.get(2, TimeUnit.SECONDS);
+                } catch (Exception ex) {
+                    // ignore
+                }
+            } else {
                 // Collect the first start exception
                 StartException startex = null;
                 for (ServiceController<?> aux : failed) {

@@ -39,7 +39,6 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -55,7 +54,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @since 22-Mar-2012
  */
 @RunWith(Arquillian.class)
-@Ignore("AS7-6647")
 public class ServerDeploymentTestCase {
 
     static final String GOOD_BUNDLE = "good-bundle.jar";
@@ -98,7 +96,7 @@ public class ServerDeploymentTestCase {
         String runtimeName = server.deploy("auto-start", input);
 
         // Find the deployed bundle
-        Bundle bundle = context.getBundle(GOOD_BUNDLE);
+        Bundle bundle = context.getBundle("auto-start");
         Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
 
         server.undeploy(runtimeName);
@@ -128,7 +126,7 @@ public class ServerDeploymentTestCase {
         String runtimeName = server.deploy("redeploy", input);
 
         // Find the deployed bundle
-        Bundle bundle = context.getBundle(GOOD_BUNDLE);
+        Bundle bundle = context.getBundle("redeploy");
         Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
 
         server.undeploy(runtimeName);
@@ -139,7 +137,7 @@ public class ServerDeploymentTestCase {
         runtimeName = server.deploy("redeploy", input);
 
         // Find the deployed bundle
-        bundle = context.getBundle(GOOD_BUNDLE);
+        bundle = context.getBundle("redeploy");
         Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
 
         server.undeploy(runtimeName);
@@ -156,7 +154,7 @@ public class ServerDeploymentTestCase {
         String fragmentName = server.deploy("bundle-fragment-attached", input);
 
         // Find the deployed bundle
-        Bundle fragment = context.getBundle(GOOD_FRAGMENT);
+        Bundle fragment = context.getBundle("bundle-fragment-attached");
         Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, fragment.getState());
 
         // Deploy the bundle
@@ -164,7 +162,7 @@ public class ServerDeploymentTestCase {
         String hostName = server.deploy("bundle-host-attached", input);
 
         // Find the deployed bundle
-        Bundle host = context.getBundle(GOOD_BUNDLE);
+        Bundle host = context.getBundle("bundle-host-attached");
         Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, host.getState());
         Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, fragment.getState());
 
@@ -189,7 +187,7 @@ public class ServerDeploymentTestCase {
         String hostName = server.deploy("bundle-host", input);
 
         // Find the deployed bundle
-        Bundle host = context.getBundle(GOOD_BUNDLE);
+        Bundle host = context.getBundle("bundle-host");
         Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, host.getState());
 
         // Deploy the fragment
@@ -197,7 +195,7 @@ public class ServerDeploymentTestCase {
         String fragmentName = server.deploy("bundle-fragment", input);
 
         // Find the deployed bundle
-        Bundle fragment = context.getBundle(GOOD_FRAGMENT);
+        Bundle fragment = context.getBundle("bundle-fragment");
         Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, fragment.getState());
 
         try {

@@ -37,7 +37,6 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -56,7 +55,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @since 25-Sep-2012
  */
 @RunWith(Arquillian.class)
-@Ignore("AS7-6647")
 public class DeferredResolveTestCase {
 
     private static final String GOOD_BUNDLE = "good-bundle.jar";
@@ -87,7 +85,7 @@ public class DeferredResolveTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(ModelControllerClient.class, ModelNode.class, ManagementClient.class);
-                builder.addImportPackages(ServiceTracker.class);
+                builder.addImportPackages(FrameworkStartLevel.class, FrameworkWiring.class, ServiceTracker.class);
                 builder.addImportPackages(XBundle.class);
                 return builder.openStream();
             }
@@ -150,7 +148,6 @@ public class DeferredResolveTestCase {
     }
 
     @Test
-    @org.junit.Ignore("AS7-6511")
     public void testFailAPICall() throws Exception {
         InputStream input = deployer.getDeployment(BAD_BUNDLE);
         Bundle bundle = context.installBundle(BAD_BUNDLE, input);
@@ -174,7 +171,6 @@ public class DeferredResolveTestCase {
     }
 
     @Test
-    @org.junit.Ignore("AS7-6511")
     public void testFailStartLevel() throws Exception {
         int orglevel = FrameworkUtils.getFrameworkStartLevel(context);
         InputStream input = deployer.getDeployment(BAD_BUNDLE);

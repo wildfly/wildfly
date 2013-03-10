@@ -34,7 +34,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -47,7 +46,6 @@ import org.osgi.framework.BundleContext;
  * @since 23-Aug-2011
  */
 @RunWith(Arquillian.class)
-@Ignore("AS7-6647")
 public class OptionalImportTestCase {
 
     static final String BUNDLE_A = "optional-import-a";
