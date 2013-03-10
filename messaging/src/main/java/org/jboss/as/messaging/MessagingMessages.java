@@ -531,4 +531,7 @@ public interface MessagingMessages {
      */
     @Message(id = 11676, value = "No resource exists at address %s")
     String hqServerManagementServiceResourceNotFound(PathAddress address);
+
+    @Message(id = 11677, value = "Can not change the clustered attribute to false: The hornetq-server resource at %s has cluster-connection children resources and will remain clustered.")
+    String canNotChangeClusteredAttribute(PathAddress address);
 }

@@ -23,9 +23,15 @@
 package org.jboss.as.messaging.test;
 
 import static org.jboss.as.controller.PathElement.pathElement;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.messaging.CommonAttributes.CALL_FAILOVER_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
@@ -33,15 +39,23 @@ import static org.jboss.as.messaging.HornetQServerResourceDefinition.HORNETQ_SER
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular.FACTORY_TYPE;
 import static org.jboss.as.model.test.ModelTestUtils.checkFailedTransformedBootOperations;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.messaging.AddressSettingDefinition;
 import org.jboss.as.messaging.BridgeDefinition;
 import org.jboss.as.messaging.BroadcastGroupDefinition;
@@ -79,9 +93,9 @@ import org.junit.Test;
 /**
  *  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat inc
  */
-public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
+public class MessagingSubsystemTestCase extends AbstractSubsystemBaseTest {
 
-    public MessagingSubsystem13TestCase() {
+    public MessagingSubsystemTestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
     }
 
@@ -162,6 +176,49 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.3.Final");
 
         doTestRejectExpressions_1_1_0(builder);
+    }
+
+    @Test
+    public void testClusteredTo120() throws Exception {
+        ModelVersion version120 = ModelVersion.create(1, 2);
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.MASTER, version120)
+                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.2.0.Final");
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(version120);
+        assertNotNull(legacyServices);
+        assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+        assertTrue(legacyServices.isSuccessfulBoot());
+
+        clusteredTo120Test(version120, mainServices, true);
+        clusteredTo120Test(version120, mainServices, false);
+    }
+
+    private void clusteredTo120Test(ModelVersion version120, KernelServices mainServices, boolean clustered) throws OperationFailedException {
+
+        PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME),
+                PathElement.pathElement(HornetQServerResourceDefinition.HORNETQ_SERVER_PATH.getKey(), String.valueOf(clustered)));
+
+        ModelNode addOp = Util.createAddOperation(pa);
+        addOp.get(CommonAttributes.CLUSTERED.getName()).set(clustered);
+
+        OperationTransformer.TransformedOperation transformedOperation = mainServices.transformOperation(version120, addOp);
+        assertFalse(transformedOperation.getTransformedOperation().has(CommonAttributes.CLUSTERED.getName()));
+
+        ModelNode result = new ModelNode();
+        result.get(OUTCOME).set(SUCCESS);
+        result.get(RESULT);
+        assertFalse(transformedOperation.rejectOperation(result));
+        assertEquals(result, transformedOperation.transformResult(result));
+
+        ModelNode writeOp = Util.createEmptyOperation(WRITE_ATTRIBUTE_OPERATION, pa);
+        writeOp.get(NAME).set(CommonAttributes.CLUSTERED.getName());
+        writeOp.get(VALUE).set(clustered);
+
+        transformedOperation = mainServices.transformOperation(version120, writeOp);
+        assertNull(transformedOperation.getTransformedOperation());
     }
 
     private static class RejectExpressionsConfigWithAddOnlyParam extends RejectExpressionsConfig {
