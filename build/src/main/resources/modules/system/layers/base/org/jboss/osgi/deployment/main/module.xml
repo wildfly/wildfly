@@ -38,6 +38,5 @@
         <module name="org.jboss.osgi.vfs"/>
         <module name="org.jboss.vfs"/>
         <module name="org.osgi.core"/>
-        <module name="org.osgi.enterprise"/>
     </dependencies>
 </module>

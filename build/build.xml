@@ -1276,10 +1276,6 @@
             <maven-resource group="org.osgi" artifact="org.osgi.core"/>
         </module-def>
 
-        <module-def name="org.osgi.enterprise">
-            <maven-resource group="org.osgi" artifact="org.osgi.enterprise"/>
-        </module-def>
-
         <module-def name="org.picketlink">
             <maven-resource group="org.picketlink" artifact="picketlink-core" jandex="true"/>
             <maven-resource group="org.picketlink.distribution" artifact="picketlink-jbas7" jandex="true"/>
