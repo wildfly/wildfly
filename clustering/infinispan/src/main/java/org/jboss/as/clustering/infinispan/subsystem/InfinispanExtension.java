@@ -48,7 +48,7 @@ public class InfinispanExtension implements Extension {
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 4;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 1;
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
            StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -81,6 +81,8 @@ public class InfinispanExtension implements Extension {
         subsystem.registerSubsystemModel(new InfinispanSubsystemRootResource(resolvePathHandler));
         subsystem.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
         if (context.isRegisterTransformers()) {
+            // TODO move transformation out of this utility class and into the ResourceDefinition impls
+            // to keep the transformation more closely related to the management API
             InfinispanTransformers.registerTransformers(subsystem);
         }
     }
