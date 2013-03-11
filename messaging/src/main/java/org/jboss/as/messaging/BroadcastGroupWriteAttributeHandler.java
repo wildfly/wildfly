@@ -23,12 +23,19 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.OperationContext.Stage.MODEL;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-
 /**
  * Write attribute handler for attributes that update a broadcast group resource.
  *
@@ -49,4 +56,36 @@ public class BroadcastGroupWriteAttributeHandler extends ReloadRequiredWriteAttr
         super.execute(context, operation);
     }
 
+    @Override
+    protected void finishModelStage(final OperationContext context,final ModelNode operation,final String attributeName,final ModelNode newValue,
+            final ModelNode oldValue,final Resource model) throws OperationFailedException {
+            if(attributeName.equals(BroadcastGroupDefinition.CONNECTOR_REFS.getName())){
+                this.validateConnectorsUpdate(context, operation, newValue, oldValue,model);
+            }
+        super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
+    }
+
+    private void validateConnectorsUpdate(OperationContext context, ModelNode operation, ModelNode newValue,
+            ModelNode oldValue, Resource model) throws OperationFailedException {
+        final Set<String> availableConnectors =  getAvailableConnectors(context,operation);
+        final List<ModelNode> operationAddress = operation.get(ModelDescriptionConstants.ADDRESS).asList();
+        final String broadCastGroup = operationAddress.get(operationAddress.size()-1).get(CommonAttributes.BROADCAST_GROUP).asString();
+        for(ModelNode connectorRef:newValue.asList()){
+            final String connectorName = connectorRef.asString();
+            if(!availableConnectors.contains(connectorName)){
+                throw MESSAGES.wrongConnectorRefInBroadCastGroup(broadCastGroup,connectorName,availableConnectors);
+            }
+        }
+    }
+
+    private Set<String> getAvailableConnectors(final OperationContext context,final ModelNode operation) throws OperationFailedException{
+        PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+        PathAddress hornetqServer = MessagingServices.getHornetQServerPathAddress(address);
+        Resource hornetQServerResource = context.readResourceFromRoot(hornetqServer);
+        Set<String> availableConnectors = new HashSet<String>();
+        availableConnectors.addAll(hornetQServerResource.getChildrenNames(CommonAttributes.IN_VM_CONNECTOR));
+        availableConnectors.addAll(hornetQServerResource.getChildrenNames(CommonAttributes.REMOTE_CONNECTOR));
+        availableConnectors.addAll(hornetQServerResource.getChildrenNames(CommonAttributes.CONNECTOR));
+        return availableConnectors;
+    }
 }
