@@ -43,7 +43,12 @@
                 <path name="com/sun/jndi/dns"/>
                 <path name="com/sun/jndi/ldap"/>
                 <path name="com/sun/jndi/url"/>
+                <path name="com/sun/jndi/url/corbaname"/>
                 <path name="com/sun/jndi/url/dns"/>
+                <path name="com/sun/jndi/url/iiop"/>
+                <path name="com/sun/jndi/url/iiopname"/>
+                <path name="com/sun/jndi/url/ldap"/>
+                <path name="com/sun/jndi/url/ldaps"/>
                 <path name="com/sun/crypto/provider"/>
                 <path name="com/sun/org/apache/xml/internal/security/transforms/implementations"/>
                 <path name="com/sun/security/auth"/>
