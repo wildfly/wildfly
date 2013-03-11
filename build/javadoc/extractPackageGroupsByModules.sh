@@ -34,6 +34,9 @@ touch $TARGET/listedPackages.tmp.txt
 ###  ...
 xsltproc $DIRNAME/printModulesInPlainText.xsl $PROJECT_ROOT_DIR/build/build.xml > $TARGET/modulesList.tmp.txt
 
+MODULES_REPO='modules'                    ## AS 7.1
+MODULES_REPO='modules/system/layers/base' ## AS 7.2
+
 echo "<groups>"
 
   ##  For each module in build.xml...
@@ -45,8 +48,8 @@ echo "<groups>"
       MOD_NAME=${LINE#MODULE: }
       MOD_PATH=`echo $MOD_NAME | tr . /`
       PACKAGES="";
-      #for JAR in `find $PROJECT_ROOT_DIR/build/target/jboss-as-7.1.3.Beta1/modules/$MOD_PATH/main -name *.jar`; do
-      for JAR in `find $AS_BUILT_DIR/modules/$MOD_PATH/main -name *.jar`; do
+
+      for JAR in `find $AS_BUILT_DIR/$MODULES_REPO/$MOD_PATH/main -name *.jar`; do
         #echo "    JAR: $JAR";
         for PACKAGE in `jar tf $JAR | grep .class | sed 's#/[^/]*\.class##' | sort | uniq`; do
           #PACKAGE=`dirname $PACKAGE | tr / .`
