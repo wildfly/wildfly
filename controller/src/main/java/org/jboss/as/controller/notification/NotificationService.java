@@ -149,14 +149,10 @@ public class NotificationService implements Service<NotificationSupport> {
 
         @Override
         public void emit(final Notification notification) {
-            final List<NotificationHandler> handlers = findMatchingNotificationHandlers(notification);
-            if (handlers.isEmpty()) {
-                return;
-            }
             executorServiceValue.getValue().execute(new Runnable() {
                 @Override
                 public void run() {
-                    for (NotificationHandler handler : handlers) {
+                    for (NotificationHandler handler : findMatchingNotificationHandlers(notification)) {
                         handler.handleNotification(notification);
                     }
                 }

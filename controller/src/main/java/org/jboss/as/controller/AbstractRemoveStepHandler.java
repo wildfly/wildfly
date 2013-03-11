@@ -24,10 +24,9 @@ package org.jboss.as.controller;
 
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.OperationContext.ResultAction.KEEP;
 import static org.jboss.as.controller.PathAddress.pathAddress;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION;
 
 import java.util.ArrayList;
@@ -71,24 +70,21 @@ public abstract class AbstractRemoveStepHandler implements OperationStepHandler 
                     });
                 }
             }, OperationContext.Stage.RUNTIME);
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    try {
-                        if (FAILED.equals(context.getResult().get(OUTCOME).asString())) {
-                            return;
-                        }
-                        PathAddress sourceAddress = pathAddress(operation.get(OP_ADDR));
-                        Notification notification = new Notification(RESOURCE_REMOVED_NOTIFICATION,
-                                sourceAddress,
-                                MESSAGES.resourceWasRemoved(sourceAddress));
-                        NotificationService.emitNotification(context, notification);
-                    } finally {
-                        context.stepCompleted();
-                    }
+        }
+
+        context.completeStep(new OperationContext.ResultHandler() {
+            @Override
+            public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                if (resultAction != KEEP) {
+                    return;
                 }
-            }, OperationContext.Stage.VERIFY);        }
-        context.stepCompleted();
+                PathAddress sourceAddress = pathAddress(operation.get(OP_ADDR));
+                Notification notification = new Notification(RESOURCE_REMOVED_NOTIFICATION,
+                        sourceAddress,
+                        MESSAGES.resourceWasRemoved(sourceAddress));
+                NotificationService.emitNotification(context, notification);
+            }
+        });
     }
 
     protected void performRemove(OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
