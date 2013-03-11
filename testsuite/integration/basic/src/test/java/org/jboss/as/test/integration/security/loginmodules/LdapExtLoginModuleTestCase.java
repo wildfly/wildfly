@@ -85,7 +85,6 @@ import org.jboss.security.auth.spi.LdapExtLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -221,9 +220,7 @@ public class LdapExtLoginModuleTestCase {
     @Test
     @OperateOnDeployment(DEP2_THROW)
     public void test2throw(@ArquillianResource URL webAppURL) throws Exception {
-        final URL rolesPrintingURL = new URL(webAppURL.toExternalForm() + RolePrintingServlet.SERVLET_PATH.substring(1) + "?"
-                + QUERY_ROLES);
-        Utils.makeCallWithBasicAuthn(rolesPrintingURL, "jduke", "theduke", 401);
+        testDeployment(webAppURL, "jduke", "TheDuke", "Echo", "jduke");
     }
 
     /**
