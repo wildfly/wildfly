@@ -53,16 +53,19 @@
         <dependency>
             <groupId>org.apache.openjpa</groupId>
             <artifactId>openjpa-kernel</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.openjpa</groupId>
             <artifactId>openjpa-lib</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.openjpa</groupId>
             <artifactId>openjpa-persistence</artifactId>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>
