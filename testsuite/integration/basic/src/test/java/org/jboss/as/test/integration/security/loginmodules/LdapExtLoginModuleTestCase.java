@@ -92,7 +92,7 @@ import org.junit.runner.RunWith;
 
 /**
  * A LdapLoginModuleTestCase, based on examples from https://community.jboss.org/wiki/LdapExtLoginModule
- * 
+ *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
@@ -138,7 +138,7 @@ public class LdapExtLoginModuleTestCase {
 
     /**
      * Creates {@link WebArchive} for {@link #test1(URL)}.
-     * 
+     *
      * @return
      */
     @Deployment(name = DEP1)
@@ -148,7 +148,7 @@ public class LdapExtLoginModuleTestCase {
 
     /**
      * Creates {@link WebArchive} for {@link #test2(URL)}.
-     * 
+     *
      * @return
      */
     @Deployment(name = DEP2)
@@ -158,7 +158,7 @@ public class LdapExtLoginModuleTestCase {
 
     /**
      * Creates {@link WebArchive} for {@link #test2throw(URL)}.
-     * 
+     *
      * @return
      */
     @Deployment(name = DEP2_THROW)
@@ -168,7 +168,7 @@ public class LdapExtLoginModuleTestCase {
 
     /**
      * Creates {@link WebArchive} for {@link #test3(URL)}.
-     * 
+     *
      * @return
      */
     @Deployment(name = DEP3)
@@ -178,7 +178,7 @@ public class LdapExtLoginModuleTestCase {
 
     /**
      * Creates {@link WebArchive} for {@link #test4(URL)}.
-     * 
+     *
      * @return
      */
     @Deployment(name = DEP4)
@@ -188,7 +188,7 @@ public class LdapExtLoginModuleTestCase {
 
     /**
      * Creates {@link WebArchive} for {@link #test5(URL)}.
-     * 
+     *
      * @return
      */
     @Deployment(name = DEP5)
@@ -198,19 +198,18 @@ public class LdapExtLoginModuleTestCase {
 
     /**
      * Test case for Example 1.
-     * 
+     *
      * @throws Exception
      */
     @Test
     @OperateOnDeployment(DEP1)
-    @Ignore("AS7-5737 LdapExtLoginModule fails with follow referral")
     public void test1(@ArquillianResource URL webAppURL) throws Exception {
         testDeployment(webAppURL, "jduke", "TheDuke", "Echo", "Admin");
     }
 
     /**
      * Test case for Example 2.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -229,19 +228,18 @@ public class LdapExtLoginModuleTestCase {
 
     /**
      * Test case for Example 3.
-     * 
+     *
      * @throws Exception
      */
     @Test
     @OperateOnDeployment(DEP3)
-    @Ignore("AS7-5737 LdapExtLoginModule fails with follow referral")
     public void test3(@ArquillianResource URL webAppURL) throws Exception {
         testDeployment(webAppURL, "Java Duke", "TheDuke", "Echo", "Admin");
     }
 
     /**
      * Test case for Example 4.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -252,7 +250,7 @@ public class LdapExtLoginModuleTestCase {
 
     /**
      * Test case for Example 5.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -289,7 +287,7 @@ public class LdapExtLoginModuleTestCase {
 
     /**
      * Creates a {@link WebArchive} for given security domain.
-     * 
+     *
      * @param securityDomainName
      * @return
      */
@@ -309,7 +307,7 @@ public class LdapExtLoginModuleTestCase {
 
     /**
      * Asserts, the role list returned from the {@link RolePrintingServlet} contains the given role.
-     * 
+     *
      * @param rolePrintResponse
      * @param role
      */
@@ -321,7 +319,7 @@ public class LdapExtLoginModuleTestCase {
 
     /**
      * Asserts, the role list returned from the {@link RolePrintingServlet} doesn't contain the given role.
-     * 
+     *
      * @param rolePrintResponse
      * @param role
      */
@@ -349,14 +347,14 @@ public class LdapExtLoginModuleTestCase {
 
     /**
      * A {@link ServerSetupTask} instance which creates security domains for this test case.
-     * 
+     *
      * @author Josef Cacek
      */
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
 
         /**
          * Returns SecurityDomains configuration for this testcase.
-         * 
+         *
          * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
          */
         @Override
@@ -444,20 +442,20 @@ public class LdapExtLoginModuleTestCase {
      * A server setup task which configures and starts LDAP server.
      */
     //@formatter:off
-    @CreateDS( 
+    @CreateDS(
         name = "JBossDS",
         partitions =
         {
             @CreatePartition(
                 name = "jboss",
                 suffix = "dc=jboss,dc=org",
-                contextEntry = @ContextEntry( 
+                contextEntry = @ContextEntry(
                     entryLdif =
                         "dn: dc=jboss,dc=org\n" +
                         "dc: jboss\n" +
                         "objectClass: top\n" +
                         "objectClass: domain\n\n" ),
-                indexes = 
+                indexes =
                 {
                     @CreateIndex( attribute = "objectClass" ),
                     @CreateIndex( attribute = "dc" ),
@@ -465,14 +463,14 @@ public class LdapExtLoginModuleTestCase {
                 })
         },
         additionalInterceptors = { KeyDerivationInterceptor.class })
-    @CreateLdapServer ( 
-        transports = 
+    @CreateLdapServer (
+        transports =
         {
-            @CreateTransport( protocol = "LDAP",  port = LDAP_PORT), 
-            @CreateTransport( protocol = "LDAPS", port = LDAPS_PORT) 
+            @CreateTransport( protocol = "LDAP",  port = LDAP_PORT),
+            @CreateTransport( protocol = "LDAPS", port = LDAPS_PORT)
         },
 //        keyStore="ldaps.jks",
-        certificatePassword="secret")            
+        certificatePassword="secret")
     //@formatter:on
     static class LDAPServerSetupTask implements ServerSetupTask {
 
@@ -481,7 +479,7 @@ public class LdapExtLoginModuleTestCase {
 
         /**
          * Creates directory services, starts LDAP server and KDCServer
-         * 
+         *
          * @param managementClient
          * @param containerId
          * @throws Exception
@@ -523,7 +521,7 @@ public class LdapExtLoginModuleTestCase {
 
         /**
          * Fixes bind address in the CreateTransport annotation.
-         * 
+         *
          * @param createLdapServer
          */
         private void fixTransportAddress(ManagedCreateLdapServer createLdapServer, String address) {
@@ -537,7 +535,7 @@ public class LdapExtLoginModuleTestCase {
 
         /**
          * Stops LDAP server and KDCServer and shuts down the directory service.
-         * 
+         *
          * @param managementClient
          * @param containerId
          * @throws Exception
