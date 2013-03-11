@@ -3361,16 +3361,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.projectodd.stilts</groupId>
-      <artifactId>stilts-stomplet-server-bundle</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.scannotation</groupId>
       <artifactId>scannotation</artifactId>
       <licenses>
