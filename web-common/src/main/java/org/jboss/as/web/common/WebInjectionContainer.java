@@ -44,7 +44,7 @@ public class WebInjectionContainer {
     public WebInjectionContainer(ClassLoader classloader, final ComponentRegistry componentRegistry) {
         this.classloader = classloader;
         this.componentRegistry = componentRegistry;
-        this.instanceMap = new ConcurrentReferenceHashMap<Object, ManagedReference>
+        this.instanceMap = new ConcurrentReferenceHashMap<>
                 (256, ConcurrentReferenceHashMap.DEFAULT_LOAD_FACTOR,
                         Runtime.getRuntime().availableProcessors(), ConcurrentReferenceHashMap.ReferenceType.STRONG,
                         ConcurrentReferenceHashMap.ReferenceType.STRONG, EnumSet.of(ConcurrentReferenceHashMap.Option.IDENTITY_COMPARISONS));

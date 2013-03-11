@@ -43,7 +43,7 @@ public final class RaRepositoryService implements Service<ResourceAdapterReposit
 
     private final ResourceAdapterRepository value;
 
-    private final InjectedValue<MetadataRepository> mdrValue = new InjectedValue<MetadataRepository>();
+    private final InjectedValue<MetadataRepository> mdrValue = new InjectedValue<>();
 
     /**
      * Create instance

@@ -51,7 +51,7 @@ public class RemotingConnectorService implements Service<RemotingConnectorServer
 
     private RemotingConnectorServer server;
 
-    private final InjectedValue<Endpoint> endpoint = new InjectedValue<Endpoint>();
+    private final InjectedValue<Endpoint> endpoint = new InjectedValue<>();
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {

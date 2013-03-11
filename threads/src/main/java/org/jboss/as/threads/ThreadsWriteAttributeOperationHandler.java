@@ -49,7 +49,7 @@ import org.jboss.msc.service.ServiceController;
 public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWriteAttributeHandler<Boolean> {
 
     protected final AttributeDefinition[] attributes;
-    protected final Map<String, AttributeDefinition> runtimeAttributes = new HashMap<String, AttributeDefinition>();
+    protected final Map<String, AttributeDefinition> runtimeAttributes = new HashMap<>();
 
     /**
      * Creates a handler that doesn't validate values.

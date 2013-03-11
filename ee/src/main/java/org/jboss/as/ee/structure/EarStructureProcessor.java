@@ -63,7 +63,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
     private static final String WAR_EXTENSION = ".war";
     private static final String SAR_EXTENSION = ".sar";
     private static final String RAR_EXTENSION = ".rar";
-    private static final List<String> CHILD_ARCHIVE_EXTENSIONS = new ArrayList<String>();
+    private static final List<String> CHILD_ARCHIVE_EXTENSIONS = new ArrayList<>();
 
     static {
         CHILD_ARCHIVE_EXTENSIONS.add(JAR_EXTENSION);
@@ -131,7 +131,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                 libDir = null;
             }
             // scan the ear looking for wars and jars
-            final List<VirtualFile> childArchives = new ArrayList<VirtualFile>(virtualFile.getChildren(new SuffixMatchFilter(
+            final List<VirtualFile> childArchives = new ArrayList<>(virtualFile.getChildren(new SuffixMatchFilter(
                     CHILD_ARCHIVE_EXTENSIONS, new VisitorAttributes() {
                 @Override
                 public boolean isLeavesOnly() {
@@ -162,7 +162,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                     this.createResourceRoot(deploymentUnit, child, isWarFile || isRarFile, isWarFile);
                 }
             } else {
-                final Set<VirtualFile> subDeploymentFiles = new HashSet<VirtualFile>();
+                final Set<VirtualFile> subDeploymentFiles = new HashSet<>();
                 // otherwise read from application.xml
                 for (final ModuleMetaData module : earMetaData.getModules()) {
 

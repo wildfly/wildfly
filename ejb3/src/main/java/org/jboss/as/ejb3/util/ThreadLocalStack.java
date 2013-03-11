@@ -27,12 +27,12 @@ import java.util.LinkedList;
 * @author Stuart Douglas
 */
 public class ThreadLocalStack<T> {
-    private final ThreadLocal<LinkedList<T>> stack = new ThreadLocal<LinkedList<T>>();
+    private final ThreadLocal<LinkedList<T>> stack = new ThreadLocal<>();
 
     public void push(T obj) {
         LinkedList<T> list = stack.get();
         if (list == null) {
-            list = new LinkedList<T>();
+            list = new LinkedList<>();
             stack.set(list);
         }
         list.addLast(obj);

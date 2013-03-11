@@ -99,13 +99,13 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      */
     private final ServiceName serviceName;
 
-    private final InjectedValue<EJBComponent> ejbComponentInjectedValue = new InjectedValue<EJBComponent>();
+    private final InjectedValue<EJBComponent> ejbComponentInjectedValue = new InjectedValue<>();
 
-    private final InjectedValue<ExecutorService> executorServiceInjectedValue = new InjectedValue<ExecutorService>();
+    private final InjectedValue<ExecutorService> executorServiceInjectedValue = new InjectedValue<>();
 
-    private final InjectedValue<java.util.Timer> timerInjectedValue = new InjectedValue<java.util.Timer>();
+    private final InjectedValue<java.util.Timer> timerInjectedValue = new InjectedValue<>();
 
-    private final InjectedValue<TimedObjectInvoker> timedObjectInvoker = new InjectedValue<TimedObjectInvoker>();
+    private final InjectedValue<TimedObjectInvoker> timedObjectInvoker = new InjectedValue<>();
 
     /**
      * Auto timers that should be added on startup
@@ -115,7 +115,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     /**
      * Used for persistent timers
      */
-    private final InjectedValue<TimerPersistence> timerPersistence = new InjectedValue<TimerPersistence>();
+    private final InjectedValue<TimerPersistence> timerPersistence = new InjectedValue<>();
 
     /**
      * All timers which were created by this {@link TimerService}
@@ -125,7 +125,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     /**
      * Holds the {@link java.util.concurrent.Future} of each of the timer tasks that have been scheduled
      */
-    private final Map<String, java.util.TimerTask> scheduledTimerFutures = new HashMap<String, java.util.TimerTask>();
+    private final Map<String, java.util.TimerTask> scheduledTimerFutures = new HashMap<>();
 
     /**
      * Key that is used to store timers that are waiting on transaction completion in the transaction local
@@ -140,7 +140,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     private volatile boolean started = false;
 
     static {
-        final Set<TimerState> states = new HashSet<TimerState>();
+        final Set<TimerState> states = new HashSet<>();
         states.add(TimerState.CANCELED);
         states.add(TimerState.EXPIRED);
         ineligibleTimerStates = Collections.unmodifiableSet(states);
@@ -184,7 +184,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         if (invoker == null) {
             throw MESSAGES.invokerIsNull();
         }
-        final List<ScheduleTimer> timers = new ArrayList<ScheduleTimer>();
+        final List<ScheduleTimer> timers = new ArrayList<>();
 
         for (Map.Entry<Method, List<AutoTimer>> entry : autoTimers.entrySet()) {
             for (AutoTimer timer : entry.getValue()) {
@@ -380,7 +380,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     public Collection<Timer> getTimers() throws IllegalStateException, EJBException {
         assertTimerServiceState();
         Object pk = currentPrimaryKey();
-        final Set<Timer> activeTimers = new HashSet<Timer>();
+        final Set<Timer> activeTimers = new HashSet<>();
         // get all active timers for this timerservice
         for (final TimerImpl timer : this.timers.values()) {
             if (timer.isActive()) {
@@ -676,7 +676,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         List<TimerImpl> restorableTimers = this.getActivePersistentTimers();
 
         //timers are removed from the list as they are loaded
-        final List<ScheduleTimer> newAutoTimers = new LinkedList<ScheduleTimer>(autoTimers);
+        final List<ScheduleTimer> newAutoTimers = new LinkedList<>(autoTimers);
 
         ROOT_LOGGER.debug("Found " + restorableTimers.size() + " active persistentTimers for timedObjectId: "
                 + getInvoker().getTimedObjectId());
@@ -896,7 +896,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     private void addWaitingOnTxCompletionTimer(final TimerImpl timer) {
         Map<String, TimerImpl> timers = (Map<String, TimerImpl>) tsr.getResource(waitingOnTxCompletionKey);
         if (timers == null) {
-            tsr.putResource(waitingOnTxCompletionKey, timers = new HashMap<String, TimerImpl>());
+            tsr.putResource(waitingOnTxCompletionKey, timers = new HashMap<>());
         }
         timers.put(timer.getId(), timer);
     }
@@ -917,7 +917,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         }
 
         final List<TimerImpl> persistedTimers = timerPersistence.getValue().loadActiveTimers(timedObjectId, this);
-        final List<TimerImpl> activeTimers = new ArrayList<TimerImpl>();
+        final List<TimerImpl> activeTimers = new ArrayList<>();
         for (final TimerImpl persistedTimer : persistedTimers) {
             if (ineligibleTimerStates.contains(persistedTimer.getState())) {
                 continue;

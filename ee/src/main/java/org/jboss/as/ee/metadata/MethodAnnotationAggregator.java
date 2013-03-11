@@ -48,9 +48,9 @@ import java.util.Set;
 public class MethodAnnotationAggregator {
 
     public static <A extends Annotation, T> RuntimeAnnotationInformation<T> runtimeAnnotationInformation(final Class<?> componentClass, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex index, final Class<A> annotationType) {
-        final HashSet<MethodIdentifier> methodIdentifiers = new HashSet<MethodIdentifier>();
-        final Map<Method, List<T>> methods = new HashMap<Method, List<T>>();
-        final Map<String, List<T>> classAnnotations = new HashMap<String, List<T>>();
+        final HashSet<MethodIdentifier> methodIdentifiers = new HashSet<>();
+        final Map<Method, List<T>> methods = new HashMap<>();
+        final Map<String, List<T>> classAnnotations = new HashMap<>();
 
         Class<?> c = componentClass;
         while (c != null && c != Object.class) {
@@ -94,7 +94,7 @@ public class MethodAnnotationAggregator {
 
             c = c.getSuperclass();
         }
-        return new RuntimeAnnotationInformation<T>(classAnnotations, methods);
+        return new RuntimeAnnotationInformation<>(classAnnotations, methods);
     }
 
     public static <A extends Annotation, T> Set<Method> runtimeAnnotationPresent(final Class<?> componentClass, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex index, final Class<A> annotationType) {

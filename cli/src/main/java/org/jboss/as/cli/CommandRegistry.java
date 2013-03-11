@@ -32,8 +32,8 @@ import java.util.Set;
  */
 public class CommandRegistry {
 
-    private final Map<String, CommandHandler> handlers = new HashMap<String, CommandHandler>();
-    private final Set<String> tabCompletionCommands = new HashSet<String>();
+    private final Map<String, CommandHandler> handlers = new HashMap<>();
+    private final Set<String> tabCompletionCommands = new HashSet<>();
 
     public void registerHandler(CommandHandler handler, String... names) {
         registerHandler(handler, true, names);

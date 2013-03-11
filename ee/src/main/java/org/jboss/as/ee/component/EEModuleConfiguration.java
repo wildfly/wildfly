@@ -44,7 +44,7 @@ public final class EEModuleConfiguration {
         applicationName = description.getApplicationName();
         moduleName = description.getModuleName();
 
-        this.componentConfigurations = new ArrayList<ComponentConfiguration>();
+        this.componentConfigurations = new ArrayList<>();
     }
 
     public String getApplicationName() {

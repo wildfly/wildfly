@@ -191,7 +191,7 @@ public class SendMessagesTestCase {
 
             // we do not assume message order since the 1st message will be redelivered
             // after redeployment (as the MDB is interrupted on 1st delivery)
-            Set<String> expected = new TreeSet<String>();
+            Set<String> expected = new TreeSet<>();
             sendMessage(session, sender, replyQueue, "await");
             expected.add("Reply: await");
 
@@ -223,7 +223,7 @@ public class SendMessagesTestCase {
             }
             log.debug("Some more messages sent");
 
-            Set<String> received = new TreeSet<String>();
+            Set<String> received = new TreeSet<>();
             for (int i = 0; i < (1 + 50 + 10); i++) {
                 Message msg = receiver.receive(SECONDS.toMillis(RECEIVE_WAIT_S));
                 assertNotNull("did not receive message " + i, msg);

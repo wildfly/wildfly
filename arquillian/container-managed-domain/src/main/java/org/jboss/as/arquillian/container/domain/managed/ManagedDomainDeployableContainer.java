@@ -190,7 +190,7 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
         if (!modulesJar.exists())
             throw new IllegalStateException("Cannot find: " + modulesJar);
 
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         String javaExec = config.getJavaHome() + File.separatorChar + "bin" + File.separatorChar + "java";
         if (config.getJavaHome().contains(" ")) {
             javaExec = "\"" + javaExec + "\"";

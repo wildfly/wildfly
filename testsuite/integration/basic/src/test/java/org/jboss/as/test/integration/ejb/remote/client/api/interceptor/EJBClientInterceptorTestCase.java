@@ -73,7 +73,7 @@ public class EJBClientInterceptorTestCase {
         final EJBClientContext ejbClientContext = EJBClientContext.requireCurrent();
 
         // create some data that the client side interceptor will pass along during the EJB invocation
-        final Map<String, Object> interceptorData = new HashMap<String, Object>();
+        final Map<String, Object> interceptorData = new HashMap<>();
         final String keyOne = "foo";
         final Object valueOne = "bar";
         final String keyTwo = "blah";

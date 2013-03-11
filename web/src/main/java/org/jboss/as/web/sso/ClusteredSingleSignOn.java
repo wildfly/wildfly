@@ -81,7 +81,7 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
     private final SSOClusterManager ssoClusterManager;
 
     /** Currently started Managers that have associated as session with an SSO */
-    private Set<Manager> activeManagers = new CopyOnWriteArraySet<Manager>();
+    private Set<Manager> activeManagers = new CopyOnWriteArraySet<>();
 
     /** Max number of ms an SSO with no active sessions will be usable by a request */
     private volatile int maxEmptyLife = DEFAULT_MAX_EMPTY_LIFE * 1000;
@@ -97,7 +97,7 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
     /**
      * Map<String, Long> containing the ids of SSOs with no active sessions and the time at which they entered that state
      */
-    private Map<String, Long> emptySSOs = new ConcurrentHashMap<String, Long>();
+    private Map<String, Long> emptySSOs = new ConcurrentHashMap<>();
 
     /** Used for sync locking of processExpires runs */
     private final Object MUTEX = new Object();

@@ -40,7 +40,7 @@ import org.jboss.as.ejb3.cache.spi.SerializationGroupMember;
  * @author Paul Ferraro
  */
 public class GroupCreationContext<K extends Serializable, V extends Cacheable<K>, G extends Serializable, M extends SerializationGroupMember<K, V, G>, C extends GroupAwareBackingCache<K, V, G, M>> {
-    private static final ThreadLocal<GroupCreationContext<?, ?, ?, ?, ?>> groupCreationContext = new ThreadLocal<GroupCreationContext<?, ?, ?, ?, ?>>();
+    private static final ThreadLocal<GroupCreationContext<?, ?, ?, ?, ?>> groupCreationContext = new ThreadLocal<>();
 
     private final List<Map.Entry<V, C>> entries;
     private final boolean strict;
@@ -69,7 +69,7 @@ public class GroupCreationContext<K extends Serializable, V extends Cacheable<K>
         if (groupCreationContext.get() != null) {
             throw EjbMessages.MESSAGES.groupCreationContextAlreadyExists();
         }
-        GroupCreationContext<K, V, G, M, C> started = new GroupCreationContext<K, V, G, M, C>(strict);
+        GroupCreationContext<K, V, G, M, C> started = new GroupCreationContext<>(strict);
         groupCreationContext.set(started);
         return started;
     }
@@ -86,7 +86,7 @@ public class GroupCreationContext<K extends Serializable, V extends Cacheable<K>
      * Prevent external instantiation.
      */
     private GroupCreationContext(boolean strict) {
-        this.entries = new ArrayList<Map.Entry<V, C>>();
+        this.entries = new ArrayList<>();
         this.strict = strict;
     }
 

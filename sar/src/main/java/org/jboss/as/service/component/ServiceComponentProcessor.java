@@ -58,7 +58,7 @@ public class ServiceComponentProcessor implements DeploymentUnitProcessor {
         }
         final EEApplicationClasses applicationClassesDescription = deploymentUnit
                 .getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
-        final Map<String, ServiceComponentInstantiator> serviceComponents = new HashMap<String, ServiceComponentInstantiator>();
+        final Map<String, ServiceComponentInstantiator> serviceComponents = new HashMap<>();
         for (final JBossServiceConfig serviceConfig : serviceXmlDescriptor.getServiceConfigs()) {
             ServiceComponentDescription componentDescription = new ServiceComponentDescription(serviceConfig.getName(),
                     serviceConfig.getCode(), moduleDescription, deploymentUnit.getServiceName(), applicationClassesDescription);

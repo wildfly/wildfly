@@ -90,7 +90,7 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition STATUS = SimpleAttributeDefinitionBuilder.create(ServerStatusHandler.ATTRIBUTE_NAME, ModelType.STRING)
-            .setValidator(new EnumValidator<ServerStatus>(ServerStatus.class, false, false))
+            .setValidator(new EnumValidator<>(ServerStatus.class, false, false))
             .build();
 
     /**

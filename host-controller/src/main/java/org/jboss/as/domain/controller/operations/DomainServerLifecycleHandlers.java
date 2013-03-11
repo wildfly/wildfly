@@ -119,7 +119,7 @@ public class DomainServerLifecycleHandlers {
             if(! serverConfig.isDefined()) {
                 return Collections.emptySet();
             }
-            final Set<String> servers = new HashSet<String>();
+            final Set<String> servers = new HashSet<>();
             for (Property config : serverConfig.asPropertyList()) {
                 if (groupName.equals(config.getValue().get(GROUP).asString())) {
                     servers.add(config.getName());

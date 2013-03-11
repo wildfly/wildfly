@@ -75,7 +75,7 @@ public class CachedConnectionManagerSetupProcessor implements DeploymentUnitProc
 
     private static class CachedConnectionManagerSetupAction implements SetupAction, Service<Void> {
 
-        private final InjectedValue<CachedConnectionManager> cachedConnectionManager = new InjectedValue<CachedConnectionManager>();
+        private final InjectedValue<CachedConnectionManager> cachedConnectionManager = new InjectedValue<>();
 
 
         private final ServiceName serviceName;

@@ -38,7 +38,7 @@ import static org.jboss.as.naming.NamingMessages.MESSAGES;
  */
 public class NamespaceBindings {
     public static final AttachmentKey<NamespaceBindings> ATTACHMENT_KEY = AttachmentKey.create(NamespaceBindings.class);
-    private final ConcurrentMap<JndiName, Object> bindings = new ConcurrentHashMap<JndiName, Object>();
+    private final ConcurrentMap<JndiName, Object> bindings = new ConcurrentHashMap<>();
 
     /**
      * Get the namespace bindings for a deployment context.

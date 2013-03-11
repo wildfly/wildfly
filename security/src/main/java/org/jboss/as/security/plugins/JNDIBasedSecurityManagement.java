@@ -60,13 +60,13 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
 
     protected static SecurityLogger log = SecurityLogger.ROOT_LOGGER;
 
-    private transient ConcurrentHashMap<String, SecurityDomainContext> securityMgrMap = new ConcurrentHashMap<String, SecurityDomainContext>();
-    private transient ConcurrentHashMap<String, AuthenticationManager> authMgrMap = new ConcurrentHashMap<String, AuthenticationManager>();
-    private transient ConcurrentHashMap<String, AuthorizationManager> authzMgrMap = new ConcurrentHashMap<String, AuthorizationManager>();
-    private transient ConcurrentHashMap<String, AuditManager> auditMgrMap = new ConcurrentHashMap<String, AuditManager>();
-    private transient ConcurrentHashMap<String, IdentityTrustManager> idmMgrMap = new ConcurrentHashMap<String, IdentityTrustManager>();
-    private transient ConcurrentHashMap<String, MappingManager> mappingMgrMap = new ConcurrentHashMap<String, MappingManager>();
-    private transient ConcurrentHashMap<String, JSSESecurityDomain> jsseMap = new ConcurrentHashMap<String, JSSESecurityDomain>();
+    private transient ConcurrentHashMap<String, SecurityDomainContext> securityMgrMap = new ConcurrentHashMap<>();
+    private transient ConcurrentHashMap<String, AuthenticationManager> authMgrMap = new ConcurrentHashMap<>();
+    private transient ConcurrentHashMap<String, AuthorizationManager> authzMgrMap = new ConcurrentHashMap<>();
+    private transient ConcurrentHashMap<String, AuditManager> auditMgrMap = new ConcurrentHashMap<>();
+    private transient ConcurrentHashMap<String, IdentityTrustManager> idmMgrMap = new ConcurrentHashMap<>();
+    private transient ConcurrentHashMap<String, MappingManager> mappingMgrMap = new ConcurrentHashMap<>();
+    private transient ConcurrentHashMap<String, JSSESecurityDomain> jsseMap = new ConcurrentHashMap<>();
 
     private String authenticationManagerClassName;
     private boolean deepCopySubjectMode;

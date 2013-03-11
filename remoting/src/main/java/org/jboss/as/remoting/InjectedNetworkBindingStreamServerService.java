@@ -36,7 +36,7 @@ import org.xnio.OptionMap;
  */
 public class InjectedNetworkBindingStreamServerService extends AbstractStreamServerService {
 
-    private final InjectedValue<NetworkInterfaceBinding> interfaceBindingValue = new InjectedValue<NetworkInterfaceBinding>();
+    private final InjectedValue<NetworkInterfaceBinding> interfaceBindingValue = new InjectedValue<>();
     private final int port;
 
     public InjectedNetworkBindingStreamServerService(final OptionMap connectorPropertiesOptionMap, int port) {

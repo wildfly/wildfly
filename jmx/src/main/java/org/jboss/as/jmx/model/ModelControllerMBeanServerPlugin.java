@@ -146,7 +146,7 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
         if (name != null && !name.isDomainPattern()) {
             return getHelper(name).queryMBeans(name, query);
         } else {
-            Set<ObjectInstance> instances = new HashSet<ObjectInstance>();
+            Set<ObjectInstance> instances = new HashSet<>();
             if (legacyHelper != null) {
                 instances.addAll(legacyHelper.queryMBeans(name, query));
             }
@@ -161,7 +161,7 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
         if (name != null && !name.isDomainPattern()) {
             return getHelper(name).queryNames(name, query);
         } else {
-            Set<ObjectName> instances = new HashSet<ObjectName>();
+            Set<ObjectName> instances = new HashSet<>();
             if (legacyHelper != null) {
                 instances.addAll(legacyHelper.queryNames(name, query));
             }

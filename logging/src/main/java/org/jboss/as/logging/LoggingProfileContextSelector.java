@@ -33,7 +33,7 @@ import org.jboss.util.collection.ConcurrentSkipListMap;
 final class LoggingProfileContextSelector {
     private static final LoggingProfileContextSelector INSTANCE = new LoggingProfileContextSelector();
 
-    private final ConcurrentMap<String, LogContext> profileContexts = new ConcurrentSkipListMap<String, LogContext>();
+    private final ConcurrentMap<String, LogContext> profileContexts = new ConcurrentSkipListMap<>();
 
     private LoggingProfileContextSelector() {
 

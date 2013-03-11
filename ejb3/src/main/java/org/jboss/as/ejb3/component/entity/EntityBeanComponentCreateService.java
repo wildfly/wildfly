@@ -66,8 +66,8 @@ public class EntityBeanComponentCreateService extends EJBComponentCreateService 
     private final InterceptorFactory ejbActivate;
     private final InterceptorFactory ejbPassivate;
     private final InterceptorFactory unsetEntityContext;
-    private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<PoolConfig>();
-    private final InjectedValue<Boolean> defaultOptimisticLocking = new InjectedValue<Boolean>();
+    private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<>();
+    private final InjectedValue<Boolean> defaultOptimisticLocking = new InjectedValue<>();
 
     public EntityBeanComponentCreateService(final ComponentConfiguration componentConfiguration, final ApplicationExceptions ejbJarConfiguration) {
         super(componentConfiguration, ejbJarConfiguration);

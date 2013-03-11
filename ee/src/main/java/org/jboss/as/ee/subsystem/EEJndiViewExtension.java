@@ -63,7 +63,7 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
 public class EEJndiViewExtension implements JndiViewExtension, Service<Void> {
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jndi-view", "extension", "ee");
 
-    private final InjectedValue<JndiViewExtensionRegistry> registry = new InjectedValue<JndiViewExtensionRegistry>();
+    private final InjectedValue<JndiViewExtensionRegistry> registry = new InjectedValue<>();
 
     public synchronized void start(StartContext startContext) throws StartException {
         registry.getValue().addExtension(this);

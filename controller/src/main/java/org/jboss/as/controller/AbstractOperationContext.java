@@ -60,7 +60,7 @@ import org.jboss.dmr.ModelNode;
 @SuppressWarnings("deprecation")
 abstract class AbstractOperationContext implements OperationContext {
 
-    static final ThreadLocal<Thread> controllingThread = new ThreadLocal<Thread>();
+    static final ThreadLocal<Thread> controllingThread = new ThreadLocal<>();
 
     final Thread initiatingThread;
     private final EnumMap<Stage, Deque<Step>> steps;
@@ -97,7 +97,7 @@ abstract class AbstractOperationContext implements OperationContext {
         this.transactionControl = transactionControl;
         this.processState = processState;
         this.booting = booting;
-        steps = new EnumMap<Stage, Deque<Step>>(Stage.class);
+        steps = new EnumMap<>(Stage.class);
         for (Stage stage : Stage.values()) {
             if (booting && stage == Stage.VERIFY) {
                 // Use a concurrent structure as the parallel boot threads will
@@ -369,7 +369,7 @@ abstract class AbstractOperationContext implements OperationContext {
         }
 
         // Allow any containing TransactionControl to vote
-        final AtomicReference<ResultAction> ref = new AtomicReference<ResultAction>(
+        final AtomicReference<ResultAction> ref = new AtomicReference<>(
                 transactionControl == null ? ResultAction.KEEP : ResultAction.ROLLBACK);
         if (transactionControl != null) {
             if (MGMT_OP_LOGGER.isTraceEnabled()) {

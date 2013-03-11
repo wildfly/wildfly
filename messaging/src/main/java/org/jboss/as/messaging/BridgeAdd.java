@@ -149,7 +149,7 @@ public class BridgeAdd extends AbstractAddStepHandler {
     }
 
     private static List<String> getStaticConnectors(ModelNode model) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (ModelNode connector : model.require(CommonAttributes.STATIC_CONNECTORS).asList()) {
             result.add(connector.asString());
         }

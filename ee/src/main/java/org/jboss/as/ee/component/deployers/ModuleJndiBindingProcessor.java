@@ -93,7 +93,7 @@ public class
         }
         final List<ServiceName> dependencies = deploymentUnit.getAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES);
 
-        final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings = new HashMap<ServiceName, BindingConfiguration>();
+        final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings = new HashMap<>();
 
         // bindings
         // Handle duplicates binding from the same source
@@ -140,10 +140,10 @@ public class
         }
 
         //now add all class level bindings
-        final Set<String> handledClasses = new HashSet<String>();
+        final Set<String> handledClasses = new HashSet<>();
 
         for (final ComponentConfiguration componentConfiguration : moduleConfiguration.getComponentConfigurations()) {
-            final Set<Class<?>> classConfigurations = new HashSet<Class<?>>();
+            final Set<Class<?>> classConfigurations = new HashSet<>();
             classConfigurations.add(componentConfiguration.getComponentClass());
 
             for (final InterceptorDescription interceptor : componentConfiguration.getComponentDescription().getAllInterceptors()) {
@@ -178,7 +178,7 @@ public class
                     // TODO: Should the view configuration just return a Set instead of a List? Or is there a better way to
                     // handle these duplicates?
                     if (!MetadataCompleteMarker.isMetadataComplete(phaseContext.getDeploymentUnit())) {
-                        final Set<BindingConfiguration> classLevelBindings = new HashSet<BindingConfiguration>(classDescription.getBindingConfigurations());
+                        final Set<BindingConfiguration> classLevelBindings = new HashSet<>(classDescription.getBindingConfigurations());
                         for (BindingConfiguration binding : classLevelBindings) {
                             final String bindingName = binding.getName();
                             final boolean compBinding = bindingName.startsWith("java:comp") || !bindingName.startsWith("java:");

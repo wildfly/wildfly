@@ -73,8 +73,8 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
     private boolean operationComplete;
     private String operationName;
     private OperationRequestAddress address;
-    private Map<String, String> props = new HashMap<String, String>();
-    private List<String> otherArgs = new ArrayList<String>();
+    private Map<String, String> props = new HashMap<>();
+    private List<String> otherArgs = new ArrayList<>();
     private String outputTarget;
 
     private String lastPropName;
@@ -431,7 +431,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
     @Override
     public void header(String name, String value, int valueIndex) throws CommandFormatException {
         if(headers == null) {
-            headers = new LinkedHashMap<String,ParsedOperationRequestHeader>();
+            headers = new LinkedHashMap<>();
         }
         lastHeader = new SimpleParsedOperationRequestHeader(name, value);
         headers.put(name, lastHeader);
@@ -443,7 +443,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
 
     public void header(ParsedOperationRequestHeader header) {
         if(headers == null) {
-            headers = new LinkedHashMap<String,ParsedOperationRequestHeader>();
+            headers = new LinkedHashMap<>();
         }
         lastHeader = header;
         headers.put(header.getName(), header);

@@ -110,7 +110,7 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
             return;
         }
 
-        final List<ModelNode> updates = new LinkedList<ModelNode>();
+        final List<ModelNode> updates = new LinkedList<>();
         for (final SecurityDomain securityDomain : securityDomains) {
             final String securityDomainName = securityDomain.getName();
             if (LOGGER.isInfoEnabled()) {
@@ -167,7 +167,7 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
             return;
         }
 
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        final List<ModelNode> updates = new ArrayList<>();
         for (final SecurityDomain securityDomain : securityDomains) {
             final String domainName = securityDomain.getName();
             if (LOGGER.isInfoEnabled()) {
@@ -215,7 +215,7 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
             throw new IllegalArgumentException("Missing mandatory part of JASPI configuration in the security domain.");
         }
 
-        final List<ModelNode> steps = new ArrayList<ModelNode>();
+        final List<ModelNode> steps = new ArrayList<>();
 
         PathAddress domainAddress = PathAddress.pathAddress()
                 .append(SUBSYSTEM, SUBSYSTEM_SECURITY)

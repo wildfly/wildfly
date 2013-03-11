@@ -85,7 +85,7 @@ public class GenerateSubsystemsDefinition {
         }
         File outputFile = new File(args[index++]);
 
-        List<SubsystemConfig> configs = new ArrayList<SubsystemConfig>();
+        List<SubsystemConfig> configs = new ArrayList<>();
         for (String spec : definitions.split(",")) {
             String[] split = spec.split(":");
             String subsystem = split[0];

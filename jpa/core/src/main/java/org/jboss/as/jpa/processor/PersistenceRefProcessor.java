@@ -71,7 +71,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
     @Override
     protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ResourceInjectionTarget resourceInjectionTarget, final ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws
         DeploymentUnitProcessingException {
-        List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
+        List<BindingConfiguration> bindings = new ArrayList<>();
         bindings.addAll(getPersistenceUnitRefs(deploymentUnit, environment, classLoader, deploymentReflectionIndex, resourceInjectionTarget));
         bindings.addAll(getPersistenceContextRefs(deploymentUnit, environment, classLoader, deploymentReflectionIndex, resourceInjectionTarget));
         return bindings;
@@ -89,7 +89,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
     private List<BindingConfiguration> getPersistenceUnitRefs(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionTarget resourceInjectionTarget) throws
         DeploymentUnitProcessingException {
 
-        final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
+        final List<BindingConfiguration> bindingConfigurations = new ArrayList<>();
         if (environment.getEnvironment() == null) {
             return bindingConfigurations;
         }
@@ -141,7 +141,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
     private List<BindingConfiguration> getPersistenceContextRefs(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionTarget resourceInjectionTarget) throws
         DeploymentUnitProcessingException {
 
-        List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
+        List<BindingConfiguration> bindingConfigurations = new ArrayList<>();
         final RemoteEnvironment remoteEnvironment = environment.getEnvironment();
         if (remoteEnvironment == null) {
             return bindingConfigurations;

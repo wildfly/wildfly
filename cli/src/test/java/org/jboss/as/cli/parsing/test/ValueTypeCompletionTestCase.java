@@ -119,7 +119,7 @@ public class ValueTypeCompletionTestCase {
         assertTrue(propDescr.isDefined());
 
         final ValueTypeCompleter completer = new ValueTypeCompleter(propDescr);
-        final List<String> candidates = new ArrayList<String>();
+        final List<String> candidates = new ArrayList<>();
 
         int i;
         i = completer.complete(null, "", 0, candidates);

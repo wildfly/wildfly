@@ -33,7 +33,7 @@ import org.jboss.as.cli.operation.OperationFormatException;
  */
 public class GlobalCharacterHandlers {
 
-    private static final Map<Character, CharacterHandler> handlers = new HashMap<Character, CharacterHandler>();
+    private static final Map<Character, CharacterHandler> handlers = new HashMap<>();
 
     static final CharacterHandlerMap GLOBAL_ENTER_STATE_HANDLERS = new CharacterHandlerMap() {
         @Override

@@ -53,7 +53,7 @@ public class InjectableConstructor {
         this.beanManager = beanManager;
 
         for(AnnotatedParameter<?> parameter : constructor.getParameters()) {
-            final Set<Annotation> qualifiers = new HashSet<Annotation>();
+            final Set<Annotation> qualifiers = new HashSet<>();
             for(Annotation annotation : parameter.getAnnotations()) {
                 if(beanManager.isQualifier(annotation.annotationType())) {
                     qualifiers.add(annotation);

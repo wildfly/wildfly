@@ -38,7 +38,7 @@ import org.jboss.as.controller.transform.ResourceTransformer;
  */
 class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformationDescriptionBuilder implements ResourceTransformationDescriptionBuilder {
 
-    private final List<String> discardedOperations = new LinkedList<String>();
+    private final List<String> discardedOperations = new LinkedList<>();
     private DiscardPolicy discardPolicy = DiscardPolicy.NEVER;
     private final AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry registry = new AttributeTransformationDescriptionBuilderImpl.AttributeTransformationDescriptionBuilderRegistry();
 

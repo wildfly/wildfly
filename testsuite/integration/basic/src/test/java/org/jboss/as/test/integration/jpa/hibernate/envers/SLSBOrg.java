@@ -58,7 +58,7 @@ public class SLSBOrg {
         for (Number revisionNumber : revList) {
             System.out.println("Available revisionNumber for o1:" + revisionNumber);
         }
-        List<Object> custHistory = new ArrayList<Object>();
+        List<Object> custHistory = new ArrayList<>();
         AuditQuery query = reader.createQuery().forRevisionsOfEntity(Organization.class, true, true);
         query.add(AuditEntity.revisionType().eq(RevisionType.DEL));
 

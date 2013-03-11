@@ -58,7 +58,6 @@ import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.annotation.javaee.Icon;
 import org.jboss.as.clustering.ClassLoaderAwareClassResolver;
 import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
-import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.AuthenticatorValve;
@@ -125,8 +124,8 @@ import org.jboss.as.web.common.WarMetaData;
  */
 public class JBossContextConfig extends ContextConfig {
     private DeploymentUnit deploymentUnitContext = null;
-    private Set<String> overlays = new HashSet<String>();
-    private final InjectedValue<DistributedCacheManagerFactory> factory = new InjectedValue<DistributedCacheManagerFactory>();
+    private Set<String> overlays = new HashSet<>();
+    private final InjectedValue<DistributedCacheManagerFactory> factory = new InjectedValue<>();
     private Map<String, AuthenticatorValve> authenValves = null;
     private boolean DELETE_WORK_DIR_ONCONTEXTDESTROY = Boolean.parseBoolean(SecurityActions.getSystemProperty("org.jboss.as.web.deployment.DELETE_WORK_DIR_ONCONTEXTDESTROY", "false"));
 
@@ -224,7 +223,7 @@ public class JBossContextConfig extends ContextConfig {
     protected Object getInstance(String moduleName, String className, List<ParamValueMetaData> params) {
         try {
             final Module module = deploymentUnitContext.getAttachment(Attachments.MODULE);
-            ClassLoader moduleClassLoader = null;
+            ClassLoader moduleClassLoader;
             if (moduleName == null) {
                 if (context.getLoader() == null || context.getLoader().getClassLoader() == null) {
                     moduleClassLoader = module.getClassLoader();
@@ -283,7 +282,7 @@ public class JBossContextConfig extends ContextConfig {
         if (module != null && metaData.getDistributable() != null) {
             try {
                 ClassResolver resolver = ModularClassResolver.getInstance(module.getModuleLoader());
-                context.setManager(new DistributableSessionManager<OutgoingDistributableSessionData>(this.factory.getValue(), metaData, new ClassLoaderAwareClassResolver(resolver, module.getClassLoader())));
+                context.setManager(new DistributableSessionManager<>(this.factory.getValue(), metaData, new ClassLoaderAwareClassResolver(resolver, module.getClassLoader())));
                 context.setDistributable(true);
             } catch (Exception e) {
                 WebLogger.WEB_LOGGER.clusteringNotSupported();
@@ -596,7 +595,7 @@ public class JBossContextConfig extends ContextConfig {
         }
         Map<String, TldMetaData> localTlds = tldsMetaData.getTlds();
         List<TldMetaData> sharedTlds = tldsMetaData.getSharedTlds(deploymentUnitContext);
-        ArrayList<TagLibraryInfo> tagLibraries = new ArrayList<TagLibraryInfo>();
+        ArrayList<TagLibraryInfo> tagLibraries = new ArrayList<>();
 
         for (String location : localTlds.keySet()) {
             processTld(tagLibraries, location, localTlds.get(location));
@@ -830,7 +829,7 @@ public class JBossContextConfig extends ContextConfig {
                                     roleNames);
 
                             if (servletSecurityAnnotation.getHttpMethodConstraints() != null) {
-                                methodConstraints = new HashSet<HttpMethodConstraintElement>();
+                                methodConstraints = new HashSet<>();
                                 for (HttpMethodConstraintMetaData annotationMethodConstraint : servletSecurityAnnotation
                                         .getHttpMethodConstraints()) {
                                     emptyRoleSemantic = EmptyRoleSemantic.PERMIT;
@@ -893,11 +892,11 @@ public class JBossContextConfig extends ContextConfig {
         // Configure configure global authenticators.
         if (ok) {
             if (! authenValves.isEmpty()) {
-                Map<String, Valve> authenvalves = new HashMap<String, Valve>();
+                Map<String, Valve> authenvalves = new HashMap<>();
                 for (String name : authenValves.keySet()) {
                     // Instantiate valve and add properties.
-                    AuthenticatorValve authenvalve = (AuthenticatorValve) authenValves.get(name);
-                    Valve valve = null;
+                    AuthenticatorValve authenvalve = authenValves.get(name);
+                    Valve valve;
                     try {
                         valve = (Valve) authenvalve.classz.newInstance();
                     } catch (InstantiationException e) {

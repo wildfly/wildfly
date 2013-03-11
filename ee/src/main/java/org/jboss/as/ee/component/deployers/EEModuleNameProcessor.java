@@ -45,8 +45,8 @@ public final class EEModuleNameProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final List<DeploymentUnit> subDeployments = deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
-        final Set<String> moduleNames = new HashSet<String>();
-        final Set<String> moduleConflicts = new HashSet<String>();
+        final Set<String> moduleNames = new HashSet<>();
+        final Set<String> moduleConflicts = new HashSet<>();
         //look for modules with the same name
         //
         for(DeploymentUnit deployment : subDeployments) {

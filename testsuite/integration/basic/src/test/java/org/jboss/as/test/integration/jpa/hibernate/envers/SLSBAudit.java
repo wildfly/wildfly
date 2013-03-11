@@ -78,7 +78,7 @@ public class SLSBAudit {
         // String queryString = "select a.originalId.REV from " + "CUSTOMER_PHONE" + "_AUD a";
         // String queryString = "select column_name from information_schema.columns where table_name = 'CUSTOMER_PHONE_AUD'";
         // Query query = em.createQuery(queryString);
-        List<Object> custHistory = new ArrayList<Object>();
+        List<Object> custHistory = new ArrayList<>();
         List<Number> revList = reader.getRevisions(Customer.class, id);
 
         for (Number revisionNumber : revList) {
@@ -96,7 +96,7 @@ public class SLSBAudit {
     public List<Object> verifyRevisionType(int id) {
 
         AuditReader reader = AuditReaderFactory.get(em);
-        List<Object> custHistory = new ArrayList<Object>();
+        List<Object> custHistory = new ArrayList<>();
         List<Number> revList = reader.getRevisions(Customer.class, id);
 
         for (Number revisionNumber : revList) {

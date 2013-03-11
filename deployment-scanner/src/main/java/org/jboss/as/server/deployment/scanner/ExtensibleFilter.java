@@ -107,15 +107,15 @@ class ExtensibleFilter implements FileFilter {
         if (matches == null)
             matches = DEFAULT_MATCHES;
         Arrays.sort(matches);
-        this.matches = new ArrayList<String>(Arrays.asList(matches));
+        this.matches = new ArrayList<>(Arrays.asList(matches));
         if (prefixes == null)
             prefixes = DEFAULT_PREFIXES;
         Arrays.sort(prefixes);
-        this.prefixes = new ArrayList<String>(Arrays.asList(prefixes));
+        this.prefixes = new ArrayList<>(Arrays.asList(prefixes));
         if (suffixes == null)
             suffixes = DEFAULT_SUFFIXES;
         Arrays.sort(suffixes, reverseComparator);
-        this.suffixes = new ArrayList<String>(Arrays.asList(suffixes));
+        this.suffixes = new ArrayList<>(Arrays.asList(suffixes));
     }
 
     public void addPrefix(String prefix) {

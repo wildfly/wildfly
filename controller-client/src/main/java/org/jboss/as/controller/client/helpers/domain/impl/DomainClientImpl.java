@@ -127,7 +127,7 @@ public class DomainClientImpl implements DomainClient {
         op.get("operation").set("read-children-names");
         op.get("child-type").set("host");
         ModelNode result = executeForResult(new OperationBuilder(op).build());
-        List<String> hosts = new ArrayList<String>();
+        List<String> hosts = new ArrayList<>();
         for (ModelNode host : result.asList()) {
             hosts.add(host.asString());
         }
@@ -136,7 +136,7 @@ public class DomainClientImpl implements DomainClient {
 
     @Override
     public Map<ServerIdentity, ServerStatus> getServerStatuses() {
-        Map<ServerIdentity, ServerStatus> result = new HashMap<ServerIdentity, ServerStatus>();
+        Map<ServerIdentity, ServerStatus> result = new HashMap<>();
         List<String> hosts = getHostControllerNames();
         for (String host : hosts) {
             Set<String> servers = getServerNames(host);
@@ -160,7 +160,7 @@ public class DomainClientImpl implements DomainClient {
         op.get("child-type").set("server-config");
         op.get("address").add("host", host);
         ModelNode result = executeForResult(new OperationBuilder(op).build());
-        Set<String> servers = new HashSet<String>();
+        Set<String> servers = new HashSet<>();
         for (ModelNode server : result.asList()) {
             servers.add(server.asString());
         }
@@ -223,7 +223,7 @@ public class DomainClientImpl implements DomainClient {
         op.get("operation").set("read-children-names");
         op.get("child-type").set("deployment");
         final ModelNode result = executeForResult(new OperationBuilder(op).build());
-        final Set<String> deploymentNames = new HashSet<String>();
+        final Set<String> deploymentNames = new HashSet<>();
         if (result.isDefined()) {
             for (ModelNode node : result.asList()) {
                 deploymentNames.add(node.asString());

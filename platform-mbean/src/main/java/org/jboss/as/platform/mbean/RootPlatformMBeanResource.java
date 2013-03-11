@@ -47,7 +47,7 @@ public class RootPlatformMBeanResource extends AbstractPlatformMBeanResource {
 
     @Override
     Set<String> getChildrenNames() {
-        return new HashSet<String>(PlatformMBeanConstants.BASE_TYPES);
+        return new HashSet<>(PlatformMBeanConstants.BASE_TYPES);
     }
 
     ResourceEntry getChildEntry(String name) {

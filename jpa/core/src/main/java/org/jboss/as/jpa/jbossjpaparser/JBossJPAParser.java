@@ -67,7 +67,7 @@ public class JBossJPAParser  {
         private static final Map<QName, Element> elements;
 
         static {
-            Map<QName, Element> elementsMap = new HashMap<QName, Element>();
+            Map<QName, Element> elementsMap = new HashMap<>();
             elementsMap.put(new QName(NAMESPACE_1_0, "jboss-jpa"), Element.JBOSS_JPA_DESCRIPTOR);
             elementsMap.put(new QName(NAMESPACE_1_0, "extended-persistence"), Element.EXTENDED_PERSISTENCE);
             elements = elementsMap;
@@ -99,7 +99,7 @@ public class JBossJPAParser  {
         private static final Map<QName, Attribute> attributes;
 
         static {
-            Map<QName, Attribute> attributesMap = new HashMap<QName, Attribute>();
+            Map<QName, Attribute> attributesMap = new HashMap<>();
             attributesMap.put(new QName(INHERITANCE_CONSTANT), INHERITANCE);
             attributes = attributesMap;
         }

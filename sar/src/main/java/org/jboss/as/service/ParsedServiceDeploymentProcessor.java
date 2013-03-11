@@ -161,8 +161,8 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         Value<?> valueToInject = Values.injectedValue();
         if (propertyName != null) {
             final Method getter = ReflectionUtils.getGetter(mBeanClassHierarchy, propertyName);
-            final Value<Method> getterValue = new ImmediateValue<Method>(getter);
-            valueToInject = cached(new MethodValue<Object>(getterValue, valueToInject, Values.<Object>emptyList()));
+            final Value<Method> getterValue = new ImmediateValue<>(getter);
+            valueToInject = cached(new MethodValue<>(getterValue, valueToInject, Values.<Object>emptyList()));
         }
         return valueToInject;
     }
@@ -170,15 +170,15 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
     private static Value<?> getValue(final ValueFactory valueFactory, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final ClassLoader classLoader) throws DeploymentUnitProcessingException {
         final String methodName = valueFactory.getMethodName();
         final ValueFactoryParameter[] parameters = valueFactory.getParameters();
-        final List<Class<?>> paramTypes = new ArrayList<Class<?>>(parameters.length);
-        final List<Value<?>> paramValues = new ArrayList<Value<?>>(parameters.length);
+        final List<Class<?>> paramTypes = new ArrayList<>(parameters.length);
+        final List<Value<?>> paramValues = new ArrayList<>(parameters.length);
         for (ValueFactoryParameter parameter : parameters) {
             final Class<?> attributeTypeValue = ReflectionUtils.getClass(parameter.getType(), classLoader);
             paramTypes.add(attributeTypeValue);
-            paramValues.add(new ImmediateValue<Object>(newValue(attributeTypeValue, parameter.getValue())));
+            paramValues.add(new ImmediateValue<>(newValue(attributeTypeValue, parameter.getValue())));
         }
-        final Value<Method> methodValue = new ImmediateValue<Method>(ReflectionUtils.getMethod(mBeanClassHierarchy, methodName, paramTypes.toArray(new Class<?>[0]), true));
-        return cached(new MethodValue<Object>(methodValue, Values.injectedValue(), paramValues));
+        final Value<Method> methodValue = new ImmediateValue<>(ReflectionUtils.getMethod(mBeanClassHierarchy, methodName, paramTypes.toArray(new Class<?>[0]), true));
+        return cached(new MethodValue<>(methodValue, Values.injectedValue(), paramValues));
     }
 
     private static Value<?> getValue(final JBossServiceAttributeConfig attributeConfig, final List<ClassReflectionIndex<?>> mBeanClassHierarchy) {
@@ -186,7 +186,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         final Method setterMethod = ReflectionUtils.getSetter(mBeanClassHierarchy, attributeName);
         final Class<?> setterType = setterMethod.getParameterTypes()[0];
 
-        return new ImmediateValue<Object>(newValue(setterType, attributeConfig.getValue()));
+        return new ImmediateValue<>(newValue(setterType, attributeConfig.getValue()));
     }
 
     private static Object newInstance(final JBossServiceConfig serviceConfig, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final ClassLoader classLoader) throws DeploymentUnitProcessingException {
@@ -212,7 +212,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
 
     private static Injector<Object> getPropertyInjector(final String propertyName, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final Service<?> service, final Value<?> value) {
         final Method setterMethod = ReflectionUtils.getSetter(mBeanClassHierarchy, propertyName);
-        return new MethodInjector<Object>(setterMethod, service, Values.nullValue(), Collections.singletonList(value));
+        return new MethodInjector<>(setterMethod, service, Values.nullValue(), Collections.singletonList(value));
     }
 
     private static Object newValue(final Class<?> type, final String value) {

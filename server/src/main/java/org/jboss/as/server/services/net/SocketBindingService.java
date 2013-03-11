@@ -49,8 +49,8 @@ public class SocketBindingService implements Service<SocketBinding> {
     /** The created binding. */
     private SocketBinding binding;
 
-    private final InjectedValue<NetworkInterfaceBinding> interfaceBinding = new InjectedValue<NetworkInterfaceBinding>();
-    private final InjectedValue<SocketBindingManager> socketBindings = new InjectedValue<SocketBindingManager>();
+    private final InjectedValue<NetworkInterfaceBinding> interfaceBinding = new InjectedValue<>();
+    private final InjectedValue<SocketBindingManager> socketBindings = new InjectedValue<>();
 
     public SocketBindingService(final String name, int port, boolean isFixedPort,
                                 InetAddress multicastAddress, int multicastPort,

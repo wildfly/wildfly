@@ -68,7 +68,7 @@ public class EJB3IIOPResourceDefinition extends SimpleResourceDefinition {
     private static final Map<String, AttributeDefinition> ATTRIBUTES;
 
     static {
-        final Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
+        final Map<String, AttributeDefinition> map = new LinkedHashMap<>();
         map.put(ENABLE_BY_DEFAULT.getName(), ENABLE_BY_DEFAULT);
         map.put(USE_QUALIFIED_NAME.getName(), USE_QUALIFIED_NAME);
 

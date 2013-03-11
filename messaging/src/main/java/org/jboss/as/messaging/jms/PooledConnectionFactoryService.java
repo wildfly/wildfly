@@ -162,7 +162,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     public static final String JGROUPS_CHANNEL_LOCATOR_CLASS = "jgroupsChannelLocatorClass";
     public static final String JGROUPS_CHANNEL_NAME = "jgroupsChannelName";
     public static final String JGROUPS_CHANNEL_REF_NAME = "jgroupsChannelRefName";
-    private static final Collection<String> JMS_ACTIVATION_CONFIG_PROPERTIES = new HashSet<String>();
+    private static final Collection<String> JMS_ACTIVATION_CONFIG_PROPERTIES = new HashSet<>();
 
    {
         // All the activation-config-properties that are mandated to be supported by the RA, as per EJB3.1 spec,
@@ -174,13 +174,13 @@ public class PooledConnectionFactoryService implements Service<Void> {
         JMS_ACTIVATION_CONFIG_PROPERTIES.add("subscriptionDurability");
     }
 
-    private Injector<Object> transactionManager = new InjectedValue<Object>();
+    private Injector<Object> transactionManager = new InjectedValue<>();
     private List<String> connectors;
     private String discoveryGroupName;
     private List<PooledConnectionFactoryConfigProperties> adapterParams;
     private String name;
-    private Map<String, SocketBinding> socketBindings = new HashMap<String, SocketBinding>();
-    private InjectedValue<HornetQServer> hornetQService = new InjectedValue<HornetQServer>();
+    private Map<String, SocketBinding> socketBindings = new HashMap<>();
+    private InjectedValue<HornetQServer> hornetQService = new InjectedValue<>();
     private List<String> jndiNames;
     private String txSupport;
     private int minPoolSize;
@@ -221,7 +221,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private void createService(ServiceTarget serviceTarget, ServiceContainer container) throws Exception {
         InputStream is = null;
         InputStream isIj = null;
-        List<ConfigProperty> properties = new ArrayList<ConfigProperty>();
+        List<ConfigProperty> properties = new ArrayList<>();
         try {
             StringBuilder connectorClassname = new StringBuilder();
             StringBuilder connectorParams = new StringBuilder();
@@ -297,7 +297,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
             // create the definition with the 1st jndi names and create jndi aliases for the rest
             String jndiName = jndiNames.get(0);
-            List<String> jndiAliases = new ArrayList<String>();
+            List<String> jndiAliases = new ArrayList<>();
             if (jndiNames.size() > 1) {
                 jndiAliases = jndiNames.subList(1, jndiNames.size());
             }
@@ -343,7 +343,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     }
 
     private List<ServiceName> createJNDIAliases(final String name, List<String> aliases, ServiceController<ResourceAdapterDeployment> controller) {
-            List<ServiceName> serviceNames = new ArrayList<ServiceName>();
+            List<ServiceName> serviceNames = new ArrayList<>();
             for (final String alias : aliases) {
                 final ContextNames.BindInfo aliasBindInfo = ContextNames.bindInfoFor(alias);
                 final BinderService aliasBinderService = new BinderService(alias);
@@ -406,7 +406,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private InboundResourceAdapter createInbound() {
         List<RequiredConfigProperty> destination = Collections.singletonList(new RequiredConfigProperty(EMPTY_LOCL, str("destination"), null));
         // setup the JMS activation config properties
-        final List<ConfigProperty> jmsActivationConfigProps = new ArrayList<ConfigProperty>(JMS_ACTIVATION_CONFIG_PROPERTIES.size());
+        final List<ConfigProperty> jmsActivationConfigProps = new ArrayList<>(JMS_ACTIVATION_CONFIG_PROPERTIES.size());
         for (final String activationConfigProp : JMS_ACTIVATION_CONFIG_PROPERTIES) {
             final ConfigProperty configProp = new ConfigPropertyImpl(EMPTY_LOCL, str(activationConfigProp), str(STRING_TYPE), null, null);
             jmsActivationConfigProps.add(configProp);
@@ -419,8 +419,8 @@ public class PooledConnectionFactoryService implements Service<Void> {
     }
 
     private static OutboundResourceAdapter createOutbound() {
-        List<ConnectionDefinition> definitions = new ArrayList<ConnectionDefinition>();
-        List<ConfigProperty> props = new ArrayList<ConfigProperty>();
+        List<ConnectionDefinition> definitions = new ArrayList<>();
+        List<ConfigProperty> props = new ArrayList<>();
         props.add(simpleProperty15(SESSION_DEFAULT_TYPE, STRING_TYPE, JMS_QUEUE));
         props.add(simpleProperty15(TRY_LOCK, INTEGER_TYPE, "0"));
         definitions.add(new ConnectionDefinitionImpl(str(RAMANAGED_CONN_FACTORY), props, str(RA_CONN_FACTORY), str(RA_CONN_FACTORY_IMPL), str(JMS_SESSION), str(HQ_SESSION), null));
@@ -447,7 +447,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     }
 
     Injector<SocketBinding> getSocketBindingInjector(String name) {
-        return new MapInjector<String, SocketBinding>(socketBindings, name);
+        return new MapInjector<>(socketBindings, name);
     }
 
     public Injector<HornetQServer> getHornetQService() {
@@ -469,7 +469,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
         public ManagedReference getReference() {
             try {
                 final Object value = new InitialContext().lookup(name);
-                return new ValueManagedReference(new ImmediateValue<Object>(value));
+                return new ValueManagedReference(new ImmediateValue<>(value));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

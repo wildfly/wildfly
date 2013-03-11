@@ -74,7 +74,7 @@ public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProc
         // TODO: how about @WebServiceProvider JMS based endpoints?
 
         //group @WebService annotations in the deployment by wsdl contract location
-        Map<String, List<AnnotationInstance>> map = new HashMap<String, List<AnnotationInstance>>();
+        Map<String, List<AnnotationInstance>> map = new HashMap<>();
         for (AnnotationInstance webServiceAnnotation : webServiceAnnotations) {
             final AnnotationValue wsdlLocation = webServiceAnnotation.value(WSDL_LOCATION);
             final AnnotationValue port = webServiceAnnotation.value(PORT_NAME);
@@ -84,7 +84,7 @@ public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProc
                 String key = wsdlLocation.asString();
                 List<AnnotationInstance> annotations = map.get(key);
                 if (annotations == null) {
-                    annotations = new LinkedList<AnnotationInstance>();
+                    annotations = new LinkedList<>();
                     map.put(key, annotations);
                 }
                 annotations.add(webServiceAnnotation);
@@ -139,7 +139,7 @@ public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProc
     }
 
     private static ResourceRoot getWsdlResourceRoot(final DeploymentUnit unit, final String wsdlPath) {
-        final AttachmentList<ResourceRoot> resourceRoots = new AttachmentList<ResourceRoot>(ResourceRoot.class);
+        final AttachmentList<ResourceRoot> resourceRoots = new AttachmentList<>(ResourceRoot.class);
         final ResourceRoot root = unit.getAttachment(DEPLOYMENT_ROOT);
         resourceRoots.add(root);
         final AttachmentList<ResourceRoot> otherResourceRoots = unit.getAttachment(RESOURCE_ROOTS);

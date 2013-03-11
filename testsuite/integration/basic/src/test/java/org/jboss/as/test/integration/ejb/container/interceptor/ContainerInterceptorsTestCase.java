@@ -144,13 +144,13 @@ public class ContainerInterceptorsTestCase {
         final EJBClientContext ejbClientContext = EJBClientContext.requireCurrent();
 
         // create some data that the client side interceptor will pass along during the EJB invocation
-        final Map<String, Object> interceptorData = new HashMap<String, Object>();
+        final Map<String, Object> interceptorData = new HashMap<>();
         interceptorData.put(FlowTrackingBean.CONTEXT_DATA_KEY, ContainerInterceptorOne.class.getName());
         final SimpleEJBClientInterceptor clientInterceptor = new SimpleEJBClientInterceptor(interceptorData);
         // register the client side interceptor
         ejbClientContext.registerInterceptor(CLIENT_INTERCEPTOR_ORDER, clientInterceptor);
 
-        final Hashtable<String, Object> jndiProps = new Hashtable<String, Object>();
+        final Hashtable<String, Object> jndiProps = new Hashtable<>();
         jndiProps.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
         final Context jndiCtx = new InitialContext(jndiProps);
         final FlowTracker bean = (FlowTracker) jndiCtx.lookup("ejb:/" + EJB_JAR_NAME + "/"

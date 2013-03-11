@@ -75,8 +75,8 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
     }
 
     private static Map<String, ServiceName> buildViews(final EjbDescriptorImpl<?> descriptor) {
-        final Map<String, ServiceName> viewServices = new HashMap<String, ServiceName>();
-        final Map<String, Class<?>> views = new HashMap<String, Class<?>>();
+        final Map<String, ServiceName> viewServices = new HashMap<>();
+        final Map<String, Class<?>> views = new HashMap<>();
         for (BusinessInterfaceDescriptor<?> view : descriptor.getRemoteBusinessInterfaces()) {
             views.put(view.getInterface().getName(), view.getInterface());
         }
@@ -90,8 +90,8 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
                 //see WELD-921
                 //this is horrible, but until it is fixed there is not much that can be done
 
-                final Set<Class<?>> seen = new HashSet<Class<?>>();
-                final Set<Class<?>> toProcess = new HashSet<Class<?>>();
+                final Set<Class<?>> seen = new HashSet<>();
+                final Set<Class<?>> toProcess = new HashSet<>();
 
                 toProcess.add(viewClass);
 

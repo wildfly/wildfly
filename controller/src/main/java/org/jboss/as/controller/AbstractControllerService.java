@@ -101,7 +101,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
     private final ResourceDefinition rootResourceDefinition;
     private final ControlledProcessState processState;
     private final OperationStepHandler prepareStep;
-    private final InjectedValue<ExecutorService> injectedExecutorService = new InjectedValue<ExecutorService>();
+    private final InjectedValue<ExecutorService> injectedExecutorService = new InjectedValue<>();
     private final ExpressionResolver expressionResolver;
     private volatile ModelControllerImpl controller;
     private ConfigurationPersister configurationPersister;

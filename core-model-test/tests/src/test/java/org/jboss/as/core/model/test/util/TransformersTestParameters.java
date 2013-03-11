@@ -54,7 +54,7 @@ public class TransformersTestParameters {
     }
 
     public static List<Object[]> setupVersions(){
-        List<Object[]> data = new ArrayList<Object[]>();
+        List<Object[]> data = new ArrayList<>();
         data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 2, 0), ModelTestControllerVersion.V7_1_2_FINAL)});
         data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 3, 0), ModelTestControllerVersion.V7_1_3_FINAL)});
         data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 4, 0), ModelTestControllerVersion.MASTER)});

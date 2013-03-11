@@ -124,7 +124,7 @@ public class OSGiRuntimeResource implements Resource {
 
     @Override
     public Set<String> getChildTypes() {
-        Set<String> result = new HashSet<String>(delegate.getChildTypes());
+        Set<String> result = new HashSet<>(delegate.getChildTypes());
         result.add(ModelConstants.BUNDLE);
         return result;
     }
@@ -140,7 +140,7 @@ public class OSGiRuntimeResource implements Resource {
     @Override
     public Set<ResourceEntry> getChildren(String childType) {
         if (ModelConstants.BUNDLE.equals(childType)) {
-            Set<ResourceEntry> result = new TreeSet<Resource.ResourceEntry>();
+            Set<ResourceEntry> result = new TreeSet<>();
             for (String id : getBundleIDs()) {
                 result.add(new OSGiBundleResource.OSGiBundleResourceEntry(id));
             }
@@ -200,7 +200,7 @@ public class OSGiRuntimeResource implements Resource {
     }
 
     private Set<String> getBundleIDs() {
-        Set<String> result = new TreeSet<String>();
+        Set<String> result = new TreeSet<>();
         BundleContext context = getBundleContext();
         if (context != null) {
             for (Bundle b : context.getBundles()) {

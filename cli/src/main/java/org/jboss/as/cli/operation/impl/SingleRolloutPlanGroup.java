@@ -81,7 +81,7 @@ public class SingleRolloutPlanGroup implements RolloutPlanGroup {
             throw new IllegalArgumentException("Invalid property value: " + value);
         }
         if(props == null) {
-            props = new HashMap<String,String>();
+            props = new HashMap<>();
         }
         props.put(name, value);
         this.lastPropertyName = name;

@@ -141,7 +141,7 @@ public class StompletTestCase {
         StompClient client = new StompClient("stomp://" + managementClient.getMgmtAddress());
         client.connect();
 
-        final Set<String> outbound = new HashSet<String>();
+        final Set<String> outbound = new HashSet<>();
         final CountDownLatch outboundLatch = new CountDownLatch(2);
         SubscriptionBuilder builder = client.subscribe(DESTINATION_QUEUE_ONE);
         builder.withMessageHandler(new MessageHandler() {
@@ -171,7 +171,7 @@ public class StompletTestCase {
         StompClient client = new StompClient("stomp://" + managementClient.getMgmtAddress());
         client.connect();
 
-        final Set<String> outbound = new HashSet<String>();
+        final Set<String> outbound = new HashSet<>();
         final CountDownLatch outboundLatch = new CountDownLatch(2);
         SubscriptionBuilder builder = client.subscribe(DESTINATION_QUEUE_ONE);
         builder.withMessageHandler(new MessageHandler() {

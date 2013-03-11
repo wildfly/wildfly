@@ -53,9 +53,9 @@ import org.jboss.msc.value.InjectedValue;
 class WelcomeContextService implements Service<Context> {
 
     private final StandardContext context;
-    private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
-    private final InjectedValue<VirtualHost> hostInjector = new InjectedValue<VirtualHost>();
-    private final InjectedValue<HttpManagement> httpManagementInjector = new InjectedValue<HttpManagement>();
+    private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<>();
+    private final InjectedValue<VirtualHost> hostInjector = new InjectedValue<>();
+    private final InjectedValue<HttpManagement> httpManagementInjector = new InjectedValue<>();
     private final String homeDirPathName;
     private PathManager.Callback.Handle callbackHandle;
 

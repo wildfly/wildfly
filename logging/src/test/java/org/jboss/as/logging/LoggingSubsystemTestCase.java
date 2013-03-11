@@ -299,7 +299,7 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         success.get(OUTCOME).set(SUCCESS);
         Assert.assertTrue(transformedOp.rejectOperation(success));
 
-        final List<ModelNode> newSteps = new ArrayList<ModelNode>(steps);
+        final List<ModelNode> newSteps = new ArrayList<>(steps);
         newSteps.remove(3);
         final ModelNode newComposite = composite.clone();
         newComposite.get(STEPS).set(newSteps);

@@ -67,7 +67,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
 
     @Override
     protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ResourceInjectionTarget resourceInjectionTarget, final ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
-        List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
+        List<BindingConfiguration> bindings = new ArrayList<>();
         bindings.addAll(getEnvironmentEntries(environment, classLoader, deploymentReflectionIndex, resourceInjectionTarget));
         bindings.addAll(getResourceEnvRefEntries(deploymentUnit, environment, classLoader, deploymentReflectionIndex, resourceInjectionTarget));
         bindings.addAll(getResourceRefEntries(deploymentUnit, environment, classLoader, deploymentReflectionIndex, resourceInjectionTarget));
@@ -76,7 +76,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
     }
 
     private List<BindingConfiguration> getResourceEnvRefEntries(final DeploymentUnit deploymentUnit, final DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionTarget resourceInjectionTarget) throws DeploymentUnitProcessingException {
-        List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
+        List<BindingConfiguration> bindings = new ArrayList<>();
         final ResourceEnvironmentReferencesMetaData resourceEnvRefs = environment.getEnvironment().getResourceEnvironmentReferences();
         final EEResourceReferenceProcessorRegistry registry = deploymentUnit.getAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY);
 
@@ -136,7 +136,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
     }
 
     private List<BindingConfiguration> getResourceRefEntries(final DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionTarget resourceInjectionTarget) throws DeploymentUnitProcessingException {
-        List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
+        List<BindingConfiguration> bindings = new ArrayList<>();
 
         final EEResourceReferenceProcessorRegistry registry = deploymentUnit.getAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY);
         final ResourceReferencesMetaData resourceRefs = environment.getEnvironment().getResourceReferences();
@@ -228,7 +228,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
     }
 
     private List<BindingConfiguration> getEnvironmentEntries(final DeploymentDescriptorEnvironment environment, final ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionTarget resourceInjectionTarget) throws DeploymentUnitProcessingException {
-        final List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
+        final List<BindingConfiguration> bindings = new ArrayList<>();
         final EnvironmentEntriesMetaData envEntries = environment.getEnvironment().getEnvironmentEntries();
         if (envEntries == null) {
             return bindings;
@@ -313,7 +313,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
      * TODO: should this be part of the messaging subsystem
      */
     private List<BindingConfiguration> getMessageDestinationRefs(final DeploymentDescriptorEnvironment environment, final ClassLoader classLoader, final DeploymentReflectionIndex deploymentReflectionIndex, final ResourceInjectionTarget resourceInjectionTarget, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
-        final List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
+        final List<BindingConfiguration> bindings = new ArrayList<>();
         final MessageDestinationReferencesMetaData messageDestinationReferences = environment.getEnvironment().getMessageDestinationReferences();
         if (messageDestinationReferences == null) {
             return bindings;

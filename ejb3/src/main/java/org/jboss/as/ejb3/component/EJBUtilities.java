@@ -65,11 +65,11 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "utilities");
 
-    private final InjectedValue<ResourceAdapterRepository> resourceAdapterRepositoryValue = new InjectedValue<ResourceAdapterRepository>();
-    private final InjectedValue<ServerSecurityManager> securityManagerValue = new InjectedValue<ServerSecurityManager>();
-    private final InjectedValue<TransactionManager> transactionManagerValue = new InjectedValue<TransactionManager>();
-    private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryValue = new InjectedValue<TransactionSynchronizationRegistry>();
-    private final InjectedValue<UserTransaction> userTransactionValue = new InjectedValue<UserTransaction>();
+    private final InjectedValue<ResourceAdapterRepository> resourceAdapterRepositoryValue = new InjectedValue<>();
+    private final InjectedValue<ServerSecurityManager> securityManagerValue = new InjectedValue<>();
+    private final InjectedValue<TransactionManager> transactionManagerValue = new InjectedValue<>();
+    private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryValue = new InjectedValue<>();
+    private final InjectedValue<UserTransaction> userTransactionValue = new InjectedValue<>();
 
     private volatile boolean statisticsEnabled = false;
 

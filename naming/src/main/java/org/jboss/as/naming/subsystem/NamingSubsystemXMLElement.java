@@ -63,7 +63,7 @@ public enum NamingSubsystemXMLElement {
     private static final Map<String, NamingSubsystemXMLElement> MAP;
 
     static {
-        final Map<String, NamingSubsystemXMLElement> map = new HashMap<String, NamingSubsystemXMLElement>();
+        final Map<String, NamingSubsystemXMLElement> map = new HashMap<>();
         for (NamingSubsystemXMLElement element : values()) {
             final String name = element.getLocalName();
             if (name != null) map.put(name, element);

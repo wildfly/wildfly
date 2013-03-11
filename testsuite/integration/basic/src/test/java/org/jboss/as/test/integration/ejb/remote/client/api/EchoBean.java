@@ -65,7 +65,7 @@ public class EchoBean implements EchoRemote {
             throw new RuntimeException(e);
         }
         logger.info(this.getClass().getSimpleName() + " echoing message: " + message);
-        return new AsyncResult<String>(message);
+        return new AsyncResult<>(message);
     }
 
     @Override

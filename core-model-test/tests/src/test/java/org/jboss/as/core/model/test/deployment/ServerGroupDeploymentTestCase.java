@@ -268,7 +268,7 @@ public class ServerGroupDeploymentTestCase extends AbstractCoreModelTest {
         ModelNode addDeployment2 = Util.createOperation(DeploymentAddHandler.OPERATION_NAME, PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, "Test2")));
         addDeployment2.get(CONTENT).add(getByteContent(1, 2, 3, 4, 5));
 
-        List<ModelNode> deployments = new ArrayList<ModelNode>();
+        List<ModelNode> deployments = new ArrayList<>();
         deployments.add(addDeployment1);
         deployments.add(addDeployment2);
 

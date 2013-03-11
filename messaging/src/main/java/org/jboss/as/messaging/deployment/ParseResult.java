@@ -30,9 +30,9 @@ import java.util.List;
  */
 class ParseResult {
 
-    private final List<JmsDestination> queues = new ArrayList<JmsDestination>();
+    private final List<JmsDestination> queues = new ArrayList<>();
 
-    private final List<JmsDestination> topics = new ArrayList<JmsDestination>();
+    private final List<JmsDestination> topics = new ArrayList<>();
 
     public List<JmsDestination> getQueues() {
         return queues;

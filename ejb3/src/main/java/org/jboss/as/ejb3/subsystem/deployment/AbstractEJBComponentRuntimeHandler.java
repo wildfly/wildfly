@@ -214,7 +214,7 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
 
     private ServiceName getComponentConfiguration(final PathAddress operationAddress) throws OperationFailedException {
 
-        final List<PathElement> relativeAddress = new ArrayList<PathElement>();
+        final List<PathElement> relativeAddress = new ArrayList<>();
         for (int i = operationAddress.size() - 1; i >= 0; i--) {
             PathElement pe = operationAddress.getElement(i);
             relativeAddress.add(0, pe);

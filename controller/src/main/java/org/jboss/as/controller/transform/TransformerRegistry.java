@@ -221,7 +221,7 @@ public final class TransformerRegistry {
 
     public static Map<PathAddress, ModelVersion> resolveVersions(final ModelNode subsystems) {
         final PathAddress base = PathAddress.EMPTY_ADDRESS;
-        final Map<PathAddress, ModelVersion> versions = new HashMap<PathAddress, ModelVersion>();
+        final Map<PathAddress, ModelVersion> versions = new HashMap<>();
         for(final Property property : subsystems.asPropertyList()) {
             final String name = property.getName();
             final PathAddress address = base.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name));

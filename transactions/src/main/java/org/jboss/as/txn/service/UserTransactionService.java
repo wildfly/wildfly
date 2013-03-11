@@ -41,7 +41,7 @@ import org.jboss.msc.value.InjectedValue;
 public class UserTransactionService extends AbstractService<UserTransaction> {
     public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_USER_TRANSACTION;
 
-    private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> injectedArjunaTM = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
+    private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> injectedArjunaTM = new InjectedValue<>();
 
     public static ServiceController<UserTransaction> addService(final ServiceTarget target, final ServiceVerificationHandler verificationHandler) {
         UserTransactionService service = new UserTransactionService();

@@ -63,29 +63,29 @@ public class ComponentConfiguration {
     private ComponentCreateServiceFactory componentCreateServiceFactory = ComponentCreateServiceFactory.BASIC;
 
     // Interceptor config
-    private final OrderedItemContainer<InterceptorFactory> postConstructInterceptors = new OrderedItemContainer<InterceptorFactory>();
-    private final OrderedItemContainer<InterceptorFactory> preDestroyInterceptors = new OrderedItemContainer<InterceptorFactory>();
-    private final OrderedItemContainer<InterceptorFactory> prePassivateInterceptors = new OrderedItemContainer<InterceptorFactory>();
-    private final OrderedItemContainer<InterceptorFactory> postActivateInterceptors = new OrderedItemContainer<InterceptorFactory>();
-    private final Map<Method, OrderedItemContainer<InterceptorFactory>> componentInterceptors = new IdentityHashMap<Method, OrderedItemContainer<InterceptorFactory>>();
+    private final OrderedItemContainer<InterceptorFactory> postConstructInterceptors = new OrderedItemContainer<>();
+    private final OrderedItemContainer<InterceptorFactory> preDestroyInterceptors = new OrderedItemContainer<>();
+    private final OrderedItemContainer<InterceptorFactory> prePassivateInterceptors = new OrderedItemContainer<>();
+    private final OrderedItemContainer<InterceptorFactory> postActivateInterceptors = new OrderedItemContainer<>();
+    private final Map<Method, OrderedItemContainer<InterceptorFactory>> componentInterceptors = new IdentityHashMap<>();
 
     //TODO: move this into an EJB specific configuration
-    private final Map<Method, OrderedItemContainer<InterceptorFactory>> timeoutInterceptors = new IdentityHashMap<Method, OrderedItemContainer<InterceptorFactory>>();
+    private final Map<Method, OrderedItemContainer<InterceptorFactory>> timeoutInterceptors = new IdentityHashMap<>();
 
     // Component instance management
     private ManagedReferenceFactory instanceFactory;
 
-    private final List<DependencyConfigurator<? extends Service<Component>>> createDependencies = new ArrayList<DependencyConfigurator<? extends Service<Component>>>();
-    private final List<DependencyConfigurator<ComponentStartService>> startDependencies = new ArrayList<DependencyConfigurator<ComponentStartService>>();
+    private final List<DependencyConfigurator<? extends Service<Component>>> createDependencies = new ArrayList<>();
+    private final List<DependencyConfigurator<ComponentStartService>> startDependencies = new ArrayList<>();
 
     // Views
-    private final List<ViewConfiguration> views = new ArrayList<ViewConfiguration>();
+    private final List<ViewConfiguration> views = new ArrayList<>();
 
     private InterceptorFactory namespaceContextInterceptorFactory;
 
     private NamespaceContextSelector namespaceContextSelector;
 
-    private final Set<Object> interceptorContextKeys = new HashSet<Object>();
+    private final Set<Object> interceptorContextKeys = new HashSet<>();
 
     public ComponentConfiguration(final ComponentDescription componentDescription, final ClassIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
         this.componentDescription = componentDescription;
@@ -176,7 +176,7 @@ public class ComponentConfiguration {
             }
             OrderedItemContainer<InterceptorFactory> interceptors = componentInterceptors.get(method);
             if (interceptors == null) {
-                componentInterceptors.put(method, interceptors = new OrderedItemContainer<InterceptorFactory>());
+                componentInterceptors.put(method, interceptors = new OrderedItemContainer<>());
             }
             interceptors.add(factory, priority);
         }
@@ -194,7 +194,7 @@ public class ComponentConfiguration {
     public void addComponentInterceptor(Method method, InterceptorFactory factory, int priority) {
         OrderedItemContainer<InterceptorFactory> interceptors = componentInterceptors.get(method);
         if (interceptors == null) {
-            componentInterceptors.put(method, interceptors = new OrderedItemContainer<InterceptorFactory>());
+            componentInterceptors.put(method, interceptors = new OrderedItemContainer<>());
         }
         interceptors.add(factory, priority);
     }
@@ -209,7 +209,7 @@ public class ComponentConfiguration {
         for (Method method : classIndex.getClassMethods()) {
             OrderedItemContainer<InterceptorFactory> interceptors = timeoutInterceptors.get(method);
             if (interceptors == null) {
-                timeoutInterceptors.put(method, interceptors = new OrderedItemContainer<InterceptorFactory>());
+                timeoutInterceptors.put(method, interceptors = new OrderedItemContainer<>());
             }
             interceptors.add(factory, priority);
         }
@@ -225,7 +225,7 @@ public class ComponentConfiguration {
     public void addTimeoutViewInterceptor(final Method method, InterceptorFactory factory, int priority) {
         OrderedItemContainer<InterceptorFactory> interceptors = timeoutInterceptors.get(method);
         if (interceptors == null) {
-            timeoutInterceptors.put(method, interceptors = new OrderedItemContainer<InterceptorFactory>());
+            timeoutInterceptors.put(method, interceptors = new OrderedItemContainer<>());
         }
         interceptors.add(factory, priority);
     }

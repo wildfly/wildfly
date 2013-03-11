@@ -70,14 +70,14 @@ public abstract class AbstractClusterLockSupport implements GroupMembershipListe
         }
     }
 
-    private final ConcurrentMap<Serializable, ClusterLockState> lockStates = new ConcurrentHashMap<Serializable, ClusterLockState>();
-    private final ConcurrentMap<ClusterNode, Set<ClusterLockState>> lockStatesByOwner = new ConcurrentHashMap<ClusterNode, Set<ClusterLockState>>();
+    private final ConcurrentMap<Serializable, ClusterLockState> lockStates = new ConcurrentHashMap<>();
+    private final ConcurrentMap<ClusterNode, Set<ClusterLockState>> lockStatesByOwner = new ConcurrentHashMap<>();
     private ClusterNode me;
     private final String serviceHAName;
     private final GroupRpcDispatcher rpcDispatcher;
     private final GroupMembershipNotifier membershipNotifier;
     private final LocalLockHandler localHandler;
-    private final List<ClusterNode> members = new CopyOnWriteArrayList<ClusterNode>();
+    private final List<ClusterNode> members = new CopyOnWriteArrayList<>();
     // private final boolean supportLocalOnly;
     private RpcTarget rpcTarget;
 
@@ -239,7 +239,7 @@ public abstract class AbstractClusterLockSupport implements GroupMembershipListe
     }
 
     public List<ClusterNode> getCurrentView() {
-        return new ArrayList<ClusterNode>(members);
+        return new ArrayList<>(members);
     }
 
     public void start() throws Exception {
@@ -250,7 +250,7 @@ public abstract class AbstractClusterLockSupport implements GroupMembershipListe
         this.rpcDispatcher.registerRPCHandler(this.serviceHAName, this.rpcTarget);
         this.membershipNotifier.registerGroupMembershipListener(this);
 
-        List<ClusterNode> allMembers = new ArrayList<ClusterNode>();
+        List<ClusterNode> allMembers = new ArrayList<>();
         for (ClusterNode node : this.rpcDispatcher.getClusterNodes()) {
             allMembers.add(node);
         }
@@ -262,8 +262,8 @@ public abstract class AbstractClusterLockSupport implements GroupMembershipListe
             this.rpcDispatcher.unregisterRPCHandler(this.serviceHAName, this.rpcTarget);
             this.rpcTarget = null;
             this.membershipNotifier.unregisterGroupMembershipListener(this);
-            List<ClusterNode> dead = new ArrayList<ClusterNode>(members);
-            List<ClusterNode> empty = new ArrayList<ClusterNode>();
+            List<ClusterNode> dead = new ArrayList<>(members);
+            List<ClusterNode> empty = new ArrayList<>();
             membershipChanged(dead, empty, empty);
             this.me = null;
         }
@@ -285,7 +285,7 @@ public abstract class AbstractClusterLockSupport implements GroupMembershipListe
                 synchronized (deadMemberLocks) {
                     // We're going to iterate and make a call that removes from set,
                     // so iterate over a copy to avoid ConcurrentModificationException
-                    Set<ClusterLockState> copy = new HashSet<ClusterLockState>(deadMemberLocks);
+                    Set<ClusterLockState> copy = new HashSet<>(deadMemberLocks);
                     for (ClusterLockState lockState : copy) {
                         releaseRemoteLock(lockState.lockId, deadMember);
                     }
@@ -457,7 +457,7 @@ public abstract class AbstractClusterLockSupport implements GroupMembershipListe
     private Set<ClusterLockState> getLocksHeldByMember(ClusterNode member) {
         Set<ClusterLockState> memberCategories = lockStatesByOwner.get(member);
         if (memberCategories == null) {
-            memberCategories = new HashSet<ClusterLockState>();
+            memberCategories = new HashSet<>();
             Set<ClusterLockState> existing = lockStatesByOwner.putIfAbsent(member, memberCategories);
             if (existing != null) {
                 memberCategories = existing;

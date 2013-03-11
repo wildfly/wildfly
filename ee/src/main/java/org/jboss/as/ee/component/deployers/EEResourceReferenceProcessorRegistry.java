@@ -32,7 +32,7 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
  */
 public class EEResourceReferenceProcessorRegistry {
 
-    private final Map<String, EEResourceReferenceProcessor> resourceReferenceProcessors = new ConcurrentHashMap<String, EEResourceReferenceProcessor>();
+    private final Map<String, EEResourceReferenceProcessor> resourceReferenceProcessors = new ConcurrentHashMap<>();
 
     public void registerResourceReferenceProcessor(final EEResourceReferenceProcessor resourceReferenceProcessor) {
         if (resourceReferenceProcessor == null) {

@@ -52,7 +52,7 @@ public class SharedTldsMetaDataBuilder {
 
     private static final String[] JSTL_TAGLIBS = { "c-1_0-rt.tld", "c-1_0.tld", "c.tld", "fmt-1_0-rt.tld", "fmt-1_0.tld", "fmt.tld", "fn.tld", "permittedTaglibs.tld", "scriptfree.tld", "sql-1_0-rt.tld", "sql-1_0.tld", "sql.tld", "x-1_0-rt.tld", "x-1_0.tld", "x.tld" };
 
-    private final ArrayList<TldMetaData> jstlTlds = new ArrayList<TldMetaData>();
+    private final ArrayList<TldMetaData> jstlTlds = new ArrayList<>();
 
     // Not used right now due to hardcoding
     /** The common container config. */
@@ -81,7 +81,7 @@ public class SharedTldsMetaDataBuilder {
     }
 
     public List<TldMetaData> getSharedTlds(DeploymentUnit deploymentUnit) {
-        final List<TldMetaData> metadata = new ArrayList<TldMetaData>();
+        final List<TldMetaData> metadata = new ArrayList<>();
         metadata.addAll(jstlTlds);
 
         List<TldMetaData> additionalSharedTlds = deploymentUnit.getAttachment(ATTACHMENT_KEY);

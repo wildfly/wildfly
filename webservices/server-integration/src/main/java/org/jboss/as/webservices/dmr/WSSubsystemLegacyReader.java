@@ -79,7 +79,7 @@ final class WSSubsystemLegacyReader implements XMLElementReader<List<ModelNode>>
         subsystem.get(OP).set(ADD);
         subsystem.get(OP_ADDR).add(SUBSYSTEM, WSExtension.SUBSYSTEM_NAME);
 
-        final List<ModelNode> endpointConfigs = new ArrayList<ModelNode>();
+        final List<ModelNode> endpointConfigs = new ArrayList<>();
 
         // elements
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
@@ -249,7 +249,7 @@ final class WSSubsystemLegacyReader implements XMLElementReader<List<ModelNode>>
             handlerChainId = "auto-generated-" + System.currentTimeMillis();
         }
         String protocolBindings = null;
-        final List<ModelNode> addHandlerOperations = new LinkedList<ModelNode>();
+        final List<ModelNode> addHandlerOperations = new LinkedList<>();
         while (reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             if (element != Element.HANDLER && !encountered.add(element)) {

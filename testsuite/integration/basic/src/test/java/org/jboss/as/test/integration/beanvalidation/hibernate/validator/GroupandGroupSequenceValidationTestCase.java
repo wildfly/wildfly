@@ -72,7 +72,7 @@ public class GroupandGroupSequenceValidationTestCase {
         user2.setEmail("mickey@gmail.com");
         user2.setAddress("DISNEY CA USA");
 
-        List<UserBean> passengers = new ArrayList<UserBean>();
+        List<UserBean> passengers = new ArrayList<>();
         passengers.add(user1);
         passengers.add(user2);
 

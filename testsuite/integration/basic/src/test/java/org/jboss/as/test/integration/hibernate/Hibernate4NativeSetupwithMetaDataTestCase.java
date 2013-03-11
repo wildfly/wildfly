@@ -158,7 +158,7 @@ public class Hibernate4NativeSetupwithMetaDataTestCase {
                 SFSBHibernatewithMetaDataSession.class);
         // setup Configuration and SessionFactory
         sfsb.setupConfig();
-        Set<Satellite> satellites1 = new HashSet<Satellite>();
+        Set<Satellite> satellites1 = new HashSet<>();
         Satellite sat = new Satellite();
         sat.setId(new Integer(1));
         sat.setName("MOON");

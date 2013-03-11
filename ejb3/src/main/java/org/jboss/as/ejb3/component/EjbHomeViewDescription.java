@@ -33,7 +33,7 @@ import org.jboss.as.ee.component.ComponentDescription;
  */
 public class EjbHomeViewDescription extends EJBViewDescription {
 
-    private final Set<Method> createMethods = new HashSet<Method>();
+    private final Set<Method> createMethods = new HashSet<>();
 
     public EjbHomeViewDescription(final ComponentDescription componentDescription, final String viewClassName, final MethodIntf methodIntf) {
         super(componentDescription, viewClassName, methodIntf, false);

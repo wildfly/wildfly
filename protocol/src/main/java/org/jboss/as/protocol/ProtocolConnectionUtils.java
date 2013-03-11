@@ -140,7 +140,7 @@ public class ProtocolConnectionUtils {
         if (isLocal(configuration.getUri()) == false) {
             builder.set(Options.SASL_DISALLOWED_MECHANISMS, Sequence.of(JBOSS_LOCAL_USER));
         }
-        List<Property> tempProperties = new ArrayList<Property>(saslOptions != null ? saslOptions.size() : 1);
+        List<Property> tempProperties = new ArrayList<>(saslOptions != null ? saslOptions.size() : 1);
         tempProperties.add(Property.of("jboss.sasl.local-user.quiet-auth", "true"));
         if (saslOptions != null) {
             for (String currentKey : saslOptions.keySet()) {

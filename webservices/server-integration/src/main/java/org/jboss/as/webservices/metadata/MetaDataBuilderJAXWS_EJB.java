@@ -54,7 +54,7 @@ final class MetaDataBuilderJAXWS_EJB extends AbstractMetaDataBuilderEJB {
         }
 
         final JAXWSDeployment jaxwsDeployment = WSHelper.getRequiredAttachment(dep, JAXWSDeployment.class);
-        final List<EJBMetaData> wsEjbsMD = new LinkedList<EJBMetaData>();
+        final List<EJBMetaData> wsEjbsMD = new LinkedList<>();
         final JBossWebservicesMetaData jbossWebservicesMD = WSHelper.getOptionalAttachment(dep, JBossWebservicesMetaData.class);
 
         for (final EJBEndpoint jbossEjbMD : jaxwsDeployment.getEjbEndpoints()) {

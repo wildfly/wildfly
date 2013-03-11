@@ -574,7 +574,7 @@ public class CoreResourceManagementTestCase {
         listSnapshotOperation.get(OP).set(SnapshotListHandler.DEFINITION.getName());
         listSnapshotOperation.get(OP_ADDR).setEmptyList();
         ModelNode listResult = validateResponse(masterClient.execute(listSnapshotOperation));
-        Set<String> snapshots = new HashSet<String>();
+        Set<String> snapshots = new HashSet<>();
         for (ModelNode curr : listResult.get(NAMES).asList()) {
             snapshots.add(listResult.get(DIRECTORY).asString() + fileSeparator + curr.asString());
         }
@@ -588,7 +588,7 @@ public class CoreResourceManagementTestCase {
         validateResponse(masterClient.execute(deleteSnapshotOperation), false);
 
         listResult = validateResponse(masterClient.execute(listSnapshotOperation));
-        snapshots = new HashSet<String>();
+        snapshots = new HashSet<>();
         for (ModelNode curr : listResult.get(NAMES).asList()) {
             snapshots.add(listResult.get(DIRECTORY).asString() + fileSeparator + curr.asString());
         }
@@ -695,7 +695,7 @@ public class CoreResourceManagementTestCase {
         Assert.assertTrue(mainOneResult.isDefined());
         Assert.assertTrue(mainThreeResult.isDefined());
 
-        List<ModelNode> steps = new ArrayList<ModelNode>();
+        List<ModelNode> steps = new ArrayList<>();
         steps.add(mainOneResult);
         steps.add(mainThreeResult);
         for (ModelNode stepResponse : steps) {
@@ -827,7 +827,7 @@ public class CoreResourceManagementTestCase {
 
         validateFailedResponse(result);
 
-        Set<String> keys = new HashSet<String>(result.get(RESULT).keys());
+        Set<String> keys = new HashSet<>(result.get(RESULT).keys());
         keys.remove(SERVER_GROUPS);
         Assert.assertEquals(2, keys.size());
 
@@ -870,7 +870,7 @@ public class CoreResourceManagementTestCase {
 
         validateFailedResponse(result);
 
-        Set<String> keys = new HashSet<String>(result.get(RESULT).keys());
+        Set<String> keys = new HashSet<>(result.get(RESULT).keys());
         keys.remove(SERVER_GROUPS);
         Assert.assertEquals(2, keys.size());
 
@@ -932,7 +932,7 @@ public class CoreResourceManagementTestCase {
         listSnapshotOperation.get(OP).set(SnapshotListHandler.DEFINITION.getName());
         listSnapshotOperation.get(OP_ADDR).set(addr);
         ModelNode listResult = validateResponse(masterClient.execute(listSnapshotOperation));
-        Set<String> snapshots = new HashSet<String>();
+        Set<String> snapshots = new HashSet<>();
         for (ModelNode curr : listResult.get(NAMES).asList()) {
             snapshots.add(listResult.get(DIRECTORY).asString() + fileSeparator + curr.asString());
         }
@@ -946,7 +946,7 @@ public class CoreResourceManagementTestCase {
         validateResponse(masterClient.execute(deleteSnapshotOperation));
 
         listResult = validateResponse(masterClient.execute(listSnapshotOperation));
-        snapshots = new HashSet<String>();
+        snapshots = new HashSet<>();
         for (ModelNode curr : listResult.get(NAMES).asList()) {
             snapshots.add(listResult.get(DIRECTORY).asString() + fileSeparator + curr.asString());
         }

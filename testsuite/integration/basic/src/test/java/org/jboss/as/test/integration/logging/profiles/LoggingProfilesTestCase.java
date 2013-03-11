@@ -104,7 +104,7 @@ public class LoggingProfilesTestCase extends AbstractLoggingTest {
 			dummyLog1Changed = prepareLogFile(managementClient,
 					CHANGED_LOG_NAME);
 
-			final List<ModelNode> updates = new ArrayList<ModelNode>();
+			final List<ModelNode> updates = new ArrayList<>();
 
 			ModelNode op = new ModelNode();
 			op.get(OP).set(ADD);
@@ -210,7 +210,7 @@ public class LoggingProfilesTestCase extends AbstractLoggingTest {
 		@Override
 		public void tearDown(ManagementClient managementClient,
 				String containerId) throws Exception {
-			final List<ModelNode> updates = new ArrayList<ModelNode>();
+			final List<ModelNode> updates = new ArrayList<>();
 
 			// delete log files
 			logFile.delete();

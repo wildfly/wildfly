@@ -170,7 +170,7 @@ public class ContainerResourceTestEnricher implements TestEnricher {
         if (annotations == null) {
             return new Annotation[0];
         }
-        List<Annotation> filtered = new ArrayList<Annotation>();
+        List<Annotation> filtered = new ArrayList<>();
         for (Annotation annotation : annotations) {
             if (annotation.annotationType() != ContainerResource.class) {
                 filtered.add(annotation);

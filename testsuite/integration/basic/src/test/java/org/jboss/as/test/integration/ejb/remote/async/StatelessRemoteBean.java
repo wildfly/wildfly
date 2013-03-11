@@ -59,7 +59,7 @@ public class StatelessRemoteBean implements RemoteInterface, LocalInterface {
 
     @Asynchronous
     public Future<String> hello() {
-        return new AsyncResult<String>("hello");
+        return new AsyncResult<>("hello");
     }
 
     @Override

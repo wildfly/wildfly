@@ -102,7 +102,7 @@ public class JacORBExtension implements Extension {
      */
     protected static void registerTransformers(final SubsystemRegistration subsystem) {
         final ModelVersion version110 = ModelVersion.create(1, 1, 0);
-        final Set<String> expressionKeys = new HashSet<String>();
+        final Set<String> expressionKeys = new HashSet<>();
         for(final AttributeDefinition def : JacORBSubsystemDefinitions.ATTRIBUTES_BY_NAME.values()) {
             if(def.isAllowExpression()) {
                 expressionKeys.add(def.getName());

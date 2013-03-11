@@ -125,7 +125,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     /**
      * The @DeclareRoles (a.k.a security-role-ref) for the bean
      */
-    private final Set<String> declaredRoles = new HashSet<String>();
+    private final Set<String> declaredRoles = new HashSet<>();
 
     /**
      * The @RunAs role associated with this bean, if any
@@ -145,7 +145,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     /**
      * Security role links. The key is the "from" role name and the value is a collection of "to" role names of the link.
      */
-    private final Map<String, Collection<String>> securityRoleLinks = new HashMap<String, Collection<String>>();
+    private final Map<String, Collection<String>> securityRoleLinks = new HashMap<>();
 
 
     private final ApplicableMethodInformation<EJBMethodSecurityAttribute> descriptorMethodPermissions;
@@ -155,7 +155,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     /**
      * @Schedule methods
      */
-    private final Map<Method, List<AutoTimer>> scheduleMethods = new IdentityHashMap<Method, List<AutoTimer>>();
+    private final Map<Method, List<AutoTimer>> scheduleMethods = new IdentityHashMap<>();
 
     /**
      * The actual timeout method
@@ -209,7 +209,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     /**
      * The default container interceptors
      */
-    private List<InterceptorDescription> defaultContainerInterceptors = new ArrayList<InterceptorDescription>();
+    private List<InterceptorDescription> defaultContainerInterceptors = new ArrayList<>();
 
     /**
      * Whether or not to exclude the default container interceptors for the EJB
@@ -219,22 +219,22 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     /**
      * Container interceptors applicable for all methods of the EJB
      */
-    private List<InterceptorDescription> classLevelContainerInterceptors = new ArrayList<InterceptorDescription>();
+    private List<InterceptorDescription> classLevelContainerInterceptors = new ArrayList<>();
 
     /**
      * Container interceptors applicable per method of the EJB
      */
-    private Map<MethodIdentifier, List<InterceptorDescription>> methodLevelContainerInterceptors = new HashMap<MethodIdentifier, List<InterceptorDescription>>();
+    private Map<MethodIdentifier, List<InterceptorDescription>> methodLevelContainerInterceptors = new HashMap<>();
 
     /**
      * Whether or not to exclude the default container interceptors applicable for the method of the EJB
      */
-    private Map<MethodIdentifier, Boolean> excludeDefaultContainerInterceptorsForMethod = new HashMap<MethodIdentifier, Boolean>();
+    private Map<MethodIdentifier, Boolean> excludeDefaultContainerInterceptorsForMethod = new HashMap<>();
 
     /**
      * Whether or not to exclude the class level container interceptors applicable for the method of the EJB
      */
-    private Map<MethodIdentifier, Boolean> excludeClassLevelContainerInterceptorsForMethod = new HashMap<MethodIdentifier, Boolean>();
+    private Map<MethodIdentifier, Boolean> excludeClassLevelContainerInterceptorsForMethod = new HashMap<>();
 
     /**
      * Combination of class and method level container interceptors
@@ -274,10 +274,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         this.addCurrentInvocationContextFactory();
         // setup a dependency on EJB remote tx repository service, if this EJB exposes at least one remote view
         this.addRemoteTransactionsRepositoryDependency();
-        this.transactionAttributes = new ApplicableMethodInformation<TransactionAttributeType>(componentName, TransactionAttributeType.REQUIRED);
-        this.transactionTimeouts = new ApplicableMethodInformation<Integer>(componentName, null);
-        this.descriptorMethodPermissions = new ApplicableMethodInformation<EJBMethodSecurityAttribute>(componentName, null);
-        this.annotationMethodPermissions = new ApplicableMethodInformation<EJBMethodSecurityAttribute>(componentName, null);
+        this.transactionAttributes = new ApplicableMethodInformation<>(componentName, TransactionAttributeType.REQUIRED);
+        this.transactionTimeouts = new ApplicableMethodInformation<>(componentName, null);
+        this.descriptorMethodPermissions = new ApplicableMethodInformation<>(componentName, null);
+        this.annotationMethodPermissions = new ApplicableMethodInformation<>(componentName, null);
 
 
         //add a dependency on the module deployment service
@@ -640,7 +640,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
         Collection<String> roleLinks = this.securityRoleLinks.get(fromRole);
         if (roleLinks == null) {
-            roleLinks = new HashSet<String>();
+            roleLinks = new HashSet<>();
             this.securityRoleLinks.put(fromRole, roleLinks);
         }
         roleLinks.add(toRole);
@@ -812,7 +812,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     public void addScheduleMethod(final Method method, final AutoTimer timer) {
         List<AutoTimer> schedules = scheduleMethods.get(method);
         if (schedules == null) {
-            scheduleMethods.put(method, schedules = new ArrayList<AutoTimer>(1));
+            scheduleMethods.put(method, schedules = new ArrayList<>(1));
         }
         schedules.add(timer);
     }
@@ -910,7 +910,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     }
 
     public Set<MethodIdentifier> getTimerMethods() {
-        final Set<MethodIdentifier> methods = new HashSet<MethodIdentifier>();
+        final Set<MethodIdentifier> methods = new HashSet<>();
         if(timeoutMethod != null) {
             methods.add(MethodIdentifier.getIdentifierForMethod(timeoutMethod));
         }
@@ -926,7 +926,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      */
     public Set<InterceptorDescription> getAllContainerInterceptors() {
         if (this.allContainerInterceptors == null) {
-            this.allContainerInterceptors = new HashSet<InterceptorDescription>();
+            this.allContainerInterceptors = new HashSet<>();
             this.allContainerInterceptors.addAll(this.classLevelContainerInterceptors);
             if (!this.excludeDefaultContainerInterceptors) {
                 this.allContainerInterceptors.addAll(this.defaultContainerInterceptors);

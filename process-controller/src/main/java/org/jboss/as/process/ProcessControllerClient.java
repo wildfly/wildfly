@@ -105,7 +105,7 @@ public final class ProcessControllerClient implements Closeable {
                     }
                     case Protocol.PROCESS_INVENTORY: {
                         final int cnt = readInt(dataStream);
-                        final Map<String, ProcessInfo> inventory = new HashMap<String, ProcessInfo>();
+                        final Map<String, ProcessInfo> inventory = new HashMap<>();
                         for (int i = 0; i < cnt; i++) {
                             final String processName = readUTFZBytes(dataStream);
                             final byte[] processAuthCode = new byte[16];

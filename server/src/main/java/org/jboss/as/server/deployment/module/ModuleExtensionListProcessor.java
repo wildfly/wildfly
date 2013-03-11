@@ -60,7 +60,7 @@ public final class ModuleExtensionListProcessor implements DeploymentUnitProcess
         final ServiceController<?> controller = phaseContext.getServiceRegistry().getRequiredService(Services.JBOSS_DEPLOYMENT_EXTENSION_INDEX);
         final ExtensionIndex index = (ExtensionIndex) controller.getValue();
         final List<ResourceRoot> allResourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
-        final Set<ServiceName> nextPhaseDeps = new HashSet<ServiceName>();
+        final Set<ServiceName> nextPhaseDeps = new HashSet<>();
         for (ResourceRoot resourceRoot : allResourceRoots) {
             final AttachmentList<ExtensionListEntry> entries = resourceRoot.getAttachment(Attachments.EXTENSION_LIST_ENTRIES);
             if (entries != null) {

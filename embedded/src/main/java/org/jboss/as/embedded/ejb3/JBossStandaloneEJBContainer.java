@@ -49,8 +49,8 @@ import org.jboss.as.util.security.ReadPropertyAction;
 public class JBossStandaloneEJBContainer extends EJBContainer {
 
     private final StandaloneServer server;
-    private final List<File> deployments = new LinkedList<File>();
-    private final List<File> tempFiles = new LinkedList<File>();
+    private final List<File> deployments = new LinkedList<>();
+    private final List<File> tempFiles = new LinkedList<>();
 
     JBossStandaloneEJBContainer(final StandaloneServer server) {
         this.server = server;

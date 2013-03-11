@@ -316,7 +316,7 @@ public class DsParser extends AbstractParser {
         dsAddress.protect();
 
         operation.get(OP_ADDR).set(dsAddress);
-        List<ModelNode> xadatasourcePropertiesOperations = new ArrayList<ModelNode>(0);
+        List<ModelNode> xadatasourcePropertiesOperations = new ArrayList<>(0);
 
         //elements reading
         while (reader.hasNext()) {
@@ -546,7 +546,7 @@ public class DsParser extends AbstractParser {
         operation.get(OP_ADDR).set(dsAddress);
 
 
-        List<ModelNode> configPropertiesOperations = new ArrayList<ModelNode>(0);
+        List<ModelNode> configPropertiesOperations = new ArrayList<>(0);
         //elements reading
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -1125,7 +1125,7 @@ public class DsParser extends AbstractParser {
         private static final Map<String, Tag> MAP;
 
         static {
-            final Map<String, Tag> map = new HashMap<String, Tag>();
+            final Map<String, Tag> map = new HashMap<>();
             for (Tag element : values()) {
                 final String name = element.getLocalName();
                 if (name != null)

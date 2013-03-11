@@ -54,7 +54,7 @@ import org.jboss.sasl.callback.VerifyPasswordCallback;
  */
 public class RealmIdentityManager implements IdentityManager {
 
-    private static final ThreadLocal<AuthMechanism> currentMechanism = new ThreadLocal<AuthMechanism>();
+    private static final ThreadLocal<AuthMechanism> currentMechanism = new ThreadLocal<>();
 
     static void setAuthenticationMechanism(final AuthMechanism mechanism) {
         currentMechanism.set(mechanism);

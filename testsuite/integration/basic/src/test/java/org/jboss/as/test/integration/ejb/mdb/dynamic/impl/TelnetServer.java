@@ -45,7 +45,7 @@ public class TelnetServer implements TtyCodes {
 
     private final int port;
 
-    private final Map<String, Cmd> cmds = new TreeMap<String, Cmd>();
+    private final Map<String, Cmd> cmds = new TreeMap<>();
 
     private final AtomicBoolean running = new AtomicBoolean();
     private final ServerSocket serverSocket;
@@ -158,7 +158,7 @@ public class TelnetServer implements TtyCodes {
 
             if (commandline.length() < 1) return;
 
-            final List<String> list = new ArrayList<String>();
+            final List<String> list = new ArrayList<>();
             Collections.addAll(list, commandline.split(" +"));
 
             final String command = list.remove(0);

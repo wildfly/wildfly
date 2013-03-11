@@ -38,7 +38,7 @@ final class DefaultServletConfig implements ServletConfig {
 
     private final String servletName;
     private final ServletContext servletContext;
-    private final Dictionary<String, String> initParams = new Hashtable<String, String>();
+    private final Dictionary<String, String> initParams = new Hashtable<>();
 
     DefaultServletConfig(String servletName, ServletContext servletContext) {
         this.servletName = servletName;

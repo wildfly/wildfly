@@ -504,7 +504,7 @@ public class TimerImpl implements Timer {
      * @see TimerTask
      */
     protected TimerTask<?> getTimerTask() {
-        return new TimerTask<TimerImpl>(this);
+        return new TimerTask<>(this);
     }
 
     public void lock() {

@@ -122,7 +122,7 @@ public class JNDITestCase {
         ObjectFactory of = new TestObjectFactory();
 
         BundleContext context = bundle.getBundleContext();
-        Dictionary<String, Object> props = new Hashtable<String, Object>();
+        Dictionary<String, Object> props = new Hashtable<>();
         props.put("osgi.jndi.url.scheme", new String [] {"testscheme"});
         ServiceRegistration reg = context.registerService(ObjectFactory.class.getName(), of, props);
 

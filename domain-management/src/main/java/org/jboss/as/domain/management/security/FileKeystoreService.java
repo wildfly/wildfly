@@ -58,7 +58,7 @@ public class FileKeystoreService implements Service<KeyStore> {
     private final String alias;
     private final char[] keyPassword;
 
-    private final InjectedValue<String> relativeTo = new InjectedValue<String>();
+    private final InjectedValue<String> relativeTo = new InjectedValue<>();
 
     public FileKeystoreService(final String path, final char[] keystorePassword, final String alias, final char[] keyPassword) {
         this.path = path;

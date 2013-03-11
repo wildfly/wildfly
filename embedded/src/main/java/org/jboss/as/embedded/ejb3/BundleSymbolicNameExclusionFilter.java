@@ -83,7 +83,7 @@ public class BundleSymbolicNameExclusionFilter implements ExclusionFilter {
         }
 
         // Defensive copy on set and make immutable
-        final Set<String> excludeSet = new HashSet<String>();
+        final Set<String> excludeSet = new HashSet<>();
         for (final String exclusionValue : exclusionValues) {
             excludeSet.add(exclusionValue);
         }

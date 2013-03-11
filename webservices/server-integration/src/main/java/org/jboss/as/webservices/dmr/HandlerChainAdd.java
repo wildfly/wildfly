@@ -81,13 +81,13 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
                     if (PRE_HANDLER_CHAIN.equals(handlerChainType)) {
                         handlerChains = commonConfig.getPreHandlerChains();
                         if (handlerChains == null) {
-                            handlerChains = new LinkedList<UnifiedHandlerChainMetaData>();
+                            handlerChains = new LinkedList<>();
                             commonConfig.setPreHandlerChains(handlerChains);
                         }
                     } else if (POST_HANDLER_CHAIN.equals(handlerChainType)) {
                         handlerChains = commonConfig.getPostHandlerChains();
                         if (handlerChains == null) {
-                            handlerChains = new LinkedList<UnifiedHandlerChainMetaData>();
+                            handlerChains = new LinkedList<>();
                             commonConfig.setPostHandlerChains(handlerChains);
                         }
                     } else {

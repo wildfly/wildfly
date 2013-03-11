@@ -42,19 +42,19 @@ import org.jboss.msc.service.ServiceName;
  */
 public class ConnectorServices {
 
-    private static Map<String, Set<ServiceName>> resourceAdapterServiceNames = new HashMap<String, Set<ServiceName>>();
-    private static Map<String, Set<Integer>> resourceAdapterIdentifiers = new HashMap<String, Set<Integer>>();
+    private static Map<String, Set<ServiceName>> resourceAdapterServiceNames = new HashMap<>();
+    private static Map<String, Set<Integer>> resourceAdapterIdentifiers = new HashMap<>();
 
-    private static Map<String, ServiceName> deploymentServiceNames = new HashMap<String, ServiceName>();
-    private static Map<String, Set<Integer>> deploymentIdentifiers = new HashMap<String, Set<Integer>>();
-    private static Map<String, Set<Integer>> resourceIdentifiers = new HashMap<String, Set<Integer>>();
+    private static Map<String, ServiceName> deploymentServiceNames = new HashMap<>();
+    private static Map<String, Set<Integer>> deploymentIdentifiers = new HashMap<>();
+    private static Map<String, Set<Integer>> resourceIdentifiers = new HashMap<>();
 
 
     /**
      * A map whose key corresponds to a ra name and whose value is a identifier with which the RA
      * is registered in the {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}
      */
-    private static Map<String, String> resourceAdapterRepositoryIdentifiers = new HashMap<String, String>();
+    private static Map<String, String> resourceAdapterRepositoryIdentifiers = new HashMap<>();
 
     public static final ServiceName CONNECTOR_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "config");
 
@@ -129,7 +129,7 @@ public class ConnectorServices {
         if (entries == null) {
             Integer identifier = Integer.valueOf(0);
 
-            entries = new HashSet<Integer>();
+            entries = new HashSet<>();
             resourceIdentifiers.put(raName, entries);
 
             entries.add(identifier);
@@ -179,7 +179,7 @@ public class ConnectorServices {
         if (entries == null) {
             Integer identifier = Integer.valueOf(1);
 
-            entries = new HashSet<Integer>();
+            entries = new HashSet<>();
             deploymentIdentifiers.put(raName, entries);
 
             entries.add(identifier);
@@ -263,7 +263,7 @@ public class ConnectorServices {
         if (entries == null) {
             Integer identifier = Integer.valueOf(1);
 
-            entries = new HashSet<Integer>();
+            entries = new HashSet<>();
             resourceAdapterIdentifiers.put(raName, entries);
 
             entries.add(identifier);
@@ -297,7 +297,7 @@ public class ConnectorServices {
         // Check if this is the first activation for the RA name
         Set<ServiceName> serviceNamesForRAActivation = resourceAdapterServiceNames.get(raName);
         if (serviceNamesForRAActivation == null) {
-            serviceNamesForRAActivation = new HashSet<ServiceName>();
+            serviceNamesForRAActivation = new HashSet<>();
             resourceAdapterServiceNames.put(raName, serviceNamesForRAActivation);
         }
         final ServiceName serviceName;

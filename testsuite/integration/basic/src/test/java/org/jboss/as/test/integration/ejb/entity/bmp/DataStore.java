@@ -31,6 +31,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DataStore {
 
-    public static final Map<Integer, String> DATA = new ConcurrentHashMap<Integer, String> ();
+    public static final Map<Integer, String> DATA = new ConcurrentHashMap<>();
 
 }

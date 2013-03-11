@@ -91,9 +91,9 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
     private static final AttachmentKey<ParseResult> RESULT_ATTACHMENT_KEY = AttachmentKey.create(ParseResult.class);
 
     public static void registerJBossXMLParsers() {
-        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER, new JBossAllXmlParserRegisteringProcessor<ParseResult>(ROOT_1_0, RESULT_ATTACHMENT_KEY, JBossDeploymentStructureParser10.JBOSS_ALL_XML_PARSER));
-        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER, new JBossAllXmlParserRegisteringProcessor<ParseResult>(ROOT_1_1, RESULT_ATTACHMENT_KEY, JBossDeploymentStructureParser11.JBOSS_ALL_XML_PARSER));
-        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER, new JBossAllXmlParserRegisteringProcessor<ParseResult>(ROOT_1_2, RESULT_ATTACHMENT_KEY, JBossDeploymentStructureParser12.JBOSS_ALL_XML_PARSER));
+        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER, new JBossAllXmlParserRegisteringProcessor<>(ROOT_1_0, RESULT_ATTACHMENT_KEY, JBossDeploymentStructureParser10.JBOSS_ALL_XML_PARSER));
+        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER, new JBossAllXmlParserRegisteringProcessor<>(ROOT_1_1, RESULT_ATTACHMENT_KEY, JBossDeploymentStructureParser11.JBOSS_ALL_XML_PARSER));
+        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER, new JBossAllXmlParserRegisteringProcessor<>(ROOT_1_2, RESULT_ATTACHMENT_KEY, JBossDeploymentStructureParser12.JBOSS_ALL_XML_PARSER));
     }
 
 
@@ -169,7 +169,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                 handleDeployment(deploymentUnit, moduleSpec, rootDeploymentSpecification);
             }
             // handle sub deployments
-            final Map<String, ResourceRoot> subDeploymentMap = new HashMap<String, ResourceRoot>();
+            final Map<String, ResourceRoot> subDeploymentMap = new HashMap<>();
             final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
             for (final ResourceRoot root : resourceRoots) {
                 if (SubDeploymentMarker.isSubDeployment(root)) {
@@ -194,7 +194,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                     ServerLogger.DEPLOYMENT_LOGGER.annotationImportIgnored(identifier, additionalModule.getModuleIdentifier());
                 }
                 //log a warning if the resource root is wrong
-                final List<ResourceRoot> additionalModuleResourceRoots = new ArrayList<ResourceRoot>(additionalModule.getResourceRoots());
+                final List<ResourceRoot> additionalModuleResourceRoots = new ArrayList<>(additionalModule.getResourceRoots());
                 final ListIterator<ResourceRoot> itr = additionalModuleResourceRoots.listIterator();
                 while (itr.hasNext()) {
                     final ResourceRoot resourceRoot = itr.next();
@@ -254,7 +254,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
     }
 
     private Map<VirtualFile, ResourceRoot> resourceRoots(final DeploymentUnit deploymentUnit) {
-        final Map<VirtualFile, ResourceRoot> resourceRoots = new HashMap<VirtualFile, ResourceRoot>();
+        final Map<VirtualFile, ResourceRoot> resourceRoots = new HashMap<>();
         for (final ResourceRoot root : DeploymentUtils.allResourceRoots(deploymentUnit)) {
             resourceRoots.put(root.getRoot(), root);
         }

@@ -42,7 +42,7 @@ import org.jboss.wsf.spi.deployment.Endpoint;
  */
 public final class EndpointRecordProcessorDeploymentAspect extends AbstractDeploymentAspect {
 
-    private List<RecordProcessor> processors = new LinkedList<RecordProcessor>();
+    private List<RecordProcessor> processors = new LinkedList<>();
 
     public EndpointRecordProcessorDeploymentAspect() {
         ServiceLoader<RecordProcessorFactory> loader = ServiceLoader.load(RecordProcessorFactory.class);
@@ -57,7 +57,7 @@ public final class EndpointRecordProcessorDeploymentAspect extends AbstractDeplo
     public void start(final Deployment dep) {
        final int size = processors.size();
        for (final Endpoint ep : dep.getService().getEndpoints()) {
-          List<RecordProcessor> processorList = new Vector<RecordProcessor>(size);
+          List<RecordProcessor> processorList = new Vector<>(size);
           if (processors != null) {
              for (RecordProcessor pr : processors) {
                 try {

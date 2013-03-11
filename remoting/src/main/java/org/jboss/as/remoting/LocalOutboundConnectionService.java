@@ -49,7 +49,7 @@ public class LocalOutboundConnectionService extends AbstractOutboundConnectionSe
 
     private static final String LOCAL_URI_SCHEME = "local://";
 
-    private final InjectedValue<OutboundSocketBinding> destinationOutboundSocketBindingInjectedValue = new InjectedValue<OutboundSocketBinding>();
+    private final InjectedValue<OutboundSocketBinding> destinationOutboundSocketBindingInjectedValue = new InjectedValue<>();
 
     private URI connectionURI;
 

@@ -58,11 +58,11 @@ public class CorbaORBService implements Service<ORB> {
 
     private static final Properties properties = new Properties();
 
-    private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
+    private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<>();
 
-    private final InjectedValue<SocketBinding> jacORBSocketBindingInjector = new InjectedValue<SocketBinding>();
+    private final InjectedValue<SocketBinding> jacORBSocketBindingInjector = new InjectedValue<>();
 
-    private final InjectedValue<SocketBinding> jacORBSSLSocketBindingInjector = new InjectedValue<SocketBinding>();
+    private final InjectedValue<SocketBinding> jacORBSSLSocketBindingInjector = new InjectedValue<>();
 
     private volatile ORB orb;
 

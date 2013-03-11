@@ -40,8 +40,8 @@ public abstract class ClassDescriptionTraversal {
 
     public void run() throws DeploymentUnitProcessingException {
         Class<?> clazz = this.clazz;
-        final List<EEModuleClassDescription> queue = new ArrayList<EEModuleClassDescription>();
-        final List<Class<?>> classQueue = new ArrayList<Class<?>>();
+        final List<EEModuleClassDescription> queue = new ArrayList<>();
+        final List<Class<?>> classQueue = new ArrayList<>();
         while (clazz != null && clazz != Object.class) {
             final EEModuleClassDescription configuration = applicationClasses.getClassByName(clazz.getName());
             queue.add(configuration);

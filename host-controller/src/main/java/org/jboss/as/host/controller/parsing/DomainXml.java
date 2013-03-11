@@ -244,7 +244,7 @@ public class DomainXml extends CommonXml {
             parseProfiles(reader, address, expectedNs, list);
             element = nextElement(reader, expectedNs);
         }
-        final Set<String> interfaceNames = new HashSet<String>();
+        final Set<String> interfaceNames = new HashSet<>();
         if (element == Element.INTERFACES) {
             parseInterfaces(reader, interfaceNames, address, expectedNs, list, false);
             element = nextElement(reader, expectedNs);
@@ -296,7 +296,7 @@ public class DomainXml extends CommonXml {
             parseProfiles(reader, address, expectedNs, list);
             element = nextElement(reader, expectedNs);
         }
-        final Set<String> interfaceNames = new HashSet<String>();
+        final Set<String> interfaceNames = new HashSet<>();
         if (element == Element.INTERFACES) {
             parseInterfaces(reader, interfaceNames, address, expectedNs, list, false);
             element = nextElement(reader, expectedNs);
@@ -352,7 +352,7 @@ public class DomainXml extends CommonXml {
             parseProfiles(reader, address, expectedNs, list);
             element = nextElement(reader, expectedNs);
         }
-        final Set<String> interfaceNames = new HashSet<String>();
+        final Set<String> interfaceNames = new HashSet<>();
         if (element == Element.INTERFACES) {
             parseInterfaces(reader, interfaceNames, address, expectedNs, list, false);
             element = nextElement(reader, expectedNs);
@@ -408,7 +408,7 @@ public class DomainXml extends CommonXml {
             parseProfiles(reader, address, expectedNs, list);
             element = nextElement(reader, expectedNs);
         }
-        final Set<String> interfaceNames = new HashSet<String>();
+        final Set<String> interfaceNames = new HashSet<>();
         if (element == Element.INTERFACES) {
             parseInterfaces(reader, interfaceNames, address, expectedNs, list, false);
             element = nextElement(reader, expectedNs);
@@ -536,9 +536,9 @@ public class DomainXml extends CommonXml {
 
     void parseSocketBindingGroup_1_0(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address,
                                      final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
-        final Set<String> includedGroups = new HashSet<String>();
+        final Set<String> includedGroups = new HashSet<>();
         // unique socket-binding names
-        final Set<String> uniqueBindingNames = new HashSet<String>();
+        final Set<String> uniqueBindingNames = new HashSet<>();
 
         // Handle attributes
         final String[] attrValues = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.DEFAULT_INTERFACE.getLocalName());
@@ -596,9 +596,9 @@ public class DomainXml extends CommonXml {
 
     void parseSocketBindingGroup_1_1(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address,
                                      final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
-        final Set<String> includedGroups = new HashSet<String>();
+        final Set<String> includedGroups = new HashSet<>();
         // both outbound-socket-bindings and socket-binding names
-        final Set<String> uniqueBindingNames = new HashSet<String>();
+        final Set<String> uniqueBindingNames = new HashSet<>();
 
         // Handle attributes
         final String[] attrValues = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.DEFAULT_INTERFACE.getLocalName());
@@ -665,7 +665,7 @@ public class DomainXml extends CommonXml {
     void parseServerGroups(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
         requireNoAttributes(reader);
 
-        final Set<String> names = new HashSet<String>();
+        final Set<String> names = new HashSet<>();
 
         while (reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -765,7 +765,7 @@ public class DomainXml extends CommonXml {
     void parseProfiles(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
         requireNoAttributes(reader);
 
-        final Set<String> names = new HashSet<String>();
+        final Set<String> names = new HashSet<>();
 
         while (reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -787,7 +787,7 @@ public class DomainXml extends CommonXml {
 
             // Content
             // Sequence
-            final Map<String, List<ModelNode>> profileOps = new LinkedHashMap<String, List<ModelNode>>();
+            final Map<String, List<ModelNode>> profileOps = new LinkedHashMap<>();
             while (reader.nextTag() != END_ELEMENT) {
                 Namespace ns = Namespace.forUri(reader.getNamespaceURI());
                 switch (ns) {
@@ -800,7 +800,7 @@ public class DomainXml extends CommonXml {
                             throw MESSAGES.duplicateDeclaration("subsystem", name, reader.getLocation());
                         }
                         // parse content
-                        final List<ModelNode> subsystems = new ArrayList<ModelNode>();
+                        final List<ModelNode> subsystems = new ArrayList<>();
                         reader.handleAny(subsystems);
 
                         profileOps.put(namespace, subsystems);

@@ -36,7 +36,7 @@ import java.util.Map;
  */
 public class TelnetResourceAdapter implements javax.resource.spi.ResourceAdapter {
 
-    private final Map<Integer, TelnetServer> activated = new HashMap<Integer, TelnetServer>();
+    private final Map<Integer, TelnetServer> activated = new HashMap<>();
     private WorkManager workManager;
 
     /**

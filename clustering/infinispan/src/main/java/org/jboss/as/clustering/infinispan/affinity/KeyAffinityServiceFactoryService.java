@@ -82,7 +82,7 @@ public class KeyAffinityServiceFactoryService implements Service<KeyAffinityServ
     @Override
     public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator) {
         boolean distributed = cache.getCacheConfiguration().clustering().cacheMode().isDistributed();
-        return distributed ? new KeyAffinityServiceImpl<K>(this.executor, cache, generator, this.bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<K>(generator);
+        return distributed ? new KeyAffinityServiceImpl<>(this.executor, cache, generator, this.bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<>(generator);
     }
 
     private static class SimpleKeyAffinityService<K> implements KeyAffinityService<K> {

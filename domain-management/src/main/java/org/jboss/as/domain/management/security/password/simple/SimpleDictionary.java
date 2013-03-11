@@ -36,7 +36,7 @@ import org.jboss.as.domain.management.security.password.Dictionary;
  */
 public class SimpleDictionary implements Dictionary {
 
-    protected Set<String> words = new TreeSet<String>();
+    protected Set<String> words = new TreeSet<>();
 
     public SimpleDictionary() {
         InputStream is = Dictionary.class.getResourceAsStream("dictionary.properties");

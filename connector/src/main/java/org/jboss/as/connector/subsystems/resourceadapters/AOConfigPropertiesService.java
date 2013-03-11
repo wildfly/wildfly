@@ -41,7 +41,7 @@ final class AOConfigPropertiesService implements Service<String> {
 
     private final String value;
         private final String name;
-        private final InjectedValue<ModifiableAdminObject> ao = new InjectedValue<ModifiableAdminObject>();
+        private final InjectedValue<ModifiableAdminObject> ao = new InjectedValue<>();
 
 
         /** create an instance **/

@@ -591,7 +591,7 @@ final class JndiPermissionCollection extends PermissionCollection implements
      * Create an empty JndiPermissions object.
      */
     public JndiPermissionCollection() {
-        perms = new ArrayList<JndiPermission>();
+        perms = new ArrayList<>();
     }
 
     /**

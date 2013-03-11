@@ -136,7 +136,7 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
                 } catch (InvocationTargetException e) {
                     throw MESSAGES.cannotGetSessionFactory(e);
                 }
-                return new ValueManagedReference(new ImmediateValue<Object>(targetValueToInject));
+                return new ValueManagedReference(new ImmediateValue<>(targetValueToInject));
             }
 
             return new ValueManagedReference(new ImmediateValue<Object>(emf));

@@ -46,8 +46,8 @@ public class ObjectTypeValidator extends ModelTypeValidator implements AllowedVa
 
     public ObjectTypeValidator(final boolean nullable, final AttributeDefinition... attributes) {
         super(nullable, true, false, ModelType.OBJECT, findModelTypes(attributes));
-        allowedValues = new HashMap<String, AttributeDefinition>(attributes.length);
-        nodeValues = new ArrayList<ModelNode>(attributes.length);
+        allowedValues = new HashMap<>(attributes.length);
+        nodeValues = new ArrayList<>(attributes.length);
         for (AttributeDefinition attribute : attributes) {
             allowedValues.put(attribute.getName(), attribute);
             nodeValues.add(new ModelNode(attribute.getName()));
@@ -74,7 +74,7 @@ public class ObjectTypeValidator extends ModelTypeValidator implements AllowedVa
     }
 
     private static ModelType[] findModelTypes(final AttributeDefinition... attributes) {
-        final Set<ModelType> result = new HashSet<ModelType>();
+        final Set<ModelType> result = new HashSet<>();
         for (AttributeDefinition attr : attributes) {
             if (attr.getType() != ModelType.OBJECT)
                 result.add(attr.getType());

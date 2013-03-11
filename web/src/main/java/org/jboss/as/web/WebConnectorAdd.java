@@ -105,7 +105,7 @@ class WebConnectorAdd extends AbstractAddStepHandler {
             service.setMaxConnections(resolved.asInt());
         }
         if ((resolved =  WebConnectorDefinition.VIRTUAL_SERVER.resolveModelAttribute(context, fullModel)).isDefined()) {
-            List<String> vServers = new LinkedList<String>();
+            List<String> vServers = new LinkedList<>();
             for (ModelNode vServer:resolved.asList()){
                 vServers.add(vServer.asString());
             }

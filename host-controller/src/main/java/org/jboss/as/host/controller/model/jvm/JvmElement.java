@@ -61,7 +61,7 @@ public class JvmElement {
     private String javaagent;
     private String stack;
     private final JvmOptionsElement jvmOptionsElement = new JvmOptionsElement();
-    private Map<String, String> environmentVariables = new HashMap<String, String>();
+    private Map<String, String> environmentVariables = new HashMap<>();
 
     public JvmElement(final String name) {
         this.name = name;

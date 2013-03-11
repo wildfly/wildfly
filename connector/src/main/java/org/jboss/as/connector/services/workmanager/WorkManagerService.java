@@ -53,11 +53,11 @@ public final class WorkManagerService implements Service<WorkManager> {
 
     private final WorkManager value;
 
-    private final InjectedValue<Executor> executorShort = new InjectedValue<Executor>();
+    private final InjectedValue<Executor> executorShort = new InjectedValue<>();
 
-    private final InjectedValue<Executor> executorLong = new InjectedValue<Executor>();
+    private final InjectedValue<Executor> executorLong = new InjectedValue<>();
 
-    private final InjectedValue<JBossXATerminator> xaTerminator = new InjectedValue<JBossXATerminator>();
+    private final InjectedValue<JBossXATerminator> xaTerminator = new InjectedValue<>();
 
     private volatile Callback callback;
 

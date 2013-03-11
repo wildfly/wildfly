@@ -58,7 +58,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
 
     private volatile PolicyConfiguration policyConfiguration;
 
-    private final InjectedValue<PolicyConfiguration> parentPolicy = new InjectedValue<PolicyConfiguration>();
+    private final InjectedValue<PolicyConfiguration> parentPolicy = new InjectedValue<>();
 
     public JaccService(final String contextId, T metaData, Boolean standalone) {
         if (contextId == null)

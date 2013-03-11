@@ -43,7 +43,7 @@ public class EJBClientClusterConfig extends EJBClientCommonConnectionConfig impl
     private static final Logger logger = Logger.getLogger(EJBClientClusterConfig.class);
 
     private final EJBClientDescriptorMetaData.ClusterConfig delegate;
-    private final Map<String, EJBClientConfiguration.ClusterNodeConfiguration> nodes = new HashMap<String, EJBClientConfiguration.ClusterNodeConfiguration>();
+    private final Map<String, EJBClientConfiguration.ClusterNodeConfiguration> nodes = new HashMap<>();
     private final ClusterNodeSelector clusterNodeSelector;
 
     public EJBClientClusterConfig(final EJBClientDescriptorMetaData.ClusterConfig clusterConfig, final ClassLoader deploymentClassLoader, final ServiceRegistry serviceRegistry) {

@@ -39,6 +39,6 @@ public class AsyncBeanRemote implements AsyncBeanRemoteInterface {
         final CountDownLatch latch = new CountDownLatch(1);
         final Future<Boolean> future = asyncBean.futureMethod(latch);
         latch.countDown();
-        return new AsyncResult<Boolean>(future.get());
+        return new AsyncResult<>(future.get());
     }  
 }

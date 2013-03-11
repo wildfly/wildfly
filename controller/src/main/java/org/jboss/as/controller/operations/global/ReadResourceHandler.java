@@ -136,13 +136,13 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
         final boolean attributesOnly = operation.get(ModelDescriptionConstants.ATTRIBUTES_ONLY).asBoolean(false);
 
         // Attributes read directly from the model with no special read handler step in the middle
-        final Map<String, ModelNode> directAttributes = new HashMap<String, ModelNode>();
+        final Map<String, ModelNode> directAttributes = new HashMap<>();
         // Children names read directly from the model with no special read handler step in the middle
-        final Map<String, ModelNode> directChildren = new HashMap<String, ModelNode>();
+        final Map<String, ModelNode> directChildren = new HashMap<>();
         // Attributes of AccessType.METRIC
         final Map<String, ModelNode> metrics = queryRuntime ? new HashMap<String, ModelNode>() : Collections.<String, ModelNode>emptyMap();
         // Non-AccessType.METRIC attributes with a special read handler registered
-        final Map<String, ModelNode> otherAttributes = new HashMap<String, ModelNode>();
+        final Map<String, ModelNode> otherAttributes = new HashMap<>();
         // Child resources recursively read
         final Map<PathElement, ModelNode> childResources = recursive ? new LinkedHashMap<PathElement, ModelNode>() : Collections.<PathElement, ModelNode>emptyMap();
 
@@ -339,8 +339,8 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-            Map<String, ModelNode> sortedAttributes = new TreeMap<String, ModelNode>();
-            Map<String, ModelNode> sortedChildren = new TreeMap<String, ModelNode>();
+            Map<String, ModelNode> sortedAttributes = new TreeMap<>();
+            Map<String, ModelNode> sortedChildren = new TreeMap<>();
             boolean failed = false;
             for (Map.Entry<String, ModelNode> entry : otherAttributes.entrySet()) {
                 ModelNode value = entry.getValue();

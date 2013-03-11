@@ -55,12 +55,12 @@ public class NotInterfaceCriteriaUnitTestCase {
             return;
         }
 
-        Map<NetworkInterface, Set<InetAddress>> correct = new LinkedHashMap<NetworkInterface, Set<InetAddress>>();
+        Map<NetworkInterface, Set<InetAddress>> correct = new LinkedHashMap<>();
         for (NetworkInterface ni : nonLoopBackInterfaces) {
             correct.put(ni, getRightTypeAddresses(allCandidates.get(ni)));
         }
 
-        Set<InterfaceCriteria> criterias = new HashSet<InterfaceCriteria>();
+        Set<InterfaceCriteria> criterias = new HashSet<>();
         criterias.add(new NicInterfaceCriteria("bogus"));
         criterias.add(LoopbackInterfaceCriteria.INSTANCE);
         NotInterfaceCriteria testee = new NotInterfaceCriteria(criterias);
@@ -75,7 +75,7 @@ public class NotInterfaceCriteriaUnitTestCase {
             return;
         }
 
-        Map<NetworkInterface, Set<InetAddress>> candidates = new HashMap<NetworkInterface, Set<InetAddress>>();
+        Map<NetworkInterface, Set<InetAddress>> candidates = new HashMap<>();
         for (NetworkInterface ni : loopbackInterfaces) {
             candidates.put(ni, allCandidates.get(ni));
         }

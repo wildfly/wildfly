@@ -80,7 +80,7 @@ public class TimeUnitValidator extends ModelTypeValidator implements AllowedValu
 
     @Override
     public List<ModelNode> getAllowedValues() {
-        List<ModelNode> result = new ArrayList<ModelNode>();
+        List<ModelNode> result = new ArrayList<>();
         for (TimeUnit tu : allowedValues) {
             result.add(new ModelNode().set(tu.name()));
         }

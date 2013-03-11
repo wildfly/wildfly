@@ -46,7 +46,7 @@ import org.mockito.stubbing.Answer;
  */
 class ResourceAddRemoveTestBase {
 
-    private final AtomicReference<ModelNode> operationHolder = new AtomicReference<ModelNode>();
+    private final AtomicReference<ModelNode> operationHolder = new AtomicReference<>();
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected OperationContext mockOperationContext(SubsystemState stateService, final List<OperationStepHandler> addedSteps,

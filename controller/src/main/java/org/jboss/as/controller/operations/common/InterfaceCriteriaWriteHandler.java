@@ -51,7 +51,7 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
 
     public static final InterfaceCriteriaWriteHandler CONFIG_ONLY = new InterfaceCriteriaWriteHandler(false);
 
-    private static final Map<String, AttributeDefinition> ATTRIBUTES = new HashMap<String, AttributeDefinition>();
+    private static final Map<String, AttributeDefinition> ATTRIBUTES = new HashMap<>();
     private static final OperationStepHandler VERIFY_HANDLER = new ModelValidationStep();
     private static final ParametersValidator nameValidator = new ParametersValidator();
 

@@ -39,12 +39,12 @@ import org.jboss.msc.value.InjectedValue;
 public final class InjectedEENamespaceContextSelector extends NamespaceContextSelector {
 
     private static final CompositeName EMPTY_NAME = new CompositeName();
-    private final InjectedValue<NamingStore> jbossContext = new InjectedValue<NamingStore>();
-    private final InjectedValue<NamingStore> globalContext = new InjectedValue<NamingStore>();
-    private final InjectedValue<NamingStore> appContext = new InjectedValue<NamingStore>();
-    private final InjectedValue<NamingStore> moduleContext = new InjectedValue<NamingStore>();
-    private final InjectedValue<NamingStore> compContext = new InjectedValue<NamingStore>();
-    private final InjectedValue<NamingStore> exportedContext = new InjectedValue<NamingStore>();
+    private final InjectedValue<NamingStore> jbossContext = new InjectedValue<>();
+    private final InjectedValue<NamingStore> globalContext = new InjectedValue<>();
+    private final InjectedValue<NamingStore> appContext = new InjectedValue<>();
+    private final InjectedValue<NamingStore> moduleContext = new InjectedValue<>();
+    private final InjectedValue<NamingStore> compContext = new InjectedValue<>();
+    private final InjectedValue<NamingStore> exportedContext = new InjectedValue<>();
 
     public InjectedEENamespaceContextSelector() {
     }

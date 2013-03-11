@@ -251,7 +251,7 @@ public class DatabaseLoginModuleTestCase {
          * @return
          */
         private Map<String, String> getLoginModuleOptions(String deployment) {
-            final Map<String, String> options = new HashMap<String, String>();
+            final Map<String, String> options = new HashMap<>();
             options.put("dsJndiName", "java:jboss/datasources/" + DATASOURCE_NAME);
             options.put("principalsQuery", "select Password from Principals" + deployment + " where PrincipalID=?");
             options.put("rolesQuery", "select Role, RoleGroup from Roles where PrincipalID=?");

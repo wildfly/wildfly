@@ -56,7 +56,7 @@ public abstract class PropertiesFileLoader {
 
     public static final char[] ESCAPE_ARRAY = new char[]{'='};
     private final String path;
-    private final InjectedValue<String> relativeTo = new InjectedValue<String>();
+    private final InjectedValue<String> relativeTo = new InjectedValue<>();
 
     private File propertiesFile;
     private volatile long fileUpdated = -1;
@@ -133,7 +133,7 @@ public abstract class PropertiesFileLoader {
     public synchronized void persistProperties() throws IOException {
         Properties toSave = (Properties) properties.clone();
 
-        List<String> content = new ArrayList<String>();
+        List<String> content = new ArrayList<>();
         FileReader fileReader = new FileReader(propertiesFile);
         BufferedReader bufferedFileReader = new BufferedReader(fileReader);
 

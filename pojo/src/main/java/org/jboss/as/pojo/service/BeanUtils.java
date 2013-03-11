@@ -81,13 +81,13 @@ public final class BeanUtils {
                     Class<?> factoryClazz = Class.forName(factoryClass, false, module.getClassLoader());
                     Method method = Configurator.findMethod(index, factoryClazz, factoryMethod, types, true, true, true);
                     MethodJoinpoint mj = new MethodJoinpoint(method);
-                    mj.setTarget(new ImmediateValue<Object>(null)); // null, since this is static call
+                    mj.setTarget(new ImmediateValue<>(null)); // null, since this is static call
                     mj.setParameters(parameters);
                     instantiateJoinpoint = mj;
                 } else if (factory != null) {
                     ReflectionJoinpoint rj = new ReflectionJoinpoint(factory.getBeanInfo(), factoryMethod, types);
                     // null type is ok, as this should be plain injection
-                    rj.setTarget(new ImmediateValue<Object>(factory.getValue(null)));
+                    rj.setTarget(new ImmediateValue<>(factory.getValue(null)));
                     rj.setParameters(parameters);
                     instantiateJoinpoint = rj;
                 }
@@ -120,7 +120,7 @@ public final class BeanUtils {
     public static void configure(BeanMetaDataConfig beanConfig, BeanInfo beanInfo, Module module, Object bean, boolean nullify) throws Throwable {
         Set<PropertyConfig> properties = beanConfig.getProperties();
         if (properties != null) {
-            List<PropertyConfig> used = new ArrayList<PropertyConfig>();
+            List<PropertyConfig> used = new ArrayList<>();
             for (PropertyConfig pc : properties) {
                 try {
                     configure(beanInfo, module, bean, pc, nullify);
@@ -180,7 +180,7 @@ public final class BeanUtils {
             params = parameters;
         }
         MethodJoinpoint joinpoint = new MethodJoinpoint(method);
-        joinpoint.setTarget(new ImmediateValue<Object>(bean));
+        joinpoint.setTarget(new ImmediateValue<>(bean));
         joinpoint.setParameters(params);
         return joinpoint;
     }
@@ -198,7 +198,7 @@ public final class BeanUtils {
         MethodJoinpoint joinpoint = new MethodJoinpoint(setter);
         ValueConfig param = (nullify == false) ? value : null;
         joinpoint.setParameters(new ValueConfig[]{param});
-        joinpoint.setTarget(new ImmediateValue<Object>(bean));
+        joinpoint.setTarget(new ImmediateValue<>(bean));
         joinpoint.dispatch();
     }
 

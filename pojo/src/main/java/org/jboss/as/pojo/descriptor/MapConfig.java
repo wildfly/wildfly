@@ -42,7 +42,7 @@ public class MapConfig extends ValueConfig implements Serializable {
     protected String keyType;
     protected String valueType;
 
-    private Map<ValueConfig, ValueConfig> map = new HashMap<ValueConfig, ValueConfig>();
+    private Map<ValueConfig, ValueConfig> map = new HashMap<>();
 
     private Class<?> mapType;
     private Class<?> keyClass;

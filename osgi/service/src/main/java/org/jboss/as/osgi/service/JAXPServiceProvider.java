@@ -52,7 +52,7 @@ final class JAXPServiceProvider extends AbstractService<Void> {
 
     public static final ServiceName SERVICE_NAME = SERVICE_BASE_NAME.append("jaxp.provider");
 
-    private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
+    private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<>();
     private XMLParserActivator activator;
 
     static ServiceController<?> addService(final ServiceTarget target) {

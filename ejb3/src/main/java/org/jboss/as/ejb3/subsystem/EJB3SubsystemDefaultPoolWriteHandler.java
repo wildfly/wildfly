@@ -93,7 +93,7 @@ public class EJB3SubsystemDefaultPoolWriteHandler extends AbstractWriteAttribute
 
         if (poolName.isDefined()) {
             // now install default pool config service which points to an existing pool config service
-            final ValueInjectionService<PoolConfig> newDefaultPoolConfigService = new ValueInjectionService<PoolConfig>();
+            final ValueInjectionService<PoolConfig> newDefaultPoolConfigService = new ValueInjectionService<>();
             ServiceController<?> newController =
                 context.getServiceTarget().addService(poolConfigServiceName, newDefaultPoolConfigService)
                     .addDependency(PoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName.asString()),

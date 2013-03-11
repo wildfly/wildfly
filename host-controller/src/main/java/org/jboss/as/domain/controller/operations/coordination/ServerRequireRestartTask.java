@@ -67,7 +67,7 @@ class ServerRequireRestartTask implements Callable<ModelNode> {
     public ModelNode call() throws Exception {
         try {
             //
-            final AtomicReference<ModelController.OperationTransaction> txRef = new AtomicReference<ModelController.OperationTransaction>();
+            final AtomicReference<ModelController.OperationTransaction> txRef = new AtomicReference<>();
             final ProxyController.ProxyOperationControl proxyControl = new ProxyController.ProxyOperationControl() {
 
                 @Override

@@ -54,7 +54,7 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Ser
     private final InjectedValue<WeldBootstrapService> weldContainer;
     private final String ejbName;
     private final Set<Class<?>> interceptorClasses;
-    private final Map<Class<?>, WeldEEInjection> interceptorInjections = new HashMap<Class<?>, WeldEEInjection>();
+    private final Map<Class<?>, WeldEEInjection> interceptorInjections = new HashMap<>();
     private final ClassLoader classLoader;
     private final String beanDeploymentArchiveId;
 
@@ -74,7 +74,7 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Ser
         this.ejbName = ejbName;
         this.beanDeploymentArchiveId = beanDeploymentArchiveId;
         this.delegateProduce = delegateProduce;
-        this.weldContainer = new InjectedValue<WeldBootstrapService>();
+        this.weldContainer = new InjectedValue<>();
         this.interceptorClasses = interceptorClasses;
         this.classLoader = classLoader;
     }
@@ -132,7 +132,7 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Ser
                     bean = beanManager.getBean(descriptor);
                 }
             } else if (delegateProduce) {
-                final Set<Annotation> qualifiers = new HashSet<Annotation>();
+                final Set<Annotation> qualifiers = new HashSet<>();
                 for(Annotation annotation : componentClass.getAnnotations()) {
                     if(beanManager.isQualifier(annotation.annotationType())) {
                         qualifiers.add(annotation);

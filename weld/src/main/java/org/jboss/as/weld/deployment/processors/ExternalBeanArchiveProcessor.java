@@ -86,15 +86,15 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
 
         final String beanArchiveIdPrefix = deploymentUnit.getName() + ".external.";
 
-        final List<DeploymentUnit> deploymentUnits = new ArrayList<DeploymentUnit>();
+        final List<DeploymentUnit> deploymentUnits = new ArrayList<>();
         deploymentUnits.add(deploymentUnit);
         deploymentUnits.addAll(deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS));
 
         BeansXmlParser parser = new BeansXmlParser();
 
-        final Map<URL, List<DeploymentUnit>> deploymentUnitMap = new HashMap<URL, List<DeploymentUnit>>();
+        final Map<URL, List<DeploymentUnit>> deploymentUnitMap = new HashMap<>();
 
-        final HashSet<URL> existing = new HashSet<URL>();
+        final HashSet<URL> existing = new HashSet<>();
 
         for (DeploymentUnit deployment : deploymentUnits) {
             try {
@@ -135,7 +135,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                     WeldLogger.DEPLOYMENT_LOGGER.debugf("Found external beans.xml: %s", beansXml.toString());
                     List<DeploymentUnit> dus = deploymentUnitMap.get(beansXml);
                     if (dus == null) {
-                        deploymentUnitMap.put(beansXml, dus = new ArrayList<DeploymentUnit>());
+                        deploymentUnitMap.put(beansXml, dus = new ArrayList<>());
                     }
                     dus.add(deployment);
                 }
@@ -151,12 +151,12 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
             final BeansXml beansXml = parseBeansXml(entry.getKey(), parser, deploymentUnit);
 
             final UrlScanner urlScanner = new UrlScanner();
-            final List<String> discoveredClasses = new ArrayList<String>();
+            final List<String> discoveredClasses = new ArrayList<>();
             if(!urlScanner.handleBeansXml(entry.getKey(), discoveredClasses)) {
                 continue;
             }
 
-            final BeanDeploymentArchiveImpl bda = new BeanDeploymentArchiveImpl(new HashSet<String>(discoveredClasses), beansXml, module, beanArchiveIdPrefix + entry.getKey().toExternalForm());
+            final BeanDeploymentArchiveImpl bda = new BeanDeploymentArchiveImpl(new HashSet<>(discoveredClasses), beansXml, module, beanArchiveIdPrefix + entry.getKey().toExternalForm());
 
             final BeanDeploymentModule bdm = new BeanDeploymentModule(Collections.singleton(bda));
             final JpaInjectionServices jpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit, deploymentUnit.getServiceRegistry());

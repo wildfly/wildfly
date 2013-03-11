@@ -216,7 +216,7 @@ public class RegistryProxyControllerTestCase {
     }
 
     private Set<PathAddress> getProxyAddresses(PathAddress address){
-        Set<PathAddress> addresses = new HashSet<PathAddress>();
+        Set<PathAddress> addresses = new HashSet<>();
         for (ProxyController proxy : root.getProxyControllers(address)) {
             addresses.add(proxy.getProxyNodeAddress());
         }

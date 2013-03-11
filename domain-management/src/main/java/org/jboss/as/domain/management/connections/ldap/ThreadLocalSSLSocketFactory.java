@@ -39,7 +39,7 @@ import javax.net.ssl.SSLSocketFactory;
  */
 public class ThreadLocalSSLSocketFactory extends SSLSocketFactory {
 
-    private static final ThreadLocal<SSLSocketFactory> socketFactory = new ThreadLocal<SSLSocketFactory>();
+    private static final ThreadLocal<SSLSocketFactory> socketFactory = new ThreadLocal<>();
 
     private final SSLSocketFactory delegate;
 

@@ -1237,7 +1237,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         TesteeSet ts = createTestee(new DiscardTaskExecutor() {
             @Override
             public <T> AsyncFuture<T> submit(Callable<T> tCallable) {
-                return new TimeOutFuture<T>(5, tCallable);
+                return new TimeOutFuture<>(5, tCallable);
             }
         });
 
@@ -1578,10 +1578,10 @@ public class FileSystemDeploymentServiceUnitTestCase {
     private static class MockServerController implements ModelControllerClient, DeploymentOperations.Factory {
 
         private final DiscardTaskExecutor executorService;
-        private final List<ModelNode> requests = new ArrayList<ModelNode>(1);
-        private final List<Response> responses = new ArrayList<Response>(1);
-        private final Map<String, byte[]> added = new HashMap<String, byte[]>();
-        private final Map<String, byte[]> deployed = new HashMap<String, byte[]>();
+        private final List<ModelNode> requests = new ArrayList<>(1);
+        private final List<Response> responses = new ArrayList<>(1);
+        private final Map<String, byte[]> added = new HashMap<>();
+        private final Map<String, byte[]> deployed = new HashMap<>();
 
         @Override
         public ModelNode execute(ModelNode operation) throws IOException {
@@ -1766,7 +1766,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
     private static class DiscardTaskExecutor extends ScheduledThreadPoolExecutor {
 
-        private final List<Runnable> tasks = new ArrayList<Runnable>();
+        private final List<Runnable> tasks = new ArrayList<>();
         private DiscardTaskExecutor() {
             super(0);
         }
@@ -1779,7 +1779,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
         @Override
         public <T> AsyncFuture<T> submit(Callable<T> tCallable) {
-            return new CallOnGetFuture<T>(tCallable);
+            return new CallOnGetFuture<>(tCallable);
         }
 
         void clear() {

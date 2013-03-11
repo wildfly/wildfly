@@ -43,7 +43,7 @@ public class BeanDeploymentModule {
 
     public BeanDeploymentModule(Set<BeanDeploymentArchiveImpl> beanDeploymentArchives) {
         this.beanDeploymentArchives = Collections
-                .unmodifiableSet(new HashSet<BeanDeploymentArchiveImpl>(beanDeploymentArchives));
+                .unmodifiableSet(new HashSet<>(beanDeploymentArchives));
         for (BeanDeploymentArchiveImpl bda : beanDeploymentArchives) {
             bda.addBeanDeploymentArchives(beanDeploymentArchives);
         }

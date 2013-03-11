@@ -76,12 +76,12 @@ public class GlobalReferenceTestCase {
     // app name: simple jar - empty app name
     // module name: name of jar = eb
     private <T extends EJBHome> T getHome(final Class<T> homeClass, final String beanName) {
-        final EJBHomeLocator<T> locator = new EJBHomeLocator<T>(homeClass, "", EJB2, beanName, "");
+        final EJBHomeLocator<T> locator = new EJBHomeLocator<>(homeClass, "", EJB2, beanName, "");
         return EJBClient.createProxy(locator);
     }
 
     private InitialContext getInitialContext() throws NamingException {
-        final Hashtable<String, String> jndiProperties = new Hashtable<String, String>();
+        final Hashtable<String, String> jndiProperties = new Hashtable<>();
         jndiProperties.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.as.naming.InitialContextFactory");
         jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
         return new InitialContext(jndiProperties);

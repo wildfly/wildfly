@@ -273,7 +273,7 @@ public class Utils {
             // We should now login with the user name and password
             HttpPost httpost = new HttpPost(URL + "/j_security_check");
 
-            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+            List<NameValuePair> nvps = new ArrayList<>();
             nvps.add(new BasicNameValuePair("j_username", user));
             nvps.add(new BasicNameValuePair("j_password", pass));
 
@@ -457,7 +457,7 @@ public class Utils {
             final HttpEntity entity = response.getEntity();
             final Header[] authnHeaders = response.getHeaders("WWW-Authenticate");
             assertTrue("WWW-Authenticate header is present", authnHeaders != null && authnHeaders.length > 0);
-            final Set<String> authnHeaderValues = new HashSet<String>();
+            final Set<String> authnHeaderValues = new HashSet<>();
             for (final Header header : authnHeaders) {
                 authnHeaderValues.add(header.getValue());
             }
@@ -532,7 +532,7 @@ public class Utils {
             }
             final Header[] authnHeaders = response.getHeaders("WWW-Authenticate");
             assertTrue("WWW-Authenticate header is present", authnHeaders != null && authnHeaders.length > 0);
-            final Set<String> authnHeaderValues = new HashSet<String>();
+            final Set<String> authnHeaderValues = new HashSet<>();
             for (final Header header : authnHeaders) {
                 authnHeaderValues.add(header.getValue());
             }
@@ -563,7 +563,7 @@ public class Utils {
             assertTrue(unauthorizedPageBody.contains("j_security_check"));
 
             HttpPost httpPost = new HttpPost(strippedContextUrl + "/j_security_check");
-            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+            List<NameValuePair> nameValuePairs = new ArrayList<>();
             nameValuePairs.add(new BasicNameValuePair("j_username", user));
             nameValuePairs.add(new BasicNameValuePair("j_password", pass));
             httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
@@ -614,7 +614,7 @@ public class Utils {
             }
             final Header[] authnHeaders = response.getHeaders("WWW-Authenticate");
             assertTrue("WWW-Authenticate header is present", authnHeaders != null && authnHeaders.length > 0);
-            final Set<String> authnHeaderValues = new HashSet<String>();
+            final Set<String> authnHeaderValues = new HashSet<>();
             for (final Header header : authnHeaders) {
                 authnHeaderValues.add(header.getValue());
             }
@@ -628,7 +628,7 @@ public class Utils {
             assertTrue(unauthorizedPageBody.contains("j_security_check"));
 
             HttpPost httpPost = new HttpPost(strippedContextUrl + "/j_security_check");
-            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+            List<NameValuePair> nameValuePairs = new ArrayList<>();
             nameValuePairs.add(new BasicNameValuePair("j_username", user));
             nameValuePairs.add(new BasicNameValuePair("j_password", pass));
             httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));

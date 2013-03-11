@@ -85,7 +85,7 @@ class SessionBasedClusteredSession extends ClusteredSession<OutgoingSessionGranu
     // ----------------------------------------------------------------- Private
 
     private Map<String, Object> getSessionAttributeMap() {
-        Map<String, Object> attrs = new HashMap<String, Object>(getAttributesInternal());
+        Map<String, Object> attrs = new HashMap<>(getAttributesInternal());
         removeExcludedAttributes(attrs);
         return attrs;
     }

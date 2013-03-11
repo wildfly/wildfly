@@ -145,9 +145,9 @@ public class ReadWriteClusteredLockManagerUnitTestCase extends ClusteredLockMana
         // When caller 1 invokes, block before giving response
         CountDownLatch answerStartLatch = new CountDownLatch(1);
         CountDownLatch answerDoneLatch = new CountDownLatch(1);
-        BlockingAnswer<Boolean> caller1Answer = new BlockingAnswer<Boolean>(Boolean.TRUE, answerStartLatch, null,
+        BlockingAnswer<Boolean> caller1Answer = new BlockingAnswer<>(Boolean.TRUE, answerStartLatch, null,
                 answerDoneLatch);
-        BlockingAnswer<Boolean> caller2Answer = new BlockingAnswer<Boolean>(new TimeoutException(caller1), answerDoneLatch, 0,
+        BlockingAnswer<Boolean> caller2Answer = new BlockingAnswer<>(new TimeoutException(caller1), answerDoneLatch, 0,
                 null, null);
         
         doAnswer(caller1Answer).when(handler).lockFromCluster("test", caller1, 1000);
@@ -255,7 +255,7 @@ public class ReadWriteClusteredLockManagerUnitTestCase extends ClusteredLockMana
         GroupRpcDispatcher rpcDispatcher = testee.getGroupRpcDispatcher();
         LocalLockHandler handler = testee.getLocalHandler();
 
-        List<RemoteLockResponse> rspList = new ArrayList<RemoteLockResponse>();
+        List<RemoteLockResponse> rspList = new ArrayList<>();
         for (int i = 0; i < viewSize - 1; i++) {
             rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.OK));
         }
@@ -267,7 +267,7 @@ public class ReadWriteClusteredLockManagerUnitTestCase extends ClusteredLockMana
         doThrow(new TimeoutException(node1)).when(handler).lockFromCluster(eq("test"), eq(node1), anyLong());
 
         when((List<Object>) rpcDispatcher.callMethodOnCluster(eq("test"), eq("releaseRemoteLock"), aryEq(new Object[] { "test", node1 }), 
-                        aryEq(AbstractClusterLockSupport.RELEASE_REMOTE_LOCK_TYPES), eq(true))).thenReturn(new ArrayList<Object>());
+                        aryEq(AbstractClusterLockSupport.RELEASE_REMOTE_LOCK_TYPES), eq(true))).thenReturn(new ArrayList<>());
         
         assertFalse(testee.lock("test", 10));
     }
@@ -299,10 +299,10 @@ public class ReadWriteClusteredLockManagerUnitTestCase extends ClusteredLockMana
         assertNull(rsp.holder);
 
         // Change the view
-        Vector<ClusterNode> dead = new Vector<ClusterNode>();
+        Vector<ClusterNode> dead = new Vector<>();
         dead.add(caller1);
 
-        Vector<ClusterNode> all = new Vector<ClusterNode>(members);
+        Vector<ClusterNode> all = new Vector<>(members);
         all.remove(caller1);
 
         when(handler.getLockHolder("test")).thenReturn(caller1);

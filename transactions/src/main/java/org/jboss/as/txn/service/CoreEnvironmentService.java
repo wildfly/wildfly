@@ -40,9 +40,9 @@ import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
 public class CoreEnvironmentService implements Service<CoreEnvironmentBean> {
 
     /** A path for the var directory */
-    private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
+    private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<>();
     /** A dependency on a socket binding for the socket process id */
-    private final InjectedValue<SocketBinding> socketProcessBindingInjector = new InjectedValue<SocketBinding>();
+    private final InjectedValue<SocketBinding> socketProcessBindingInjector = new InjectedValue<>();
     private final String nodeIdentifier;
     private final String path;
     private final String pathRef;

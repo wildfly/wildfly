@@ -137,7 +137,7 @@ class ClassPathEjbJarScanner {
     private static final List<ExclusionFilter> exclusionFilters;
 
     static {
-        exclusionFilters = new ArrayList<ExclusionFilter>();
+        exclusionFilters = new ArrayList<>();
         exclusionFilters.add(new BundleSymbolicNameExclusionFilter("org.eclipse", "org.junit"));
         // scanning rt.jar leads to out of perm-gen
         exclusionFilters.add(new ExclusionFilter() {
@@ -170,7 +170,7 @@ class ClassPathEjbJarScanner {
     public static String[] getEjbJars(Map<?, ?> properties) {
 
         // Initialize
-        final Collection<String> returnValue = new ArrayList<String>();
+        final Collection<String> returnValue = new ArrayList<>();
 
         // Get the full ClassPath
         String classPath = getSystemProperty("surefire.test.class.path");
@@ -200,10 +200,10 @@ class ClassPathEjbJarScanner {
                 returnValue.add(((File) modules).getAbsolutePath());
                 return returnValue.toArray(DUMMY);
             } else if (modules instanceof String[]) {
-                moduleNames = new HashSet<String>();
+                moduleNames = new HashSet<>();
                 moduleNames.addAll(Arrays.asList((String[]) modules));
             } else if (modules instanceof String) {
-                moduleNames = new HashSet<String>();
+                moduleNames = new HashSet<>();
                 moduleNames.add(modules.toString());
             } else {
                 throw MESSAGES.invalidModuleType(EJBContainer.MODULES, modules.getClass());

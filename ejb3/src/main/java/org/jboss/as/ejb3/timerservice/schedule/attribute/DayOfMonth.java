@@ -90,7 +90,7 @@ public class DayOfMonth extends IntegerBasedExpression {
      * Internally, we map all allowed {@link String} values to their {@link Integer} equivalents.
      * This map holds the {@link String} name to {@link Integer} value mapping.
      */
-    private static final Map<String, Integer> DAY_OF_MONTH_ALIAS = new HashMap<String, Integer>();
+    private static final Map<String, Integer> DAY_OF_MONTH_ALIAS = new HashMap<>();
 
     static {
         DAY_OF_MONTH_ALIAS.put("sun", Calendar.SUNDAY);
@@ -103,9 +103,9 @@ public class DayOfMonth extends IntegerBasedExpression {
 
     }
 
-    private static final Set<String> ORDINALS = new HashSet<String>();
+    private static final Set<String> ORDINALS = new HashSet<>();
 
-    private static final Map<String, Integer> ORDINAL_TO_WEEK_NUMBER_MAPPING = new HashMap<String, Integer>();
+    private static final Map<String, Integer> ORDINAL_TO_WEEK_NUMBER_MAPPING = new HashMap<>();
 
     static {
         ORDINALS.add("1st");
@@ -199,7 +199,7 @@ public class DayOfMonth extends IntegerBasedExpression {
         if (this.hasRelativeDayOfMonth() == false) {
             return this.absoluteValues;
         }
-        SortedSet<Integer> eligibleDaysOfMonth = new TreeSet<Integer>(this.absoluteValues);
+        SortedSet<Integer> eligibleDaysOfMonth = new TreeSet<>(this.absoluteValues);
         for (ScheduleValue relativeValue : this.relativeValues) {
             if (relativeValue instanceof SingleValue) {
                 SingleValue singleValue = (SingleValue) relativeValue;

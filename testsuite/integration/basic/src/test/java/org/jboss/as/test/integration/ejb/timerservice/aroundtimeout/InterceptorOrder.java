@@ -33,7 +33,7 @@ import java.util.List;
 public class InterceptorOrder {
 
 
-    private static final List<Class<?>> order = new ArrayList<Class<?>>();
+    private static final List<Class<?>> order = new ArrayList<>();
 
     public static void reset() {
         order.clear();

@@ -93,7 +93,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
 
         moduleDescription.setNamespaceContextSelector(selector);
 
-        final Set<ServiceName> serviceNames = new HashSet<ServiceName>();
+        final Set<ServiceName> serviceNames = new HashSet<>();
         serviceNames.add(appContextServiceName);
         serviceNames.add(moduleContextServiceName);
         serviceNames.add(ContextNames.JBOSS_CONTEXT_SERVICE_NAME);

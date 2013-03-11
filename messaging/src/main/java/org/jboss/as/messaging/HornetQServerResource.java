@@ -153,7 +153,7 @@ public class HornetQServerResource implements Resource {
 
     @Override
     public Set<String> getChildTypes() {
-        Set<String> result = new HashSet<String>(delegate.getChildTypes());
+        Set<String> result = new HashSet<>(delegate.getChildTypes());
         result.add(CORE_ADDRESS);
         result.add(RUNTIME_QUEUE);
         return result;
@@ -173,13 +173,13 @@ public class HornetQServerResource implements Resource {
     @Override
     public Set<ResourceEntry> getChildren(String childType) {
         if (CORE_ADDRESS.equals(childType)) {
-            Set<ResourceEntry> result = new HashSet<ResourceEntry>();
+            Set<ResourceEntry> result = new HashSet<>();
             for (String name : getCoreAddressNames()) {
                 result.add(new CoreAddressResource.CoreAddressResourceEntry(name, getManagementService()));
             }
             return result;
         } else if (RUNTIME_QUEUE.equals(childType)) {
-            Set<ResourceEntry> result = new LinkedHashSet<ResourceEntry>();
+            Set<ResourceEntry> result = new LinkedHashSet<>();
             for (String name : getCoreQueueNames()) {
                 result.add(new PlaceholderResource.PlaceholderResourceEntry(RUNTIME_QUEUE, name));
             }
@@ -243,7 +243,7 @@ public class HornetQServerResource implements Resource {
         if (managementService == null) {
             return Collections.emptySet();
         } else {
-            Set<String> result = new HashSet<String>();
+            Set<String> result = new HashSet<>();
             for (Object obj : managementService.getResources(AddressControl.class)) {
                 AddressControl ac = AddressControl.class.cast(obj);
                 result.add(ac.getAddress());
@@ -257,7 +257,7 @@ public class HornetQServerResource implements Resource {
         if (managementService == null) {
             return Collections.emptySet();
         } else {
-            Set<String> result = new HashSet<String>();
+            Set<String> result = new HashSet<>();
             for (Object obj : managementService.getResources(QueueControl.class)) {
                 QueueControl qc = QueueControl.class.cast(obj);
                 result.add(qc.getName());

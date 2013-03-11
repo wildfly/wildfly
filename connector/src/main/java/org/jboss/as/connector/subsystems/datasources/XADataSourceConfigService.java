@@ -43,7 +43,7 @@ public class XADataSourceConfigService implements Service<ModifiableXaDataSource
 
     private final ModifiableXaDataSource dataSourceConfig;
 
-    private final ConcurrentMap<String, String> xaDataSourceProperties = new ConcurrentHashMap<String, String>(0);
+    private final ConcurrentMap<String, String> xaDataSourceProperties = new ConcurrentHashMap<>(0);
 
 
 

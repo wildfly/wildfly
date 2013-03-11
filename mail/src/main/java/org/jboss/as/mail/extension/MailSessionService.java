@@ -48,7 +48,7 @@ import org.jboss.msc.service.StopContext;
 public class MailSessionService implements Service<Session> {
     private volatile Properties props;
     private final MailSessionConfig config;
-    private Map<String, OutboundSocketBinding> socketBindings = new HashMap<String, OutboundSocketBinding>();
+    private Map<String, OutboundSocketBinding> socketBindings = new HashMap<>();
 
     public MailSessionService(MailSessionConfig config) {
         MailLogger.ROOT_LOGGER.tracef("service constructed with config: %s", config);
@@ -70,7 +70,7 @@ public class MailSessionService implements Service<Session> {
     }
 
     Injector<OutboundSocketBinding> getSocketBindingInjector(String name) {
-        return new MapInjector<String, OutboundSocketBinding>(socketBindings, name);
+        return new MapInjector<>(socketBindings, name);
     }
 
     /**

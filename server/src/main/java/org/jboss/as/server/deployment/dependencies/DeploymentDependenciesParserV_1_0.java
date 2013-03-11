@@ -59,7 +59,7 @@ class DeploymentDependenciesParserV_1_0 implements JBossAllXMLParser<DeploymentD
         private static final Map<QName, Element> elements;
 
         static {
-            Map<QName, Element> elementsMap = new HashMap<QName, Element>();
+            Map<QName, Element> elementsMap = new HashMap<>();
             elementsMap.put(new QName(NAMESPACE_1_0, "jboss-deployment-dependencies"), Element.JBOSS_DEPLOYMENT_DEPENDENCIES);
             elementsMap.put(new QName(NAMESPACE_1_0, "dependency"), Element.DEPENDENCY);
             elements = elementsMap;
@@ -100,7 +100,7 @@ class DeploymentDependenciesParserV_1_0 implements JBossAllXMLParser<DeploymentD
         private static final Map<String, Attribute> MAP;
 
         static {
-            final Map<String, Attribute> map = new HashMap<String, Attribute>();
+            final Map<String, Attribute> map = new HashMap<>();
             for (Attribute element : values()) {
                 final String name = element.getLocalName();
                 if (name != null)

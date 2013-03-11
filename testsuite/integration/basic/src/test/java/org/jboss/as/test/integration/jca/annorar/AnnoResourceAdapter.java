@@ -81,7 +81,7 @@ public class AnnoResourceAdapter implements ResourceAdapter,
 	 * Default constructor
 	 */
 	public AnnoResourceAdapter() {
-		this.activations = new ConcurrentHashMap<AnnoActivationSpec, AnnoActivation>();
+		this.activations = new ConcurrentHashMap<>();
 
 	}
 

@@ -104,7 +104,7 @@ public class ModelControllerMBeanTestCase {
     @Test
     public void testAllMBeanInfos() throws Exception {
         Set<ObjectName> names = connection.queryNames(RESOLVED_MODEL_FILTER, null);
-        Map<ObjectName, Exception> failedInfos = new HashMap<ObjectName, Exception>();
+        Map<ObjectName, Exception> failedInfos = new HashMap<>();
 
         for (ObjectName name : names) {
             try {
@@ -181,7 +181,7 @@ public class ModelControllerMBeanTestCase {
                 break;
             }
         }
-        Map<String, Object> values = new HashMap<String, Object>();
+        Map<String, Object> values = new HashMap<>();
         for (String key : contentType.keySet()) {
             values.put(key, null);
         }

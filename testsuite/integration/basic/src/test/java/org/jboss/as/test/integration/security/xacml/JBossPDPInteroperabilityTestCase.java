@@ -169,7 +169,7 @@ public class JBossPDPInteroperabilityTestCase {
             final JBossPDP pdp = createPDPForMed(policyDir);
             final String requestTemplate = IOUtils.toString(requestIS, "UTF-8");
             LOGGER.info("REQUEST template: " + requestTemplate);
-            final Map<String, Object> substitutionMap = new HashMap<String, Object>();
+            final Map<String, Object> substitutionMap = new HashMap<>();
 
             substitutionMap.put(XACMLTestUtils.SUBST_SUBJECT_ID, "josef@med.example.com");
             assertEquals("Decision for josef@med.example.com should be DECISION_PERMIT", XACMLConstants.DECISION_PERMIT,
@@ -237,7 +237,7 @@ public class JBossPDPInteroperabilityTestCase {
         locators.getLocator().add(locator);
         pdp.setLocators(locators);
 
-        return new JBossPDP(new JAXBElement<PDP>(new QName("urn:jboss:xacml:2.0", "jbosspdp"), PDP.class, pdp));
+        return new JBossPDP(new JAXBElement<>(new QName("urn:jboss:xacml:2.0", "jbosspdp"), PDP.class, pdp));
     }
 
     /**

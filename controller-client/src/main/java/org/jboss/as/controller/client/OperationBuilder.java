@@ -74,7 +74,7 @@ public class OperationBuilder {
         try {
             FileStreamEntry entry = new FileStreamEntry(file);
             if (inputStreams == null) {
-                inputStreams = new ArrayList<InputStream>();
+                inputStreams = new ArrayList<>();
             }
             inputStreams.add(entry);
         } catch (IOException e) {
@@ -95,7 +95,7 @@ public class OperationBuilder {
             throw MESSAGES.nullVar("input-stream");
         }
         if (inputStreams == null) {
-            inputStreams = new ArrayList<InputStream>();
+            inputStreams = new ArrayList<>();
         }
         inputStreams.add(in);
         return this;

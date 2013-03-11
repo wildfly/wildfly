@@ -75,8 +75,8 @@ public class PersistenceUnitProcessor implements DeploymentUnitProcessor {
 
     static class EntityManagerFactoryRegistration implements Service<ServiceRegistration> {
 
-        private final InjectedValue<XBundle> injectedBundle = new InjectedValue<XBundle>();
-        private final InjectedValue<PersistenceUnitService> injectedPersistenceUnitService = new InjectedValue<PersistenceUnitService>();
+        private final InjectedValue<XBundle> injectedBundle = new InjectedValue<>();
+        private final InjectedValue<PersistenceUnitService> injectedPersistenceUnitService = new InjectedValue<>();
         private ServiceRegistration registration;
 
         static void addService(ServiceTarget serviceTarget, BundleManager bundleManager, ServiceName puServiceName, XBundle bundle) {

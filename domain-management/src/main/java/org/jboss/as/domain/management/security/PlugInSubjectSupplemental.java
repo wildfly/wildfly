@@ -87,7 +87,7 @@ public class PlugInSubjectSupplemental extends AbstractPlugInService implements 
             private Set<RealmRole> loadRoles(final RealmUser user) throws IOException {
                 Set<RealmRole> response;
                 String[] roles = ap.loadRoles(user.getName(), getRealmName());
-                response = new HashSet<RealmRole>(roles.length);
+                response = new HashSet<>(roles.length);
                 for (String current : roles) {
                     response.add(new RealmRole(current));
                 }

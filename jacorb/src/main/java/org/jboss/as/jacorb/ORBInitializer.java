@@ -95,7 +95,7 @@ public enum ORBInitializer {
     private static final Map<String, ORBInitializer> MAP;
 
     static {
-        final Map<String, ORBInitializer> map = new HashMap<String, ORBInitializer>();
+        final Map<String, ORBInitializer> map = new HashMap<>();
         for (ORBInitializer element : values()) {
             final String name = element.getInitializerName();
             if (name != null)

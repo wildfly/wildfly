@@ -53,7 +53,7 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
         ;
         private final String namespace;
 
-        private static final Map<String, Namespace> NS_MAP = new HashMap<String, Namespace>();
+        private static final Map<String, Namespace> NS_MAP = new HashMap<>();
 
         static {
             for (Namespace namespace : Namespace.values()) {
@@ -92,7 +92,7 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
 
         private final String localName;
 
-        private static final Map<String, Element> NAME_MAP = new HashMap<String, Element>();
+        private static final Map<String, Element> NAME_MAP = new HashMap<>();
 
         static {
             for (Element element : Element.values()) {
@@ -129,7 +129,7 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
 
         private final QName qName;
 
-        private static final Map<QName, Attribute> QNAME_MAP = new HashMap<QName, Attribute>();
+        private static final Map<QName, Attribute> QNAME_MAP = new HashMap<>();
 
         static {
             for(Attribute attribute : Attribute.values()) {
@@ -155,7 +155,7 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
 
     public void readElement(final XMLExtendedStreamReader reader, final ParseResult<JBossServiceXmlDescriptor> value) throws XMLStreamException {
         final JBossServiceXmlDescriptor serviceXmlDescriptor = new JBossServiceXmlDescriptor();
-        final List<JBossServiceConfig> serviceConfigs = new ArrayList<JBossServiceConfig>();
+        final List<JBossServiceConfig> serviceConfigs = new ArrayList<>();
         serviceXmlDescriptor.setServiceConfigs(serviceConfigs);
         value.setResult(serviceXmlDescriptor);
 
@@ -222,10 +222,10 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
         if(!required.isEmpty()) {
             throw missingAttributes(reader.getLocation(), required);
         }
-        final List<JBossServiceDependencyConfig> dependencyConfigs = new ArrayList<JBossServiceDependencyConfig>();
-        final List<JBossServiceAttributeConfig> attributes = new ArrayList<JBossServiceAttributeConfig>();
-        final List<String> aliases = new ArrayList<String>();
-        final List<String> annotations = new ArrayList<String>();
+        final List<JBossServiceDependencyConfig> dependencyConfigs = new ArrayList<>();
+        final List<JBossServiceAttributeConfig> attributes = new ArrayList<>();
+        final List<String> aliases = new ArrayList<>();
+        final List<String> annotations = new ArrayList<>();
 
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -274,7 +274,7 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
 
     private JBossServiceConstructorConfig parseConstructor(final XMLExtendedStreamReader reader) throws XMLStreamException {
         final JBossServiceConstructorConfig constructorConfig = new JBossServiceConstructorConfig();
-        final List<JBossServiceConstructorConfig.Argument> arguments = new ArrayList<JBossServiceConstructorConfig.Argument>();
+        final List<JBossServiceConstructorConfig.Argument> arguments = new ArrayList<>();
 
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -438,7 +438,7 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
             throw missingAttributes(reader.getLocation(), required);
         }
 
-        final List<JBossServiceAttributeConfig.ValueFactoryParameter> parameters = new ArrayList<JBossServiceAttributeConfig.ValueFactoryParameter>();
+        final List<JBossServiceAttributeConfig.ValueFactoryParameter> parameters = new ArrayList<>();
         while (reader.hasNext()) {
             switch (reader.next()) {
                 case END_ELEMENT:
@@ -520,7 +520,7 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
     }
 
     private List<JBossServiceDependencyConfig> parseDependsList(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        final List<JBossServiceDependencyConfig> dependencyConfigs = new ArrayList<JBossServiceDependencyConfig>();
+        final List<JBossServiceDependencyConfig> dependencyConfigs = new ArrayList<>();
         String optionalAttributeName = null;
         final int count = reader.getAttributeCount();
         for(int i = 0; i < count; i++) {

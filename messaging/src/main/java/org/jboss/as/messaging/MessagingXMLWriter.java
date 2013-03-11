@@ -460,13 +460,13 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
                 // TODO use a custom attribute marshaller
                 if (matchRoles.getValue().hasDefined(ROLE)) {
 
-                    ArrayList<String> send = new ArrayList<String>();
-                    ArrayList<String> consume = new ArrayList<String>();
-                    ArrayList<String> createDurableQueue = new ArrayList<String>();
-                    ArrayList<String> deleteDurableQueue = new ArrayList<String>();
-                    ArrayList<String> createNonDurableQueue = new ArrayList<String>();
-                    ArrayList<String> deleteNonDurableQueue = new ArrayList<String>();
-                    ArrayList<String> manageRoles = new ArrayList<String>();
+                    ArrayList<String> send = new ArrayList<>();
+                    ArrayList<String> consume = new ArrayList<>();
+                    ArrayList<String> createDurableQueue = new ArrayList<>();
+                    ArrayList<String> deleteDurableQueue = new ArrayList<>();
+                    ArrayList<String> createNonDurableQueue = new ArrayList<>();
+                    ArrayList<String> deleteNonDurableQueue = new ArrayList<>();
+                    ArrayList<String> manageRoles = new ArrayList<>();
 
                     for (Property rolePerms : matchRoles.getValue().get(ROLE).asPropertyList()) {
                         final String role = rolePerms.getName();

@@ -40,7 +40,7 @@ public class CreatedEntityManagers {
     // The deferToPostConstruct is a one item length store (hack)
     private static ThreadLocal<List<ExtendedEntityManager>> deferToPostConstruct = new ThreadLocal<List<ExtendedEntityManager>>() {
         protected List<ExtendedEntityManager> initialValue() {
-            return new ArrayList<ExtendedEntityManager>(1);
+            return new ArrayList<>(1);
         }
     };
 
@@ -64,7 +64,7 @@ public class CreatedEntityManagers {
     public static List<ExtendedEntityManager> getDeferredEntityManagers() {
         List<ExtendedEntityManager> store = deferToPostConstruct.get();
         try {
-            return new ArrayList<ExtendedEntityManager>(store);
+            return new ArrayList<>(store);
         } finally {
             store.clear();
         }

@@ -49,7 +49,7 @@ public class CustomerMO {
     private String surname;
 
     @OneToMany
-    private List<PhoneMO> phones = new ArrayList<PhoneMO>();
+    private List<PhoneMO> phones = new ArrayList<>();
 
     public int getId() {
         return id;

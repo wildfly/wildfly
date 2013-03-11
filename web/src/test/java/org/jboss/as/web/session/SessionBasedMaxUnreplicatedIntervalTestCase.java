@@ -71,9 +71,9 @@ public class SessionBasedMaxUnreplicatedIntervalTestCase extends InfinispanCache
     @Override
     public void start() throws Exception {
         super.start();
-        allAttributes = new HashMap<String, Object>();
-        immutables = new HashMap<String, Object>();
-        mutables = new HashMap<String, Object>();
+        allAttributes = new HashMap<>();
+        immutables = new HashMap<>();
+        mutables = new HashMap<>();
 
         allAttributes.put("IMMUTABLE", "IMMUTABLE");
         immutables.put("IMMUTABLE", "IMMUTABLE");

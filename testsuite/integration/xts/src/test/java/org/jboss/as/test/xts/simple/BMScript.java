@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @Author paul.robinson@redhat.com 21/11/2012
+ * @author paul.robinson@redhat.com 21/11/2012
  */
 public class BMScript {
 
@@ -62,7 +62,7 @@ public class BMScript {
         File file=new File(resource.getFile());
 
         if(file.exists() && file.isFile()) {
-            List<String> files = new ArrayList<String>();
+            List<String> files = new ArrayList<>();
             files.add(resource.getFile());
             return files;
         } else {

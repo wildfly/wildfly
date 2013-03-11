@@ -37,7 +37,7 @@ import org.jboss.msc.value.InjectedValue;
 public class ContextManagedReferenceFactory implements ContextListAndJndiViewManagedReferenceFactory {
 
     private final String name;
-    private final InjectedValue<NamingStore> namingStoreInjectedValue = new InjectedValue<NamingStore>();
+    private final InjectedValue<NamingStore> namingStoreInjectedValue = new InjectedValue<>();
 
     public ContextManagedReferenceFactory(final String name) {
         this.name = name;

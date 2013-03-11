@@ -66,7 +66,7 @@ public class GroupAwareCache<K extends Serializable, V extends Cacheable<K>, G e
             // Create our item. This may lead to nested calls to other caches
             V cacheItem = this.groupedCache.create().getUnderlyingItem();
 
-            contextEntries.add(new AbstractMap.SimpleImmutableEntry<V, GroupAwareBackingCache<K, V, G, M>>(cacheItem, groupedCache));
+            contextEntries.add(new AbstractMap.SimpleImmutableEntry<>(cacheItem, groupedCache));
 
             if (outer) {
                 // If there is more than one item in the context, we need a group

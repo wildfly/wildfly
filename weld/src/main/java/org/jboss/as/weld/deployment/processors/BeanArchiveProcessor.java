@@ -82,11 +82,11 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             beanArchiveIdPrefix = deploymentUnit.getParent().getName() + "." + deploymentUnit.getName();
         }
 
-        final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>();
+        final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives = new HashSet<>();
         WeldLogger.DEPLOYMENT_LOGGER.processingWeldDeployment(phaseContext.getDeploymentUnit().getName());
 
         final Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
-        final Map<ResourceRoot, BeanDeploymentArchiveImpl> bdaMap = new HashMap<ResourceRoot, BeanDeploymentArchiveImpl>();
+        final Map<ResourceRoot, BeanDeploymentArchiveImpl> bdaMap = new HashMap<>();
 
         final Module module = phaseContext.getDeploymentUnit().getAttachment(Attachments.MODULE);
         BeanDeploymentArchiveImpl rootBda = null;
@@ -128,7 +128,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             if (component instanceof EJBComponentDescription) {
                 final EJBComponentDescription componentDescription = (EJBComponentDescription) component;
                 //first we need to resolve the correct BDA for the bean
-                bda.addEjbDescriptor(new EjbDescriptorImpl<Object>(componentDescription, bda, reflectionIndex));
+                bda.addEjbDescriptor(new EjbDescriptorImpl<>(componentDescription, bda, reflectionIndex));
             }
         }
     }
@@ -158,7 +158,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
     private BeanDeploymentArchiveImpl createBeanDeploymentArchive(final Index index, BeanArchiveMetadata beanArchiveMetadata,
                                                                   Module module, String beanArchivePrefix) throws DeploymentUnitProcessingException {
 
-        Set<String> classNames = new HashSet<String>();
+        Set<String> classNames = new HashSet<>();
         // index may be null if a war has a beans.xml but no WEB-INF/classes
         if (index != null) {
             for (ClassInfo classInfo : index.getKnownClasses()) {

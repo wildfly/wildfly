@@ -137,7 +137,7 @@ public class ManagementRemoteEjbComponentView extends BaseManagementEjbComponent
         } catch (Exception e) {
             throw new RuntimeException();
         }
-        Map<String, Map<String, Method>> map = new HashMap<String, Map<String,Method>>();
+        Map<String, Map<String, Method>> map = new HashMap<>();
         addMethod(map, queryNames);
         addMethod(map, isRegistered);
         addMethod(map, getMBeanCount);

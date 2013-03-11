@@ -58,7 +58,7 @@ public class StrictMaxPool<T> extends AbstractPool<T> {
      * The pool data structure
      * Guarded by the implicit lock for "pool"
      */
-    private final LinkedList<T> pool = new LinkedList<T>();
+    private final LinkedList<T> pool = new LinkedList<>();
 
     public StrictMaxPool(StatelessObjectFactory<T> factory, int maxSize, long timeout, TimeUnit timeUnit) {
         super(factory);

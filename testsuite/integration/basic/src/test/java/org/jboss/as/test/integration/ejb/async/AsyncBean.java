@@ -64,13 +64,13 @@ public class AsyncBean implements AsyncBeanCancelRemoteInterface {
     public Future<Boolean> futureMethod(CountDownLatch latch) throws InterruptedException {
         latch.await(5, TimeUnit.SECONDS);
         futureMethodCalled = true;
-        return new AsyncResult<Boolean>(true);
+        return new AsyncResult<>(true);
     }
 
     public Future<Integer> testRequestScopeActive(CountDownLatch latch) throws InterruptedException {
         latch.await(5, TimeUnit.SECONDS);
         requestScopedBean.setState(20);
-        return new AsyncResult<Integer>(requestScopedBean.getState());
+        return new AsyncResult<>(requestScopedBean.getState());
     }
 
     public Future<String> asyncCancelMethod(CountDownLatch latch, CountDownLatch latch2) throws InterruptedException {
@@ -82,7 +82,7 @@ public class AsyncBean implements AsyncBeanCancelRemoteInterface {
         
         result += ";";
         result += ctx.wasCancelCalled() ? "true" : "false";
-        return new AsyncResult<String>(result);
+        return new AsyncResult<>(result);
     }
     
     public Future<String> asyncRemoteCancelMethod() throws InterruptedException {
@@ -95,13 +95,13 @@ public class AsyncBean implements AsyncBeanCancelRemoteInterface {
         result += ";";
 
         result += ctx.wasCancelCalled() ? "true" : "false";
-        return new AsyncResult<String>(result);
+        return new AsyncResult<>(result);
     }
     
     public Future<String> asyncMethodWithException(boolean isException) {
         if(isException) {
             throw new IllegalArgumentException(); //some exception is thrown
         }
-        return new AsyncResult<String>("Hi");
+        return new AsyncResult<>("Hi");
     }
 }

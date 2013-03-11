@@ -110,7 +110,7 @@ public class EjbInjectionSource extends InjectionSource {
 
                     final Set<ViewDescription> views = getViews();
 
-                    final Set<EJBViewDescription> ejbsForViewName = new HashSet<EJBViewDescription>();
+                    final Set<EJBViewDescription> ejbsForViewName = new HashSet<>();
                     for (final ViewDescription view : views) {
                         if (view instanceof EJBViewDescription) {
                             final MethodIntf viewType = ((EJBViewDescription) view).getMethodIntf();

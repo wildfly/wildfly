@@ -67,12 +67,12 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
 
     private final boolean rollbackAcrossGroups;
     private final Runnable rootTask;
-    private final Map<String, ServerUpdatePolicy> updatePolicies = new HashMap<String, ServerUpdatePolicy>();
+    private final Map<String, ServerUpdatePolicy> updatePolicies = new HashMap<>();
     private final boolean shutdown;
     private final long gracefulShutdownPeriod;
     private final ServerTaskExecutor taskExecutor;
     private final DomainOperationContext domainOperationContext;
-    private final ConcurrentMap<String, Map<ServerIdentity, ModelNode>> serverResults = new ConcurrentHashMap<String, Map<ServerIdentity, ModelNode>>();
+    private final ConcurrentMap<String, Map<ServerIdentity, ModelNode>> serverResults = new ConcurrentHashMap<>();
 
     public RolloutPlanController(final Map<String, Map<ServerIdentity, ModelNode>> opsByGroup,
                                  final ModelNode rolloutPlan,
@@ -86,18 +86,18 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
         this.shutdown = rolloutPlan.hasDefined(SHUTDOWN) && rolloutPlan.get(SHUTDOWN).asBoolean();
         this.gracefulShutdownPeriod = rolloutPlan.hasDefined(GRACEFUL_SHUTDOWN_TIMEOUT) ? rolloutPlan.get(GRACEFUL_SHUTDOWN_TIMEOUT).asInt() : -1;
 
-        final List<Runnable> rollingTasks = new ArrayList<Runnable>();
+        final List<Runnable> rollingTasks = new ArrayList<>();
         this.rootTask = new RollingUpdateTask(rollingTasks);
 
         if (rolloutPlan.hasDefined(IN_SERIES)) {
             ConcurrentGroupServerUpdatePolicy predecessor = null;
             for (ModelNode series : rolloutPlan.get(IN_SERIES).asList()) {
 
-                final List<Runnable> seriesTasks = new ArrayList<Runnable>();
+                final List<Runnable> seriesTasks = new ArrayList<>();
                 rollingTasks.add(new ConcurrentUpdateTask(seriesTasks, executor));
 
-                Set<String> groupNames = new HashSet<String>();
-                List<Property> groupPolicies = new ArrayList<Property>();
+                Set<String> groupNames = new HashSet<>();
+                List<Property> groupPolicies = new ArrayList<>();
                 if (series.hasDefined(CONCURRENT_GROUPS)) {
                     for (Property pol : series.get(CONCURRENT_GROUPS).asPropertyList()) {
                         groupNames.add(pol.getName());
@@ -119,7 +119,7 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
                         continue;
                     }
 
-                    final List<ServerUpdateTask> groupTasks = new ArrayList<ServerUpdateTask>();
+                    final List<ServerUpdateTask> groupTasks = new ArrayList<>();
                     final ModelNode policyNode = prop.getValue();
                     final boolean rollingGroup = policyNode.hasDefined(ROLLING_TO_SERVERS) && policyNode.get(ROLLING_TO_SERVERS).asBoolean();
 
@@ -175,7 +175,7 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
         }
         Map<ServerIdentity, ModelNode> groupResults = serverResults.get(serverId.getServerGroupName());
         if (groupResults == null) {
-            groupResults = new ConcurrentHashMap<ServerIdentity, ModelNode>();
+            groupResults = new ConcurrentHashMap<>();
         }
         Map<ServerIdentity, ModelNode> existing = serverResults.putIfAbsent(serverId.getServerGroupName(), groupResults);
         if (existing != null) {

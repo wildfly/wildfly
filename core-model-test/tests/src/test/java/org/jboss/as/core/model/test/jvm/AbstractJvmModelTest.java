@@ -303,7 +303,7 @@ public abstract class AbstractJvmModelTest extends AbstractCoreModelTest {
     }
 
     protected KernelServices doEmptyJvmAdd() throws Exception {
-        List<ModelNode> bootOps = new ArrayList<ModelNode>();
+        List<ModelNode> bootOps = new ArrayList<>();
 
         bootOps.add(createOperation(ADD));
 

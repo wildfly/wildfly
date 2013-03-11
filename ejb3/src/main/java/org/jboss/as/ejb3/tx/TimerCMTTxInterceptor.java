@@ -43,7 +43,7 @@ public class TimerCMTTxInterceptor extends CMTTxInterceptor {
     /**
      * This is a hack to make sure that the transaction interceptor does not swallow the underlying exception
      */
-    private static final ThreadLocal<Throwable> EXCEPTION = new ThreadLocal<Throwable>();
+    private static final ThreadLocal<Throwable> EXCEPTION = new ThreadLocal<>();
 
     public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new TimerCMTTxInterceptor());
 

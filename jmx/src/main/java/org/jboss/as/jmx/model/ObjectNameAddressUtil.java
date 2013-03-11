@@ -45,7 +45,7 @@ class ObjectNameAddressUtil {
 
     private static final EscapedCharacter[] ESCAPED_KEY_CHARACTERS;
     static {
-        List<EscapedCharacter> keys = new ArrayList<EscapedCharacter>();
+        List<EscapedCharacter> keys = new ArrayList<>();
 
         //From ObjectName javadoc:
         //Each key is a nonempty string of characters which may not contain any of the characters
@@ -111,7 +111,7 @@ class ObjectNameAddressUtil {
                     replaceEscapedCharactersInValue(entry.getValue()));
             Resource child = resource.getChild(childElement);
             if (child != null) {
-                Map<String, String> childProps = new HashMap<String, String>(properties);
+                Map<String, String> childProps = new HashMap<>(properties);
                 childProps.remove(entry.getKey());
                 PathAddress foundAddr = searchPathAddress(address.append(childElement), child, childProps);
                 if (foundAddr != null) {

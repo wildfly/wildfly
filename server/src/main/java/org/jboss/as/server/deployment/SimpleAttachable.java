@@ -37,7 +37,7 @@ import org.jboss.as.server.ServerMessages;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public class SimpleAttachable implements Attachable {
-    private final Map<AttachmentKey<?>, Object> attachments = new HashMap<AttachmentKey<?>, Object>();
+    private final Map<AttachmentKey<?>, Object> attachments = new HashMap<>();
 
     /** {@inheritDoc} */
     public synchronized boolean hasAttachment(AttachmentKey<?> key) {
@@ -89,7 +89,7 @@ public class SimpleAttachable implements Attachable {
             final Map<AttachmentKey<?>, Object> attachments = this.attachments;
             final AttachmentList<T> list = key.cast(attachments.get(key));
             if (list == null) {
-                final AttachmentList<T> newList = new AttachmentList<T>(((ListAttachmentKey<T>) key).getValueClass());
+                final AttachmentList<T> newList = new AttachmentList<>(((ListAttachmentKey<T>) key).getValueClass());
                 attachments.put(key, newList);
                 newList.add(value);
             } else {

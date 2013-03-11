@@ -65,10 +65,10 @@ import org.osgi.framework.BundleContext;
  */
 final class SystemServicesIntegration extends SystemServicesPlugin {
 
-    private final InjectedValue<ModelController> injectedModelController = new InjectedValue<ModelController>();
-    private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
-    private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
-    private final InjectedValue<XRepository> injectedRepository = new InjectedValue<XRepository>();
+    private final InjectedValue<ModelController> injectedModelController = new InjectedValue<>();
+    private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<>();
+    private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<>();
+    private final InjectedValue<XRepository> injectedRepository = new InjectedValue<>();
     private final List<SubsystemExtension> extensions;
     private final OSGiRuntimeResource resource;
     private ServiceContainer serviceContainer;
@@ -135,7 +135,7 @@ final class SystemServicesIntegration extends SystemServicesPlugin {
             // Register the socket-binding services
             String bindingNames = syscontext.getProperty(FrameworkBootstrapService.MAPPED_OSGI_SOCKET_BINDINGS);
             if (bindingNames != null) {
-                final Set<ServiceName> socketBindingNames = new HashSet<ServiceName>();
+                final Set<ServiceName> socketBindingNames = new HashSet<>();
                 for (String suffix : bindingNames.split(",")) {
                     socketBindingNames.add(JBOSS_BINDING_NAME.append(suffix));
                 }
@@ -146,7 +146,7 @@ final class SystemServicesIntegration extends SystemServicesPlugin {
                     public void start(StartContext context) throws StartException {
                         for (ServiceName serviceName : socketBindingNames) {
                             SocketBinding binding = (SocketBinding) serviceContainer.getRequiredService(serviceName).getValue();
-                            Dictionary<String, String> props = new Hashtable<String, String>();
+                            Dictionary<String, String> props = new Hashtable<>();
                             props.put("socketBinding", serviceName.getSimpleName());
                             InetSocketAddress value = binding.getSocketAddress();
                             syscontext.registerService(InetSocketAddress.class.getName(), value, props);

@@ -55,7 +55,7 @@ public class EJB3AsyncResourceDefinition extends SimpleResourceDefinition {
     private static final Map<String, AttributeDefinition> ATTRIBUTES;
 
     static {
-        Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
+        Map<String, AttributeDefinition> map = new LinkedHashMap<>();
         map.put(THREAD_POOL_NAME.getName(), THREAD_POOL_NAME);
 
         ATTRIBUTES = Collections.unmodifiableMap(map);

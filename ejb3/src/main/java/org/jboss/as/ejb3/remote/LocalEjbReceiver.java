@@ -106,10 +106,10 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
 
     private static final Object[] EMPTY_OBJECT_ARRAY = {};
 
-    private final List<EJBReceiverContext> contexts = new CopyOnWriteArrayList<EJBReceiverContext>();
-    private final InjectedValue<DeploymentRepository> deploymentRepository = new InjectedValue<DeploymentRepository>();
+    private final List<EJBReceiverContext> contexts = new CopyOnWriteArrayList<>();
+    private final InjectedValue<DeploymentRepository> deploymentRepository = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<RegistryCollector> clusterRegistryCollector = new InjectedValue<RegistryCollector>();
+    private final InjectedValue<RegistryCollector> clusterRegistryCollector = new InjectedValue<>();
     private final Listener deploymentListener = new Listener();
     private final boolean allowPassByReference;
     private final ServiceLookupValue<Endpoint> endpointValue;
@@ -183,7 +183,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
             // no private or public data
             interceptorContext.setContextData(new HashMap<String, Object>());
         } else {
-            final Map<String, Object> data = new HashMap<String, Object>();
+            final Map<String, Object> data = new HashMap<>();
             interceptorContext.setContextData(data);
 
             // write out public (application specific) context data
@@ -269,7 +269,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         }
         final StatefulSessionComponent statefulComponent = (StatefulSessionComponent) component;
         final SessionID sessionID = statefulComponent.createSession();
-        return new StatefulEJBLocator<T>(viewType, appName, moduleName, beanName, distinctName, sessionID, statefulComponent.getCache().getStrictAffinity(), this.getNodeName());
+        return new StatefulEJBLocator<>(viewType, appName, moduleName, beanName, distinctName, sessionID, statefulComponent.getCache().getStrictAffinity(), this.getNodeName());
     }
 
     private Object clone(final Class<?> target, final ObjectCloner cloner, final Object object, final boolean allowPassByReference) {

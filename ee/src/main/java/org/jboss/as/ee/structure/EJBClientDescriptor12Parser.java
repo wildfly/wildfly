@@ -86,7 +86,7 @@ class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescripto
         private static final Map<QName, Element> elements;
 
         static {
-            Map<QName, Element> elementsMap = new HashMap<QName, Element>();
+            Map<QName, Element> elementsMap = new HashMap<>();
             elementsMap.put(new QName(NAMESPACE_1_2, "jboss-ejb-client"), Element.JBOSS_EJB_CLIENT);
             elementsMap.put(new QName(NAMESPACE_1_2, "client-context"), Element.CLIENT_CONTEXT);
             elementsMap.put(new QName(NAMESPACE_1_2, "ejb-receivers"), Element.EJB_RECEIVERS);
@@ -131,7 +131,7 @@ class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescripto
         private static final Map<QName, Attribute> attributes;
 
         static {
-            Map<QName, Attribute> attributesMap = new HashMap<QName, Attribute>();
+            Map<QName, Attribute> attributesMap = new HashMap<>();
             attributesMap.put(new QName("exclude-local-receiver"), EXCLUDE_LOCAL_RECEIVER);
             attributesMap.put(new QName("local-receiver-pass-by-value"), LOCAL_RECEIVER_PASS_BY_VALUE);
             attributesMap.put(new QName("name"), NAME);

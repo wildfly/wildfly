@@ -77,7 +77,7 @@ public class JdrRunner implements JdrReportCollector {
             throw MESSAGES.couldNotCreateZipfile();
         }
 
-        List<JdrCommand> commands = new ArrayList<JdrCommand>();
+        List<JdrCommand> commands = new ArrayList<>();
 
         ByteArrayOutputStream versionStream = new ByteArrayOutputStream();
         PrintWriter versionWriter = new PrintWriter(new OutputStreamWriter(versionStream));

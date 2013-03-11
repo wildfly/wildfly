@@ -76,7 +76,7 @@ public class Util {
                 if (configurationName.equals(name) == false) {
                     throw new IllegalArgumentException("Unexpected configuration name '" + name + "'");
                 }
-                Map<String, String> options = new HashMap<String, String>();
+                Map<String, String> options = new HashMap<>();
                 options.put("multi-threaded", "true");
                 options.put("restore-login-identity", "true");
 

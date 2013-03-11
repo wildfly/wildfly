@@ -60,9 +60,9 @@ class ArquillianConfig implements Service<ArquillianConfig> {
     private final ArquillianService arqService;
     private final DeploymentUnit depUnit;
     private final ServiceName serviceName;
-    private final List<String> testClasses = new ArrayList<String>();
+    private final List<String> testClasses = new ArrayList<>();
 
-    private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
+    private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<>();
     private ServiceTarget serviceTarget;
 
     static ServiceName getServiceName(DeploymentUnit depUnit) {

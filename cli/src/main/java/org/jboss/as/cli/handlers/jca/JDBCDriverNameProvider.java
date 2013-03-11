@@ -69,7 +69,7 @@ public class JDBCDriverNameProvider implements DefaultCompleter.CandidatesProvid
             return Collections.emptyList();
         }
         final List<ModelNode> nodeList = response.get(Util.RESULT).asList();
-        final List<String> names = new ArrayList<String>(nodeList.size());
+        final List<String> names = new ArrayList<>(nodeList.size());
         for(ModelNode node : nodeList) {
             if(node.has(Util.DRIVER_NAME)) {
                 names.add(node.get(Util.DRIVER_NAME).asString());

@@ -57,7 +57,7 @@ import org.jboss.security.SecurityConstants;
  */
 public class SecurityDomainJndiInjectable implements InvocationHandler, ContextListAndJndiViewManagedReferenceFactory {
 
-    private final InjectedValue<ISecurityManagement> securityManagementValue = new InjectedValue<ISecurityManagement>();
+    private final InjectedValue<ISecurityManagement> securityManagementValue = new InjectedValue<>();
 
     @Override
     public String getInstanceClassName() {
@@ -83,7 +83,7 @@ public class SecurityDomainJndiInjectable implements InvocationHandler, ContextL
             throw SecurityMessages.MESSAGES.unableToGetModuleClassLoader(e);
         }
         Class<?>[] interfaces = { Context.class };
-        return new ValueManagedReference(new ImmediateValue<Object>(Proxy.newProxyInstance(loader, interfaces, this)));
+        return new ValueManagedReference(new ImmediateValue<>(Proxy.newProxyInstance(loader, interfaces, this)));
     }
 
     /**

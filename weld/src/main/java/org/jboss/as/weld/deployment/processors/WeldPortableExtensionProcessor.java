@@ -102,7 +102,7 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
             if(extension == null) {
                 continue;
             }
-            Metadata<Extension> metadata = new MetadataImpl<Extension>(extension, deploymentUnit.getName());
+            Metadata<Extension> metadata = new MetadataImpl<>(extension, deploymentUnit.getName());
             WeldLogger.DEPLOYMENT_LOGGER.debug("Loaded portable extension " + extension);
             topLevelDeployment.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
         }

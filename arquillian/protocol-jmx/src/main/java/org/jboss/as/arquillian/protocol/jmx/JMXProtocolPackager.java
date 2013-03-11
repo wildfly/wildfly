@@ -77,7 +77,7 @@ import org.osgi.framework.Constants;
  */
 public class JMXProtocolPackager implements DeploymentPackager {
 
-    private static final List<String> defaultDependencies = new ArrayList<String>();
+    private static final List<String> defaultDependencies = new ArrayList<>();
 
     static {
         defaultDependencies.add("deployment.arquillian-service");
@@ -119,7 +119,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
         archive.addClasses(ServerSetup.class, ServerSetupTask.class, ManagementClient.class, Authentication.class, NetworkUtils.class);
 
         // Merge the auxiliary archives and collect the loadable extensions
-        final Set<String> loadableExtensions = new HashSet<String>();
+        final Set<String> loadableExtensions = new HashSet<>();
         final String loadableExtensionsPath = "META-INF/services/" + RemoteLoadableExtension.class.getName();
         for (Archive<?> aux : auxArchives) {
             Node node = aux.get(loadableExtensionsPath);

@@ -419,7 +419,7 @@ public class LayeredBundlePathTest {
         }
         if (expectAddons) {
             File addOnBase = new File(repoRoot, "system/add-ons");
-            Set<String> valid = new HashSet<String>(Arrays.asList("a", "b"));
+            Set<String> valid = new HashSet<>(Arrays.asList("a", "b"));
             for (int i = 0; i < 2; i++) {
                 File addOn = bundlePath[expectedStartPos + layers.length + i + 1];
                 Assert.assertEquals(addOnBase, addOn.getParentFile());

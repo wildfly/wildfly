@@ -50,8 +50,8 @@ public final class EEModuleClassDescription {
     private final Map<Class<? extends Annotation>, ClassAnnotationInformation<?,?>> annotationInformation = Collections.synchronizedMap(new HashMap<Class<? extends Annotation>, ClassAnnotationInformation<?, ?>>());
     private InterceptorClassDescription interceptorClassDescription = InterceptorClassDescription.EMPTY_INSTANCE;
 
-    private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
-    private final Map<InjectionTarget, ResourceInjectionConfiguration> injectionConfigurations = new HashMap<InjectionTarget, ResourceInjectionConfiguration>();
+    private final List<BindingConfiguration> bindingConfigurations = new ArrayList<>();
+    private final Map<InjectionTarget, ResourceInjectionConfiguration> injectionConfigurations = new HashMap<>();
 
     public EEModuleClassDescription(final String className) {
         this.className = className;

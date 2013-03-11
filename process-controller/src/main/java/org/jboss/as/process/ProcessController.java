@@ -58,8 +58,8 @@ public final class ProcessController {
     private final ProtocolServer server;
     // Synchronized map so we can safely check its size without holding the monitor for field 'lock' */
     private final Map<String, ManagedProcess> processes = Collections.synchronizedMap(new HashMap<String, ManagedProcess>());
-    private final Map<Key, ManagedProcess> processesByKey = new HashMap<Key, ManagedProcess>();
-    private final Set<Connection> managedConnections = new CopyOnWriteArraySet<Connection>();
+    private final Map<Key, ManagedProcess> processesByKey = new HashMap<>();
+    private final Set<Connection> managedConnections = new CopyOnWriteArraySet<>();
 
     private volatile boolean shutdown;
 

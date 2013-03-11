@@ -106,7 +106,7 @@ public class JGroupsSubsystemXMLReader_1_0 implements XMLElementReader<List<Mode
     private void parseStack(XMLExtendedStreamReader reader, ModelNode subsystemAddress, List<ModelNode> operations) throws XMLStreamException {
 
         final ModelNode stack = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         String name = null;
         for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -230,7 +230,7 @@ public class JGroupsSubsystemXMLReader_1_0 implements XMLElementReader<List<Mode
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.TYPE));
         }
 
-        List<ModelNode> propertyOperations = new ArrayList<ModelNode>();
+        List<ModelNode> propertyOperations = new ArrayList<>();
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
@@ -288,7 +288,7 @@ public class JGroupsSubsystemXMLReader_1_0 implements XMLElementReader<List<Mode
         ModelNode protocolAddress = stackAddress.clone() ;
         protocolAddress.add(ModelKeys.PROTOCOL, protocol.get(ModelKeys.TYPE).asString());
 
-        List<ModelNode> propertyOperations = new ArrayList<ModelNode>();
+        List<ModelNode> propertyOperations = new ArrayList<>();
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {

@@ -92,7 +92,7 @@ public class StatefulSessionBeanClassTable implements ClassTable {
 
     private static final Map<Class<?>, Writer> writers = createWriters();
     private static Map<Class<?>, Writer> createWriters() {
-        Map<Class<?>, Writer> writers = new IdentityHashMap<Class<?>, Writer>();
+        Map<Class<?>, Writer> writers = new IdentityHashMap<>();
         for (int i = 0; i < classes.length; i++) {
             writers.put(classes[i], new ByteWriter((byte) i));
         }

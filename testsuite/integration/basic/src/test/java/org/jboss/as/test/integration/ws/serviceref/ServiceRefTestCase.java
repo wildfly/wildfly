@@ -56,7 +56,7 @@ public class ServiceRefTestCase {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        final Hashtable<String, String> props = new Hashtable<String, String>();
+        final Hashtable<String, String> props = new Hashtable<>();
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
         final Context context = new InitialContext(props);
         remote1 = (StatelessRemote) context.lookup("ejb:/ws-serviceref-example//StatelessBean!"

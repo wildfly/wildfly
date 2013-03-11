@@ -275,7 +275,7 @@ public class WebExtension implements Extension {
         @Override
         public PathAddress convertToTargetAddress(PathAddress addr) {
             final PathAddress targetAddress = getTargetAddress();
-            List<PathElement> list = new ArrayList<PathElement>();
+            List<PathElement> list = new ArrayList<>();
             int i = 0;
             for (PathElement element : addr) {
                 String key = element.getKey();

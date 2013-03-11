@@ -40,16 +40,16 @@ public class SFSBCallStack {
      */
     private static ThreadLocal<ArrayList<Map<String, ExtendedEntityManager>>> SFSBInvocationStack = new ThreadLocal<ArrayList<Map<String, ExtendedEntityManager>>>() {
         protected ArrayList<Map<String, ExtendedEntityManager>> initialValue() {
-            return new ArrayList<Map<String, ExtendedEntityManager>>();
+            return new ArrayList<>();
         }
     };
 
     /**
      * During SFSB creation, track the injected extended persistence contexts
      */
-    private static ThreadLocal<Map<String, ExtendedEntityManager>> sfsbCreationTimeXPCRegistration = new ThreadLocal<Map<String, ExtendedEntityManager>>();
+    private static ThreadLocal<Map<String, ExtendedEntityManager>> sfsbCreationTimeXPCRegistration = new ThreadLocal<>();
 
-    private static ThreadLocal<SFSBInjectedXPCs> sfsbCreationTimeInjectedXPCs = new ThreadLocal<SFSBInjectedXPCs>();
+    private static ThreadLocal<SFSBInjectedXPCs> sfsbCreationTimeInjectedXPCs = new ThreadLocal<>();
     /**
      * Track the SFSB bean injection nesting level.  Zero indicates the top level bean, one is the first level of SFSBs injected,
      * two is the second level of SFSBs injected...

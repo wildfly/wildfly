@@ -30,8 +30,8 @@ import org.jboss.dmr.ModelNode;
 public class CallAS7 extends JdrCommand {
 
     private String operation = "read-resource";
-    private LinkedList<String> resource = new LinkedList<String>();
-    private Map<String, String> parameters = new HashMap<String, String>();
+    private LinkedList<String> resource = new LinkedList<>();
+    private Map<String, String> parameters = new HashMap<>();
     private String name;
 
     public CallAS7(String name) {

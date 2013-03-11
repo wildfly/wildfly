@@ -41,7 +41,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class UserTransactionBindingService extends BinderService {
 
-    private final InjectedValue<UserTransactionAccessControlService> accessControlService = new InjectedValue<UserTransactionAccessControlService>();
+    private final InjectedValue<UserTransactionAccessControlService> accessControlService = new InjectedValue<>();
 
     public UserTransactionBindingService(final String name) {
         super(name);

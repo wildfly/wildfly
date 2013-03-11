@@ -35,7 +35,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class GetHomeInterceptorFactory implements InterceptorFactory {
 
-    private final InjectedValue<ComponentView> viewToCreate = new InjectedValue<ComponentView>();
+    private final InjectedValue<ComponentView> viewToCreate = new InjectedValue<>();
 
     private final Interceptor interceptor;
 

@@ -70,7 +70,7 @@ public class JMSTopicManagementTestCase {
     private static HornetQConnectionFactory consumerConnectionFactory;
 
     @BeforeClass
-    public static void beforeClass() throws Exception {HashMap<String, Object> map = new HashMap<String, Object>();
+    public static void beforeClass() throws Exception {HashMap<String, Object> map = new HashMap<>();
         map.put("host", TestSuiteEnvironment.getServerAddress());
         TransportConfiguration transportConfiguration =
                      new TransportConfiguration(NettyConnectorFactory.class.getName(), map);

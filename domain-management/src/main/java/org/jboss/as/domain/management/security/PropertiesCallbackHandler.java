@@ -85,7 +85,7 @@ CallbackHandlerService, CallbackHandler {
     }
 
     public Map<String, String> getConfigurationOptions() {
-        Map<String, String> response = new HashMap<String, String>(2);
+        Map<String, String> response = new HashMap<>(2);
         response.put(DIGEST_PLAIN_TEXT, Boolean.toString(plainText));
         response.put(VERIFY_PASSWORD_CALLBACK_SUPPORTED, Boolean.TRUE.toString());
         return response;
@@ -126,7 +126,7 @@ CallbackHandlerService, CallbackHandler {
      */
 
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-        List<Callback> toRespondTo = new LinkedList<Callback>();
+        List<Callback> toRespondTo = new LinkedList<>();
 
         String userName = null;
         boolean userFound = false;

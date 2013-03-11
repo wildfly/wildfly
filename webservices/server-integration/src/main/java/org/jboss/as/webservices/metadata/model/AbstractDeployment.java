@@ -34,11 +34,11 @@ import java.util.Map;
  */
 abstract class AbstractDeployment {
 
-    private final List<EJBEndpoint> ejbEndpoints = new LinkedList<EJBEndpoint>();
+    private final List<EJBEndpoint> ejbEndpoints = new LinkedList<>();
     private final List<EJBEndpoint> unmodifiableEjbEndpoints = Collections.unmodifiableList(ejbEndpoints);
-    private final List<POJOEndpoint> pojoEndpoints = new LinkedList<POJOEndpoint>();
+    private final List<POJOEndpoint> pojoEndpoints = new LinkedList<>();
     private final List<POJOEndpoint> unmodifiablePojoEndpoints = Collections.unmodifiableList(pojoEndpoints);
-    private final Map<String, String> urlPatternToClassMapping = new HashMap<String, String>();
+    private final Map<String, String> urlPatternToClassMapping = new HashMap<>();
 
     public List<EJBEndpoint> getEjbEndpoints() {
         return unmodifiableEjbEndpoints;

@@ -276,7 +276,7 @@ public final class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<
         ModelNode cache = Util.getEmptyOperation(ADD, null);
         // NOTE: this list is used to avoid lost attribute updates to the cache
         // object once it has been added to the operations list
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         // set the cache mode to local
         // cache.get(ModelKeys.MODE).set(Configuration.CacheMode.LOCAL.name());
@@ -310,7 +310,7 @@ public final class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -371,7 +371,7 @@ public final class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -413,7 +413,7 @@ public final class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -680,7 +680,7 @@ public final class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<
             throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.CLASS));
         }
 
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
         this.parseStoreElements(reader, store, additionalConfigurationOperations);
         operations.add(store);
         operations.addAll(additionalConfigurationOperations);
@@ -709,7 +709,7 @@ public final class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<
             }
         }
 
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
         this.parseStoreElements(reader, store, additionalConfigurationOperations);
         operations.add(store);
         operations.addAll(additionalConfigurationOperations);
@@ -720,7 +720,7 @@ public final class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<
         PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
         ModelNode store = Util.createAddOperation(storeAddress);
 
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -790,7 +790,7 @@ public final class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<
         PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
         ModelNode store = Util.createAddOperation(storeAddress);
 
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -835,7 +835,7 @@ public final class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<
         PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
         ModelNode store = Util.createAddOperation(storeAddress);
 
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -880,7 +880,7 @@ public final class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<
         PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
         ModelNode store = Util.createAddOperation(storeAddress);
 
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);

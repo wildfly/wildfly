@@ -33,7 +33,7 @@ import java.util.Map;
 public class StrictSizeTable {
 
     private final int rowsTotal;
-    private final Map<String,Column> columns = new LinkedHashMap<String,Column>();//HashMap<String,Column>();
+    private final Map<String,Column> columns = new LinkedHashMap<>();//HashMap<String,Column>();
 
     private int rowIndex = 0;
     private int totalWidth;

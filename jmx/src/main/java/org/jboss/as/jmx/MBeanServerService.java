@@ -55,7 +55,7 @@ public class MBeanServerService implements Service<PluggableMBeanServer> {
     private final String resolvedDomainName;
     private final String expressionsDomainName;
     private final boolean legacyWithProperPropertyFormat;
-    private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
+    private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<>();
 
     private PluggableMBeanServer mBeanServer;
     private MBeanServerPlugin showModelPlugin;

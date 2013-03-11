@@ -223,7 +223,7 @@ public enum ConsoleMode {
 
         final String modulePath = SecurityActions.getProperty("module.path");
         File[] moduleRoots = getFiles(modulePath, 0, 0);
-        SortedSet<ConsoleVersion> consoleVersions = new TreeSet<ConsoleVersion>();
+        SortedSet<ConsoleVersion> consoleVersions = new TreeSet<>();
         for (File root : moduleRoots) {
             findConsoleModules(root, path, consoleVersions);
             File layers = new File(root, "system" + File.separator + "layers");

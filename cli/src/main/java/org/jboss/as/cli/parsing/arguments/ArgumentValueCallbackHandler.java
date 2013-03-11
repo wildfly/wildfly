@@ -56,7 +56,7 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
         if(ArgumentValueState.ID.equals(stateId)) {
             if(currentState != null) {
                 if (stack == null) {
-                    stack = new ArrayDeque<ValueState>();
+                    stack = new ArrayDeque<>();
                 }
                 stack.push(currentState);
                 if(ctx.getCharacter() == '{') {
@@ -72,7 +72,7 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
         } else if(ListState.ID.equals(stateId)) {
             if(currentState != null) {
                 if(stack == null) {
-                    stack = new ArrayDeque<ValueState>();
+                    stack = new ArrayDeque<>();
                 }
                 stack.push(currentState);
             }

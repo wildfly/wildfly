@@ -66,7 +66,7 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
         assert warMetaData != null;
         Map<String, WebFragmentMetaData> webFragments = warMetaData.getWebFragmentsMetaData();
         if (webFragments == null) {
-            webFragments = new HashMap<String, WebFragmentMetaData>();
+            webFragments = new HashMap<>();
             warMetaData.setWebFragmentsMetaData(webFragments);
         }
         List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);

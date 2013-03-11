@@ -43,27 +43,27 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
     private final String earApplicationName;
     //distinct name defaults to the empty string
     private volatile String distinctName = "";
-    private final Map<String, ComponentDescription> componentsByName = new HashMap<String, ComponentDescription>();
-    private final Map<String, List<ComponentDescription>> componentsByClassName = new HashMap<String, List<ComponentDescription>>();
-    private final Map<String, EEModuleClassDescription> classDescriptions = new HashMap<String, EEModuleClassDescription>();
-    private final Map<String, InterceptorClassDescription> interceptorClassOverrides = new HashMap<String, InterceptorClassDescription>();
+    private final Map<String, ComponentDescription> componentsByName = new HashMap<>();
+    private final Map<String, List<ComponentDescription>> componentsByClassName = new HashMap<>();
+    private final Map<String, EEModuleClassDescription> classDescriptions = new HashMap<>();
+    private final Map<String, InterceptorClassDescription> interceptorClassOverrides = new HashMap<>();
 
     /**
      * Additional interceptor environment that was defined in the deployment descriptor <interceptors/> element.
      */
-    private final Map<String, InterceptorEnvironment> interceptorEnvironment = new HashMap<String, InterceptorEnvironment>();
+    private final Map<String, InterceptorEnvironment> interceptorEnvironment = new HashMap<>();
 
     /**
      * A map of message destinations names to their resolved JNDI name
      */
-    private final Map<String, String> messageDestinations = new HashMap<String, String>();
+    private final Map<String, String> messageDestinations = new HashMap<>();
 
     private InjectedEENamespaceContextSelector namespaceContextSelector;
 
     // Module Bindings
-    private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
+    private final List<BindingConfiguration> bindingConfigurations = new ArrayList<>();
     //injections that have been set in the components deployment descriptor
-    private final Map<String, Map<InjectionTarget, ResourceInjectionConfiguration>> resourceInjections = new HashMap<String, Map<InjectionTarget, ResourceInjectionConfiguration>>();
+    private final Map<String, Map<InjectionTarget, ResourceInjectionConfiguration>> resourceInjections = new HashMap<>();
 
     private final boolean appClient;
 
@@ -142,7 +142,7 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
         componentsByName.put(componentName, description);
         List<ComponentDescription> list = componentsByClassName.get(componentClassName);
         if (list == null) {
-            componentsByClassName.put(componentClassName, list = new ArrayList<ComponentDescription>(1));
+            componentsByClassName.put(componentClassName, list = new ArrayList<>(1));
         }
         list.add(description);
     }
@@ -260,7 +260,7 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
         String className = injection.getTarget().getClassName();
         Map<InjectionTarget, ResourceInjectionConfiguration> map = resourceInjections.get(className);
         if (map == null) {
-            resourceInjections.put(className, map = new HashMap<InjectionTarget, ResourceInjectionConfiguration>());
+            resourceInjections.put(className, map = new HashMap<>());
         }
         map.put(injection.getTarget(), injection);
     }

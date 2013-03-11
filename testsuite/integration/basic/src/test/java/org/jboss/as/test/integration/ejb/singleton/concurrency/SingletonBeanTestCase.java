@@ -136,8 +136,8 @@ public class SingletonBeanTestCase {
 
         // one is expected to complete successfully
         // rest all are expected to timeout
-        final List<Object> passed = new ArrayList<Object>();
-        final List<Throwable> throwables = new ArrayList<Throwable>();
+        final List<Object> passed = new ArrayList<>();
+        final List<Throwable> throwables = new ArrayList<>();
         for (int i = 0; i < NUM_THREADS; i++) {
             try {
                 passed.add(results[i].get(10, TimeUnit.SECONDS));

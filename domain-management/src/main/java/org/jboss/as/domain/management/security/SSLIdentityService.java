@@ -55,8 +55,8 @@ class SSLIdentityService implements Service<SSLIdentity>, SSLIdentity {
     private final String protocol;
     private final char[] keystorePassword;
     private final char[] keyPassword;
-    private final InjectedValue<KeyStore> keystore = new InjectedValue<KeyStore>();
-    private final InjectedValue<KeyStore> truststore = new InjectedValue<KeyStore>();
+    private final InjectedValue<KeyStore> keystore = new InjectedValue<>();
+    private final InjectedValue<KeyStore> truststore = new InjectedValue<>();
 
     private volatile SSLContext fullContext;
     private volatile SSLContext trustOnlyContext;

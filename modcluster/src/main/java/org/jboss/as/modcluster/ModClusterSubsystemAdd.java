@@ -220,7 +220,7 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
             load = myload;
         }
 
-        Set<LoadMetric> metrics = new HashSet<LoadMetric>();
+        Set<LoadMetric> metrics = new HashSet<>();
         if (model.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH.getKeyValuePair()).isDefined()) {
             final ModelNode node = model.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH.getKeyValuePair());
             int decayFactor = DynamicLoadProviderDefinition.DECAY.resolveModelAttribute(context, model).asInt();

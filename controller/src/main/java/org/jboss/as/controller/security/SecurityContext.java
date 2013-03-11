@@ -39,7 +39,7 @@ public class SecurityContext {
     private static final RuntimePermission SET_SUBJECT_PERMISSION = new RuntimePermission("org.jboss.as.controller.security.SET_SUBJECT");
     private static final RuntimePermission CLEAR_SUBJECT_PERMISSION = new RuntimePermission("org.jboss.as.controller.security.CLEAR_SUBJECT");
 
-    private static final ThreadLocal<Subject> subject = new ThreadLocal<Subject>();
+    private static final ThreadLocal<Subject> subject = new ThreadLocal<>();
 
     /**
      *

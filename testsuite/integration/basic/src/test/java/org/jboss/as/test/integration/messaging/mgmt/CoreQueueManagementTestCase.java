@@ -72,7 +72,7 @@ public class CoreQueueManagementTestCase {
     public static void beforeClass() throws Exception {
 
 
-        HashMap<String, Object> map = new HashMap<String, Object>();
+        HashMap<String, Object> map = new HashMap<>();
         map.put("host", TestSuiteEnvironment.getServerAddress());
         TransportConfiguration transportConfiguration =
                 new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
@@ -313,7 +313,7 @@ public class CoreQueueManagementTestCase {
         producer.send(session.createMessage(ClientMessage.TEXT_TYPE, false));
         producer.send(session.createMessage(ClientMessage.TEXT_TYPE, false));
 
-        Set<Integer> priorities = new HashSet<Integer>();
+        Set<Integer> priorities = new HashSet<>();
         ModelNode result = execute(getQueueOperation("list-messages"), true);
         Assert.assertEquals(3, result.asInt());
         for (ModelNode node : result.asList()) {

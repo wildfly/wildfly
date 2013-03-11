@@ -37,7 +37,7 @@ public class MockHttpSessionAttributeListener implements HttpSessionAttributeLis
         ADDED, REMOVED, REPLACED
     };
 
-    public final List<Type> invocations = new ArrayList<Type>();
+    public final List<Type> invocations = new ArrayList<>();
 
     /*
      * (non-Javadoc)

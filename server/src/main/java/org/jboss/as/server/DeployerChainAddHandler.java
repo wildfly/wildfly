@@ -71,7 +71,7 @@ public class DeployerChainAddHandler implements OperationStepHandler {
     private final EnumMap<Phase, Set<RegisteredDeploymentUnitProcessor>> deployerMap;
 
     private DeployerChainAddHandler() {
-        final EnumMap<Phase, Set<RegisteredDeploymentUnitProcessor>> map = new EnumMap<Phase, Set<RegisteredDeploymentUnitProcessor>>(Phase.class);
+        final EnumMap<Phase, Set<RegisteredDeploymentUnitProcessor>> map = new EnumMap<>(Phase.class);
         for (Phase phase : Phase.values()) {
             map.put(phase, new ConcurrentSkipListSet<RegisteredDeploymentUnitProcessor>());
         }
@@ -115,15 +115,15 @@ public class DeployerChainAddHandler implements OperationStepHandler {
 
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-            final EnumMap<Phase, List<RegisteredDeploymentUnitProcessor>> finalDeployers = new EnumMap<Phase, List<RegisteredDeploymentUnitProcessor>>(Phase.class);
-            final List<RegisteredDeploymentUnitProcessor> processorList = new ArrayList<RegisteredDeploymentUnitProcessor>(256);
+            final EnumMap<Phase, List<RegisteredDeploymentUnitProcessor>> finalDeployers = new EnumMap<>(Phase.class);
+            final List<RegisteredDeploymentUnitProcessor> processorList = new ArrayList<>(256);
             for (Phase phase : Phase.values()) {
                 processorList.clear();
                 final Set<RegisteredDeploymentUnitProcessor> processorSet = deployerMap.get(phase);
                 for (RegisteredDeploymentUnitProcessor processor : processorSet) {
                     processorList.add(processor);
                 }
-                finalDeployers.put(phase, new ArrayList<RegisteredDeploymentUnitProcessor>(processorList));
+                finalDeployers.put(phase, new ArrayList<>(processorList));
             }
             final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
             DeployerChainsService.addService(context.getServiceTarget(), finalDeployers, verificationHandler);

@@ -52,7 +52,7 @@ public class TimeoutMethod implements Serializable {
         this.declaringClass = declaringClass;
         this.methodName = methodName;
         if (methodParams != null) {
-            this.methodParams = new ArrayList<String>(Arrays.asList(methodParams));
+            this.methodParams = new ArrayList<>(Arrays.asList(methodParams));
         }
     }
 

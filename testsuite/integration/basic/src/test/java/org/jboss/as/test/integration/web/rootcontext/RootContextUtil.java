@@ -58,7 +58,7 @@ public class RootContextUtil {
     private static String ENABLE_WELCOME_ROOT = "enable-welcome-root";
 
     public static void createVirtualServer(ModelControllerClient client, String serverName) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        final List<ModelNode> updates = new ArrayList<>();
 
         ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
@@ -74,7 +74,7 @@ public class RootContextUtil {
     }
 
     public static void removeVirtualServer(final ModelControllerClient client, String serverName) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        final List<ModelNode> updates = new ArrayList<>();
 
         ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);
@@ -86,7 +86,7 @@ public class RootContextUtil {
     }
 
     public static void undeploy(final ModelControllerClient client, String deploymentName) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        final List<ModelNode> updates = new ArrayList<>();
 
         ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);

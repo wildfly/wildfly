@@ -184,14 +184,14 @@ public class InfinispanRejectedExpressions_1_3 {
      * Helper methods to create arrays of attributes which need to have transformers applied.
      */
     private static AttributeDefinition[] concat(AttributeDefinition[]... additions) {
-        HashSet<AttributeDefinition> result = new HashSet<AttributeDefinition>();
+        HashSet<AttributeDefinition> result = new HashSet<>();
         for (int i = 0; i < additions.length; i++)
             result.addAll(Arrays.asList(additions[i]));
         return result.toArray(new AttributeDefinition[0]);
     }
 
     private static AttributeDefinition[] remove(AttributeDefinition[] initial, AttributeDefinition[]... removals) {
-        HashSet<AttributeDefinition> result = new HashSet<AttributeDefinition>(Arrays.asList(initial));
+        HashSet<AttributeDefinition> result = new HashSet<>(Arrays.asList(initial));
         for (int i = 0; i < removals.length; i++)
             result.removeAll(Arrays.asList(removals[i]));
         return result.toArray(new AttributeDefinition[0]);

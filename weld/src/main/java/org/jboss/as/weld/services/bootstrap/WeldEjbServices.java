@@ -49,7 +49,7 @@ public class WeldEjbServices implements EjbServices {
 
     @Override
     public synchronized void registerInterceptors(EjbDescriptor<?> ejbDescriptor, InterceptorBindings interceptorBindings) {
-        final Map<String, InterceptorBindings> bindings = new HashMap<String, InterceptorBindings>(this.bindings);
+        final Map<String, InterceptorBindings> bindings = new HashMap<>(this.bindings);
         bindings.put(ejbDescriptor.getEjbName(), interceptorBindings);
         this.bindings = bindings;
     }

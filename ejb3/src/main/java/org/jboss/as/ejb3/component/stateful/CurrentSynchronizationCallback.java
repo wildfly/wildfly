@@ -35,7 +35,7 @@ public class CurrentSynchronizationCallback {
         BEFORE_COMPLETION
     }
 
-    private static final ThreadLocal<CallbackType> type = new ThreadLocal<CallbackType>();
+    private static final ThreadLocal<CallbackType> type = new ThreadLocal<>();
 
     public static CallbackType get() {
         return type.get();

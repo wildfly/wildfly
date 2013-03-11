@@ -36,8 +36,8 @@ import java.util.Set;
 class ModelMatcher {
     static class Model {
         private PathAddress address;
-        private List<String> attributes = new LinkedList<String>();
-        private List<Model> children = new LinkedList<Model>();
+        private List<String> attributes = new LinkedList<>();
+        private List<Model> children = new LinkedList<>();
 
         Model(PathAddress address) {
             this.address = address;
@@ -81,7 +81,7 @@ class ModelMatcher {
          * @return return simple 1=1 rules
          */
         public List<TransformRule> toRules() {
-            LinkedList<TransformRule> rules = new LinkedList<TransformRule>();
+            LinkedList<TransformRule> rules = new LinkedList<>();
             for (String attribute : attributes) {
                 rules.add(new TransformRule(address, address, attribute, attribute));
             }
@@ -98,7 +98,7 @@ class ModelMatcher {
         }
 
         public List<TransformRule> getMatchedRules(Model other) {
-            LinkedList<TransformRule> rules = new LinkedList<TransformRule>();
+            LinkedList<TransformRule> rules = new LinkedList<>();
             for (String attribute : attributes) {
                 TransformRule r = matchAttribute(attribute, other);
                 if (r != null) {

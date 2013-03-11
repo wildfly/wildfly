@@ -76,7 +76,7 @@ public class RemoveMethodMergingProcessor extends AbstractMergingProcessor<State
 
         final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
 
-        final Set<MethodIdentifier> annotationRemoveMethods = new HashSet<MethodIdentifier>();
+        final Set<MethodIdentifier> annotationRemoveMethods = new HashSet<>();
         for(final StatefulComponentDescription.StatefulRemoveMethod method : componentConfiguration.getRemoveMethods()) {
             annotationRemoveMethods.add(method.getMethodIdentifier());
         }

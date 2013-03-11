@@ -75,7 +75,7 @@ import org.osgi.framework.wiring.BundleWire;
  */
 final class ModuleLoaderIntegration extends FrameworkModuleLoaderPlugin {
 
-    private final InjectedValue<ServiceModuleLoader> injectedModuleLoader = new InjectedValue<ServiceModuleLoader>();
+    private final InjectedValue<ServiceModuleLoader> injectedModuleLoader = new InjectedValue<>();
     private ServiceContainer serviceContainer;
     private ServiceTarget serviceTarget;
 
@@ -198,8 +198,8 @@ final class ModuleLoaderIntegration extends FrameworkModuleLoaderPlugin {
             ModuleIdentifier identifier = moduleSpec.getModuleIdentifier();
             LOGGER.tracef("Add module spec to loader: %s", identifier);
             ServiceName moduleSpecName = ServiceModuleLoader.moduleSpecServiceName(identifier);
-            ImmediateValue<ModuleSpec> value = new ImmediateValue<ModuleSpec>(moduleSpec);
-            serviceTarget.addService(moduleSpecName, new ValueService<ModuleSpec>(value)).install();
+            ImmediateValue<ModuleSpec> value = new ImmediateValue<>(moduleSpec);
+            serviceTarget.addService(moduleSpecName, new ValueService<>(value)).install();
         }
 
         /**
@@ -216,7 +216,7 @@ final class ModuleLoaderIntegration extends FrameworkModuleLoaderPlugin {
             ServiceName moduleServiceName = getModuleServiceName(module.getIdentifier());
             if (serviceContainer.getService(moduleServiceName) == null) {
                 LOGGER.debugf("Add module to loader: %s", module.getIdentifier());
-                serviceTarget.addService(moduleServiceName, new ValueService<Module>(new ImmediateValue<Module>(module))).install();
+                serviceTarget.addService(moduleServiceName, new ValueService<>(new ImmediateValue<>(module))).install();
             }
         }
 
@@ -226,7 +226,7 @@ final class ModuleLoaderIntegration extends FrameworkModuleLoaderPlugin {
             DeploymentUnit depUnit = deployment.getAttachment(DeploymentUnit.class);
 
             // Add a dependency on the parent module if we have one
-            List<ModuleDependency> dependencies = new ArrayList<ModuleDependency>();
+            List<ModuleDependency> dependencies = new ArrayList<>();
             if (depUnit != null && depUnit.getParent() != null) {
                 String parentName = depUnit.getParent().getName();
                 ModuleIdentifier depId = ModuleIdentifier.create(MODULE_PREFIX + parentName);
@@ -249,7 +249,7 @@ final class ModuleLoaderIntegration extends FrameworkModuleLoaderPlugin {
          */
         @Override
         public void removeModule(XBundleRevision brev) {
-            Set<ServiceName> serviceNames = new HashSet<ServiceName>();
+            Set<ServiceName> serviceNames = new HashSet<>();
             ModuleIdentifier identifier = brev.getModuleIdentifier();
             serviceNames.add(getModuleSpecServiceName(identifier));
             serviceNames.add(getModuleServiceName(identifier));

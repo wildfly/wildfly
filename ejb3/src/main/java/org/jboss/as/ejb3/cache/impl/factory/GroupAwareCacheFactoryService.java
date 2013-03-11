@@ -41,7 +41,7 @@ import org.jboss.msc.value.InjectedValue;
 public class GroupAwareCacheFactoryService<K extends Serializable, V extends Cacheable<K>> extends CacheFactoryService<K, V> {
 
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<BackingCacheEntryStoreSource> storeSource = new InjectedValue<BackingCacheEntryStoreSource>();
+    private final InjectedValue<BackingCacheEntryStoreSource> storeSource = new InjectedValue<>();
 
     public GroupAwareCacheFactoryService(String name, Set<String> aliases) {
         super(name, aliases);
@@ -55,6 +55,6 @@ public class GroupAwareCacheFactoryService<K extends Serializable, V extends Cac
     protected CacheFactory<K, V> createCacheFactory() {
         @SuppressWarnings("unchecked")
         BackingCacheEntryStoreSource<K, V, UUID> source = this.storeSource.getValue();
-        return new GroupAwareCacheFactory<K, V>(source);
+        return new GroupAwareCacheFactory<>(source);
     }
 }

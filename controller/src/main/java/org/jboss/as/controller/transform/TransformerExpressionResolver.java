@@ -53,7 +53,7 @@ class TransformerExpressionResolver implements ExpressionResolver {
             case SERVER:
         }
         final Map<String, String> environment = Collections.emptyMap();
-        final Map<String, String> properties = new HashMap<String, String>();
+        final Map<String, String> properties = new HashMap<>();
         final PathElement systemProperty = PathElement.pathElement(SYSTEM_PROPERTY);
         final PathAddress address = PathAddress.EMPTY_ADDRESS.append(systemProperty);
         if(context.getRootResourceRegistration().getChildNames(address).contains(SYSTEM_PROPERTY)) {

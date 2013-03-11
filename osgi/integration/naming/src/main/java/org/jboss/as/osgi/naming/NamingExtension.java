@@ -59,7 +59,7 @@ import org.osgi.framework.InvalidSyntaxException;
  */
 public class NamingExtension extends AbstractSubsystemExtension {
 
-    private final InjectedValue<NamingStore> injectedNamingStore = new InjectedValue<NamingStore>();
+    private final InjectedValue<NamingStore> injectedNamingStore = new InjectedValue<>();
     private JNDIServiceListener jndiServiceListener;
 
     @Override

@@ -109,35 +109,35 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
     /**
      * The component
      */
-    private final InjectedValue<EJBComponent> ejbComponentInjectedValue = new InjectedValue<EJBComponent>();
+    private final InjectedValue<EJBComponent> ejbComponentInjectedValue = new InjectedValue<>();
 
     /**
      * The home view
      */
-    private final InjectedValue<ComponentView> homeView = new InjectedValue<ComponentView>();
+    private final InjectedValue<ComponentView> homeView = new InjectedValue<>();
 
     /**
      * the ejbObject view
      */
-    private final InjectedValue<ComponentView> remoteView = new InjectedValue<ComponentView>();
+    private final InjectedValue<ComponentView> remoteView = new InjectedValue<>();
 
 
-    private final InjectedValue<POARegistry> poaRegistry = new InjectedValue<POARegistry>();
+    private final InjectedValue<POARegistry> poaRegistry = new InjectedValue<>();
 
     /**
      * The corba naming context
      */
-    private final InjectedValue<NamingContextExt> corbaNamingContext = new InjectedValue<NamingContextExt>();
+    private final InjectedValue<NamingContextExt> corbaNamingContext = new InjectedValue<>();
 
     /**
      * A reference for the ORB.
      */
-    private final InjectedValue<ORB> orb = new InjectedValue<ORB>();
+    private final InjectedValue<ORB> orb = new InjectedValue<>();
 
     /**
      * The module loader
      */
-    private final InjectedValue<ServiceModuleLoader> serviceModuleLoaderInjectedValue = new InjectedValue<ServiceModuleLoader>();
+    private final InjectedValue<ServiceModuleLoader> serviceModuleLoaderInjectedValue = new InjectedValue<>();
 
     /**
      * Used for serializing EJB id's
@@ -205,7 +205,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
     /**
      * POA for the enterprise bean's interface repository.
      */
-    private final InjectedValue<POA> irPoa = new InjectedValue<POA>();
+    private final InjectedValue<POA> irPoa = new InjectedValue<>();
 
     /**
      * The IIOP metadata, configured in the assembly descriptor.
@@ -277,7 +277,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                 iorSecurityConfigMetaData = this.iiopMetaData.getIorSecurityConfigMetaData();
 
             // Create security policies if security metadata has been provided.
-            List<Policy> policyList = new ArrayList<Policy>();
+            List<Policy> policyList = new ArrayList<>();
             if (iorSecurityConfigMetaData != null) {
 
                 // Create csiv2Policy for both home and remote containing IorSecurityConfigMetadata.

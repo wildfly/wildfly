@@ -54,11 +54,11 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
 
     private static final AttachmentKey<AttachmentList<DeploymentUnit>> UNVISITED_DEFERRED_MODULES = AttachmentKey.createList(DeploymentUnit.class);
 
-    private final InjectedValue<DeployerChains> deployerChainsInjector = new InjectedValue<DeployerChains>();
+    private final InjectedValue<DeployerChains> deployerChainsInjector = new InjectedValue<>();
     private final DeploymentUnit deploymentUnit;
     private final Phase phase;
     private final AttachmentKey<T> valueKey;
-    private final List<AttachedDependency> injectedAttachedDependencies = new ArrayList<AttachedDependency>();
+    private final List<AttachedDependency> injectedAttachedDependencies = new ArrayList<>();
 
     private DeploymentUnitPhaseService(final DeploymentUnit deploymentUnit, final Phase phase, final AttachmentKey<T> valueKey) {
         this.deploymentUnit = deploymentUnit;
@@ -67,7 +67,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
     }
 
     private static <T> DeploymentUnitPhaseService<T> create(final DeploymentUnit deploymentUnit, final Phase phase, AttachmentKey<T> valueKey) {
-        return new DeploymentUnitPhaseService<T>(deploymentUnit, phase, valueKey);
+        return new DeploymentUnitPhaseService<>(deploymentUnit, phase, valueKey);
     }
 
     static DeploymentUnitPhaseService<?> create(final DeploymentUnit deploymentUnit, final Phase phase) {

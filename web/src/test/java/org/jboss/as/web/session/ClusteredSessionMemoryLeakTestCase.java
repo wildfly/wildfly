@@ -57,7 +57,7 @@ public class ClusteredSessionMemoryLeakTestCase extends InfinispanCacheContainer
     protected static long testId = System.currentTimeMillis();
 
     public static final String KEY = "Key";
-    public static final Set<String> KEYS = new HashSet<String>();
+    public static final Set<String> KEYS = new HashSet<>();
     static {
         KEYS.add(KEY);
     }
@@ -310,7 +310,7 @@ public class ClusteredSessionMemoryLeakTestCase extends InfinispanCacheContainer
 
         public static AtomicInteger COUNT = new AtomicInteger(0);
 
-        private static final WeakHashMap<Attribute, String> attributes = new WeakHashMap<Attribute, String>();
+        private static final WeakHashMap<Attribute, String> attributes = new WeakHashMap<>();
 
         private final int count;
 

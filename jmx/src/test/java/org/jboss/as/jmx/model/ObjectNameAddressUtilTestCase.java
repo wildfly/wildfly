@@ -88,7 +88,7 @@ public class ObjectNameAddressUtilTestCase {
 
     private static class TestResource implements Resource {
 
-        private Map<String, Map<String, Resource>> children = new HashMap<String, Map<String,Resource>>();
+        private Map<String, Map<String, Resource>> children = new HashMap<>();
 
         @Override
         public Resource getChild(PathElement element) {
@@ -103,7 +103,7 @@ public class ObjectNameAddressUtilTestCase {
         public void registerChild(PathElement address, Resource resource) {
             Map<String, Resource> resources = children.get(address.getKey());
             if (resources == null) {
-                resources = new HashMap<String, Resource>();
+                resources = new HashMap<>();
                 children.put(address.getKey(), resources);
             }
             resources.put(address.getValue(), resource);

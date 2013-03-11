@@ -76,7 +76,7 @@ public class ReadMasterDomainModelHandler implements OperationStepHandler {
      * @return the list of resources
      */
     private List<ModelNode> describeAsNodeList(final Resource resource) {
-        final List<ModelNode> list = new ArrayList<ModelNode>();
+        final List<ModelNode> list = new ArrayList<>();
         describe(PathAddress.EMPTY_ADDRESS, resource, list);
         return list;
     }

@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class DefaultBatch implements Batch {
 
-    private final List<BatchedCommand> commands = new ArrayList<BatchedCommand>();
+    private final List<BatchedCommand> commands = new ArrayList<>();
 
     /* (non-Javadoc)
      * @see org.jboss.as.cli.batch.Batch#getCommands()

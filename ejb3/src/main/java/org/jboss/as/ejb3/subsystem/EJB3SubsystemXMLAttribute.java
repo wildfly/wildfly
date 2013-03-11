@@ -101,7 +101,7 @@ public enum EJB3SubsystemXMLAttribute {
     private static final Map<String, EJB3SubsystemXMLAttribute> MAP;
 
     static {
-        final Map<String, EJB3SubsystemXMLAttribute> map = new HashMap<String, EJB3SubsystemXMLAttribute>();
+        final Map<String, EJB3SubsystemXMLAttribute> map = new HashMap<>();
         for (EJB3SubsystemXMLAttribute element : values()) {
             final String name = element.getLocalName();
             if (name != null)

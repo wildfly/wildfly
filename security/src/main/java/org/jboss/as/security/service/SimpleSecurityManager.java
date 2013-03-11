@@ -75,7 +75,7 @@ import org.jboss.security.javaee.SecurityHelperFactory;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class SimpleSecurityManager implements ServerSecurityManager {
-    private ThreadLocalStack<SecurityContext> contexts = new ThreadLocalStack<SecurityContext>();
+    private ThreadLocalStack<SecurityContext> contexts = new ThreadLocalStack<>();
 
     private ISecurityManagement securityManagement = null;
 
@@ -192,11 +192,11 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         List<Role> roles = roleGroup.getRoles();
 
         // TODO - Review most performant way.
-        Set<String> requiredRoles = new HashSet<String>();
+        Set<String> requiredRoles = new HashSet<>();
         for (String current : roleNames) {
             requiredRoles.add(current);
         }
-        Set<String> actualRoles = new HashSet<String>();
+        Set<String> actualRoles = new HashSet<>();
         for (Role current : roles) {
             actualRoles.add(current.getRoleName());
         }
@@ -432,7 +432,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         if (roleLinks == null || roleLinks.isEmpty()) {
             return Collections.emptySet();
         }
-        final Set<String> aliases = new HashSet<String>();
+        final Set<String> aliases = new HashSet<>();
         for (final Map.Entry<String, Collection<String>> roleLinkEntry : roleLinks.entrySet()) {
             final String aliasRoleName = roleLinkEntry.getKey();
             final Collection<String> realRoleNames = roleLinkEntry.getValue();
@@ -452,7 +452,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
      */
     private void audit(String level, AuditManager auditManager, Principal userPrincipal) {
         AuditEvent auditEvent = new AuditEvent(AuditLevel.SUCCESS);
-        Map<String, Object> ctxMap = new HashMap<String, Object>();
+        Map<String, Object> ctxMap = new HashMap<>();
         ctxMap.put("principal", userPrincipal != null ? userPrincipal : "null");
         ctxMap.put("Source", getClass().getCanonicalName());
         ctxMap.put("Action", "authentication");

@@ -80,7 +80,7 @@ public class SimpleTabCompleter implements CommandLineCompleter {
             ++result;
         }
 
-        final List<String> remainingArgs = new ArrayList<String>(all);
+        final List<String> remainingArgs = new ArrayList<>(all);
         int maxI = chunk == null ? split.length : split.length - 1;
         for(int i = 0; i < maxI; ++i) {
             String arg = split[i];

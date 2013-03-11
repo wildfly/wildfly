@@ -67,8 +67,8 @@ public abstract class AbstractModelControllerOperationHandlerFactoryService impl
         CHANNEL_SHUTDOWN_TIMEOUT = timeout;
     }
 
-    private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
-    private final InjectedValue<ExecutorService> executor = new InjectedValue<ExecutorService>();
+    private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<>();
+    private final InjectedValue<ExecutorService> executor = new InjectedValue<>();
 
     // The defaults if no executor was defined
     private static final int WORK_QUEUE_SIZE = 4096;
@@ -98,7 +98,7 @@ public abstract class AbstractModelControllerOperationHandlerFactoryService impl
         SERVER_MANAGEMENT_LOGGER.debugf("Starting operation handler service %s", context.getController().getName());
         if(executor.getOptionalValue() == null) {
             // Create the default executor
-            final BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>(WORK_QUEUE_SIZE);
+            final BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<>(WORK_QUEUE_SIZE);
             final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup(getThreadGroupName()), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
             final ThreadPoolExecutor executorService = new ThreadPoolExecutor(POOL_CORE_SIZE, POOL_MAX_SIZE,
                                                             60L, TimeUnit.SECONDS, workQueue,

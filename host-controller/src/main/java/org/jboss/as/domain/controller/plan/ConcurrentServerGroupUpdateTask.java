@@ -41,7 +41,7 @@ class ConcurrentServerGroupUpdateTask extends AbstractServerGroupRolloutTask imp
 
     @Override
     public void execute() {
-        final Set<ServerIdentity> outstanding = new HashSet<ServerIdentity>();
+        final Set<ServerIdentity> outstanding = new HashSet<>();
         final ServerTaskExecutor.ServerOperationListener listener = new ServerTaskExecutor.ServerOperationListener();
         for(final ServerUpdateTask task : tasks) {
             final ServerIdentity identity = task.getServerIdentity();

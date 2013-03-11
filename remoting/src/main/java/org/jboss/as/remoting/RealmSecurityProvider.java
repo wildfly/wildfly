@@ -111,8 +111,8 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
 
     @Override
     public OptionMap getOptionMap() {
-        List<String> mechanisms = new LinkedList<String>();
-        Set<Property> properties = new HashSet<Property>();
+        List<String> mechanisms = new LinkedList<>();
+        Set<Property> properties = new HashSet<>();
         Builder builder = OptionMap.builder();
 
         if (realm == null) {
@@ -339,7 +339,7 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
         }
 
         public UserInfo createUserInfo(Collection<Principal> remotingPrincipals) throws IOException {
-            Collection<Principal> converted = new ArrayList<Principal>(remotingPrincipals.size());
+            Collection<Principal> converted = new ArrayList<>(remotingPrincipals.size());
             for (Principal current : remotingPrincipals) {
                 // Just convert the Remoting UserPrincipal to a RealmUser.
                 // The remaining principals will be added to the Subject later.

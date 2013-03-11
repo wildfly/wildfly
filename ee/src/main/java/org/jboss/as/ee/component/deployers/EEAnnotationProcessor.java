@@ -42,10 +42,10 @@ public class EEAnnotationProcessor extends AbstractEEAnnotationProcessor {
     final List<ClassAnnotationInformationFactory> factories;
 
     public EEAnnotationProcessor() {
-        List<ClassAnnotationInformationFactory> factories = new ArrayList<ClassAnnotationInformationFactory>();
+        List<ClassAnnotationInformationFactory> factories = new ArrayList<>();
         factories.add(new InterceptorsAnnotationInformationFactory());
-        factories.add(new BooleanAnnotationInformationFactory<ExcludeDefaultInterceptors>(ExcludeDefaultInterceptors.class));
-        factories.add(new BooleanAnnotationInformationFactory<ExcludeClassInterceptors>(ExcludeClassInterceptors.class));
+        factories.add(new BooleanAnnotationInformationFactory<>(ExcludeDefaultInterceptors.class));
+        factories.add(new BooleanAnnotationInformationFactory<>(ExcludeClassInterceptors.class));
         this.factories = Collections.unmodifiableList(factories);
     }
 

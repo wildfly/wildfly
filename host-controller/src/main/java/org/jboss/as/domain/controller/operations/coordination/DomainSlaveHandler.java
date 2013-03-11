@@ -78,9 +78,9 @@ public class DomainSlaveHandler implements OperationStepHandler {
         // Temporary hack to prevent CompositeOperationHandler throwing away domain failure data
         context.attachIfAbsent(CompositeOperationHandler.DOMAIN_EXECUTION_KEY, Boolean.TRUE);
 
-        final Set<String> outstanding = new HashSet<String>(hostProxies.keySet());
-        final List<TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation>> results = new ArrayList<TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation>>();
-        final Map<String, HostControllerUpdateTask.ExecutedHostRequest> finalResults = new HashMap<String, HostControllerUpdateTask.ExecutedHostRequest>();
+        final Set<String> outstanding = new HashSet<>(hostProxies.keySet());
+        final List<TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation>> results = new ArrayList<>();
+        final Map<String, HostControllerUpdateTask.ExecutedHostRequest> finalResults = new HashMap<>();
         final HostControllerUpdateTask.ProxyOperationListener listener = new HostControllerUpdateTask.ProxyOperationListener();
         for (Map.Entry<String, ProxyController> entry : hostProxies.entrySet()) {
             // Create the proxy task

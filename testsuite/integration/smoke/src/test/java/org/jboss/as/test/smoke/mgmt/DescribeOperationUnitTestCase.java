@@ -56,7 +56,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class DescribeOperationUnitTestCase {
 
-    private static final Set<String> ignored = new HashSet<String>();
+    private static final Set<String> ignored = new HashSet<>();
 
     @ContainerResource
     private ManagementClient managementClient;

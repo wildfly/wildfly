@@ -64,8 +64,8 @@ public class SharedLocalYieldingClusterLockManager {
 
     class LocalLock {
         volatile boolean removable;
-        private final Queue<Thread> waiters = new ConcurrentLinkedQueue<Thread>();
-        final AtomicReference<LockState> lockState = new AtomicReference<LockState>(LockState.AVAILABLE);
+        private final Queue<Thread> waiters = new ConcurrentLinkedQueue<>();
+        final AtomicReference<LockState> lockState = new AtomicReference<>(LockState.AVAILABLE);
 
         /**
          * Just takes the lock for the local node. This should only be invoked for new locks or in a callback from the cluster
@@ -364,7 +364,7 @@ public class SharedLocalYieldingClusterLockManager {
     }
 
     ClusterNode localNode;
-    ConcurrentMap<Serializable, LocalLock> localLocks = new ConcurrentHashMap<Serializable, LocalLock>();
+    ConcurrentMap<Serializable, LocalLock> localLocks = new ConcurrentHashMap<>();
     private final YieldingGloballyExclusiveClusterLockSupport clusterSupport;
 
     public SharedLocalYieldingClusterLockManager(String serviceHAName, GroupRpcDispatcher rpcDispatcher, GroupMembershipNotifier membershipNotifier) {

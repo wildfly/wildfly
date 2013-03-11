@@ -69,7 +69,7 @@ final class DefaultDeploymentOperations implements DeploymentOperations {
             throw new RuntimeException(e);
         }
         final ModelNode result = response.get(RESULT);
-        final Map<String, Boolean> deployments = new HashMap<String, Boolean>();
+        final Map<String, Boolean> deployments = new HashMap<>();
         if (result.isDefined()) {
             for (Property property : result.asPropertyList()) {
                 deployments.put(property.getName(), property.getValue().get(ENABLED).asBoolean(false));

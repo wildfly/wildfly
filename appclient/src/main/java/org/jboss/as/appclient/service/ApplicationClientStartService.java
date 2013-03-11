@@ -62,8 +62,8 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("appClientStart");
 
-    private final InjectedValue<ApplicationClientDeploymentService> applicationClientDeploymentServiceInjectedValue = new InjectedValue<ApplicationClientDeploymentService>();
-    private final InjectedValue<Component> applicationClientComponent = new InjectedValue<Component>();
+    private final InjectedValue<ApplicationClientDeploymentService> applicationClientDeploymentServiceInjectedValue = new InjectedValue<>();
+    private final InjectedValue<Component> applicationClientComponent = new InjectedValue<>();
     private final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue;
     private final List<SetupAction> setupActions;
     private final Method mainMethod;

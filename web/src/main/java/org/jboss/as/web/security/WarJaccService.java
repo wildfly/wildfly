@@ -121,7 +121,7 @@ public class WarJaccService extends JaccService<WarMetaData> {
                         String url = urlPatterns[n];
                         // Get the qualified url pattern
                         PatternInfo info = (PatternInfo) patternMap.get(url);
-                        HashSet<String> mappedRoles = new HashSet<String>();
+                        HashSet<String> mappedRoles = new HashSet<>();
                         String[] authRoles = sc.findAuthRoles();
                         for (int k = 0; k < authRoles.length; k++) {
                             String role = authRoles[k];
@@ -246,7 +246,7 @@ public class WarJaccService extends JaccService<WarMetaData> {
         }
 
         String[] unreferencedRoles = context.findSecurityRoles();
-        List<String> unRefRoles = new ArrayList<String>();
+        List<String> unRefRoles = new ArrayList<>();
         for (int i = 0; i < unreferencedRoles.length; i++) {
             unRefRoles.add(unreferencedRoles[i]);
         }
@@ -366,10 +366,10 @@ public class WarJaccService extends JaccService<WarMetaData> {
      * @return HashMap<String, PatternInfo>
      */
     static HashMap<String, PatternInfo> qualifyURLPatterns(Context metaData) {
-        ArrayList<PatternInfo> prefixList = new ArrayList<PatternInfo>();
-        ArrayList<PatternInfo> extensionList = new ArrayList<PatternInfo>();
-        ArrayList<PatternInfo> exactList = new ArrayList<PatternInfo>();
-        HashMap<String, PatternInfo> patternMap = new HashMap<String, PatternInfo>();
+        ArrayList<PatternInfo> prefixList = new ArrayList<>();
+        ArrayList<PatternInfo> extensionList = new ArrayList<>();
+        ArrayList<PatternInfo> exactList = new ArrayList<>();
+        HashMap<String, PatternInfo> patternMap = new HashMap<>();
         PatternInfo defaultInfo = null;
 
         SecurityConstraint[] constraints = metaData.findConstraints();
@@ -464,7 +464,7 @@ public class WarJaccService extends JaccService<WarMetaData> {
      */
     static class PatternInfo {
 
-        static final HashMap<String, Set<String>> ALL_TRANSPORTS = new HashMap<String, Set<String>>();
+        static final HashMap<String, Set<String>> ALL_TRANSPORTS = new HashMap<>();
 
         static {
             ALL_TRANSPORTS.put("NONE", WebResourceCollectionMetaData.ALL_HTTP_METHODS);
@@ -477,7 +477,7 @@ public class WarJaccService extends JaccService<WarMetaData> {
         String qpattern;
 
         /** The list of qualifying patterns as determined by qualifyURLPatterns */
-        ArrayList<PatternInfo> qualifiers = new ArrayList<PatternInfo>();
+        ArrayList<PatternInfo> qualifiers = new ArrayList<>();
 
         /** One of PREFIX, EXTENSION, DEFAULT, EXACT */
         int type;
@@ -492,7 +492,7 @@ public class WarJaccService extends JaccService<WarMetaData> {
         HashMap<String, Set<String>> transports;
 
         /** The url pattern to http methods for patterns for */
-        HashSet<String> allMethods = new HashSet<String>();
+        HashSet<String> allMethods = new HashSet<>();
 
         /**
          * Does a qualifying pattern match this pattern and make this pattern obsolete?
@@ -523,7 +523,7 @@ public class WarJaccService extends JaccService<WarMetaData> {
             if (methods.size() == 0)
                 methods = WebResourceCollectionMetaData.ALL_HTTP_METHODS;
             if (excludedMethods == null)
-                excludedMethods = new HashSet<String>();
+                excludedMethods = new HashSet<>();
             excludedMethods.addAll(methods);
             allMethods.addAll(methods);
         }
@@ -554,12 +554,12 @@ public class WarJaccService extends JaccService<WarMetaData> {
                 methods = WebResourceCollectionMetaData.ALL_HTTP_METHODS;
             allMethods.addAll(methods);
             if (roles == null)
-                roles = new HashMap<String, Set<String>>();
+                roles = new HashMap<>();
 
             for (String role : mappedRoles) {
                 Set<String> roleMethods = roles.get(role);
                 if (roleMethods == null) {
-                    roleMethods = new HashSet<String>();
+                    roleMethods = new HashSet<>();
                     roles.put(role, roleMethods);
                 }
                 roleMethods.addAll(methods);
@@ -574,7 +574,7 @@ public class WarJaccService extends JaccService<WarMetaData> {
         public Iterator<Map.Entry<String, Set<String>>> getRoleMethods() {
             HashMap<String, Set<String>> tmp = roles;
             if (tmp == null)
-                tmp = new HashMap<String, Set<String>>(0);
+                tmp = new HashMap<>(0);
             Iterator<Map.Entry<String, Set<String>>> iter = tmp.entrySet().iterator();
             return iter;
         }
@@ -590,11 +590,11 @@ public class WarJaccService extends JaccService<WarMetaData> {
             if (methods.size() == 0)
                 methods = WebResourceCollectionMetaData.ALL_HTTP_METHODS;
             if (transports == null)
-                transports = new HashMap<String, Set<String>>();
+                transports = new HashMap<>();
 
             Set<String> transportMethods = transports.get(transport);
             if (transportMethods == null) {
-                transportMethods = new HashSet<String>();
+                transportMethods = new HashSet<>();
                 transports.put(transport, transportMethods);
             }
             transportMethods.addAll(methods);

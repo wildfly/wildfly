@@ -34,7 +34,7 @@ public enum Version {
     JPA_1_0("http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"),
     JPA_2_0("http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd");
 
-    private static final Map<String, Version> bindings = new HashMap<String, Version>();
+    private static final Map<String, Version> bindings = new HashMap<>();
 
     private final String location;
 

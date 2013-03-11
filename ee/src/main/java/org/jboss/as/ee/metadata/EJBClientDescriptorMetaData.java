@@ -42,8 +42,8 @@ public class EJBClientDescriptorMetaData {
     private long invocationTimeout;
     private String deploymentNodeSelector;
 
-    private Map<String, RemotingReceiverConfiguration> remotingReceiverConfigurations = new HashMap<String, RemotingReceiverConfiguration>();
-    private Set<ClusterConfig> clusterConfigs = new HashSet<ClusterConfig>();
+    private Map<String, RemotingReceiverConfiguration> remotingReceiverConfigurations = new HashMap<>();
+    private Set<ClusterConfig> clusterConfigs = new HashSet<>();
 
 
     /**
@@ -139,7 +139,7 @@ public class EJBClientDescriptorMetaData {
     public class ClusterConfig extends CommonConnectionConfig {
 
         private final String clusterName;
-        private final Set<ClusterNodeConfig> nodes = new HashSet<ClusterNodeConfig>();
+        private final Set<ClusterNodeConfig> nodes = new HashSet<>();
         private long maxAllowedConnectedNodes;
         private String nodeSelector;
 

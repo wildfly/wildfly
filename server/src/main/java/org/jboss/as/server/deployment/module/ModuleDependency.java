@@ -55,8 +55,8 @@ public final class ModuleDependency implements Serializable {
     private final ModuleIdentifier identifier;
     private final boolean export;
     private final boolean optional;
-    private final List<FilterSpecification> importFilters = new ArrayList<FilterSpecification>();
-    private final List<FilterSpecification> exportFilters = new ArrayList<FilterSpecification>();
+    private final List<FilterSpecification> importFilters = new ArrayList<>();
+    private final List<FilterSpecification> exportFilters = new ArrayList<>();
     private final boolean importServices;
     private final boolean userSpecified;
 

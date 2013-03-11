@@ -65,7 +65,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "http://www.jboss.org/jbossws/ws-extensions/wsrm", name = "writeLogMessage")
     public JAXBElement<WriteLogMessage> createWriteLogMessage(WriteLogMessage value) {
-        return new JAXBElement<WriteLogMessage>(_WriteLogMessage_QNAME, WriteLogMessage.class, null, value);
+        return new JAXBElement<>(_WriteLogMessage_QNAME, WriteLogMessage.class, null, value);
     }
 
     /**
@@ -74,7 +74,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "http://www.jboss.org/jbossws/ws-extensions/wsrm", name = "sayHello")
     public JAXBElement<SayHello> createSayHello(SayHello value) {
-        return new JAXBElement<SayHello>(_SayHello_QNAME, SayHello.class, null, value);
+        return new JAXBElement<>(_SayHello_QNAME, SayHello.class, null, value);
     }
 
     /**
@@ -83,7 +83,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "http://www.jboss.org/jbossws/ws-extensions/wsrm", name = "sayHelloResponse")
     public JAXBElement<SayHelloResponse> createSayHelloResponse(SayHelloResponse value) {
-        return new JAXBElement<SayHelloResponse>(_SayHelloResponse_QNAME, SayHelloResponse.class, null, value);
+        return new JAXBElement<>(_SayHelloResponse_QNAME, SayHelloResponse.class, null, value);
     }
 
 }

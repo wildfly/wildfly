@@ -16,7 +16,7 @@ public class PooledConnectionFactoryAttributesTestCase extends AttributesTestBas
     private static final SortedSet<String> KNOWN_ATTRIBUTES;
 
     static {
-        UNSUPPORTED_HORNETQ_RA_PROPERTIES = new TreeSet<String>();
+        UNSUPPORTED_HORNETQ_RA_PROPERTIES = new TreeSet<>();
 
         // we configure discovery group using discoveryGroupName instead of individual params:
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add(PooledConnectionFactoryService.GROUP_ADDRESS);
@@ -40,7 +40,7 @@ public class PooledConnectionFactoryAttributesTestCase extends AttributesTestBas
 
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("connectionPoolName");
 
-        KNOWN_ATTRIBUTES = new TreeSet<String>();
+        KNOWN_ATTRIBUTES = new TreeSet<>();
         // these are supported but it is not found by JavaBeans introspector because of the type
         // difference b/w the getter and the setters (Long vs long)
         KNOWN_ATTRIBUTES.add(Pooled.SETUP_ATTEMPTS_PROP_NAME);
@@ -62,7 +62,7 @@ public class PooledConnectionFactoryAttributesTestCase extends AttributesTestBas
     }
 
     private static final SortedSet<String> findAllResourceAdapterProperties(ConnectionFactoryAttribute... attrs) {
-        SortedSet<String> names = new TreeSet<String>();
+        SortedSet<String> names = new TreeSet<>();
         for (ConnectionFactoryAttribute attr : attrs) {
             if (attr.isResourceAdapterProperty()) {
                 names.add(attr.getPropertyName());

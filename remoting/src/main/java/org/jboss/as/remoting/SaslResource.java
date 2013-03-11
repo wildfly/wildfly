@@ -149,7 +149,7 @@ public class SaslResource extends SimpleResourceDefinition {
     }
 
     private abstract static class SaslEnumValidator extends StringLengthValidator implements AllowedValuesValidator {
-        final List<ModelNode> allowedValues = new ArrayList<ModelNode>();
+        final List<ModelNode> allowedValues = new ArrayList<>();
 
         SaslEnumValidator(Enum<?>[] src, boolean toLowerCase) {
             super(1);

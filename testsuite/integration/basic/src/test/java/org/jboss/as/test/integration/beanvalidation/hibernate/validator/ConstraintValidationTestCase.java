@@ -97,7 +97,7 @@ public class ConstraintValidationTestCase {
         UserBean user2 = new UserBean("Mickey", "Mouse");
         user2.setAddress("");
 
-        List<UserBean> passengers = new ArrayList<UserBean>();
+        List<UserBean> passengers = new ArrayList<>();
         passengers.add(user1);
         passengers.add(user2);
 

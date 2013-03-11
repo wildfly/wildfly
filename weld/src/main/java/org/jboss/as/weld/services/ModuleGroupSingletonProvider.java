@@ -47,7 +47,7 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
     /**
      * Map of the top level class loader to all class loaders in a deployment
      */
-    public static Map<ClassLoader, Set<ClassLoader>> deploymentClassLoaders = new ConcurrentHashMap<ClassLoader, Set<ClassLoader>>();
+    public static Map<ClassLoader, Set<ClassLoader>> deploymentClassLoaders = new ConcurrentHashMap<>();
 
     /**
      * Maps a top level class loader to all CL's in the deployment
@@ -65,7 +65,7 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
 
     @Override
     public <T> Singleton<T> create(Class<? extends T> type) {
-        return new TCCLSingleton<T>();
+        return new TCCLSingleton<>();
     }
 
     @SuppressWarnings("unused")
@@ -82,7 +82,7 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
         }
 
         public synchronized void set(T object) {
-            final Map<ClassLoader, T> store = new IdentityHashMap<ClassLoader, T>(this.store);
+            final Map<ClassLoader, T> store = new IdentityHashMap<>(this.store);
             ClassLoader classLoader = getClassLoader();
             store.put(classLoader, object);
             if (deploymentClassLoaders.containsKey(classLoader)) {
@@ -95,7 +95,7 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
 
         public synchronized void clear() {
             ClassLoader classLoader = getClassLoader();
-            final Map<ClassLoader, T> store = new IdentityHashMap<ClassLoader, T>(this.store);
+            final Map<ClassLoader, T> store = new IdentityHashMap<>(this.store);
             store.remove(classLoader);
             if (deploymentClassLoaders.containsKey(classLoader)) {
                 for (ClassLoader cl : deploymentClassLoaders.get(classLoader)) {

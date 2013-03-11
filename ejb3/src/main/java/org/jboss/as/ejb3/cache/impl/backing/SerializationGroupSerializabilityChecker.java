@@ -33,7 +33,7 @@ import org.jboss.marshalling.SerializabilityChecker;
  */
 public class SerializationGroupSerializabilityChecker implements SerializabilityChecker {
 
-    private final List<SerializabilityChecker> checkers = new CopyOnWriteArrayList<SerializabilityChecker>();
+    private final List<SerializabilityChecker> checkers = new CopyOnWriteArrayList<>();
 
     public void addSerializabilityChecker(SerializabilityChecker checker) {
         this.checkers.add(checker);

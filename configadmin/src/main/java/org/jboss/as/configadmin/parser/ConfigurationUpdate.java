@@ -58,7 +58,7 @@ public class ConfigurationUpdate implements OperationStepHandler {
                 ModelNode entries = operation.get(ModelConstants.ENTRIES);
                 String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CONFIGURATION).asString();
 
-                Dictionary<String, String> dictionary = new Hashtable<String, String>();
+                Dictionary<String, String> dictionary = new Hashtable<>();
                 for (String key : entries.keys()) {
                     dictionary.put(key, entries.get(key).asString());
                 }

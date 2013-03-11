@@ -76,7 +76,7 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
         AttachmentList<ResourceRoot> resourceRoots = unit.getAttachment(RESOURCE_ROOTS);
         if (!unit.getName().endsWith(".war") && EjbDeploymentMarker.isEjbDeployment(unit)) {
             // ejb archives don't define resource roots, using root resource
-            resourceRoots = new AttachmentList<ResourceRoot>(ResourceRoot.class);
+            resourceRoots = new AttachmentList<>(ResourceRoot.class);
             final ResourceRoot root = unit.getAttachment(DEPLOYMENT_ROOT);
             resourceRoots.add(root);
         }
@@ -160,7 +160,7 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
     }
 
     private static Set<String> getHandlers(final InputStream is) throws IOException {
-        final Set<String> retVal = new HashSet<String>();
+        final Set<String> retVal = new HashSet<>();
 
         final UnifiedHandlerChainsMetaData handlerChainsUMDM = UnifiedHandlerChainsMetaDataParser.parse(is);
         for (final UnifiedHandlerChainMetaData handlerChainUMDM : handlerChainsUMDM.getHandlerChains()) {

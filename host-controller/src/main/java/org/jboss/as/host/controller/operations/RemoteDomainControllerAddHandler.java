@@ -151,7 +151,7 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler {
         ModelNode portNode = PORT.resolveModelAttribute(context, remoteDC);
         if (hostNode.isDefined() && portNode.isDefined()) {
             // Create a StaticDiscovery option and add it to the host controller info
-            Map<String, ModelNode> properties = new HashMap<String, ModelNode>();
+            Map<String, ModelNode> properties = new HashMap<>();
             properties.put(ModelDescriptionConstants.HOST, hostNode);
             properties.put(ModelDescriptionConstants.PORT, portNode);
             StaticDiscovery staticDiscoveryOption = new StaticDiscovery(properties);

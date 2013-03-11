@@ -44,13 +44,13 @@ public class AdditionalModuleSpecification extends ModuleSpecification implement
 
     public AdditionalModuleSpecification(ModuleIdentifier moduleIdentifier, ResourceRoot resourceRoot) {
         this.moduleIdentifier = moduleIdentifier;
-        this.resourceRoots = new ArrayList<ResourceRoot>();
+        this.resourceRoots = new ArrayList<>();
         this.resourceRoots.add(resourceRoot);
     }
 
     public AdditionalModuleSpecification(ModuleIdentifier moduleIdentifier, Collection<ResourceRoot> resourceRoots) {
         this.moduleIdentifier = moduleIdentifier;
-        this.resourceRoots = new ArrayList<ResourceRoot>(resourceRoots);
+        this.resourceRoots = new ArrayList<>(resourceRoots);
     }
 
     public ModuleIdentifier getModuleIdentifier() {

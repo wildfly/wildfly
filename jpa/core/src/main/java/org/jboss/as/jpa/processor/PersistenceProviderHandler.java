@@ -65,7 +65,7 @@ public class PersistenceProviderHandler {
 
             // collect list of persistence providers packaged with the application
             final List<String> providerNames = servicesAttachment.getServiceImplementations(PERSISTENCE_PROVIDER_CLASSNAME);
-            List<PersistenceProvider> providerList = new ArrayList<PersistenceProvider>();
+            List<PersistenceProvider> providerList = new ArrayList<>();
 
             for (String providerName : providerNames) {
                 try {
@@ -136,7 +136,7 @@ public class PersistenceProviderHandler {
      * @return
      */
     private static Set<ClassLoader> allDeploymentModuleClassLoaders(DeploymentUnit deploymentUnit) {
-        Set<ClassLoader> deploymentClassLoaders = new HashSet<ClassLoader>();
+        Set<ClassLoader> deploymentClassLoaders = new HashSet<>();
         final DeploymentUnit topDeploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
         final Module toplevelModule = topDeploymentUnit.getAttachment(Attachments.MODULE);
         if (toplevelModule != null) {

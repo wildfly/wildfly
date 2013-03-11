@@ -52,9 +52,9 @@ import org.jboss.wsf.spi.management.ServerConfig;
 public final class PortComponentLinkService implements Service<WebAppController> {
 
     private final ServiceName name;
-    private final InjectedValue<VirtualHost> hostInjector = new InjectedValue<VirtualHost>();
+    private final InjectedValue<VirtualHost> hostInjector = new InjectedValue<>();
     private volatile WebAppController pclwa;
-    private final InjectedValue<ServerConfig> serverConfigInjectorValue = new InjectedValue<ServerConfig>();
+    private final InjectedValue<ServerConfig> serverConfigInjectorValue = new InjectedValue<>();
     private static final String DEFAULT_HOST_NAME = "default-host";
 
     private PortComponentLinkService() {

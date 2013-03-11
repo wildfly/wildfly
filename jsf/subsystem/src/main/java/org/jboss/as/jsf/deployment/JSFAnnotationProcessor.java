@@ -84,7 +84,7 @@ public class JSFAnnotationProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        final Map<Class<? extends Annotation>, Set<Class<?>>> instances = new HashMap<Class<? extends Annotation>, Set<Class<?>>>();
+        final Map<Class<? extends Annotation>, Set<Class<?>>> instances = new HashMap<>();
 
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if (compositeIndex == null) {
@@ -102,7 +102,7 @@ public class JSFAnnotationProcessor implements DeploymentUnitProcessor {
             if (annotationInstances == null || annotationInstances.isEmpty()) {
                 continue;
             }
-            final Set<Class<?>> discoveredClasses = new HashSet<Class<?>>();
+            final Set<Class<?>> discoveredClasses = new HashSet<>();
             instances.put(annotation.annotationClass, discoveredClasses);
             for (AnnotationInstance annotationInstance : annotationInstances) {
                 final AnnotationTarget target = annotationInstance.target();

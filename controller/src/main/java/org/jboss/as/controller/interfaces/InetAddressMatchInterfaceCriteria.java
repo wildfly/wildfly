@@ -167,8 +167,8 @@ public class InetAddressMatchInterfaceCriteria extends AbstractInterfaceCriteria
     }
 
     private void logMultipleValidInterfaces(Map<NetworkInterface, Set<InetAddress>> matches) {
-        Set<String> nis = new HashSet<String>();
-        Set<InetAddress> addresses = new HashSet<InetAddress>();
+        Set<String> nis = new HashSet<>();
+        Set<InetAddress> addresses = new HashSet<>();
         for (Map.Entry<NetworkInterface, Set<InetAddress>> entry : matches.entrySet()) {
             nis.add(entry.getKey().getName());
             addresses.addAll(entry.getValue());

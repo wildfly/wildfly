@@ -67,7 +67,7 @@ class WebContextLifecycleInterceptor extends AbstractLifecycleInterceptor implem
 
     static final ServiceName SERVICE_NAME = JBOSS_WEB.append(WebContextLifecycleInterceptor.class.getSimpleName());
 
-    private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
+    private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<>();
     private ServiceRegistration<LifecycleInterceptor> registration;
 
     static ServiceController<LifecycleInterceptor> addService(ServiceTarget serviceTarget, ServiceVerificationHandler verificationHandler) {
@@ -131,7 +131,7 @@ class WebContextLifecycleInterceptor extends AbstractLifecycleInterceptor implem
 
     private void registerServletContextService(ServletContext servletContext, BundleContext bundleContext) {
         Bundle bundle = bundleContext.getBundle();
-        Dictionary<String, Object> props = new Hashtable<String, Object>();
+        Dictionary<String, Object> props = new Hashtable<>();
         props.put("osgi.web.symbolicname", bundle.getSymbolicName());
         Dictionary<?, ?> headers = bundle.getHeaders();
         // The version of the Web Application Bundle. If no Bundle-Version is specified in the manifest then

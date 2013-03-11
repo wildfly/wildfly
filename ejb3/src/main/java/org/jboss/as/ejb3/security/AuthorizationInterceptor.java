@@ -133,7 +133,7 @@ public class AuthorizationInterceptor implements Interceptor {
      * @return the constructed set of role principals.
      */
     protected Set<Principal> getMethodRolesAsPrincipals() {
-        Set<Principal> methodRoles = new HashSet<Principal>();
+        Set<Principal> methodRoles = new HashSet<>();
         if (this.ejbMethodSecurityMetaData.isDenyAll())
             methodRoles.add(NobodyPrincipal.NOBODY_PRINCIPAL);
         else if (this.ejbMethodSecurityMetaData.isPermitAll())

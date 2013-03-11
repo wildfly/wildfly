@@ -147,7 +147,7 @@ public class RemoteStatelessFailoverTestCase {
 
             this.establishView(listener, NODES);
             
-            List<String> results = new ArrayList<String>(10);
+            List<String> results = new ArrayList<>(10);
             for (int i = 0; i < 10; ++i) {
                 results.add(bean.getNodeName());
             }
@@ -197,7 +197,7 @@ public class RemoteStatelessFailoverTestCase {
 
             this.establishView(listener, NODES);
 
-            List<String> results = new ArrayList<String>(10);
+            List<String> results = new ArrayList<>(10);
             for (int i = 0; i < 10; ++i) {
                 results.add(bean.getNodeName());
             }
@@ -298,12 +298,12 @@ public class RemoteStatelessFailoverTestCase {
      * The necessary number of processed calls by each server is {minPercentage} of the number of all calls.
      */
     private void validateBalancing(Stateless bean, int numCalls, int expectedServers, double minPercentage) {
-        List<String> results = new ArrayList<String>(numCalls);
+        List<String> results = new ArrayList<>(numCalls);
         for (int i = 0; i < numCalls; i++) {
             results.add(bean.getNodeName());
         }
 
-        Set<String> entries = new HashSet<String>();
+        Set<String> entries = new HashSet<>();
         entries.addAll(results);
         
         Assert.assertEquals(expectedServers, entries.size());

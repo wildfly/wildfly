@@ -45,9 +45,9 @@ import org.jboss.modules.ModuleClassLoader;
 public class PersistenceProviderResolverImpl implements PersistenceProviderResolver {
 
     private Map<ClassLoader, List<Class>> persistenceProviderPerClassLoader =
-            new HashMap<ClassLoader, List<Class>>();
+            new HashMap<>();
 
-    private List<Class> providers = new CopyOnWriteArrayList<Class>();
+    private List<Class> providers = new CopyOnWriteArrayList<>();
 
     private static final PersistenceProviderResolverImpl INSTANCE = new PersistenceProviderResolverImpl();
 
@@ -65,7 +65,7 @@ public class PersistenceProviderResolverImpl implements PersistenceProviderResol
      */
     @Override
     public List<PersistenceProvider> getPersistenceProviders() {
-        List<PersistenceProvider> providersCopy = new ArrayList<PersistenceProvider>(providers.size());
+        List<PersistenceProvider> providersCopy = new ArrayList<>(providers.size());
 
         /**
          * Add the application specified providers first so they are found before the global providers
@@ -141,7 +141,7 @@ public class PersistenceProviderResolverImpl implements PersistenceProviderResol
                 List<Class> list = persistenceProviderPerClassLoader.get(deploymentClassLoader);
                 ROOT_LOGGER.tracef("getting persistence provider list (%s) for deployment (%s)", list, deploymentClassLoader );
                 if (list == null) {
-                    list = new ArrayList<Class>();
+                    list = new ArrayList<>();
                     persistenceProviderPerClassLoader.put(deploymentClassLoader, list);
                     ROOT_LOGGER.tracef("saving new persistence provider list (%s) for deployment (%s)", list, deploymentClassLoader );
                 }

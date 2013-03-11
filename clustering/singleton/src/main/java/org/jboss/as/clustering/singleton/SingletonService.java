@@ -61,8 +61,8 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
 
     public static final String DEFAULT_CONTAINER = "singleton";
 
-    private final InjectedValue<ServiceProviderRegistry> registryRef = new InjectedValue<ServiceProviderRegistry>();
-    private final InjectedValue<GroupRpcDispatcher> dispatcherRef = new InjectedValue<GroupRpcDispatcher>();
+    private final InjectedValue<ServiceProviderRegistry> registryRef = new InjectedValue<>();
+    private final InjectedValue<GroupRpcDispatcher> dispatcherRef = new InjectedValue<>();
     private final Service<T> service;
     private final ServiceName targetServiceName;
     private final ServiceName singletonServiceName;
@@ -233,7 +233,7 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
 
     @Override
     public AtomicReference<T> getValueRef() {
-        return this.master.get() ? new AtomicReference<T>(this.service.getValue()) : null;
+        return this.master.get() ? new AtomicReference<>(this.service.getValue()) : null;
     }
 
     @Override
@@ -285,7 +285,7 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
                         SingletonLogger.ROOT_LOGGER.noResponseFromMaster(this.name);
                         // Verify whether there is no master because a quorum was not reached during the last election
                         if (SingletonService.this.registry.getServiceProviders(this.name).size() < SingletonService.this.quorum) {
-                            return new AtomicReference<T>();
+                            return new AtomicReference<>();
                         }
                         // Otherwise, we're in the midst of a new master election, so just try again
                         Thread.yield();

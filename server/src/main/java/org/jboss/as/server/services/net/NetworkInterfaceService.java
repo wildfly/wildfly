@@ -133,7 +133,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
 
     private static NetworkInterfaceBinding resolveInterface(final OverallInterfaceCriteria criteria) throws SocketException {
         NetworkInterfaceBinding result = null;
-        final Map<NetworkInterface, Set<InetAddress>> candidates = new HashMap<NetworkInterface, Set<InetAddress>>();
+        final Map<NetworkInterface, Set<InetAddress>> candidates = new HashMap<>();
         final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
         while (networkInterfaces.hasMoreElements()) {
             storeAddresses(networkInterfaces.nextElement(), candidates);
@@ -151,7 +151,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
 
     private static void storeAddresses(final NetworkInterface networkInterface, final Map<NetworkInterface, Set<InetAddress>> candidates) {
         final Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
-        Set<InetAddress> addresses = new HashSet<InetAddress>();
+        Set<InetAddress> addresses = new HashSet<>();
         candidates.put(networkInterface, addresses);
         while (interfaceAddresses.hasMoreElements()) {
             addresses.add(interfaceAddresses.nextElement());
@@ -164,7 +164,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
 
     static NetworkInterfaceBinding getNetworkInterfaceBinding(final String addr) throws UnknownHostException, SocketException {
         final InetAddress address = InetAddress.getByName(addr);
-        final Collection<NetworkInterface> interfaces = new ArrayList<NetworkInterface>();
+        final Collection<NetworkInterface> interfaces = new ArrayList<>();
         final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
         while (networkInterfaces.hasMoreElements()) {
             interfaces.add(networkInterfaces.nextElement());

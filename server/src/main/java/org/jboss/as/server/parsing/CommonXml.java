@@ -121,7 +121,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
     static {
 
-        final HashSet<String> set = new HashSet<String>(10);
+        final HashSet<String> set = new HashSet<>(10);
         // Define the restricted path names.
         set.add("jboss.home");
         set.add("jboss.home.dir");
@@ -169,7 +169,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     protected void parseSchemaLocations(final XMLExtendedStreamReader reader, final ModelNode address,
                                         final List<ModelNode> updateList, final int idx) throws XMLStreamException {
         final List<String> elements = reader.getListAttributeValue(idx);
-        final List<String> values = new ArrayList<String>();
+        final List<String> values = new ArrayList<>();
         for (String element : elements) {
             if (!element.trim().isEmpty()) {
                 values.add(element);
@@ -294,7 +294,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
     protected void parsePaths(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list,
                               final boolean requirePath) throws XMLStreamException {
-        final Set<String> pathNames = new HashSet<String>();
+        final Set<String> pathNames = new HashSet<>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             requireNamespace(reader, expectedNs);
@@ -963,7 +963,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                                     final Set<Attribute> allowedAttributes, final Set<Element> allowedElements) throws XMLStreamException {
         requireNoAttributes(reader);
 
-        final Set<String> names = new HashSet<String>();
+        final Set<String> names = new HashSet<>();
 
         while (reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);

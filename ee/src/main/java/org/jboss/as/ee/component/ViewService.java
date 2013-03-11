@@ -53,7 +53,7 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
  */
 public final class ViewService implements Service<ComponentView> {
 
-    private final InjectedValue<Component> componentInjector = new InjectedValue<Component>();
+    private final InjectedValue<Component> componentInjector = new InjectedValue<>();
     private final Map<Method, InterceptorFactory> viewInterceptorFactories;
     private final Map<Method, InterceptorFactory> clientInterceptorFactories;
     private final InterceptorFactory clientPostConstruct;
@@ -74,8 +74,8 @@ public final class ViewService implements Service<ComponentView> {
         final int methodCount = methods.size();
         clientPostConstruct = Interceptors.getChainedInterceptorFactory(viewConfiguration.getClientPostConstructInterceptors());
         clientPreDestroy = Interceptors.getChainedInterceptorFactory(viewConfiguration.getClientPreDestroyInterceptors());
-        final IdentityHashMap<Method, InterceptorFactory> viewInterceptorFactories = new IdentityHashMap<Method, InterceptorFactory>(methodCount);
-        final IdentityHashMap<Method, InterceptorFactory> clientInterceptorFactories = new IdentityHashMap<Method, InterceptorFactory>(methodCount);
+        final IdentityHashMap<Method, InterceptorFactory> viewInterceptorFactories = new IdentityHashMap<>(methodCount);
+        final IdentityHashMap<Method, InterceptorFactory> clientInterceptorFactories = new IdentityHashMap<>(methodCount);
         for (final Method method : methods) {
             if (method.getName().equals("finalize") && method.getParameterTypes().length == 0) {
                 viewInterceptorFactories.put(method, Interceptors.getTerminalInterceptorFactory());
@@ -129,8 +129,8 @@ public final class ViewService implements Service<ComponentView> {
             this.privateData = privateData;
             component = componentInjector.getValue();
             //we need to build the view interceptor chain
-            this.viewInterceptors = new IdentityHashMap<Method, Interceptor>();
-            this.methods = new HashMap<MethodDescription, Method>();
+            this.viewInterceptors = new IdentityHashMap<>();
+            this.methods = new HashMap<>();
         }
 
         void initializeInterceptors() {
@@ -253,7 +253,7 @@ public final class ViewService implements Service<ComponentView> {
             final Interceptor clientPreDestroyInterceptor = clientPreDestroy.create(factoryContext);
 
             final Map<Method, InterceptorFactory> clientInterceptorFactories = ViewService.this.clientInterceptorFactories;
-            IdentityHashMap<Method, Interceptor> clientEntryPoints = new IdentityHashMap<Method, Interceptor>(clientInterceptorFactories.size());
+            IdentityHashMap<Method, Interceptor> clientEntryPoints = new IdentityHashMap<>(clientInterceptorFactories.size());
             for (Method method : clientInterceptorFactories.keySet()) {
                 clientEntryPoints.put(method, clientInterceptorFactories.get(method).create(factoryContext));
             }

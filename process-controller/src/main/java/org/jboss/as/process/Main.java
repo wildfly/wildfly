@@ -87,8 +87,8 @@ public final class Main {
 
         String currentWorkingDir = SecurityActions.getSystemProperty("user.dir");
 
-        final List<String> javaOptions = new ArrayList<String>();
-        final List<String> smOptions = new ArrayList<String>();
+        final List<String> javaOptions = new ArrayList<>();
+        final List<String> smOptions = new ArrayList<>();
 
         // target module is always SM
         // -mp is my module path
@@ -204,7 +204,7 @@ public final class Main {
         final ProcessController processController = new ProcessController(configuration, System.out, System.err);
         final InetSocketAddress boundAddress = processController.getServer().getBoundAddress();
 
-        final List<String> initialCommand = new ArrayList<String>();
+        final List<String> initialCommand = new ArrayList<>();
         initialCommand.add(jvmName);
         initialCommand.add("-D[" + HOST_CONTROLLER_PROCESS_NAME + "]");
         initialCommand.addAll(javaOptions);

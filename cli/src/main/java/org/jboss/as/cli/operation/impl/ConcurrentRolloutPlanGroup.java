@@ -34,7 +34,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class ConcurrentRolloutPlanGroup implements RolloutPlanGroup {
 
-    private final List<SingleRolloutPlanGroup> groups = new ArrayList<SingleRolloutPlanGroup>();
+    private final List<SingleRolloutPlanGroup> groups = new ArrayList<>();
 
     public void addGroup(RolloutPlanGroup group) {
         if(group == null) {

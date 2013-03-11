@@ -90,8 +90,8 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
         }
         // we have now found some container interceptors which are bound to certain EJBs, start the real work!
 
-        final Map<String, List<InterceptorBindingMetaData>> bindingsPerEJB = new HashMap<String, List<InterceptorBindingMetaData>>();
-        final List<InterceptorBindingMetaData> bindingsForAllEJBs = new ArrayList<InterceptorBindingMetaData>();
+        final Map<String, List<InterceptorBindingMetaData>> bindingsPerEJB = new HashMap<>();
+        final List<InterceptorBindingMetaData> bindingsForAllEJBs = new ArrayList<>();
         for (final InterceptorBindingMetaData containerInterceptorBinding : containerInterceptorBindings) {
             if (containerInterceptorBinding.getEjbName().equals("*")) {
                 // container interceptor bindings that are applicable for all EJBs are *not* expected to specify a method
@@ -108,7 +108,7 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
                 // fetch existing container interceptor bindings for the EJB, if any.
                 List<InterceptorBindingMetaData> bindings = bindingsPerEJB.get(containerInterceptorBinding.getEjbName());
                 if (bindings == null) {
-                    bindings = new ArrayList<InterceptorBindingMetaData>();
+                    bindings = new ArrayList<>();
                     bindingsPerEJB.put(containerInterceptorBinding.getEjbName(), bindings);
                 }
                 // Make a note that the container interceptor binding is applicable for this specific EJB
@@ -117,7 +117,7 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
         }
         // At this point we now know which container interceptor bindings have been configured for which EJBs.
         // Next, we create InterceptorDescription(s) out of those.
-        final List<InterceptorDescription> interceptorDescriptionsForAllEJBs = new ArrayList<InterceptorDescription>();
+        final List<InterceptorDescription> interceptorDescriptionsForAllEJBs = new ArrayList<>();
         // first process container interceptors applicable for all EJBs
         for (InterceptorBindingMetaData binding : bindingsForAllEJBs) {
             if (binding.getInterceptorClasses() != null) {
@@ -139,17 +139,17 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
                 throw MESSAGES.failToLoadComponentClass(e, ejbComponentDescription.getComponentClassName());
             }
             final List<InterceptorBindingMetaData> bindingsApplicableForCurrentEJB = bindingsPerEJB.get(ejbComponentDescription.getComponentName());
-            final Map<Method, List<InterceptorBindingMetaData>> methodInterceptors = new HashMap<Method, List<InterceptorBindingMetaData>>();
-            final List<InterceptorBindingMetaData> classLevelBindings = new ArrayList<InterceptorBindingMetaData>();
+            final Map<Method, List<InterceptorBindingMetaData>> methodInterceptors = new HashMap<>();
+            final List<InterceptorBindingMetaData> classLevelBindings = new ArrayList<>();
             // we only want to exclude default and class level interceptors if every binding
             // has the exclude element.
             boolean classLevelExcludeDefaultInterceptors = false;
-            Map<Method, Boolean> methodLevelExcludeDefaultInterceptors = new HashMap<Method, Boolean>();
-            Map<Method, Boolean> methodLevelExcludeClassInterceptors = new HashMap<Method, Boolean>();
+            Map<Method, Boolean> methodLevelExcludeDefaultInterceptors = new HashMap<>();
+            Map<Method, Boolean> methodLevelExcludeClassInterceptors = new HashMap<>();
 
             // if an absolute order has been defined at any level then absolute ordering takes precedence
             boolean classLevelAbsoluteOrder = false;
-            final Map<Method, Boolean> methodLevelAbsoluteOrder = new HashMap<Method, Boolean>();
+            final Map<Method, Boolean> methodLevelAbsoluteOrder = new HashMap<>();
             if (bindingsApplicableForCurrentEJB != null) {
                 for (final InterceptorBindingMetaData binding : bindingsApplicableForCurrentEJB) {
                     if (binding.getMethod() == null) {
@@ -201,7 +201,7 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
                         }
                         List<InterceptorBindingMetaData> methodSpecificInterceptorBindings = methodInterceptors.get(resolvedMethod);
                         if (methodSpecificInterceptorBindings == null) {
-                            methodSpecificInterceptorBindings = new ArrayList<InterceptorBindingMetaData>();
+                            methodSpecificInterceptorBindings = new ArrayList<>();
                             methodInterceptors.put(resolvedMethod, methodSpecificInterceptorBindings);
                         }
                         methodSpecificInterceptorBindings.add(binding);
@@ -228,7 +228,7 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
             if (classLevelExcludeDefaultInterceptors) {
                 ejbComponentDescription.setExcludeDefaultContainerInterceptors(true);
             }
-            final List<InterceptorDescription> classLevelInterceptors = new ArrayList<InterceptorDescription>();
+            final List<InterceptorDescription> classLevelInterceptors = new ArrayList<>();
             if (classLevelAbsoluteOrder) {
                 // We have an absolute ordering for the class level interceptors
                 for (final InterceptorBindingMetaData binding : classLevelBindings) {
@@ -275,7 +275,7 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
                     excludeClassInterceptors = ejbComponentDescription.isExcludeClassLevelContainerInterceptors(methodIdentifier);
                 }
 
-                final List<InterceptorDescription> methodLevelInterceptors = new ArrayList<InterceptorDescription>();
+                final List<InterceptorDescription> methodLevelInterceptors = new ArrayList<>();
                 if (totalOrder) {
                     // If there is a total order we just use it
                     for (final InterceptorBindingMetaData binding : methodBindings) {

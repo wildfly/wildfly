@@ -71,10 +71,10 @@ public class AnnotationImpl implements Annotation {
         this.className = className;
         this.cl = cl;
         if (parameterTypes != null) {
-            this.parameterTypes = new ArrayList<String>(parameterTypes.size());
+            this.parameterTypes = new ArrayList<>(parameterTypes.size());
             this.parameterTypes.addAll(parameterTypes);
         } else {
-            this.parameterTypes = new ArrayList<String>(0);
+            this.parameterTypes = new ArrayList<>(0);
         }
 
         this.memberName = memberName;

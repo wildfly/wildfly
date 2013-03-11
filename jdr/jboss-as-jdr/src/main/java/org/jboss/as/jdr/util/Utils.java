@@ -41,7 +41,7 @@ public final class Utils {
 
     public static List<String> readLines(InputStream input) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         String line = reader.readLine();
 
         while(line != null){

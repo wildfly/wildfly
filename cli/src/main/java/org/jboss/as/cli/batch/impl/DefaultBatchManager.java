@@ -52,7 +52,7 @@ public class DefaultBatchManager implements BatchManager {
         }
 
         if(batches.isEmpty()) {
-            batches = new HashMap<String, DefaultBatch>();
+            batches = new HashMap<>();
         }
         batches.put(name, activeBatch);
         activeBatch = null;

@@ -54,7 +54,7 @@ public class InitializeInOrderProcessor implements DeploymentUnitProcessor {
             final boolean inOrder = earConfig.getInitializeInOrder();
             if (inOrder && earConfig.getModules().size() > 1) {
 
-                final Map<String, DeploymentUnit> deploymentUnitMap = new HashMap<String, DeploymentUnit>();
+                final Map<String, DeploymentUnit> deploymentUnitMap = new HashMap<>();
                 for (final DeploymentUnit subDeployment : parent.getAttachment(org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS)) {
 
                     final ResourceRoot deploymentRoot = subDeployment.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);

@@ -42,7 +42,7 @@ class JBossAllXmlParseContext {
 
     private final DeploymentUnit deploymentUnit;
 
-    private final Map<QName, Object> parseResults = new HashMap<QName, Object>();
+    private final Map<QName, Object> parseResults = new HashMap<>();
 
     public JBossAllXmlParseContext(final DeploymentUnit deploymentUnit) {
         this.deploymentUnit = deploymentUnit;

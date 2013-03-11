@@ -66,7 +66,7 @@ public class JPADefinition extends SimpleResourceDefinition {
                     .setAllowExpression(true)
                     .setXmlName(CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new EnumValidator<ExtendedPersistenceInheritance>(ExtendedPersistenceInheritance.class,true,true))
+                    .setValidator(new EnumValidator<>(ExtendedPersistenceInheritance.class,true,true))
                     .setDefaultValue(new ModelNode(ExtendedPersistenceInheritance.DEEP.toString()))
                     .build();
 

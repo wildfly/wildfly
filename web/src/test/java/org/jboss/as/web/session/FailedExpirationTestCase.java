@@ -110,7 +110,7 @@ public class FailedExpirationTestCase {
         assertEquals(0, manager.getActiveSessionCount());
         assertEquals(0, manager.getPassivatedSessionCount());
 
-        Map<String, Object> attrs = new HashMap<String, Object>();
+        Map<String, Object> attrs = new HashMap<>();
         attrs.put("failInvalid", new FailInvalidationAttribute());
         attrs.put("failDeserialization", new FailDeserializationAttribute());
 
@@ -147,7 +147,7 @@ public class FailedExpirationTestCase {
         assertEquals(0, manager.getActiveSessionCount());
         assertEquals(0, manager.getPassivatedSessionCount());
 
-        Map<String, Object> attrs = new HashMap<String, Object>();
+        Map<String, Object> attrs = new HashMap<>();
         attrs.put("failInvalid", new FailInvalidationAttribute());
         attrs.put("failDeserialization", new FailDeserializationAttribute());
 
@@ -181,7 +181,7 @@ public class FailedExpirationTestCase {
         assertEquals(0, manager.getActiveSessionCount());
         assertEquals(0, manager.getPassivatedSessionCount());
 
-        Map<String, Object> attrs = new HashMap<String, Object>();
+        Map<String, Object> attrs = new HashMap<>();
         attrs.put("failInvalid", new FailInvalidationAttribute());
         attrs.put("failDeserialization", new FailDeserializationAttribute());
 

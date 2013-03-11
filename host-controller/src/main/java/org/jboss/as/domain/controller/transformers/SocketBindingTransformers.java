@@ -45,7 +45,7 @@ class SocketBindingTransformers {
 
     static TransformersSubRegistration registerTransformers(TransformersSubRegistration parent) {
 
-        Map<String, AttributeTransformationRequirementChecker> fieldCheckers = new HashMap<String, AttributeTransformationRequirementChecker>();
+        Map<String, AttributeTransformationRequirementChecker> fieldCheckers = new HashMap<>();
         fieldCheckers.put(AbstractSocketBindingResourceDefinition.CLIENT_MAPPING_SOURCE_NETWORK.getName(), AttributeTransformationRequirementChecker.SIMPLE_EXPRESSIONS);
         fieldCheckers.put(AbstractSocketBindingResourceDefinition.CLIENT_MAPPING_DESTINATION_ADDRESS.getName(), AttributeTransformationRequirementChecker.SIMPLE_EXPRESSIONS);
         fieldCheckers.put(AbstractSocketBindingResourceDefinition.CLIENT_MAPPING_DESTINATION_PORT.getName(), AttributeTransformationRequirementChecker.SIMPLE_EXPRESSIONS);

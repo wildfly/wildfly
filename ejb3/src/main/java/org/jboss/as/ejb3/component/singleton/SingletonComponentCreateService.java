@@ -40,7 +40,7 @@ public class SingletonComponentCreateService extends SessionBeanComponentCreateS
 
     private final boolean initOnStartup;
     private final List<ServiceName> dependsOn;
-    private final InjectedValue<DefaultAccessTimeoutService> defaultAccessTimeoutService = new InjectedValue<DefaultAccessTimeoutService>();
+    private final InjectedValue<DefaultAccessTimeoutService> defaultAccessTimeoutService = new InjectedValue<>();
 
     public SingletonComponentCreateService(final ComponentConfiguration componentConfiguration, final ApplicationExceptions ejbJarConfiguration, final boolean initOnStartup, final List<ServiceName> dependsOn) {
         super(componentConfiguration, ejbJarConfiguration);

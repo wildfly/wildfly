@@ -144,7 +144,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
      * @throws IOException for any error
      */
     private List<ResourceRoot> createResourceRoots(final VirtualFile deploymentRoot, MountHandle mountHandle) throws IOException, DeploymentUnitProcessingException {
-        final List<ResourceRoot> entries = new ArrayList<ResourceRoot>();
+        final List<ResourceRoot> entries = new ArrayList<>();
         // WEB-INF classes
         final VirtualFile webinfClasses = deploymentRoot.getChild(WEB_INF_CLASSES);
         if (webinfClasses.exists()) {

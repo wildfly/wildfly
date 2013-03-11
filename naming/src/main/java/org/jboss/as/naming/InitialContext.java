@@ -56,7 +56,7 @@ public class InitialContext extends NamingContext {
      * @param factory The ObjectFactory that can handle the requests.
      */
     public static synchronized void addUrlContextFactory(final String scheme, ObjectFactory factory) {
-        Map<String, ObjectFactory> factories = new HashMap<String, ObjectFactory>(urlContextFactories);
+        Map<String, ObjectFactory> factories = new HashMap<>(urlContextFactories);
         factories.put(scheme, factory);
         urlContextFactories = Collections.unmodifiableMap(factories);
     }
@@ -70,7 +70,7 @@ public class InitialContext extends NamingContext {
      * @throws IllegalArgumentException if the requested scheme/factory combination is not registered.
      */
     public static synchronized void removeUrlContextFactory(final String scheme, ObjectFactory factory) {
-        Map<String, ObjectFactory> factories = new HashMap<String, ObjectFactory>(urlContextFactories);
+        Map<String, ObjectFactory> factories = new HashMap<>(urlContextFactories);
 
         ObjectFactory f = factories.get(scheme);
         if (f == factory) {

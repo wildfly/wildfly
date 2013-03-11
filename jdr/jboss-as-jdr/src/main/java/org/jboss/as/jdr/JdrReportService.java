@@ -66,8 +66,8 @@ public class JdrReportService implements JdrReportCollector, Service<JdrReportCo
                 .install();
     }
 
-    private final InjectedValue<ServerEnvironment> serverEnvironmentValue = new InjectedValue<ServerEnvironment>();
-    private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
+    private final InjectedValue<ServerEnvironment> serverEnvironmentValue = new InjectedValue<>();
+    private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<>();
     private ExecutorService executorService;
     private ServerEnvironment serverEnvironment;
     private ModelControllerClient controllerClient;

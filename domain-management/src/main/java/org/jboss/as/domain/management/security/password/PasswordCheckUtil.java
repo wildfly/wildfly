@@ -45,7 +45,7 @@ public class PasswordCheckUtil {
 
     private PasswordStrengthChecker passwordStrengthChecker;
     private PasswordStrength acceptable = PasswordStrength.MODERATE;
-    private List<PasswordRestriction> passwordValuesRestrictions = new ArrayList<PasswordRestriction>();
+    private List<PasswordRestriction> passwordValuesRestrictions = new ArrayList<>();
 
     private PasswordCheckUtil() {
         InputStream is = Keyboard.class.getResourceAsStream("utility.properties");
@@ -140,7 +140,7 @@ public class PasswordCheckUtil {
     public PasswordCheckResult check(boolean isAdminitrative, String userName, String password) {
         // TODO: allow custom restrictions?
 
-        List<PasswordRestriction> passwordValuesRestrictions = new ArrayList<PasswordRestriction>(this.passwordValuesRestrictions);
+        List<PasswordRestriction> passwordValuesRestrictions = new ArrayList<>(this.passwordValuesRestrictions);
         passwordValuesRestrictions.add(new ValueRestriction(userName));
         final PasswordStrengthCheckResult strengthResult = this.passwordStrengthChecker.check(password, passwordValuesRestrictions);
 

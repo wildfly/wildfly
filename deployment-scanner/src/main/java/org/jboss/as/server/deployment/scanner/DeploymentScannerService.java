@@ -67,9 +67,9 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
      */
     private FileSystemDeploymentService scanner;
 
-    private final InjectedValue<PathManager> pathManagerValue = new InjectedValue<PathManager>();
-    private final InjectedValue<ModelController> controllerValue = new InjectedValue<ModelController>();
-    private final InjectedValue<ScheduledExecutorService> scheduledExecutorValue = new InjectedValue<ScheduledExecutorService>();
+    private final InjectedValue<PathManager> pathManagerValue = new InjectedValue<>();
+    private final InjectedValue<ModelController> controllerValue = new InjectedValue<>();
+    private final InjectedValue<ScheduledExecutorService> scheduledExecutorValue = new InjectedValue<>();
     private volatile PathManager.Callback.Handle callbackHandle;
 
     public static ServiceName getServiceName(String repositoryName) {

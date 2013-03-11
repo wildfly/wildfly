@@ -104,7 +104,7 @@ public class MockOperationCandidatesProvider implements OperationCandidatesProvi
 
     @Override
     public List<String> getOperationNames(CommandContext ctx, OperationRequestAddress prefix) {
-        return new ArrayList<String>(root.getOperationNames());
+        return new ArrayList<>(root.getOperationNames());
     }
 
     @Override
@@ -115,7 +115,7 @@ public class MockOperationCandidatesProvider implements OperationCandidatesProvi
         }
 
         final List<String> names = operation.getPropertyNames();
-        final List<CommandArgument> result = new ArrayList<CommandArgument>(names.size());
+        final List<CommandArgument> result = new ArrayList<>(names.size());
         for(final String name : names) {
             result.add(new CommandArgument(){
                 @Override

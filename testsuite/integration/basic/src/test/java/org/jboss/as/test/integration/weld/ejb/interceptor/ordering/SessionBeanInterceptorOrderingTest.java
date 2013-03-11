@@ -63,13 +63,13 @@ public class SessionBeanInterceptorOrderingTest {
 
     @Test
     public void testSessionBeanInterceptorOrdering() {
-        List<String> expectedSequence = new ArrayList<String>();
+        List<String> expectedSequence = new ArrayList<>();
         expectedSequence.add("LegacyInterceptor");
         expectedSequence.add("CdiInterceptor");
         expectedSequence.add("TargetClassInterceptor");
         expectedSequence.add("InterceptedBean");
 
-        List<String> actualSequence = new ArrayList<String>();
+        List<String> actualSequence = new ArrayList<>();
         bean.ping(actualSequence);
 
         assertEquals(expectedSequence, actualSequence);

@@ -89,7 +89,7 @@ public class ObjectFactoryWithEnvironmentBindingTestCase {
     private static final Map<String, String> ENVIRONMENT_PROPERTIES = getEnvironmentProperties();
 
     private static Map<String, String> getEnvironmentProperties() {
-        final Map<String, String> map = new HashMap<String, String>();
+        final Map<String, String> map = new HashMap<>();
         map.put("p1", "v1");
         map.put("p2", "v2");
         return Collections.unmodifiableMap(map);

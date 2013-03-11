@@ -180,7 +180,7 @@ class HornetQServerAdd implements OperationStepHandler {
             }, OperationContext.Stage.MODEL);
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+                    final List<ServiceController<?>> controllers = new ArrayList<>();
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     performRuntime(context, resource, verificationHandler, controllers);
 
@@ -247,7 +247,7 @@ class HornetQServerAdd implements OperationStepHandler {
                         hqService.getSecurityDomainContextInjector());
 
                 // Process acceptors and connectors
-                final Set<String> socketBindings = new HashSet<String>();
+                final Set<String> socketBindings = new HashSet<>();
                 TransportConfigOperationHandlers.processAcceptors(context, configuration, model, socketBindings);
 
                 for (final String socketBinding : socketBindings) {
@@ -255,7 +255,7 @@ class HornetQServerAdd implements OperationStepHandler {
                     serviceBuilder.addDependency(socketName, SocketBinding.class, hqService.getSocketBindingInjector(socketBinding));
                 }
 
-                final Set<String> outboundSocketBindings = new HashSet<String>();
+                final Set<String> outboundSocketBindings = new HashSet<>();
                 TransportConfigOperationHandlers.processConnectors(context, configuration, model, outboundSocketBindings);
                 for (final String outboundSocketBinding : outboundSocketBindings) {
                     final ServiceName outboundSocketName = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketBinding);
@@ -466,7 +466,7 @@ class HornetQServerAdd implements OperationStepHandler {
         // TODO preemptively check that the interceptor classes can be loaded
         ModelNode interceptors = params.get(CommonAttributes.REMOTING_INTERCEPTORS.getName());
         if (interceptors.isDefined()) {
-            final List<String> interceptorClassNames = new ArrayList<String>();
+            final List<String> interceptorClassNames = new ArrayList<>();
             for (ModelNode child : interceptors.asList()) {
                 interceptorClassNames.add(child.asString());
             }
@@ -481,7 +481,7 @@ class HornetQServerAdd implements OperationStepHandler {
         // TODO preemptively check that the interceptor classes can be loaded
         ModelNode interceptors = params.get(CommonAttributes.REMOTING_INCOMING_INTERCEPTORS.getName());
         if (interceptors.isDefined()) {
-            final List<String> interceptorClassNames = new ArrayList<String>();
+            final List<String> interceptorClassNames = new ArrayList<>();
             for (ModelNode child : interceptors.asList()) {
                 interceptorClassNames.add(child.asString());
             }
@@ -496,7 +496,7 @@ class HornetQServerAdd implements OperationStepHandler {
         // TODO preemptively check that the interceptor classes can be loaded
         ModelNode interceptors = params.get(CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS.getName());
         if (interceptors.isDefined()) {
-            final List<String> interceptorClassNames = new ArrayList<String>();
+            final List<String> interceptorClassNames = new ArrayList<>();
             for (ModelNode child : interceptors.asList()) {
                 interceptorClassNames.add(child.asString());
             }
@@ -517,7 +517,7 @@ class HornetQServerAdd implements OperationStepHandler {
                 final ModelNode config = property.getValue();
 
                 if(config.hasDefined(CommonAttributes.ROLE)) {
-                    final Set<Role> roles = new HashSet<Role>();
+                    final Set<Role> roles = new HashSet<>();
                     for (final Property role : config.get(CommonAttributes.ROLE).asPropertyList()) {
                         roles.add(SecurityRoleDefinition.transform(context, role.getName(), role.getValue()));
                     }

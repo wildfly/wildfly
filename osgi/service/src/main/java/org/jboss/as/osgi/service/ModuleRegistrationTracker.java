@@ -59,10 +59,10 @@ public class ModuleRegistrationTracker extends AbstractService<Void> {
 
     public static final ServiceName MODULE_REGISTRATION_COMPLETE = SERVICE_BASE_NAME.append("module", "registration");
 
-    private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
-    private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
+    private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<>();
+    private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<>();
 
-    private final Map<Module, Registration> registrations = new LinkedHashMap<Module, Registration>();
+    private final Map<Module, Registration> registrations = new LinkedHashMap<>();
 
     public ServiceController<Void> install(ServiceTarget serviceTarget, ServiceVerificationHandler verificationHandler) {
         ServiceBuilder<Void> builder = serviceTarget.addService(MODULE_REGISTRATION_COMPLETE, this);

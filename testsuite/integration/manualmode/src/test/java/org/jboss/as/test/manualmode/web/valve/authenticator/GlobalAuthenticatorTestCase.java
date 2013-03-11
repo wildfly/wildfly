@@ -111,7 +111,7 @@ public class GlobalAuthenticatorTestCase {
     @InSequence(1)
     @OperateOnDeployment(value = DEPLOYMENT_NAME_2)
     public void createSecondValveAndDeploy(@ArquillianResource ManagementClient client) throws Exception {
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         params.put(PARAM_NAME, GLOBAL_PARAM_VALUE);
         ValveUtil.addValve(client, CUSTOM_AUTHENTICATOR_2, MODULENAME, AUTHENTICATOR.getName(), params);
         ValveUtil.reload(client);

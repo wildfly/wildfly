@@ -95,7 +95,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
             // handle META-INF/persistence.xml
             // ordered list of PUs
-            List<PersistenceUnitMetadataHolder> listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
+            List<PersistenceUnitMetadataHolder> listPUHolders = new ArrayList<>(1);
             // handle META-INF/persistence.xml
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
             VirtualFile persistence_xml = deploymentRoot.getRoot().getChild(META_INF_PERSISTENCE_XML);
@@ -118,7 +118,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
             int puCount;
             // ordered list of PUs
-            List<PersistenceUnitMetadataHolder> listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
+            List<PersistenceUnitMetadataHolder> listPUHolders = new ArrayList<>(1);
 
             // handle WEB-INF/classes/META-INF/persistence.xml
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
@@ -136,7 +136,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
             for (ResourceRoot resourceRoot : resourceRoots) {
                 if (resourceRoot.getRoot().getName().toLowerCase(Locale.ENGLISH).endsWith(JAR_FILE_EXTENSION)) {
-                    listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
+                    listPUHolders = new ArrayList<>(1);
                     persistence_xml = resourceRoot.getRoot().getChild(META_INF_PERSISTENCE_XML);
                     parse(persistence_xml, listPUHolders, deploymentUnit);
                     holder = normalize(listPUHolders);
@@ -158,7 +158,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
             int puCount = 0;
             // ordered list of PUs
-            List<PersistenceUnitMetadataHolder> listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
+            List<PersistenceUnitMetadataHolder> listPUHolders = new ArrayList<>(1);
             // handle META-INF/persistence.xml
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
             VirtualFile persistence_xml = deploymentRoot.getRoot().getChild(META_INF_PERSISTENCE_XML);
@@ -177,7 +177,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                 if (!SubDeploymentMarker.isSubDeployment(resourceRoot) &&
                     resourceRoot.getRoot().getName().toLowerCase(Locale.ENGLISH).endsWith(JAR_FILE_EXTENSION) &&
                     resourceRoot.getRoot().getParent().getName().equals(LIB_FOLDER)) {
-                    listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
+                    listPUHolders = new ArrayList<>(1);
                     persistence_xml = resourceRoot.getRoot().getChild(META_INF_PERSISTENCE_XML);
                     parse(persistence_xml, listPUHolders, deploymentUnit);
                     holder = normalize(listPUHolders);
@@ -237,7 +237,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
         for (PersistenceUnitMetadata pu : puHolder.getPersistenceUnits()) {
             // set URLs
-            List<URL> jarfilesUrls = new ArrayList<URL>();
+            List<URL> jarfilesUrls = new ArrayList<>();
             if (pu.getJarFiles() != null) {
                 for (String jar : pu.getJarFiles()) {
                     jarfilesUrls.add(getRelativeURL(persistence_xml, jar));
@@ -291,7 +291,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
      */
     private PersistenceUnitMetadataHolder normalize(List<PersistenceUnitMetadataHolder> listPUHolders) {
         // eliminate duplicates (keeping the first instance of each PU by name)
-        Map<String, PersistenceUnitMetadata> flattened = new HashMap<String, PersistenceUnitMetadata>();
+        Map<String, PersistenceUnitMetadata> flattened = new HashMap<>();
         for (PersistenceUnitMetadataHolder puHolder : listPUHolders) {
             for (PersistenceUnitMetadata pu : puHolder.getPersistenceUnits()) {
                 if (!flattened.containsKey(pu.getPersistenceUnitName())) {
@@ -303,7 +303,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                 }
             }
         }
-        PersistenceUnitMetadataHolder holder = new PersistenceUnitMetadataHolder(new ArrayList<PersistenceUnitMetadata>(flattened.values()));
+        PersistenceUnitMetadataHolder holder = new PersistenceUnitMetadataHolder(new ArrayList<>(flattened.values()));
         return holder;
     }
 
@@ -316,7 +316,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     }
 
     private static String getScopedDeploymentUnitPath(DeploymentUnit deploymentUnit) {
-        ArrayList<String> parts = new ArrayList<String>();  // order of deployment elements will start with parent
+        ArrayList<String> parts = new ArrayList<>();  // order of deployment elements will start with parent
 
         do {
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);

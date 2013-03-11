@@ -64,7 +64,7 @@ public class GroupingHandlerDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition TYPE = create("type", STRING)
             .setAllowExpression(true)
-            .setValidator(new EnumValidator<GroupingHandlerConfiguration.TYPE>(GroupingHandlerConfiguration.TYPE.class, false, true))
+            .setValidator(new EnumValidator<>(GroupingHandlerConfiguration.TYPE.class, false, true))
             .setRestartAllServices()
             .build();
 

@@ -79,7 +79,7 @@ public class SimpleStatelessWebserviceEndpointTestCase {
     @Test
     public void testRemoteAccess() throws Exception {
         
-        final Hashtable<String, String> props = new Hashtable<String, String>();
+        final Hashtable<String, String> props = new Hashtable<>();
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
         final Context context = new InitialContext(props);
         SimpleStatelessWebserviceEndpointIface ejb3Remote = (SimpleStatelessWebserviceEndpointIface) 

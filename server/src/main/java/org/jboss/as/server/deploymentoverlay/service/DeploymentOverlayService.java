@@ -38,7 +38,7 @@ public class DeploymentOverlayService implements Service<DeploymentOverlayServic
 
     public static final ServiceName SERVICE_NAME = DeploymentOverlayIndexService.SERVICE_NAME.append("deploymentOverlayService");
 
-    private final Set<ContentService> contentServices = new CopyOnWriteArraySet<ContentService>();
+    private final Set<ContentService> contentServices = new CopyOnWriteArraySet<>();
     private final String name;
 
     public DeploymentOverlayService(final String name) {

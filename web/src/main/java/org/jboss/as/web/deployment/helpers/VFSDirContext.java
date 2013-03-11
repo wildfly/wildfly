@@ -241,7 +241,7 @@ public class VFSDirContext extends BaseDirContext {
 
     protected ArrayList<NamingEntry> list(VirtualFile entry) {
 
-        ArrayList<NamingEntry> entries = new ArrayList<NamingEntry>();
+        ArrayList<NamingEntry> entries = new ArrayList<>();
         if (entry.isDirectory()) {
             Iterator<VirtualFile> children = entry.getChildren().iterator();
             NamingEntry namingEntry = null;

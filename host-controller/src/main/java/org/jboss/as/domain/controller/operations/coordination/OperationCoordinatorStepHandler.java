@@ -199,7 +199,7 @@ public class OperationCoordinatorStepHandler {
         if (localHostControllerInfo.isMasterDomainController()) {
 
             // Add steps to invoke on the HC for each relevant slave
-            Set<String> remoteHosts = new HashSet<String>(routing.getHosts());
+            Set<String> remoteHosts = new HashSet<>(routing.getHosts());
             boolean global = remoteHosts.size() == 0;
             remoteHosts.remove(localHostName);
 
@@ -212,7 +212,7 @@ public class OperationCoordinatorStepHandler {
                     remoteHosts.addAll(hostProxies.keySet());
                 }
 
-                Map<String, ProxyController> remoteProxies = new HashMap<String, ProxyController>();
+                Map<String, ProxyController> remoteProxies = new HashMap<>();
                 for (String host : remoteHosts) {
                     ProxyController proxy = hostProxies.get(host);
                     if (proxy != null) {

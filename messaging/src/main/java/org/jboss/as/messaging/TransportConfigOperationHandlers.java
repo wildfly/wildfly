@@ -72,7 +72,7 @@ class TransportConfigOperationHandlers {
      * @throws OperationFailedException
      */
     static void processAcceptors(final OperationContext context, final Configuration configuration, final ModelNode params, final Set<String> bindings) throws OperationFailedException {
-        final Map<String, TransportConfiguration> acceptors = new HashMap<String, TransportConfiguration>();
+        final Map<String, TransportConfiguration> acceptors = new HashMap<>();
         if (params.hasDefined(ACCEPTOR)) {
             for (final Property property : params.get(ACCEPTOR).asPropertyList()) {
                 final String acceptorName = property.getName();
@@ -102,7 +102,7 @@ class TransportConfigOperationHandlers {
                 acceptors.put(acceptorName, new TransportConfiguration(InVMAcceptorFactory.class.getName(), parameters, acceptorName));
             }
         }
-        configuration.setAcceptorConfigurations(new HashSet<TransportConfiguration>(acceptors.values()));
+        configuration.setAcceptorConfigurations(new HashSet<>(acceptors.values()));
     }
 
     /**
@@ -114,7 +114,7 @@ class TransportConfigOperationHandlers {
      * @throws OperationFailedException if an expression can not be resolved
      */
     static Map<String, Object> getParameters(final OperationContext context, final ModelNode config) throws OperationFailedException {
-        final Map<String, Object> parameters = new HashMap<String, Object>();
+        final Map<String, Object> parameters = new HashMap<>();
         if (config.hasDefined(PARAM)) {
             for (final Property parameter : config.get(PARAM).asPropertyList()) {
                 String name = parameter.getName();
@@ -135,7 +135,7 @@ class TransportConfigOperationHandlers {
      * @throws OperationFailedException
      */
     static void processConnectors(final OperationContext context, final Configuration configuration, final ModelNode params, final Set<String> bindings) throws OperationFailedException {
-        final Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
+        final Map<String, TransportConfiguration> connectors = new HashMap<>();
         if (params.hasDefined(CONNECTOR)) {
             for (final Property property : params.get(CONNECTOR).asPropertyList()) {
                 final String connectorName = property.getName();

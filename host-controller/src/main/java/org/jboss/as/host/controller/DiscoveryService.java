@@ -46,8 +46,8 @@ class DiscoveryService implements Service<Void> {
 
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "discovery");
 
-    private final InjectedValue<NetworkInterfaceBinding> interfaceBinding = new InjectedValue<NetworkInterfaceBinding>();
-    private final InjectedValue<ExecutorService> executorService = new InjectedValue<ExecutorService>();
+    private final InjectedValue<NetworkInterfaceBinding> interfaceBinding = new InjectedValue<>();
+    private final InjectedValue<ExecutorService> executorService = new InjectedValue<>();
     private final List<DiscoveryOption> discoveryOptions;
     private final int port;
     private final boolean isMasterDomainController;

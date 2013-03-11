@@ -34,7 +34,7 @@ import org.jboss.as.server.ServerMessages;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class DeploymentReflectionIndex {
-    private final Map<Class<?>, ClassReflectionIndex<?>> classes = new HashMap<Class<?>, ClassReflectionIndex<?>>();
+    private final Map<Class<?>, ClassReflectionIndex<?>> classes = new HashMap<>();
 
     DeploymentReflectionIndex() {
     }
@@ -65,7 +65,7 @@ public final class DeploymentReflectionIndex {
         try {
             ClassReflectionIndex<T> index = (ClassReflectionIndex<T>) classes.get(clazz);
             if (index == null) {
-                classes.put(clazz, index = new ClassReflectionIndex<T>(clazz, this));
+                classes.put(clazz, index = new ClassReflectionIndex<>(clazz, this));
             }
             return index;
         } catch (Throwable e) {

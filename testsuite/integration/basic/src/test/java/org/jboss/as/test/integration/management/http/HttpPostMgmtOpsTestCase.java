@@ -147,7 +147,7 @@ public class HttpPostMgmtOpsTestCase {
         List<ModelNode> names = ret.get("result").asList();
 
         System.out.println(names.toString());
-        Set<String> strNames = new TreeSet<String>();
+        Set<String> strNames = new TreeSet<>();
         for (ModelNode n : names) strNames.add(n.asString());
 
         assertTrue(strNames.contains("read-attribute"));
@@ -186,7 +186,7 @@ public class HttpPostMgmtOpsTestCase {
         ModelNode result = ret.get("result");
 
         List<ModelNode> list = result.asList();
-        Set<String> strNames = new TreeSet<String>();
+        Set<String> strNames = new TreeSet<>();
         for (ModelNode n : list) strNames.add(n.asString());
 
 
@@ -206,7 +206,7 @@ public class HttpPostMgmtOpsTestCase {
         ModelNode result = ret.get("result");
 
         List<ModelNode> names = result.asList();
-        Set<String> strNames = new TreeSet<String>();
+        Set<String> strNames = new TreeSet<>();
         for (ModelNode n : names) strNames.add(n.asString());
 
         assertTrue(strNames.contains("http"));

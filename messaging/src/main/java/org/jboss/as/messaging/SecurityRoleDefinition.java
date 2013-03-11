@@ -93,7 +93,7 @@ public class SecurityRoleDefinition extends SimpleResourceDefinition {
     private final boolean readOnly;
 
     static {
-        Map<String, AttributeDefinition> robxn = new HashMap<String, AttributeDefinition>();
+        Map<String, AttributeDefinition> robxn = new HashMap<>();
         for (AttributeDefinition attr : SecurityRoleDefinition.ATTRIBUTES) {
             robxn.put(attr.getXmlName(), attr);
         }

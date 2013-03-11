@@ -70,20 +70,20 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     private volatile PersistenceUnitTransactionType transactionType;
 
     // optional: collection of individually named managed entity classes
-    private volatile List<String> classes = new ArrayList<String>(1);
+    private volatile List<String> classes = new ArrayList<>(1);
 
     // optional:
-    private final List<String> packages = new ArrayList<String>(1);
+    private final List<String> packages = new ArrayList<>(1);
 
     // optional:  collection of jar file names that contain entity classes
-    private volatile List<String> jarFiles = new ArrayList<String>(1);
+    private volatile List<String> jarFiles = new ArrayList<>(1);
 
-    private volatile List<URL> jarFilesUrls = new ArrayList<URL>();
+    private volatile List<URL> jarFilesUrls = new ArrayList<>();
 
     private volatile URL persistenceUnitRootUrl;
 
     // optional: collection of orm.xml style entity mapping files
-    private volatile List<String> mappingFiles = new ArrayList<String>(1);
+    private volatile List<String> mappingFiles = new ArrayList<>(1);
 
     // collection of properties for the persistence provider
     private volatile Properties props = new Properties();
@@ -100,7 +100,7 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     // transformers will be written to when the JPA persistence provider adds their transformer.
     // there should be very few calls to add transformers but potentially many calls to get the
     // transformer list (once per application class loaded).
-    private final List<ClassTransformer> transformers = new CopyOnWriteArrayList<ClassTransformer>();
+    private final List<ClassTransformer> transformers = new CopyOnWriteArrayList<>();
 
     private volatile SharedCacheMode sharedCacheMode;
 

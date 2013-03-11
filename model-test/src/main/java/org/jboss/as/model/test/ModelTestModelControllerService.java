@@ -210,7 +210,7 @@ public abstract class ModelTestModelControllerService extends AbstractController
      * @param kernelServices the kernel services used to access the controller
      */
     public static Resource grabRootResource(ModelTestKernelServices<?> kernelServices) {
-        final AtomicReference<Resource> resourceRef = new AtomicReference<Resource>();
+        final AtomicReference<Resource> resourceRef = new AtomicReference<>();
         ((ModelTestKernelServicesImpl<?>)kernelServices).internalExecute(new ModelNode(), new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {

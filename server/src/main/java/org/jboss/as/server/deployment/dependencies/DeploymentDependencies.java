@@ -34,7 +34,7 @@ class DeploymentDependencies {
 
     public static final AttachmentKey<DeploymentDependencies> ATTACHMENT_KEY = AttachmentKey.create(DeploymentDependencies.class);
 
-    private final List<String> dependencies = new ArrayList<String>();
+    private final List<String> dependencies = new ArrayList<>();
 
     public List<String> getDependencies() {
         return dependencies;

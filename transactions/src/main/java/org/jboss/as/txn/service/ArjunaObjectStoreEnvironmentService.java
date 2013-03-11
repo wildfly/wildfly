@@ -43,7 +43,7 @@ import com.arjuna.common.internal.util.propertyservice.BeanPopulator;
  */
 public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
 
-    private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
+    private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<>();
     private final boolean useHornetqJournalStore;
     private final String path;
     private final String pathRef;

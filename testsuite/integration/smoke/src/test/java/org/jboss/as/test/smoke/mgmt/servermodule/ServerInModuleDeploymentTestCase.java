@@ -622,13 +622,13 @@ public class ServerInModuleDeploymentTestCase {
         Assert.assertTrue(file.exists());
         file = new File(file, "data");
         if (!file.exists() && emptyOk) {
-            return new HashSet<String>();
+            return new HashSet<>();
         }
         Assert.assertTrue(file.exists());
         file = new File(file, "content");
         Assert.assertTrue(file.exists());
 
-        Set<String> hashes = new HashSet<String>();
+        Set<String> hashes = new HashSet<>();
         for (File top : file.listFiles()) {
             if (top.isDirectory() && top.getName().length() == 2) {
                 for (File content : top.listFiles()) {

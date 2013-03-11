@@ -44,7 +44,7 @@ public class SerializedStatefulSessionObject implements Serializable {
     public SerializedStatefulSessionObject(final ServiceName componentServiceName, final SessionID sessionID, final Map<String, ServiceName> serviceNames) {
         this.componentServiceName = componentServiceName.getCanonicalName();
         this.sessionID = sessionID;
-        Map<String, String> names = new HashMap<String, String>();
+        Map<String, String> names = new HashMap<>();
         for (Map.Entry<String, ServiceName> e : serviceNames.entrySet()) {
             names.put(e.getKey(), e.getValue().getCanonicalName());
         }
@@ -52,7 +52,7 @@ public class SerializedStatefulSessionObject implements Serializable {
     }
 
     private Object readResolve() throws ObjectStreamException {
-        Map<String, ServiceName> names = new HashMap<String, ServiceName>();
+        Map<String, ServiceName> names = new HashMap<>();
         for (Map.Entry<String, String> e : serviceNames.entrySet()) {
             names.put(e.getKey(), ServiceName.parse(e.getValue()));
         }

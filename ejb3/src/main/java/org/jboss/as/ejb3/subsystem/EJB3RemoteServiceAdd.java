@@ -101,7 +101,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         final String threadPoolName = EJB3RemoteResourceDefinition.THREAD_POOL_NAME.resolveModelAttribute(context, model).asString();
         final ServiceName remotingServerServiceName = RemotingServices.serverServiceName(connectorName);
 
-        final List<ServiceController<?>> services = new ArrayList<ServiceController<?>>();
+        final List<ServiceController<?>> services = new ArrayList<>();
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
         // Install the client-mapping service for the remoting connector

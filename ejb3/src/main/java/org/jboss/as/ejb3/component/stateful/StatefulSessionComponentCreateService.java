@@ -66,10 +66,10 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     private final StatefulTimeoutInfo statefulTimeout;
     private final CacheInfo cache;
     private final Map<Integer, MarshallingConfiguration> marshallingConfigurations;
-    private final InjectedValue<DefaultAccessTimeoutService> defaultAccessTimeoutService = new InjectedValue<DefaultAccessTimeoutService>();
+    private final InjectedValue<DefaultAccessTimeoutService> defaultAccessTimeoutService = new InjectedValue<>();
     private final InterceptorFactory ejb2XRemoveMethod;
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<CacheFactory> cacheFactory = new InjectedValue<CacheFactory>();
+    private final InjectedValue<CacheFactory> cacheFactory = new InjectedValue<>();
     private final Set<Object> serializableInterceptorContextKeys;
 
     /**

@@ -139,7 +139,7 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
         try {
             final Class<?> clazz = module.getClassLoader().loadClass(className);
 
-            final Map<String, String> props = new HashMap<String, String>();
+            final Map<String, String> props = new HashMap<>();
             if (properties != null) {
                 for (String prop : properties) {
                     if (prop.contains("=")) {

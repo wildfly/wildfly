@@ -69,7 +69,7 @@ public class VaultAddHandler extends AbstractAddStepHandler {
         String vaultClass = codeNode.isDefined() ? codeNode.asString() : null;
 
         if (vaultReader != null) {
-            final Map<String, Object> vaultOptions = new HashMap<String, Object>();
+            final Map<String, Object> vaultOptions = new HashMap<>();
             if (operation.hasDefined(VaultResourceDefinition.VAULT_OPTIONS.getName())) {
                 for (Map.Entry<String, String> vaultOption : VaultResourceDefinition.VAULT_OPTIONS.unwrap(context, model).entrySet()) {
                     vaultOptions.put(vaultOption.getKey(), vaultOption.getValue());

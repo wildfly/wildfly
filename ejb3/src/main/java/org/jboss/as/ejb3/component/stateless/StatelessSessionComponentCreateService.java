@@ -37,8 +37,8 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class StatelessSessionComponentCreateService extends SessionBeanComponentCreateService {
 
-    private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<PoolConfig>();
-    private final InjectedValue<String> clusterName = new InjectedValue<String>();
+    private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<>();
+    private final InjectedValue<String> clusterName = new InjectedValue<>();
 
     /**
      * Construct a new instance.

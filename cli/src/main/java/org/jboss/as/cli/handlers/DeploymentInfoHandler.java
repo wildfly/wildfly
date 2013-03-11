@@ -158,18 +158,18 @@ public class DeploymentInfoHandler extends BaseOperationCommand {
                         final ModelNode stepResult = stepResponse.get(Util.RESULT);
                         if(stepResult.hasDefined(Util.VALID) && stepResult.get(Util.VALID).asBoolean()) {
                             if(addedServerGroups == null) {
-                                addedServerGroups = new ArrayList<String>();
+                                addedServerGroups = new ArrayList<>();
                             }
                            addedServerGroups.add(serverGroups.get(i));
                         } else {
                             if(otherServerGroups == null) {
-                                otherServerGroups = new ArrayList<String>();
+                                otherServerGroups = new ArrayList<>();
                             }
                             otherServerGroups.add(serverGroups.get(i));
                         }
                     } else {
                         if(otherServerGroups == null) {
-                            otherServerGroups = new ArrayList<String>();
+                            otherServerGroups = new ArrayList<>();
                         }
                         otherServerGroups.add(serverGroups.get(i));
                     }

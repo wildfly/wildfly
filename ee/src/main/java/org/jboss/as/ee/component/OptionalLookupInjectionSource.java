@@ -110,7 +110,7 @@ public final class OptionalLookupInjectionSource extends InjectionSource {
         public ManagedReference getReference() {
             try {
                 Object value = new InitialContext().lookup(lookupName);
-                return new ValueManagedReference(new ImmediateValue<Object>(value));
+                return new ValueManagedReference(new ImmediateValue<>(value));
             } catch (NamingException e) {
                 return null;
             }

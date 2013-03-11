@@ -172,7 +172,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
 
         // set up the protocol stack Protocol objects
         ProtocolStack stackConfig = new ProtocolStack(name, transportConfig);
-        List<Map.Entry<Protocol, String>> protocolSocketBindings = new ArrayList<Map.Entry<Protocol, String>>(orderedProtocols.size());
+        List<Map.Entry<Protocol, String>> protocolSocketBindings = new ArrayList<>(orderedProtocols.size());
         for (Property protocolProperty : orderedProtocols) {
             ModelNode protocol = protocolProperty.getValue();
             final String protocolType = (resolvedValue = ProtocolResource.TYPE.resolveModelAttribute(context, protocol)).isDefined() ? resolvedValue.asString() : null;
@@ -180,7 +180,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
             initProtocolProperties(context, protocol, protocolConfig);
             stackConfig.getProtocols().add(protocolConfig);
             final String protocolSocketBinding = (resolvedValue = ProtocolResource.SOCKET_BINDING.resolveModelAttribute(context, protocol)).isDefined() ? resolvedValue.asString() : null;
-            protocolSocketBindings.add(new AbstractMap.SimpleImmutableEntry<Protocol, String>(protocolConfig, protocolSocketBinding));
+            protocolSocketBindings.add(new AbstractMap.SimpleImmutableEntry<>(protocolConfig, protocolSocketBinding));
         }
 
         ServiceTarget target = context.getServiceTarget();
@@ -319,13 +319,13 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
     }
 
     static class ProtocolStack implements ProtocolStackConfiguration {
-        private final InjectedValue<ProtocolDefaults> defaults = new InjectedValue<ProtocolDefaults>();
-        private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
-        private final InjectedValue<ServerEnvironment> environment = new InjectedValue<ServerEnvironment>();
+        private final InjectedValue<ProtocolDefaults> defaults = new InjectedValue<>();
+        private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<>();
+        private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
 
         private final String name;
         private final TransportConfiguration transport;
-        private final List<ProtocolConfiguration> protocols = new LinkedList<ProtocolConfiguration>();
+        private final List<ProtocolConfiguration> protocols = new LinkedList<>();
 
         ProtocolStack(String name, TransportConfiguration transport) {
             this.name = name;
@@ -376,11 +376,11 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
     }
 
     static class Transport extends Protocol implements TransportConfiguration {
-        private final InjectedValue<SocketBinding> diagnosticsSocketBinding = new InjectedValue<SocketBinding>();
-        private final InjectedValue<Executor> defaultExecutor = new InjectedValue<Executor>();
-        private final InjectedValue<Executor> oobExecutor = new InjectedValue<Executor>();
-        private final InjectedValue<ScheduledExecutorService> timerExecutor = new InjectedValue<ScheduledExecutorService>();
-        private final InjectedValue<ThreadFactory> threadFactory = new InjectedValue<ThreadFactory>();
+        private final InjectedValue<SocketBinding> diagnosticsSocketBinding = new InjectedValue<>();
+        private final InjectedValue<Executor> defaultExecutor = new InjectedValue<>();
+        private final InjectedValue<Executor> oobExecutor = new InjectedValue<>();
+        private final InjectedValue<ScheduledExecutorService> timerExecutor = new InjectedValue<>();
+        private final InjectedValue<ThreadFactory> threadFactory = new InjectedValue<>();
         private boolean shared = true;
         private Topology topology;
 
@@ -485,8 +485,8 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
 
     static class Protocol implements ProtocolConfiguration {
         private final String name;
-        private final InjectedValue<SocketBinding> socketBinding = new InjectedValue<SocketBinding>();
-        private final Map<String, String> properties = new HashMap<String, String>();
+        private final InjectedValue<SocketBinding> socketBinding = new InjectedValue<>();
+        private final Map<String, String> properties = new HashMap<>();
         final Class<?> protocolClass;
 
         Protocol(final String name) {

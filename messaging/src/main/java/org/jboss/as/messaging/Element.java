@@ -279,7 +279,7 @@ public enum Element {
 
    Element(final List<AttributeDefinition> definitions) {
         this.definition = null;
-       this.definitions = new HashMap<String, AttributeDefinition>();
+       this.definitions = new HashMap<>();
         String ourName = null;
         for (AttributeDefinition def : definitions) {
             if (ourName == null) {
@@ -296,7 +296,7 @@ public enum Element {
 
    Element(final Map<String, AttributeDefinition> definitions) {
         this.definition = null;
-        this.definitions = new HashMap<String, AttributeDefinition>();
+        this.definitions = new HashMap<>();
         String ourName = null;
         for (Map.Entry<String, AttributeDefinition> def : definitions.entrySet()) {
             String xmlName = def.getValue().getXmlName();
@@ -330,7 +330,7 @@ public enum Element {
    private static final Map<String, Element> MAP;
 
    static {
-      final Map<String, Element> map = new HashMap<String, Element>();
+      final Map<String, Element> map = new HashMap<>();
       for (Element element : values()) {
          final String name = element.getLocalName();
          if (name != null) map.put(name, element);
@@ -348,21 +348,21 @@ public enum Element {
     }
 
     private static Map<String, AttributeDefinition> getScheduledThreadPoolDefinitions() {
-        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        final Map<String, AttributeDefinition> result = new HashMap<>();
         result.put("server", CommonAttributes.SCHEDULED_THREAD_POOL_MAX_SIZE);
         result.put("connection", Common.SCHEDULED_THREAD_POOL_MAX_SIZE);
         return result;
     }
 
     private static Map<String, AttributeDefinition> getThreadPoolDefinitions() {
-        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        final Map<String, AttributeDefinition> result = new HashMap<>();
         result.put("server", CommonAttributes.THREAD_POOL_MAX_SIZE);
         result.put("connection", Common.THREAD_POOL_MAX_SIZE);
         return result;
     }
 
     private static Map<String, AttributeDefinition> getConnectorRefDefinitions() {
-        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        final Map<String, AttributeDefinition> result = new HashMap<>();
         result.put("simple", ClusterConnectionDefinition.CONNECTOR_REF);
         result.put("broadcast-group", BroadcastGroupDefinition.CONNECTOR_REFS);
         result.put("bridge", BridgeDefinition.CONNECTOR_REFS);
@@ -372,7 +372,7 @@ public enum Element {
     }
 
     private static Map<String, AttributeDefinition> getReconnectAttemptsDefinitions() {
-        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        final Map<String, AttributeDefinition> result = new HashMap<>();
         result.put("connection", Common.RECONNECT_ATTEMPTS);
         result.put("pooled-connection", Pooled.RECONNECT_ATTEMPTS);
         result.put("bridge", BridgeDefinition.RECONNECT_ATTEMPTS);
@@ -382,7 +382,7 @@ public enum Element {
     }
 
     private static Map<String, AttributeDefinition> getConfirmationWindowSizeDefinitions() {
-        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        final Map<String, AttributeDefinition> result = new HashMap<>();
         result.put("connection", ConnectionFactoryAttributes.Common.CONFIRMATION_WINDOW_SIZE);
         result.put("bridge", CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE);
         return result;
@@ -390,7 +390,7 @@ public enum Element {
     }
 
     private static Map<String, AttributeDefinition> getForwardingAddressDefinitions() {
-        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        final Map<String, AttributeDefinition> result = new HashMap<>();
         result.put("divert", DivertDefinition.FORWARDING_ADDRESS);
         result.put("bridge", BridgeDefinition.FORWARDING_ADDRESS);
         return result;
@@ -398,7 +398,7 @@ public enum Element {
     }
 
     private static Map<String, AttributeDefinition> getDuplicateDetectionDefinitions() {
-        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        final Map<String, AttributeDefinition> result = new HashMap<>();
         result.put("cluster", ClusterConnectionDefinition.USE_DUPLICATE_DETECTION);
         result.put("bridge", BridgeDefinition.USE_DUPLICATE_DETECTION);
         return result;
@@ -406,7 +406,7 @@ public enum Element {
     }
 
     private static Map<String, AttributeDefinition> getRetryIntervalDefinitions() {
-        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        final Map<String, AttributeDefinition> result = new HashMap<>();
         result.put("cluster", ClusterConnectionDefinition.RETRY_INTERVAL);
         result.put("connection", ConnectionFactoryAttributes.Common.RETRY_INTERVAL);
         result.put("default", CommonAttributes.RETRY_INTERVAL);
@@ -414,7 +414,7 @@ public enum Element {
     }
 
     private static Map<String, AttributeDefinition> getRetryIntervalMultiplierDefinitions() {
-        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        final Map<String, AttributeDefinition> result = new HashMap<>();
         result.put("cluster", ClusterConnectionDefinition.RETRY_INTERVAL_MULTIPLIER);
         result.put("connection", ConnectionFactoryAttributes.Common.RETRY_INTERVAL_MULTIPLIER);
         result.put("default", CommonAttributes.RETRY_INTERVAL_MULTIPLIER);
@@ -422,7 +422,7 @@ public enum Element {
     }
 
     private static Map<String, AttributeDefinition> getMaxRetryIntervalDefinitions() {
-        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        final Map<String, AttributeDefinition> result = new HashMap<>();
         result.put("cluster", ClusterConnectionDefinition.MAX_RETRY_INTERVAL);
         result.put("connection", ConnectionFactoryAttributes.Common.MAX_RETRY_INTERVAL);
         result.put("default", CommonAttributes.MAX_RETRY_INTERVAL);
@@ -430,14 +430,14 @@ public enum Element {
     }
 
     private static Map<String, AttributeDefinition> getMinLargeMessageSizeDefinitions() {
-        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        final Map<String, AttributeDefinition> result = new HashMap<>();
         result.put("connection", ConnectionFactoryAttributes.Common.MIN_LARGE_MESSAGE_SIZE);
         result.put("default", CommonAttributes.MIN_LARGE_MESSAGE_SIZE);
         return result;
     }
 
     private static Map<String, AttributeDefinition> getConnectionTTLDefinitions() {
-        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        final Map<String, AttributeDefinition> result = new HashMap<>();
         result.put("cluster", ClusterConnectionDefinition.CONNECTION_TTL);
         result.put("connection", ConnectionFactoryAttributes.Common.CONNECTION_TTL);
         result.put("default", CommonAttributes.CONNECTION_TTL);
@@ -445,14 +445,14 @@ public enum Element {
     }
 
     private static Map<String, AttributeDefinition> getCheckPeriodDefinitions() {
-        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        final Map<String, AttributeDefinition> result = new HashMap<>();
         result.put("cluster", ClusterConnectionDefinition.CHECK_PERIOD);
         result.put("default", CommonAttributes.CHECK_PERIOD);
         return result;
     }
 
     private static Map<String, AttributeDefinition> getUserDefinitions() {
-        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        final Map<String, AttributeDefinition> result = new HashMap<>();
         result.put("source", JMSBridgeDefinition.SOURCE_USER);
         result.put("target", JMSBridgeDefinition.TARGET_USER);
         result.put("default", BridgeDefinition.USER);
@@ -460,7 +460,7 @@ public enum Element {
     }
 
     private static Map<String, AttributeDefinition> getPasswordDefinitions() {
-        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        final Map<String, AttributeDefinition> result = new HashMap<>();
         result.put("source", JMSBridgeDefinition.SOURCE_PASSWORD);
         result.put("target", JMSBridgeDefinition.TARGET_PASSWORD);
         result.put("default", BridgeDefinition.PASSWORD);
@@ -468,21 +468,21 @@ public enum Element {
     }
 
     private static Map<String, AttributeDefinition> getConnectionFactoryDefinitions() {
-        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        final Map<String, AttributeDefinition> result = new HashMap<>();
         result.put("source", JMSBridgeDefinition.SOURCE_CONNECTION_FACTORY);
         result.put("target", JMSBridgeDefinition.TARGET_CONNECTION_FACTORY);
         return result;
     }
 
     private static Map<String, AttributeDefinition> getDestinationDefinitions() {
-        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        final Map<String, AttributeDefinition> result = new HashMap<>();
         result.put("source", JMSBridgeDefinition.SOURCE_DESTINATION);
         result.put("target", JMSBridgeDefinition.TARGET_DESTINATION);
         return result;
     }
 
     private static Map<String, AttributeDefinition> getContextDefinitions() {
-        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        final Map<String, AttributeDefinition> result = new HashMap<>();
         result.put("source", JMSBridgeDefinition.SOURCE_CONTEXT);
         result.put("target", JMSBridgeDefinition.TARGET_CONTEXT);
         return result;

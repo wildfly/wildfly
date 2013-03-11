@@ -36,7 +36,7 @@ import org.apache.catalina.connector.Response;
  */
 public class MockResponse extends Response {
     private Connector connector;
-    private final Set<Cookie> cookies = new HashSet<Cookie>();
+    private final Set<Cookie> cookies = new HashSet<>();
 
     /**
      * Create a new MockResponse.

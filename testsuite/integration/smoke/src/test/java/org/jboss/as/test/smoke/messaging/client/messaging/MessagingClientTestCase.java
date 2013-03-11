@@ -150,7 +150,7 @@ public class MessagingClientTestCase {
     }
 
     static ClientSessionFactory createClientSessionFactory(String host, int port) throws Exception {
-        final Map<String, Object> properties = new HashMap<String, Object>();
+        final Map<String, Object> properties = new HashMap<>();
         properties.put(TransportConstants.HOST_PROP_NAME, host);
         properties.put(TransportConstants.PORT_PROP_NAME, port);
         final TransportConfiguration configuration = new TransportConfiguration(NettyConnectorFactory.class.getName(), properties);

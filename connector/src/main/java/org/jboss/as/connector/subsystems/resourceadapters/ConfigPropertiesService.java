@@ -41,7 +41,7 @@ final class ConfigPropertiesService implements Service<String> {
 
     private final String value;
     private final String name;
-    private final InjectedValue<ModifiableResourceAdapter> ra = new InjectedValue<ModifiableResourceAdapter>();
+    private final InjectedValue<ModifiableResourceAdapter> ra = new InjectedValue<>();
 
 
     /**

@@ -43,7 +43,7 @@ import org.jboss.as.jpa.container.EntityManagerUnwrappedTargetInvocationHandler;
 public class TestPersistenceProvider implements PersistenceProvider {
 
     // key = pu name
-    private static Map<String,PersistenceUnitInfo> persistenceUnitInfo = new HashMap<String,PersistenceUnitInfo>();
+    private static Map<String,PersistenceUnitInfo> persistenceUnitInfo = new HashMap<>();
 
     public static PersistenceUnitInfo getPersistenceUnitInfo(String name) {
         return persistenceUnitInfo.get(name);

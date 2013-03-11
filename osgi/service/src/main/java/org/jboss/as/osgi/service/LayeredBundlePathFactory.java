@@ -76,7 +76,7 @@ class LayeredBundlePathFactory {
      */
     static List<File> resolveLayeredBundlePath(final File... bundlePath) {
 
-        List<File> layeredPath = new ArrayList<File>();
+        List<File> layeredPath = new ArrayList<>();
 
         for (File file : bundlePath) {
             // Always add the root, as the user may place modules directly in it
@@ -95,7 +95,7 @@ class LayeredBundlePathFactory {
             }
 
             boolean validLayers = true;
-            List<File> layerFiles = new ArrayList<File>();
+            List<File> layerFiles = new ArrayList<>();
             for (String layerName : layersConfig.getLayers()) {
                 File layer = new File(layersDir, layerName);
                 if (!layer.exists()) {
@@ -188,7 +188,7 @@ class LayeredBundlePathFactory {
                 }
             } else {
                 String[] layerNames = layersProp.split(",");
-                layers = new ArrayList<String>();
+                layers = new ArrayList<>();
                 boolean hasBase = false;
                 for (String layerName : layerNames) {
                     if ("base".equals(layerName)) {

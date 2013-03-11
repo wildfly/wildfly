@@ -55,7 +55,7 @@ public class CacheContainerWriteAttributeHandler implements OperationStepHandler
 
     public CacheContainerWriteAttributeHandler(final AttributeDefinition... definitions) {
         assert definitions != null : MESSAGES.nullVar("definitions").getLocalizedMessage();
-        attributeDefinitions = new HashMap<String, AttributeDefinition>();
+        attributeDefinitions = new HashMap<>();
         for (AttributeDefinition def : definitions) {
             attributeDefinitions.put(def.getName(), def);
         }

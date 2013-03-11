@@ -48,7 +48,7 @@ import org.jboss.msc.value.InjectedValue;
 public abstract class AbstractDeploymentUnitService implements Service<DeploymentUnit> {
 
     private static final String FIRST_PHASE_NAME = Phase.values()[0].name();
-    private final InjectedValue<DeployerChains> deployerChainsInjector = new InjectedValue<DeployerChains>();
+    private final InjectedValue<DeployerChains> deployerChainsInjector = new InjectedValue<>();
 
     private DeploymentUnit deploymentUnit;
     private volatile StabilityMonitor monitor;
@@ -98,7 +98,7 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
     }
 
     public DeploymentStatus getStatus() {
-        final Set<ServiceController<?>> problems = new HashSet<ServiceController<?>>();
+        final Set<ServiceController<?>> problems = new HashSet<>();
         try {
             monitor.awaitStability(problems, problems);
         } catch (final InterruptedException e) {

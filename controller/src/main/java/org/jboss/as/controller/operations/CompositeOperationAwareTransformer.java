@@ -49,7 +49,7 @@ public class CompositeOperationAwareTransformer implements DomainOperationTransf
     public ModelNode transform(final OperationContext context, final ModelNode operation) {
         if (operation.get(OP).asString().equals(COMPOSITE)) {
             ModelNode ret = operation.clone();
-            final List<ModelNode> list = new ArrayList<ModelNode>();
+            final List<ModelNode> list = new ArrayList<>();
             ListIterator<ModelNode> it = ret.get(STEPS).asList().listIterator();
             while (it.hasNext()) {
                 final ModelNode subOperation = it.next();

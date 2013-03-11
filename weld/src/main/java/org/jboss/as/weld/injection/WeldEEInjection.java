@@ -111,8 +111,8 @@ class WeldEEInjection {
 
     public static WeldEEInjection createWeldEEInjection(Class<?> componentClass, Bean<?> bean, final BeanManagerImpl beanManager) {
         final AnnotatedType<?> type = beanManager.getServices().get(ClassTransformer.class).loadClass(componentClass);
-        List<InjectableField> injectableFields = new ArrayList<InjectableField>();
-        List<InjectableMethod> injectableMethods = new ArrayList<InjectableMethod>();
+        List<InjectableField> injectableFields = new ArrayList<>();
+        List<InjectableMethod> injectableMethods = new ArrayList<>();
 
 
         AnnotatedConstructor<?> injectConstructor = null;
@@ -148,7 +148,7 @@ class WeldEEInjection {
                         throw WeldMessages.MESSAGES.attemptingToInjectInjectionPointIntoField(componentClass, field.getJavaMember());
                     }
 
-                    final Set<Annotation> qualifiers = new HashSet<Annotation>();
+                    final Set<Annotation> qualifiers = new HashSet<>();
                     for (Annotation annotation : field.getAnnotations()) {
                         if (beanManager.isQualifier(annotation.annotationType())) {
                             qualifiers.add(annotation);
@@ -167,10 +167,10 @@ class WeldEEInjection {
             //now look for @Inject methods
             for (AnnotatedMethod<?> method : type.getMethods()) {
                 if (method.isAnnotationPresent(Inject.class)) {
-                    final List<Bean<?>> parameterBeans = new ArrayList<Bean<?>>();
-                    final List<InjectionPoint> ips = new ArrayList<InjectionPoint>();
+                    final List<Bean<?>> parameterBeans = new ArrayList<>();
+                    final List<InjectionPoint> ips = new ArrayList<>();
                     for (AnnotatedParameter<?> param : method.getParameters()) {
-                        final Set<Annotation> qualifiers = new HashSet<Annotation>();
+                        final Set<Annotation> qualifiers = new HashSet<>();
                         for (Annotation annotation : param.getAnnotations()) {
                             if (beanManager.isQualifier(annotation.annotationType())) {
                                 qualifiers.add(annotation);

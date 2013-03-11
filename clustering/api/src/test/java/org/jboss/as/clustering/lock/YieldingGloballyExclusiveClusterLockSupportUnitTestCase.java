@@ -126,10 +126,10 @@ public class YieldingGloballyExclusiveClusterLockSupportUnitTestCase extends Clu
         assertNull(rsp.holder);
 
         // Change the view
-        Vector<ClusterNode> dead = new Vector<ClusterNode>();
+        Vector<ClusterNode> dead = new Vector<>();
         dead.add(caller1);
 
-        Vector<ClusterNode> all = new Vector<ClusterNode>(members);
+        Vector<ClusterNode> all = new Vector<>(members);
         all.remove(caller1);
 
         testee.membershipChanged(dead, new Vector<ClusterNode>(), all);

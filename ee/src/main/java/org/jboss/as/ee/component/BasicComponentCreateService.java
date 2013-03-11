@@ -46,7 +46,7 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public class BasicComponentCreateService implements Service<Component> {
-    private final InjectedValue<DeploymentUnit> deploymentUnit = new InjectedValue<DeploymentUnit>();
+    private final InjectedValue<DeploymentUnit> deploymentUnit = new InjectedValue<>();
 
     private final ServiceName serviceName;
     private final String componentName;
@@ -69,7 +69,7 @@ public class BasicComponentCreateService implements Service<Component> {
         componentName = componentConfiguration.getComponentName();
         postConstruct = Interceptors.getChainedInterceptorFactory(componentConfiguration.getPostConstructInterceptors());
         preDestroy = Interceptors.getChainedInterceptorFactory(componentConfiguration.getPreDestroyInterceptors());
-        final IdentityHashMap<Method, InterceptorFactory> componentInterceptors = new IdentityHashMap<Method, InterceptorFactory>();
+        final IdentityHashMap<Method, InterceptorFactory> componentInterceptors = new IdentityHashMap<>();
         for (Method method : componentConfiguration.getDefinedComponentMethods()) {
             if(requiresInterceptors(method, componentConfiguration)) {
                 componentInterceptors.put(method, Interceptors.getChainedInterceptorFactory(componentConfiguration.getComponentInterceptors(method)));

@@ -83,7 +83,7 @@ public final class TestParser implements  ModelTestParser {
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
 
         ParseUtils.requireNoAttributes(reader);
-        final Map<String, List<ModelNode>> profileOps = new LinkedHashMap<String, List<ModelNode>>();
+        final Map<String, List<ModelNode>> profileOps = new LinkedHashMap<>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.UNKNOWN) {
                 throw unexpectedElement(reader);
@@ -96,7 +96,7 @@ public final class TestParser implements  ModelTestParser {
                 throw ControllerMessages.MESSAGES.duplicateDeclaration("subsystem", reader.getLocation());
             }
             // parse subsystem
-            final List<ModelNode> subsystems = new ArrayList<ModelNode>();
+            final List<ModelNode> subsystems = new ArrayList<>();
             reader.handleAny(subsystems);
 
             profileOps.put(namespace, subsystems);

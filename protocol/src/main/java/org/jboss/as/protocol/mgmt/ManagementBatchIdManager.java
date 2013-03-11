@@ -56,7 +56,7 @@ public interface ManagementBatchIdManager {
 
     class DefaultManagementBatchIdManager implements ManagementBatchIdManager {
 
-        private final Set<Integer> ids = new HashSet<Integer>();
+        private final Set<Integer> ids = new HashSet<>();
 
         @Override
         public synchronized boolean lockBatchId(int id) {

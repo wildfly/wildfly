@@ -276,7 +276,7 @@ class ModelControllerImpl implements ModelController {
                     context.addStep(result.add(), bootOp, stepHandler, OperationContext.Stage.MODEL);
                 } else {
                     // Start the postExtension list
-                    postExtensionOps = new ArrayList<ParsedBootOp>();
+                    postExtensionOps = new ArrayList<>();
                     if (parallelSubsystemHandler == null || !parallelSubsystemHandler.addSubsystemOperation(parsedOp)) {
                         postExtensionOps.add(parsedOp);
                     } else {
@@ -351,7 +351,7 @@ class ModelControllerImpl implements ModelController {
                 if (executor == null) {
                     throw MESSAGES.nullAsynchronousExecutor();
                 }
-                final AtomicReference<Thread> opThread = new AtomicReference<Thread>();
+                final AtomicReference<Thread> opThread = new AtomicReference<>();
                 class OpTask extends AsyncFutureTask<ModelNode> {
                     OpTask() {
                         super(executor);
@@ -516,7 +516,7 @@ class ModelControllerImpl implements ModelController {
      */
     private final class RootResource implements Resource {
 
-        private final AtomicReference<Resource> modelReference = new AtomicReference<Resource>(Resource.Factory.create());
+        private final AtomicReference<Resource> modelReference = new AtomicReference<>(Resource.Factory.create());
 
         void set(Resource resource){
             modelReference.set(resource);

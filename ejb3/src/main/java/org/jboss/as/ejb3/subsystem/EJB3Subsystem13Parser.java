@@ -149,7 +149,7 @@ public class EJB3Subsystem13Parser extends EJB3Subsystem12Parser {
         operations.add(operation);
 
         // set the address for this operation
-        final Set<EJB3SubsystemXMLElement> parsedElements = new HashSet<EJB3SubsystemXMLElement>();
+        final Set<EJB3SubsystemXMLElement> parsedElements = new HashSet<>();
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
                 case CHANNEL_CREATION_OPTIONS: {

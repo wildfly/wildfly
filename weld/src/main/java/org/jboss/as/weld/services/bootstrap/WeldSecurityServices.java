@@ -37,7 +37,7 @@ public class WeldSecurityServices implements Service<WeldSecurityServices>, Secu
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("WeldSecurityServices");
 
-    private final InjectedValue<SimpleSecurityManager> securityManagerValue = new InjectedValue<SimpleSecurityManager>();
+    private final InjectedValue<SimpleSecurityManager> securityManagerValue = new InjectedValue<>();
 
     @Override
     public void start(StartContext context) throws StartException {

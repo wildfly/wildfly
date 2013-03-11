@@ -99,11 +99,11 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
 
         // Find all fragments that have been processed by deployers, and place
         // them in a map keyed by location
-        LinkedList<String> order = new LinkedList<String>();
-        List<WebOrdering> orderings = new ArrayList<WebOrdering>();
-        HashSet<String> jarsSet = new HashSet<String>();
-        Set<VirtualFile> overlays = new HashSet<VirtualFile>();
-        Map<String, VirtualFile> scis = new HashMap<String, VirtualFile>();
+        LinkedList<String> order = new LinkedList<>();
+        List<WebOrdering> orderings = new ArrayList<>();
+        HashSet<String> jarsSet = new HashSet<>();
+        Set<VirtualFile> overlays = new HashSet<>();
+        Map<String, VirtualFile> scis = new HashMap<>();
         boolean fragmentFound = false;
         Map<String, WebFragmentMetaData> webFragments = warMetaData.getWebFragmentsMetaData();
         List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
@@ -124,7 +124,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         }
 
         if (!isComplete) {
-            HashSet<String> jarsWithoutFragmentsSet = new HashSet<String>();
+            HashSet<String> jarsWithoutFragmentsSet = new HashSet<>();
             jarsWithoutFragmentsSet.addAll(jarsSet);
             for (String jarName : webFragments.keySet()) {
                 fragmentFound = true;
@@ -381,8 +381,8 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
 
         protected String jar = null;
         protected String name = null;
-        protected List<String> after = new ArrayList<String>();
-        protected List<String> before = new ArrayList<String>();
+        protected List<String> after = new ArrayList<>();
+        protected List<String> before = new ArrayList<>();
         protected boolean afterOthers = false;
         protected boolean beforeOthers = false;
 
@@ -438,8 +438,8 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
 
     protected static class Ordering {
         protected WebOrdering ordering;
-        protected Set<Ordering> after = new HashSet<Ordering>();
-        protected Set<Ordering> before = new HashSet<Ordering>();
+        protected Set<Ordering> after = new HashSet<>();
+        protected Set<Ordering> before = new HashSet<>();
         protected boolean afterOthers = false;
         protected boolean beforeOthers = false;
 
@@ -567,7 +567,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
      * @param order        The generated order list
      */
     protected static void resolveOrder(List<WebOrdering> webOrderings, List<String> order) {
-        List<Ordering> work = new ArrayList<Ordering>();
+        List<Ordering> work = new ArrayList<>();
 
         // Populate the work Ordering list
         Iterator<WebOrdering> webOrderingsIterator = webOrderings.iterator();
@@ -643,7 +643,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         }
 
         // Create three ordered lists that will then be merged
-        List<Ordering> tempOrder = new ArrayList<Ordering>();
+        List<Ordering> tempOrder = new ArrayList<>();
 
         // Create the ordered list of fragments which are before others
         workIterator = work.iterator();

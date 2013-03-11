@@ -106,7 +106,7 @@ public class CourseBooking {
      */
     public List<StudentType> getStudent() {
         if (student == null) {
-            student = new ArrayList<StudentType>();
+            student = new ArrayList<>();
         }
         return this.student;
     }

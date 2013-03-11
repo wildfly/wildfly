@@ -39,7 +39,7 @@ import org.jboss.msc.value.InjectedValue;
 final class AdminObjectService implements Service<ModifiableAdminObject> {
 
     private final ModifiableAdminObject value;
-    private final InjectedValue<ModifiableResourceAdapter> ra = new InjectedValue<ModifiableResourceAdapter>();
+    private final InjectedValue<ModifiableResourceAdapter> ra = new InjectedValue<>();
 
 
     /** create an instance **/

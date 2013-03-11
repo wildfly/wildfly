@@ -423,7 +423,7 @@ public class CompareModelVersionsUtil {
     }
 
     private Map<String, ModelNode> createMapIndexedByKey(ModelNode node){
-        Map<String, ModelNode> map = new HashMap<String, ModelNode>();
+        Map<String, ModelNode> map = new HashMap<>();
         if (!node.isDefined()) {
             return map;
         }
@@ -494,7 +494,7 @@ public class CompareModelVersionsUtil {
     }
 
     private Set<String> getMissingNames(CompareContext context, Set<String> possiblyMissing, Set<String> names){
-        Set<String> missing = new HashSet<String>(possiblyMissing);
+        Set<String> missing = new HashSet<>(possiblyMissing);
         for (String name : names) {
             missing.remove(name);
         }
@@ -634,7 +634,7 @@ public class CompareModelVersionsUtil {
             if (!parent.hasDefined(name)) {
                 return Collections.emptyMap();
             }
-            Map<String, ModelNode> sorted = new TreeMap<String, ModelNode>();
+            Map<String, ModelNode> sorted = new TreeMap<>();
             for (Property prop : parent.get(name).asPropertyList()) {
                 sorted.put(prop.getName(), prop.getValue());
             }

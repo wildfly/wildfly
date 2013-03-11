@@ -41,7 +41,7 @@ public class SharedLocalYieldingClusterLockManagerServiceProvider implements Cha
 
     @Override
     public ServiceController<?> install(ServiceTarget target, String cluster) {
-        final InjectedValue<CoreGroupCommunicationService> groupService = new InjectedValue<CoreGroupCommunicationService>();
+        final InjectedValue<CoreGroupCommunicationService> groupService = new InjectedValue<>();
         return target.addService(this.getServiceName(cluster), new SharedLocalYieldingClusterLockManagerService(cluster, groupService))
                 .addDependency(CoreGroupCommunicationService.getServiceName(cluster), CoreGroupCommunicationService.class, groupService)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)

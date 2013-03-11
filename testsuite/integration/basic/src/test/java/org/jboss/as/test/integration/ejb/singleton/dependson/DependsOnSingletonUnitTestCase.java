@@ -93,7 +93,7 @@ public class DependsOnSingletonUnitTestCase {
         deployer.deploy("ear");
         deployer.undeploy("ear");
         
-        List<String> expectedOrder = new ArrayList<String>();
+        List<String> expectedOrder = new ArrayList<>();
         expectedOrder.add("SingletonOne");
         expectedOrder.add("SingletonTwo");
         expectedOrder.add("SingletonThree");

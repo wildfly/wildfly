@@ -259,12 +259,12 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     protected static final String DOMAIN_CONFIG_DIR = "jboss.domain.config.dir";
 
     /** Properties that cannot be set via {@link #systemPropertyUpdated(String, String)} */
-    private static final Set<String> ILLEGAL_PROPERTIES = new HashSet<String>(Arrays.asList(DOMAIN_BASE_DIR,
+    private static final Set<String> ILLEGAL_PROPERTIES = new HashSet<>(Arrays.asList(DOMAIN_BASE_DIR,
             DOMAIN_CONFIG_DIR, JAVA_EXT_DIRS, HOME_DIR, "modules.path", SERVER_BASE_DIR, SERVER_CONFIG_DIR,
             SERVER_DATA_DIR, SERVER_DEPLOY_DIR, SERVER_LOG_DIR, BOOTSTRAP_MAX_THREADS, CONTROLLER_TEMP_DIR,
             JBOSS_SERVER_DEFAULT_CONFIG, JBOSS_PERSIST_SERVER_CONFIG));
     /** Properties that can only be set via {@link #systemPropertyUpdated(String, String)} during server boot. */
-    private static final Set<String> BOOT_PROPERTIES = new HashSet<String>(Arrays.asList(BUNDLES_DIR, SERVER_TEMP_DIR,
+    private static final Set<String> BOOT_PROPERTIES = new HashSet<>(Arrays.asList(BUNDLES_DIR, SERVER_TEMP_DIR,
             NODE_NAME, SERVER_NAME, HOST_NAME, QUALIFIED_HOST_NAME));
 
     /** Properties that we care about that were provided to the constructor (i.e. by the user via cmd line) */

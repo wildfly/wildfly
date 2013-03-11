@@ -37,7 +37,7 @@ import org.jboss.as.web.session.notification.ClusteredSessionNotificationPolicyB
 public class MockClusteredSessionNotificationPolicy extends ClusteredSessionNotificationPolicyBase implements
         ClusteredSessionNotificationPolicy {
     private boolean response;
-    public final List<PolicyInvocation> invocations = new ArrayList<PolicyInvocation>();
+    public final List<PolicyInvocation> invocations = new ArrayList<>();
 
     public enum Type {
         ACTIVATION, ATTRIBUTE, BINDING, SESSION

@@ -47,7 +47,7 @@ class IgnoredDomainResourceRoot implements Resource.ResourceEntry {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.IGNORED_RESOURCES);
 
     private IgnoredDomainResourceRegistry ignoredRegistry;
-    private final Map<String, IgnoreDomainResourceTypeResource> children = new LinkedHashMap<String, IgnoreDomainResourceTypeResource>();
+    private final Map<String, IgnoreDomainResourceTypeResource> children = new LinkedHashMap<>();
 
     IgnoredDomainResourceRoot(IgnoredDomainResourceRegistry ignoredRegistry) {
         this.ignoredRegistry = ignoredRegistry;
@@ -131,7 +131,7 @@ class IgnoredDomainResourceRoot implements Resource.ResourceEntry {
         Set<String> result;
         if (!isMaster() && IGNORED_RESOURCE_TYPE.equals(childType)) {
             synchronized (children) {
-                result = new HashSet<String>(children.keySet());
+                result = new HashSet<>(children.keySet());
             }
         } else {
             result = Collections.emptySet();

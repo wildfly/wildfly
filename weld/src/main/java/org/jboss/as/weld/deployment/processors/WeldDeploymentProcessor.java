@@ -114,7 +114,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final ServiceName weldBootstrapServiceName = parent.getServiceName().append(WeldBootstrapService.SERVICE_NAME);
         deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, weldBootstrapServiceName);
 
-        final Set<ServiceName> jpaServices = new HashSet<ServiceName>();
+        final Set<ServiceName> jpaServices = new HashSet<>();
 
 
         // we only start weld on top level deployments
@@ -127,9 +127,9 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
-        final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>();
-        final Map<ModuleIdentifier, BeanDeploymentModule> bdmsByIdentifier = new HashMap<ModuleIdentifier, BeanDeploymentModule>();
-        final Map<ModuleIdentifier, ModuleSpecification> moduleSpecByIdentifier = new HashMap<ModuleIdentifier, ModuleSpecification>();
+        final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives = new HashSet<>();
+        final Map<ModuleIdentifier, BeanDeploymentModule> bdmsByIdentifier = new HashMap<>();
+        final Map<ModuleIdentifier, ModuleSpecification> moduleSpecByIdentifier = new HashMap<>();
 
         // the root module only has access to itself. For most deployments this will be the only module
         // for ear deployments this represents the ear/lib directory.
@@ -152,7 +152,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         beanDeploymentArchives.addAll(rootBeanDeploymentModule.getBeanDeploymentArchives());
         final List<DeploymentUnit> subDeployments = deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
 
-        final Set<ClassLoader> subDeploymentLoaders = new HashSet<ClassLoader>();
+        final Set<ClassLoader> subDeploymentLoaders = new HashSet<>();
 
         getJpaDependencies(deploymentUnit, jpaServices);
 
@@ -237,7 +237,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         weldBootstrapServiceBuilder.install();
 
-        final List<SetupAction> setupActions  = new ArrayList<SetupAction>();
+        final List<SetupAction> setupActions  = new ArrayList<>();
         JavaNamespaceSetup naming = deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION);
         if(naming != null) {
             setupActions.add(naming);

@@ -28,8 +28,8 @@ import java.util.Set;
  */
 public class Domain {
 
-    private Set<Server> servers = new HashSet<Server>();
-    private Set<ServerGroup> serverGroups = new HashSet<ServerGroup>();
+    private Set<Server> servers = new HashSet<>();
+    private Set<ServerGroup> serverGroups = new HashSet<>();
 
     public void addServer(Server server) {
         servers.add(server);
@@ -48,7 +48,7 @@ public class Domain {
     }
 
     public Set<String> getHosts() {
-        Set<String> unique = new HashSet<String>();
+        Set<String> unique = new HashSet<>();
 
         for (Server server : servers) {
             unique.add(server.host);
@@ -61,7 +61,7 @@ public class Domain {
     }
 
     public Set<Server> getServersInGroup(String group) {
-        Set<Server> unique = new HashSet<Domain.Server>();
+        Set<Server> unique = new HashSet<>();
 
         for (Server server : servers) {
             if (group.equals(server.group)) {
@@ -72,7 +72,7 @@ public class Domain {
     }
 
     public Set<Server> getAutoStartServers() {
-        Set<Server> auto = new HashSet<Domain.Server>();
+        Set<Server> auto = new HashSet<>();
 
         for (Server server : servers) {
             if (server.autostart) {

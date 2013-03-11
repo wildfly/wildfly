@@ -63,7 +63,7 @@ public class ScopedKernelServicesBootstrap {
                     legacyChildFirstClassLoader.loadClass(ModelVersion.class.getName()),
                     List.class);
 
-            List<Object> convertedBootOps = new ArrayList<Object>();
+            List<Object> convertedBootOps = new ArrayList<>();
             for (int i = 0 ; i < bootOperations.size() ; i++) {
                 ModelNode node = bootOperations.get(i);
                 if (node != null) {
@@ -73,7 +73,7 @@ public class ScopedKernelServicesBootstrap {
 
             List<Object> convertedModelInitializerEntries = null;
             if (modelInitializerEntries != null) {
-                convertedModelInitializerEntries = new ArrayList<Object>();
+                convertedModelInitializerEntries = new ArrayList<>();
                 for (LegacyModelInitializerEntry entry : modelInitializerEntries) {
                     convertedModelInitializerEntries.add(objectConverter.convertLegacyModelInitializerEntryToChildCl(entry));
                 }

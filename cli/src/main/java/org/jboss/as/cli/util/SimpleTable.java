@@ -36,7 +36,7 @@ public class SimpleTable {
 
     private final Object[] header;
     private final int[] columnLengths;
-    private final List<String[]> lines = new ArrayList<String[]>();
+    private final List<String[]> lines = new ArrayList<>();
 
     public SimpleTable(String[] header) {
         if(header == null || header.length == 0) {

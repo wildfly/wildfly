@@ -74,18 +74,18 @@ class RejectedAttributesLogContext {
         assert checker.getRejectionLogMessageId() != null : "Null log id";
         final String id = checker.getRejectionLogMessageId();
         if (failedCheckers == null) {
-            failedCheckers = new HashMap<String, RejectAttributeChecker>();
+            failedCheckers = new HashMap<>();
         }
         if (failedCheckers.get(id) == null) {
             failedCheckers.put(id, checker);
         }
 
         if (failedAttributes == null) {
-            failedAttributes = new LinkedHashMap<String, Map<String, ModelNode>>();
+            failedAttributes = new LinkedHashMap<>();
         }
         Map<String, ModelNode> attributes = failedAttributes.get(checker.getRejectionLogMessageId());
         if (attributes == null) {
-            attributes = new HashMap<String, ModelNode>();
+            attributes = new HashMap<>();
             failedAttributes.put(checker.getRejectionLogMessageId(), attributes);
         }
         attributes.put(attributeName, attributeValue);

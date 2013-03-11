@@ -52,7 +52,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
 
     private final ExecutorService executorService;
     private final AtomicInteger requestID = new AtomicInteger();
-    private final Map<Integer, ActiveRequest<?, ?>> requests = new ConcurrentHashMap<Integer, ActiveRequest<?, ?>>(16, 0.75f, Runtime.getRuntime().availableProcessors());
+    private final Map<Integer, ActiveRequest<?, ?>> requests = new ConcurrentHashMap<>(16, 0.75f, Runtime.getRuntime().availableProcessors());
 
     protected AbstractMessageHandler(final ExecutorService executorService) {
         if(executorService == null) {
@@ -140,7 +140,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
     protected <T, A> AsyncFuture<T> executeRequest(final ManagementRequest<T, A> request, final Channel channel, final ActiveOperation<T, A> support) {
         assert support != null;
         final Integer requestId = this.requestID.incrementAndGet();
-        final ActiveRequest<T, A> ar = new ActiveRequest<T, A>(support, request, channel);
+        final ActiveRequest<T, A> ar = new ActiveRequest<>(support, request, channel);
         requests.put(requestId, ar);
         final ManagementRequestHeader header = new ManagementRequestHeader(ManagementProtocol.VERSION, requestId, support.getOperationId(), request.getOperationType());
         final ActiveOperation.ResultHandler<T> resultHandler = support.getResultHandler();

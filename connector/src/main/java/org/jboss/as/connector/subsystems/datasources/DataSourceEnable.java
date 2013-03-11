@@ -89,7 +89,7 @@ public class DataSourceEnable implements OperationStepHandler {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                    final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+                    final List<ServiceController<?>> controllers = new ArrayList<>();
                     addServices(context, operation, verificationHandler, model, isXa(), controllers);
                     context.addStep(verificationHandler, Stage.VERIFY);
                     context.completeStep(new OperationContext.RollbackHandler() {

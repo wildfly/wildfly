@@ -42,12 +42,12 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class AdminObjectReferenceFactoryService implements Service<ManagedReferenceFactory>, ManagedReferenceFactory {
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("admin-object").append("reference-factory");
-    private final InjectedValue<Object> adminObjectValue = new InjectedValue<Object>();
+    private final InjectedValue<Object> adminObjectValue = new InjectedValue<>();
 
     private ManagedReference reference;
 
     public synchronized void start(StartContext startContext) throws StartException {
-        reference = new ValueManagedReference(new ImmediateValue<Object>(adminObjectValue.getValue()));
+        reference = new ValueManagedReference(new ImmediateValue<>(adminObjectValue.getValue()));
     }
 
     public synchronized void stop(StopContext stopContext) {

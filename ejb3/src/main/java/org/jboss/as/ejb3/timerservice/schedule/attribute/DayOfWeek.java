@@ -43,7 +43,7 @@ public class DayOfWeek extends IntegerBasedExpression {
 
     public static final Integer MIN_DAY_OF_WEEK = 0;
 
-    private static final Map<String, Integer> DAY_OF_WEEK_ALIAS = new HashMap<String, Integer>();
+    private static final Map<String, Integer> DAY_OF_WEEK_ALIAS = new HashMap<>();
 
     static {
         DAY_OF_WEEK_ALIAS.put("sun", 0);
@@ -57,7 +57,7 @@ public class DayOfWeek extends IntegerBasedExpression {
 
     private static final int OFFSET = DAY_OF_WEEK_ALIAS.get("sun") - Calendar.SUNDAY;
 
-    private SortedSet<Integer> offsetAdjustedDaysOfWeek = new TreeSet<Integer>();
+    private SortedSet<Integer> offsetAdjustedDaysOfWeek = new TreeSet<>();
 
     public DayOfWeek(String value) {
         super(value);

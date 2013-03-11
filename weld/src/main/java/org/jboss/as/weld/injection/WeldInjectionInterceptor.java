@@ -86,7 +86,7 @@ public class WeldInjectionInterceptor implements Interceptor {
         @Override
         public Interceptor create(final InterceptorFactoryContext context) {
             final AtomicReference<ManagedReference> targetReference = (AtomicReference<ManagedReference>) context.getContextData().get(BasicComponentInstance.INSTANCE_KEY);
-            final Map<Class<?>, AtomicReference<ManagedReference>> interceptors = new HashMap<Class<?>, AtomicReference<ManagedReference>>();
+            final Map<Class<?>, AtomicReference<ManagedReference>> interceptors = new HashMap<>();
             for (Class<?> clazz : interceptorClasses) {
                 final AtomicReference<ManagedReference> interceptor = (AtomicReference<ManagedReference>) context.getContextData().get(clazz);
                 if(interceptor != null) {

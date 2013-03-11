@@ -43,7 +43,7 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
  */
 public class OrderedItemContainer<T> {
 
-    private final Map<Integer, T> items = new HashMap<Integer, T>();
+    private final Map<Integer, T> items = new HashMap<>();
     private volatile List<T> sortedItems;
 
     public void add(final T item, int priority) {
@@ -62,8 +62,8 @@ public class OrderedItemContainer<T> {
 
     public List<T> getSortedItems() {
         if(sortedItems == null) {
-            final SortedMap<Integer, T> sortedMap = new TreeMap<Integer, T>(items);
-            sortedItems = new ArrayList<T>(sortedMap.values());
+            final SortedMap<Integer, T> sortedMap = new TreeMap<>(items);
+            sortedItems = new ArrayList<>(sortedMap.values());
         }
         return sortedItems;
     }

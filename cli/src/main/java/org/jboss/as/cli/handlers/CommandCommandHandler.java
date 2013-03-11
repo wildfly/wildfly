@@ -90,7 +90,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
                     return Collections.emptyList();
                 }
 
-                final List<String> candidates = new ArrayList<String>();
+                final List<String> candidates = new ArrayList<>();
                 for(Property prop : props) {
                     final ModelNode value = prop.getValue();
                     if(value.has("access-type") && "read-only".equals(value.get("access-type").asString())) {
@@ -203,7 +203,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
     }
 
     protected List<String> getExistingCommands() {
-        final List<String> commands = new ArrayList<String>();
+        final List<String> commands = new ArrayList<>();
         for(String cmd : cmdRegistry.getTabCompletionCommands()) {
             if(cmdRegistry.getCommandHandler(cmd) instanceof GenericTypeOperationHandler) {
                 commands.add(cmd);

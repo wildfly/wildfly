@@ -34,7 +34,7 @@ import org.jboss.vfs.VirtualFile;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 class ContentServitor extends AbstractService<VirtualFile> {
-    private final InjectedValue<ContentRepository> contentRepositoryInjectedValue = new InjectedValue<ContentRepository>();
+    private final InjectedValue<ContentRepository> contentRepositoryInjectedValue = new InjectedValue<>();
     private final byte[] hash;
 
     ContentServitor(final byte[] hash) {

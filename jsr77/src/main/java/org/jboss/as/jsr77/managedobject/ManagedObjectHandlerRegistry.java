@@ -54,7 +54,7 @@ public class ManagedObjectHandlerRegistry {
     public static final ManagedObjectHandlerRegistry INSTANCE = new ManagedObjectHandlerRegistry();
 
     private ManagedObjectHandlerRegistry() {
-        Map<String, Handler> handlers = new HashMap<String, Handler>();
+        Map<String, Handler> handlers = new HashMap<>();
         handlers.put(JVMHandler.J2EE_TYPE, JVMHandler.INSTANCE);
         handlers.put(J2EEDomainHandler.J2EE_TYPE, J2EEDomainHandler.INSTANCE);
         handlers.put(J2EEServerHandler.J2EE_TYPE, J2EEServerHandler.INSTANCE);
@@ -76,7 +76,7 @@ public class ManagedObjectHandlerRegistry {
     }
 
     public Set<ObjectName> queryNames(ModelController controller, ObjectName name, QueryExp query){
-        Set<ObjectName> result = new HashSet<ObjectName>();
+        Set<ObjectName> result = new HashSet<>();
         for (Handler handler : getHandlers(name)) {
             result.addAll(handler.queryObjectNames(new ModelReader(controller), name, query));
         }
@@ -141,7 +141,7 @@ public class ManagedObjectHandlerRegistry {
         for (Entry<String, Handler> handlerEntry : this.handlers.entrySet()) {
             if (matcher.matches(handlerEntry.getKey())) {
                 if (result == null) {
-                    result = new HashSet<Handler>();
+                    result = new HashSet<>();
                 }
                 result.add(handlerEntry.getValue());
             }

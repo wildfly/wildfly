@@ -96,7 +96,7 @@ public class PropertyNameCompleter extends DefaultCompleter {
                 if(!attrs.isDefined()) {
                     return Collections.emptyList();
                 }
-                final List<String> names = new ArrayList<String>();
+                final List<String> names = new ArrayList<>();
                 for(Property attr : attrs.asPropertyList()) {
                     if(onlyWritable) {
                         final ModelNode descr = attr.getValue();

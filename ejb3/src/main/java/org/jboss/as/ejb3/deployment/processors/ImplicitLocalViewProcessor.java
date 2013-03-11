@@ -122,7 +122,7 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
         // java.io.Serializable; java.io.Externalizable; any of the interfaces defined by the javax.ejb
         // are excluded from interface check
 
-        List<Class<?>> implementedInterfaces = new ArrayList<Class<?>>(Arrays.asList(interfaces));
+        List<Class<?>> implementedInterfaces = new ArrayList<>(Arrays.asList(interfaces));
         List<Class<?>> filteredInterfaces = this.filterInterfaces(implementedInterfaces);
         // Now that we have removed the interfaces that should be excluded from the check,
         // if the filtered interfaces collection is empty then this bean can be considered for no-interface view
@@ -143,7 +143,7 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
         if (interfaces.length == 0) {
             return null;
         }
-        List<Class<?>> implementedInterfaces = new ArrayList<Class<?>>(Arrays.asList(interfaces));
+        List<Class<?>> implementedInterfaces = new ArrayList<>(Arrays.asList(interfaces));
         List<Class<?>> filteredInterfaces = this.filterInterfaces(implementedInterfaces);
         if (filteredInterfaces.isEmpty() || filteredInterfaces.size() > 1) {
             return null;
@@ -164,7 +164,7 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
         if (interfaces == null) {
             return null;
         }
-        List<Class<?>> filteredInterfaces = new ArrayList<Class<?>>();
+        List<Class<?>> filteredInterfaces = new ArrayList<>();
         for (Class<?> intf : interfaces) {
             if (intf.equals(java.io.Serializable.class)
                     || intf.equals(java.io.Externalizable.class)

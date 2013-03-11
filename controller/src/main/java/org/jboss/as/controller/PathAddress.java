@@ -66,7 +66,7 @@ public class PathAddress implements Iterable<PathElement> {
 //            final List<Property> props = node.asPropertyList();
             // Following bit is crap TODO; uncomment above and delete below
             // when bug is fixed
-            final List<Property> props = new ArrayList<Property>();
+            final List<Property> props = new ArrayList<>();
             String key = null;
             for (ModelNode element : node.asList()) {
                 Property prop = null;
@@ -88,8 +88,8 @@ public class PathAddress implements Iterable<PathElement> {
             if (props.size() == 0) {
                 return EMPTY_ADDRESS;
             } else {
-                final Set<String> seen = new HashSet<String>();
-                final List<PathElement> values = new ArrayList<PathElement>();
+                final Set<String> seen = new HashSet<>();
+                final List<PathElement> values = new ArrayList<>();
                 int index = 0;
                 for (final Property prop : props) {
                     final String name = prop.getName();
@@ -114,8 +114,8 @@ public class PathAddress implements Iterable<PathElement> {
         if (elements.size() == 0) {
             return EMPTY_ADDRESS;
         }
-        final ArrayList<PathElement> newList = new ArrayList<PathElement>(elements.size());
-        final Set<String> seen = new HashSet<String>();
+        final ArrayList<PathElement> newList = new ArrayList<>(elements.size());
+        final Set<String> seen = new HashSet<>();
         int index = 0;
         for (PathElement element : elements) {
             final String name = element.getKey();
@@ -138,7 +138,7 @@ public class PathAddress implements Iterable<PathElement> {
     }
 
     public static PathAddress pathAddress(PathAddress parent, PathElement... elements) {
-        List<PathElement> list = new ArrayList<PathElement>(parent.pathAddressList);
+        List<PathElement> list = new ArrayList<>(parent.pathAddressList);
         for (PathElement element : elements) {
             list.add(element);
         }
@@ -209,7 +209,7 @@ public class PathAddress implements Iterable<PathElement> {
      * @return the new path address
      */
     public PathAddress append(List<PathElement> additionalElements) {
-        final ArrayList<PathElement> newList = new ArrayList<PathElement>(pathAddressList.size() + additionalElements.size());
+        final ArrayList<PathElement> newList = new ArrayList<>(pathAddressList.size() + additionalElements.size());
         newList.addAll(pathAddressList);
         newList.addAll(additionalElements);
         return pathAddress(newList);

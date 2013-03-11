@@ -42,7 +42,7 @@ public class DelegatingInterceptorInvocationContext implements InvocationContext
         this.delegateInvocationContext = delegateInvocationContext;
         this.interceptionType = interceptionType;
         this.invocationQueue = new ArrayList<Interceptor>(interceptors);
-        this.interceptorInstances = new ArrayList<Object>(instances);
+        this.interceptorInstances = new ArrayList<>(instances);
         position = 0;
     }
 

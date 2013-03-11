@@ -94,14 +94,14 @@ public class ArgumentWithoutValue implements CommandArgument {
             return;
         }
         if(requiredPreceding.size() == 1) {
-            requiredPreceding = new ArrayList<CommandArgument>(requiredPreceding);
+            requiredPreceding = new ArrayList<>(requiredPreceding);
         }
         requiredPreceding.add(arg);
     }
 
     public void addCantAppearAfter(CommandArgument arg) {
         if(cantAppearAfter.isEmpty()) {
-            cantAppearAfter = new ArrayList<CommandArgument>();
+            cantAppearAfter = new ArrayList<>();
         }
         cantAppearAfter.add(arg);
     }

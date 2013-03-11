@@ -153,20 +153,20 @@ public class BeansXmlHandler extends DefaultHandler {
     public BeansXmlHandler(final URL file, final PropertyReplacer propertyReplacer) {
         this.file = file;
         this.propertyReplacer = propertyReplacer;
-        this.interceptors = new ArrayList<Metadata<String>>();
-        this.decorators = new ArrayList<Metadata<String>>();
-        this.alternativeClasses = new ArrayList<Metadata<String>>();
-        this.alternativeStereotypes = new ArrayList<Metadata<String>>();
-        this.includes = new ArrayList<Metadata<Filter>>();
-        this.excludes = new ArrayList<Metadata<Filter>>();
-        this.seenContainers = new ArrayList<Container>();
-        this.containers = new ArrayList<Container>();
+        this.interceptors = new ArrayList<>();
+        this.decorators = new ArrayList<>();
+        this.alternativeClasses = new ArrayList<>();
+        this.alternativeStereotypes = new ArrayList<>();
+        this.includes = new ArrayList<>();
+        this.excludes = new ArrayList<>();
+        this.seenContainers = new ArrayList<>();
+        this.containers = new ArrayList<>();
         containers.add(new Container(JAVAEE_URI, "interceptors", "class") {
 
             @Override
             public void processEndChildElement(String uri, String localName, String qName, String nestedText) {
                 if (isInNamespace(uri) && "class".equals(localName)) {
-                    interceptors.add(new XmlMetadata<String>(qName, propertyReplacer.replaceProperties(trim(nestedText)), file, locator.getLineNumber()));
+                    interceptors.add(new XmlMetadata<>(qName, propertyReplacer.replaceProperties(trim(nestedText)), file, locator.getLineNumber()));
                 }
             }
 
@@ -181,7 +181,7 @@ public class BeansXmlHandler extends DefaultHandler {
             @Override
             public void processEndChildElement(String uri, String localName, String qName, String nestedText) {
                 if (isInNamespace(uri) && "class".equals(localName)) {
-                    decorators.add(new XmlMetadata<String>(qName, propertyReplacer.replaceProperties(trim(nestedText)), file, locator.getLineNumber()));
+                    decorators.add(new XmlMetadata<>(qName, propertyReplacer.replaceProperties(trim(nestedText)), file, locator.getLineNumber()));
                 }
             }
 
@@ -196,9 +196,9 @@ public class BeansXmlHandler extends DefaultHandler {
             @Override
             public void processEndChildElement(String uri, String localName, String qName, String nestedText) {
                 if (isInNamespace(uri) && "class".equals(localName)) {
-                    alternativeClasses.add(new XmlMetadata<String>(qName, propertyReplacer.replaceProperties(trim(nestedText)), file, locator.getLineNumber()));
+                    alternativeClasses.add(new XmlMetadata<>(qName, propertyReplacer.replaceProperties(trim(nestedText)), file, locator.getLineNumber()));
                 } else if (isInNamespace(uri) && "stereotype".equals(localName)) {
-                    alternativeStereotypes.add(new XmlMetadata<String>(qName, propertyReplacer.replaceProperties(trim(nestedText)), file, locator.getLineNumber()));
+                    alternativeStereotypes.add(new XmlMetadata<>(qName, propertyReplacer.replaceProperties(trim(nestedText)), file, locator.getLineNumber()));
                 }
             }
 
@@ -220,8 +220,8 @@ public class BeansXmlHandler extends DefaultHandler {
                 if (isFilterElement(uri, localName)) {
                     name = trim(attributes.getValue("name"));
                     pattern = trim(attributes.getValue("pattern"));
-                    systemPropertyActivations = new ArrayList<Metadata<SystemPropertyActivation>>();
-                    classAvailableActivations = new ArrayList<Metadata<ClassAvailableActivation>>();
+                    systemPropertyActivations = new ArrayList<>();
+                    classAvailableActivations = new ArrayList<>();
                 } else if (isInNamespace(uri) && "if-system-property".equals(localName)) {
                     String systemPropertyName = trim(attributes.getValue("name"));
                     String systemPropertyValue = trim(attributes.getValue("value"));

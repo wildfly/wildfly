@@ -64,7 +64,7 @@ public class HelloWorldManagedConnection implements ManagedConnection {
    public HelloWorldManagedConnection(HelloWorldManagedConnectionFactory mcf) {
       this.mcf = mcf;
       this.logWriter = null;
-      this.listeners = new ArrayList<ConnectionEventListener>(1);
+      this.listeners = new ArrayList<>(1);
       this.connection = null;
    }
 

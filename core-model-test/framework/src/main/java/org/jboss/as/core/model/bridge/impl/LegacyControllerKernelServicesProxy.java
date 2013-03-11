@@ -61,7 +61,7 @@ public class LegacyControllerKernelServicesProxy extends ModelTestLegacyControll
                         List.class);
             }
 
-            List<Object> convertedResources = new ArrayList<Object>();
+            List<Object> convertedResources = new ArrayList<>();
             if (ignoredResources != null) {
                 for (IgnoreDomainResourceTypeResource resource : ignoredResources) {
                     convertedResources.add(converter.convertIgnoreDomainTypeResourceToChildCl(resource));

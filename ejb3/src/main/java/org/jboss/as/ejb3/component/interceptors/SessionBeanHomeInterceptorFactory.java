@@ -38,12 +38,12 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class SessionBeanHomeInterceptorFactory implements InterceptorFactory {
 
-    private final InjectedValue<ComponentView> viewToCreate = new InjectedValue<ComponentView>();
+    private final InjectedValue<ComponentView> viewToCreate = new InjectedValue<>();
 
     //TODO: there has to be a better way to pass this into the create interceptor chain
-    public static final ThreadLocal<Method> INIT_METHOD = new ThreadLocal<Method>();
+    public static final ThreadLocal<Method> INIT_METHOD = new ThreadLocal<>();
 
-    public static final ThreadLocal<Object[]> INIT_PARAMETERS = new ThreadLocal<Object[]>();
+    public static final ThreadLocal<Object[]> INIT_PARAMETERS = new ThreadLocal<>();
 
     /**
      * The init method to invoke on the SFSB

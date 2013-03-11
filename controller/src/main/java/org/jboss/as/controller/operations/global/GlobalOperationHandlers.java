@@ -319,7 +319,7 @@ public class GlobalOperationHandlers {
      */
     static Map<String, Set<String>> getChildAddresses(final OperationContext context, final PathAddress addr, final ImmutableManagementResourceRegistration registry, Resource resource, final String validChildType) {
 
-        Map<String, Set<String>> result = new HashMap<String, Set<String>>();
+        Map<String, Set<String>> result = new HashMap<>();
         Set<PathElement> elements = registry.getChildAddresses(PathAddress.EMPTY_ADDRESS);
         for (PathElement element : elements) {
             String childType = element.getKey();
@@ -331,7 +331,7 @@ public class GlobalOperationHandlers {
 
             Set<String> set = result.get(childType);
             if (set == null) {
-                set = new LinkedHashSet<String>();
+                set = new LinkedHashSet<>();
                 result.put(childType, set);
             }
 

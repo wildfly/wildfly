@@ -48,8 +48,8 @@ public class CoreGroupCommunicationServiceProvider implements ChannelDependentSe
 
     @Override
     public ServiceController<?> install(ServiceTarget target, String cluster) {
-        final InjectedValue<Channel> channel = new InjectedValue<Channel>();
-        final InjectedValue<ModuleLoader> loader = new InjectedValue<ModuleLoader>();
+        final InjectedValue<Channel> channel = new InjectedValue<>();
+        final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
         final Service<CoreGroupCommunicationService> service = new CoreGroupCommunicationService(GROUP_COMMUNICATION_SERVICE_SCOPE, channel, loader);
         return target.addService(this.getServiceName(cluster), service)
                 // Make sure Infinispan starts its channel before we try to use it..

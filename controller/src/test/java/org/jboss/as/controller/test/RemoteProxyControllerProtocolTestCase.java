@@ -118,7 +118,7 @@ public class RemoteProxyControllerProtocolTestCase {
         ModelNode operation = new ModelNode();
         operation.get("test").set("123");
 
-        final BlockingQueue<String> messages = new LinkedBlockingQueue<String>();
+        final BlockingQueue<String> messages = new LinkedBlockingQueue<>();
 
         CommitProxyOperationControl commitControl = new CommitProxyOperationControl();
         proxyController.execute(operation,
@@ -158,7 +158,7 @@ public class RemoteProxyControllerProtocolTestCase {
 
         final AtomicBoolean prepared = new AtomicBoolean();
         final AtomicBoolean completed = new AtomicBoolean();
-        final TestFuture<ModelNode> failure = new TestFuture<ModelNode>();
+        final TestFuture<ModelNode> failure = new TestFuture<>();
         proxyController.execute(operation,
                 null,
                 new ProxyOperationControl() {
@@ -201,7 +201,7 @@ public class RemoteProxyControllerProtocolTestCase {
 
         final AtomicBoolean prepared = new AtomicBoolean();
         final AtomicBoolean completed = new AtomicBoolean();
-        final TestFuture<ModelNode> failure = new TestFuture<ModelNode>();
+        final TestFuture<ModelNode> failure = new TestFuture<>();
         proxyController.execute(operation,
                 null,
                 new ProxyOperationControl() {
@@ -265,9 +265,9 @@ public class RemoteProxyControllerProtocolTestCase {
         operation.get("test").set("123");
 
         final AtomicBoolean failed = new AtomicBoolean();
-        final TestFuture<ModelNode> prepared = new TestFuture<ModelNode>();
-        final TestFuture<OperationTransaction> preparedTx = new TestFuture<OperationTransaction>();
-        final TestFuture<ModelNode> result = new TestFuture<ModelNode>();
+        final TestFuture<ModelNode> prepared = new TestFuture<>();
+        final TestFuture<OperationTransaction> preparedTx = new TestFuture<>();
+        final TestFuture<ModelNode> result = new TestFuture<>();
         proxyController.execute(operation,
                 null,
                 new ProxyOperationControl() {
@@ -337,9 +337,9 @@ public class RemoteProxyControllerProtocolTestCase {
         operation.get("test").set("123");
 
         final AtomicBoolean failed = new AtomicBoolean();
-        final TestFuture<ModelNode> prepared = new TestFuture<ModelNode>();
-        final TestFuture<OperationTransaction> preparedTx = new TestFuture<OperationTransaction>();
-        final TestFuture<ModelNode> result = new TestFuture<ModelNode>();
+        final TestFuture<ModelNode> prepared = new TestFuture<>();
+        final TestFuture<OperationTransaction> preparedTx = new TestFuture<>();
+        final TestFuture<ModelNode> result = new TestFuture<>();
         proxyController.execute(operation,
                 null,
                 new ProxyOperationControl() {
@@ -419,16 +419,16 @@ public class RemoteProxyControllerProtocolTestCase {
         final byte[] secondBytes = new byte[] {10, 9, 8 , 7 , 6, 5, 4, 3, 2, 1};
 
         final AtomicInteger size = new AtomicInteger();
-        final AtomicReference<byte[]> firstResult = new AtomicReference<byte[]>();
-        final AtomicReference<byte[]> secondResult = new AtomicReference<byte[]>();
-        final AtomicReference<byte[]> thirdResult = new AtomicReference<byte[]>();
+        final AtomicReference<byte[]> firstResult = new AtomicReference<>();
+        final AtomicReference<byte[]> secondResult = new AtomicReference<>();
+        final AtomicReference<byte[]> thirdResult = new AtomicReference<>();
         MockModelController controller = new MockModelController() {
             @Override
             public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
                 int streamIndex = 0;
                 for (InputStream in : attachments.getInputStreams()) {
                     try {
-                        ArrayList<Integer> readBytes = new ArrayList<Integer>();
+                        ArrayList<Integer> readBytes = new ArrayList<>();
                         int b = in.read();
                         while (b != -1) {
                             readBytes.add(b);
@@ -477,7 +477,7 @@ public class RemoteProxyControllerProtocolTestCase {
 
             @Override
             public List<InputStream> getInputStreams() {
-                ArrayList<InputStream> streams = new ArrayList<InputStream>();
+                ArrayList<InputStream> streams = new ArrayList<>();
                 streams.add(new ByteArrayInputStream(firstBytes));
                 streams.add(new ByteArrayInputStream(secondBytes));
                 streams.add(null);
@@ -512,7 +512,7 @@ public class RemoteProxyControllerProtocolTestCase {
     public void testClosesBeforePrepare() throws Exception {
 
         final CountDownLatch latch = new CountDownLatch(1);
-        final AtomicReference<Exception> errorRef = new AtomicReference<Exception>();
+        final AtomicReference<Exception> errorRef = new AtomicReference<>();
         MockModelController controller = new MockModelController() {
             @Override
             public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {

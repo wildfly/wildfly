@@ -245,7 +245,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
 
     private static synchronized List<DeploymentAspect> getPublisherDeploymentAspects() {
         if (depAspects == null) {
-            depAspects = new LinkedList<DeploymentAspect>();
+            depAspects = new LinkedList<>();
             final List<DeploymentAspect> serverAspects = DeploymentAspectsProvider.getSortedDeploymentAspects();
             // copy to replace the EndpointServiceDeploymentAspect
             for (DeploymentAspect aspect : serverAspects) {

@@ -110,12 +110,12 @@ public class BeansXmlParser {
     }
 
     public BeansXml parse(Iterable<URL> urls, final PropertyReplacer propertyReplacer) throws DeploymentUnitProcessingException {
-        List<Metadata<String>> alternativeStereotypes = new ArrayList<Metadata<String>>();
-        List<Metadata<String>> alternativeClasses = new ArrayList<Metadata<String>>();
-        List<Metadata<String>> decorators = new ArrayList<Metadata<String>>();
-        List<Metadata<String>> interceptors = new ArrayList<Metadata<String>>();
-        List<Metadata<Filter>> includes = new ArrayList<Metadata<Filter>>();
-        List<Metadata<Filter>> excludes = new ArrayList<Metadata<Filter>>();
+        List<Metadata<String>> alternativeStereotypes = new ArrayList<>();
+        List<Metadata<String>> alternativeClasses = new ArrayList<>();
+        List<Metadata<String>> decorators = new ArrayList<>();
+        List<Metadata<String>> interceptors = new ArrayList<>();
+        List<Metadata<Filter>> includes = new ArrayList<>();
+        List<Metadata<Filter>> excludes = new ArrayList<>();
         for (URL url : urls) {
             BeansXml beansXml = parse(url, propertyReplacer);
             alternativeStereotypes.addAll(beansXml.getEnabledAlternativeStereotypes());
@@ -129,7 +129,7 @@ public class BeansXmlParser {
     }
 
     private static InputSource[] loadXsds() {
-        List<InputSource> xsds = new ArrayList<InputSource>();
+        List<InputSource> xsds = new ArrayList<>();
         // The Weld xsd
         InputSource weldXsd = loadXsd("beans_1_1.xsd", BeansXmlParser.class.getClassLoader());
         // The CDI Xsd

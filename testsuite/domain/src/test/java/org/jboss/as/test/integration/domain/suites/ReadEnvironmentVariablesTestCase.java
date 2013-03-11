@@ -148,7 +148,7 @@ public class ReadEnvironmentVariablesTestCase {
         HttpClient httpClient = new DefaultHttpClient();
         HttpResponse response = httpClient.execute(get);
         ModelNode env = ModelNode.fromJSONStream(response.getEntity().getContent());
-        Map<String, String> environment = new HashMap<String, String>();
+        Map<String, String> environment = new HashMap<>();
         for (Property property : env.asPropertyList()) {
             environment.put(property.getName(), property.getValue().asProperty().getName());
         }

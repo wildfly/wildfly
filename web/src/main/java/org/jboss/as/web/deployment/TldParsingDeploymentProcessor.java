@@ -72,7 +72,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
             tldsMetaData = new TldsMetaData();
             deploymentUnit.putAttachment(TldsMetaData.ATTACHMENT_KEY, tldsMetaData);
         }
-        Map<String, TldMetaData> tlds = new HashMap<String, TldMetaData>();
+        Map<String, TldMetaData> tlds = new HashMap<>();
         tldsMetaData.setTlds(tlds);
         // TLDs are located in WEB-INF or any subdir (except the top level "classes" and "lib")
         // and in JARs from WEB-INF/lib, in META-INF or any subdir

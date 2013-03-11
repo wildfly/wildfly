@@ -113,8 +113,8 @@ public class EJB3SubsystemDefaultCacheWriteHandler extends AbstractWriteAttribut
     }
 
     private <T> ServiceController<T> installValueService(final OperationContext context, final ServiceName serviceName, final Class<T> targetClass, final ServiceName dependencyServiceName) {
-        final InjectedValue<T> value = new InjectedValue<T>();
-        return context.getServiceTarget().addService(serviceName, new ValueService<T>(value))
+        final InjectedValue<T> value = new InjectedValue<>();
+        return context.getServiceTarget().addService(serviceName, new ValueService<>(value))
                 .addDependency(dependencyServiceName, targetClass, value)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()

@@ -108,10 +108,10 @@ public class ClusterPassivationTestCase {
 
     // Properties pass amongst tests
     private static ContextSelector<EJBClientContext> previousSelector;
-    private static Map<String, String> node2deployment = new HashMap<String, String>();
-    private static Map<String, String> node2container = new HashMap<String, String>();
-    private static Map<String, String> container2node = new HashMap<String, String>();
-    private static Map<String, ManagementClient> node2client = new HashMap<String, ManagementClient>();
+    private static Map<String, String> node2deployment = new HashMap<>();
+    private static Map<String, String> node2container = new HashMap<>();
+    private static Map<String, String> container2node = new HashMap<>();
+    private static Map<String, ManagementClient> node2client = new HashMap<>();
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)

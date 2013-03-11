@@ -43,7 +43,7 @@ public class DeploymentVisibilityProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpec = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE_SPECIFICATION);
-        final Map<ModuleIdentifier, DeploymentUnit> deployments = new HashMap<ModuleIdentifier, DeploymentUnit>();
+        final Map<ModuleIdentifier, DeploymentUnit> deployments = new HashMap<>();
         //local classes are always first
         deploymentUnit.addToAttachmentList(Attachments.ACCESSIBLE_SUB_DEPLOYMENTS, deploymentUnit);
         buildModuleMap(deploymentUnit, deployments);

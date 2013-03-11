@@ -165,7 +165,7 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
 
         private AllowedChannelOptionTypesValidator() {
             super(ModelType.STRING, false);
-            allowedChannelOptTypes = new ArrayList<ModelNode>();
+            allowedChannelOptTypes = new ArrayList<>();
             allowedChannelOptTypes.add(new ModelNode().set("remoting"));
             allowedChannelOptTypes.add(new ModelNode().set("xnio"));
         }

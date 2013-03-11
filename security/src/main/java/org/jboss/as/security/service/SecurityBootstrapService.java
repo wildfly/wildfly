@@ -58,7 +58,7 @@ public class SecurityBootstrapService implements Service<Void> {
 
     private static final SecurityLogger log = SecurityLogger.ROOT_LOGGER;
 
-    private final InjectedValue<ServiceModuleLoader> moduleLoaderValue = new InjectedValue<ServiceModuleLoader>();
+    private final InjectedValue<ServiceModuleLoader> moduleLoaderValue = new InjectedValue<>();
 
 
     protected volatile Properties securityProperty;

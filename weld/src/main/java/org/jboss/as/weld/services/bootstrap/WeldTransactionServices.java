@@ -48,9 +48,9 @@ public class WeldTransactionServices implements TransactionServices, Service<Wel
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("WeldTransactionServices");
 
-    private final InjectedValue<UserTransaction> injectedTransaction = new InjectedValue<UserTransaction>();
+    private final InjectedValue<UserTransaction> injectedTransaction = new InjectedValue<>();
 
-    private final InjectedValue<TransactionManager> injectedTransactionManager = new InjectedValue<TransactionManager>();
+    private final InjectedValue<TransactionManager> injectedTransactionManager = new InjectedValue<>();
 
     @Override
     public UserTransaction getUserTransaction() {

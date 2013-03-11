@@ -130,7 +130,7 @@ public class StandardResourceDescriptionResolver implements ResourceDescriptionR
                                                final boolean useUnprefixedChildTypes) {
         this.keyPrefix = keyPrefix;
         this.bundleBaseName = bundleBaseName;
-        this.bundleLoader = new WeakReference<ClassLoader>(bundleLoader);
+        this.bundleLoader = new WeakReference<>(bundleLoader);
         this.reuseAttributesForAdd = reuseAttributesForAdd;
         this.useUnprefixedChildTypes = useUnprefixedChildTypes;
     }

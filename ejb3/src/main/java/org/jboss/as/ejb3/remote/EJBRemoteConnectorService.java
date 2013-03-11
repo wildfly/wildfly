@@ -76,15 +76,15 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "connector");
 
-    private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
-    private final InjectedValue<ExecutorService> executorService = new InjectedValue<ExecutorService>();
-    private final InjectedValue<DeploymentRepository> deploymentRepositoryInjectedValue = new InjectedValue<DeploymentRepository>();
-    private final InjectedValue<EJBRemoteTransactionsRepository> ejbRemoteTransactionsRepositoryInjectedValue = new InjectedValue<EJBRemoteTransactionsRepository>();
-    private final InjectedValue<RegistryCollector> clusterRegistryCollector = new InjectedValue<RegistryCollector>();
-    private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<ServerEnvironment>();
-    private final InjectedValue<RemoteAsyncInvocationCancelStatusService> remoteAsyncInvocationCancelStatus = new InjectedValue<RemoteAsyncInvocationCancelStatusService>();
-    private final InjectedValue<TransactionManager> txManager = new InjectedValue<TransactionManager>();
-    private final InjectedValue<TransactionSynchronizationRegistry> txSyncRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
+    private final InjectedValue<Endpoint> endpointValue = new InjectedValue<>();
+    private final InjectedValue<ExecutorService> executorService = new InjectedValue<>();
+    private final InjectedValue<DeploymentRepository> deploymentRepositoryInjectedValue = new InjectedValue<>();
+    private final InjectedValue<EJBRemoteTransactionsRepository> ejbRemoteTransactionsRepositoryInjectedValue = new InjectedValue<>();
+    private final InjectedValue<RegistryCollector> clusterRegistryCollector = new InjectedValue<>();
+    private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<>();
+    private final InjectedValue<RemoteAsyncInvocationCancelStatusService> remoteAsyncInvocationCancelStatus = new InjectedValue<>();
+    private final InjectedValue<TransactionManager> txManager = new InjectedValue<>();
+    private final InjectedValue<TransactionSynchronizationRegistry> txSyncRegistry = new InjectedValue<>();
     private final ServiceName remotingConnectorServiceName;
     private volatile Registration registration;
     private volatile InjectedSocketBindingStreamServerService remotingServer;
@@ -126,7 +126,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         // setup a EJBClientTransactionContext backed the transaction manager on this server.
         // This will be used to propagate the transactions from this server to remote servers during EJB invocations
         final EJBClientTransactionContext ejbClientTransactionContext = EJBClientTransactionContext.create(this.txManager.getValue(), this.txSyncRegistry.getValue());
-        EJBClientTransactionContext.setSelector(new ConstantContextSelector<EJBClientTransactionContext>(ejbClientTransactionContext));
+        EJBClientTransactionContext.setSelector(new ConstantContextSelector<>(ejbClientTransactionContext));
     }
 
     @Override

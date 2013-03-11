@@ -176,7 +176,7 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
 
     private static Collection<Class<?>> getBusinessInterfacesFromInterfaceAnnotations(Class<?> sessionBeanClass, Class<? extends Annotation> annotation) {
         final Set<Class<?>> potentialBusinessInterfaces = getPotentialBusinessInterfaces(sessionBeanClass);
-        final Set<Class<?>> businessInterfaces = new HashSet<Class<?>>();
+        final Set<Class<?>> businessInterfaces = new HashSet<>();
         for (Class<?> iface : potentialBusinessInterfaces) {
             if (iface.getAnnotation(annotation) != null) {
                 businessInterfaces.add(iface);
@@ -219,7 +219,7 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
     }
 
     private Collection<String> toString(Collection<Class<?>> classes) {
-        final Collection<String> classNames = new ArrayList<String>(classes.size());
+        final Collection<String> classNames = new ArrayList<>(classes.size());
         for (Class<?> klass : classes) {
             classNames.add(klass.getName());
         }

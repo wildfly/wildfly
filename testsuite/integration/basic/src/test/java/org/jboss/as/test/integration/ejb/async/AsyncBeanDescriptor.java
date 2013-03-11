@@ -11,6 +11,6 @@ public class AsyncBeanDescriptor {
     public Future<Boolean> futureMethod(CountDownLatch latch) throws InterruptedException {
         futureMethodCalled = true;
         latch.countDown();
-        return new AsyncResult<Boolean>(true);
+        return new AsyncResult<>(true);
     }
 }

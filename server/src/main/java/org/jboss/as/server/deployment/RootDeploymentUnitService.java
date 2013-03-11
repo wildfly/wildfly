@@ -38,10 +38,10 @@ import org.jboss.vfs.VirtualFile;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
-    private final InjectedValue<DeploymentMountProvider> serverDeploymentRepositoryInjector = new InjectedValue<DeploymentMountProvider>();
+    private final InjectedValue<DeploymentMountProvider> serverDeploymentRepositoryInjector = new InjectedValue<>();
     private final String name;
     private final String managementName;
-    final InjectedValue<VirtualFile> contentsInjector = new InjectedValue<VirtualFile>();
+    final InjectedValue<VirtualFile> contentsInjector = new InjectedValue<>();
     private final DeploymentUnit parent;
     private final ImmutableManagementResourceRegistration registration;
     private final ManagementResourceRegistration mutableRegistration;

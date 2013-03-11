@@ -43,7 +43,7 @@ import java.util.Map;
  */
 public class ModuleIndexService implements Service<ModuleIndexService> {
 
-    private final Map<ModuleIdentifier, CompositeIndex> indexes = new HashMap<ModuleIdentifier, CompositeIndex>();
+    private final Map<ModuleIdentifier, CompositeIndex> indexes = new HashMap<>();
 
 
     @Override

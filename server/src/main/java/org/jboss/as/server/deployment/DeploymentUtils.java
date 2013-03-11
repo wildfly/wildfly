@@ -51,7 +51,7 @@ public final class DeploymentUtils {
      * @return The deployment root and any additional resource roots
      */
     public static List<ResourceRoot> allResourceRoots(DeploymentUnit deploymentUnit) {
-        List<ResourceRoot> roots = new ArrayList<ResourceRoot>();
+        List<ResourceRoot> roots = new ArrayList<>();
         // not all deployment units have a deployment root
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         if (deploymentRoot != null)
@@ -107,7 +107,7 @@ public final class DeploymentUtils {
     }
 
     public static List<byte[]> getDeploymentHash(ModelNode deployment){
-        List<byte[]> hashes = new ArrayList<byte[]>();
+        List<byte[]> hashes = new ArrayList<>();
         if (deployment.hasDefined(CONTENT)) {
             for (ModelNode contentElement : deployment.get(CONTENT).asList()) {
                 if (contentElement.hasDefined(HASH)) {

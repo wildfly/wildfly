@@ -31,7 +31,7 @@ import org.jboss.dmr.ModelNode;
 public class ModelUtil {
 
     public static List<String> modelNodeAsStingList(ModelNode node) {
-        List<String> ret = new LinkedList<String>();
+        List<String> ret = new LinkedList<>();
         for (ModelNode n : node.asList()) ret.add(n.asString());
         return ret;
     }

@@ -72,7 +72,7 @@ final class ModuleIdentityRepository extends AbstractRepository {
     @Override
     public Collection<Capability> findProviders(Requirement req) {
         String namespace = req.getNamespace();
-        List<Capability> result = new ArrayList<Capability>();
+        List<Capability> result = new ArrayList<>();
         if (MODULE_IDENTITY_NAMESPACE.equals(namespace)) {
             String moduleId = (String) req.getAttributes().get(MODULE_IDENTITY_NAMESPACE);
             ModuleIdentifier moduleIdentifier = ModuleIdentifier.fromString(moduleId);

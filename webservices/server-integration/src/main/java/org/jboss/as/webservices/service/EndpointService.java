@@ -69,10 +69,10 @@ public final class EndpointService implements Service<Endpoint> {
     private static final ServiceName MBEAN_SERVER_NAME = ServiceName.JBOSS.append("mbean", "server");
     private final Endpoint endpoint;
     private final ServiceName name;
-    private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
-    private final InjectedValue<WebAppController> pclWebAppControllerValue = new InjectedValue<WebAppController>();
-    private final InjectedValue<EndpointRegistry> endpointRegistryValue = new InjectedValue<EndpointRegistry>();
-    private final InjectedValue<MBeanServer> mBeanServerValue = new InjectedValue<MBeanServer>();
+    private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<>();
+    private final InjectedValue<WebAppController> pclWebAppControllerValue = new InjectedValue<>();
+    private final InjectedValue<EndpointRegistry> endpointRegistryValue = new InjectedValue<>();
+    private final InjectedValue<MBeanServer> mBeanServerValue = new InjectedValue<>();
 
     private EndpointService(final Endpoint endpoint, final ServiceName name) {
         this.endpoint = endpoint;

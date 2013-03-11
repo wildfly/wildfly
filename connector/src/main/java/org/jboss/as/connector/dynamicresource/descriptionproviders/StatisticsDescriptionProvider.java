@@ -104,7 +104,7 @@ public class StatisticsDescriptionProvider implements DescriptionProvider {
     }
 
     public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
-        Map<String, ModelNode> attributes = new HashMap<String, ModelNode>();
+        Map<String, ModelNode> attributes = new HashMap<>();
         for (StatisticsPlugin plugin : plugins) {
             for (String name : plugin.getNames()) {
                 ModelNode node = new ModelNode();

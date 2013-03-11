@@ -83,7 +83,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
 
         private final String localPart;
 
-        private static final Map<String, Element> QNAME_MAP = new HashMap<String, Element>();
+        private static final Map<String, Element> QNAME_MAP = new HashMap<>();
 
         static {
             for (Element element : Element.values()) {
@@ -126,7 +126,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
 
         private final String localPart;
 
-        private static final Map<String, Attribute> QNAME_MAP = new HashMap<String, Attribute>();
+        private static final Map<String, Attribute> QNAME_MAP = new HashMap<>();
 
         static {
             for (Attribute attribute : Attribute.values()) {
@@ -147,7 +147,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
     @Override
     public void readElement(XMLExtendedStreamReader reader, ParseResult<KernelDeploymentXmlDescriptor> value) throws XMLStreamException {
         final KernelDeploymentXmlDescriptor kernelDeploymentXmlDescriptor = new KernelDeploymentXmlDescriptor();
-        final List<BeanMetaDataConfig> beansConfigs = new ArrayList<BeanMetaDataConfig>();
+        final List<BeanMetaDataConfig> beansConfigs = new ArrayList<>();
         kernelDeploymentXmlDescriptor.setBeans(beansConfigs);
         value.setResult(kernelDeploymentXmlDescriptor);
 
@@ -230,7 +230,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         case ALIAS:
                             Set<String> aliases = beanConfig.getAliases();
                             if (aliases == null) {
-                                aliases = new HashSet<String>();
+                                aliases = new HashSet<>();
                                 beanConfig.setAliases(aliases);
                             }
                             aliases.add(parseAlias(reader));
@@ -244,7 +244,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         case PROPERTY:
                             Set<PropertyConfig> properties = beanConfig.getProperties();
                             if (properties == null) {
-                                properties = new HashSet<PropertyConfig>();
+                                properties = new HashSet<>();
                                 beanConfig.setProperties(properties);
                             }
                             properties.add(parseProperty(reader));
@@ -252,7 +252,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         case INSTALL:
                             List<InstallConfig> installs = beanConfig.getInstalls();
                             if (installs == null) {
-                                installs = new ArrayList<InstallConfig>();
+                                installs = new ArrayList<>();
                                 beanConfig.setInstalls(installs);
                             }
                             installs.add(parseInstall(reader));
@@ -260,7 +260,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         case UNINSTALL:
                             List<InstallConfig> uninstalls = beanConfig.getUninstalls();
                             if (uninstalls == null) {
-                                uninstalls = new ArrayList<InstallConfig>();
+                                uninstalls = new ArrayList<>();
                                 beanConfig.setUninstalls(uninstalls);
                             }
                             uninstalls.add(parseInstall(reader));
@@ -268,7 +268,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         case INCALLBACK:
                             List<CallbackConfig> incallbacks = beanConfig.getIncallbacks();
                             if (incallbacks == null) {
-                                incallbacks = new ArrayList<CallbackConfig>();
+                                incallbacks = new ArrayList<>();
                                 beanConfig.setIncallbacks(incallbacks);
                             }
                             incallbacks.add(parseCallback(reader));
@@ -276,7 +276,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         case UNCALLBACK:
                             List<CallbackConfig> uncallbacks = beanConfig.getUncallbacks();
                             if (uncallbacks == null) {
-                                uncallbacks = new ArrayList<CallbackConfig>();
+                                uncallbacks = new ArrayList<>();
                                 beanConfig.setUncallbacks(uncallbacks);
                             }
                             uncallbacks.add(parseCallback(reader));
@@ -284,7 +284,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         case DEPENDS:
                             Set<DependsConfig> depends = beanConfig.getDepends();
                             if (depends == null) {
-                                depends = new HashSet<DependsConfig>();
+                                depends = new HashSet<>();
                                 beanConfig.setDepends(depends);
                             }
                             depends.add(parseDepends(reader));
@@ -335,7 +335,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     throw unexpectedAttribute(reader, i);
             }
         }
-        List<ValueConfig> parameters = new ArrayList<ValueConfig>();
+        List<ValueConfig> parameters = new ArrayList<>();
         while (reader.hasNext()) {
             switch (reader.next()) {
                 case END_ELEMENT:
@@ -468,7 +468,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
             throw missingRequired(reader, required);
         }
 
-        List<ValueConfig> parameters = new ArrayList<ValueConfig>();
+        List<ValueConfig> parameters = new ArrayList<>();
         while (reader.hasNext()) {
             switch (reader.next()) {
                 case END_ELEMENT:
@@ -577,7 +577,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
             }
         }
 
-        List<ValueConfig> parameters = new ArrayList<ValueConfig>();
+        List<ValueConfig> parameters = new ArrayList<>();
         while (reader.hasNext()) {
             switch (reader.next()) {
                 case END_ELEMENT:
@@ -908,7 +908,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
             throw missingRequired(reader, required);
         }
 
-        List<ValueConfig> parameters = new ArrayList<ValueConfig>();
+        List<ValueConfig> parameters = new ArrayList<>();
         while (reader.hasNext()) {
             switch (reader.next()) {
                 case END_ELEMENT:

@@ -41,7 +41,7 @@ import org.osgi.framework.BundleContext;
  */
 public class JMXExtension extends AbstractSubsystemExtension {
 
-    private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
+    private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<>();
 
     @Override
     public void configureServiceDependencies(ServiceName serviceName, ServiceBuilder<?> builder) {

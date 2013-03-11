@@ -36,8 +36,8 @@ import org.jboss.as.domain.management.security.password.PasswordStrength;
 public class SimplePasswordStrengthCheckResult implements PasswordStrengthCheckResult {
 
     private PasswordStrength strength;
-    private List<PasswordRestriction> failedRestrictions = new ArrayList<PasswordRestriction>();
-    private List<PasswordRestriction> passedRestrictions = new ArrayList<PasswordRestriction>();
+    private List<PasswordRestriction> failedRestrictions = new ArrayList<>();
+    private List<PasswordRestriction> passedRestrictions = new ArrayList<>();
     private int positive = 0;
     private int negative = 0;
 

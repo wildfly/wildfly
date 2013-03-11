@@ -117,7 +117,7 @@ final class ReflectionUtils {
     }
 
     static List<ClassReflectionIndex<?>> getClassHierarchy(final String className, final DeploymentReflectionIndex index, final ClassLoader classLoader) {
-        final List<ClassReflectionIndex<?>> retVal = new LinkedList<ClassReflectionIndex<?>>();
+        final List<ClassReflectionIndex<?>> retVal = new LinkedList<>();
 
         Class<?> temp = getClass(className, classLoader);
         while (temp != null) {

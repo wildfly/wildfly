@@ -15,7 +15,7 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
  */
 public class InfinispanResourceDescriptionResolver extends StandardResourceDescriptionResolver {
 
-    private Map<String, String> sharedAttributeResolver = new HashMap<String, String>();
+    private Map<String, String> sharedAttributeResolver = new HashMap<>();
 
     public InfinispanResourceDescriptionResolver(String keyPrefix, String bundleBaseName, ClassLoader bundleLoader) {
         super(keyPrefix, bundleBaseName, bundleLoader, true, false);

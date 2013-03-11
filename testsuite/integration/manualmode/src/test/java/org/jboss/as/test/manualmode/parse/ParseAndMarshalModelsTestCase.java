@@ -725,7 +725,7 @@ public class ParseAndMarshalModelsTestCase {
         caputreModelOp.get(OP_ADDR).set(PathAddress.EMPTY_ADDRESS.toModelNode());
         caputreModelOp.get(OP).set("capture-model");
 
-        final List<ModelNode> toRun = new ArrayList<ModelNode>(ops);
+        final List<ModelNode> toRun = new ArrayList<>(ops);
         toRun.add(caputreModelOp);
         executeOperations(controller, toRun);
         persister.store(model, null).commit();
@@ -814,7 +814,7 @@ public class ParseAndMarshalModelsTestCase {
         caputreModelOp.get(OP_ADDR).set(PathAddress.EMPTY_ADDRESS.toModelNode());
         caputreModelOp.get(OP).set("capture-model");
 
-        final List<ModelNode> toRun = new ArrayList<ModelNode>(ops);
+        final List<ModelNode> toRun = new ArrayList<>(ops);
         toRun.add(caputreModelOp);
         executeOperations(controller, toRun);
 
@@ -852,7 +852,7 @@ public class ParseAndMarshalModelsTestCase {
         caputreModelOp.get(OP_ADDR).set(PathAddress.EMPTY_ADDRESS.toModelNode());
         caputreModelOp.get(OP).set("capture-model");
 
-        final List<ModelNode> toRun = new ArrayList<ModelNode>(ops);
+        final List<ModelNode> toRun = new ArrayList<>(ops);
         toRun.add(caputreModelOp);
 
         executeOperations(controller, toRun);

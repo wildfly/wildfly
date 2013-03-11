@@ -85,7 +85,7 @@ public class ServerInventoryImpl implements ServerInventory {
     private static final Charset UTF_8 = Charset.forName("UTF-8");
 
     /** The managed servers. */
-    private final ConcurrentMap<String, ManagedServer> servers = new ConcurrentHashMap<String, ManagedServer>();
+    private final ConcurrentMap<String, ManagedServer> servers = new ConcurrentHashMap<>();
 
     private final HostControllerEnvironment environment;
     private final ProcessControllerClient processControllerClient;
@@ -145,7 +145,7 @@ public class ServerInventoryImpl implements ServerInventory {
         if (!serversOnly) {
             return processInfos;
         }
-        final Map<String, ProcessInfo> processes = new HashMap<String, ProcessInfo>();
+        final Map<String, ProcessInfo> processes = new HashMap<>();
         for (Map.Entry<String, ProcessInfo> procEntry : processInfos.entrySet()) {
             if (ManagedServer.isServerProcess(procEntry.getKey())) {
                 processes.put(procEntry.getKey(), procEntry.getValue());
@@ -540,7 +540,7 @@ public class ServerInventoryImpl implements ServerInventory {
     public CallbackHandler getServerCallbackHandler() {
         return new CallbackHandler() {
             public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-                List<Callback> toRespondTo = new LinkedList<Callback>();
+                List<Callback> toRespondTo = new LinkedList<>();
 
                 String userName = null;
                 String realm = null;

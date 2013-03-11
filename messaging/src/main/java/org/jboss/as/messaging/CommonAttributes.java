@@ -361,7 +361,7 @@ public interface CommonAttributes {
             .setDefaultValue(new ModelNode(ConfigurationImpl.DEFAULT_JOURNAL_TYPE.toString()))
             .setAllowNull(true)
             .setAllowExpression(true)
-            .setValidator(new EnumValidator<JournalType>(JournalType.class, true, true))
+            .setValidator(new EnumValidator<>(JournalType.class, true, true))
             .setRestartAllServices()
             .build();
 

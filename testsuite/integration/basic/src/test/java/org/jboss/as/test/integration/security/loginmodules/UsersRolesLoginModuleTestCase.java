@@ -369,7 +369,7 @@ public class UsersRolesLoginModuleTestCase {
         @Override
         protected SecurityDomain[] getSecurityDomains() {
 
-            final Map<String, String> lmOptions = new HashMap<String, String>();
+            final Map<String, String> lmOptions = new HashMap<>();
             final Builder loginModuleBuilder = new SecurityModule.Builder().name("UsersRoles").options(lmOptions);
 
             lmOptions.put("usersProperties", PropertyFilesSetup.FILE_USERS.getAbsolutePath());

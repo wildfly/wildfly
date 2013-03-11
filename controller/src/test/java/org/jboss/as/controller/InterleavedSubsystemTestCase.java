@@ -206,7 +206,7 @@ public class InterleavedSubsystemTestCase {
         /** {@inheritDoc} */
         @Override
         public List<ModelNode> load() {
-            final List<ModelNode> bootOps = new ArrayList<ModelNode>();
+            final List<ModelNode> bootOps = new ArrayList<>();
             final ModelNode addrAE = new ModelNode().setEmptyList().add(EXTENSION, "a");
             final ModelNode addrAS = new ModelNode().setEmptyList().add(SUBSYSTEM, "a");
             final ModelNode addrBE = new ModelNode().setEmptyList().add(EXTENSION, "b");

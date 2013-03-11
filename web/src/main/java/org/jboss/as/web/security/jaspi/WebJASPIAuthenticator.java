@@ -313,7 +313,7 @@ public class WebJASPIAuthenticator extends AuthenticatorBase {
 
     protected Principal buildJBossPrincipal(Subject subject, Principal principal, GroupPrincipalCallback gpc) {
 
-        List<String> roles = new ArrayList<String>();
+        List<String> roles = new ArrayList<>();
         // look for roles in the subject first.
         for (Principal p : subject.getPrincipals()) {
             if (p instanceof Group && p.getName().equals("Roles")) {

@@ -36,7 +36,7 @@ import org.xnio.OptionMap;
  */
 public class InjectedSocketBindingStreamServerService extends AbstractStreamServerService {
 
-    private final InjectedValue<SocketBinding> socketBindingValue = new InjectedValue<SocketBinding>();
+    private final InjectedValue<SocketBinding> socketBindingValue = new InjectedValue<>();
 
     public InjectedSocketBindingStreamServerService(final OptionMap connectorPropertiesOptionMap) {
         super(connectorPropertiesOptionMap);

@@ -73,7 +73,7 @@ class ActiveOperationSupport {
         }
     };
 
-    private final ConcurrentMap<Integer, ActiveOperationImpl<?, ?>> activeRequests = new ConcurrentHashMap<Integer, ActiveOperationImpl<?, ?>> (16, 0.75f, Runtime.getRuntime().availableProcessors());
+    private final ConcurrentMap<Integer, ActiveOperationImpl<?, ?>> activeRequests = new ConcurrentHashMap<>(16, 0.75f, Runtime.getRuntime().availableProcessors());
     private final ManagementBatchIdManager operationIdManager = new ManagementBatchIdManager.DefaultManagementBatchIdManager();
 
     private final ReentrantLock lock = new ReentrantLock();
@@ -155,7 +155,7 @@ class ActiveOperationSupport {
                 }
                 operationId = id;
             }
-            final ActiveOperationImpl<T, A> request = new ActiveOperationImpl<T, A>(operationId, attachment, getCheckedCallback(callback));
+            final ActiveOperationImpl<T, A> request = new ActiveOperationImpl<>(operationId, attachment, getCheckedCallback(callback));
             final ActiveOperation<?, ?> existing =  activeRequests.putIfAbsent(operationId, request);
             if(existing != null) {
                 throw ProtocolMessages.MESSAGES.operationIdAlreadyExists(operationId);
@@ -215,7 +215,7 @@ class ActiveOperationSupport {
      * @return a list of cancelled operations
      */
     protected List<Integer> cancelAllActiveOperations() {
-        final List<Integer> operations = new ArrayList<Integer>();
+        final List<Integer> operations = new ArrayList<>();
         for(final ActiveOperationImpl<?, ?> activeOperation : activeRequests.values()) {
             activeOperation.asyncCancel(false);
             operations.add(activeOperation.getOperationId());
@@ -390,7 +390,7 @@ class ActiveOperationSupport {
                         if (cancellables == CANCEL_REQUESTED) {
                             break;
                         } else {
-                            ((cancellables == null) ? (this.cancellables = new ArrayList<Cancellable>()) : cancellables).add(cancellable);
+                            ((cancellables == null) ? (this.cancellables = new ArrayList<>()) : cancellables).add(cancellable);
                         }
                     default:
                         return;

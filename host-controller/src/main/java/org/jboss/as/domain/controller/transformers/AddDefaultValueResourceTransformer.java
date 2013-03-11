@@ -64,7 +64,7 @@ class AddDefaultValueResourceTransformer implements ResourceTransformer {
     }
 
     static class Builder {
-        Map<String, ModelNode> map = new HashMap<String, ModelNode>();
+        Map<String, ModelNode> map = new HashMap<>();
 
         AddDefaultValueResourceTransformer build() {
             return new AddDefaultValueResourceTransformer(map);

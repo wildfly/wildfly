@@ -197,7 +197,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
         if (configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
             // The bindings for the component
-            final Set<ServiceName> bound = new HashSet<ServiceName>();
+            final Set<ServiceName> bound = new HashSet<>();
             processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, configuration.getComponentDescription().getBindingConfigurations(), dependencies, bound);
 
             //class level bindings should be ignored if the deployment is metadata complete

@@ -83,7 +83,7 @@ public class Jsr299BindingsInterceptor implements org.jboss.invocation.Intercept
 
             if (reference == null) {
                 creationalContext = beanManager.createCreationalContext(bean);
-                interceptorInstances = new HashMap<String, SerializableContextualInstance<Interceptor<Object>, Object>>();
+                interceptorInstances = new HashMap<>();
                 InterceptorBindings interceptorBindings = getInterceptorBindings(this.ejbName);
                 if (interceptorBindings != null) {
                     for (Interceptor<?> interceptor : interceptorBindings.getAllInterceptors()) {
@@ -106,7 +106,7 @@ public class Jsr299BindingsInterceptor implements org.jboss.invocation.Intercept
 
     protected Object delegateInterception(InvocationContext invocationContext, InterceptionType interceptionType, List<Interceptor<?>> currentInterceptors)
             throws Exception {
-        List<Object> currentInterceptorInstances = new ArrayList<Object>();
+        List<Object> currentInterceptorInstances = new ArrayList<>();
         for (Interceptor<?> interceptor : currentInterceptors) {
             currentInterceptorInstances.add(interceptorInstances.get(interceptor.getBeanClass().getName()).getInstance());
         }
@@ -187,7 +187,7 @@ public class Jsr299BindingsInterceptor implements org.jboss.invocation.Intercept
 
     public static class Factory extends ComponentInstanceInterceptorFactory {
 
-        private final InjectedValue<WeldBootstrapService> weldContainer = new InjectedValue<WeldBootstrapService>();
+        private final InjectedValue<WeldBootstrapService> weldContainer = new InjectedValue<>();
         private final String beanArchiveId;
         private final String ejbName;
         private final InterceptionType interceptionType;

@@ -14,10 +14,10 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
 
     private static final SortedSet<String> UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES;
     private static final SortedSet<String> KNOWN_ATTRIBUTES;
-    private static final HashMap<String, String> DODGY_NAME = new HashMap<String, String>();
+    private static final HashMap<String, String> DODGY_NAME = new HashMap<>();
 
     static {
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES = new TreeSet<String>();
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES = new TreeSet<>();
         //List type stuff we dont care about
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("acceptorConfigurations");
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("addressesSettings");
@@ -48,7 +48,7 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("maskPassword");
 
         //stuff we arent bothered about
-        KNOWN_ATTRIBUTES = new TreeSet<String>();
+        KNOWN_ATTRIBUTES = new TreeSet<>();
         KNOWN_ATTRIBUTES.add("journalBufferSize");
         KNOWN_ATTRIBUTES.add("journalBufferTimeout");
         KNOWN_ATTRIBUTES.add("journalMaxIo");
@@ -91,7 +91,7 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
     }
 
     private void convert(SortedSet<String> attributes) {
-        SortedSet<String> newAttributes = new TreeSet<String>();
+        SortedSet<String> newAttributes = new TreeSet<>();
         for (String attribute : attributes) {
             String[] split = attribute.split("-");
             StringBuilder newString = new StringBuilder();
@@ -117,7 +117,7 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
 
 
     private static final SortedSet<String> findAllConfigurationProperties(AttributeDefinition... attrs) throws Exception{
-        SortedSet<String> names = new TreeSet<String>();
+        SortedSet<String> names = new TreeSet<>();
         for (AttributeDefinition attr : attrs) {
             String name = attr.getName();
             names.add(name);

@@ -184,7 +184,7 @@ final class ManagedProcess {
         // Call under lock
         assert holdsLock(lock);
         stopRequested = false;
-        final List<String> command = new ArrayList<String>(this.command);
+        final List<String> command = new ArrayList<>(this.command);
         if(restart) {
             //Add the restart flag to the HC process if we are respawning it
             command.add(CommandLineConstants.PROCESS_RESTARTED);

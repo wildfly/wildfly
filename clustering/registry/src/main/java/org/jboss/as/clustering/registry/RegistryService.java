@@ -63,7 +63,7 @@ public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<
     private final CacheInvoker invoker = new BatchCacheInvoker();
     private final Value<Cache<Address, Map.Entry<K, V>>> cache;
     private final Value<RegistryEntryProvider<K, V>> provider;
-    private final Set<Listener<K, V>> listeners = new CopyOnWriteArraySet<Listener<K, V>>();
+    private final Set<Listener<K, V>> listeners = new CopyOnWriteArraySet<>();
 
     public RegistryService(Value<Cache<Address, Map.Entry<K, V>>> cache, Value<RegistryEntryProvider<K, V>> provider) {
         this.cache = cache;
@@ -100,7 +100,7 @@ public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<
      */
     @Override
     public Map<K, V> getEntries() {
-        Map<K, V> map = new HashMap<K, V>();
+        Map<K, V> map = new HashMap<>();
         for (Map.Entry<K, V> entry: this.cache.getValue().values()) {
             map.put(entry.getKey(), entry.getValue());
         }
@@ -151,7 +151,7 @@ public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<
     Map.Entry<K, V> createLocalCacheEntry() {
         RegistryEntryProvider<K, V> provider = this.provider.getValue();
         K key = provider.getKey();
-        return (key != null) ? new AbstractMap.SimpleImmutableEntry<K, V>(key, provider.getValue()) : null;
+        return (key != null) ? new AbstractMap.SimpleImmutableEntry<>(key, provider.getValue()) : null;
     }
 
     @Override
@@ -182,7 +182,7 @@ public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<
             public Set<K> invoke(Cache<Address, Map.Entry<K, V>> cache) {
                 Collection<Address> oldMembers = event.getOldMembers();
                 Collection<Address> newMembers = event.getNewMembers();
-                Set<K> removed = new HashSet<K>();
+                Set<K> removed = new HashSet<>();
                 // Remove entry of crashed member
                 for (Address member: oldMembers) {
                     if (!newMembers.contains(member)) {
@@ -209,7 +209,7 @@ public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<
     }
 
     // Yes, this could be static - but it references instance types
-    private ThreadLocal<Map.Entry<K, V>> entry = new ThreadLocal<Map.Entry<K, V>>();
+    private ThreadLocal<Map.Entry<K, V>> entry = new ThreadLocal<>();
 
     @CacheEntryModified
     public void modified(CacheEntryModifiedEvent<Address, Map.Entry<K, V>> event) {

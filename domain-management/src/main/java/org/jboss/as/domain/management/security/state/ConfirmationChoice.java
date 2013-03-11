@@ -83,7 +83,7 @@ public class ConfirmationChoice implements State {
             case NO:
                 return noState;
             default: {
-                List<String> acceptedValues = new ArrayList<String>(4);
+                List<String> acceptedValues = new ArrayList<>(4);
                 acceptedValues.add(MESSAGES.yes());
                 if (MESSAGES.shortYes().length() > 0) {
                     acceptedValues.add(MESSAGES.shortYes());

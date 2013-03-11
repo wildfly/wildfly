@@ -68,9 +68,9 @@ class WebConnectorService implements Service<Connector> {
 
     private Connector connector;
 
-    private final InjectedValue<Executor> executor = new InjectedValue<Executor>();
-    private final InjectedValue<SocketBinding> binding = new InjectedValue<SocketBinding>();
-    private final InjectedValue<WebServer> server = new InjectedValue<WebServer>();
+    private final InjectedValue<Executor> executor = new InjectedValue<>();
+    private final InjectedValue<SocketBinding> binding = new InjectedValue<>();
+    private final InjectedValue<WebServer> server = new InjectedValue<>();
 
     public WebConnectorService(String protocol, String scheme) {
         if(protocol != null) this.protocol = protocol;
@@ -136,7 +136,7 @@ class WebConnectorService implements Service<Connector> {
                 }
             }
             if (virtualServers != null) {
-                HashSet<String> virtualServersList = new HashSet<String>();
+                HashSet<String> virtualServersList = new HashSet<>();
                 for (final String virtualServer : virtualServers) {
                     virtualServersList.add(virtualServer);
                 }

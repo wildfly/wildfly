@@ -48,7 +48,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 public class ParallelExtensionAddHandler implements OperationStepHandler {
 
     private final ExecutorService executor;
-    private final List<ParsedBootOp> extensionAdds = new ArrayList<ParsedBootOp>();
+    private final List<ParsedBootOp> extensionAdds = new ArrayList<>();
 
     public ParallelExtensionAddHandler(ExecutorService executorService) {
         this.executor = executorService;
@@ -78,7 +78,7 @@ public class ParallelExtensionAddHandler implements OperationStepHandler {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
                 long start = System.currentTimeMillis();
-                final Map<String, Future<OperationFailedException>> futures = new LinkedHashMap<String, Future<OperationFailedException>>();
+                final Map<String, Future<OperationFailedException>> futures = new LinkedHashMap<>();
                 for (ParsedBootOp op : extensionAdds) {
                     String module = op.address.getLastElement().getValue();
                     ExtensionAddHandler addHandler = ExtensionAddHandler.class.cast(op.handler);

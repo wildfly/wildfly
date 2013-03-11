@@ -35,7 +35,7 @@ import javax.ejb.Singleton;
 @Remote(DataStore.class)
 public class DataStoreBean implements DataStore {
 
-    public static final Map<Integer, String> DATA = new ConcurrentHashMap<Integer, String> ();
+    public static final Map<Integer, String> DATA = new ConcurrentHashMap<>();
 
     public void clear() {
         DATA.clear();

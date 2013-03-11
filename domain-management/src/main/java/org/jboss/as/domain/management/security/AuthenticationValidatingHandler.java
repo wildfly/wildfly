@@ -81,7 +81,7 @@ class AuthenticationValidatingHandler implements OperationStepHandler {
         children.remove(ModelDescriptionConstants.TRUSTSTORE);
         children.remove(ModelDescriptionConstants.LOCAL);
         if (children.size() > 1) {
-            Set<String> invalid = new HashSet<String>(children);
+            Set<String> invalid = new HashSet<>(children);
             invalid.remove(ModelDescriptionConstants.TRUSTSTORE);
             throw DomainManagementMessages.MESSAGES.multipleAuthenticationMechanismsDefined(realmName, invalid);
         }

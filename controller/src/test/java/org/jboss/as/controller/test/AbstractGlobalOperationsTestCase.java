@@ -564,7 +564,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
     }
 
     protected List<String> modelNodeListToStringList(List<ModelNode> nodes) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (ModelNode node : nodes) {
             result.add(node.asString());
         }

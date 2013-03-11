@@ -85,9 +85,9 @@ class ConfigurationAssembler {
     }
 
     private void populateTemplate(TemplateParser templateParser, SubsystemsParser subsystemsParser) throws IOException, XMLStreamException{
-        final Set<String> extensions = new TreeSet<String>();
-        final Map<String, Map<String, ElementNode>> socketBindingsByGroup = new HashMap<String, Map<String, ElementNode>>();
-        final Map<String, Map<String, ElementNode>> outboundSocketBindingsByGroup = new HashMap<String, Map<String, ElementNode>>();
+        final Set<String> extensions = new TreeSet<>();
+        final Map<String, Map<String, ElementNode>> socketBindingsByGroup = new HashMap<>();
+        final Map<String, Map<String, ElementNode>> outboundSocketBindingsByGroup = new HashMap<>();
         for (Map.Entry<String, ProcessingInstructionNode> subsystemEntry : templateParser.getSubsystemPlaceholders().entrySet()) {
             final String subsystemName = subsystemEntry.getKey();
             final String groupName = subsystemEntry.getValue().getDataValue("socket-binding-group", "");
@@ -96,11 +96,11 @@ class ConfigurationAssembler {
             if (subsystems == null) {
                 throw new IllegalStateException("Could not find a subsystems configuration called '" + subsystemEntry.getKey() + "' in " + subsystemsFile);
             }
-            final Map<String, ElementNode> socketBindings = new TreeMap<String, ElementNode>();
+            final Map<String, ElementNode> socketBindings = new TreeMap<>();
             if (socketBindingsByGroup.put(groupName, socketBindings) != null) {
                 throw new IllegalStateException("Group '" + groupName + "' already exists");
             }
-            final Map<String, ElementNode> outboundSocketBindings = new TreeMap<String, ElementNode>();
+            final Map<String, ElementNode> outboundSocketBindings = new TreeMap<>();
             outboundSocketBindingsByGroup.put(groupName, outboundSocketBindings);
 
             for (SubsystemConfig subsystem : subsystems) {

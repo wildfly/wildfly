@@ -208,7 +208,7 @@ final class AliasResourceRegistration extends AbstractResourceRegistration imple
 
     @Override
     void getOperationDescriptions(final ListIterator<PathElement> iterator, final Map<String, OperationEntry> providers, final boolean inherited) {
-        Map<String, OperationEntry> temp = new HashMap<String, OperationEntry>();
+        Map<String, OperationEntry> temp = new HashMap<>();
         target.getOperationDescriptions(iterator, temp, inherited);
         for (Map.Entry<String, OperationEntry> entry : providers.entrySet()) {
             providers.put(entry.getKey(),

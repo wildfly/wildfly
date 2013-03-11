@@ -279,7 +279,7 @@ public class ExpressionTypeConverterUnitTestCase {
         Assert.assertEquals(node, converter.toModelNode(tabularData));
 
         //Allow plain map as well? Yeah why not!
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put("one", "1");
         map.put("two", "2");
         Assert.assertEquals(node, converter.toModelNode(map));
@@ -302,7 +302,7 @@ public class ExpressionTypeConverterUnitTestCase {
         Assert.assertTrue(Arrays.equals(new byte[] {3,4}, (byte[])tabularData.get(new Object[] {"two"}).get("value")));
 
         //Allow plain map as well? Yeah why not!
-        Map<String, byte[]> map = new HashMap<String, byte[]>();
+        Map<String, byte[]> map = new HashMap<>();
         map.put("one", new byte[] {1,2});
         map.put("two", new byte[] {3,4});
         Assert.assertEquals(node, converter.toModelNode(map));
@@ -870,7 +870,7 @@ public class ExpressionTypeConverterUnitTestCase {
     }
 
     private List<Object> createList(Object...values){
-        List<Object> list = new ArrayList<Object>();
+        List<Object> list = new ArrayList<>();
         for (Object value : values) {
             list.add(value);
         }

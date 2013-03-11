@@ -109,7 +109,7 @@ public class SerializationGroupContainer<K extends Serializable, V extends Cache
 
     @Override
     public SerializationGroup<K, V, UUID> createEntry(Cacheable<UUID> item) {
-        SerializationGroupImpl<K, V> group = new SerializationGroupImpl<K, V>(this.groupCache.createIdentifier());
+        SerializationGroupImpl<K, V> group = new SerializationGroupImpl<>(this.groupCache.createIdentifier());
         group.setClustered(clustered);
         group.setGroupCache(groupCache);
         return group;

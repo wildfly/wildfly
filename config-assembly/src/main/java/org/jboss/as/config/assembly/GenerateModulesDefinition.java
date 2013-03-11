@@ -115,7 +115,7 @@ public class GenerateModulesDefinition {
     private void process() throws XMLStreamException, IOException {
 
         ElementNode modulesNode = new ElementNode(null, "modules", "urn:modules:1.0");
-        List<ModuleIdentifier> dependencies = new ArrayList<ModuleIdentifier>();
+        List<ModuleIdentifier> dependencies = new ArrayList<>();
 
         if (!inputFile.getName().equals(SKIP_SUBSYSTEMS)) {
             SubsystemsParser parser = new SubsystemsParser(inputFile);

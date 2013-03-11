@@ -78,7 +78,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         if (requiresRuntime(context)) {
             context.addStep(new OperationStepHandler() {
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                    final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+                    final List<ServiceController<?>> controllers = new ArrayList<>();
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     performRuntime(context, operation, resource, model, verificationHandler, controllers);
 

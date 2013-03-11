@@ -86,12 +86,12 @@ import org.osgi.service.resolver.ResolutionException;
  */
 public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
 
-    private static Map<String, Deployment> deploymentMap = new HashMap<String, Deployment>();
+    private static Map<String, Deployment> deploymentMap = new HashMap<>();
 
-    private final InjectedValue<ModelController> injectedController = new InjectedValue<ModelController>();
-    private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
-    private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
-    private final InjectedValue<XResolver> injectedResolver = new InjectedValue<XResolver>();
+    private final InjectedValue<ModelController> injectedController = new InjectedValue<>();
+    private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<>();
+    private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<>();
+    private final InjectedValue<XResolver> injectedResolver = new InjectedValue<>();
     private ServerDeploymentManager deploymentManager;
 
     @Override
@@ -277,7 +277,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
             phaseService.setMode(Mode.ACTIVE);
             final StabilityMonitor monitor = new StabilityMonitor();
             monitor.addController(phaseService);
-            final Set<ServiceController<?>> failed = new HashSet<ServiceController<?>>();
+            final Set<ServiceController<?>> failed = new HashSet<>();
             try {
                 monitor.awaitStability(failed, null);
             } catch (final InterruptedException ex) {
@@ -312,7 +312,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
 
                 // Wait for the phase service to come down
                 try {
-                    FutureServiceValue<Phase> future = new FutureServiceValue<Phase>(phaseService, State.DOWN);
+                    FutureServiceValue<Phase> future = new FutureServiceValue<>(phaseService, State.DOWN);
                     future.get(30, TimeUnit.SECONDS);
                 } catch (ExecutionException ex) {
                     LOGGER.errorf(failure, failure.getMessage());

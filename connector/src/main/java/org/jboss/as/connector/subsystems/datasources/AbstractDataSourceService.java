@@ -91,12 +91,12 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("data-source");
     private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, AS7DataSourceDeployer.class.getName());
-    protected final InjectedValue<TransactionIntegration> transactionIntegrationValue = new InjectedValue<TransactionIntegration>();
-    private final InjectedValue<Driver> driverValue = new InjectedValue<Driver>();
-    private final InjectedValue<ManagementRepository> managementRepositoryValue = new InjectedValue<ManagementRepository>();
-    private final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
-    private final InjectedValue<DriverRegistry> driverRegistry = new InjectedValue<DriverRegistry>();
-    private final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
+    protected final InjectedValue<TransactionIntegration> transactionIntegrationValue = new InjectedValue<>();
+    private final InjectedValue<Driver> driverValue = new InjectedValue<>();
+    private final InjectedValue<ManagementRepository> managementRepositoryValue = new InjectedValue<>();
+    private final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<>();
+    private final InjectedValue<DriverRegistry> driverRegistry = new InjectedValue<>();
+    private final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<>();
 
     private final String jndiName;
 
@@ -241,7 +241,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                 }
                 this.serviceContainer = serviceContainer;
 
-                HashMap<String, org.jboss.jca.common.api.metadata.ds.Driver> drivers = new HashMap<String, org.jboss.jca.common.api.metadata.ds.Driver>(
+                HashMap<String, org.jboss.jca.common.api.metadata.ds.Driver> drivers = new HashMap<>(
                         1);
 
                 DataSources dataSources = null;

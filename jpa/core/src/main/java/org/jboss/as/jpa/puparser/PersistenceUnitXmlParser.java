@@ -111,7 +111,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                     throw unexpectedAttribute(reader, i);
             }
         }
-        final List<PersistenceUnitMetadata> PUs = new ArrayList<PersistenceUnitMetadata>();
+        final List<PersistenceUnitMetadata> PUs = new ArrayList<>();
         // until the ending PERSISTENCE tag
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
@@ -144,9 +144,9 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
      */
     private static PersistenceUnitMetadata parsePU(XMLStreamReader reader, Version version, final PropertyReplacer propertyReplacer) throws XMLStreamException {
         PersistenceUnitMetadata pu = new PersistenceUnitMetadataImpl();
-        List<String> classes = new ArrayList<String>(1);
-        List<String> jarFiles = new ArrayList<String>(1);
-        List<String> mappingFiles = new ArrayList<String>(1);
+        List<String> classes = new ArrayList<>(1);
+        List<String> jarFiles = new ArrayList<>(1);
+        List<String> mappingFiles = new ArrayList<>(1);
         Properties properties = new Properties();
 
         // set defaults

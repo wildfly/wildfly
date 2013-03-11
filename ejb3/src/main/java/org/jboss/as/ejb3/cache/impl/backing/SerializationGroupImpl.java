@@ -59,18 +59,18 @@ public class SerializationGroupImpl<K extends Serializable, V extends Cacheable<
      * The actual underlying objects passed in via addMember(). We store them here so they aren't lost when they are cleared
      * from the values stored in the "members" map.
      */
-    private Map<K, V> memberObjects = new ConcurrentHashMap<K, V>();
+    private Map<K, V> memberObjects = new ConcurrentHashMap<>();
 
     /**
      * The active group members. We don't serialize these. Rather, it is the responsibility of members to reassociate themselves
      * with the group upon deserialization (via addActive())
      */
-    private transient Map<K, SerializationGroupMember<K, V, UUID>> active = new HashMap<K, SerializationGroupMember<K, V, UUID>>();
+    private transient Map<K, SerializationGroupMember<K, V, UUID>> active = new HashMap<>();
 
     /**
      * Set of keys passed to {@link #addInUse(java.io.Serializable)}
      */
-    private transient Set<K> inUseKeys = new HashSet<K>();
+    private transient Set<K> inUseKeys = new HashSet<>();
 
     /** Transient ref to our group cache; used to validate compatibility */
     private transient PassivatingBackingCache<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>> groupCache;
@@ -337,8 +337,8 @@ public class SerializationGroupImpl<K extends Serializable, V extends Cacheable<
         in.defaultReadObject();
         lock = new ReentrantLock();
         this.memberObjects = (Map<K, V>) in.readObject();
-        active = new HashMap<K, SerializationGroupMember<K, V, UUID>>();
-        inUseKeys = new HashSet<K>();
+        active = new HashMap<>();
+        inUseKeys = new HashSet<>();
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {

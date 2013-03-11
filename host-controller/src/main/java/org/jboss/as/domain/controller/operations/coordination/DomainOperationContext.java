@@ -52,11 +52,11 @@ public class DomainOperationContext {
 
     private final LocalHostControllerInfo localHostInfo;
     private final ModelNode coordinatorResult = new ModelNode();
-    private final ConcurrentMap<String, ModelNode> hostControllerResults = new ConcurrentHashMap<String, ModelNode>();
-    private final ConcurrentMap<ServerIdentity, ModelNode> serverResults = new ConcurrentHashMap<ServerIdentity, ModelNode>();
-    private final ConcurrentMap<String, HostControllerUpdateTask.ExecutedHostRequest> finalResultFutures = new ConcurrentHashMap<String, HostControllerUpdateTask.ExecutedHostRequest>();
+    private final ConcurrentMap<String, ModelNode> hostControllerResults = new ConcurrentHashMap<>();
+    private final ConcurrentMap<ServerIdentity, ModelNode> serverResults = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, HostControllerUpdateTask.ExecutedHostRequest> finalResultFutures = new ConcurrentHashMap<>();
 
-    private final Map<String, Boolean> serverGroupStatuses = new ConcurrentHashMap<String, Boolean>();
+    private final Map<String, Boolean> serverGroupStatuses = new ConcurrentHashMap<>();
     private volatile boolean completeRollback = true;
     private volatile boolean failureReported;
 
@@ -73,7 +73,7 @@ public class DomainOperationContext {
     }
 
     public Map<String, ModelNode> getHostControllerResults() {
-        return new HashMap<String, ModelNode>(hostControllerResults);
+        return new HashMap<>(hostControllerResults);
     }
 
     public void addHostControllerResult(String hostId, ModelNode hostResult) {
@@ -81,7 +81,7 @@ public class DomainOperationContext {
     }
 
     public Map<ServerIdentity, ModelNode> getServerResults() {
-        return new HashMap<ServerIdentity, ModelNode>(serverResults);
+        return new HashMap<>(serverResults);
     }
 
     public void addServerResult(ServerIdentity serverId, ModelNode serverResult) {

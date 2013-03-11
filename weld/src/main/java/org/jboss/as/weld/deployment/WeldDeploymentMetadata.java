@@ -42,7 +42,7 @@ public class WeldDeploymentMetadata {
     private final Set<BeanArchiveMetadata> beanArchiveMetadata;
 
     public WeldDeploymentMetadata(Set<BeanArchiveMetadata> beanArchiveMetadata) {
-        this.beanArchiveMetadata = new HashSet<BeanArchiveMetadata>(beanArchiveMetadata);
+        this.beanArchiveMetadata = new HashSet<>(beanArchiveMetadata);
     }
 
     public Set<BeanArchiveMetadata> getBeanArchiveMetadata() {

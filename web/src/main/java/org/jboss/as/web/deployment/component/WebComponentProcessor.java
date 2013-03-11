@@ -91,7 +91,7 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        final Map<String, ComponentDescription> componentByClass = new HashMap<String, ComponentDescription>();
+        final Map<String, ComponentDescription> componentByClass = new HashMap<>();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
@@ -150,7 +150,7 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
      * @return
      */
     private Set<String> getAllComponentClasses(DeploymentUnit deploymentUnit, CompositeIndex index, WarMetaData metaData, TldsMetaData tldsMetaData) {
-        final Set<String> classes = new HashSet<String>();
+        final Set<String> classes = new HashSet<>();
         if (metaData.getAnnotationsMetaData() != null)
             for (Map.Entry<String, WebMetaData> webMetaData : metaData.getAnnotationsMetaData().entrySet()) {
                 getAllComponentClasses(webMetaData.getValue(), classes);

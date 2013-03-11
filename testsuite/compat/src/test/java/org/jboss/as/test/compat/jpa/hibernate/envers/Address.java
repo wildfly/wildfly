@@ -47,7 +47,7 @@ public class Address {
 
 
     @OneToMany(mappedBy = "address")
-    private Set<Person> persons = new HashSet<Person>(  );
+    private Set<Person> persons = new HashSet<>(  );
 
 	public Integer getHouseNumber() {
 		return houseNumber;

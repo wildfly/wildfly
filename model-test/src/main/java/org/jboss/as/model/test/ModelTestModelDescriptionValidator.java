@@ -83,7 +83,7 @@ public class ModelTestModelDescriptionValidator {
     private static final Map<String, ArbitraryDescriptorValidator> VALID_OPERATION_KEYS;
     private static final Map<String, AttributeOrParameterArbitraryDescriptorValidator> VALID_PARAMETER_KEYS;
     static {
-        Map<String, ArbitraryDescriptorValidator> validResourceKeys = new HashMap<String, ArbitraryDescriptorValidator>();
+        Map<String, ArbitraryDescriptorValidator> validResourceKeys = new HashMap<>();
         validResourceKeys.put(DESCRIPTION, NullDescriptorValidator.INSTANCE);
         validResourceKeys.put(HEAD_COMMENT_ALLOWED, BooleanDescriptorValidator.INSTANCE);
         validResourceKeys.put(TAIL_COMMENT_ALLOWED, BooleanDescriptorValidator.INSTANCE);
@@ -94,7 +94,7 @@ public class ModelTestModelDescriptionValidator {
         validResourceKeys.put(DEPRECATED, DeprecatedDescriptorValidator.INSTANCE);
         VALID_RESOURCE_KEYS = Collections.unmodifiableMap(validResourceKeys);
 
-        Map<String, ArbitraryDescriptorValidator> validChildTypeKeys = new HashMap<String, ModelTestModelDescriptionValidator.ArbitraryDescriptorValidator>();
+        Map<String, ArbitraryDescriptorValidator> validChildTypeKeys = new HashMap<>();
         validChildTypeKeys.put(DESCRIPTION, NullDescriptorValidator.INSTANCE);
         validChildTypeKeys.put(MODEL_DESCRIPTION, NullDescriptorValidator.INSTANCE);
         validChildTypeKeys.put(MIN_OCCURS, SimpleIntDescriptorValidator.INSTANCE);
@@ -103,7 +103,7 @@ public class ModelTestModelDescriptionValidator {
         VALID_CHILD_TYPE_KEYS = Collections.unmodifiableMap(validChildTypeKeys);
 
 
-        Map<String, AttributeOrParameterArbitraryDescriptorValidator> paramAndAttributeKeys = new HashMap<String, AttributeOrParameterArbitraryDescriptorValidator>();
+        Map<String, AttributeOrParameterArbitraryDescriptorValidator> paramAndAttributeKeys = new HashMap<>();
         //Normal
         paramAndAttributeKeys.put(DESCRIPTION, NullDescriptorValidator.INSTANCE);
         paramAndAttributeKeys.put(REQUIRED, BooleanDescriptorValidator.INSTANCE);
@@ -123,7 +123,7 @@ public class ModelTestModelDescriptionValidator {
         paramAndAttributeKeys.put(EXPRESSIONS_ALLOWED, BooleanDescriptorValidator.INSTANCE);
         paramAndAttributeKeys.put(DEPRECATED, DeprecatedDescriptorValidator.INSTANCE);
 
-        Map<String, AttributeOrParameterArbitraryDescriptorValidator> validAttributeKeys = new HashMap<String, AttributeOrParameterArbitraryDescriptorValidator>();
+        Map<String, AttributeOrParameterArbitraryDescriptorValidator> validAttributeKeys = new HashMap<>();
         validAttributeKeys.putAll(paramAndAttributeKeys);
         validAttributeKeys.put(ACCESS_TYPE, AccessTypeDescriptorValidator.INSTANCE);
         validAttributeKeys.put(HEAD_COMMENT_ALLOWED, BooleanDescriptorValidator.INSTANCE);
@@ -133,7 +133,7 @@ public class ModelTestModelDescriptionValidator {
         validAttributeKeys.put(DEPRECATED, DeprecatedDescriptorValidator.INSTANCE);
         VALID_ATTRIBUTE_KEYS = Collections.unmodifiableMap(validAttributeKeys);
 
-        Map<String, ArbitraryDescriptorValidator> validOperationKeys = new HashMap<String, ArbitraryDescriptorValidator>();
+        Map<String, ArbitraryDescriptorValidator> validOperationKeys = new HashMap<>();
         validOperationKeys.put(DESCRIPTION, NullDescriptorValidator.INSTANCE);
         validOperationKeys.put(OPERATION_NAME, NullDescriptorValidator.INSTANCE);
         validOperationKeys.put(REQUEST_PROPERTIES, NullDescriptorValidator.INSTANCE);
@@ -141,7 +141,7 @@ public class ModelTestModelDescriptionValidator {
         validOperationKeys.put(DEPRECATED, DeprecatedDescriptorValidator.INSTANCE);
         VALID_OPERATION_KEYS = Collections.unmodifiableMap(validOperationKeys);
 
-        Map<String, AttributeOrParameterArbitraryDescriptorValidator> validParameterKeys = new HashMap<String, AttributeOrParameterArbitraryDescriptorValidator>();
+        Map<String, AttributeOrParameterArbitraryDescriptorValidator> validParameterKeys = new HashMap<>();
         validParameterKeys.putAll(paramAndAttributeKeys);
         VALID_PARAMETER_KEYS = Collections.unmodifiableMap(validParameterKeys);
     }
@@ -567,10 +567,10 @@ public class ModelTestModelDescriptionValidator {
      * Allows extra configuration of the validation
      */
     public static class ValidationConfiguration {
-        private Map<ModelNode, Set<String>> nullValueTypeAttributes = new HashMap<ModelNode, Set<String>>();
-        private Map<ModelNode, Map<String, Set<String>>> nullValueTypeOperations = new HashMap<ModelNode, Map<String, Set<String>>>();
-        private Map<ModelNode, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>> attributeDescriptors = new HashMap<ModelNode, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>>();
-        private Map<ModelNode, Map<String, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>>> operationParameterDescriptors = new HashMap<ModelNode, Map<String, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>>>();
+        private Map<ModelNode, Set<String>> nullValueTypeAttributes = new HashMap<>();
+        private Map<ModelNode, Map<String, Set<String>>> nullValueTypeOperations = new HashMap<>();
+        private Map<ModelNode, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>> attributeDescriptors = new HashMap<>();
+        private Map<ModelNode, Map<String, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>>> operationParameterDescriptors = new HashMap<>();
 
         /**
          * Allow undefined value-types for a OBJECT or LIST type attribute. This should be used
@@ -582,7 +582,7 @@ public class ModelTestModelDescriptionValidator {
         public void allowNullValueTypeForAttribute(ModelNode address, String name) {
             Set<String> names = nullValueTypeAttributes.get(address);
             if (names == null) {
-                names = new HashSet<String>();
+                names = new HashSet<>();
                 nullValueTypeAttributes.put(address, names);
             }
             names.add(name);
@@ -621,12 +621,12 @@ public class ModelTestModelDescriptionValidator {
         public void allowNullValueTypeForOperationParameter(ModelNode address, String operation, String param) {
             Map<String, Set<String>> names = nullValueTypeOperations.get(address);
             if (names == null) {
-                names = new HashMap<String, Set<String>>();
+                names = new HashMap<>();
                 nullValueTypeOperations.put(address, names);
             }
             Set<String> params = names.get(operation);
             if (params == null) {
-                params = new HashSet<String>();
+                params = new HashSet<>();
                 names.put(operation, params);
             }
             params.add(param);
@@ -643,12 +643,12 @@ public class ModelTestModelDescriptionValidator {
         public void registerAttributeArbitraryDescriptor(ModelNode address, String name, String descriptor, AttributeOrParameterArbitraryDescriptorValidator validator) {
             Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>> byName = attributeDescriptors.get(address);
             if (byName == null) {
-                byName = new HashMap<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>();
+                byName = new HashMap<>();
                 attributeDescriptors.put(address, byName);
             }
             Map<String, AttributeOrParameterArbitraryDescriptorValidator> descriptors = byName.get(name);
             if (descriptors == null) {
-                descriptors = new HashMap<String, AttributeOrParameterArbitraryDescriptorValidator>();
+                descriptors = new HashMap<>();
                 byName.put(name, descriptors);
             }
             descriptors.put(descriptor, validator == null ? NullDescriptorValidator.INSTANCE : validator);
@@ -690,17 +690,17 @@ public class ModelTestModelDescriptionValidator {
         public void registerArbitraryDescriptorForOperationParameter(ModelNode address, String operation, String parameter, String descriptor, AttributeOrParameterArbitraryDescriptorValidator validator) {
             Map<String, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>> byName = operationParameterDescriptors.get(address);
             if (byName == null) {
-                byName = new HashMap<String, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>>();
+                byName = new HashMap<>();
                 operationParameterDescriptors.put(address, byName);
             }
             Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>> params = byName.get(operation);
             if (params == null) {
-                params = new HashMap<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>();
+                params = new HashMap<>();
                 byName.put(operation, params);
             }
             Map<String, AttributeOrParameterArbitraryDescriptorValidator> descriptors = params.get(parameter);
             if (descriptors == null) {
-                descriptors = new HashMap<String, ModelTestModelDescriptionValidator.AttributeOrParameterArbitraryDescriptorValidator>();
+                descriptors = new HashMap<>();
                 params.put(parameter, descriptors);
             }
             descriptors.put(descriptor, validator == null ? NullDescriptorValidator.INSTANCE : validator);

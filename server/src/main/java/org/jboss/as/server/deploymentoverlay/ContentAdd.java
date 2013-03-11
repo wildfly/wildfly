@@ -121,7 +121,7 @@ public class ContentAdd extends AbstractAddStepHandler {
 
             List<DomainOperationTransformer> transformers = context.getAttachment(OperationAttachments.SLAVE_SERVER_OPERATION_TRANSFORMERS);
             if(transformers == null) {
-                context.attach(OperationAttachments.SLAVE_SERVER_OPERATION_TRANSFORMERS, transformers = new ArrayList<DomainOperationTransformer>());
+                context.attach(OperationAttachments.SLAVE_SERVER_OPERATION_TRANSFORMERS, transformers = new ArrayList<>());
             }
             transformers.add(new CompositeOperationAwareTransformer(slave));
         }

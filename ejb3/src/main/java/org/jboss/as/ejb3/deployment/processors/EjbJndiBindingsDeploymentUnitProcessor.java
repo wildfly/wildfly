@@ -193,7 +193,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
 
     private void registerRemoteBinding(final EJBComponentDescription componentDescription, final ViewDescription viewDescription, final String jndiName) {
         final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
-        final InjectedValue<ClassLoader> viewClassLoader = new InjectedValue<ClassLoader>();
+        final InjectedValue<ClassLoader> viewClassLoader = new InjectedValue<>();
         moduleDescription.getBindingConfigurations().add(new BindingConfiguration(jndiName, new RemoteViewInjectionSource(null, moduleDescription.getEarApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful(), viewClassLoader)));
         componentDescription.getConfigurators().add(new ComponentConfigurator() {
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {

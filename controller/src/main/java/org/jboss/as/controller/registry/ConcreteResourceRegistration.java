@@ -457,7 +457,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
             checkPermission();
             final Map<String, NodeSubregistry> children = this.children;
             if (children != null) {
-                final Set<PathElement> elements = new HashSet<PathElement>();
+                final Set<PathElement> elements = new HashSet<>();
                 for (final Map.Entry<String, NodeSubregistry> entry : children.entrySet()) {
                     for (final String entryChild : entry.getValue().getChildNames()) {
                         elements.add(PathElement.pathElement(entry.getKey(), entryChild));

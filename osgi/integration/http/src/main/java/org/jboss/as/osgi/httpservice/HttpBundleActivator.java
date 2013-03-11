@@ -57,7 +57,7 @@ public final class HttpBundleActivator implements BundleActivator {
         if (controller != null) {
             // Wait for the {@link HttpServiceFactoryService} to get removed
             // [AS7-5828] HttpService may fail to start due to already existing service
-            FutureServiceValue<StandardContext> future = new FutureServiceValue<StandardContext>(controller, State.REMOVED);
+            FutureServiceValue<StandardContext> future = new FutureServiceValue<>(controller, State.REMOVED);
             controller.setMode(Mode.REMOVE);
             future.get(10, TimeUnit.SECONDS);
         }

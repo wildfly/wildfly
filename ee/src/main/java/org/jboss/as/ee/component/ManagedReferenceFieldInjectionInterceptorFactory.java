@@ -61,7 +61,7 @@ final class ManagedReferenceFieldInjectionInterceptorFactory implements Intercep
         final Map<Object, Object> contextData = context.getContextData();
         @SuppressWarnings("unchecked")
         final AtomicReference<ManagedReference> targetReference = (AtomicReference<ManagedReference>) contextData.get(targetContextKey);
-        final AtomicReference<ManagedReference> valueReference = new AtomicReference<ManagedReference>();
+        final AtomicReference<ManagedReference> valueReference = new AtomicReference<>();
         contextData.put(valueContextKey, valueReference);
         return new ManagedReferenceFieldInjectionInterceptor(targetReference, valueReference, factoryValue.getValue(), field, optional);
     }

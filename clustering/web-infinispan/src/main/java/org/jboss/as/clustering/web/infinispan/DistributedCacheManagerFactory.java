@@ -79,11 +79,11 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
     private CacheInvoker invoker = new RetryingCacheInvoker(new BatchCacheInvoker(), 10, 100);
     private SessionAttributeMarshallerFactory marshallerFactory = new SessionAttributeMarshallerFactoryImpl();
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<Registry> registry = new InjectedValue<Registry>();
-    private final InjectedValue<SharedLocalYieldingClusterLockManager> lockManager = new InjectedValue<SharedLocalYieldingClusterLockManager>();
+    private final InjectedValue<Registry> registry = new InjectedValue<>();
+    private final InjectedValue<SharedLocalYieldingClusterLockManager> lockManager = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<Cache> cache = new InjectedValue<Cache>();
-    private final InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<KeyAffinityServiceFactory>();
+    private final InjectedValue<Cache> cache = new InjectedValue<>();
+    private final InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<>();
 
     @Override
     public <T extends OutgoingDistributableSessionData> org.jboss.as.clustering.web.DistributedCacheManager<T> getDistributedCacheManager(LocalDistributableSessionManager manager) throws ClusteringNotSupportedException {
@@ -100,7 +100,7 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
         BatchingManager batchingManager = new TransactionBatchingManager(cache.getTransactionManager());
         SessionAttributeStorage<T> storage = this.storageFactory.createStorage(manager.getReplicationConfig().getReplicationGranularity(), this.marshallerFactory.createMarshaller(manager));
 
-        return new DistributedCacheManager<T>(manager, new AtomicMapCache<String, Object, Object>(cache), jvmRouteRegistry, this.lockManager.getOptionalValue(), storage, batchingManager, this.invoker, this.affinityFactory.getValue());
+        return new DistributedCacheManager<>(manager, new AtomicMapCache<>(cache), jvmRouteRegistry, this.lockManager.getOptionalValue(), storage, batchingManager, this.invoker, this.affinityFactory.getValue());
     }
 
     @Override
@@ -123,15 +123,15 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
         ServiceName cacheConfigurationServiceName = AbstractCacheConfigurationService.getServiceName(containerName, cacheName);
         ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
 
-        final InjectedValue<EmbeddedCacheManager> container = new InjectedValue<EmbeddedCacheManager>();
-        final InjectedValue<Configuration> config = new InjectedValue<Configuration>();
+        final InjectedValue<EmbeddedCacheManager> container = new InjectedValue<>();
+        final InjectedValue<Configuration> config = new InjectedValue<>();
         target.addService(cacheConfigurationServiceName, new WebSessionCacheConfigurationService(cacheName, container, config))
                 .addDependency(containerServiceName, EmbeddedCacheManager.class, container)
                 .addDependency(templateCacheConfigurationServiceName, Configuration.class, config)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
-        final InjectedValue<EmbeddedCacheManager> cacheContainer = new InjectedValue<EmbeddedCacheManager>();
+        final InjectedValue<EmbeddedCacheManager> cacheContainer = new InjectedValue<>();
         CacheService.Dependencies dependencies = new CacheService.Dependencies() {
             @Override
             public EmbeddedCacheManager getCacheContainer() {
@@ -143,7 +143,7 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
                 return null;
             }
         };
-        AsynchronousService.addService(target, cacheServiceName, new CacheService<Object, Object>(cacheName, dependencies))
+        AsynchronousService.addService(target, cacheServiceName, new CacheService<>(cacheName, dependencies))
                 .addDependency(cacheConfigurationServiceName)
                 .addDependency(containerServiceName, EmbeddedCacheManager.class, cacheContainer)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
@@ -159,8 +159,8 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Collection<ServiceController<?>> installServices(ServiceTarget target) {
-        InjectedValue<Cache> cache = new InjectedValue<Cache>();
-        InjectedValue<Registry.RegistryEntryProvider> providerValue = new InjectedValue<Registry.RegistryEntryProvider>();
+        InjectedValue<Cache> cache = new InjectedValue<>();
+        InjectedValue<Registry.RegistryEntryProvider> providerValue = new InjectedValue<>();
         ServiceController<?> controller = AsynchronousService.addService(target, JVM_ROUTE_REGISTRY_SERVICE_NAME, new RegistryService(cache, providerValue))
                 .addDependency(CacheService.getServiceName(DEFAULT_CACHE_CONTAINER, null), Cache.class, cache)
                 .addDependency(DistributedCacheManagerFactoryService.JVM_ROUTE_REGISTRY_ENTRY_PROVIDER_SERVICE_NAME, Registry.RegistryEntryProvider.class, providerValue)

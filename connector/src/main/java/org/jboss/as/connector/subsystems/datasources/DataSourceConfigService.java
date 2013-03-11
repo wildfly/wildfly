@@ -42,7 +42,7 @@ public class DataSourceConfigService implements Service<ModifiableDataSource> {
 
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("data-source-config");
 
-    private final ConcurrentMap<String, String> connectionProperties = new ConcurrentHashMap<String, String>(0);
+    private final ConcurrentMap<String, String> connectionProperties = new ConcurrentHashMap<>(0);
 
 
     private final ModifiableDataSource dataSourceConfig;

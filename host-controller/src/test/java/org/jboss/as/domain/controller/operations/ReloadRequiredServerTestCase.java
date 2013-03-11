@@ -316,7 +316,7 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
     }
 
     private void checkServerOperationResolver(MockOperationContext context, ModelNode operation, PathAddress address, boolean expectServerOps) {
-        Map<String, ProxyController> serverProxies = new HashMap<String, ProxyController>();
+        Map<String, ProxyController> serverProxies = new HashMap<>();
         serverProxies.put("server-one", new MockServerProxy());
         serverProxies.put("server-two", new MockServerProxy());
         serverProxies.put("server-three", new MockServerProxy());

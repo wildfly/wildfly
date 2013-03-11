@@ -169,7 +169,7 @@ public final class Main {
     }
 
     public static ParsedOptions determineEnvironment(String[] args, Properties systemProperties, Map<String, String> systemEnvironment, ServerEnvironment.LaunchType launchType) {
-        List<String> clientArguments = new ArrayList<String>();
+        List<String> clientArguments = new ArrayList<>();
         ParsedOptions ret = new ParsedOptions();
         ret.clientArguments = clientArguments;
         final int argsLength = args.length;

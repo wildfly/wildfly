@@ -118,7 +118,7 @@ public final class WSIntegrationProcessorJAXRPC_EJB implements DeploymentUnitPro
     }
 
     private static Set<String> getSecurityRoles(final DeploymentUnit unit) {
-        final Set<String> securityRoles = new HashSet<String>();
+        final Set<String> securityRoles = new HashSet<>();
 
         // process assembly-descriptor DD section
         final EjbJarMetaData ejbJarMD = unit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);

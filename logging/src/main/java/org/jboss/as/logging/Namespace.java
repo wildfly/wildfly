@@ -65,8 +65,8 @@ public enum Namespace {
     private static final List<Namespace> READABLE;
 
     static {
-        final Map<String, Namespace> map = new HashMap<String, Namespace>();
-        final List<Namespace> readable = new ArrayList<Namespace>();
+        final Map<String, Namespace> map = new HashMap<>();
+        final List<Namespace> readable = new ArrayList<>();
         for (Namespace namespace : values()) {
             final String name = namespace.getUriString();
             if (name != null) {

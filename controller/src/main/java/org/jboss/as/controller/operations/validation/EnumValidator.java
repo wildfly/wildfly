@@ -46,7 +46,7 @@ public class EnumValidator<E extends Enum<E>> extends ModelTypeValidator impleme
 
     private final EnumSet<E> allowedValues;
     private final Class<E> enumType;
-    private final Map<String, E> toStringMap = new HashMap<String, E>();
+    private final Map<String, E> toStringMap = new HashMap<>();
 
     public EnumValidator(final Class<E> enumType, final boolean nullable, final E... allowed) {
         this(enumType, nullable, false, allowed);
@@ -82,7 +82,7 @@ public class EnumValidator<E extends Enum<E>> extends ModelTypeValidator impleme
      * @return a new validator.
      */
     public static <E extends Enum<E>> EnumValidator<E> create(final Class<E> enumType, final boolean nullable, final E... allowed) {
-        return new EnumValidator<E>(enumType, nullable, allowed);
+        return new EnumValidator<>(enumType, nullable, allowed);
     }
 
     /**
@@ -96,7 +96,7 @@ public class EnumValidator<E extends Enum<E>> extends ModelTypeValidator impleme
      * @return a new validator.
      */
     public static <E extends Enum<E>> EnumValidator<E> create(final Class<E> enumType, final boolean nullable, final boolean allowExpressions) {
-        return new EnumValidator<E>(enumType, nullable, allowExpressions);
+        return new EnumValidator<>(enumType, nullable, allowExpressions);
     }
 
     /**
@@ -111,7 +111,7 @@ public class EnumValidator<E extends Enum<E>> extends ModelTypeValidator impleme
      * @return a new validator.
      */
     public static <E extends Enum<E>> EnumValidator<E> create(final Class<E> enumType, final boolean nullable, final boolean allowExpressions, final E... allowed) {
-        return new EnumValidator<E>(enumType, nullable, allowExpressions, allowed);
+        return new EnumValidator<>(enumType, nullable, allowExpressions, allowed);
     }
 
     @Override
@@ -143,7 +143,7 @@ public class EnumValidator<E extends Enum<E>> extends ModelTypeValidator impleme
 
     @Override
     public List<ModelNode> getAllowedValues() {
-        List<ModelNode> result = new ArrayList<ModelNode>();
+        List<ModelNode> result = new ArrayList<>();
         for (E value : allowedValues) {
             if (value.toString() != null) {
                 result.add(new ModelNode().set(value.toString()));

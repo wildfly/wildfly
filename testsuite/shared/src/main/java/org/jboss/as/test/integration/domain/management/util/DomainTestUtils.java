@@ -132,7 +132,7 @@ public class DomainTestUtils {
         if(! operationResult.hasDefined(RESULT)) {
             return Collections.singletonList(operationResult);
         }
-        final List<ModelNode> result = new ArrayList<ModelNode>();
+        final List<ModelNode> result = new ArrayList<>();
         final int size = operationResult.get(RESULT).asPropertyList().size();
         for(int i = 0; i < size; i++) {
             result.add(operationResult.get(RESULT).require("steps-" + (i+1)));

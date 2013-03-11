@@ -74,7 +74,7 @@ public class AssertConsoleBuilder {
         }
     }
 
-    private Queue<AssertConsole> queue = new LinkedList<AssertConsole>();
+    private Queue<AssertConsole> queue = new LinkedList<>();
 
     /**
      * Recorded the expected display text

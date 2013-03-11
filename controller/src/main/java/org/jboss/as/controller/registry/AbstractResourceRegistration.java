@@ -258,7 +258,7 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
             return ri.root.getOperationDescriptions(ri.pathAddress.append(address), inherited);
         }
         // else we are the root
-        Map<String, OperationEntry> providers = new TreeMap<String, OperationEntry>();
+        Map<String, OperationEntry> providers = new TreeMap<>();
         getOperationDescriptions(address.iterator(), providers, inherited);
         return providers;
     }
@@ -340,7 +340,7 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
         }
         // else we are the root
 
-        Set<ProxyController> controllers = new HashSet<ProxyController>();
+        Set<ProxyController> controllers = new HashSet<>();
         getProxyControllers(address.iterator(), controllers);
         return controllers;
     }
@@ -423,7 +423,7 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
                 if (rootInvocation == null) {
                     NodeSubregistry ancestorSubregistry = parent;
                     AbstractResourceRegistration ancestorReg = this;
-                    final List<PathElement> path = new ArrayList<PathElement>();
+                    final List<PathElement> path = new ArrayList<>();
                     while (ancestorSubregistry != null) {
                         PathElement pe = PathElement.pathElement(ancestorSubregistry.getKeyName(), ancestorReg.valueString);
                         path.add(0, pe);

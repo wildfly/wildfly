@@ -63,7 +63,6 @@ import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
 import org.jboss.as.controller.client.helpers.domain.DuplicateDeploymentNameException;
 import org.jboss.as.controller.client.helpers.domain.InitialDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlan;
-import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -104,10 +103,10 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
             throw MESSAGES.cannotUseDeploymentPlan();
         }
         DeploymentPlanImpl planImpl = DeploymentPlanImpl.class.cast(plan);
-        Map<UUID, List<String>> actionsById = new HashMap<UUID, List<String>>();
+        Map<UUID, List<String>> actionsById = new HashMap<>();
         Operation operation = getDeploymentPlanOperation(planImpl, actionsById);
         Future<ModelNode> future = client.executeAsync(operation, null);
-        return new DomainDeploymentPlanResultFuture(planImpl, future, new LinkedHashSet<ServerIdentity>(client.getServerStatuses().keySet()), actionsById);
+        return new DomainDeploymentPlanResultFuture(planImpl, future, new LinkedHashSet<>(client.getServerStatuses().keySet()), actionsById);
     }
 
     @Override
@@ -137,11 +136,11 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
         OperationBuilder builder = new OperationBuilder(op);
         int stepNum = 1;
         for (DeploymentActionImpl action : plan.getDeploymentActionImpls()) {
-            final List<String> actionStepIds = new ArrayList<String>();
+            final List<String> actionStepIds = new ArrayList<>();
 
             actionsById.put(action.getId(), actionStepIds);
 
-            List<ModelNode> actionSteps = new ArrayList<ModelNode>();
+            List<ModelNode> actionSteps = new ArrayList<>();
             String uniqueName = action.getDeploymentUnitUniqueName();
             switch (action.getType()) {
             case ADD: {
@@ -230,7 +229,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
         op.get("operation").set("read-children-names");
         op.get("child-type").set("deployment");
         ModelNode rsp = client.executeForResult(new OperationBuilder(op).build());
-        Set<String> deployments = new HashSet<String>();
+        Set<String> deployments = new HashSet<>();
         if (rsp.isDefined()) {
             for (ModelNode node : rsp.asList()) {
                 deployments.add(node.asString());
@@ -279,7 +278,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
     }
 
     private Set<String> getServerGroupNames(DeploymentPlan plan) {
-        Set<String> names = new HashSet<String>();
+        Set<String> names = new HashSet<>();
         for (Set<ServerGroupDeploymentPlan> sgdps : plan.getServerGroupDeploymentPlans()) {
             for (ServerGroupDeploymentPlan sgdp : sgdps) {
                 names.add(sgdp.getServerGroupName());

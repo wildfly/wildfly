@@ -84,7 +84,7 @@ public class JBossAllXMLParsingProcessor implements DeploymentUnitProcessor {
             return;
         }
         final XMLMapper mapper = XMLMapper.Factory.create();
-        final Map<QName, AttachmentKey<?>> namespaceAttachments = new HashMap<QName, AttachmentKey<?>>();
+        final Map<QName, AttachmentKey<?>> namespaceAttachments = new HashMap<>();
         for(final JBossAllXMLParserDescription<?> parser : deploymentUnit.getAttachmentList(JBossAllXMLParserDescription.ATTACHMENT_KEY)) {
             namespaceAttachments.put(parser.getRootElement(), parser.getAttachmentKey());
             mapper.registerRootElement(parser.getRootElement(), new JBossAllXMLElementReader(parser));
@@ -96,7 +96,7 @@ public class JBossAllXMLParsingProcessor implements DeploymentUnitProcessor {
         parse(descriptor, mapper, context);
 
         //we use this map to detect the presence of two different but functionally equivalent namespaces
-        final Map<AttachmentKey<?>, QName> usedNamespaces = new HashMap<AttachmentKey<?>, QName>();
+        final Map<AttachmentKey<?>, QName> usedNamespaces = new HashMap<>();
         for(Map.Entry<QName, Object> entry : context.getParseResults().entrySet()) {
             final AttachmentKey attachmentKey = namespaceAttachments.get(entry.getKey());
             if(usedNamespaces.containsKey(attachmentKey)) {
@@ -229,7 +229,7 @@ public class JBossAllXMLParsingProcessor implements DeploymentUnitProcessor {
         private static final Map<String, Element> MAP;
 
         static {
-            final Map<String, Element> map = new HashMap<String, Element>();
+            final Map<String, Element> map = new HashMap<>();
             for (Element element : values()) {
                 final String name = element.getLocalName();
                 if (name != null) map.put(name, element);
@@ -277,7 +277,7 @@ public class JBossAllXMLParsingProcessor implements DeploymentUnitProcessor {
         private static final Map<String, Namespace> MAP;
 
         static {
-            final Map<String, Namespace> map = new HashMap<String, Namespace>();
+            final Map<String, Namespace> map = new HashMap<>();
             for (Namespace namespace : values()) {
                 final String name = namespace.getUriString();
                 if (name != null)

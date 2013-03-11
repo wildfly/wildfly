@@ -75,7 +75,7 @@ public class NamingEventCoordinator {
         ListenerHolder holder = holdersByListener.get(namingListener);
         if (holder == null) {
             holder = new ListenerHolder(namingListener, targetScope);
-            final Map<NamingListener, ListenerHolder> byListenerCopy = new FastCopyHashMap<NamingListener, ListenerHolder>(holdersByListener);
+            final Map<NamingListener, ListenerHolder> byListenerCopy = new FastCopyHashMap<>(holdersByListener);
             byListenerCopy.put(namingListener, holder);
             holdersByListener = byListenerCopy;
         } else {
@@ -84,8 +84,8 @@ public class NamingEventCoordinator {
 
         List<ListenerHolder> holdersForTarget = holdersByTarget.get(targetScope);
         if (holdersForTarget == null) {
-            holdersForTarget = new CopyOnWriteArrayList<ListenerHolder>();
-            final Map<TargetScope, List<ListenerHolder>> byTargetCopy = new FastCopyHashMap<TargetScope, List<ListenerHolder>>(holdersByTarget);
+            holdersForTarget = new CopyOnWriteArrayList<>();
+            final Map<TargetScope, List<ListenerHolder>> byTargetCopy = new FastCopyHashMap<>(holdersByTarget);
             byTargetCopy.put(targetScope, holdersForTarget);
             holdersByTarget = byTargetCopy;
         }
@@ -105,11 +105,11 @@ public class NamingEventCoordinator {
             return;
         }
 
-        final Map<NamingListener, ListenerHolder> byListenerCopy = new FastCopyHashMap<NamingListener, ListenerHolder>(holdersByListener);
+        final Map<NamingListener, ListenerHolder> byListenerCopy = new FastCopyHashMap<>(holdersByListener);
         byListenerCopy.remove(namingListener);
         holdersByListener = byListenerCopy;
 
-        final Map<TargetScope, List<ListenerHolder>> byTargetCopy = new FastCopyHashMap<TargetScope, List<ListenerHolder>>(holdersByTarget);
+        final Map<TargetScope, List<ListenerHolder>> byTargetCopy = new FastCopyHashMap<>(holdersByTarget);
         for (TargetScope targetScope : holder.targets) {
             final List<ListenerHolder> holders = holdersByTarget.get(targetScope);
             holders.remove(holder);
@@ -134,10 +134,10 @@ public class NamingEventCoordinator {
      */
     void fireEvent(final EventContext context, final Name name, final Binding existingBinding, final Binding newBinding, int type, final String changeInfo, final Integer... scopes) {
         final String target = name.toString();
-        final Set<Integer> scopeSet = new HashSet<Integer>(Arrays.asList(scopes));
+        final Set<Integer> scopeSet = new HashSet<>(Arrays.asList(scopes));
         final NamingEvent event = new NamingEvent(context, type, newBinding, existingBinding, changeInfo);
 
-        final Set<ListenerHolder> holdersToFire = new HashSet<ListenerHolder>();
+        final Set<ListenerHolder> holdersToFire = new HashSet<>();
 
         // Check for OBJECT_SCOPE based listeners
         if (scopeSet.contains(EventContext.OBJECT_SCOPE)) {
@@ -214,7 +214,7 @@ public class NamingEventCoordinator {
     }
 
     private class ListenerHolder {
-        private volatile Set<TargetScope> targets = new HashSet<TargetScope>();
+        private volatile Set<TargetScope> targets = new HashSet<>();
         private final NamingListener listener;
 
         private ListenerHolder(final NamingListener listener, final TargetScope initialTarget) {

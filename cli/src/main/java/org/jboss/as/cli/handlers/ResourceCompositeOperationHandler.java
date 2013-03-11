@@ -60,7 +60,7 @@ public class ResourceCompositeOperationHandler extends BaseOperationCommand {
 //    private final String commandName;
     private final String[] ops;
 
-    private final Map<String, Map<String, ArgumentWithValue>> opArgs = new HashMap<String, Map<String, ArgumentWithValue>>();
+    private final Map<String, Map<String, ArgumentWithValue>> opArgs = new HashMap<>();
 
     protected final String idProperty;
 
@@ -70,7 +70,7 @@ public class ResourceCompositeOperationHandler extends BaseOperationCommand {
     private Map<String, ArgumentValueConverter> propConverters;
     private Map<String, CommandLineCompleter> valueCompleters;
 
-    private final Map<String, CommandArgument> staticArgs = new HashMap<String, CommandArgument>();
+    private final Map<String, CommandArgument> staticArgs = new HashMap<>();
 
     public ResourceCompositeOperationHandler(CommandContext ctx,
             String command,
@@ -149,14 +149,14 @@ public class ResourceCompositeOperationHandler extends BaseOperationCommand {
 
     public void addValueConverter(String propertyName, ArgumentValueConverter converter) {
         if(propConverters == null) {
-            propConverters = new HashMap<String, ArgumentValueConverter>();
+            propConverters = new HashMap<>();
         }
         propConverters.put(propertyName, converter);
     }
 
     public void addValueCompleter(String propertyName, CommandLineCompleter completer) {
         if(valueCompleters == null) {
-            valueCompleters = new HashMap<String, CommandLineCompleter>();
+            valueCompleters = new HashMap<>();
         }
         valueCompleters.put(propertyName, completer);
     }
@@ -260,7 +260,7 @@ public class ResourceCompositeOperationHandler extends BaseOperationCommand {
     protected void recognizeArguments(CommandContext ctx) throws CommandFormatException {
         final Map<String, CommandArgument> allArgs = getAllArguments(ctx);
         if(!allArgs.keySet().containsAll(ctx.getParsedCommandLine().getPropertyNames())) {
-            final Set<String> unrecognized = new HashSet<String>(ctx.getParsedCommandLine().getPropertyNames());
+            final Set<String> unrecognized = new HashSet<>(ctx.getParsedCommandLine().getPropertyNames());
             unrecognized.removeAll(allArgs.keySet());
             throw new CommandFormatException("Unrecognized arguments: " + unrecognized);
         }
@@ -276,7 +276,7 @@ public class ResourceCompositeOperationHandler extends BaseOperationCommand {
     }
 
     protected Map<String, CommandArgument> loadArguments(CommandContext ctx) {
-        final Map<String, CommandArgument> allArgs = new HashMap<String, CommandArgument>();
+        final Map<String, CommandArgument> allArgs = new HashMap<>();
         for(String opName : ops) {
             try {
                 allArgs.putAll(getOperationArguments(ctx, opName));
@@ -295,7 +295,7 @@ public class ResourceCompositeOperationHandler extends BaseOperationCommand {
 
         final ModelNode descr = getOperationDescription(ctx, opName);
         if(descr.has(Util.REQUEST_PROPERTIES)) {
-            args = new HashMap<String,ArgumentWithValue>();
+            args = new HashMap<>();
             final List<Property> propList = descr.get(Util.REQUEST_PROPERTIES).asPropertyList();
             for (Property prop : propList) {
                 final ModelNode propDescr = prop.getValue();

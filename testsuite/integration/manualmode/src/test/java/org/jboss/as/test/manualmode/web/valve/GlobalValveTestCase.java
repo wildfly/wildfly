@@ -120,7 +120,7 @@ public class GlobalValveTestCase {
     @Test
     @InSequence(2)
     public void addValveTwo(@ArquillianResource ManagementClient client) throws Exception {
-        Map<String,String> params = new HashMap<String, String>();
+        Map<String,String> params = new HashMap<>();
         params.put(PARAM_NAME, VALVE_NAME_2); //as param of valve defining its name
         ValveUtil.addValve(client, VALVE_NAME_2, STANDARD_VALVE_MODULE, VALVE_CLASS.getName(), params);
     }

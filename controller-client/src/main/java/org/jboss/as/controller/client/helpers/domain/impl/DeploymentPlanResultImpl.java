@@ -103,7 +103,7 @@ public class DeploymentPlanResultImpl implements DeploymentPlanResult {
 
     // Builds the data structures that show the effects of the plan by server group
     private static Map<String, ServerGroupDeploymentPlanResult> buildServerGroupResults(Map<UUID, DeploymentActionResult> deploymentActionResults) {
-        Map<String, ServerGroupDeploymentPlanResult> serverGroupResults = new HashMap<String, ServerGroupDeploymentPlanResult>();
+        Map<String, ServerGroupDeploymentPlanResult> serverGroupResults = new HashMap<>();
 
         for (Map.Entry<UUID, DeploymentActionResult> entry : deploymentActionResults.entrySet()) {
 

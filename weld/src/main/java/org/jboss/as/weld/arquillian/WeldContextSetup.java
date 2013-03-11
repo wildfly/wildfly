@@ -54,7 +54,7 @@ public class WeldContextSetup implements SetupAction {
     private static class ContextMapThreadLocal extends ThreadLocal<Map<String, Object>> {
         @Override
         protected Map<String, Object> initialValue() {
-            return new ConcurrentHashMap<String, Object>();
+            return new ConcurrentHashMap<>();
         }
     }
 
@@ -62,7 +62,7 @@ public class WeldContextSetup implements SetupAction {
 
     private final ThreadLocal<Map<String, Object>> sessionContexts = new ContextMapThreadLocal();
     private final ThreadLocal<Map<String, Object>> requestContexts = new ContextMapThreadLocal();
-    private final ThreadLocal<BoundRequest> boundRequests = new ThreadLocal<BoundRequest>();
+    private final ThreadLocal<BoundRequest> boundRequests = new ThreadLocal<>();
 
     @SuppressWarnings("unchecked")
     public void setup(Map<String, Object> properties) {

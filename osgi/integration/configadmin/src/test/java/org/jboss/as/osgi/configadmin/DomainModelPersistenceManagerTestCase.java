@@ -52,7 +52,7 @@ public class DomainModelPersistenceManagerTestCase {
         ServiceReference mockSCSR = Mockito.mock(ServiceReference.class);
 
         ConfigAdmin mockJBCAS = Mockito.mock(ConfigAdmin.class);
-        Set<String> pids = new HashSet<String>(Arrays.asList("a.b", "1"));
+        Set<String> pids = new HashSet<>(Arrays.asList("a.b", "1"));
         Mockito.when(mockJBCAS.getConfigurations()).thenReturn(pids);
 
         ServiceController mockJBCASController = Mockito.mock(ServiceController.class);
@@ -74,7 +74,7 @@ public class DomainModelPersistenceManagerTestCase {
         dmpm.start(mockBundleContext);
 
         // Verify that the persistence manager was registered in the Service Registry.
-        Hashtable<String, Object> props = new Hashtable<String, Object>();
+        Hashtable<String, Object> props = new Hashtable<>();
         props.put(Constants.SERVICE_RANKING, Integer.MAX_VALUE);
         Mockito.verify(mockBundleContext).registerService(PersistenceManager.class.getName(), dmpm, props);
     }

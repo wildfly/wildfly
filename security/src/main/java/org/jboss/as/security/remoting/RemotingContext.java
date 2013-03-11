@@ -40,7 +40,7 @@ public class RemotingContext {
     private static final RuntimePermission GET_CONNECTION_PERMISSION = new RuntimePermission("org.jboss.as.security.remoting.GET_CONNECTION");
     private static final RuntimePermission IS_SET_PERMISSION = new RuntimePermission("org.jboss.as.security.remoting.IS_CONNECTION_SET");
 
-    private static ThreadLocal<Connection> connection = new ThreadLocal<Connection>();
+    private static ThreadLocal<Connection> connection = new ThreadLocal<>();
 
     public static void setConnection(final Connection connection) {
         checkPermission(SET_CONNECTION_PERMISSION);

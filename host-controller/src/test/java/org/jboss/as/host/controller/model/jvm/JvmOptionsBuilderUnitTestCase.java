@@ -48,7 +48,7 @@ public class JvmOptionsBuilderUnitTestCase {
     private void testNoOptions(JvmType type) {
         JvmElement element = JvmElementTestUtils.create(type);
 
-        List<String> command = new ArrayList<String>();
+        List<String> command = new ArrayList<>();
         JvmOptionsBuilderFactory.getInstance().addOptions(element, command);
 
         Assert.assertEquals(0, command.size());
@@ -69,7 +69,7 @@ public class JvmOptionsBuilderUnitTestCase {
         JvmElementTestUtils.setDebugEnabled(element, false);
         JvmElementTestUtils.setDebugOptions(element, "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n");
 
-        List<String> command = new ArrayList<String>();
+        List<String> command = new ArrayList<>();
         JvmOptionsBuilderFactory.getInstance().addOptions(element, command);
 
         Assert.assertEquals(0, command.size());
@@ -90,7 +90,7 @@ public class JvmOptionsBuilderUnitTestCase {
         JvmElementTestUtils.setDebugEnabled(element, true);
         JvmElementTestUtils.setDebugOptions(element, "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n");
 
-        List<String> command = new ArrayList<String>();
+        List<String> command = new ArrayList<>();
         JvmOptionsBuilderFactory.getInstance().addOptions(element, command);
 
         Assert.assertEquals(1, command.size());
@@ -112,7 +112,7 @@ public class JvmOptionsBuilderUnitTestCase {
         JvmElementTestUtils.setHeapSize(element, "28M");
         JvmElementTestUtils.setMaxHeap(element, "96M");
 
-        List<String> command = new ArrayList<String>();
+        List<String> command = new ArrayList<>();
         JvmOptionsBuilderFactory.getInstance().addOptions(element, command);
 
         Assert.assertEquals(2, command.size());
@@ -126,7 +126,7 @@ public class JvmOptionsBuilderUnitTestCase {
         JvmElementTestUtils.setPermgenSize(element, "32M");
         JvmElementTestUtils.setMaxPermgen(element, "64M");
 
-        List<String> command = new ArrayList<String>();
+        List<String> command = new ArrayList<>();
         JvmOptionsBuilderFactory.getInstance().addOptions(element, command);
 
         Assert.assertEquals(2, command.size());
@@ -140,7 +140,7 @@ public class JvmOptionsBuilderUnitTestCase {
         JvmElementTestUtils.setPermgenSize(element, "32M");
         JvmElementTestUtils.setMaxPermgen(element, "64M");
 
-        List<String> command = new ArrayList<String>();
+        List<String> command = new ArrayList<>();
         JvmOptionsBuilderFactory.getInstance().addOptions(element, command);
 
         Assert.assertEquals(0, command.size());
@@ -160,7 +160,7 @@ public class JvmOptionsBuilderUnitTestCase {
         JvmElement element = JvmElementTestUtils.create(type);
         JvmElementTestUtils.setStack(element, "1M");
 
-        List<String> command = new ArrayList<String>();
+        List<String> command = new ArrayList<>();
         JvmOptionsBuilderFactory.getInstance().addOptions(element, command);
 
         Assert.assertEquals(1, command.size());
@@ -181,7 +181,7 @@ public class JvmOptionsBuilderUnitTestCase {
         JvmElement element = JvmElementTestUtils.create(type);
         JvmElementTestUtils.setAgentLib(element, "blah=x");
 
-        List<String> command = new ArrayList<String>();
+        List<String> command = new ArrayList<>();
         JvmOptionsBuilderFactory.getInstance().addOptions(element, command);
 
         Assert.assertEquals(1, command.size());
@@ -203,7 +203,7 @@ public class JvmOptionsBuilderUnitTestCase {
         JvmElement element = JvmElementTestUtils.create(type);
         JvmElementTestUtils.setAgentPath(element, "blah.jar=x");
 
-        List<String> command = new ArrayList<String>();
+        List<String> command = new ArrayList<>();
         JvmOptionsBuilderFactory.getInstance().addOptions(element, command);
 
         Assert.assertEquals(1, command.size());
@@ -224,7 +224,7 @@ public class JvmOptionsBuilderUnitTestCase {
         JvmElement element = JvmElementTestUtils.create(type);
         JvmElementTestUtils.setJavaagent(element, "blah.jar=x");
 
-        List<String> command = new ArrayList<String>();
+        List<String> command = new ArrayList<>();
         JvmOptionsBuilderFactory.getInstance().addOptions(element, command);
 
         Assert.assertEquals(1, command.size());
@@ -246,7 +246,7 @@ public class JvmOptionsBuilderUnitTestCase {
         JvmElementTestUtils.addJvmOption(element, "-Xblah1=yes");
         JvmElementTestUtils.addJvmOption(element, "-Xblah2=no");
 
-        List<String> command = new ArrayList<String>();
+        List<String> command = new ArrayList<>();
         JvmOptionsBuilderFactory.getInstance().addOptions(element, command);
 
         Assert.assertEquals(2, command.size());
@@ -290,7 +290,7 @@ public class JvmOptionsBuilderUnitTestCase {
         JvmElementTestUtils.addJvmOption(element, "-agentlib:other=x");
         JvmElementTestUtils.addJvmOption(element, "-javaagent:other.jar=x");
 
-        List<String> command = new ArrayList<String>();
+        List<String> command = new ArrayList<>();
         JvmOptionsBuilderFactory.getInstance().addOptions(element, command);
 
         Assert.assertEquals(type == JvmType.SUN ? 10 : 8, command.size());

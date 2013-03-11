@@ -62,9 +62,9 @@ public class ViewDescription {
 
     private final String viewClassName;
     private final ComponentDescription componentDescription;
-    private final List<String> viewNameParts = new ArrayList<String>();
-    private final Set<String> bindingNames = new HashSet<String>();
-    private final Deque<ViewConfigurator> configurators = new ArrayDeque<ViewConfigurator>();
+    private final List<String> viewNameParts = new ArrayList<>();
+    private final Set<String> bindingNames = new HashSet<>();
+    private final Deque<ViewConfigurator> configurators = new ArrayDeque<>();
     private boolean serializable;
     private boolean useWriteReplace;
 

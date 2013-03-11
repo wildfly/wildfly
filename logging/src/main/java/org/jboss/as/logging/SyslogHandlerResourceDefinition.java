@@ -193,7 +193,7 @@ class SyslogHandlerResourceDefinition extends SimpleResourceDefinition {
         private static final Map<String, FacilityAttribute> MAP;
 
         static {
-            MAP = new HashMap<String, FacilityAttribute>();
+            MAP = new HashMap<>();
             for (FacilityAttribute facilityAttribute : values()) {
                 MAP.put(facilityAttribute.toString(), facilityAttribute);
             }

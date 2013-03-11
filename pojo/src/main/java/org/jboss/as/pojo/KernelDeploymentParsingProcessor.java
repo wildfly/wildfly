@@ -106,7 +106,7 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
             beans = Collections.singleton(root);
         } else {
             VirtualFileFilter filter = new SuffixMatchFilter("jboss-beans.xml");
-            beans = new ArrayList<VirtualFile>();
+            beans = new ArrayList<>();
             try {
                 // try plain .jar/META-INF
                 VirtualFile metainf = root.getChild("META-INF");
@@ -147,7 +147,7 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
         try {
             xmlStream = beansXmlFile.openStream();
             final XMLStreamReader reader = inputFactory.createXMLStreamReader(xmlStream);
-            final ParseResult<KernelDeploymentXmlDescriptor> result = new ParseResult<KernelDeploymentXmlDescriptor>();
+            final ParseResult<KernelDeploymentXmlDescriptor> result = new ParseResult<>();
             xmlMapper.parseDocument(result, reader);
             final KernelDeploymentXmlDescriptor xmlDescriptor = result.getResult();
             if (xmlDescriptor != null)

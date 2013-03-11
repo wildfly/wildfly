@@ -67,7 +67,7 @@ public class MultipleWarSingleRedeployTestCase extends InfinispanCacheContainerT
     public void start() throws Exception {
         super.start();
 
-        allAttributes = new HashMap<String, Object>();
+        allAttributes = new HashMap<>();
 
         allAttributes.put("key", "value");
 

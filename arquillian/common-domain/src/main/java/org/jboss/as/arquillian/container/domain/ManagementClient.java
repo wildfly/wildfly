@@ -95,7 +95,7 @@ public class ManagementClient {
         }
         this.client = client;
         this.mgmtAddress = mgmtAddress;
-        this.subsystemURICache = new HashMap<String, URI>();
+        this.subsystemURICache = new HashMap<>();
         this.mgmtPort = managementPort;
     }
 
@@ -440,7 +440,7 @@ public class ManagementClient {
     private MBeanServerConnection getConnection() {
         if (connection == null) {
             try {
-                final HashMap<String, Object> env = new HashMap<String, Object>();
+                final HashMap<String, Object> env = new HashMap<>();
                 env.put(CallbackHandler.class.getName(), Authentication.getCallbackHandler());
                 connection = JMXConnectorFactory.connect(getRemoteJMXURL(), env).getMBeanServerConnection();
             } catch (IOException e) {

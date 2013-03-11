@@ -77,7 +77,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
     public static final Set<String> RESOURCE_REF_ENTRIES;
 
     static {
-        final Map<String, String> locations = new HashMap<String, String>();
+        final Map<String, String> locations = new HashMap<>();
         locations.put("javax.transaction.UserTransaction", "java:jboss/UserTransaction");
         locations.put("javax.transaction.TransactionSynchronizationRegistry", "java:jboss/TransactionSynchronizationRegistry");
         locations.put("org.osgi.framework.BundleContext", "java:jboss/osgi/BundleContext");
@@ -90,7 +90,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         locations.put("org.omg.CORBA.ORB", "java:comp/ORB");
         FIXED_LOCATIONS = Collections.unmodifiableMap(locations);
 
-        final Set<String> simpleEntries = new HashSet<String>();
+        final Set<String> simpleEntries = new HashSet<>();
         simpleEntries.add("boolean");
         simpleEntries.add("char");
         simpleEntries.add("byte");
@@ -111,7 +111,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         simpleEntries.add("java.lang.Class");
         SIMPLE_ENTRIES = Collections.unmodifiableSet(simpleEntries);
 
-        final Set<String> resourceRefEntries = new HashSet<String>();
+        final Set<String> resourceRefEntries = new HashSet<>();
         resourceRefEntries.add("javax.sql.DataSource");
         resourceRefEntries.add("javax.jms.QueueConnectionFactory");
         resourceRefEntries.add("javax.jms.TopicConnectionFactory");

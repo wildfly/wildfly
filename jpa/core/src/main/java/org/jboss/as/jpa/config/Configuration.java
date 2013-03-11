@@ -152,7 +152,7 @@ public class Configuration {
     public static final String ADAPTER_CLASS = "jboss.as.jpa.adapterClass";
 
     // key = provider class name, value = module name
-    private static final Map<String, String> providerClassToModuleName = new HashMap<String, String>();
+    private static final Map<String, String> providerClassToModuleName = new HashMap<>();
 
     static {
         // always choose the default hibernate version for the Hibernate provider class mapping
@@ -201,7 +201,7 @@ public class Configuration {
     }
 
     // key = provider class name, value = adapter module name
-    private static final Map<String, String> providerClassToAdapterModuleName = new HashMap<String, String>();
+    private static final Map<String, String> providerClassToAdapterModuleName = new HashMap<>();
 
     static {
         providerClassToAdapterModuleName.put(PROVIDER_CLASS_OPENJPA, ADAPTER_MODULE_OPENJPA);

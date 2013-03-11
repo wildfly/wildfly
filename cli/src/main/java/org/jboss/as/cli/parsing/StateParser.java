@@ -81,7 +81,7 @@ public class StateParser {
 
     static class ParsingContextImpl implements ParsingContext {
 
-        private final Deque<ParsingState> stack = new ArrayDeque<ParsingState>();
+        private final Deque<ParsingState> stack = new ArrayDeque<>();
 
         String input;
         int location;

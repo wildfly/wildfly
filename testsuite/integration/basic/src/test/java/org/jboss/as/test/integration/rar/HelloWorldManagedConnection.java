@@ -69,7 +69,7 @@ public class HelloWorldManagedConnection implements ManagedConnection {
      */
     public HelloWorldManagedConnection(HelloWorldManagedConnectionFactory mcf) {
         this.mcf = mcf;
-        this.listeners = new ArrayList<javax.resource.spi.ConnectionEventListener>();
+        this.listeners = new ArrayList<>();
         this.connection = null;
 
     }

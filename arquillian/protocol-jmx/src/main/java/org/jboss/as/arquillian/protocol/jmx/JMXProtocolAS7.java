@@ -62,7 +62,7 @@ public class JMXProtocolAS7 extends AbstractJMXProtocol {
          * Hold the Archives that have been enriched with the jmx-as7 protocol so we can deploy the serviceArchive.
          * This is removed in ArquillianServiceDeployer.
          */
-        private Set<String> preparedDeployments = new HashSet<String>();
+        private Set<String> preparedDeployments = new HashSet<>();
 
         Archive<?> getArchive() {
             return serviceArchive;

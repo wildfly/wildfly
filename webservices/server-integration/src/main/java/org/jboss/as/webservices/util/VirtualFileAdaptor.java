@@ -91,7 +91,7 @@ public final class VirtualFileAdaptor implements UnifiedVirtualFile {
         List<VirtualFile> vfList = getFile().getChildren();
         if (vfList == null)
             return null;
-        List<UnifiedVirtualFile> uvfList = new LinkedList<UnifiedVirtualFile>();
+        List<UnifiedVirtualFile> uvfList = new LinkedList<>();
         for (VirtualFile vf : vfList) {
             uvfList.add(new VirtualFileAdaptor(vf));
         }

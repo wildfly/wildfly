@@ -60,7 +60,7 @@ public class ConfigurationUpdateTestCase {
         OperationContext mockOperationContext = Mockito.mock(OperationContext.class);
         Mockito.when(mockOperationContext.createResource(PathAddress.EMPTY_ADDRESS)).thenReturn(mockResource);
 
-        Hashtable<String, String> dict = new Hashtable<String, String>();
+        Hashtable<String, String> dict = new Hashtable<>();
         dict.put("foo", "bar");
         ModelNode operation = getOperationModelNode("mypid", dict);
 

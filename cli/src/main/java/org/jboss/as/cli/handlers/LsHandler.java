@@ -226,7 +226,7 @@ public class LsHandler extends CommandHandlerWithHelp {
                             final ModelNode resourceResult = typesOutcome.get(Util.RESULT);
                             final List<ModelNode> types = resourceResult.asList();
                             if (!types.isEmpty()) {
-                                typeNames = new ArrayList<String>();
+                                typeNames = new ArrayList<>();
                                 for (ModelNode type : types) {
                                     typeNames.add(type.asString());
                                 }
@@ -271,7 +271,7 @@ public class LsHandler extends CommandHandlerWithHelp {
                                 }
                                 SimpleTable childrenTable = childDescriptions == null ? null : new SimpleTable(new String[] { "CHILD", "MIN-OCCURS", "MAX-OCCURS" });
                                 if (typeNames == null && attrTable == null && childrenTable == null) {
-                                    typeNames = new ArrayList<String>();
+                                    typeNames = new ArrayList<>();
                                 }
 
                                 for (Property prop : props) {

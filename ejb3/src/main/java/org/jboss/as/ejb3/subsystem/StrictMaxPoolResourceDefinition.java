@@ -81,7 +81,7 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
     public static final Map<String, AttributeDefinition> ATTRIBUTES ;
 
     static {
-        Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
+        Map<String, AttributeDefinition> map = new LinkedHashMap<>();
         map.put(MAX_POOL_SIZE.getName(), MAX_POOL_SIZE);
         map.put(INSTANCE_ACQUISITION_TIMEOUT.getName(), INSTANCE_ACQUISITION_TIMEOUT);
         map.put(INSTANCE_ACQUISITION_TIMEOUT_UNIT.getName(), INSTANCE_ACQUISITION_TIMEOUT_UNIT);

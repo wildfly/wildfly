@@ -55,7 +55,7 @@ public class DataSourceDefinitionDeploymentDescriptorParser extends AbstractDepl
     protected List<BindingConfiguration> processDescriptorEntries(final DeploymentUnit deploymentUnit, final DeploymentDescriptorEnvironment environment, final ResourceInjectionTarget resourceInjectionTarget, final ComponentDescription componentDescription, final ClassLoader classLoader, final DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
         DataSourcesMetaData dataSources = environment.getEnvironment().getDataSources();
         if(dataSources != null) {
-            List<BindingConfiguration> ret = new ArrayList<BindingConfiguration>(dataSources.size());
+            List<BindingConfiguration> ret = new ArrayList<>(dataSources.size());
             for(DataSourceMetaData dataSource : dataSources) {
                 ret.add(getBindingConfiguration(dataSource));
             }

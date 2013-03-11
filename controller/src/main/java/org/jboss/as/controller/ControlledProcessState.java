@@ -72,7 +72,7 @@ public class ControlledProcessState {
     }
 
     private final AtomicInteger stamp = new AtomicInteger(0);
-    private final AtomicStampedReference<State> state = new AtomicStampedReference<State>(State.STARTING, 0);
+    private final AtomicStampedReference<State> state = new AtomicStampedReference<>(State.STARTING, 0);
     private final boolean reloadSupported;
     private final ControlledProcessStateService service;
 

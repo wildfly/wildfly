@@ -41,9 +41,9 @@ import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
  */
 public class RealmSecurityProviderService implements Service<RemotingSecurityProvider> {
 
-    private final InjectedValue<SecurityRealm> securityRealmInjectedValue = new InjectedValue<SecurityRealm>();
-    private final InjectedValue<CallbackHandler> serverCallbackValue = new InjectedValue<CallbackHandler>();
-    private final InjectedValue<String> tmpDirValue = new InjectedValue<String>();
+    private final InjectedValue<SecurityRealm> securityRealmInjectedValue = new InjectedValue<>();
+    private final InjectedValue<CallbackHandler> serverCallbackValue = new InjectedValue<>();
+    private final InjectedValue<String> tmpDirValue = new InjectedValue<>();
 
     private volatile RemotingSecurityProvider securityProvider = null;
     /** The base name of the AuthenticationProvider service */

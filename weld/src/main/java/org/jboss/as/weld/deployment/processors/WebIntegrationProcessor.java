@@ -90,7 +90,7 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
 
         List<ListenerMetaData> listeners = webMetaData.getListeners();
         if (listeners == null) {
-            listeners = new ArrayList<ListenerMetaData>();
+            listeners = new ArrayList<>();
             webMetaData.setListeners(listeners);
         } else {
             //if the weld servlet listener is present remove it

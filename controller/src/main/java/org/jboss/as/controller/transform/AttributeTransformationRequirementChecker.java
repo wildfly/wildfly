@@ -125,7 +125,7 @@ public interface AttributeTransformationRequirementChecker {
 
     class ObjectFieldsAttributeTransformationRequirementChecker implements AttributeTransformationRequirementChecker {
 
-        private final Map<String, AttributeTransformationRequirementChecker> fields = new HashMap<String, AttributeTransformationRequirementChecker>();
+        private final Map<String, AttributeTransformationRequirementChecker> fields = new HashMap<>();
 
         public ObjectFieldsAttributeTransformationRequirementChecker(Map<String, AttributeTransformationRequirementChecker> fields) {
             this.fields.putAll(fields);

@@ -135,7 +135,7 @@ public abstract class BuildConfigurationTestBase {
                         if (start >= 0) {
                             StringBuilder sb = new StringBuilder();
                             sb.append(line.substring(0, start));
-                            List<String> opts = new ArrayList<String>();
+                            List<String> opts = new ArrayList<>();
                             TestSuiteEnvironment.getIpv6Args(opts);
                             for (String opt : opts) {
                                 sb.append("<option value=\"" + opt + "\"/>");

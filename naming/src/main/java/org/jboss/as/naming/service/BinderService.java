@@ -45,9 +45,9 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class BinderService implements Service<ManagedReferenceFactory> {
 
-    private final InjectedValue<ServiceBasedNamingStore> namingStoreValue = new InjectedValue<ServiceBasedNamingStore>();
+    private final InjectedValue<ServiceBasedNamingStore> namingStoreValue = new InjectedValue<>();
     private final String name;
-    private final InjectedValue<ManagedReferenceFactory> managedReferenceFactory = new InjectedValue<ManagedReferenceFactory>();
+    private final InjectedValue<ManagedReferenceFactory> managedReferenceFactory = new InjectedValue<>();
     private final Object source;
     private final AtomicInteger refcnt = new AtomicInteger(0);
     private ServiceController<?> controller;

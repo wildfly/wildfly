@@ -125,7 +125,7 @@ public class UndeployWildcardTestCase {
         for(File f : appFiles) {
             ctx.handle("deploy " + f.getAbsolutePath());
         }
-        afterTestDeployments = new HashSet<String>();
+        afterTestDeployments = new HashSet<>();
     }
 
     @After

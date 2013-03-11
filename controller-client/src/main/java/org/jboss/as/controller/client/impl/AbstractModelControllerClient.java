@@ -353,7 +353,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         if(streams.isEmpty()) {
             return Collections.emptyList();
         }
-        final List<InputStreamEntry> entries = new ArrayList<InputStreamEntry>();
+        final List<InputStreamEntry> entries = new ArrayList<>();
         final boolean autoClose = operation.isAutoCloseStreams();
         for(final InputStream stream : streams) {
             if(stream instanceof InputStreamEntry) {

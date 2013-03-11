@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
  * @author Paul Ferraro
  */
 public class ManagedScheduledExecutorService extends ManagedExecutorService implements ScheduledExecutorService {
-    private final List<Future<?>> futures = new LinkedList<Future<?>>();
+    private final List<Future<?>> futures = new LinkedList<>();
     private volatile boolean shutdown = false;
     private volatile boolean terminated = false;
     private final ScheduledExecutorService executor;

@@ -111,7 +111,7 @@ public final class WSIntegrationProcessorJAXWS_EJB implements DeploymentUnitProc
     }
 
     private static List<SessionBeanComponentDescription> getSessionBeans(final List<ComponentDescription> componentDescriptions) {
-        final List<SessionBeanComponentDescription> sessionBeans = new LinkedList<SessionBeanComponentDescription>();
+        final List<SessionBeanComponentDescription> sessionBeans = new LinkedList<>();
         for (final ComponentDescription componentDescription : componentDescriptions) {
             if (componentDescription instanceof SessionBeanComponentDescription) {
                 sessionBeans.add((SessionBeanComponentDescription) componentDescription);
@@ -121,7 +121,7 @@ public final class WSIntegrationProcessorJAXWS_EJB implements DeploymentUnitProc
     }
 
     private static Set<String> getDeclaredSecurityRoles(final DeploymentUnit unit, final ClassInfo webServiceClassInfo) {
-        final Set<String> securityRoles = new HashSet<String>();
+        final Set<String> securityRoles = new HashSet<>();
 
         // process assembly-descriptor DD section
         final EjbJarMetaData ejbJarMD = unit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);

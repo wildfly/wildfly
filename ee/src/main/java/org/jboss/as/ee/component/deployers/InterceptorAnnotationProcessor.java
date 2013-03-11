@@ -95,7 +95,7 @@ public class InterceptorAnnotationProcessor implements DeploymentUnitProcessor {
 
     private void handleAnnotations(final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final ComponentDescription description) {
 
-        final List<Class> heirachy = new ArrayList<Class>();
+        final List<Class> heirachy = new ArrayList<>();
         Class c = componentClass;
         while (c != Object.class && c != null) {
             heirachy.add(c);

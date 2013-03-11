@@ -216,12 +216,12 @@ public class BMPRemoteEntityBeanTestCase {
     }
 
     private BMPHome getHome() {
-        final EJBHomeLocator<BMPHome> locator = new EJBHomeLocator<BMPHome>(BMPHome.class, APP_NAME, MODULE_NAME, "SimpleBMP", "");
+        final EJBHomeLocator<BMPHome> locator = new EJBHomeLocator<>(BMPHome.class, APP_NAME, MODULE_NAME, "SimpleBMP", "");
         return EJBClient.createProxy(locator);
     }
 
     private DataStore getDataStore() {
-        final StatelessEJBLocator<DataStore> locator = new StatelessEJBLocator<DataStore>(DataStore.class, APP_NAME, MODULE_NAME, DataStoreBean.class.getSimpleName(), "");
+        final StatelessEJBLocator<DataStore> locator = new StatelessEJBLocator<>(DataStore.class, APP_NAME, MODULE_NAME, DataStoreBean.class.getSimpleName(), "");
         return EJBClient.createProxy(locator);
     }
 }

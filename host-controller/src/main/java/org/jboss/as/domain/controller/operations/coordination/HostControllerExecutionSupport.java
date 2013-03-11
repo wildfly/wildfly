@@ -165,7 +165,7 @@ interface HostControllerExecutionSupport {
             else if (COMPOSITE.equals(operation.require(OP).asString())) {
                 // Recurse into the steps to see what's required
                 if (operation.hasDefined(STEPS)) {
-                    List<HostControllerExecutionSupport> parsedSteps = new ArrayList<HostControllerExecutionSupport>();
+                    List<HostControllerExecutionSupport> parsedSteps = new ArrayList<>();
                     for (ModelNode step : operation.get(STEPS).asList()) {
                         //Remove the caller-type=user header
                         if (operation.hasDefined(OPERATION_HEADERS) && operation.get(OPERATION_HEADERS).hasDefined(CALLER_TYPE) && operation.get(OPERATION_HEADERS, CALLER_TYPE).asString().equals(USER)) {
@@ -245,7 +245,7 @@ interface HostControllerExecutionSupport {
             public Map<ServerIdentity, ModelNode> getServerOps(ServerOperationProvider provider) {
                 // TODO change ServerOperationResolver to just provide the unbundled map
                 Map<Set<ServerIdentity>, ModelNode> bundled = provider.getServerOperations(domainOp, domainOpAddress);
-                Map<ServerIdentity, ModelNode> unbundled = new HashMap<ServerIdentity, ModelNode>();
+                Map<ServerIdentity, ModelNode> unbundled = new HashMap<>();
                 for (Map.Entry<Set<ServerIdentity>, ModelNode> entry : bundled.entrySet()) {
                     ModelNode op = entry.getValue();
                     for (ServerIdentity id : entry.getKey()) {
@@ -276,7 +276,7 @@ interface HostControllerExecutionSupport {
             }
 
             public Map<ServerIdentity, ModelNode> getServerOps(ServerOperationProvider provider) {
-                final Map<ServerIdentity, ModelNode> result = new HashMap<ServerIdentity, ModelNode>();
+                final Map<ServerIdentity, ModelNode> result = new HashMap<>();
                 int stepNum = 1;
                 for (HostControllerExecutionSupport step : steps) {
                     String stepLabel = "step-" + stepNum++;
@@ -296,7 +296,7 @@ interface HostControllerExecutionSupport {
             @Override
             public ModelNode getDomainOperation() {
 
-                List<ModelNode> domainSteps = new ArrayList<ModelNode>();
+                List<ModelNode> domainSteps = new ArrayList<>();
                 for (HostControllerExecutionSupport step : steps) {
                     ModelNode stepNode = step.getDomainOperation();
                     if (stepNode != null) {

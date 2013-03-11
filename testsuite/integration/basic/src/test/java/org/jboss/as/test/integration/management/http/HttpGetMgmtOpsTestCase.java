@@ -139,7 +139,7 @@ public class HttpGetMgmtOpsTestCase {
         List<ModelNode> names = node.asList();
 
         System.out.println(names.toString());
-        Set<String> strNames = new TreeSet<String>();
+        Set<String> strNames = new TreeSet<>();
         for (ModelNode n : names) strNames.add(n.asString());
 
         assertTrue(strNames.contains("read-attribute"));

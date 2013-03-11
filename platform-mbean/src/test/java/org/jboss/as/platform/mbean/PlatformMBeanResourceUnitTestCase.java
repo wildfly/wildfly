@@ -267,7 +267,7 @@ public class PlatformMBeanResourceUnitTestCase {
     public void testMemoryPoolMXBean() throws IOException {
         List<ModelNode> mps = rootWithNamedChildResourceTest("memory-pool");
 
-        Map<String, MemoryPoolMXBean> mbeans = new HashMap<String, MemoryPoolMXBean>();
+        Map<String, MemoryPoolMXBean> mbeans = new HashMap<>();
         for (MemoryPoolMXBean mbean : ManagementFactory.getMemoryPoolMXBeans()) {
             mbeans.put(PlatformMBeanUtil.escapeMBeanName(mbean.getName()), mbean);
         }

@@ -66,7 +66,7 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
     private static final ThreadPoolExecutor executorService;
     private static final Endpoint endpoint;
     static {
-        final BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>();
+        final BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<>();
         final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("cli-remoting"), Boolean.FALSE, null,
                 "%G - %t", null, null, AccessController.getContext());
         executorService = new ThreadPoolExecutor(2, 4, 60L, TimeUnit.SECONDS, workQueue, threadFactory);

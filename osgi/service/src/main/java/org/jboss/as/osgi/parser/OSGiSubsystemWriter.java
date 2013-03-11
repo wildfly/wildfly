@@ -60,7 +60,7 @@ class OSGiSubsystemWriter implements XMLStreamConstants, XMLElementWriter<Subsys
         if (node.hasDefined(ModelConstants.PROPERTY)) {
             writer.writeStartElement(Element.PROPERTIES.getLocalName());
             ModelNode properties = node.get(ModelConstants.PROPERTY);
-            for (String key : new TreeSet<String>(properties.keys())) {
+            for (String key : new TreeSet<>(properties.keys())) {
                 String val = properties.get(key).get(ModelConstants.VALUE).asString();
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), key);

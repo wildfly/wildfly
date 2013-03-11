@@ -65,7 +65,7 @@ import org.jboss.modules.ModuleLoadException;
 public class ApplyExtensionsHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "resolve-subsystems";
-    private final Set<String> appliedExtensions = new HashSet<String>();
+    private final Set<String> appliedExtensions = new HashSet<>();
     private final ExtensionRegistry extensionRegistry;
     private final LocalHostControllerInfo localHostInfo;
     private final IgnoredDomainResourceRegistry ignoredResourceRegistry;
@@ -114,7 +114,7 @@ public class ApplyExtensionsHandler implements OperationStepHandler {
         if (!context.isBooting()) {
             final Resource domainRootResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
             final ModelNode endRoot = Resource.Tools.readModel(domainRootResource);
-            final Set<ServerIdentity> affectedServers = new HashSet<ServerIdentity>();
+            final Set<ServerIdentity> affectedServers = new HashSet<>();
             final ModelNode hostModel = endRoot.require(HOST).asPropertyList().iterator().next().getValue();
             final Map<String, ProxyController> serverProxies = DomainServerUtils.getServerProxies(localHostInfo.getLocalHostName(), domainRootResource, context.getResourceRegistration());
 

@@ -159,7 +159,7 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
      */
     @Override
     public List<org.jgroups.conf.ProtocolConfiguration> getProtocolStack() {
-        List<org.jgroups.conf.ProtocolConfiguration> configs = new ArrayList<org.jgroups.conf.ProtocolConfiguration>(this.configuration.getProtocols().size() + 1);
+        List<org.jgroups.conf.ProtocolConfiguration> configs = new ArrayList<>(this.configuration.getProtocols().size() + 1);
         TransportConfiguration transport = this.configuration.getTransport();
         org.jgroups.conf.ProtocolConfiguration config = this.createProtocol(transport);
         Map<String, String> properties = config.getProperties();
@@ -251,7 +251,7 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
 
     private org.jgroups.conf.ProtocolConfiguration createProtocol(final ProtocolConfiguration protocolConfig) {
         String protocol = protocolConfig.getName();
-        final Map<String, String> properties = new HashMap<String, String>(this.configuration.getDefaults().getProperties(protocol));
+        final Map<String, String> properties = new HashMap<>(this.configuration.getDefaults().getProperties(protocol));
         properties.putAll(protocolConfig.getProperties());
         return new org.jgroups.conf.ProtocolConfiguration(protocol, properties) {
             @Override

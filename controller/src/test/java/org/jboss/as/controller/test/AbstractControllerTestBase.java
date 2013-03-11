@@ -199,7 +199,7 @@ public abstract class AbstractControllerTestBase {
          */
         @Override
         public List<ModelNode> load() {
-            return new ArrayList<ModelNode>();
+            return new ArrayList<>();
         }
 
         private static class NullPersistenceResource implements ConfigurationPersister.PersistenceResource {

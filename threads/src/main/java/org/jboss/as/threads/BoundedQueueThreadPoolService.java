@@ -41,8 +41,8 @@ import java.util.concurrent.TimeUnit;
  * @author John E. Bailey
  */
 public class BoundedQueueThreadPoolService implements Service<ManagedQueueExecutorService> {
-    private final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<ThreadFactory>();
-    private final InjectedValue<Executor> handoffExecutorValue = new InjectedValue<Executor>();
+    private final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<>();
+    private final InjectedValue<Executor> handoffExecutorValue = new InjectedValue<>();
 
     private ManagedQueueExecutorService executor;
 

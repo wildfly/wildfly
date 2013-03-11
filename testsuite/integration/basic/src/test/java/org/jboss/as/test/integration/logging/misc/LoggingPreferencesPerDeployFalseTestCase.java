@@ -95,7 +95,7 @@ public class LoggingPreferencesPerDeployFalseTestCase extends
 					PER_DEPLOY_NAME);
 			profileLog = prepareLogFile(managementClient, PROFILE_LOG_NAME);
 
-			final List<ModelNode> updates = new ArrayList<ModelNode>();
+			final List<ModelNode> updates = new ArrayList<>();
 
 			ModelNode op = new ModelNode();
 			ModelNode file = new ModelNode();
@@ -156,7 +156,7 @@ public class LoggingPreferencesPerDeployFalseTestCase extends
 		@Override
 		public void tearDown(ManagementClient managementClient,
 				String containerId) throws Exception {
-			final List<ModelNode> updates = new ArrayList<ModelNode>();
+			final List<ModelNode> updates = new ArrayList<>();
 
 			// delete log files
 			perDeployLogFile.delete();

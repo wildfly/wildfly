@@ -76,7 +76,7 @@ public class ResourceRootIndexer {
         final List<String> indexIgnorePathList = resourceRoot.getAttachment(Attachments.INDEX_IGNORE_PATHS);
         final Set<String> indexIgnorePaths;
         if (indexIgnorePathList != null && !indexIgnorePathList.isEmpty()) {
-            indexIgnorePaths = new HashSet<String>(indexIgnorePathList);
+            indexIgnorePaths = new HashSet<>(indexIgnorePathList);
         } else {
             indexIgnorePaths = null;
         }

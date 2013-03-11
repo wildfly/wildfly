@@ -55,7 +55,7 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
 
     protected AbstractWriteAttributeHandler(final AttributeDefinition... definitions) {
         assert definitions != null : MESSAGES.nullVar("definitions").getLocalizedMessage();
-        attributeDefinitions = new HashMap<String, AttributeDefinition>();
+        attributeDefinitions = new HashMap<>();
         for (AttributeDefinition def : definitions) {
             attributeDefinitions.put(def.getName(), def);
         }
@@ -97,7 +97,7 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final ModelNode resolvedValue = attributeDefinition != null ? attributeDefinition.resolveModelAttribute(context, submodel) : updatedValue.resolve();
                     validateResolvedValue(attributeName, updatedValue);
-                    final HandbackHolder<T> handback = new HandbackHolder<T>();
+                    final HandbackHolder<T> handback = new HandbackHolder<>();
                     final boolean reloadRequired = applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handback);
                     if (reloadRequired) {
                         context.reloadRequired();

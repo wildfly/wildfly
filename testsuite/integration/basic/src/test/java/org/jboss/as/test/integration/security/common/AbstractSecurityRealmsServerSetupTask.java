@@ -75,7 +75,7 @@ public abstract class AbstractSecurityRealmsServerSetupTask implements ServerSet
             return;
         }
 
-        final List<ModelNode> updates = new LinkedList<ModelNode>();
+        final List<ModelNode> updates = new LinkedList<>();
         for (final SecurityRealm securityRealm : securityRealms) {
             final String securityRealmName = securityRealm.getName();
             LOGGER.info("Adding security realm " + securityRealmName);
@@ -138,7 +138,7 @@ public abstract class AbstractSecurityRealmsServerSetupTask implements ServerSet
             return;
         }
 
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        final List<ModelNode> updates = new ArrayList<>();
         for (final SecurityRealm securityRealm : securityRealms) {
             final String realmName = securityRealm.getName();
             if (LOGGER.isInfoEnabled()) {

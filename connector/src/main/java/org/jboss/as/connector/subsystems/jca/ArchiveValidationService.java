@@ -38,7 +38,7 @@ final class ArchiveValidationService implements Service<ArchiveValidationService
 
 
     private final ArchiveValidationService.ArchiveValidation value;
-        private final InjectedValue<JcaSubsystemConfiguration> jcaConfig = new InjectedValue<JcaSubsystemConfiguration>();
+        private final InjectedValue<JcaSubsystemConfiguration> jcaConfig = new InjectedValue<>();
 
 
         /** create an instance **/

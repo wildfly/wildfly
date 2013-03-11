@@ -67,8 +67,8 @@ public class HostControllerConnectionService implements Service<HostControllerCl
     private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
     private static final long SERVER_CONNECTION_TIMEOUT = 60000;
 
-    private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
-    private final InjectedValue<ControlledProcessStateService> processStateServiceInjectedValue = new InjectedValue<ControlledProcessStateService>();
+    private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<>();
+    private final InjectedValue<ControlledProcessStateService> processStateServiceInjectedValue = new InjectedValue<>();
 
     private final int port;
     private final String hostName;

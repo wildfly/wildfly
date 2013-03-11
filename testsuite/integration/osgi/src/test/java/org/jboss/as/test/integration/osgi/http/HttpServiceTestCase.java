@@ -197,7 +197,7 @@ public class HttpServiceTestCase {
 
             // Register the test servlet
             HttpServiceServlet servlet = new HttpServiceServlet(bundle);
-            Dictionary<String, String> parms = new Hashtable<String, String>();
+            Dictionary<String, String> parms = new Hashtable<>();
             parms.put("foo", "bar");
             httpService.registerServlet("/servlet2", servlet, parms, null);
 

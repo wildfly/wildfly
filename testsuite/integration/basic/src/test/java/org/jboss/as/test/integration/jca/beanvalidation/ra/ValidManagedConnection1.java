@@ -62,7 +62,7 @@ public class ValidManagedConnection1 implements ManagedConnection {
     public ValidManagedConnection1(ValidManagedConnectionFactory1 mcf) {
         this.mcf = mcf;
         this.logwriter = null;
-        this.listeners = new ArrayList<ConnectionEventListener>(1);
+        this.listeners = new ArrayList<>(1);
         this.connection = null;
     }
 

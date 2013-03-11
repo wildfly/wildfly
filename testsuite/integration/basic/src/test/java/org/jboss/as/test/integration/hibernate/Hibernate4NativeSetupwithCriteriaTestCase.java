@@ -159,13 +159,13 @@ public class Hibernate4NativeSetupwithCriteriaTestCase {
                 SFSBHibernatewithCriteriaSession.class);
         // setup Configuration and SessionFactory
         sfsb.setupConfig();
-        Set<Satellite> satellites1 = new HashSet<Satellite>();
+        Set<Satellite> satellites1 = new HashSet<>();
         Satellite sat = new Satellite();
         sat.setId(new Integer(1));
         sat.setName("MOON");
         satellites1.add(sat);
 
-        Set<Satellite> satellites2 = new HashSet<Satellite>();
+        Set<Satellite> satellites2 = new HashSet<>();
         Satellite sat2 = new Satellite();
         sat2.setId(new Integer(2));
         sat2.setName("TRITON");

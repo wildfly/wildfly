@@ -47,7 +47,7 @@ import org.jboss.modules.ModuleIdentifier;
 class ModuleParser {
 
     private final File inputFile;
-    List<ModuleDependency> dependencies = new ArrayList<ModuleDependency>();
+    List<ModuleDependency> dependencies = new ArrayList<>();
 
     ModuleParser(final File inputFile) {
         this.inputFile = inputFile;

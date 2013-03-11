@@ -42,8 +42,8 @@ class ConfigAdminState {
 
     static final String TRANSIENT_PROPERTY_SERIAL_ID = ".transient.serial.id";
 
-    private final Map<String, Dictionary<String, String>> configurations = new LinkedHashMap<String, Dictionary<String, String>>();
-    private final Map<String, AtomicLong> serialids = new HashMap<String, AtomicLong>();
+    private final Map<String, Dictionary<String, String>> configurations = new LinkedHashMap<>();
+    private final Map<String, AtomicLong> serialids = new HashMap<>();
 
     synchronized Set<String> keySet() {
         return configurations.keySet();
@@ -92,7 +92,7 @@ class ConfigAdminState {
         if (previous == null) {
             if (Long.parseLong(sourceid) == serialId.get()) {
                 LOGGER.debugf("Config put: %s => %s", pid, source);
-                configurations.put(pid, new UnmodifiableDictionary<String, String>(source));
+                configurations.put(pid, new UnmodifiableDictionary<>(source));
                 return true;
             } else {
                 LOGGER.debugf("Config skip put: %s => %s", pid, source);
@@ -104,7 +104,7 @@ class ConfigAdminState {
         String previd = previous.get(TRANSIENT_PROPERTY_SERIAL_ID);
         if (Long.parseLong(previd) <= Long.parseLong(sourceid)) {
             LOGGER.debugf("Config put: %s => %s", pid, source);
-            configurations.put(pid, new UnmodifiableDictionary<String, String>(source));
+            configurations.put(pid, new UnmodifiableDictionary<>(source));
             return true;
         } else {
             LOGGER.debugf("Config skip put: %s => %s", pid, source);

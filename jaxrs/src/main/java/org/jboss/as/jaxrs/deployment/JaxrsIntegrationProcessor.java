@@ -107,10 +107,10 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
 
 
         final Map<ModuleIdentifier, ResteasyDeploymentData> attachmentMap = parent.getAttachment(JaxrsAttachments.ADDITIONAL_RESTEASY_DEPLOYMENT_DATA);
-        final List<ResteasyDeploymentData> additionalData = new ArrayList<ResteasyDeploymentData>();
+        final List<ResteasyDeploymentData> additionalData = new ArrayList<>();
         final ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         if (moduleSpec != null && attachmentMap != null) {
-            final Set<ModuleIdentifier> identifiers = new HashSet<ModuleIdentifier>();
+            final Set<ModuleIdentifier> identifiers = new HashSet<>();
             for (ModuleDependency dep : moduleSpec.getAllDependencies()) {
                 //make sure we don't double up
                 if (!identifiers.contains(dep.getIdentifier())) {
@@ -213,7 +213,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             addServlet(webdata, servlet);
             if (!servletMappingsExist(webdata, servletName)) {
                 //no mappings, add our own
-                List<String> patterns = new ArrayList<String>();
+                List<String> patterns = new ArrayList<>();
                 ApplicationPath path = applicationClass.getAnnotation(ApplicationPath.class);
                 String pathValue = path.value().trim();
                 if (!pathValue.startsWith("/")) {
@@ -281,7 +281,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         param.setParamValue(value);
         List<ParamValueMetaData> params = filter.getInitParam();
         if (params == null) {
-            params = new ArrayList<ParamValueMetaData>();
+            params = new ArrayList<>();
             filter.setInitParam(params);
         }
         params.add(param);
@@ -336,7 +336,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         param.setParamValue(value);
         List<ParamValueMetaData> params = webdata.getContextParams();
         if (params == null) {
-            params = new ArrayList<ParamValueMetaData>();
+            params = new ArrayList<>();
             webdata.setContextParams(params);
         }
         params.add(param);

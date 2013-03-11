@@ -51,10 +51,10 @@ public class InterfaceCriteriaTestUtil {
 
     static {
 
-        Set<NetworkInterface> loop = new HashSet<NetworkInterface>();
-        Set<NetworkInterface> notLoop = new HashSet<NetworkInterface>();
-        Set<NetworkInterface> all = new HashSet<NetworkInterface>();
-        Map<NetworkInterface, Set<InetAddress>> candidates = new HashMap<NetworkInterface, Set<InetAddress>>();
+        Set<NetworkInterface> loop = new HashSet<>();
+        Set<NetworkInterface> notLoop = new HashSet<>();
+        Set<NetworkInterface> all = new HashSet<>();
+        Map<NetworkInterface, Set<InetAddress>> candidates = new HashMap<>();
 
         try {
             Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
@@ -66,7 +66,7 @@ public class InterfaceCriteriaTestUtil {
                 } else {
                     notLoop.add(nic);
                 }
-                Set<InetAddress> addresses = new HashSet<InetAddress>();
+                Set<InetAddress> addresses = new HashSet<>();
                 Enumeration<InetAddress> addressEnumeration = nic.getInetAddresses();
                 while (addressEnumeration.hasMoreElements()) {
                     InetAddress inetAddress = addressEnumeration.nextElement();
@@ -89,7 +89,7 @@ public class InterfaceCriteriaTestUtil {
                     } else {
                         notLoop.add(nic);
                     }
-                    addresses = new HashSet<InetAddress>();
+                    addresses = new HashSet<>();
                     addressEnumeration = nic.getInetAddresses();
                     while (addressEnumeration.hasMoreElements()) {
                         addresses.add(addressEnumeration.nextElement());
@@ -113,7 +113,7 @@ public class InterfaceCriteriaTestUtil {
     }
 
     static Set<InetAddress> getRightTypeAddresses(Set<InetAddress> all) {
-        Set<InetAddress> result = new HashSet<InetAddress>();
+        Set<InetAddress> result = new HashSet<>();
         for (InetAddress address : all) {
 
             if (preferIPv4Stack && !preferIPv6Stack && !(address instanceof Inet4Address)) {

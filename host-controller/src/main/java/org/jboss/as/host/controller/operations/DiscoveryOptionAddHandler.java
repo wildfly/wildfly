@@ -90,7 +90,7 @@ public class DiscoveryOptionAddHandler extends AbstractAddStepHandler {
         ModelNode moduleNode = DiscoveryOptionResourceDefinition.MODULE.resolveModelAttribute(context, model);
         String moduleName = moduleNode.isDefined() ? moduleNode.asString() : null;
 
-        final Map<String, ModelNode> discoveryOptionProperties = new HashMap<String, ModelNode>();
+        final Map<String, ModelNode> discoveryOptionProperties = new HashMap<>();
         if (operation.hasDefined(DiscoveryOptionResourceDefinition.PROPERTIES.getName())) {
             for (Map.Entry<String, String> discoveryOptionProperty : DiscoveryOptionResourceDefinition.PROPERTIES.unwrap(context, model).entrySet()) {
                 discoveryOptionProperties.put(discoveryOptionProperty.getKey(), new ModelNode(discoveryOptionProperty.getValue()));

@@ -97,7 +97,7 @@ public class WebCERTTestsSecurityDomainSetup implements ServerSetupTask {
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         log.debug("start of the domain creation");
 
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        final List<ModelNode> updates = new ArrayList<>();
         PathAddress address = PathAddress.pathAddress()
                 .append(SUBSYSTEM, "security")
                 .append(SECURITY_DOMAIN, APP_SECURITY_DOMAIN);
@@ -169,7 +169,7 @@ public class WebCERTTestsSecurityDomainSetup implements ServerSetupTask {
 
     @Override
     public void tearDown(ManagementClient managementClient, String containerId) {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        final List<ModelNode> updates = new ArrayList<>();
 
         // remove the security domains.
         ModelNode op = new ModelNode();

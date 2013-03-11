@@ -56,7 +56,7 @@ import org.jboss.ejb.client.NodeAffinity;
 public class SimpleBackingCacheEntryStore<K extends Serializable, V extends Cacheable<K>, E extends BackingCacheEntry<K, V>> extends AbstractBackingCacheEntryStore<K, V, E> {
     private final IdentifierFactory<K> identifierFactory;
     private final PersistentObjectStore<K, E> store;
-    private final Map<K, EntryHolder> cache = new ConcurrentHashMap<K, EntryHolder>();
+    private final Map<K, EntryHolder> cache = new ConcurrentHashMap<>();
 
     /**
      * SORTED SETS COMPARE FOR EQUALITY USING Comparable
@@ -65,7 +65,7 @@ public class SimpleBackingCacheEntryStore<K extends Serializable, V extends Cach
      * This means that when removing from this set you MUST use the timestamp that is stored in {@link #cache}, otherwise
      * nothing will be removed.
      */
-    private final SortedSet<CacheableTimestamp<K>> entries = new ConcurrentSkipListSet<CacheableTimestamp<K>>();
+    private final SortedSet<CacheableTimestamp<K>> entries = new ConcurrentSkipListSet<>();
     private final ServerEnvironment environment;
 
     /**
@@ -109,7 +109,7 @@ public class SimpleBackingCacheEntryStore<K extends Serializable, V extends Cach
         if (holder == null) {
             E value = store.load(key);
             if (value != null) {
-                CacheableTimestamp<K> timestamp = new CacheableTimestamp<K>(value);
+                CacheableTimestamp<K> timestamp = new CacheableTimestamp<>(value);
                 cache.put(key, new EntryHolder(value, timestamp));
                 this.entries.add(timestamp);
             }
@@ -124,10 +124,10 @@ public class SimpleBackingCacheEntryStore<K extends Serializable, V extends Cach
         if (cache.containsKey(key)) {
             throw EjbMessages.MESSAGES.duplicateCacheEntry(key);
         }
-        CacheableTimestamp<K> timestamp = new CacheableTimestamp<K>(entry);
+        CacheableTimestamp<K> timestamp = new CacheableTimestamp<>(entry);
         cache.put(key, new EntryHolder(entry, timestamp));
         this.entries.add(timestamp);
-        final Set<K> toPassivate = new HashSet<K>();
+        final Set<K> toPassivate = new HashSet<>();
         int maxSize = this.getConfig().getMaxSize();
         int thisSize = cache.size();
         if (thisSize > maxSize) {
@@ -184,7 +184,7 @@ public class SimpleBackingCacheEntryStore<K extends Serializable, V extends Cach
     }
 
     private void update(E entry) {
-        CacheableTimestamp<K> timestamp = new CacheableTimestamp<K>(entry);
+        CacheableTimestamp<K> timestamp = new CacheableTimestamp<>(entry);
         final EntryHolder holder = cache.get(entry.getId());
         if (holder != null) {
             this.entries.remove(holder.timestamp);

@@ -102,7 +102,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     /**
      * Set containing all members of {@link #excludedAttributes}.
      */
-    protected static final Set<String> replicationExcludes = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(excludedAttributes)));
+    protected static final Set<String> replicationExcludes = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(excludedAttributes)));
 
     /**
      * The method signature for the <code>fireContainerEvent</code> method.
@@ -135,7 +135,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     /**
      * The collection of user data attributes associated with this Session.
      */
-    private final Map<String, Object> attributes = new ConcurrentHashMap<String, Object>(16, 0.75f, 2);
+    private final Map<String, Object> attributes = new ConcurrentHashMap<>(16, 0.75f, 2);
 
     /**
      * The authentication type used to authenticate our cached Principal, if any. NOTE: This value is not included in the
@@ -179,7 +179,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     /**
      * The session event listeners for this Session.
      */
-    private transient List<SessionListener> listeners = new ArrayList<SessionListener>();
+    private transient List<SessionListener> listeners = new ArrayList<>();
 
     /**
      * The Manager with which this Session is associated.
@@ -211,7 +211,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
      * Internal notes associated with this session by Catalina components and event listeners. <b>IMPLEMENTATION NOTE:</b> This
      * object is <em>not</em> saved and restored across session serializations!
      */
-    private final transient Map<String, Object> notes = new Hashtable<String, Object>();
+    private final transient Map<String, Object> notes = new Hashtable<>();
 
     /**
      * The authenticated Principal associated with this session, if any. <b>IMPLEMENTATION NOTE:</b> This object is <i>not</i>
@@ -1528,7 +1528,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
                     log.tracef("Excluding attribute %s from replication", excludedAttributes[i]);
                 }
                 if (excluded == null) {
-                    excluded = new HashMap<String, Object>();
+                    excluded = new HashMap<>();
                 }
                 excluded.put(excludedAttributes[i], attr);
             }

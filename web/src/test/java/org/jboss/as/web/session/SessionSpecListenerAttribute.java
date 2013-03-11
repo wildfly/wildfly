@@ -42,7 +42,7 @@ public class SessionSpecListenerAttribute implements HttpSessionBindingListener,
         BOUND, UNBOUND, ACTIVATING, PASSIVATED
     };
 
-    public static final List<Type> invocations = new ArrayList<Type>();
+    public static final List<Type> invocations = new ArrayList<>();
 
     /*
      * (non-Javadoc)

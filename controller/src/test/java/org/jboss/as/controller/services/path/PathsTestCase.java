@@ -845,7 +845,7 @@ public class PathsTestCase extends AbstractControllerTestBase {
     }
 
     private static class ExpectedResultBuilder {
-        LinkedHashMap<Transition, ServiceName> map = new LinkedHashMap<ServiceController.Transition, ServiceName>();
+        LinkedHashMap<Transition, ServiceName> map = new LinkedHashMap<>();
 
         ExpectedResultBuilder addUp(ServiceName name) {
             map.put(Transition.STARTING_to_UP, name);
@@ -860,7 +860,7 @@ public class PathsTestCase extends AbstractControllerTestBase {
 
     private static class PerformChangeCallback implements PathManager.Callback {
 
-        private LinkedHashMap<Event, PathEntry> paths = new LinkedHashMap<PathManager.Event, PathEntry>();
+        private LinkedHashMap<Event, PathEntry> paths = new LinkedHashMap<>();
         private Handle handle;
 
         PerformChangeCallback(PathManager pathManager, String pathName, Event... events) {

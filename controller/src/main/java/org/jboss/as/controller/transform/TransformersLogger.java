@@ -61,7 +61,7 @@ public class TransformersLogger {
     private TransformationTarget target;
     private ControllerLogger logger;
     private List<LogEntry> messageQueue = Collections.synchronizedList(new LinkedList<LogEntry>());
-    private static final ConcurrentHashMap<String, TransformersLogger> loggers = new ConcurrentHashMap<String, TransformersLogger>();
+    private static final ConcurrentHashMap<String, TransformersLogger> loggers = new ConcurrentHashMap<>();
 
     private TransformersLogger(TransformationTarget target) {
         this.target = target;
@@ -243,7 +243,7 @@ public class TransformersLogger {
      * flushes log queue, this actually writes combined log message into system log
      */
     void flushLogQueue() {
-        Set<String> problems = new LinkedHashSet<String>();
+        Set<String> problems = new LinkedHashSet<>();
         for (LogEntry entry : messageQueue) {
             problems.add("\t\t" + entry.getMessage() + "\n");
         }
@@ -263,7 +263,7 @@ public class TransformersLogger {
         private final Set<String> attributes;
 
         private AttributeLogEntry(PathAddress address, ModelNode operation, String message, String... attributes) {
-            this(address, operation, message, new TreeSet<String>(Arrays.asList(attributes)));
+            this(address, operation, message, new TreeSet<>(Arrays.asList(attributes)));
         }
 
         private AttributeLogEntry(PathAddress address, ModelNode operation, String message, Set<String> attributes) {

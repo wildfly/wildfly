@@ -61,7 +61,7 @@ public class Krb5LoginConfiguration extends Configuration {
      */
     public Krb5LoginConfiguration(final String principal, final File keyTab, final boolean acceptor)
             throws MalformedURLException {
-        final Map<String, Object> options = new HashMap<String, Object>();
+        final Map<String, Object> options = new HashMap<>();
         final String loginModule;
         if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
             loginModule = "com.ibm.security.auth.module.Krb5LoginModule";

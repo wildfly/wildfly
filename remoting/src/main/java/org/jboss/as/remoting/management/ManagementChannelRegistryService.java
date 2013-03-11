@@ -44,7 +44,7 @@ public class ManagementChannelRegistryService implements Service<ManagementChann
 
     /** The service name. */
     public static final ServiceName SERVICE_NAME = RemotingServices.REMOTING_BASE.append("management", "channel", "registry");
-    private final ArrayList<Registration> registrations = new ArrayList<Registration>();
+    private final ArrayList<Registration> registrations = new ArrayList<>();
 
     public static void addService(final ServiceTarget serviceTarget, final ServiceName endpointName) {
         serviceTarget.addService(SERVICE_NAME, new ManagementChannelRegistryService())

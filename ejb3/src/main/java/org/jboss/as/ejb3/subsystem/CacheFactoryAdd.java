@@ -22,7 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,7 +36,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSourceService;
 import org.jboss.as.ejb3.cache.impl.factory.GroupAwareCacheFactoryService;
 import org.jboss.as.ejb3.cache.impl.factory.NonPassivatingCacheFactoryService;
@@ -80,16 +78,16 @@ public class CacheFactoryAdd extends AbstractAddStepHandler {
         ModelNode passivationStoreModel = CacheFactoryResourceDefinition.PASSIVATION_STORE.resolveModelAttribute(context,model);
         String passivationStore = passivationStoreModel.isDefined() ? passivationStoreModel.asString() : null;
 
-        Set<String> aliases = new HashSet<String>(CacheFactoryResourceDefinition.ALIASES.unwrap(context,model));
+        Set<String> aliases = new HashSet<>(CacheFactoryResourceDefinition.ALIASES.unwrap(context,model));
         ServiceTarget target = context.getServiceTarget();
-        ServiceBuilder<?> builder = (passivationStore != null) ? new GroupAwareCacheFactoryService<Serializable, Cacheable<Serializable>>(name, aliases).build(target, passivationStore) : new NonPassivatingCacheFactoryService<Serializable, Cacheable<Serializable>>(name, aliases).build(target);
+        ServiceBuilder<?> builder = (passivationStore != null) ? new GroupAwareCacheFactoryService<>(name, aliases).build(target, passivationStore) : new NonPassivatingCacheFactoryService<>(name, aliases).build(target);
         if (verificationHandler != null) {
             builder.addListener(verificationHandler);
         }
         ServiceController<?> controller = builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         if (passivationStore != null) {
-            InjectedValue<String> clusterName = new InjectedValue<String>();
-            final ServiceBuilder<String> passivationBuilder = target.addService(ClusteredBackingCacheEntryStoreSourceService.getCacheFactoryClusterNameServiceName(name), new ValueService<String>(clusterName))
+            InjectedValue<String> clusterName = new InjectedValue<>();
+            final ServiceBuilder<String> passivationBuilder = target.addService(ClusteredBackingCacheEntryStoreSourceService.getCacheFactoryClusterNameServiceName(name), new ValueService<>(clusterName))
                     .addDependency(ClusteredBackingCacheEntryStoreSourceService.getPassivationStoreClusterNameServiceName(passivationStore), String.class, clusterName)
                     .setInitialMode(ServiceController.Mode.ON_DEMAND);
             if(verificationHandler != null) {

@@ -51,7 +51,7 @@ public abstract class AbstractOutboundConnectionService<T extends AbstractOutbou
 
     public static final ServiceName OUTBOUND_CONNECTION_BASE_SERVICE_NAME = RemotingServices.SUBSYSTEM_ENDPOINT.append("outbound-connection");
 
-    protected final InjectedValue<Endpoint> endpointInjectedValue = new InjectedValue<Endpoint>();
+    protected final InjectedValue<Endpoint> endpointInjectedValue = new InjectedValue<>();
 
     protected volatile OptionMap connectionCreationOptions;
 

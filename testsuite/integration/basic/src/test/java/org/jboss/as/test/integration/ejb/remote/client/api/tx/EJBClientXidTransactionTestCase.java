@@ -123,7 +123,7 @@ public class EJBClientXidTransactionTestCase {
      */
     @Test
     public void testSLSBMandatoryTx() throws Exception {
-        final StatelessEJBLocator<CMTRemote> cmtRemoteBeanLocator = new StatelessEJBLocator<CMTRemote>(CMTRemote.class, APP_NAME, MODULE_NAME, CMTBean.class.getSimpleName(), "");
+        final StatelessEJBLocator<CMTRemote> cmtRemoteBeanLocator = new StatelessEJBLocator<>(CMTRemote.class, APP_NAME, MODULE_NAME, CMTBean.class.getSimpleName(), "");
         final CMTRemote cmtRemoteBean = EJBClient.createProxy(cmtRemoteBeanLocator);
 
         // start the transaction
@@ -141,10 +141,10 @@ public class EJBClientXidTransactionTestCase {
      */
     @Test
     public void testClientTransactionManagement() throws Exception {
-        final StatelessEJBLocator<RemoteBatch> batchBeanLocator = new StatelessEJBLocator<RemoteBatch>(RemoteBatch.class, APP_NAME, MODULE_NAME, BatchCreationBean.class.getSimpleName(), "");
+        final StatelessEJBLocator<RemoteBatch> batchBeanLocator = new StatelessEJBLocator<>(RemoteBatch.class, APP_NAME, MODULE_NAME, BatchCreationBean.class.getSimpleName(), "");
         final RemoteBatch batchBean = EJBClient.createProxy(batchBeanLocator);
 
-        final StatelessEJBLocator<BatchRetriever> batchRetrieverLocator = new StatelessEJBLocator<BatchRetriever>(BatchRetriever.class, APP_NAME, MODULE_NAME, BatchFetchingBean.class.getSimpleName(), "");
+        final StatelessEJBLocator<BatchRetriever> batchRetrieverLocator = new StatelessEJBLocator<>(BatchRetriever.class, APP_NAME, MODULE_NAME, BatchFetchingBean.class.getSimpleName(), "");
         final BatchRetriever batchRetriever = EJBClient.createProxy(batchRetrieverLocator);
 
         final String batchName = "Simple Batch";

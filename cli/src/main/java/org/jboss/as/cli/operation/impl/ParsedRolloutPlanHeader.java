@@ -116,13 +116,13 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
             throw new IllegalStateException("Groups can't be added if the plan ref is specified.");
         }
         if(groups == null) {
-            groups = new ArrayList<RolloutPlanGroup>();
+            groups = new ArrayList<>();
         }
         groups.add(group);
         this.lastGroup = group;
         separator = -1;
         if(mentionedGroups == null) {
-            mentionedGroups = new HashSet<String>();
+            mentionedGroups = new HashSet<>();
         }
         mentionedGroups.add(group.getGroupName());
     }
@@ -150,7 +150,7 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
         this.lastGroup = group;
         this.separator = -1;
         if(mentionedGroups == null) {
-            mentionedGroups = new HashSet<String>();
+            mentionedGroups = new HashSet<>();
         }
         mentionedGroups.add(group.getGroupName());
     }
@@ -168,7 +168,7 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
             throw new IllegalArgumentException("Invalid property value: " + value);
         }
         if(props == null) {
-            props = new HashMap<String,String>();
+            props = new HashMap<>();
         }
         props.put(name, value);
 
@@ -184,7 +184,7 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
             throw new IllegalArgumentException("Invalid property name: " + name);
         }
         if(props == null) {
-            props = new HashMap<String,String>();
+            props = new HashMap<>();
         }
         props.put(name, Util.TRUE);
 

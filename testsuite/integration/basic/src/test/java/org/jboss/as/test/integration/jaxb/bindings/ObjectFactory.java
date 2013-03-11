@@ -79,7 +79,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "", name = "purchaseOrder")
     public JAXBElement<PurchaseOrderType> createPurchaseOrder(PurchaseOrderType value) {
-        return new JAXBElement<PurchaseOrderType>(_PurchaseOrder_QNAME, PurchaseOrderType.class, null, value);
+        return new JAXBElement<>(_PurchaseOrder_QNAME, PurchaseOrderType.class, null, value);
     }
 
     /**
@@ -88,7 +88,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "", name = "comment")
     public JAXBElement<String> createComment(String value) {
-        return new JAXBElement<String>(_Comment_QNAME, String.class, null, value);
+        return new JAXBElement<>(_Comment_QNAME, String.class, null, value);
     }
 
 }

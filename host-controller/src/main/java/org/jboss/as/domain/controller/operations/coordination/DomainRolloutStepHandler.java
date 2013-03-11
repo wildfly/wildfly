@@ -141,8 +141,8 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
             // We no longer roll back by default
             domainOperationContext.setCompleteRollback(false);
 
-            final Map<ServerIdentity, ServerTaskExecutor.ExecutedServerRequest> submittedTasks = new HashMap<ServerIdentity, ServerTaskExecutor.ExecutedServerRequest>();
-            final List<ServerTaskExecutor.ServerPreparedResponse> preparedResults = new ArrayList<ServerTaskExecutor.ServerPreparedResponse>();
+            final Map<ServerIdentity, ServerTaskExecutor.ExecutedServerRequest> submittedTasks = new HashMap<>();
+            final List<ServerTaskExecutor.ServerPreparedResponse> preparedResults = new ArrayList<>();
             boolean completeStepCalled = false;
             try {
                 pushToServers(context, submittedTasks, preparedResults);
@@ -238,7 +238,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                                final List<ServerTaskExecutor.ServerPreparedResponse> preparedResults) throws OperationFailedException {
 
         final String localHostName = domainOperationContext.getLocalHostInfo().getLocalHostName();
-        Map<String, ModelNode> hostResults = new HashMap<String, ModelNode>(domainOperationContext.getHostControllerResults());
+        Map<String, ModelNode> hostResults = new HashMap<>(domainOperationContext.getHostControllerResults());
         if (domainOperationContext.getCoordinatorResult().isDefined()) {
             hostResults.put(localHostName, domainOperationContext.getCoordinatorResult());
         }
@@ -296,7 +296,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
     }
 
     private Map<String, Map<ServerIdentity, ModelNode>> getOpsByGroup(Map<String, ModelNode> hostResults) {
-        Map<String, Map<ServerIdentity, ModelNode>> result = new HashMap<String, Map<ServerIdentity, ModelNode>>();
+        Map<String, Map<ServerIdentity, ModelNode>> result = new HashMap<>();
 
         for (Map.Entry<String, ModelNode> entry : hostResults.entrySet()) {
             if (trace) {
@@ -311,7 +311,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                         String group = prop.getValue().asString();
                         Map<ServerIdentity, ModelNode> groupMap = result.get(group);
                         if (groupMap == null) {
-                            groupMap = new HashMap<ServerIdentity, ModelNode>();
+                            groupMap = new HashMap<>();
                             result.put(group, groupMap);
                         }
                         groupMap.put(new ServerIdentity(host, group, prop.getName()), op);
@@ -343,7 +343,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
         }
         else {
             // Validate that plan covers all groups
-            Set<String> found = new HashSet<String>();
+            Set<String> found = new HashSet<>();
             if (rolloutPlan.hasDefined(IN_SERIES)) {
                 for (ModelNode series : rolloutPlan.get(IN_SERIES).asList()) {
                     if (series.hasDefined(CONCURRENT_GROUPS)) {
@@ -361,7 +361,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                 }
             }
 
-            Set<String> groups = new HashSet<String>(opsByGroup.keySet());
+            Set<String> groups = new HashSet<>(opsByGroup.keySet());
             groups.removeAll(found);
             if (!groups.isEmpty()) {
                 throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidRolloutPlan(groups)));

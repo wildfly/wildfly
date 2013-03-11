@@ -40,7 +40,7 @@ import org.jboss.wsf.spi.management.ServerConfig;
 public class XTSManagerService extends AbstractService<XTSService> {
     private final String coordinatorURL;
     private volatile org.jboss.jbossts.XTSService xtsService;
-    private InjectedValue<ServerConfig> wsServerConfig = new InjectedValue<ServerConfig>();
+    private InjectedValue<ServerConfig> wsServerConfig = new InjectedValue<>();
 
     public XTSManagerService(String coordinatorURL) {
         this.coordinatorURL = coordinatorURL;

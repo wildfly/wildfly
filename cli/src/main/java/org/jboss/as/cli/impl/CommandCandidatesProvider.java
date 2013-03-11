@@ -63,7 +63,7 @@ public class CommandCandidatesProvider implements OperationCandidatesProvider {
 
     @Override
     public List<String> getOperationNames(CommandContext ctx, OperationRequestAddress prefix) {
-        final List<String> commands = new ArrayList<String>();
+        final List<String> commands = new ArrayList<>();
         for(String command : registry.getTabCompletionCommands()) {
             CommandHandler handler = registry.getCommandHandler(command);
             if(handler.isAvailable(ctx)) {

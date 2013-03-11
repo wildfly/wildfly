@@ -33,7 +33,7 @@ import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
  */
 public class ApplicationExceptionDescriptions {
 
-    private final Map<String, ApplicationExceptionDetails> applicationExceptions = new ConcurrentHashMap<String, ApplicationExceptionDetails>();
+    private final Map<String, ApplicationExceptionDetails> applicationExceptions = new ConcurrentHashMap<>();
 
 
     public void addApplicationException(final String exceptionClassName, final boolean rollback, final boolean inherited) {

@@ -45,7 +45,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class DataSourceReferenceFactoryService implements Service<ManagedReferenceFactory>, ContextListAndJndiViewManagedReferenceFactory {
     public static final ServiceName SERVICE_NAME_BASE = AbstractDataSourceService.SERVICE_NAME_BASE.append("reference-factory");
-    private final InjectedValue<DataSource> dataSourceValue = new InjectedValue<DataSource>();
+    private final InjectedValue<DataSource> dataSourceValue = new InjectedValue<>();
 
     private ManagedReference reference;
 

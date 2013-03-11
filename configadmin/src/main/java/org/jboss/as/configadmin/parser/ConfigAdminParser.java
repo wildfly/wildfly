@@ -60,7 +60,7 @@ class ConfigAdminParser implements Namespace10, XMLStreamConstants, XMLElementRe
 
         if (model.hasDefined(ModelConstants.CONFIGURATION)) {
             ModelNode configuration = model.get(ModelConstants.CONFIGURATION);
-            for (String pid : new TreeSet<String>(configuration.keys())) {
+            for (String pid : new TreeSet<>(configuration.keys())) {
                 writer.writeStartElement(Element.CONFIGURATION.getLocalName());
                 writer.writeAttribute(Attribute.PID.getLocalName(), pid);
                 ConfigurationResource.ENTRIES.marshallAsElement(configuration.get(pid), writer);

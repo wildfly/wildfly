@@ -1094,7 +1094,7 @@ public class ManagementXml {
         list.add(local);
 
         final int count = reader.getAttributeCount();
-        Set<Attribute> attributesFound = new HashSet<Attribute>(count);
+        Set<Attribute> attributesFound = new HashSet<>(count);
 
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);

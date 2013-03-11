@@ -47,8 +47,8 @@ import org.jboss.msc.value.Value;
  */
 public class MBeanRegistrationService<T> implements Service<Void> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("mbean", "registration");
-    private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
-    private final InjectedValue<T> value = new InjectedValue<T>();
+    private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<>();
+    private final InjectedValue<T> value = new InjectedValue<>();
     private final String name;
     private ObjectName objectName;
     private final ServiceName duServiceName;

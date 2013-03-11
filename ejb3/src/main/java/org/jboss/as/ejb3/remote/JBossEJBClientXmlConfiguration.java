@@ -37,7 +37,7 @@ import java.util.Map;
  */
 public class JBossEJBClientXmlConfiguration implements EJBClientConfiguration {
 
-    private final Map<String, ClusterConfiguration> clusterConfigs = new HashMap<String, ClusterConfiguration>();
+    private final Map<String, ClusterConfiguration> clusterConfigs = new HashMap<>();
     private long invocationTimeout;
     private DeploymentNodeSelector deploymentNodeSelector = new LocalEJBReceiverPreferringDeploymentNodeSelector();
 

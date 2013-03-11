@@ -65,7 +65,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         //now we have the service controller, as this method is only called at runtime the service should
         //always be up
         PersistenceUnitServiceImpl persistenceUnitService = (PersistenceUnitServiceImpl) serviceController.getValue();
-        return new TransactionScopedEntityManager(scopedPuName, new HashMap<Object, Object>(), persistenceUnitService.getEntityManagerFactory());
+        return new TransactionScopedEntityManager(scopedPuName, new HashMap<>(), persistenceUnitService.getEntityManagerFactory());
     }
 
     @Override

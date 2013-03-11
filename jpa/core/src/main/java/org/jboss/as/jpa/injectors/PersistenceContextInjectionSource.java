@@ -243,7 +243,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                 if (JPA_LOGGER.isDebugEnabled())
                     JPA_LOGGER.debugf("injecting entity manager into a '%s' (unit name=%s)", extensionClass.getName(), unitName);
 
-                return new ValueManagedReference(new ImmediateValue<Object>(proxyForUnwrappedObject));
+                return new ValueManagedReference(new ImmediateValue<>(proxyForUnwrappedObject));
             }
 
             return new ValueManagedReference(new ImmediateValue<Object>(entityManager));

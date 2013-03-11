@@ -55,7 +55,7 @@ public final class ClassReflectionIndex<T> {
         this.indexedClass = indexedClass;
         // -- fields --
         final Field[] declaredFields = indexedClass.getDeclaredFields();
-        final Map<String, Field> fields = new HashMap<String, Field>();
+        final Map<String, Field> fields = new HashMap<>();
         for (Field field : declaredFields) {
             field.setAccessible(true);
             fields.put(field.getName(), field);
@@ -63,8 +63,8 @@ public final class ClassReflectionIndex<T> {
         this.fields = fields;
         // -- methods --
         final Method[] declaredMethods = indexedClass.getDeclaredMethods();
-        final Map<String, Map<ParamList, Map<Class<?>, Method>>> methods = new HashMap<String, Map<ParamList, Map<Class<?>, Method>>>();
-        final Map<String, Map<ParamNameList, Map<String, Method>>> methodsByTypeName = new HashMap<String, Map<ParamNameList, Map<String, Method>>>();
+        final Map<String, Map<ParamList, Map<Class<?>, Method>>> methods = new HashMap<>();
+        final Map<String, Map<ParamNameList, Map<String, Method>>> methodsByTypeName = new HashMap<>();
         for (Method method : declaredMethods) {
             method.setAccessible(true);
             addMethod(methods, method);
@@ -75,8 +75,8 @@ public final class ClassReflectionIndex<T> {
         this.methodsByTypeName = methodsByTypeName;
         // -- constructors --
         final Constructor<T>[] declaredConstructors = (Constructor<T>[]) indexedClass.getDeclaredConstructors();
-        final Map<ParamNameList, Constructor<T>> constructorsByTypeName = new HashMap<ParamNameList, Constructor<T>>();
-        final Map<ParamList, Constructor<T>> constructors = new HashMap<ParamList, Constructor<T>>();
+        final Map<ParamNameList, Constructor<T>> constructorsByTypeName = new HashMap<>();
+        final Map<ParamList, Constructor<T>> constructors = new HashMap<>();
         for (Constructor<T> constructor : declaredConstructors) {
             constructor.setAccessible(true);
             Class<?>[] parameterTypes = constructor.getParameterTypes();
@@ -94,13 +94,13 @@ public final class ClassReflectionIndex<T> {
         final String name = method.getName();
         Map<ParamList, Map<Class<?>, Method>> nameMap = methods.get(name);
         if (nameMap == null) {
-            methods.put(name, nameMap = new HashMap<ParamList, Map<Class<?>, Method>>());
+            methods.put(name, nameMap = new HashMap<>());
         }
         final Class<?>[] types = method.getParameterTypes();
         final ParamList list = createParamList(types);
         Map<Class<?>, Method> paramsMap = nameMap.get(list);
         if (paramsMap == null) {
-            nameMap.put(list, paramsMap = new HashMap<Class<?>, Method>());
+            nameMap.put(list, paramsMap = new HashMap<>());
         }
         //don't allow superclass / interface methods to overwrite existing methods
         if (!paramsMap.containsKey(method.getReturnType())) {
@@ -112,13 +112,13 @@ public final class ClassReflectionIndex<T> {
         final String name = method.getName();
         Map<ParamNameList, Map<String, Method>> nameMap = methodsByTypeName.get(name);
         if (nameMap == null) {
-            methodsByTypeName.put(name, nameMap = new HashMap<ParamNameList, Map<String, Method>>());
+            methodsByTypeName.put(name, nameMap = new HashMap<>());
         }
         final Class<?>[] types = method.getParameterTypes();
         final ParamNameList list = createParamNameList(types);
         Map<String, Method> paramsMap = nameMap.get(list);
         if (paramsMap == null) {
-            nameMap.put(list, paramsMap = new HashMap<String, Method>());
+            nameMap.put(list, paramsMap = new HashMap<>());
         }
 
         //don't allow superclass / interface methods to overwrite existing methods
@@ -291,7 +291,7 @@ public final class ClassReflectionIndex<T> {
         if (nameMap == null) {
             return Collections.emptySet();
         }
-        final Collection<Method> methods = new ArrayList<Method>();
+        final Collection<Method> methods = new ArrayList<>();
         for (Map<Class<?>, Method> map : nameMap.values()) {
             methods.addAll(map.values());
         }
@@ -310,7 +310,7 @@ public final class ClassReflectionIndex<T> {
         if (nameMap == null) {
             return Collections.emptySet();
         }
-        final Collection<Method> methods = new ArrayList<Method>();
+        final Collection<Method> methods = new ArrayList<>();
         for (Map<Class<?>, Method> map : nameMap.values()) {
             for (Method method : map.values()) {
                 if (method.getParameterTypes().length == paramCount) {
@@ -327,7 +327,7 @@ public final class ClassReflectionIndex<T> {
      * @return the (possibly empty) collection of all declared methods
      */
     public Collection<Method> getMethods() {
-        final Collection<Method> methods = new ArrayList<Method>();
+        final Collection<Method> methods = new ArrayList<>();
         for (Map.Entry<String, Map<ParamList, Map<Class<?>, Method>>> entry : this.methods.entrySet()) {
             final Map<ParamList, Map<Class<?>, Method>> nameMap = entry.getValue();
             for (Map<Class<?>, Method> map : nameMap.values()) {

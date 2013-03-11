@@ -115,7 +115,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         config.setConnectionTTL(Common.CONNECTION_TTL.resolveModelAttribute(context, model).asLong());
         if (model.hasDefined(CONNECTOR)) {
             ModelNode connectorRefs = model.get(CONNECTOR);
-            List<String> connectorNames = new ArrayList<String>(connectorRefs.keys());
+            List<String> connectorNames = new ArrayList<>(connectorRefs.keys());
             config.setConnectorNames(connectorNames);
         }
         config.setConsumerMaxRate(Common.CONSUMER_MAX_RATE.resolveModelAttribute(context, model).asInt());

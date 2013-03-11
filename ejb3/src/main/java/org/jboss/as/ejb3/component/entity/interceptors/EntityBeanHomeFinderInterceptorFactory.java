@@ -61,7 +61,7 @@ public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactor
 
     private final Method finderMethod;
     private final ReturnType returnType;
-    private final InjectedValue<ComponentView> viewToCreate = new InjectedValue<ComponentView>();
+    private final InjectedValue<ComponentView> viewToCreate = new InjectedValue<>();
 
     public EntityBeanHomeFinderInterceptorFactory(final Method finderMethod) {
         this.finderMethod = finderMethod;
@@ -104,7 +104,7 @@ public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactor
         switch (returnType) {
             case COLLECTION: {
                 Collection keys = (Collection) result;
-                final Set<Object> results = new LinkedHashSet<Object>();
+                final Set<Object> results = new LinkedHashSet<>();
                 if (keys != null) {
                     for (Object key : keys) {
                         results.add(getLocalObject(key));
@@ -114,7 +114,7 @@ public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactor
             }
             case ENUMERATION: {
                 Enumeration keys = (Enumeration) result;
-                final Set<Object> results = new LinkedHashSet<Object>();
+                final Set<Object> results = new LinkedHashSet<>();
                 if (keys != null) {
                     while (keys.hasMoreElements()) {
                         Object key = keys.nextElement();
@@ -159,7 +159,7 @@ public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactor
     }
 
     protected Object getLocalObject(final Object result) throws Exception {
-        final HashMap<Object, Object> create = new HashMap<Object, Object>();
+        final HashMap<Object, Object> create = new HashMap<>();
         create.put(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, result);
         return viewToCreate.getValue().createInstance(create).getInstance();
     }

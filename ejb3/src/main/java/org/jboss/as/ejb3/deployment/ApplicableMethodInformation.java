@@ -50,7 +50,7 @@ public class ApplicableMethodInformation<T> {
     /**
      * applied to all view methods of a given type
      */
-    private final Map<MethodIntf, T> perViewStyle1 = new HashMap<MethodIntf, T>();
+    private final Map<MethodIntf, T> perViewStyle1 = new HashMap<>();
 
     /**
      * Applied to all methods with a given name on a given view type
@@ -58,7 +58,7 @@ public class ApplicableMethodInformation<T> {
     private final PopulatingMap<MethodIntf, Map<String, T>> perViewStyle2 = new PopulatingMap<MethodIntf, Map<String, T>>() {
         @Override
         Map<String, T> populate() {
-            return new HashMap<String, T>();
+            return new HashMap<>();
         }
     };
 
@@ -71,7 +71,7 @@ public class ApplicableMethodInformation<T> {
             return new PopulatingMap<String, Map<ArrayKey, T>>() {
                 @Override
                 Map<ArrayKey, T> populate() {
-                    return new HashMap<ArrayKey, T>();
+                    return new HashMap<>();
                 }
             };
         }
@@ -80,12 +80,12 @@ public class ApplicableMethodInformation<T> {
     /**
      * Map of bean class to attribute
      */
-    private final Map<String, T> style1 = new HashMap<String, T>();
+    private final Map<String, T> style1 = new HashMap<>();
 
     /**
      * map of bean method name to attribute
      */
-    private final Map<String, T> style2 = new HashMap<String, T>();
+    private final Map<String, T> style2 = new HashMap<>();
 
     public ApplicableMethodInformation(final String componentName, final T defaultAttribute) {
         this.componentName = componentName;
@@ -101,7 +101,7 @@ public class ApplicableMethodInformation<T> {
             return new PopulatingMap<String, Map<ArrayKey, T>>() {
                 @Override
                 Map<ArrayKey, T> populate() {
-                    return new HashMap<ArrayKey, T>();
+                    return new HashMap<>();
                 }
             };
         }
@@ -138,7 +138,7 @@ public class ApplicableMethodInformation<T> {
         assert methodIntf != null : "methodIntf is null";
         assert methodName != null : "methodName is null";
         assert methodParams != null : "methodParams is null";
-        final List<T> ret = new ArrayList<T>();
+        final List<T> ret = new ArrayList<>();
         ArrayKey methodParamsKey = new ArrayKey((Object[]) methodParams);
         T attr = get(get(get(perViewStyle3, methodIntf), methodName), methodParamsKey);
         if (attr != null)

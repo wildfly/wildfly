@@ -71,7 +71,7 @@ import org.jboss.modules.ModuleLoader;
  */
 final class HandlerOperations {
 
-    private static final AttachmentKey<Map<String, String>> DISABLED_HANDLERS_KEY = new AttachmentKey<Map<String, String>>();
+    private static final AttachmentKey<Map<String, String>> DISABLED_HANDLERS_KEY = new AttachmentKey<>();
     private static final Object HANDLER_LOCK = new Object();
 
 
@@ -150,7 +150,7 @@ final class HandlerOperations {
         protected HandlerAddOperationStepHandler(final Class<? extends Handler> type, final AttributeDefinition[] attributes, final ConfigurationProperty<?>... constructionProperties) {
             this.type = type;
             this.attributes = attributes;
-            final List<String> names = new ArrayList<String>();
+            final List<String> names = new ArrayList<>();
             for (ConfigurationProperty<?> prop : constructionProperties) {
                 names.add(prop.getPropertyName());
             }
@@ -381,7 +381,7 @@ final class HandlerOperations {
             // Create a new handler list for the model
             boolean found = false;
             final List<ModelNode> handlers = model.get(SUBHANDLERS.getName()).asList();
-            final List<ModelNode> newHandlers = new ArrayList<ModelNode>(handlers.size());
+            final List<ModelNode> newHandlers = new ArrayList<>(handlers.size());
             for (ModelNode handler : handlers) {
                 if (handlerName.equals(handler.asString())) {
                     found = true;
@@ -658,7 +658,7 @@ final class HandlerOperations {
         Map<String, String> disableHandlers = root.getAttachment(DISABLED_HANDLERS_KEY);
         synchronized (HANDLER_LOCK) {
             if (disableHandlers == null) {
-                disableHandlers = new HashMap<String, String>();
+                disableHandlers = new HashMap<>();
                 final Map<String, String> current = root.attachIfAbsent(DISABLED_HANDLERS_KEY, disableHandlers);
                 if (current != null) {
                     disableHandlers = current;

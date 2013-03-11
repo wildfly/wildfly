@@ -45,7 +45,7 @@ public class Customer {
     @OneToMany
     @JoinTable(name = "CUSTOMER_PHONE", joinColumns = { @JoinColumn(name = "CUST_ID", referencedColumnName = "CUST_ID") }, inverseJoinColumns = { @JoinColumn(name = "PHONE_ID", referencedColumnName = "PHONE_ID") })
     @AuditJoinTable(name = "CUSTOMER_PHONE_AUD", inverseJoinColumns = { @JoinColumn(name = "PHONE_ID", referencedColumnName = "PHONE_ID") })
-    private List<Phone> phones = new ArrayList<Phone>();
+    private List<Phone> phones = new ArrayList<>();
 
     public int getId() {
         return id;

@@ -49,7 +49,7 @@ public class AsyncStateful {
     public Future<Boolean> futureMethod(CountDownLatch latch) throws InterruptedException {
         latch.await(5, TimeUnit.SECONDS);
         futureMethodCalled = true;
-        return new AsyncResult<Boolean>(true);
+        return new AsyncResult<>(true);
     }
 
 }

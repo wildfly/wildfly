@@ -41,7 +41,7 @@ public final class ManagedBeanCreateInterceptorFactory implements InterceptorFac
     }
 
     public Interceptor create(final InterceptorFactoryContext context) {
-        AtomicReference<ComponentInstance> reference = new AtomicReference<ComponentInstance>();
+        AtomicReference<ComponentInstance> reference = new AtomicReference<>();
         context.getContextData().put(contextKey, reference);
         return new ManagedBeanCreateInterceptor(reference);
     }

@@ -84,7 +84,7 @@ public class VaultToolTestCase {
   }
 
   private Map<String, Object> generateVaultOptionsMap() {
-    Map<String, Object> options = new HashMap<String, Object>();
+    Map<String, Object> options = new HashMap<>();
     options.put("KEYSTORE_URL", KEYSTORE_URL_VALUE);
     options.put("KEYSTORE_PASSWORD", MASKED_MYPASSWORD_VALUE);
     options.put("SALT", SALT_VALUE);
@@ -106,7 +106,7 @@ public class VaultToolTestCase {
   }
 
   private String[] generateArgs() {
-    List<String> args = new ArrayList<String>();
+    List<String> args = new ArrayList<>();
     addAll(args, "-k", KEYSTORE_URL_VALUE);
     addAll(args, "-p", KEYSTORE_PASSWORD);
     addAll(args, "-e", ENC_FILE_DIR_VALUE);

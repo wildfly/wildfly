@@ -92,7 +92,7 @@ public class Items {
      */
     public List<Items.Item> getItem() {
         if (item == null) {
-            item = new ArrayList<Items.Item>();
+            item = new ArrayList<>();
         }
         return this.item;
     }

@@ -50,7 +50,7 @@ import org.jboss.msc.value.ImmediateValue;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore implements WritableNamingStore {
-    private static final ThreadLocalStack<ServiceName> WRITE_OWNER = new ThreadLocalStack<ServiceName>();
+    private static final ThreadLocalStack<ServiceName> WRITE_OWNER = new ThreadLocalStack<>();
 
     private final ServiceTarget serviceTarget;
 
@@ -71,7 +71,7 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
             final BinderService binderService = new BinderService(name.toString());
             final ServiceBuilder<?> builder = serviceTarget.addService(bindName, binderService)
                     .addDependency(getServiceNameBase(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
-                    .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(new ImmediateValue<Object>(object)))
+                    .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(new ImmediateValue<>(object)))
                     .setInitialMode(ServiceController.Mode.ACTIVE);
             final ServiceController<?> binderServiceController = builder.install();
             final StabilityMonitor monitor = new StabilityMonitor();

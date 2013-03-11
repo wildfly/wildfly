@@ -65,7 +65,7 @@ public final class ExtensionIndexService implements Service<ExtensionIndex>, Ext
     public static final String MODULE_PREFIX = ServiceModuleLoader.MODULE_PREFIX + "extension.";
 
     private final File[] extensionRoots;
-    private final Map<String, Set<ExtensionJar>> extensions = new HashMap<String, Set<ExtensionJar>>();
+    private final Map<String, Set<ExtensionJar>> extensions = new HashMap<>();
 
     private volatile ServiceContainer serviceContainer;
 
@@ -102,7 +102,7 @@ public final class ExtensionIndexService implements Service<ExtensionIndex>, Ext
                             jarFile.close();
                             Set<ExtensionJar> extensionJarSet = extensions.get(extensionName);
                             if (extensionJarSet == null)
-                                extensions.put(extensionName, extensionJarSet = new LinkedHashSet<ExtensionJar>());
+                                extensions.put(extensionName, extensionJarSet = new LinkedHashSet<>());
 
                             ModuleIdentifier moduleIdentifier = moduleIdentifier(extensionName, specVersion, implVersion,
                                     implVendorId);
@@ -144,7 +144,7 @@ public final class ExtensionIndexService implements Service<ExtensionIndex>, Ext
         final ExtensionJar extensionJar = new ExtensionJar(identifier, extensionInfo);
         Set<ExtensionJar> jars = this.extensions.get(extensionInfo.getName());
         if (jars == null) {
-            this.extensions.put(extensionInfo.getName(), jars = new HashSet<ExtensionJar>());
+            this.extensions.put(extensionInfo.getName(), jars = new HashSet<>());
         }
         jars.add(extensionJar);
     }

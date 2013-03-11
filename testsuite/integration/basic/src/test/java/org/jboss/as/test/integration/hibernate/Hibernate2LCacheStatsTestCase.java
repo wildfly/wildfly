@@ -167,7 +167,7 @@ public class Hibernate2LCacheStatsTestCase {
         SFSBHibernate2LcacheStats sfsb = lookup("SFSBHibernate2LcacheStats", SFSBHibernate2LcacheStats.class);
         // setup Configuration and SessionFactory
         sfsb.setupConfig();
-        Set<Satellite> satellites1 = new HashSet<Satellite>();
+        Set<Satellite> satellites1 = new HashSet<>();
         Satellite sat = new Satellite();
         sat.setId(new Integer(1));
         sat.setName("MOON");

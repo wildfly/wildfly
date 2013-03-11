@@ -84,7 +84,7 @@ public class SimpleBMPBean implements EntityBean {
     }
 
     public Collection<Integer> ejbFindCollection() {
-        final HashSet<Integer> set = new HashSet<Integer>();
+        final HashSet<Integer> set = new HashSet<>();
         set.add(1000);
         set.add(1001);
         return set;

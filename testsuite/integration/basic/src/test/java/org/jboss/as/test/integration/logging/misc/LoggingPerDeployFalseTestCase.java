@@ -85,7 +85,7 @@ public class LoggingPerDeployFalseTestCase extends AbstractLoggingTest {
 		@Override
 		protected void doSetup(ManagementClient managementClient)
 				throws Exception {
-			final List<ModelNode> updates = new ArrayList<ModelNode>();
+			final List<ModelNode> updates = new ArrayList<>();
 
 			// prepare log files
 			logFile = prepareLogFile(managementClient,
@@ -137,7 +137,7 @@ public class LoggingPerDeployFalseTestCase extends AbstractLoggingTest {
 		@Override
 		public void tearDown(ManagementClient managementClient,
 				String containerId) throws Exception {
-			final List<ModelNode> updates = new ArrayList<ModelNode>();
+			final List<ModelNode> updates = new ArrayList<>();
 
 			// delete log files
 			logFile.delete();

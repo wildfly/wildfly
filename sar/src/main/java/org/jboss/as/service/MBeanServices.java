@@ -136,7 +136,7 @@ final class MBeanServices {
         startStopServiceBuilder.install();
 
         // Add service to register the mbean in the mbean server
-        final MBeanRegistrationService<Object> mbeanRegistrationService = new MBeanRegistrationService<Object>(mBeanName, duServiceName);
+        final MBeanRegistrationService<Object> mbeanRegistrationService = new MBeanRegistrationService<>(mBeanName, duServiceName);
         target.addService(MBeanRegistrationService.SERVICE_NAME.append(mBeanName), mbeanRegistrationService)
             .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, mbeanRegistrationService.getMBeanServerInjector())
             .addDependency(startStopServiceName, Object.class, mbeanRegistrationService.getValueInjector())

@@ -45,8 +45,8 @@ public class InjectedValueConfig extends ValueConfig {
     private String service;
     private String property;
 
-    private final transient InjectedValue<BeanInfo> beanInfo = new InjectedValue<BeanInfo>();
-    private final transient InjectedValue<Object> value = new InjectedValue<Object>();
+    private final transient InjectedValue<BeanInfo> beanInfo = new InjectedValue<>();
+    private final transient InjectedValue<Object> value = new InjectedValue<>();
 
     protected Object getClassValue(Class<?> type) {
         Object result = value.getValue();

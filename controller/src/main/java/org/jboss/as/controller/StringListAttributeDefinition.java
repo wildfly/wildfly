@@ -48,7 +48,7 @@ public final class StringListAttributeDefinition extends PrimitiveListAttributeD
             return null;
         }
         ModelNode modelProps = model.get(getName());
-        List<String> result = new LinkedList<String>();
+        List<String> result = new LinkedList<>();
         for (ModelNode p : modelProps.asList()) {
             result.add(context.resolveExpressions(p).asString());
         }

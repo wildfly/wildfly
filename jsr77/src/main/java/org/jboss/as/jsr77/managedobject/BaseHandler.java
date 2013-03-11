@@ -81,7 +81,7 @@ abstract class BaseHandler extends Handler{
 
 
     Set<MBeanAttributeInfo> getAttributeInfos() {
-        Set<MBeanAttributeInfo> attributes = new HashSet<MBeanAttributeInfo>();
+        Set<MBeanAttributeInfo> attributes = new HashSet<>();
         attributes.add(createRoMBeanAttributeInfo(ATTR_NAME, String.class.getName(), MESSAGES.attrInfoAttrName()));
         attributes.add(createRoMBeanAttributeInfo(ATTR_STATE_MANAGEABLE, Boolean.TYPE.getName(), MESSAGES.attrInfoStateManageable()));
         attributes.add(createRoMBeanAttributeInfo(ATTR_STATISTICS_PROVIDER, Boolean.TYPE.getName(), MESSAGES.attrInfoStatisticsProvider()));

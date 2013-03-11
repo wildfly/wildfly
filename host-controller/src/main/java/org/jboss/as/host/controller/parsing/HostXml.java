@@ -237,7 +237,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         String hostName = null;
 
         // Deffer adding the namespaces and schema locations until after the host has been created.
-        List<ModelNode> namespaceOperations = new LinkedList<ModelNode>();
+        List<ModelNode> namespaceOperations = new LinkedList<>();
         parseNamespaces(reader, address, namespaceOperations);
 
         // attributes
@@ -311,7 +311,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             parseDomainController(reader, address, DOMAIN_1_0, list);
             element = nextElement(reader, DOMAIN_1_0);
         }
-        final Set<String> interfaceNames = new HashSet<String>();
+        final Set<String> interfaceNames = new HashSet<>();
         if (element == Element.INTERFACES) {
             parseInterfaces(reader, interfaceNames, address, DOMAIN_1_0, list, true);
             element = nextElement(reader, DOMAIN_1_0);
@@ -335,7 +335,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         String hostName = null;
 
         // Deffer adding the namespaces and schema locations until after the host has been created.
-        List<ModelNode> namespaceOperations = new LinkedList<ModelNode>();
+        List<ModelNode> namespaceOperations = new LinkedList<>();
         parseNamespaces(reader, address, namespaceOperations);
 
         // attributes
@@ -414,7 +414,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             parseDomainController(reader, address, namespace, list);
             element = nextElement(reader, namespace);
         }
-        final Set<String> interfaceNames = new HashSet<String>();
+        final Set<String> interfaceNames = new HashSet<>();
         if (element == Element.INTERFACES) {
             parseInterfaces(reader, interfaceNames, address, namespace, list, true);
             element = nextElement(reader, namespace);
@@ -829,8 +829,8 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         requireNoAttributes(reader);
 
         boolean hasDiscoveryOptions = false;
-        Set<String> staticDiscoveryOptionNames = new HashSet<String>();
-        Set<String> discoveryOptionNames = new HashSet<String>();
+        Set<String> staticDiscoveryOptionNames = new HashSet<>();
+        Set<String> discoveryOptionNames = new HashSet<>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
@@ -866,7 +866,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                 break;
         }
 
-        Set<String> types = new HashSet<String>();
+        Set<String> types = new HashSet<>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
@@ -899,9 +899,9 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                 break;
         }
 
-        Set<String> types = new HashSet<String>();
-        Set<String> staticDiscoveryOptionNames = new HashSet<String>();
-        Set<String> discoveryOptionNames = new HashSet<String>();
+        Set<String> types = new HashSet<>();
+        Set<String> staticDiscoveryOptionNames = new HashSet<>();
+        Set<String> discoveryOptionNames = new HashSet<>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
@@ -1353,7 +1353,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
 
         requireNoAttributes(reader);
 
-        final Set<String> names = new HashSet<String>();
+        final Set<String> names = new HashSet<>();
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -1393,7 +1393,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
     private void parseServers_1_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
             throws XMLStreamException {
         // Handle elements
-        final Set<String> names = new HashSet<String>();
+        final Set<String> names = new HashSet<>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
@@ -1411,7 +1411,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             final List<ModelNode> list) throws XMLStreamException {
         parseServersAttributes(reader, address, list);
         // Handle elements
-        final Set<String> names = new HashSet<String>();
+        final Set<String> names = new HashSet<>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
@@ -1450,7 +1450,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         boolean sawJvm = false;
         boolean sawSystemProperties = false;
         boolean sawSocketBinding = false;
-        final Set<String> interfaceNames = new HashSet<String>();
+        final Set<String> interfaceNames = new HashSet<>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
@@ -1502,7 +1502,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         boolean sawJvm = false;
         boolean sawSystemProperties = false;
         boolean sawSocketBinding = false;
-        final Set<String> interfaceNames = new HashSet<String>();
+        final Set<String> interfaceNames = new HashSet<>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());

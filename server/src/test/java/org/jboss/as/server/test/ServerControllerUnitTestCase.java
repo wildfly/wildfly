@@ -226,7 +226,7 @@ public class ServerControllerUnitTestCase {
     }
 
     protected void populateCritieria(final ModelNode model, final Nesting nesting, final AttributeDefinition...excluded) {
-        Set<AttributeDefinition> excludedCriteria = new HashSet<AttributeDefinition>(Arrays.asList(excluded));
+        Set<AttributeDefinition> excludedCriteria = new HashSet<>(Arrays.asList(excluded));
         for(final AttributeDefinition def : InterfaceDefinition.NESTED_ATTRIBUTES) {
 
             if (excludedCriteria.contains(def)) {

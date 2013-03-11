@@ -44,7 +44,7 @@ class AsynchEventHandler implements Runnable {
 
     private String name;
     /** The LinkedQueue of events to pass to our processor */
-    private BlockingQueue<Object> events = new LinkedBlockingQueue<Object>();
+    private BlockingQueue<Object> events = new LinkedBlockingQueue<>();
     /** Whether we're blocking on the queue */
     private boolean blocking;
     private AsynchEventProcessor processor;

@@ -37,7 +37,7 @@ public class MainService implements Service<MainService> {
 
     public static ServiceName NAME = ServiceName.of("test", "service", "main");
 
-    public final InjectedValue<Dependency> dependencyValue = new InjectedValue<Dependency>();
+    public final InjectedValue<Dependency> dependencyValue = new InjectedValue<>();
 
     @Override
     public MainService getValue() throws IllegalStateException, IllegalArgumentException {

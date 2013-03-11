@@ -151,8 +151,8 @@ public abstract class AbstractOperationTestCase {
         Resource root;
         private final boolean booting;
         private final PathAddress operationAddress;
-        private Set<PathAddress> expectedSteps = new HashSet<PathAddress>();
-        private final Map<AttachmentKey<?>, Object> valueAttachments = new HashMap<AttachmentKey<?>, Object>();
+        private Set<PathAddress> expectedSteps = new HashSet<>();
+        private final Map<AttachmentKey<?>, Object> valueAttachments = new HashMap<>();
 
 
         private MockOperationContext(final Resource root, final boolean booting, final PathAddress operationAddress) {

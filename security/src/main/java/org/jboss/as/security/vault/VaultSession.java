@@ -193,7 +193,7 @@ public final class VaultSession {
     }
 
     private Map<String, Object> getVaultOptionsMap() {
-        Map<String, Object> options = new HashMap<String, Object>();
+        Map<String, Object> options = new HashMap<>();
         options.put(PicketBoxSecurityVault.KEYSTORE_URL, keystoreURL);
         options.put(PicketBoxSecurityVault.KEYSTORE_PASSWORD, keystoreMaskedPassword);
         options.put(PicketBoxSecurityVault.KEYSTORE_ALIAS, vaultAlias);
@@ -204,7 +204,7 @@ public final class VaultSession {
     }
 
     private void handshake() throws SecurityVaultException {
-        Map<String, Object> handshakeOptions = new HashMap<String, Object>();
+        Map<String, Object> handshakeOptions = new HashMap<>();
         handshakeOptions.put(PicketBoxSecurityVault.PUBLIC_CERT, vaultAlias);
         handshakeKey = vault.handshake(handshakeOptions);
     }

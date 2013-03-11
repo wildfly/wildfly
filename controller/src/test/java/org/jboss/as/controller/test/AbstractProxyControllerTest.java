@@ -576,7 +576,7 @@ public abstract class AbstractProxyControllerTest {
 
     public class MainModelControllerService extends TestModelControllerService {
 
-        private final InjectedValue<ModelController> proxy = new InjectedValue<ModelController>();
+        private final InjectedValue<ModelController> proxy = new InjectedValue<>();
 
         MainModelControllerService(final ControlledProcessState processState) {
             super(ProcessType.EMBEDDED_SERVER, new NullConfigurationPersister(), processState,

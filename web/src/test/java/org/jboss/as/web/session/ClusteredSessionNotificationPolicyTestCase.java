@@ -84,11 +84,11 @@ public class ClusteredSessionNotificationPolicyTestCase extends InfinispanCacheC
         System.setProperty("jboss.web.clustered.session.notification.policy",
                 MockClusteredSessionNotificationPolicy.class.getName());
 
-        attributes = new HashMap<String, Object>();
+        attributes = new HashMap<>();
         attributes.put("KEY", attribute);
         attributes = Collections.unmodifiableMap(attributes);
 
-        newAttributes = new HashMap<String, Object>();
+        newAttributes = new HashMap<>();
         newAttributes.put("KEY", newAttribute);
         newAttributes = Collections.unmodifiableMap(newAttributes);
     }

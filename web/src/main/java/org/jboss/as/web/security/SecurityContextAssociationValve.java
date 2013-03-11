@@ -66,7 +66,7 @@ public class SecurityContextAssociationValve extends ValveBase {
     private final Map<String, RunAsIdentityMetaData> runAsIdentity;
     private final String contextId;
 
-    private static final ThreadLocal<Request> activeRequest = new ThreadLocal<Request>();
+    private static final ThreadLocal<Request> activeRequest = new ThreadLocal<>();
 
     public SecurityContextAssociationValve(DeploymentUnit deploymentUnit) {
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);

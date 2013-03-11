@@ -136,7 +136,7 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
     }
 
     private static class BeanManagerManagedReferenceFactory implements ContextListManagedReferenceFactory {
-        private final InjectedValue<BeanManager> beanManager = new InjectedValue<BeanManager>();
+        private final InjectedValue<BeanManager> beanManager = new InjectedValue<>();
 
         @Override
         public ManagedReference getReference() {

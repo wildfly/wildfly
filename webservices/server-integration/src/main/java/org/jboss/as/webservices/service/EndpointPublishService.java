@@ -60,7 +60,7 @@ public final class EndpointPublishService implements Service<Context> {
     private final JBossWebMetaData jbwmd;
     private final WebservicesMetaData wsmd;
 
-    private final InjectedValue<VirtualHost> hostInjector = new InjectedValue<VirtualHost>();
+    private final InjectedValue<VirtualHost> hostInjector = new InjectedValue<>();
 
     private EndpointPublishService(final String context, final ClassLoader loader,
             final Map<String,String> urlPatternToClassName, JBossWebMetaData jbwmd, WebservicesMetaData wsmd) {

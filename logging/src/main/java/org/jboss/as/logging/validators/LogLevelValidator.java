@@ -81,7 +81,7 @@ public final class LogLevelValidator extends ModelTypeValidator implements Allow
         super(ModelType.STRING, nullable, allowExpressions);
         allowedValues = Arrays.asList(levels);
         Collections.sort(allowedValues, LevelComparator.INSTANCE);
-        nodeValues = new ArrayList<ModelNode>(allowedValues.size());
+        nodeValues = new ArrayList<>(allowedValues.size());
         for (Level level : allowedValues) {
             nodeValues.add(new ModelNode(level.getName()));
         }

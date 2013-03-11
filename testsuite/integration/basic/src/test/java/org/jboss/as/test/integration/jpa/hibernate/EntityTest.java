@@ -52,7 +52,7 @@ public class EntityTest {
         t.setNumber("111");
 
         Customer c = new Customer();
-        Set<Ticket> tickets = new HashSet<Ticket>();
+        Set<Ticket> tickets = new HashSet<>();
 
         tickets.add(t);
         t.setCustomer(c);
@@ -89,8 +89,8 @@ public class EntityTest {
         us.setName("Airline 2");
         f2.setCompany(us);
 
-        Set<Customer> customers1 = new HashSet<Customer>();
-        Set<Customer> customers2 = new HashSet<Customer>();
+        Set<Customer> customers1 = new HashSet<>();
+        Set<Customer> customers2 = new HashSet<>();
 
         Customer c1 = new Customer();
         c1.setName("John");

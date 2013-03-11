@@ -78,7 +78,7 @@ final class WebMetaDataModifier {
         ROOT_LOGGER.modifyingServlets();
 
         // get a list of the endpoint bean class names
-        final Set<String> epNames = new HashSet<String>();
+        final Set<String> epNames = new HashSet<>();
         for (Endpoint ep : dep.getService().getEndpoints()) {
             epNames.add(ep.getTargetBeanName());
         }

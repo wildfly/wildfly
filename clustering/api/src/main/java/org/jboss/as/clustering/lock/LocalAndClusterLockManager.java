@@ -55,7 +55,7 @@ public class LocalAndClusterLockManager {
     class LocalLock {
         volatile ClusterNode holder;
         private final AtomicBoolean locked = new AtomicBoolean(false);
-        private final Queue<Thread> waiters = new ConcurrentLinkedQueue<Thread>();
+        private final Queue<Thread> waiters = new ConcurrentLinkedQueue<>();
 
         void lock(ClusterNode caller, long timeout) throws TimeoutException {
             long deadline = System.currentTimeMillis() + timeout;
@@ -132,7 +132,7 @@ public class LocalAndClusterLockManager {
     }
 
     ClusterNode localNode;
-    private ConcurrentMap<Serializable, LocalLock> localLocks = new ConcurrentHashMap<Serializable, LocalLock>();
+    private ConcurrentMap<Serializable, LocalLock> localLocks = new ConcurrentHashMap<>();
     private final NonGloballyExclusiveClusterLockSupport clusterSupport;
 
     public LocalAndClusterLockManager(String serviceHAName, GroupRpcDispatcher rpcDispatcher,

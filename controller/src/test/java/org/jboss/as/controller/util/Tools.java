@@ -114,7 +114,7 @@ public class Tools {
             result = Tools.getAndCheckResult(client.execute(op));
 
             //Shove it into a tree map to sort the subsystems alphabetically
-            TreeMap<String, ModelNode> map = new TreeMap<String, ModelNode>();
+            TreeMap<String, ModelNode> map = new TreeMap<>();
             List<ModelNode> subsystemResults = result.asList();
             for (ModelNode subsystemResult : subsystemResults) {
                 String subsystemName = PathAddress.pathAddress(subsystemResult.get(OP_ADDR)).getLastElement().getValue();

@@ -39,7 +39,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class NonPassivatingCacheFactoryService<K extends Serializable, V extends Cacheable<K>> extends CacheFactoryService<K, V> {
 
-    private final InjectedValue<ServerEnvironment> environment = new InjectedValue<ServerEnvironment>();
+    private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
 
     public NonPassivatingCacheFactoryService(String name, Set<String> aliases) {
         super(name, aliases);
@@ -52,6 +52,6 @@ public class NonPassivatingCacheFactoryService<K extends Serializable, V extends
 
     @Override
     protected CacheFactory<K, V> createCacheFactory() {
-        return new NonPassivatingCacheFactory<K, V>(this.environment.getValue());
+        return new NonPassivatingCacheFactory<>(this.environment.getValue());
     }
 }

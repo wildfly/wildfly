@@ -90,12 +90,12 @@ public class FineSessionAttributeStorageTest {
         Map<Object, Object> map = mock(Map.class);
         Object marshalledAttribute = new Object();
 
-        Map.Entry<Object, Object> nonAttributeEntry = new AbstractMap.SimpleImmutableEntry<Object, Object>(new Object(), new Object());
+        Map.Entry<Object, Object> nonAttributeEntry = new AbstractMap.SimpleImmutableEntry<>(new Object(), new Object());
         Map.Entry<Object, Object> attributeEntry = new AbstractMap.SimpleImmutableEntry<Object, Object>("key", marshalledAttribute);
         @SuppressWarnings("unchecked")
         List<Map.Entry<Object, Object>> entries = Arrays.asList(nonAttributeEntry, attributeEntry);
 
-        when(map.entrySet()).thenReturn(new HashSet<Map.Entry<Object, Object>>(entries));
+        when(map.entrySet()).thenReturn(new HashSet<>(entries));
         when(this.marshaller.unmarshal(same(marshalledAttribute))).thenReturn("value");
 
         Map<String, Object> result = this.storage.load(map);

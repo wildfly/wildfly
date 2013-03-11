@@ -178,7 +178,7 @@ class DomainApiHandler implements BlockingHttpHandler {
 
         int i = path.charAt(0) == '/' ? 1 : 0;
 
-        ArrayList<String> segments = new ArrayList<String>();
+        ArrayList<String> segments = new ArrayList<>();
 
         do {
             int j = path.indexOf('/', i);

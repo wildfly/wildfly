@@ -64,7 +64,7 @@ public class CompositeIndexProcessor implements DeploymentUnitProcessor {
         }
 
         final List<ModuleIdentifier> additionalModuleIndexes = deploymentUnit.getAttachmentList(Attachments.ADDITIONAL_ANNOTATION_INDEXES);
-        final List<Index> indexes = new ArrayList<Index>();
+        final List<Index> indexes = new ArrayList<>();
         for (final ModuleIdentifier moduleIdentifier : additionalModuleIndexes) {
             try {
                 Module module = Module.getBootModuleLoader().loadModule(moduleIdentifier);
@@ -79,7 +79,7 @@ public class CompositeIndexProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        final List<ResourceRoot> allResourceRoots = new ArrayList<ResourceRoot>();
+        final List<ResourceRoot> allResourceRoots = new ArrayList<>();
         final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
         for (ResourceRoot resourceRoot : resourceRoots) {
             // do not add child sub deployments to the composite index
@@ -114,11 +114,11 @@ public class CompositeIndexProcessor implements DeploymentUnitProcessor {
      * adds them to the list of roots to be processed.
      */
     private Collection<? extends ResourceRoot> handleClassPathItems(final DeploymentUnit deploymentUnit) {
-        final Set<ResourceRoot> additionalRoots = new HashSet<ResourceRoot>();
-        final ArrayDeque<ResourceRoot> toProcess = new ArrayDeque<ResourceRoot>();
+        final Set<ResourceRoot> additionalRoots = new HashSet<>();
+        final ArrayDeque<ResourceRoot> toProcess = new ArrayDeque<>();
         final List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
         toProcess.addAll(resourceRoots);
-        final Set<ResourceRoot> processed = new HashSet<ResourceRoot>(resourceRoots);
+        final Set<ResourceRoot> processed = new HashSet<>(resourceRoots);
 
         while (!toProcess.isEmpty()) {
             final ResourceRoot root = toProcess.pop();

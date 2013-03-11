@@ -75,7 +75,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
      */
     private boolean initOnStartup;
 
-    private final List<ServiceName> dependsOn = new ArrayList<ServiceName>();
+    private final List<ServiceName> dependsOn = new ArrayList<>();
 
     private DefaultAccessTimeoutService defaultAccessTimeoutProvider;
 

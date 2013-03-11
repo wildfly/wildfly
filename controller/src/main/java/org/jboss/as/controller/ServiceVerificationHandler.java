@@ -55,8 +55,8 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
     }
 
     public synchronized void execute(final OperationContext context, final ModelNode operation) {
-        final Set<ServiceController<?>> failed = new HashSet<ServiceController<?>>();
-        final Set<ServiceController<?>> problems = new HashSet<ServiceController<?>>();
+        final Set<ServiceController<?>> failed = new HashSet<>();
+        final Set<ServiceController<?>> problems = new HashSet<>();
 
         try {
             monitor.awaitStability(failed, problems);
@@ -69,7 +69,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
 
         if (!failed.isEmpty() || !problems.isEmpty()) {
             Set<ServiceController<?>> missingTransitive = null;
-            Set<ServiceName> trackedServices = new HashSet<ServiceName>();
+            Set<ServiceName> trackedServices = new HashSet<>();
             final ModelNode failureDescription = context.getFailureDescription();
             ModelNode failedList = null;
             for (ServiceController<?> controller : failed) {
@@ -106,7 +106,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
 
                 } else {
                     if (missingTransitive == null) {
-                        missingTransitive = new HashSet<ServiceController<?>>();
+                        missingTransitive = new HashSet<>();
                     }
                     missingTransitive.add(controller);
                 }
@@ -120,7 +120,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
                 if (!allMissing.isEmpty()) {
                     ModelNode missingTransitiveDesc = failureDescription.get(MESSAGES.missingTransitiveDependencyProblem());
                     ModelNode missingTransitiveDeps = missingTransitiveDesc.get(MESSAGES.missingTransitiveDependendents());
-                    Set<ServiceName> sortedNames = new TreeSet<ServiceName>();
+                    Set<ServiceName> sortedNames = new TreeSet<>();
                     for (ServiceController<?> serviceController : missingTransitive) {
                         sortedNames.add(serviceController.getName());
                     }
@@ -160,8 +160,8 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
         // Check all relevant service containers. This is a bit silly since in reality there
         // should only be one that is associated with every SC that is passed in,
         // but I'm being anal and vaguely future-proofing a bit
-        Set<ServiceContainer> examined = new HashSet<ServiceContainer>();
-        SortedSet<ServiceName> result = new TreeSet<ServiceName>();
+        Set<ServiceContainer> examined = new HashSet<>();
+        SortedSet<ServiceName> result = new TreeSet<>();
         for (ServiceController<?> controller : missingTransitive) {
             ServiceContainer container = controller.getServiceContainer();
             if (examined.add(container)) {
@@ -171,7 +171,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
 
         // Only report the missing services if the list includes ones not already tracked
         // as failed or directly missing
-        Set<ServiceName> retain = new HashSet<ServiceName>(result);
+        Set<ServiceName> retain = new HashSet<>(result);
         retain.removeAll(alreadyTracked);
         if (retain.size() == 0) {
             result.clear();
@@ -181,7 +181,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
     }
 
     private static Set<ServiceName> findAllMissingServices(ServiceContainer container) {
-        Set<ServiceName> result = new HashSet<ServiceName>();
+        Set<ServiceName> result = new HashSet<>();
         for (ServiceName serviceName : container.getServiceNames()) {
             ServiceController<?> controller = container.getService(serviceName);
             if (controller != null && controller.getMode() != ServiceController.Mode.NEVER && controller.getMode() != ServiceController.Mode.REMOVE

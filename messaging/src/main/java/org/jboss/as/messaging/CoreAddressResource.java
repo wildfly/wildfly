@@ -98,7 +98,7 @@ public class CoreAddressResource implements Resource {
 
     @Override
     public Set<String> getChildTypes() {
-        Set<String> result = new HashSet<String>();
+        Set<String> result = new HashSet<>();
         result.add(SECURITY_ROLE);
         return result;
     }
@@ -114,7 +114,7 @@ public class CoreAddressResource implements Resource {
     @Override
     public Set<ResourceEntry> getChildren(String childType) {
         if (SECURITY_ROLE.equals(childType)) {
-            Set<ResourceEntry> result = new HashSet<ResourceEntry>();
+            Set<ResourceEntry> result = new HashSet<>();
             for (String name : getSecurityRoles()) {
                 result.add(new SecurityRoleResource.SecuriyRoleResourceEntry(name));
             }
@@ -153,7 +153,7 @@ public class CoreAddressResource implements Resource {
         if (addressControl == null) {
             return Collections.emptySet();
         } else {
-            Set<String> names = new HashSet<String>();
+            Set<String> names = new HashSet<>();
             try {
                 ModelNode res = ModelNode.fromJSONString(addressControl.getRolesAsJSON());
                 ModelNode converted = ManagementUtil.convertSecurityRole(res);

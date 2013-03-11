@@ -41,7 +41,7 @@ public class StatelessBean implements StatelessBeanRemote {
     @Override
     @Asynchronous
     public Future<String> sayHelloAsync() {
-        return new AsyncResult<String>(ANSWER);
+        return new AsyncResult<>(ANSWER);
     }
 
 }

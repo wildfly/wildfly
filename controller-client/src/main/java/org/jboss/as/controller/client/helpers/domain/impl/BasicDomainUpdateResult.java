@@ -42,7 +42,7 @@ public class BasicDomainUpdateResult implements Serializable {
     private static final long serialVersionUID = -3525117172870002485L;
 
     private final UpdateFailedException domainFailure;
-    private final Map<String, UpdateFailedException> hostFailures = new HashMap<String, UpdateFailedException>();
+    private final Map<String, UpdateFailedException> hostFailures = new HashMap<>();
     private final boolean cancelled;
     private final boolean rolledBack;
 

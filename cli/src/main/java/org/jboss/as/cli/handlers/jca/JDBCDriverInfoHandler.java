@@ -75,7 +75,7 @@ public class JDBCDriverInfoHandler extends BaseOperationCommand {
                     return Collections.emptyList();
                 }
                 final List<ModelNode> list = result.asList();
-                final List<String> names = new ArrayList<String>(list.size());
+                final List<String> names = new ArrayList<>(list.size());
                 for(ModelNode node : list) {
                     names.add(node.asString());
                 }
@@ -109,7 +109,7 @@ public class JDBCDriverInfoHandler extends BaseOperationCommand {
                     return Collections.emptyList();
                 }
                 final List<ModelNode> list = result.asList();
-                final List<String> names = new ArrayList<String>(list.size());
+                final List<String> names = new ArrayList<>(list.size());
                 for(ModelNode node : list) {
                     names.add(node.asString());
                 }
@@ -129,7 +129,7 @@ public class JDBCDriverInfoHandler extends BaseOperationCommand {
                     final ModelNode response = ctx.getModelControllerClient().execute(req);
                     if(response.hasDefined(Util.RESULT)) {
                         final List<ModelNode> list = response.get(Util.RESULT).asList();
-                        final List<String> names = new ArrayList<String>(list.size());
+                        final List<String> names = new ArrayList<>(list.size());
                         for(ModelNode node : list) {
                             if(node.hasDefined(Util.DRIVER_NAME)) {
                                 names.add(node.get(Util.DRIVER_NAME).asString());

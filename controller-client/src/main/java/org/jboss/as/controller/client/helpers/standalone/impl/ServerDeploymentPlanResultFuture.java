@@ -114,7 +114,7 @@ class ServerDeploymentPlanResultFuture implements Future<ServerDeploymentPlanRes
 
     private ServerDeploymentPlanResult getResultFromNode(ModelNode planResultNode) {
         UUID planId = plan.getId();
-        Map<UUID, ServerDeploymentActionResult> actionResults = new HashMap<UUID, ServerDeploymentActionResult>();
+        Map<UUID, ServerDeploymentActionResult> actionResults = new HashMap<>();
         List<DeploymentActionImpl> actions = plan.getDeploymentActionImpls();
         for (int i = 0; i < actions.size(); i++) {
             DeploymentActionImpl action = actions.get(i);

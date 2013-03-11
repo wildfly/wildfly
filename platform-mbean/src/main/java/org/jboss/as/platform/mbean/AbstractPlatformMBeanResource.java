@@ -88,7 +88,7 @@ abstract class AbstractPlatformMBeanResource implements Resource.ResourceEntry {
         if (!hasChildren(childType)) {
             return Collections.emptySet();
         } else {
-            Set<Resource.ResourceEntry> result = new HashSet<Resource.ResourceEntry>();
+            Set<Resource.ResourceEntry> result = new HashSet<>();
             for (String name : getChildrenNames()) {
                 result.add(getChildEntry(name));
             }

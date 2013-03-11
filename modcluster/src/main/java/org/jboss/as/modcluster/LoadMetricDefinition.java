@@ -45,7 +45,7 @@ public class LoadMetricDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition TYPE = SimpleAttributeDefinitionBuilder.create(CommonAttributes.TYPE, ModelType.STRING, false)
             .setAllowExpression(false)
             .setRestartAllServices()
-            .setValidator(new EnumValidator<LoadMetricEnum>(LoadMetricEnum.class, false, false))
+            .setValidator(new EnumValidator<>(LoadMetricEnum.class, false, false))
             .build();
 
     static final SimpleAttributeDefinition WEIGHT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.WEIGHT, ModelType.INT, true)

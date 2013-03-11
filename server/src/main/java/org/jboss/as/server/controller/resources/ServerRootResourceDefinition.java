@@ -169,13 +169,13 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
             .setValidator(NOT_NULL_STRING_LENGTH_ONE_VALIDATOR)
             .build();
     public static final SimpleAttributeDefinition LAUNCH_TYPE = SimpleAttributeDefinitionBuilder.create(ServerDescriptionConstants.LAUNCH_TYPE, ModelType.STRING)
-            .setValidator(new EnumValidator<LaunchType>(LaunchType.class, false, false))
+            .setValidator(new EnumValidator<>(LaunchType.class, false, false))
             .setStorageRuntime()
             .build();
 
     private static final EnumSet<Flag> runtimeOnlyFlag = EnumSet.of(Flag.RUNTIME_ONLY);
     public static final AttributeDefinition RUNNING_MODE = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.RUNNING_MODE, ModelType.STRING)
-            .setValidator(new EnumValidator<RunningMode>(RunningMode.class, false, false))
+            .setValidator(new EnumValidator<>(RunningMode.class, false, false))
             .setStorageRuntime()
             .build();
 

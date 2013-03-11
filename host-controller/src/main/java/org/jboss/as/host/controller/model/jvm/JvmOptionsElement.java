@@ -36,7 +36,7 @@ import java.util.List;
  */
 public final class JvmOptionsElement {
 
-    private final List<String> options = new ArrayList<String>();
+    private final List<String> options = new ArrayList<>();
 
     /**
      * Construct a new instance.
@@ -69,7 +69,7 @@ public final class JvmOptionsElement {
      * @return the copy of the options
      */
     public List<String> getOptions() {
-        return new ArrayList<String>(options);
+        return new ArrayList<>(options);
     }
 
 }

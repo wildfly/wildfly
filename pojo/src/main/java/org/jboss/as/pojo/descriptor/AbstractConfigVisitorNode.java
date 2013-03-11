@@ -52,7 +52,7 @@ public abstract class AbstractConfigVisitorNode implements ConfigVisitorNode, Ty
     }
 
     public Iterable<ConfigVisitorNode> getChildren(ConfigVisitor visitor) {
-        List<ConfigVisitorNode> nodes = new ArrayList<ConfigVisitorNode>();
+        List<ConfigVisitorNode> nodes = new ArrayList<>();
         addChildren(visitor, nodes);
         return nodes;
     }

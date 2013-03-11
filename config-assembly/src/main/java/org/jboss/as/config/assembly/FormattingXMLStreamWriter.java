@@ -48,7 +48,7 @@ final class FormattingXMLStreamWriter implements XMLStreamWriter, XMLStreamConst
     private int level;
     private int state = START_DOCUMENT;
     private boolean indentEndElement = false;
-    private ArrayDeque<String> unspecifiedNamespaces = new ArrayDeque<String>();
+    private ArrayDeque<String> unspecifiedNamespaces = new ArrayDeque<>();
 
 
     public FormattingXMLStreamWriter(final XMLStreamWriter delegate) {

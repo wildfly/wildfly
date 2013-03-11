@@ -95,7 +95,7 @@ public class JmsClientTestCase {
             session = conn.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
 
             final CountDownLatch latch = new CountDownLatch(10);
-            final List<String> result = new ArrayList<String>();
+            final List<String> result = new ArrayList<>();
 
             // Set the async listener
             QueueReceiver recv = session.createReceiver(queue);

@@ -200,7 +200,7 @@ public class WebJSPDefinition extends SimpleResourceDefinition {
             X_POWERED_BY,
             DISPLAY_SOURCE_FRAGMENT
     };
-    static final Map<String,SimpleAttributeDefinition> ATTRIBUTES_MAP = new HashMap<String, SimpleAttributeDefinition>();
+    static final Map<String,SimpleAttributeDefinition> ATTRIBUTES_MAP = new HashMap<>();
 
     static {
         for (SimpleAttributeDefinition attr:JSP_ATTRIBUTES){

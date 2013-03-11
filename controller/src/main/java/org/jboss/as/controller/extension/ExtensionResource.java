@@ -44,7 +44,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class ExtensionResource implements Resource.ResourceEntry {
 
-    private static final Set<String> CHILD_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(SUBSYSTEM)));
+    private static final Set<String> CHILD_TYPES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(SUBSYSTEM)));
 
     private final String moduleName;
     private final ExtensionRegistry extensionRegistry;
@@ -141,7 +141,7 @@ public class ExtensionResource implements Resource.ResourceEntry {
         Set<String> result = null;
         if (SUBSYSTEM.equals(childType)) {
             Map<String, SubsystemInformation> info = extensionRegistry.getAvailableSubsystems(moduleName);
-            result = info != null ? new HashSet<String>(info.keySet()) : null;
+            result = info != null ? new HashSet<>(info.keySet()) : null;
         }
         return result != null ? result : Collections.<String>emptySet();
     }
@@ -150,7 +150,7 @@ public class ExtensionResource implements Resource.ResourceEntry {
     public Set<ResourceEntry> getChildren(String childType) {
         Set<ResourceEntry> result = null;
         if (SUBSYSTEM.equals(childType)) {
-            result = new HashSet<ResourceEntry>();
+            result = new HashSet<>();
             Map<String, SubsystemInformation> entry = extensionRegistry.getAvailableSubsystems(moduleName);
             if (entry != null) {
                 for (Map.Entry<String, SubsystemInformation> subsys : entry.entrySet()) {

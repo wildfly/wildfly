@@ -41,7 +41,7 @@ final class CDConfigPropertiesService implements Service<String> {
 
     private final String value;
         private final String name;
-        private final InjectedValue<ModifiableConnDef> cd = new InjectedValue<ModifiableConnDef>();
+        private final InjectedValue<ModifiableConnDef> cd = new InjectedValue<>();
 
 
         /** create an instance **/

@@ -140,12 +140,12 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         operation.get(OP).set(ADD);
 
         String archiveOrModuleName = null;
-        HashMap<String, ModelNode> configPropertiesOperations = new HashMap<String, ModelNode>();
-        HashMap<String, ModelNode> connectionDefinitionsOperations = new HashMap<String, ModelNode>();
-        HashMap<String, HashMap<String, ModelNode>> cfConfigPropertiesOperations = new HashMap<String, HashMap<String, ModelNode>>();
+        HashMap<String, ModelNode> configPropertiesOperations = new HashMap<>();
+        HashMap<String, ModelNode> connectionDefinitionsOperations = new HashMap<>();
+        HashMap<String, HashMap<String, ModelNode>> cfConfigPropertiesOperations = new HashMap<>();
 
-        HashMap<String, ModelNode> adminObjectsOperations = new HashMap<String, ModelNode>();
-        HashMap<String, HashMap<String, ModelNode>> aoConfigPropertiesOperations = new HashMap<String, HashMap<String, ModelNode>>();
+        HashMap<String, ModelNode> adminObjectsOperations = new HashMap<>();
+        HashMap<String, HashMap<String, ModelNode>> aoConfigPropertiesOperations = new HashMap<>();
 
 
         boolean archiveOrModuleMatched = false;
@@ -378,7 +378,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         private static final Map<String, Tag> MAP;
 
         static {
-            final Map<String, Tag> map = new HashMap<String, Tag>();
+            final Map<String, Tag> map = new HashMap<>();
             for (Tag element : values()) {
                 final String name = element.getLocalName();
                 if (name != null)
@@ -446,7 +446,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         private static final Map<String, Attribute> MAP;
 
         static {
-            final Map<String, Attribute> map = new HashMap<String, Attribute>();
+            final Map<String, Attribute> map = new HashMap<>();
             for (Attribute element : values()) {
                 final String name = element.getLocalName();
                 if (name != null)

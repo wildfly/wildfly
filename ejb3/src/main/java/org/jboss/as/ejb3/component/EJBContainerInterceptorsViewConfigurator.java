@@ -110,10 +110,10 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final DeploymentClassIndex deploymentClassIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
 
-        final Map<String, List<InterceptorFactory>> userAroundInvokesByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
+        final Map<String, List<InterceptorFactory>> userAroundInvokesByInterceptorClass = new HashMap<>();
         final Map<String, List<InterceptorFactory>> userAroundTimeoutsByInterceptorClass;
         if (ejbComponentDescription.isTimerServiceRequired()) {
-            userAroundTimeoutsByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
+            userAroundTimeoutsByInterceptorClass = new HashMap<>();
         } else {
             userAroundTimeoutsByInterceptorClass = null;
         }
@@ -152,8 +152,8 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
         final List<Method> viewMethods = viewConfiguration.getProxyFactory().getCachedMethods();
         for (final Method method : viewMethods) {
             final MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(method.getReturnType(), method.getName(), method.getParameterTypes());
-            final List<InterceptorFactory> aroundInvokesApplicableForMethod = new ArrayList<InterceptorFactory>();
-            final List<InterceptorFactory> aroundTimeoutsApplicableForMethod = new ArrayList<InterceptorFactory>();
+            final List<InterceptorFactory> aroundInvokesApplicableForMethod = new ArrayList<>();
+            final List<InterceptorFactory> aroundTimeoutsApplicableForMethod = new ArrayList<>();
             // first add the default interceptors (if not excluded) to the deque
             if (!ejbComponentDescription.isExcludeDefaultContainerInterceptors() && !ejbComponentDescription.isExcludeDefaultContainerInterceptors(methodIdentifier)) {
                 for (final InterceptorDescription interceptorDescription : ejbComponentDescription.getDefaultContainerInterceptors()) {
@@ -235,8 +235,8 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
         private final Class<?> interceptorClass;
         private final String interceptorClassName;
 
-        private final List<InterceptorFactory> aroundInvokeInterceptorFactories = new ArrayList<InterceptorFactory>();
-        private final List<InterceptorFactory> aroundTimeoutInterceptorFactories = new ArrayList<InterceptorFactory>();
+        private final List<InterceptorFactory> aroundInvokeInterceptorFactories = new ArrayList<>();
+        private final List<InterceptorFactory> aroundTimeoutInterceptorFactories = new ArrayList<>();
 
         InterceptorClassDescriptionTraversal(final Class<?> interceptorClass, final EEApplicationClasses applicationClasses,
                                              final DeploymentUnit deploymentUnit, final EJBComponentDescription ejbComponentDescription) {

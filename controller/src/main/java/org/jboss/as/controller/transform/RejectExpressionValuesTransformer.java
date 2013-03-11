@@ -61,7 +61,7 @@ public class RejectExpressionValuesTransformer implements ResourceTransformer, O
     }
 
     private static Set<String> namesFromDefinitions(AttributeDefinition... attributes) {
-        final Set<String> names = new HashSet<String>();
+        final Set<String> names = new HashSet<>();
         for (final AttributeDefinition def : attributes) {
             names.add(def.getName());
         }
@@ -73,7 +73,7 @@ public class RejectExpressionValuesTransformer implements ResourceTransformer, O
     }
 
     public RejectExpressionValuesTransformer(String... attributeNames) {
-        this(new HashSet<String>(Arrays.asList(attributeNames)));
+        this(new HashSet<>(Arrays.asList(attributeNames)));
     }
 
     public RejectExpressionValuesTransformer(Set<String> allAttributeNames, Map<String, AttributeTransformationRequirementChecker> specialCheckers) {
@@ -172,7 +172,7 @@ public class RejectExpressionValuesTransformer implements ResourceTransformer, O
      * @return the attribute containing an expression
      */
     private Set<String> checkModel(final ModelNode model, TransformationContext context) throws OperationFailedException {
-        final Set<String> attributes = new HashSet<String>();
+        final Set<String> attributes = new HashSet<>();
         AttributeTransformationRequirementChecker checker;
         for (final String attribute : attributeNames) {
             if (model.hasDefined(attribute)) {

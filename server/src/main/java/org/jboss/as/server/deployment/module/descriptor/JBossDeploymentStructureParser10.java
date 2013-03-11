@@ -93,7 +93,7 @@ public class JBossDeploymentStructureParser10 implements XMLElementReader<ParseR
         private static final Map<QName, Element> elements;
 
         static {
-            Map<QName, Element> elementsMap = new HashMap<QName, Element>();
+            Map<QName, Element> elementsMap = new HashMap<>();
             elementsMap.put(new QName(NAMESPACE_1_0, "jboss-deployment-structure"), Element.JBOSS_DEPLOYMENT_STRUCTURE);
             elementsMap.put(new QName(NAMESPACE_1_0, "ear-subdeployments-isolated"), Element.EAR_SUBDEPLOYMENTS_ISOLATED);
             elementsMap.put(new QName(NAMESPACE_1_0, "deployment"), Element.DEPLOYMENT);
@@ -137,7 +137,7 @@ public class JBossDeploymentStructureParser10 implements XMLElementReader<ParseR
         private static final Map<QName, Attribute> attributes;
 
         static {
-            Map<QName, Attribute> attributesMap = new HashMap<QName, Attribute>();
+            Map<QName, Attribute> attributesMap = new HashMap<>();
             attributesMap.put(new QName("name"), NAME);
             attributesMap.put(new QName("slot"), SLOT);
             attributesMap.put(new QName("export"), EXPORT);
@@ -163,7 +163,7 @@ public class JBossDeploymentStructureParser10 implements XMLElementReader<ParseR
         private static final Map<String, Disposition> values;
 
         static {
-            final Map<String, Disposition> map = new HashMap<String, Disposition>();
+            final Map<String, Disposition> map = new HashMap<>();
             for (Disposition d : values()) {
                 map.put(d.value, d);
             }
@@ -508,7 +508,7 @@ public class JBossDeploymentStructureParser10 implements XMLElementReader<ParseR
         }
         if (name == null)
             name = path;
-        List<FilterSpecification> resourceFilters = new ArrayList<FilterSpecification>();
+        List<FilterSpecification> resourceFilters = new ArrayList<>();
         final Set<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -626,7 +626,7 @@ public class JBossDeploymentStructureParser10 implements XMLElementReader<ParseR
 
     private static void parseSet(final XMLStreamReader reader, final boolean include, final List<FilterSpecification> filters)
             throws XMLStreamException {
-        final Set<String> set = new HashSet<String>();
+        final Set<String> set = new HashSet<>();
         // xsd:choice
         while (reader.hasNext()) {
             switch (reader.nextTag()) {

@@ -114,7 +114,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
 
     }
 
-    public static final Set<String> BOOT_CLASSES = new HashSet<String>();
+    public static final Set<String> BOOT_CLASSES = new HashSet<>();
 
     static {
         Collections.addAll(BOOT_CLASSES, ResteasyBootstrapClasses.BOOTSTRAP_CLASSES);
@@ -215,7 +215,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
 
         if ((resources == null || resources.isEmpty()) && (providers == null || providers.isEmpty()))
             return;
-        final Set<ClassInfo> pathInterfaces = new HashSet<ClassInfo>();
+        final Set<ClassInfo> pathInterfaces = new HashSet<>();
         if (resources != null) {
             for (AnnotationInstance e : resources) {
                 final ClassInfo info;
@@ -280,7 +280,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                 param.setParamValue(servletClass);
                 List<ParamValueMetaData> params = servlet.getInitParam();
                 if (params == null) {
-                    params = new ArrayList<ParamValueMetaData>();
+                    params = new ArrayList<>();
                     servlet.setInitParam(params);
                 }
                 params.add(param);

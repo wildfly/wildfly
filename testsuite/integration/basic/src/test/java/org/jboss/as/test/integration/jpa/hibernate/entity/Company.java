@@ -44,7 +44,7 @@ public class Company {
 
     private Long id;
     private String name;
-    private Set<Flight> flights = new HashSet<Flight>();
+    private Set<Flight> flights = new HashSet<>();
 
     public Company() {
     }

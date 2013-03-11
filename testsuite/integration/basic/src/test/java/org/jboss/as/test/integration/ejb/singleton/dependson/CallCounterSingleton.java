@@ -34,7 +34,7 @@ import javax.ejb.Singleton;
  */
 @Singleton
 public class CallCounterSingleton {
-    private List<String> orderLog = new ArrayList<String>(); 
+    private List<String> orderLog = new ArrayList<>();
     
     public void addCall(String call) {
         this.orderLog.add(call);

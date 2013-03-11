@@ -207,7 +207,7 @@ public final class ManagedServerOperationsFactory {
     }
 
     private void addNamespaces(List<ModelNode> updates) {
-        final Map<String, ModelNode> map = new LinkedHashMap<String, ModelNode>();
+        final Map<String, ModelNode> map = new LinkedHashMap<>();
         addNamespaces(map, domainModel.get(NAMESPACES));
         addNamespaces(map, hostModel.get(NAMESPACES));
         updates.addAll(map.values());
@@ -226,7 +226,7 @@ public final class ManagedServerOperationsFactory {
     }
 
     private void addSchemaLocations(List<ModelNode> updates) {
-        final Map<String, ModelNode> map = new LinkedHashMap<String, ModelNode>();
+        final Map<String, ModelNode> map = new LinkedHashMap<>();
         addSchemaLocations(map, domainModel.get(SCHEMA_LOCATIONS));
         addSchemaLocations(map, hostModel.get(SCHEMA_LOCATIONS));
         updates.addAll(map.values());
@@ -241,7 +241,7 @@ public final class ManagedServerOperationsFactory {
     }
 
     private void addExtensions(List<ModelNode> updates) {
-        final Set<String> extensionNames = new LinkedHashSet<String>();
+        final Set<String> extensionNames = new LinkedHashSet<>();
         addExtensions(extensionNames, domainModel.get(EXTENSION));
         addExtensions(extensionNames, hostModel.get(EXTENSION));
 
@@ -257,7 +257,7 @@ public final class ManagedServerOperationsFactory {
     }
 
     private void addPaths(List<ModelNode> updates) {
-        final Map<String, ModelNode> paths = new LinkedHashMap<String, ModelNode>();
+        final Map<String, ModelNode> paths = new LinkedHashMap<>();
         addPaths(paths, domainModel.get(PATH));
         addPaths(paths, hostModel.get(PATH));
         addPaths(paths, serverModel.get(PATH));
@@ -291,7 +291,7 @@ public final class ManagedServerOperationsFactory {
     }
 
     private Map<String, String> getAllSystemProperties(boolean boottimeOnly) {
-        Map<String, String> props = new LinkedHashMap<String, String>();
+        Map<String, String> props = new LinkedHashMap<>();
 
         addSystemProperties(domainModel, props, boottimeOnly);
         addSystemProperties(serverGroup, props, boottimeOnly);
@@ -407,7 +407,7 @@ public final class ManagedServerOperationsFactory {
     }
 
     private void addInterfaces(List<ModelNode> updates) {
-        final Map<String, ModelNode> interfaces = new LinkedHashMap<String, ModelNode>();
+        final Map<String, ModelNode> interfaces = new LinkedHashMap<>();
         addInterfaces(interfaces, domainModel.get(INTERFACE));
         addInterfaces(interfaces, hostModel.get(INTERFACE));
         addInterfaces(interfaces, hostModel.get(SERVER_CONFIG, serverName, INTERFACE));
@@ -435,8 +435,8 @@ public final class ManagedServerOperationsFactory {
     }
 
     private void addSocketBindings(List<ModelNode> updates, int portOffSet, String bindingRef) {
-        final Set<String> processed = new HashSet<String>();
-        final Map<String, ModelNode> groups = new LinkedHashMap<String, ModelNode>();
+        final Set<String> processed = new HashSet<>();
+        final Map<String, ModelNode> groups = new LinkedHashMap<>();
         if (domainModel.hasDefined(SOCKET_BINDING_GROUP)) {
             for (Property prop : domainModel.get(SOCKET_BINDING_GROUP).asPropertyList()) {
                 ModelNode node = prop.getValue().clone();

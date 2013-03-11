@@ -41,7 +41,7 @@ final class ResourceAdapterService implements Service<ResourceAdapter> {
 
     private final ResourceAdapter value;
 
-    private final InjectedValue<ResourceAdaptersService.ModifiableResourceAdaptors> resourceAdapters = new InjectedValue<ResourceAdaptersService.ModifiableResourceAdaptors>();
+    private final InjectedValue<ResourceAdaptersService.ModifiableResourceAdaptors> resourceAdapters = new InjectedValue<>();
 
 
     /** create an instance **/
