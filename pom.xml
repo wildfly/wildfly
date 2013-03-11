@@ -251,7 +251,6 @@
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.1.6.Final</version.org.picketlink>
         <version.org.powermock>1.5</version.org.powermock>
-        <version.org.projectodd.stilts>0.1.26</version.org.projectodd.stilts>
         <version.org.scannotation>1.0.2</version.org.scannotation>
         <version.org.slf4j>1.7.2</version.org.slf4j>
         <version.org.sonatype.aether>1.13.1</version.org.sonatype.aether>
@@ -6253,30 +6252,6 @@
                 <groupId>org.powermock</groupId>
                 <artifactId>powermock-api-mockito</artifactId>
                 <version>${version.org.powermock}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.projectodd.stilts</groupId>
-                <artifactId>stilts-stomp-client</artifactId>
-                <version>${version.org.projectodd.stilts}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.projectodd.stilts</groupId>
-                <artifactId>stilts-stomplet-server-bundle</artifactId>
-                <version>${version.org.projectodd.stilts}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.projectodd.stilts</groupId>
-                <artifactId>stilts-stomplet-server-core</artifactId>
-                <version>${version.org.projectodd.stilts}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.transaction</groupId>
-                        <artifactId>jta</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>

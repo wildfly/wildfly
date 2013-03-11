@@ -1765,11 +1765,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.projectodd.stilts</groupId>
-                    <artifactId>stilts-stomplet-server-bundle</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.scannotation</groupId>
                     <artifactId>scannotation</artifactId>
                 </dependency>
