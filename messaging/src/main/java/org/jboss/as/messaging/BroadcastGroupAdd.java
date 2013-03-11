@@ -25,12 +25,14 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.messaging.CommonAttributes.JGROUPS_STACK;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.hornetq.api.core.BroadcastEndpointFactoryConfiguration;
 import org.hornetq.api.core.BroadcastGroupConfiguration;
@@ -127,20 +129,25 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
     static void addBroadcastGroupConfigs(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {
         if (model.hasDefined(CommonAttributes.BROADCAST_GROUP)) {
             final List<BroadcastGroupConfiguration> configs = configuration.getBroadcastGroupConfigurations();
+            final Set<String> connectors = configuration.getConnectorConfigurations().keySet();
             for (Property prop : model.get(CommonAttributes.BROADCAST_GROUP).asPropertyList()) {
-                configs.add(createBroadcastGroupConfiguration(context, prop.getName(), prop.getValue()));
+                configs.add(createBroadcastGroupConfiguration(context, connectors, prop.getName(), prop.getValue()));
 
             }
         }
     }
 
-    static BroadcastGroupConfiguration createBroadcastGroupConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
+    static BroadcastGroupConfiguration createBroadcastGroupConfiguration(final OperationContext context, final Set<String> connectors, final String name, final ModelNode model) throws OperationFailedException {
 
         final long broadcastPeriod = BroadcastGroupDefinition.BROADCAST_PERIOD.resolveModelAttribute(context, model).asLong();
         final List<String> connectorRefs = new ArrayList<String>();
         if (model.hasDefined(CommonAttributes.CONNECTORS)) {
             for (ModelNode ref : model.get(CommonAttributes.CONNECTORS).asList()) {
-                connectorRefs.add(ref.asString());
+                final String refName = ref.asString();
+                if(!connectors.contains(refName)){
+                    throw MESSAGES.wrongConnectorRefInBroadCastGroup(name,refName, connectors);
+                }
+                connectorRefs.add(refName);
             }
         }
         // Requires runtime service

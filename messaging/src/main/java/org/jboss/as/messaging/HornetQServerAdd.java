@@ -268,6 +268,8 @@ class HornetQServerAdd implements OperationStepHandler {
                                 hqService.getSocketBindingInjector(outboundSocketBinding));
                     }
                 }
+                //this requires connectors
+                BroadcastGroupAdd.addBroadcastGroupConfigs(context, configuration, model);
 
                 final List<BroadcastGroupConfiguration> broadcastGroupConfigurations = configuration.getBroadcastGroupConfigurations();
                 final Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations = configuration.getDiscoveryGroupConfigurations();
@@ -421,7 +423,6 @@ class HornetQServerAdd implements OperationStepHandler {
 
         // Add in items from child resources
         GroupingHandlerAdd.addGroupingHandlerConfig(context,configuration, model);
-        BroadcastGroupAdd.addBroadcastGroupConfigs(context, configuration, model);
         DiscoveryGroupAdd.addDiscoveryGroupConfigs(context, configuration, model);
         DivertAdd.addDivertConfigs(context, configuration, model);
         QueueAdd.addQueueConfigs(context, configuration, model);
