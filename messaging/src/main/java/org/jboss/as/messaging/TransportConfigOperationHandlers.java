@@ -54,7 +54,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-
 /**
  * Basic {@link TransportConfiguration} (Acceptor/Connector) related operations.
  *
@@ -164,6 +163,9 @@ class TransportConfigOperationHandlers {
                 parameters.put(InVMTransportDefinition.SERVER_ID.getName(), InVMTransportDefinition.SERVER_ID.resolveModelAttribute(context, config).asInt());
                 connectors.put(connectorName, new TransportConfiguration(InVMConnectorFactory.class.getName(), parameters, connectorName));
             }
+        }
+        if(connectors.size() == 0){
+            throw MESSAGES.noConnectors();
         }
         configuration.setConnectorConfigurations(connectors);
     }

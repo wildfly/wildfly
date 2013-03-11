@@ -96,6 +96,8 @@ public class JMSService implements Service<JMSServerManager> {
                 }
             });
             jmsServer.start();
+        } catch(StartException e){
+            throw e;
         } catch (Exception e) {
             throw MESSAGES.failedToStartService(e);
         } finally {
