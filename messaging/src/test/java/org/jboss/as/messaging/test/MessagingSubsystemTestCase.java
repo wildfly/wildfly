@@ -186,7 +186,12 @@ public class MessagingSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelVersion version120 = ModelVersion.create(1, 2);
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
-        builder.createLegacyKernelServicesBuilder(null, version120)
+        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, version120)
+                .addMavenResourceURL("org.hornetq:hornetq-server:2.3.0.CR1")
+                .addMavenResourceURL("org.hornetq:hornetq-jms-server:2.3.0.CR1")
+                .addMavenResourceURL("org.hornetq:hornetq-core-client:2.3.0.CR1")
+                .addMavenResourceURL("org.hornetq:hornetq-jms-client:2.3.0.CR1")
+                .addMavenResourceURL("org.hornetq:hornetq-ra:2.3.0.CR1")
                 .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.2.0.Final");
 
         KernelServices mainServices = builder.build();

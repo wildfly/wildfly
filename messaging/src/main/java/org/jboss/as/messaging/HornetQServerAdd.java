@@ -366,13 +366,13 @@ class HornetQServerAdd implements OperationStepHandler {
         configuration.setJournalType(journalType);
 
         // AIO Journal
-        configuration.setJournalBufferSize_AIO(JOURNAL_BUFFER_SIZE.resolveModelAttribute(context, model).asInt(HornetQDefaultConfiguration.DEFAULT_JOURNAL_BUFFER_SIZE_AIO));
-        configuration.setJournalBufferTimeout_AIO(JOURNAL_BUFFER_TIMEOUT.resolveModelAttribute(context, model).asInt(HornetQDefaultConfiguration.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO));
-        configuration.setJournalMaxIO_AIO(JOURNAL_MAX_IO.resolveModelAttribute(context, model).asInt(HornetQDefaultConfiguration.DEFAULT_JOURNAL_MAX_IO_AIO));
+        configuration.setJournalBufferSize_AIO(JOURNAL_BUFFER_SIZE.resolveModelAttribute(context, model).asInt(HornetQDefaultConfiguration.getDefaultJournalBufferSizeAio()));
+        configuration.setJournalBufferTimeout_AIO(JOURNAL_BUFFER_TIMEOUT.resolveModelAttribute(context, model).asInt(HornetQDefaultConfiguration.getDefaultJournalBufferTimeoutAio()));
+        configuration.setJournalMaxIO_AIO(JOURNAL_MAX_IO.resolveModelAttribute(context, model).asInt(HornetQDefaultConfiguration.getDefaultJournalMaxIoAio()));
         // NIO Journal
-        configuration.setJournalBufferSize_NIO(JOURNAL_BUFFER_SIZE.resolveModelAttribute(context, model).asInt(HornetQDefaultConfiguration.DEFAULT_JOURNAL_BUFFER_SIZE_NIO));
-        configuration.setJournalBufferTimeout_NIO(JOURNAL_BUFFER_TIMEOUT.resolveModelAttribute(context, model).asInt(HornetQDefaultConfiguration.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO));
-        configuration.setJournalMaxIO_NIO(JOURNAL_MAX_IO.resolveModelAttribute(context, model).asInt(HornetQDefaultConfiguration.DEFAULT_JOURNAL_MAX_IO_NIO));
+        configuration.setJournalBufferSize_NIO(JOURNAL_BUFFER_SIZE.resolveModelAttribute(context, model).asInt(HornetQDefaultConfiguration.getDefaultJournalBufferSizeNio()));
+        configuration.setJournalBufferTimeout_NIO(JOURNAL_BUFFER_TIMEOUT.resolveModelAttribute(context, model).asInt(HornetQDefaultConfiguration.getDefaultJournalBufferTimeoutNio()));
+        configuration.setJournalMaxIO_NIO(JOURNAL_MAX_IO.resolveModelAttribute(context, model).asInt(HornetQDefaultConfiguration.getDefaultJournalMaxIoNio()));
         //
         configuration.setJournalCompactMinFiles(JOURNAL_COMPACT_MIN_FILES.resolveModelAttribute(context, model).asInt());
         configuration.setJournalCompactPercentage(JOURNAL_COMPACT_PERCENTAGE.resolveModelAttribute(context, model).asInt());

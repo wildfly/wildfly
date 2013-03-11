@@ -21,8 +21,6 @@
  */
 package org.jboss.as.messaging.jms;
 
-import static org.hornetq.api.config.HornetQDefaultConfiguration.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
-import static org.hornetq.api.config.HornetQDefaultConfiguration.DEFAULT_THREAD_POOL_MAX_SIZE;
 import static org.hornetq.api.core.client.HornetQClient.DEFAULT_CONNECTION_TTL;
 import static org.hornetq.api.core.client.HornetQClient.DEFAULT_MAX_RETRY_INTERVAL;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
@@ -41,6 +39,7 @@ import static org.jboss.dmr.ModelType.STRING;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.jboss.as.controller.AttributeDefinition;
@@ -244,13 +243,13 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition SCHEDULED_THREAD_POOL_MAX_SIZE = SimpleAttributeDefinitionBuilder.create("scheduled-thread-pool-max-size", INT)
-                .setDefaultValue(new ModelNode().set(DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE))
+                .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize()))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition THREAD_POOL_MAX_SIZE = SimpleAttributeDefinitionBuilder.create("thread-pool-max-size", INT)
-                .setDefaultValue(new ModelNode().set(DEFAULT_THREAD_POOL_MAX_SIZE))
+                .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.getDefaultThreadPoolMaxSize()))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();

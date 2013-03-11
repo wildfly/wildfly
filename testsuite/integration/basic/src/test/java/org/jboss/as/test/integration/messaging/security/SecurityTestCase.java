@@ -77,7 +77,7 @@ public class SecurityTestCase {
             fail("must not allow to create a session with bad authentication");
         } catch (HornetQException e) {
             assertEquals(HornetQExceptionType.SECURITY_EXCEPTION, e.getType());
-            assertTrue(e.getMessage().startsWith("HQ119061"));
+            assertTrue(e.getMessage().startsWith("HQ119031"));
         } finally {
             if (sf != null) {
                 sf.close();
@@ -93,7 +93,7 @@ public class SecurityTestCase {
             fail("must not allow to create a session without any authentication");
         } catch (HornetQException e) {
             assertEquals(HornetQExceptionType.SECURITY_EXCEPTION, e.getType());
-            assertTrue(e.getMessage().startsWith("HQ119061"));
+            assertTrue(e.getMessage().startsWith("HQ119031"));
         } finally {
             if (sf != null) {
                 sf.close();
@@ -105,11 +105,11 @@ public class SecurityTestCase {
     public void testDefaultClusterUser() throws Exception {
         final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
         try {
-            sf.createSession(HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER, HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD, false, true, true, false, 1);
+            sf.createSession(HornetQDefaultConfiguration.getDefaultClusterUser(), HornetQDefaultConfiguration.getDefaultClusterPassword(), false, true, true, false, 1);
             fail("must not allow to create a session with the default cluster user credentials");
         } catch (HornetQException e) {
             assertEquals(HornetQExceptionType.SECURITY_EXCEPTION, e.getType());
-            assertTrue(e.getMessage().startsWith("HQ119061"));
+            assertTrue(e.getMessage().startsWith("HQ119031"));
         } finally {
             if (sf != null) {
                 sf.close();
@@ -165,7 +165,7 @@ public class SecurityTestCase {
             fail("Must not create a durable queue without the CREATE_DURABLE_QUEUE permission");
         } catch (HornetQException e) {
             assertEquals(HornetQExceptionType.SECURITY_EXCEPTION, e.getType());
-            assertTrue(e.getMessage().startsWith("HQ119062"));
+            assertTrue(e.getMessage().startsWith("HQ119032"));
             assertTrue(e.getMessage().contains(CheckType.CREATE_DURABLE_QUEUE.toString()));
         } finally {
             if (session != null) {

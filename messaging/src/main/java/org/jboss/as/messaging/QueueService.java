@@ -71,7 +71,7 @@ class QueueService implements Service<Void> {
     public synchronized void stop(StopContext context) {
         try {
             final HornetQServer hornetQService = this.hornetQService.getValue();
-            hornetQService.destroyQueue(new SimpleString(queueConfiguration.getName()), null);
+            hornetQService.destroyQueue(new SimpleString(queueConfiguration.getName()), null, false);
         } catch(Exception e) {
             MESSAGING_LOGGER.failedToDestroy("queue", queueConfiguration.getName());
         }

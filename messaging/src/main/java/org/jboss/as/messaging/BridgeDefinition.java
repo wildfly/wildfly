@@ -80,27 +80,27 @@ public class BridgeDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition PASSWORD = create("password", STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD))
+            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.getDefaultClusterPassword()))
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition USER = create("user", STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER))
+            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.getDefaultClusterUser()))
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition USE_DUPLICATE_DETECTION = create("use-duplicate-detection", BOOLEAN)
             .setAllowNull(true)
-            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_BRIDGE_DUPLICATE_DETECTION))
+            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.isDefaultBridgeDuplicateDetection()))
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
             .setAllowNull(true)
-            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_BRIDGE_RECONNECT_ATTEMPTS))
+            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.getDefaultBridgeReconnectAttempts()))
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();

@@ -63,7 +63,7 @@ public class DivertDefinition extends SimpleResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition EXCLUSIVE = create("exclusive", BOOLEAN)
-            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_DIVERT_EXCLUSIVE))
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.isDefaultDivertExclusive()))
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()

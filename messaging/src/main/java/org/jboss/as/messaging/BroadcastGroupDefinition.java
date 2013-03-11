@@ -72,7 +72,7 @@ public class BroadcastGroupDefinition extends SimpleResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition BROADCAST_PERIOD = create("broadcast-period", LONG)
-            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_BROADCAST_PERIOD))
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.getDefaultBroadcastPeriod()))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
