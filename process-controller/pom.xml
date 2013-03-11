@@ -104,15 +104,15 @@
         <profile>
             <id>tools</id>
             <activation>
-                <file><exists>${java.home}/../lib/tools.jar</exists></file>
+                <file><exists>${com.sun.tools.path}</exists></file>
             </activation>
             <dependencies>
-                <dependency>
-                    <groupId>system</groupId>
-                    <artifactId>jdk-tools</artifactId>
-                    <version>jdk</version>
+                    <dependency>
+                    <groupId>com.sun</groupId>
+                    <artifactId>tools</artifactId>
                     <scope>system</scope>
-                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                    <version>1.6</version>
+                    <systemPath>${com.sun.tools.path}</systemPath>
                 </dependency>
             </dependencies>
         </profile>
