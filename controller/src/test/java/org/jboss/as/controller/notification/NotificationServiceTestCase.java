@@ -31,6 +31,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.OperationFailedException;
@@ -59,28 +60,18 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
     public static final String OPERATION_THAT_REGISTERS_A_NOTIFICATION_HANDLER = "operation-that-registers-a-notification-handler";
     public static final String OPERATION_THAT_UNREGISTERS_A_NOTIFICATION_HANDLER = "operation-that-unregisters-a-notification-handler";
 
+    private DelegatingNotificationHandler delegatingNotificationHandler = new DelegatingNotificationHandler();
+
     public static final AtomicReference<CountDownLatch> notificationEmittedLatch = new AtomicReference<>();
     public static final AtomicReference<CountDownLatch> notificationHandlerRegisteredLatch = new AtomicReference<>();
     public static final AtomicReference<CountDownLatch> notificationHandlerUnregisteredLatch = new AtomicReference<>();
-    public static final AtomicReference<NotificationHandler> notificationHandler = new AtomicReference<>();
-    public static final AtomicReference<NotificationFilter> notificationFilter = new AtomicReference<>();
     public static final String MY_TYPE = "my-notification-type";
 
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration registration) {
-        notificationEmittedLatch.set(new CountDownLatch(1));
         notificationHandlerRegisteredLatch.set(new CountDownLatch(1));
+        notificationEmittedLatch.set(new CountDownLatch(1));
         notificationHandlerUnregisteredLatch.set(new CountDownLatch(1));
-
-        notificationHandler.set(new NotificationHandler() {
-            @Override
-            public void handleNotification(Notification notification) {
-                if (MY_TYPE.equals(notification.getType())) {
-                    notificationEmittedLatch.get().countDown();
-                }
-            }
-        });
-        notificationFilter.set(ALL);
 
         registration.registerOperationHandler(new SimpleOperationDefinitionBuilder(OPERATION_THAT_EMITS_A_NOTIFICATION, new NonResolvingResourceDescriptionResolver())
                 .setPrivateEntry()
@@ -103,7 +94,7 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
                         ServiceController<?> notificationService = context.getServiceRegistry(false).getService(NotificationService.SERVICE_NAME);
                         NotificationSupport notificationSupport = NotificationSupport.class.cast(notificationService.getValue());
                         PathAddress source = pathAddress(operation.get(OP_ADDR));
-                        notificationSupport.registerNotificationHandler(source, notificationHandler.get(), notificationFilter.get());
+                        notificationSupport.registerNotificationHandler(source, delegatingNotificationHandler, delegatingNotificationHandler);
                         context.stepCompleted();
                         notificationHandlerRegisteredLatch.get().countDown();
                     }
@@ -118,7 +109,7 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
                         ServiceController<?> notificationService = context.getServiceRegistry(false).getService(NotificationService.SERVICE_NAME);
                         NotificationSupport notificationSupport = NotificationSupport.class.cast(notificationService.getValue());
                         PathAddress source = pathAddress(operation.get(OP_ADDR));
-                        notificationSupport.unregisterNotificationHandler(source, notificationHandler.get(), notificationFilter.get());
+                        notificationSupport.unregisterNotificationHandler(source, delegatingNotificationHandler, delegatingNotificationHandler);
                         context.stepCompleted();
                         notificationHandlerUnregisteredLatch.get().countDown();
                     }
@@ -130,10 +121,20 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
 
     @Test
     public void testSendNotification() throws Exception {
+        delegatingNotificationHandler.setDelegatingHandler(new NotificationHandler() {
+            @Override
+            public void handleNotification(Notification notification) {
+                if (MY_TYPE.equals(notification.getType())) {
+                    notificationEmittedLatch.get().countDown();
+                }
+            }
+        });
+        delegatingNotificationHandler.setDelegatingFilter(ALL);
         executeForResult(createOperation(OPERATION_THAT_REGISTERS_A_NOTIFICATION_HANDLER));
         assertTrue("the notification handler was not registered", notificationHandlerRegisteredLatch.get().await(1, SECONDS));
-
+        System.out.println("NotificationServiceTestCase.testSendNotification 1");
         executeForResult(createOperation(OPERATION_THAT_EMITS_A_NOTIFICATION));
+        System.out.println("NotificationServiceTestCase.testSendNotification notificationEmittedLatch.get()" + notificationEmittedLatch.get());
         assertTrue("the notification handler did not receive the notification", notificationEmittedLatch.get().await(1, SECONDS));
 
         executeForResult(createOperation(OPERATION_THAT_UNREGISTERS_A_NOTIFICATION_HANDLER));
@@ -142,7 +143,13 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
 
     @Test
     public void testSendNotificationWithFilter() throws Exception {
-        notificationFilter.set(new NotificationFilter() {
+        delegatingNotificationHandler.setDelegatingHandler(new NotificationHandler() {
+            @Override
+            public void handleNotification(Notification notification) {
+                notificationEmittedLatch.get().countDown();
+            }
+        });
+        delegatingNotificationHandler.setDelegatingFilter(new NotificationFilter() {
             @Override
             public boolean isNotificationEnabled(Notification notification) {
                 return false;
@@ -160,21 +167,47 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
 
     @Test
     public void testSendNotificationToFailingHandler() throws Exception {
-        notificationHandler.set(new NotificationHandler() {
+        delegatingNotificationHandler.setDelegatingHandler(new NotificationHandler() {
             @Override
             public void handleNotification(Notification notification) {
-                // the handler receives the notifications
+                // the handler receives the notification
                 notificationEmittedLatch.get().countDown();
                 // but fails to process it
                 throw new IllegalStateException("somehow, the handler throws an exception");
             }
         });
+        delegatingNotificationHandler.setDelegatingFilter(ALL);
         executeForResult(createOperation(OPERATION_THAT_REGISTERS_A_NOTIFICATION_HANDLER));
         assertTrue("the notification handler was not registered", notificationHandlerRegisteredLatch.get().await(1, SECONDS));
 
         // having a failing notification handler has no incidence on the operation that triggered the notification emission
         executeForResult(createOperation(OPERATION_THAT_EMITS_A_NOTIFICATION));
-        assertTrue("the notification handler did not receive the notification", notificationEmittedLatch.get().await(1, SECONDS));
+        assertTrue("the notification handler did receive the notification", notificationEmittedLatch.get().await(1, SECONDS));
+
+        executeForResult(createOperation(OPERATION_THAT_UNREGISTERS_A_NOTIFICATION_HANDLER));
+        assertTrue("the notification handler was not unregistered", notificationHandlerUnregisteredLatch.get().await(1, SECONDS));
+    }
+
+    @Test
+    public void testSendNotificationToFailingFilter() throws Exception {
+        delegatingNotificationHandler.setDelegatingHandler(new NotificationHandler() {
+            @Override
+            public void handleNotification(Notification notification) {
+                notificationEmittedLatch.get().countDown();
+            }
+        });
+        delegatingNotificationHandler.setDelegatingFilter(new NotificationFilter() {
+            @Override
+            public boolean isNotificationEnabled(Notification notification) {
+                throw new IllegalStateException("somehow, the filter throws an exception");
+            }
+        });
+        executeForResult(createOperation(OPERATION_THAT_REGISTERS_A_NOTIFICATION_HANDLER));
+        assertTrue("the notification handler was not registered", notificationHandlerRegisteredLatch.get().await(1, SECONDS));
+
+        // having a failing notification filter has no incidence on the operation that triggered the notification emission
+        executeForResult(createOperation(OPERATION_THAT_EMITS_A_NOTIFICATION));
+        assertFalse("the notification handler did receive the notification", notificationEmittedLatch.get().await(256, MILLISECONDS));
 
         executeForResult(createOperation(OPERATION_THAT_UNREGISTERS_A_NOTIFICATION_HANDLER));
         assertTrue("the notification handler was not unregistered", notificationHandlerUnregisteredLatch.get().await(1, SECONDS));
