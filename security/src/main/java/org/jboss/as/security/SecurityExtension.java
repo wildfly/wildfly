@@ -23,8 +23,13 @@
 package org.jboss.as.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.Collections;
@@ -41,11 +46,13 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.CombinedTransformer;
 import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
@@ -74,7 +81,7 @@ public class SecurityExtension implements Extension {
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 2;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 1;
 
     private static final SecuritySubsystemParser PARSER = SecuritySubsystemParser.getInstance();
     static final PathElement ACL_PATH = PathElement.pathElement(Constants.ACL, Constants.CLASSIC);
@@ -145,6 +152,11 @@ public class SecurityExtension implements Extension {
     }
 
     private void registerTransformers(SubsystemRegistration subsystemRegistration) {
+        registerTransformers_1_1_0(subsystemRegistration);
+        registerTransformers_1_2_0(subsystemRegistration);
+    }
+
+    private void registerTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, SecuritySubsystemRootResourceDefinition.DEEP_COPY_SUBJECT_MODE);
         ResourceTransformationDescriptionBuilder securityDomain = builder.addChildResource(SECURITY_DOMAIN_PATH);
@@ -152,7 +164,6 @@ public class SecurityExtension implements Extension {
 
 
         ModulesToAttributeTransformer loginModule = new ModulesToAttributeTransformer(Constants.LOGIN_MODULE, Constants.LOGIN_MODULES);
-
         registerModuleTransformer(securityDomain, PATH_CLASSIC_AUTHENTICATION, loginModule);
         final ModulesToAttributeTransformer policyModule = new ModulesToAttributeTransformer(Constants.POLICY_MODULE, Constants.POLICY_MODULES);
         registerModuleTransformer(securityDomain, PATH_AUTHORIZATION_CLASSIC, policyModule);
@@ -182,6 +193,27 @@ public class SecurityExtension implements Extension {
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 1, 0));
     }
 
+    private void registerTransformers_1_2_0(SubsystemRegistration subsystemRegistration) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        ResourceTransformationDescriptionBuilder securityDomain = builder.addChildResource(SECURITY_DOMAIN_PATH);
+
+        // Transform any add op that includes the module list attribute into a compsosite of an add w/o that + write-attribute
+        AttributeToModulesTransformer loginModule = new AttributeToModulesTransformer(Constants.LOGIN_MODULES);
+        registerModuleTransformer(securityDomain, PATH_CLASSIC_AUTHENTICATION, loginModule);
+        AttributeToModulesTransformer policyModule = new AttributeToModulesTransformer(Constants.POLICY_MODULES);
+        registerModuleTransformer(securityDomain, PATH_AUTHORIZATION_CLASSIC, policyModule);
+        AttributeToModulesTransformer mappingModule = new AttributeToModulesTransformer(Constants.MAPPING_MODULES);
+        registerModuleTransformer(securityDomain, PATH_MAPPING_CLASSIC, mappingModule);
+        AttributeToModulesTransformer providerModule = new AttributeToModulesTransformer(Constants.PROVIDER_MODULES);
+        registerModuleTransformer(securityDomain, PATH_AUDIT_CLASSIC, providerModule);
+        AttributeToModulesTransformer authModule = new AttributeToModulesTransformer(Constants.AUTH_MODULES);
+        ResourceTransformationDescriptionBuilder jaspiReg = registerModuleTransformer(securityDomain, PATH_JASPI_AUTH, authModule);
+        registerModuleTransformer(jaspiReg, PATH_LOGIN_MODULE_STACK, loginModule);
+
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 2, 0));
+    }
+
     private ResourceTransformationDescriptionBuilder registerModuleTransformer(ResourceTransformationDescriptionBuilder parent, final PathElement childPath,
                                                                                ModulesToAttributeTransformer transformer) {
         ResourceTransformationDescriptionBuilder child = parent.addChildResource(childPath)
@@ -199,6 +231,15 @@ public class SecurityExtension implements Extension {
                 .setCustomOperationTransformer(transformer)
                 .inheritResourceAttributeDefinitions().end();
         return child;
+    }
+
+    private ResourceTransformationDescriptionBuilder registerModuleTransformer(ResourceTransformationDescriptionBuilder parent, final PathElement childPath,
+                                                                               AttributeToModulesTransformer transformer) {
+        return parent.addChildResource(childPath)
+            .addOperationTransformationOverride(ADD)
+                .inheritResourceAttributeDefinitions()
+                .setCustomOperationTransformer(transformer)
+                .end();
     }
 
 
@@ -261,6 +302,41 @@ public class SecurityExtension implements Extension {
                 Resource moduleResource = context.readResourceFromRoot(address.append(entry.getPathElement()));
                 modules.add(moduleResource.getModel());
             }
+        }
+    }
+
+    private static class AttributeToModulesTransformer implements OperationTransformer {
+
+        private final String attributeName;
+
+        private AttributeToModulesTransformer(String attributeName) {
+            this.attributeName = attributeName;
+        }
+
+        @Override
+        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
+
+            final ModelNode transformedOp;
+            if (!operation.has(attributeName)) {
+                transformedOp = operation;
+            } else if (!operation.hasDefined(attributeName)) {
+                transformedOp = operation.clone();
+                transformedOp.remove(attributeName);
+            } else {
+                // Convert to a composite of an add without the module list + a write-attribute for the module list
+                PathAddress pa = PathAddress.pathAddress(operation.get(OP_ADDR));
+                transformedOp = Util.createEmptyOperation(COMPOSITE, pa);
+                ModelNode steps = transformedOp.get(STEPS);
+                ModelNode clone = operation.clone();
+                clone.remove(attributeName);
+                steps.add(clone);
+                ModelNode writeOp = Util.createEmptyOperation(WRITE_ATTRIBUTE_OPERATION, pa);
+                writeOp.get(NAME).set(attributeName);
+                writeOp.get(VALUE).set(operation.get(attributeName));
+                steps.add(writeOp);
+            }
+
+            return new TransformedOperation(transformedOp, OperationResultTransformer.ORIGINAL_RESULT);
         }
     }
 
