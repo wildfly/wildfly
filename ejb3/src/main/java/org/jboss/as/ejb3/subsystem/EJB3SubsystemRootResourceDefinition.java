@@ -101,6 +101,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                     .build();
     static final SimpleAttributeDefinition DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, ModelType.STRING, true)
+                    .setXmlName(EJB3SubsystemXMLAttribute.PASSIVATION_DISABLED_CACHE_REF.getLocalName())
                     .setAllowExpression(true)
                     .build();
 

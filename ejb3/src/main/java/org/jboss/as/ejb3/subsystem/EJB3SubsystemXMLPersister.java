@@ -40,7 +40,6 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_DISTINCT_NA
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SECURITY_DOMAIN;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ENABLE_STATISTICS;
@@ -357,10 +356,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             String cache = statefulBeanModel.get(DEFAULT_CLUSTERED_SFSB_CACHE).asString();
             writer.writeAttribute(EJB3SubsystemXMLAttribute.CLUSTERED_CACHE_REF.getLocalName(), cache);
         }
-        if (statefulBeanModel.hasDefined(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE)) {
-            final String cacheRef = statefulBeanModel.get(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE).asString();
-            writer.writeAttribute(EJB3SubsystemXMLAttribute.PASSIVATION_DISABLED_CACHE_REF.getLocalName(), cacheRef);
-        }
+        EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE.marshallAsAttribute(statefulBeanModel, writer);
     }
 
     private void writeDefaultSLSBPool(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
