@@ -132,6 +132,12 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-core-model-test-framework</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-model-test</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -705,12 +711,12 @@
 
                 <dependency>
                     <groupId>org.hornetq</groupId>
-                    <artifactId>hornetq-core-client</artifactId>
+                    <artifactId>hornetq-commons</artifactId>
                 </dependency>
 
                 <dependency>
                     <groupId>org.hornetq</groupId>
-                    <artifactId>hornetq-server</artifactId>
+                    <artifactId>hornetq-core-client</artifactId>
                 </dependency>
 
                 <dependency>
@@ -725,7 +731,17 @@
 
                 <dependency>
                     <groupId>org.hornetq</groupId>
+                    <artifactId>hornetq-journal</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.hornetq</groupId>
                     <artifactId>hornetq-ra</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.hornetq</groupId>
+                    <artifactId>hornetq-server</artifactId>
                 </dependency>
 
                 <dependency>
@@ -799,6 +815,16 @@
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-client-all</artifactId>
                     <scope>provided</scope>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.jboss.as</groupId>
+                            <artifactId>jboss-as-ejb-client-bom</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.as</groupId>
+                            <artifactId>jboss-as-jms-client-bom</artifactId>
+                        </exclusion>
+                    </exclusions>
                 </dependency>
 
                 <dependency>
@@ -1145,6 +1171,12 @@
                 <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-jpa-hibernate3</artifactId>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.hibernate</groupId>
+                            <artifactId>hibernate-commons-annotations</artifactId>
+                        </exclusion>
+                    </exclusions>
                 </dependency>
 
                 <dependency>
@@ -1283,6 +1315,11 @@
                 <dependency>
                     <groupId>io.netty</groupId>
                     <artifactId>netty</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.osgi.deployment</groupId>
+                    <artifactId>jbosgi-deployment</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1854,6 +1891,42 @@
         </profile>
         -->
 
+        <profile>
+            <id>enforce</id>
+            <activation>
+                <property>
+                    <name>!skip-enforce</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ban-transitive-deps</id>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <banTransitiveDependencies>
+                                            <excludes>
+                                                <!-- Ignore jdk jars because they are system scope -->
+                                                <exclude>com.sun:tools</exclude>
+                                                <exclude>sun.jdk:jconsole</exclude>
+                                            </excludes>
+                                        </banTransitiveDependencies>
+                                    </rules>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>javadocDist</id>
             <properties>
@@ -2446,8 +2519,8 @@
                                             <packages>org.codehaus.jettison:org.codehaus.jettison.badgerfish:org.codehaus.jettison.json:org.codehaus.jettison.mapped:org.codehaus.jettison.util</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.hibernate</title>
                                             <packages>org.hibernate.cache.infinispan:org.hibernate.cache.infinispan.access:org.hibernate.cache.infinispan.collection:org.hibernate.cache.infinispan.entity:org.hibernate.cache.infinispan.impl:org.hibernate.cache.infinispan.naturalid:org.hibernate.cache.infinispan.query:org.hibernate.cache.infinispan.timestamp:org.hibernate.cache.infinispan.tm:org.hibernate.cache.infinispan.util:org.hibernate:org.hibernate.action.internal:org.hibernate.action.spi:org.hibernate.annotations:org.hibernate.bytecode.buildtime.internal:org.hibernate.bytecode.buildtime.spi:org.hibernate.bytecode.instrumentation.internal:org.hibernate.bytecode.instrumentation.internal.javassist:org.hibernate.bytecode.instrumentation.spi:org.hibernate.bytecode.internal.javassist:org.hibernate.bytecode.spi:org.hibernate.cache:org.hibernate.cache.internal:org.hibernate.cache.spi:org.hibernate.cache.spi.access:org.hibernate.cache.spi.entry:org.hibernate.cfg:org.hibernate.cfg.annotations:org.hibernate.cfg.annotations.reflection:org.hibernate.cfg.beanvalidation:org.hibernate.classic:org.hibernate.classic.:org.hibernate.collection.internal:org.hibernate.collection.spi:org.hibernate.context:org.hibernate.context.internal:org.hibernate.context.spi:org.hibernate.criterion:org.hibernate.dialect:org.hibernate.dialect.function:org.hibernate.dialect.lock:org.hibernate.dialect.pagination:org.hibernate.dialect.resolver:org.hibernate.engine:org.hibernate.engine.internal:org.hibernate.engine.jdbc:org.hibernate.engine.jdbc.batch.internal:org.hibernate.engine.jdbc.batch.spi:org.hibernate.engine.jdbc.internal:org.hibernate.engine.jdbc.internal.proxy:org.hibernate.engine.jdbc.spi:org.hibernate.engine.loading.internal:org.hibernate.engine.profile:org.hibernate.engine.query.spi:org.hibernate.engine.query.spi.sql:org.hibernate.engine.spi:org.hibernate.engine.transaction.internal:org.hibernate.engine.transaction.internal.jdbc:org.hibernate.engine.transaction.internal.jta:org.hibernate.engine.transaction.spi:org.hibernate.engine.transaction.synchronization.internal:org.hibernate.engine.transaction.synchronization.spi:org.hibernate.event.internal:org.hibernate.event.service.internal:org.hibernate.event.service.spi:org.hibernate.event.spi:org.hibernate.exception:org.hibernate.exception.internal:org.hibernate.exception.spi:org.hibernate.hql.internal:org.hibernate.hql.internal.antlr:org.hibernate.hql.internal.ast:org.hibernate.hql.internal.ast.exec:org.hibernate.hql.internal.ast.tree:org.hibernate.hql.internal.ast.util:org.hibernate.hql.internal.classic:org.hibernate.hql.internal.classic.:org.hibernate.hql.spi:org.hibernate.id:org.hibernate.id.enhanced:org.hibernate.id.factory:org.hibernate.id.factory.internal:org.hibernate.id.factory.spi:org.hibernate.id.insert:org.hibernate.id.uuid:org.hibernate.integrator.internal:org.hibernate.integrator.spi:org.hibernate.internal:org.hibernate.internal.jaxb:org.hibernate.internal.jaxb.cfg:org.hibernate.internal.jaxb.mapping.hbm:org.hibernate.internal.jaxb.mapping.orm:org.hibernate.internal.util:org.hibernate.internal.util.beans:org.hibernate.internal.util.collections:org.hibernate.internal.util.compare:org.hibernate.internal.util.config:org.hibernate.internal.util.io:org.hibernate.internal.util.jndi:org.hibernate.internal.util.xml:org.hibernate.jdbc:org.hibernate.jmx:org.hibernate.loader:org.hibernate.loader.collection:org.hibernate.loader.criteria:org.hibernate.loader.custom:org.hibernate.loader.custom.sql:org.hibernate.loader.entity:org.hibernate.loader.hql:org.hibernate.lob:org.hibernate.mapping:org.hibernate.metadata:org.hibernate.metamodel:org.hibernate.metamodel.binding:org.hibernate.metamodel.domain:org.hibernate.metamodel.relational:org.hibernate.metamodel.relational.state:org.hibernate.metamodel.source:org.hibernate.metamodel.source.annotations:org.hibernate.metamodel.source.annotations.attribute:org.hibernate.metamodel.source.annotations.attribute.type:org.hibernate.metamodel.source.annotations.entity:org.hibernate.metamodel.source.annotations.global:org.hibernate.metamodel.source.annotations.xml:org.hibernate.metamodel.source.annotations.xml.filter:org.hibernate.metamodel.source.annotations.xml.mocker:org.hibernate.metamodel.source.binder:org.hibernate.metamodel.source.hbm:org.hibernate.metamodel.source.internal:org.hibernate.param:org.hibernate.persister.collection:org.hibernate.persister.entity:org.hibernate.persister.internal:org.hibernate.persister.spi:org.hibernate.pretty:org.hibernate.property:org.hibernate.proxy:org.hibernate.proxy.dom4j:org.hibernate.proxy.map:org.hibernate.proxy.pojo:org.hibernate.proxy.pojo.javassist:org.hibernate.secure.internal:org.hibernate.service:org.hibernate.service.classloading.:org.hibernate.service.classloading.internal:org.hibernate.service.classloading.internal.:org.hibernate.service.classloading.spi:org.hibernate.service.classloading.spi.:org.hibernate.service.config.internal:org.hibernate.service.config.spi:org.hibernate.service.internal:org.hibernate.service.jdbc.connections.internal:org.hibernate.service.jdbc.connections.spi:org.hibernate.service.jdbc.dialect.internal:org.hibernate.service.jdbc.dialect.spi:org.hibernate.service.jmx.internal:org.hibernate.service.jmx.spi:org.hibernate.service.jndi:org.hibernate.service.jndi.internal:org.hibernate.service.jndi.spi:org.hibernate.service.jta.platform.internal:org.hibernate.service.jta.platform.spi:org.hibernate.service.spi:org.hibernate.sql:org.hibernate.sql.ordering.antlr:org.hibernate.stat:org.hibernate.stat.internal:org.hibernate.stat.spi:org.hibernate.tool.hbm2ddl:org.hibernate.tool.instrument:org.hibernate.tool.instrument.javassist:org.hibernate.transaction:org.hibernate.transform:org.hibernate.tuple:org.hibernate.tuple.component:org.hibernate.tuple.entity:org.hibernate.type:org.hibernate.type.descriptor:org.hibernate.type.descriptor.java:org.hibernate.type.descriptor.sql:org.hibernate.usertype:org.hibernate.ejb:org.hibernate.ejb.cfg.spi:org.hibernate.ejb.connection:org.hibernate.ejb.criteria:org.hibernate.ejb.criteria.expression:org.hibernate.ejb.criteria.expression.function:org.hibernate.ejb.criteria.path:org.hibernate.ejb.criteria.predicate:org.hibernate.ejb.event:org.hibernate.ejb.instrument:org.hibernate.ejb.internal:org.hibernate.ejb.metamodel:org.hibernate.ejb.packaging:org.hibernate.ejb.util</packages>
+                                            <title>Module org.hibernate</title>
                                         </group>
                                         <group>
                                             <title>Module org.hibernate.commons-annotations</title>

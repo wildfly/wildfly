@@ -3348,6 +3348,10 @@
                         <groupId>org.hibernate</groupId>
                         <artifactId>hibernate-entitymanager</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.rhq.helpers</groupId>
+                        <artifactId>rhq-pluginAnnotations</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -3481,6 +3485,16 @@
                 <groupId>org.hornetq</groupId>
                 <artifactId>hornetq-jms-server</artifactId>
                 <version>${version.org.hornetq}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.jbossts</groupId>
+                        <artifactId>jbossjts</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.naming</groupId>
+                        <artifactId>jnpserver</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -4065,6 +4079,12 @@
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-jsf-injection</artifactId>
                 <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.myfaces.core</groupId>
+                        <artifactId>myfaces-impl</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -4083,6 +4103,14 @@
                     <exclusion>
                         <groupId>commons-codec</groupId>
                         <artifactId>commons-codec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>jfree</groupId>
+                        <artifactId>jfreechart</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>jfree</groupId>
+                        <artifactId>jcommon</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>log4j</groupId>
@@ -4377,6 +4405,14 @@
                         <artifactId>idl</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>jfree</groupId>
+                        <artifactId>jfreechart</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>jfree</groupId>
+                        <artifactId>jcommon</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.integration</groupId>
                         <artifactId>jboss-corba-ots-spi</artifactId>
                     </exclusion>
@@ -4387,6 +4423,10 @@
                     <exclusion>
                         <groupId>org.jboss.jbossas</groupId>
                         <artifactId>jboss-server-manager</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.jbossts.arjunacore</groupId>
+                        <artifactId>arjunacore</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
@@ -4442,12 +4482,24 @@
                         <artifactId>jacorb</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>jfree</groupId>
+                        <artifactId>jfreechart</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>jfree</groupId>
+                        <artifactId>jcommon</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.integration</groupId>
                         <artifactId>jboss-corba-ots-spi</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.jbossas</groupId>
                         <artifactId>jboss-server-manager</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.jbossts.arjunacore</groupId>
+                        <artifactId>arjunacore</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
@@ -4504,6 +4556,10 @@
                     <exclusion>
                         <groupId>org.jboss.jbossas</groupId>
                         <artifactId>jboss-server-manager</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.jbossts.jta</groupId>
+                        <artifactId>narayana-jta</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.spec.javax.transaction</groupId>
@@ -4644,6 +4700,7 @@
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging-processor</artifactId>
                 <version>${version.org.jboss.logging.jboss-logging-processor}</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
@@ -4727,6 +4784,10 @@
                     <exclusion>
                         <groupId>com.mycila.com.google.inject.extensions</groupId>
                         <artifactId>guice-assisted-inject</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.as</groupId>
+                        <artifactId>jboss-as-console-resources</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4819,6 +4880,12 @@
                 <groupId>org.jboss.remotingjmx</groupId>
                 <artifactId>remoting-jmx</artifactId>
                 <version>${version.org.jboss.remotingjmx.remoting-jmx}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-processor</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
