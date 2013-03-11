@@ -408,7 +408,8 @@ final class HandlerOperations {
     public static LoggingOperations.LoggingUpdateOperationStepHandler ENABLE_HANDLER = new LoggingOperations.LoggingUpdateOperationStepHandler() {
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-            // Nothing to do
+            // Set the enable attribute to true
+            model.get(CommonAttributes.ENABLED.getName()).set(true);
         }
 
         @Override
@@ -420,7 +421,8 @@ final class HandlerOperations {
     public static LoggingOperations.LoggingUpdateOperationStepHandler DISABLE_HANDLER = new LoggingOperations.LoggingUpdateOperationStepHandler() {
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-            // Nothing to do
+            // Set the enable attribute to false
+            model.get(CommonAttributes.ENABLED.getName()).set(false);
         }
 
         @Override
