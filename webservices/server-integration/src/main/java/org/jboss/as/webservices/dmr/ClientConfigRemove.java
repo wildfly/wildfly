@@ -22,15 +22,13 @@
 package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.webservices.dmr.PackageUtils.getServerConfig;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.wsf.spi.management.ServerConfig;
-import org.jboss.wsf.spi.metadata.config.ClientConfig;
 
 /**
  * OperationHandler to remove the client configuration
@@ -47,22 +45,12 @@ final class ClientConfigRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final ServerConfig config = getServerConfig(context);
-        if (config != null) {
-            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            final String name = address.getLastElement().getValue();
 
-            ClientConfig target = null;
-            for (ClientConfig clConfig : config.getClientConfigs()) {
-                if (clConfig.getConfigName().equals(name)) {
-                    target = clConfig;
-                }
-            }
-            if (target != null) {
-                config.getClientConfigs().remove(target);
-                context.reloadRequired();
-            }
-        }
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
+
+        context.removeService(WSServices.CLIENT_CONFIG_SERVICE.append(name));
+        context.reloadRequired();
     }
 
     @Override
