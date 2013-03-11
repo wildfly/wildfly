@@ -24,10 +24,9 @@ package org.jboss.as.controller;
 
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.OperationContext.ResultAction.KEEP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.operations.global.GlobalNotifications.NEW_VALUE;
 import static org.jboss.as.controller.operations.global.GlobalNotifications.OLD_VALUE;
@@ -110,6 +109,7 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
                     newVal.set(resolvedValue);
                     final HandbackHolder<T> handback = new HandbackHolder<T>();
                     final boolean reloadRequired = applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handback);
+
                     if (reloadRequired) {
                         context.reloadRequired();
                     }
@@ -133,31 +133,25 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.addStep(new OperationStepHandler() {
+
+        context.completeStep(new OperationContext.ResultHandler() {
             @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                try {
-                    if (FAILED.equals(context.getResult().get(OUTCOME).asString())) {
-                        return;
-                    }
-
-                    PathAddress sourceAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
-                    ModelNode data = new ModelNode();
-                    data.get(NAME).set(attributeName);
-                    data.get(OLD_VALUE).set(currentValue);
-                    data.get(NEW_VALUE).set(newVal.get());
-                    Notification notification = new Notification(ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION,
-                            sourceAddress,
-                            MESSAGES.attributeValueWritten(attributeName, currentValue, newVal.get()),
-                            data);
-                    NotificationService.emitNotification(context, notification);
-                } finally {
-                    context.stepCompleted();
+            public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                if (resultAction != KEEP) {
+                    return;
                 }
+                PathAddress sourceAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+                ModelNode data = new ModelNode();
+                data.get(NAME).set(attributeName);
+                data.get(OLD_VALUE).set(currentValue);
+                data.get(NEW_VALUE).set(newVal.get());
+                Notification notification = new Notification(ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION,
+                        sourceAddress,
+                        MESSAGES.attributeValueWritten(attributeName, currentValue, newVal.get()),
+                        data);
+                NotificationService.emitNotification(context, notification);
             }
-        }, OperationContext.Stage.VERIFY);
-
-        context.stepCompleted();
+        });
     }
 
 
