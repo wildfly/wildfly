@@ -200,7 +200,10 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         }
         PlugInLoaderService loaderService = new PlugInLoaderService(Collections.unmodifiableList(knownNames));
         ServiceBuilder<PlugInLoaderService> builder = serviceTarget.addService(plugInLoaderName, loaderService);
-        newControllers.add(builder.setInitialMode(Mode.ON_DEMAND).install());
+        final ServiceController<PlugInLoaderService> sc = builder.setInitialMode(Mode.ON_DEMAND).install();
+        if(newControllers != null) {
+            newControllers.add(sc);
+        }
 
         return plugInLoaderName;
     }
@@ -211,8 +214,10 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         ClientCertCallbackHandler clientCertCallbackHandler = new ClientCertCallbackHandler();
 
         ServiceBuilder<?> ccBuilder = serviceTarget.addService(clientCertServiceName, clientCertCallbackHandler);
-
-        newControllers.add(ccBuilder.setInitialMode(ON_DEMAND).install());
+        final ServiceController<?> sc = ccBuilder.setInitialMode(ON_DEMAND).install();
+        if(newControllers != null) {
+            newControllers.add(sc);
+        }
 
         return clientCertServiceName;
     }
@@ -229,7 +234,10 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
                     ServerSecurityManager.class, jaasCallbackHandler.getSecurityManagerValue());
         }
 
-        newControllers.add(jaasBuilder.setInitialMode(ON_DEMAND).install());
+        final ServiceController<?> sc = jaasBuilder.setInitialMode(ON_DEMAND).install();
+        if(newControllers != null) {
+            newControllers.add(sc);
+        }
 
         return jaasServiceName;
     }
@@ -271,8 +279,10 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         LocalCallbackHandlerService localCallbackHandler = new LocalCallbackHandlerService(defaultUser, allowedUsers);
 
         ServiceBuilder<?> jaasBuilder = serviceTarget.addService(localServiceName, localCallbackHandler);
-
-        newControllers.add(jaasBuilder.setInitialMode(ON_DEMAND).install());
+        final ServiceController<?> serviceController = jaasBuilder.setInitialMode(ON_DEMAND).install();
+        if(newControllers != null) {
+            newControllers.add(serviceController);
+        }
 
         return localServiceName;
     }
@@ -292,7 +302,10 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         ServiceBuilder<CallbackHandlerService> plugInBuilder = serviceTarget.addService(plugInServiceName, plugInService);
         plugInBuilder.addDependency(plugInLoaderName, PlugInLoaderService.class, plugInService.getPlugInLoaderServiceValue());
 
-        newControllers.add(plugInBuilder.setInitialMode(ON_DEMAND).install());
+        final ServiceController<CallbackHandlerService> sc = plugInBuilder.setInitialMode(ON_DEMAND).install();
+        if(newControllers != null) {
+            newControllers.add(sc);
+        }
 
         return plugInServiceName;
     }
