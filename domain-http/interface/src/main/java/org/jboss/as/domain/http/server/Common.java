@@ -21,6 +21,7 @@
 */
 package org.jboss.as.domain.http.server;
 
+import static io.undertow.server.handlers.ResponseCodeHandler.HANDLE_404;
 import io.undertow.io.IoCallback;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.ResponseCodeHandler;
@@ -35,7 +36,8 @@ public class Common {
 
     public static final ResponseCodeHandler MOVED_PERMANENTLY = new ResponseCodeHandler(301);
     public static final ResponseCodeHandler TEMPORARY_REDIRECT = new ResponseCodeHandler(307);
-    public static final ResponseCodeHandler UNAUTHORIZED = new ResponseCodeHandler(405);
+    public static final ResponseCodeHandler UNAUTHORIZED = new ResponseCodeHandler(403);
+    public static final ResponseCodeHandler NOT_FOUND = HANDLE_404;
     public static final ResponseCodeHandler METHOD_NOT_ALLOWED_HANDLER = new ResponseCodeHandler(405);
     public static final ResponseCodeHandler UNSUPPORTED_MEDIA_TYPE = new ResponseCodeHandler(415);
     public static final ResponseCodeHandler INTERNAL_SERVER_ERROR = new ResponseCodeHandler(500);
