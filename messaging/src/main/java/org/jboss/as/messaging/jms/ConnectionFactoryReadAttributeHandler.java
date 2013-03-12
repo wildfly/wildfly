@@ -24,6 +24,7 @@ package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.messaging.CommonAttributes.HA;
 import static org.jboss.as.messaging.CommonAttributes.NAME;
+import static org.jboss.as.messaging.HornetQActivationService.ignoreOperationIfServerNotActive;
 import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithResourceNotFound;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
@@ -64,6 +65,10 @@ public class ConnectionFactoryReadAttributeHandler extends AbstractRuntimeOnlyHa
 
     @Override
     public void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+        if (ignoreOperationIfServerNotActive(context, operation)) {
+            return;
+        }
 
         validator.validate(operation);
         final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();

@@ -27,8 +27,10 @@ import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
+import org.jboss.as.messaging.HornetQActivationService;
 import org.jboss.as.messaging.HornetQDefaultCredentials;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceListener;
@@ -40,6 +42,8 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.msc.service.ServiceController.Mode.REMOVE;
 
 /**
  * The {@code JMSServerManager} service.
@@ -48,69 +52,68 @@ import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
  */
 public class JMSService implements Service<JMSServerManager> {
     private final InjectedValue<HornetQServer> hornetQServer = new InjectedValue<HornetQServer>();
+    private final ServiceName hqServiceName;
     private JMSServerManager jmsServer;
 
-    public static ServiceController<?> addService(final ServiceTarget target, ServiceName hqServiceName, final ServiceListener<Object>... listeners) {
-        final JMSService service = new JMSService();
+    public static ServiceController<JMSServerManager> addService(final ServiceTarget target, ServiceName hqServiceName, final ServiceListener<Object>... listeners) {
+        final JMSService service = new JMSService(hqServiceName);
         return target.addService(JMSServices.getJmsManagerBaseServiceName(hqServiceName), service)
-            .addDependency(hqServiceName, HornetQServer.class, service.getHornetQServer())
-            .addListener(listeners)
-            .setInitialMode(Mode.ACTIVE)
-            .install();
+                .addDependency(hqServiceName, HornetQServer.class, service.getHornetQServer())
+                .addListener(listeners)
+                .setInitialMode(Mode.ACTIVE)
+                .install();
     }
 
-    protected JMSService() {
-        //
+    protected JMSService(ServiceName hqServiceName) {
+        this.hqServiceName = hqServiceName;
     }
 
-    public synchronized void start(StartContext context) throws StartException {
+    public synchronized void start(final StartContext context) throws StartException {
+        ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(getClass());
         try {
-            final JMSServerManager jmsServer = new JMSServerManagerImpl(hornetQServer.getValue(), new AS7BindingRegistry(context.getController().getServiceContainer()));
+            jmsServer = new JMSServerManagerImpl(hornetQServer.getValue(), new AS7BindingRegistry(context.getController().getServiceContainer()));
+            final ServiceBuilder<Void> hornetqActivationService = context.getChildTarget().addService(HornetQActivationService.getHornetQActivationServiceName(hqServiceName), new HornetQActivationService())
+                    .setInitialMode(Mode.ACTIVE);
 
-            try {
-                // FIXME - we also need the TCCL here in case the JMSServerManager starts the HornetQServer
-                final ClassLoader loader = getClass().getClassLoader();
-                SecurityActions.setContextClassLoader(loader);
-                jmsServer.start();
+            hornetQServer.getValue().registerActivateCallback(new ActivateCallback() {
+                public ServiceController<Void> hornetqActivationController;
 
-                // FIXME - this check is a work-around for AS7-3658
-                if (!hornetQServer.getValue().getConfiguration().isBackup()) {
-                    hornetQServer.getValue().getRemotingService().allowInvmSecurityOverride(new HornetQPrincipal(HornetQDefaultCredentials.getUsername(), HornetQDefaultCredentials.getPassword()));
-                } else {
-                    hornetQServer.getValue().registerActivateCallback(new ActivateCallback() {
-                        public void preActivate() {
-                        }
-
-                        public void activated() {
-                            hornetQServer.getValue().getRemotingService().allowInvmSecurityOverride(new HornetQPrincipal(HornetQDefaultCredentials.getUsername(), HornetQDefaultCredentials.getPassword()));
-                        }
-
-                        public void deActivate() {
-                        }
-                    });
+                public void preActivate() {
                 }
-            } finally {
-                SecurityActions.setContextClassLoader(null);
-            }
-            this.jmsServer = jmsServer;
+
+                public void activated() {
+                    // FIXME - this check is a work-around for AS7-3658
+                    hornetQServer.getValue().getRemotingService().allowInvmSecurityOverride(new HornetQPrincipal(HornetQDefaultCredentials.getUsername(), HornetQDefaultCredentials.getPassword()));
+                    // HornetQ only provides a callback to be notified when HornetQ core server is activated.
+                    // but the JMS service start must not be completed until the JMSServerManager wrappee is indeed started (and has deployed the JMS resources, etc.)
+                    hornetqActivationController = hornetqActivationService.install();
+                }
+
+                public void deActivate() {
+                    if (hornetqActivationController != null) {
+                        hornetqActivationController.setMode(REMOVE);
+                    }
+                }
+            });
+            jmsServer.start();
         } catch (Exception e) {
-            throw new StartException(e);
+            throw MESSAGES.failedToStartService(e);
+        } finally {
+            SecurityActions.setThreadContextClassLoader(oldTccl);
         }
     }
 
     public synchronized void stop(StopContext context) {
-        final JMSServerManager jmsServer = this.jmsServer;
-        this.jmsServer = null;
         try {
             jmsServer.stop();
+            jmsServer = null;
         } catch (Exception e) {
             MESSAGING_LOGGER.errorStoppingJmsServer(e);
         }
     }
 
     public synchronized JMSServerManager getValue() throws IllegalStateException {
-        final JMSServerManager jmsServer = this.jmsServer;
-        if(jmsServer == null) {
+        if (jmsServer == null) {
             throw new IllegalStateException();
         }
         return jmsServer;

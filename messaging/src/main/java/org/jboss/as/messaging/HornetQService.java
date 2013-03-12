@@ -101,7 +101,8 @@ class HornetQService implements Service<HornetQServer> {
     // broadcast-group and discovery-groups configured with JGroups must share the same channel
     private final Map<String, JChannel> channels = new HashMap<String, JChannel>();
 
-    public HornetQService(PathConfig pathConfig) {
+    public HornetQService(Configuration configuration, PathConfig pathConfig) {
+        this.configuration = configuration;
         this.pathConfig = pathConfig;
     }
 
@@ -303,14 +304,6 @@ class HornetQService implements Service<HornetQServer> {
             throw new IllegalStateException();
         }
         return server;
-    }
-
-    public Configuration getConfiguration() {
-        return configuration;
-    }
-
-    public void setConfiguration(Configuration hqConfig) {
-        this.configuration = hqConfig;
     }
 
     public Injector<SecurityDomainContext> getSecurityDomainContextInjector() {

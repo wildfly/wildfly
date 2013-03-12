@@ -77,9 +77,10 @@ public class QueueAdd extends AbstractAddStepHandler {
             final QueueService service = new QueueService(queueConfiguration, false);
             final ServiceName queueServiceName = MessagingServices.getQueueBaseServiceName(hqServiceName).append(queueName);
             newControllers.add(context.getServiceTarget().addService(queueServiceName, service)
+                    .addDependency(HornetQActivationService.getHornetQActivationServiceName(hqServiceName))
                     .addDependency(hqServiceName, HornetQServer.class, service.getHornetQService())
                     .addListener(verificationHandler)
-                    .setInitialMode(Mode.ACTIVE)
+                    .setInitialMode(Mode.PASSIVE)
                     .install());
 
         }

@@ -23,6 +23,7 @@
 package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.controller.OperationContext.Stage.MODEL;
+import static org.jboss.as.messaging.HornetQActivationService.isHornetQServerActive;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import org.hornetq.api.core.management.ResourceNames;
@@ -88,6 +89,9 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
             // No, don't barf; just let the update apply to the model and put the server in a reload-required state
             return true;
         } else {
+            if (!isHornetQServerActive(context, operation)) {
+                return false;
+            }
             // Actually apply the update
             applyOperationToHornetQService(context, getName(operation), attributeName, newValue, hqService);
             return false;
