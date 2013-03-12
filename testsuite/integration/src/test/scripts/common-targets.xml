@@ -471,5 +471,44 @@
         </sequential>
     </macrodef>
 
+    <macrodef name="ts.config-as.add-messaging-failover" description="Make default hornetq-server fails over on shutdown">
+
+        <attribute name="name" default="jbossas"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <sequential>
+            <echo message="Make default hornetq-server fails over on shutdown"/>
+            <copy file="@{output.dir}/@{name}/@{config.dir.name}/standalone-full.xml"
+                  tofile="@{output.dir}/@{name}/@{config.dir.name}/standalone-full-backup.xml" />
+
+            <!-- Process *.xml to *.xml.mod. -->
+            <xslt destdir="@{output.dir}/@{name}-tmp/@{config.dir.name}"
+                  style="${jbossas.ts.integ.dir}/src/test/xslt/addMessagingFailoverOnShutdown.xsl"
+                  extension=".xml.mod"
+                  useImplicitFileset="false">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="**/standalone-full.xml"/>
+                </fileset>
+            </xslt>
+            <xslt destdir="@{output.dir}/@{name}-tmp/@{config.dir.name}"
+                  style="${jbossas.ts.integ.dir}/src/test/xslt/addMessagingBackup.xsl"
+                  extension=".xml.mod"
+                  useImplicitFileset="false">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="**/standalone-full-backup.xml"/>
+                </fileset>
+            </xslt>
+
+            <!-- Move processed files back. -->
+            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
+                <fileset dir="@{output.dir}/@{name}-tmp/@{config.dir.name}">
+                    <include name="**/standalone-full.xml.mod"/>
+                    <include name="**/standalone-full-backup.xml.mod"/>
+                </fileset>
+                <mapper type="glob" from="*.mod" to="*"/>
+            </move>
+        </sequential>
+    </macrodef>
 
 </project>

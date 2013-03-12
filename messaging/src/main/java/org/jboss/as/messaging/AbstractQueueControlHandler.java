@@ -23,6 +23,7 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
+import static org.jboss.as.messaging.HornetQActivationService.rollbackOperationIfServerNotActive;
 import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithResourceNotFound;
 import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
@@ -279,6 +280,10 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
 
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+        if (rollbackOperationIfServerNotActive(context, operation)) {
+            return;
+        }
 
         final String operationName = operation.require(ModelDescriptionConstants.OP).asString();
         final String queueName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();

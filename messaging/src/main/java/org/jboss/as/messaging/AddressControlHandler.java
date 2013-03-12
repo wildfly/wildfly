@@ -30,6 +30,8 @@ import static org.jboss.as.messaging.CommonAttributes.NUMBER_OF_BYTES_PER_PAGE;
 import static org.jboss.as.messaging.CommonAttributes.NUMBER_OF_PAGES;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE_NAMES;
 import static org.jboss.as.messaging.CommonAttributes.ROLES_ATTR_NAME;
+import static org.jboss.as.messaging.HornetQActivationService.ignoreOperationIfServerNotActive;
+import static org.jboss.as.messaging.HornetQActivationService.rollbackOperationIfServerNotActive;
 import static org.jboss.as.messaging.ManagementUtil.reportListOfString;
 import static org.jboss.as.messaging.ManagementUtil.reportRoles;
 import static org.jboss.as.messaging.ManagementUtil.reportRolesAsJSON;
@@ -62,6 +64,10 @@ public class AddressControlHandler extends AbstractRuntimeOnlyHandler {
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
 
+        if (rollbackOperationIfServerNotActive(context, operation)) {
+            return;
+        }
+
         final String operationName = operation.require(OP).asString();
         if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {
             handleReadAttribute(context, operation);
@@ -71,6 +77,11 @@ public class AddressControlHandler extends AbstractRuntimeOnlyHandler {
     }
 
     private void handleReadAttribute(OperationContext context, ModelNode operation) {
+
+        if (ignoreOperationIfServerNotActive(context, operation)) {
+            return;
+        }
+
         final AddressControl addressControl = getAddressControl(context, operation);
         if (addressControl == null) {
             ManagementUtil.rollbackOperationWithResourceNotFound(context, operation);

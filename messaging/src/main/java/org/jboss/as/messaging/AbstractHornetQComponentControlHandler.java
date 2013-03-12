@@ -77,19 +77,30 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
 
         final String operationName = operation.require(OP).asString();
 
-        HornetQComponentControl control = null;
-        boolean appliedToRuntime = false;
-        Object handback = null;
         if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {
+            if (HornetQActivationService.ignoreOperationIfServerNotActive(context, operation)) {
+                return;
+            }
             readAttributeValidator.validate(operation);
             final String name = operation.require(NAME).asString();
             if (STARTED.getName().equals(name)) {
-                control = getHornetQComponentControl(context, operation, false);
+                HornetQComponentControl control = getHornetQComponentControl(context, operation, false);
                 context.getResult().set(control.isStarted());
             } else {
                 handleReadAttribute(name, context, operation);
             }
-        } else if (START.equals(operationName)) {
+            context.stepCompleted();
+            return;
+        }
+
+        if (HornetQActivationService.rollbackOperationIfServerNotActive(context, operation)) {
+            return;
+        }
+
+        HornetQComponentControl control = null;
+        boolean appliedToRuntime = false;
+        Object handback = null;
+        if (START.equals(operationName)) {
             control = getHornetQComponentControl(context, operation, true);
             try {
                 control.start();

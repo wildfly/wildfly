@@ -33,6 +33,36 @@
                 <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
+
+        <container qualifier="jbossas-messaging-live" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-messaging-failover</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-messaging-failover -Djboss.node.name=default-jbossas-messaging-failover</property>
+                <property name="serverConfig">standalone-full.xml</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9999}</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9999}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
+
+        <container qualifier="jbossas-messaging-backup" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-messaging-failover</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.socket.binding.port-offset=100 -Djboss.inst=${basedir}/target/jbossas-messaging-failover -Djboss.node.name=default-jbossas-messaging-failover</property>
+                <property name="serverConfig">standalone-full-backup.xml</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:10099}</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8987} ${as.managementPort:10099}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
     </group>
 
 </arquillian>

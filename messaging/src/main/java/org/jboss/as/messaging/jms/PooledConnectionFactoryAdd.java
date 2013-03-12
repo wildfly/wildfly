@@ -48,6 +48,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.messaging.AlternativeAttributeCheckHandler;
 import org.jboss.as.messaging.CommonAttributes;
+import org.jboss.as.messaging.HornetQActivationService;
 import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
@@ -137,11 +138,12 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implement
                 .addService(hornetQResourceAdapterService, resourceAdapterService)
                 .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, resourceAdapterService.getTransactionManager())
                 .addDependency(hqServiceName, HornetQServer.class, resourceAdapterService.getHornetQService())
+                .addDependency(HornetQActivationService.getHornetQActivationServiceName(hqServiceName))
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName))
-                .addListener(ServiceListener.Inheritance.ALL, verificationHandler);
+                .addListener(ServiceListener.Inheritance.ALL, verificationHandler)
+                .setInitialMode(Mode.PASSIVE);
 
-
-        newControllers.add(serviceBuilder.setInitialMode(Mode.ACTIVE).install());
+        newControllers.add(serviceBuilder.install());
     }
 
     static List<String> getConnectors(final ModelNode model) {

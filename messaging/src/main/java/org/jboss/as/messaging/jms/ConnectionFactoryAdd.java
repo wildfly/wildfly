@@ -46,6 +46,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.AlternativeAttributeCheckHandler;
+import org.jboss.as.messaging.HornetQActivationService;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.dmr.ModelNode;
@@ -83,9 +84,10 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         final ConnectionFactoryService service = new ConnectionFactoryService(configuration);
         final ServiceName serviceName = JMSServices.getConnectionFactoryBaseServiceName(hqServiceName).append(name);
         ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(serviceName, service)
+                .addDependency(HornetQActivationService.getHornetQActivationServiceName(hqServiceName))
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName), JMSServerManager.class, service.getJmsServer())
                 .addListener(verificationHandler)
-                .setInitialMode(Mode.ACTIVE);
+                .setInitialMode(Mode.PASSIVE);
         org.jboss.as.server.Services.addServerExecutorDependency(serviceBuilder, service.getExecutorInjector(), false);
         newControllers.add(serviceBuilder.install());
     }

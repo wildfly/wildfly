@@ -25,6 +25,9 @@ package org.jboss.as.messaging.jms;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
+import static java.lang.System.getSecurityManager;
+import static java.lang.Thread.currentThread;
+
 public final class SecurityActions {
 
     private SecurityActions() {
@@ -49,22 +52,48 @@ public final class SecurityActions {
     }
 
     /**
-     * Sets context classloader.
+     * Sets current thread context classloader to the class' ClassLoader
      *
-     * @param classLoader
-     *            the classloader
+     * @param clazz the class
      */
-    public static void setContextClassLoader(final ClassLoader classLoader) {
-        if (System.getSecurityManager() == null) {
-            Thread.currentThread().setContextClassLoader(classLoader);
+
+    public static ClassLoader setThreadContextClassLoader(final Class clazz) {
+        if (getSecurityManager() == null) {
+            final Thread thread = currentThread();
+            try {
+                return thread.getContextClassLoader();
+            } finally {
+                thread.setContextClassLoader(clazz.getClassLoader());
+            }
         } else {
-            AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                public Object run() {
-                    Thread.currentThread().setContextClassLoader(classLoader);
-                    return null;
+            return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+                public ClassLoader run() {
+                    final Thread thread = currentThread();
+                    try {
+                        return thread.getContextClassLoader();
+                    } finally {
+                        thread.setContextClassLoader(clazz.getClassLoader());
+                    }
                 }
             });
         }
     }
 
+    /**
+     * Sets current thread context classloader to the classLoader
+     *
+     * @param cl the class loader
+     */
+    public static void setThreadContextClassLoader(final ClassLoader cl) {
+        if (getSecurityManager() == null) {
+            currentThread().setContextClassLoader(cl);
+        } else {
+            AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+                public ClassLoader run() {
+                    Thread.currentThread().setContextClassLoader(cl);
+                    return cl;
+                }
+            });
+        }
+    }
 }

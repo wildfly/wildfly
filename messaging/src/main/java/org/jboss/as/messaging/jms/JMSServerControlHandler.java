@@ -23,6 +23,7 @@
 package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.messaging.HornetQActivationService.rollbackOperationIfServerNotActive;
 import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithResourceNotFound;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
@@ -90,6 +91,10 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
 
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+        if (rollbackOperationIfServerNotActive(context, operation)) {
+            return;
+        }
 
         final String operationName = operation.require(OP).asString();
         final JMSServerControl serverControl = getServerControl(context, operation);
