@@ -62,7 +62,7 @@ public class EJBEndpointSecuredWSDLAccessTestCase {
                 .addAsResource(EJBEndpointSecuredWSDLAccessTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(EJBEndpointSecuredWSDLAccessTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addClasses(EJBEndpointIface.class, EJBEndpointSecuredWSDLAccess.class);
-        
+
         return jar;
     }
 
@@ -80,13 +80,13 @@ public class EJBEndpointSecuredWSDLAccessTestCase {
             // failure is expected
         }
     }
-    
+
 
     @Test
     public void accessWSDLWithValidUsernameAndPassord() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3-for-wsdl/EJB3ServiceForWSDL?wsdl");
         String encoding = Base64Encoder.encode("user1:password1");
-        
+
         DefaultHttpClient httpclient = new DefaultHttpClient();
         HttpGet httpget = new HttpGet(wsdlURL.toString());
         httpget.setHeader("Authorization", "Basic " + encoding);
@@ -94,49 +94,52 @@ public class EJBEndpointSecuredWSDLAccessTestCase {
 
         String text = Utils.getContent(response);
         Assert.assertTrue("Response doesn't contain wsdl file", text.contains("wsdl:binding"));
-            
+
     }
-    
+
     @Test
     public void accessWSDLWithValidUsernameAndPassordButInvalidRole() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3-for-wsdl/EJB3ServiceForWSDL?wsdl");
         String encoding = Base64Encoder.encode("user2:password2");
-        
+
         DefaultHttpClient httpclient = new DefaultHttpClient();
         HttpGet httpget = new HttpGet(wsdlURL.toString());
         httpget.setHeader("Authorization", "Basic " + encoding);
         HttpResponse response = httpclient.execute(httpget);
+        Assert.assertEquals(403, response.getStatusLine().getStatusCode());
 
-        String text = Utils.getContent(response);
-        Assert.assertTrue("Response doesn't contain access denied message", text.contains("Access to the requested resource has been denied"));
-            
+        Utils.getContent(response);
+        //Assert.assertTrue("Response doesn't contain access denied message", text.contains("Access to the requested resource has been denied"));
+
     }
 
     @Test
     public void accessWSDLWithInvalidUsernameAndPassord() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3-for-wsdl/EJB3ServiceForWSDL?wsdl");
         String encoding = Base64Encoder.encode("user1:password-XZY");
-        
+
         DefaultHttpClient httpclient = new DefaultHttpClient();
         HttpGet httpget = new HttpGet(wsdlURL.toString());
         httpget.setHeader("Authorization", "Basic " + encoding);
         HttpResponse response = httpclient.execute(httpget);
+        Assert.assertEquals(401, response.getStatusLine().getStatusCode());
 
-        String text = Utils.getContent(response);
-        Assert.assertTrue("Response doesn't contain expected message.", text.contains("This request requires HTTP authentication"));
+        Utils.getContent(response);
+        //Assert.assertTrue("Response doesn't contain expected message.", text.contains("This request requires HTTP authentication"));
     }
-    
+
     @Test
     public void accessWSDLWithoutUsernameAndPassord() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3-for-wsdl/EJB3ServiceForWSDL?wsdl");
-        
+
         DefaultHttpClient httpclient = new DefaultHttpClient();
         HttpGet httpget = new HttpGet(wsdlURL.toString());
         HttpResponse response = httpclient.execute(httpget);
+        Assert.assertEquals(401, response.getStatusLine().getStatusCode());
 
-        String text = Utils.getContent(response);
-        Assert.assertTrue("Response doesn't contain expected message.", text.contains("This request requires HTTP authentication"));
+        Utils.getContent(response);
+        //Assert.assertTrue("Response doesn't contain expected message.", text.contains("This request requires HTTP authentication"));
     }
-    
-    
+
+
 }
