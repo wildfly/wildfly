@@ -22,6 +22,8 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.messaging.HornetQActivationService.getHornetQServer;
+
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -48,7 +50,7 @@ class AddressSettingsWriteHandler extends AbstractWriteAttributeHandler<AddressS
     protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue,
                                            final ModelNode currentValue, final HandbackHolder<RevertHandback> handbackHolder) throws OperationFailedException {
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-        final HornetQServer server = AddressSettingAdd.getServer(context, operation);
+        final HornetQServer server = getHornetQServer(context, operation);
         if(server != null) {
             final ModelNode model = resource.getModel();
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));

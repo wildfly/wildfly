@@ -24,6 +24,7 @@ package org.jboss.as.messaging.jms;
 
 
 import static org.jboss.as.messaging.CommonAttributes.NAME;
+import static org.jboss.as.messaging.HornetQActivationService.ignoreOperationIfServerNotActive;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import org.hornetq.api.core.management.ResourceNames;
@@ -61,6 +62,10 @@ public class JMSQueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
 
     @Override
     public void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+        if (ignoreOperationIfServerNotActive(context, operation)) {
+            return;
+        }
 
         validator.validate(operation);
         final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();

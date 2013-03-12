@@ -34,6 +34,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.CommonAttributes;
+import org.jboss.as.messaging.HornetQActivationService;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -73,8 +74,9 @@ public class JMSTopicAdd extends AbstractAddStepHandler {
         final ServiceName serviceName = JMSServices.getJmsTopicBaseServiceName(hqServiceName).append(name);
 
         final ServiceBuilder<Void> serviceBuilder = serviceTarget.addService(serviceName, service)
+                .addDependency(HornetQActivationService.getHornetQActivationServiceName(hqServiceName))
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName), JMSServerManager.class, service.getJmsServer())
-                .setInitialMode(Mode.ACTIVE);
+                .setInitialMode(Mode.PASSIVE);
         org.jboss.as.server.Services.addServerExecutorDependency(serviceBuilder, service.getExecutorInjector(), false);
         if(verificationHandler != null) {
             serviceBuilder.addListener(verificationHandler);

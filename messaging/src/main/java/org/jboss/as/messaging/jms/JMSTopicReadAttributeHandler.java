@@ -23,6 +23,7 @@
 package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.messaging.CommonAttributes.NAME;
+import static org.jboss.as.messaging.HornetQActivationService.ignoreOperationIfServerNotActive;
 import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithResourceNotFound;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 import static org.jboss.as.messaging.jms.JMSTopicDefinition.DURABLE_MESSAGE_COUNT;
@@ -66,6 +67,10 @@ public class JMSTopicReadAttributeHandler extends AbstractRuntimeOnlyHandler {
 
     @Override
     public void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+        if (ignoreOperationIfServerNotActive(context, operation)) {
+            return;
+        }
 
         validator.validate(operation);
         final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();

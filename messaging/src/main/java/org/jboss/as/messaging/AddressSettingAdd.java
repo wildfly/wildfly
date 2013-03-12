@@ -24,6 +24,7 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
+import static org.jboss.as.messaging.HornetQActivationService.getHornetQServer;
 
 import java.util.List;
 
@@ -42,7 +43,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * {@code OperationStepHandler} adding a new address setting.
@@ -64,7 +64,7 @@ class AddressSettingAdd extends AbstractAddStepHandler {
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                   final ServiceVerificationHandler verificationHandler,
                                   final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final HornetQServer server = getServer(context, operation);
+        final HornetQServer server = getHornetQServer(context, operation);
         if(server != null) {
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
             final AddressSettings settings = createSettings(context, model);
@@ -103,12 +103,4 @@ class AddressSettingAdd extends AbstractAddStepHandler {
         return SimpleString.toSimpleString(node.getType() != ModelType.UNDEFINED ? node.asString() : defVal);
     }
 
-    static HornetQServer getServer(final OperationContext context, ModelNode operation) {
-        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
-        final ServiceController<?> controller = context.getServiceRegistry(true).getService(hqServiceName);
-        if(controller != null) {
-            return HornetQServer.class.cast(controller.getValue());
-        }
-        return null;
-    }
 }

@@ -24,6 +24,7 @@ package org.jboss.as.messaging.jms;
 
 import org.jboss.as.util.security.GetContextClassLoaderAction;
 import org.jboss.as.util.security.SetContextClassLoaderAction;
+import org.jboss.as.util.security.SetContextClassLoaderFromClassAction;
 
 import static java.lang.System.getSecurityManager;
 import static java.lang.Thread.currentThread;
@@ -45,17 +46,33 @@ public final class SecurityActions {
     }
 
     /**
-     * Sets context classloader.
+     * Sets current thread context classloader to the class' ClassLoader
      *
-     * @param classLoader
-     *            the classloader
+     * @param clazz the class
      */
-    public static void setContextClassLoader(final ClassLoader classLoader) {
+    public static ClassLoader setThreadContextClassLoader(Class clazz) {
         if (getSecurityManager() == null) {
-            currentThread().setContextClassLoader(classLoader);
+            final Thread thread = currentThread();
+            try {
+                return thread.getContextClassLoader();
+            } finally {
+                thread.setContextClassLoader(clazz.getClassLoader());
+            }
         } else {
-            doPrivileged(new SetContextClassLoaderAction(classLoader));
+            return doPrivileged(new SetContextClassLoaderFromClassAction(clazz));
         }
     }
 
+    /**
+     * Sets current thread context classloader to the classLoader
+     *
+     * @param cl the class loader
+     */
+    public static void setThreadContextClassLoader(ClassLoader cl) {
+        if (getSecurityManager() == null) {
+            currentThread().setContextClassLoader(cl);
+        } else {
+            doPrivileged(new SetContextClassLoaderAction(cl));
+        }
+    }
 }

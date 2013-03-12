@@ -91,14 +91,14 @@ class JMSBridgeService implements Service<JMSBridge> {
         if (moduleName == null) {
             bridge.start();
         } else {
-            ClassLoader cl = SecurityActions.getContextClassLoader();
+            ClassLoader oldTccl= SecurityActions.getContextClassLoader();
             try {
                 ModuleIdentifier moduleID = ModuleIdentifier.create(moduleName);
                 Module module = Module.getCallerModuleLoader().loadModule(moduleID);
-                SecurityActions.setContextClassLoader(module.getClassLoader());
+                SecurityActions.setThreadContextClassLoader(module.getClassLoader());
                 bridge.start();
             } finally {
-                SecurityActions.setContextClassLoader(cl);
+                SecurityActions.setThreadContextClassLoader(oldTccl);
             }
         }
         MessagingLogger.MESSAGING_LOGGER.startedService("JMS Bridge", bridgeName);
