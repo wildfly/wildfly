@@ -2243,8 +2243,8 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.jbossts.jts</groupId>
-      <artifactId>jbossjts-jacorb</artifactId>
+      <groupId>org.jboss.narayana.jts</groupId>
+      <artifactId>narayana-jts-jacorb</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License, Version 2.1</name>
@@ -2253,8 +2253,8 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.jbossts.jts</groupId>
-      <artifactId>jbossjts-integration</artifactId>
+      <groupId>org.jboss.narayana.jts</groupId>
+      <artifactId>narayana-jts-integration</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License, Version 2.1</name>
@@ -2263,7 +2263,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.jbossts</groupId>
+      <groupId>org.jboss.narayana</groupId>
       <artifactId>jbosstxbridge</artifactId>
       <licenses>
         <license>
@@ -2273,7 +2273,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.jbossts.xts</groupId>
+      <groupId>org.jboss.narayana.xts</groupId>
       <artifactId>jbossxts</artifactId>
       <licenses>
         <license>
@@ -2283,7 +2283,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.jbossts.xts</groupId>
+      <groupId>org.jboss.narayana.xts</groupId>
       <artifactId>jbossxts</artifactId>
       <classifier>api</classifier>
       <licenses>

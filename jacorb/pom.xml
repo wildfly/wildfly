@@ -113,13 +113,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-security-util</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.jbossts.jts</groupId>
-            <artifactId>jbossjts-jacorb</artifactId>
+            <groupId>org.jboss.narayana.jts</groupId>
+            <artifactId>narayana-jts-jacorb</artifactId>
         </dependency>
 
         <dependency>
