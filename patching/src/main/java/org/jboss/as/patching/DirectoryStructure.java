@@ -31,37 +31,116 @@ import java.io.File;
  * |
  * |-- bin
  * |-- bundles
- * |   `-- org/jboss/as/osgi
+ * |   |-- layers.conf
+ * |   |-- system
+ * |   |   |-- layers
+ * |   |   |   | -- xyz
+ * |   |   |   |    `-- .patches (overlay directory)
+ * |   |   |   |        |-- patch-xyz-1
+ * |   |   |   |        `-- patch-xyz-2
+ * |   |   |   `-- vuw
+ * |   |   |        `-- .patches (overlay directory)
+ * |   |   |            `-- patch-vuw-1
+ * |   |   |-- base
+ * |   |   |   |-- .patches (overlay directory)
+ * |   |   |   |   |-- patch-base-1
+ * |   |   |   |   `-- patch-base-2
+ * |   |   |   `-- org/jboss/as/osgi
+ * |   |   `-- add-ons
+ * |   |       `-- def
+ * |   |           `-- .patches (overlay directory)
+ * |   |               |-- patch-def-1
+ * |   |               `-- patch-def-2
+ * |   |
+ * |   `-- my/own/bundle/path/thing
+ * |
  * |-- docs
  * |-- modules
- * |   |-- org/jboss/as/...
- * |   `-- org/jboss/as/server/main/module.xml
- * |-- patches (overlay directory)
- * |   |-- patch01
- * |   |   |-- bundles
- * |   |   |   `-- org/jboss/as/osgi/configadmin/main
- * |   |   `-- modules
- * |   |       `-- org/jboss/as/server/main/module.xml
- * |   |-- patch02
- * |   |   |-- bundles
- * |   |   |   `-- org/jboss/as/osgi/configadmin/main
- * |   |   `-- modules
- * |   |       `-- org/jboss/as/server/main/module.xml
- * |   `-- .metadata
- * |       |-- cumulative (links to given patchId)
- * |       |-- references
- * |       |   |-- patch01 (list of one-off patches)
- * |       |   `-- patch02 (list of one-off patches)
- * |       `-- history (rollback information for a patch)
- * |           |-- patch01
- * |           |   |-- cumulative (previous cp)
- * |           |   `-- misc
- * |           `-- patch02
- * |               |-- cumulative (previous cp)
- * |               `-- misc
+ * |   |-- layers.conf
+ * |   |-- system
+ * |   |   |-- layers
+ * |   |   |   | -- xyz
+ * |   |   |   |    `-- .patches (overlay directory)
+ * |   |   |   |        |-- patch-xyz-1
+ * |   |   |   |        `-- patch-xyz-2
+ * |   |   |   `-- vuw
+ * |   |   |        `-- .patches (overlay directory)
+ * |   |   |            `-- patch-vuw-1
+ * |   |   |-- base
+ * |   |   |   |-- .patches (overlay directory)
+ * |   |   |   |   |-- patch-base-1
+ * |   |   |   |   `-- patch-base-2
+ * |   |   |   |-- org/jboss/as/...
+ * |   |   |   `-- org/jboss/as/server/main/module.xml
+ * |   |   |
+ * |   |   `-- add-ons
+ * |   |       `-- def
+ * |   |           `-- .patches (overlay directory)
+ * |   |               |-- patch-def-1
+ * |   |               `-- patch-def-2
+ * |   |
+ * |   `-- my/own/module/root/repo
  * |
- * |-- jboss-modules.jar
- * `-- loader.jar (boot module-loader)
+ * |-- .installation (metdata directory)
+ * |   |-- layers
+ * |   |   |-- xyz
+ * |   |   |   |-- installation (layer metadata)
+ * |   |   |   |-- cumulative (links to given patchId)
+ * |   |   |   |-- references
+ * |   |   |   |   `-- patch-xyz-1 (list of one-off patches)
+ * |   |   |   `-- history
+ * |   |   |       |-- patch-xyz-1
+ * |   |   |       |   |-- cumulative (previous cp)
+ * |   |   |       |   |-- misc
+ * |   |   |       |   `-- rollback.xml
+ * |   |   |       `-- patch-xyz-2
+ * |   |   |           |-- cumulative
+ * |   |   |           |-- misc
+ * |   |   |           `-- rollback.xml
+ * |   |   |
+ * |   |   `-- vuw
+ * |   |       |-- installation
+ * |   |       |-- cumulative (links to given patchId)
+ * |   |       |-- references
+ * |   |       |   `-- patch-vuw-1 (list of one-off patches)
+ * |   |       `-- history
+ * |   |           `-- patch-vuw-1
+ * |   |               |-- cumulative (previous cp)
+ * |   |               |-- misc
+ * |   |               `-- rollback.xml
+ * |   |
+ * |   |-- base
+ * |   |   |-- installation
+ * |   |   |-- cumulative (links to given patchId)
+ * |   |   |-- references
+ * |   |   |   `-- patch-base-1 (list of one-off patches)
+ * |   |   `-- history
+ * |   |       |-- patch-base-1
+ * |   |       |   |-- cumulative (previous cp)
+ * |   |       |   |-- misc
+ * |   |       |   `-- rollback.xml
+ * |   |       `-- patch-base-2
+ * |   |           |-- cumulative
+ * |   |           |-- misc
+ * |   |           `-- rollback.xml
+ * |   |
+ * |   `-- add-ons
+ * |       `-- def
+ * |           |-- installation
+ * |           |-- cumulative (links to given patchId)
+ * |           |-- references
+ * |           |   `-- patch-def-1 (list of one-off patches)
+ * |           `-- history
+ * |               |-- patch-def-1
+ * |               |   |-- cumulative (previous cp)
+ * |               |   |-- misc
+ * |               |   `-- rollback.xml
+ * |               `-- patch-def-2
+ * |                   |-- cumulative (previous cp)
+ * |                   |-- misc
+ * |                   `-- rollback.xml
+ * |
+ * `-- jboss-modules.jar
  *
  * @author Emanuel Muckenhuber
  */
