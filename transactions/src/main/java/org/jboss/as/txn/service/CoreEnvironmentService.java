@@ -28,6 +28,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
+import com.arjuna.ats.arjuna.common.CoreEnvironmentBeanException;
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import com.arjuna.ats.arjuna.utils.Process;
 import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
@@ -69,7 +70,13 @@ public class CoreEnvironmentService implements Service<CoreEnvironmentBean> {
             UuidProcessId id = new UuidProcessId();
             coreEnvironmentBean.setProcessImplementation(id);
         }
-        coreEnvironmentBean.setNodeIdentifier(nodeIdentifier);
+
+        try {
+            coreEnvironmentBean.setNodeIdentifier(nodeIdentifier);
+        } catch (CoreEnvironmentBeanException e) {
+            throw new StartException(e.getCause());
+        }
+
         // Setup the socket process id if there is a binding
         SocketBinding binding = socketProcessBindingInjector.getOptionalValue();
         if(binding != null) {
