@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,64 +20,69 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching;
+package org.jboss.as.patching.structure;
 
 import java.io.File;
-import java.util.List;
 
 /**
- * Basic information about a patch.
- *
  * @author Emanuel Muckenhuber
  */
-public interface PatchInfo {
-
-    /** The default if no patches are active. */
-    String BASE = "base";
+public interface InstalledImage {
 
     /**
-     * Get the current version.
+     * Get the jboss home.
      *
-     * @return the current version
+     * @return the jboss home
      */
-    String getVersion();
+    File getJbossHome();
 
     /**
-     * The cumulative patch id.
+     * Get the app-client directory.
      *
-     * @return the cp id
+     * @return the app client dir
      */
-    String getCumulativeID();
+    File getAppClientDir();
 
     /**
-     * Get cumulative patch ids.
+     * Get the bundles directory.
      *
-     * @return the patch ids
+     * @return the bundles directory
      */
-    List<String> getPatchIDs();
+    File getBundlesDir();
 
     /**
-     * Get the current path for patching.
-     * Note this does not include the module.path.
+     * Get the domain directory.
      *
-     * @return the module path
-     * @deprecated TODO remove
+     * @return the domain dir
      */
-    @Deprecated
-    File[] getPatchingPath();
+    File getDomainDir();
 
     /**
-     * Get the resolved module path.
+     * Get the installation metadata directory.
      *
-     * @return the module path
+     * @return the patches metadata dir
      */
-    File[] getModulePath();
+    File getInstallationMetadata();
 
     /**
-     * Get the current bundle.path.
+     * Get the modules directory.
      *
-     * @return the bundle path
+     * @return the modules dir
      */
-    File[] getBundlePath();
+    File getModulesDir();
+
+    /**
+     * Get the standalone dir.
+     *
+     * @return the standalone dir
+     */
+    File getStandaloneDir();
+
+    /**
+     * Get the path to the layers.conf file.
+     *
+     * @return the layers.conf path
+     */
+    File getLayersConf();
 
 }
