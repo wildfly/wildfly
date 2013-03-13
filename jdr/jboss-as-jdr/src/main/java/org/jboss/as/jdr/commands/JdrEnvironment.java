@@ -24,6 +24,12 @@ package org.jboss.as.jdr.commands;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.jdr.util.JdrZipFile;
 
+/**
+ * Value object of globally useful data.
+ *
+ * This object contains information that is designed to be used by Commands. It isn't thread safe.
+ * Most commands will need to interact with the {@link JdrZipFile} zip member.
+ */
 public class JdrEnvironment {
     private String jbossHome = System.getenv("JBOSS_HOME");
     private String username;
