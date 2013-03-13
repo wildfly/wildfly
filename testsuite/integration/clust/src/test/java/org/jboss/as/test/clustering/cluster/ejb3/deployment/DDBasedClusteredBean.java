@@ -34,7 +34,7 @@ public class DDBasedClusteredBean {
     public int increment() {
         return count++;
     }
-    
+
     public int getCount() {
         return count;
     }

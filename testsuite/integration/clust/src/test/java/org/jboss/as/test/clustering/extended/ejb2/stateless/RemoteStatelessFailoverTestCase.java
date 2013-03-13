@@ -65,10 +65,10 @@ import org.junit.runner.RunWith;
 
 /**
  * EJB2 stateless bean - basic cluster tests - failover and load balancing.
- * @see  org.jboss.as.test.clustering.cluster.ejb3.stateless.RemoteStatelessFailoverTestCase
- * 
+ *
  * @author Paul Ferraro
  * @author Ondrej Chaloupka
+ * @see org.jboss.as.test.clustering.cluster.ejb3.stateless.RemoteStatelessFailoverTestCase
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -85,14 +85,14 @@ public class RemoteStatelessFailoverTestCase {
     private static final String HOST_2 = System.getProperty("node1");
     private static final String REMOTE_PORT_PROPERTY_NAME = "remote.connection.default.port";
     private static final String REMOTE_HOST_PROPERTY_NAME = "remote.connection.default.host";
-    
+
     private static final String DEPLOYMENT_1_DD = DEPLOYMENT_1 + "-descriptor";
     private static final String DEPLOYMENT_2_DD = DEPLOYMENT_2 + "-descriptor";
-    
+
     private static final Map<String, Boolean> deployed = new HashMap<String, Boolean>();
     private static final Map<String, Boolean> started = new HashMap<String, Boolean>();
     private static final Map<String, List<String>> container2deployment = new HashMap<String, List<String>>();
-    
+
     @BeforeClass
     public static void init() throws NamingException {
         directoryAnnotation = new RemoteEJBDirectory(ARCHIVE_NAME);
@@ -104,7 +104,7 @@ public class RemoteStatelessFailoverTestCase {
         deployed.put(DEPLOYMENT_2_DD, false);
         started.put(CONTAINER_1, false);
         started.put(CONTAINER_2, false);
-        
+
         List<String> deployments1 = new ArrayList<String>();
         deployments1.add(DEPLOYMENT_1);
         deployments1.add(DEPLOYMENT_1_DD);
@@ -137,7 +137,7 @@ public class RemoteStatelessFailoverTestCase {
     public static Archive<?> createDeploymentForContainer2() {
         return createDeployment();
     }
-    
+
     @Deployment(name = DEPLOYMENT_1_DD, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> createDeploymentOnDescriptorForContainer1() {
@@ -159,7 +159,7 @@ public class RemoteStatelessFailoverTestCase {
         log.info(jar.toString(true));
         return jar;
     }
-    
+
     private static Archive<?> createDeploymentOnDescriptor() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME_DD + ".jar");
         jar.addClasses(StatelessBeanBase.class, StatelessBeanDD.class, StatelessRemote.class, StatelessRemoteHome.class);
@@ -173,7 +173,7 @@ public class RemoteStatelessFailoverTestCase {
     }
 
     @Test
-    public void testFailoverOnStopAnnotatedBean() throws Exception {        
+    public void testFailoverOnStopAnnotatedBean() throws Exception {
         doFailover(true, directoryAnnotation, DEPLOYMENT_1, DEPLOYMENT_2);
     }
 
@@ -184,25 +184,25 @@ public class RemoteStatelessFailoverTestCase {
 
     @Test
     public void testFailoverOnUndeployAnnotatedBean() throws Exception {
-        doFailover(false, directoryAnnotation, DEPLOYMENT_1, DEPLOYMENT_2);     
+        doFailover(false, directoryAnnotation, DEPLOYMENT_1, DEPLOYMENT_2);
     }
-    
+
     @Test
     public void testFailoverOnUndeploySpecifiedByDescriptor() throws Exception {
         doFailover(false, directoryDD, DEPLOYMENT_1_DD, DEPLOYMENT_2_DD);
     }
-    
+
     private void doFailover(boolean isStop, EJBDirectory directory, String deployment1, String deployment2) throws Exception {
         this.start(CONTAINER_1);
         this.deploy(CONTAINER_1, deployment1);
-        
+
         final ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         try {
             ViewChangeListener listener = directory.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
-            
+
             this.establishView(listener, NODES[0]);
-            
+
             StatelessRemoteHome home = directory.lookupHome(StatelessBean.class, StatelessRemoteHome.class);
             StatelessRemote bean = home.create();
 
@@ -210,17 +210,17 @@ public class RemoteStatelessFailoverTestCase {
 
             this.start(CONTAINER_2);
             this.deploy(CONTAINER_2, deployment2);
-            
+
             this.establishView(listener, NODES);
-            
-            if(isStop) {
+
+            if (isStop) {
                 this.stop(CONTAINER_1);
             } else {
                 this.undeploy(CONTAINER_1, deployment1);
             }
-            
+
             this.establishView(listener, NODES[1]);
-            
+
             assertEquals("Only " + NODES[1] + " is active. The bean had to be invoked on it but it wasn't.", NODES[1], bean.getNodeName());
         } finally {
             // reset the selector
@@ -233,7 +233,7 @@ public class RemoteStatelessFailoverTestCase {
             undeployAll();
             shutdownAll();
         }
-    }    
+    }
 
     @Test
     public void testLoadbalanceAnnotatedBean() throws Exception {
@@ -244,7 +244,7 @@ public class RemoteStatelessFailoverTestCase {
     public void testLoadbalanceSpecifiedByDescriptor() throws Exception {
         loadbalance(directoryDD, DEPLOYMENT_1_DD, DEPLOYMENT_2_DD);
     }
-    
+
     /**
      * Basic load balance testing. A random distribution is used amongst nodes for client now.
      */
@@ -307,28 +307,28 @@ public class RemoteStatelessFailoverTestCase {
             count = count == null ? 1 : ++count;
             callCount.put(nodeName, count);
         }
-        Assert.assertEquals("It was running " + expectedServers + " servers but not all of them were used for loadbalancing.", 
-                   expectedServers, callCount.size());
+        Assert.assertEquals("It was running " + expectedServers + " servers but not all of them were used for loadbalancing.",
+                expectedServers, callCount.size());
 
         for (Integer count : callCount.values()) {
             maxNumOfProcessedCalls = count > maxNumOfProcessedCalls ? count : maxNumOfProcessedCalls;
             minNumOfProcessedCalls = count < minNumOfProcessedCalls ? count : minNumOfProcessedCalls;
         }
-        Assert.assertTrue("Minimal number of calls done to all servers have to be " + minPercentage * numCalls + " but was " + minNumOfProcessedCalls, 
+        Assert.assertTrue("Minimal number of calls done to all servers have to be " + minPercentage * numCalls + " but was " + minNumOfProcessedCalls,
                 minPercentage * numCalls <= minNumOfProcessedCalls);
         log.info("All " + expectedServers + " servers processed at least " + minNumOfProcessedCalls + " of calls");
     }
-    
+
     private void undeployAll() {
-        for(String container: container2deployment.keySet()) {
-            for(String deployment: container2deployment.get(container)) {
+        for (String container : container2deployment.keySet()) {
+            for (String deployment : container2deployment.get(container)) {
                 undeploy(container, deployment);
             }
         }
     }
-    
+
     private void shutdownAll() {
-        for(String container: container2deployment.keySet()) {
+        for (String container : container2deployment.keySet()) {
             stop(container);
         }
     }

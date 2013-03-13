@@ -109,9 +109,9 @@ public class CacheInvalidationTestCase {
         if (previousSelector != null) {
             EJBClientContext.setSelector(previousSelector);
         }
-        if(controller.isStarted(CONTAINER_1))
+        if (controller.isStarted(CONTAINER_1))
             controller.stop(CONTAINER_1);
-        if(controller.isStarted(CONTAINER_2))
+        if (controller.isStarted(CONTAINER_2))
             controller.stop(CONTAINER_2);
         directory.close();
     }
@@ -130,7 +130,7 @@ public class CacheInvalidationTestCase {
 
         StatefulRemoteHome home = directory.lookupHome(StatefulBean.class, StatefulRemoteHome.class);
         StatefulRemote remote = home.create();
-        for(int i=0; i<25; i++) {
+        for (int i = 0; i < 25; i++) {
             remote.incrementNumber();
         }
         controller.stop(CONTAINER_1);

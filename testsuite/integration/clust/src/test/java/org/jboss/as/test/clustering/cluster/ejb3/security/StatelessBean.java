@@ -23,6 +23,7 @@
 package org.jboss.as.test.clustering.cluster.ejb3.security;
 
 import javax.ejb.Stateless;
+
 import org.jboss.ejb3.annotation.Clustered;
 
 /**

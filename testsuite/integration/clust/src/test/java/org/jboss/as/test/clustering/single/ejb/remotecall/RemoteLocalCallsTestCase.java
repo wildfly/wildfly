@@ -52,7 +52,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Calling clustered annotated beans on one (local) machine plus testing remote calls for that single node.
- * 
+ *
  * @author Kabir Khan, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
@@ -81,30 +81,30 @@ public class RemoteLocalCallsTestCase {
         ejbInitialContext = new InitialContext(props);
 
     }
-    
+
     @AfterClass
     public static void tearDown() throws Exception {
-        if(initalContext != null) { 
+        if (initalContext != null) {
             initalContext.close();
         }
-        if(ejbInitialContext != null) { 
+        if (ejbInitialContext != null) {
             ejbInitialContext.close();
         }
     }
 
     private InitialContext getInitialContext(String remoteProviderUrl) throws Exception {
-        if(initalContext == null) {
+        if (initalContext == null) {
             final Properties env = new Properties();
             env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
             env.put(Context.PROVIDER_URL, remoteProviderUrl);
             env.put("jboss.naming.client.ejb.context", true);
             env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
-            env.put("jboss.naming.client.security.callback.handler.class",  org.jboss.as.test.shared.integration.ejb.security.CallbackHandler.class.getName());
+            env.put("jboss.naming.client.security.callback.handler.class", org.jboss.as.test.shared.integration.ejb.security.CallbackHandler.class.getName());
             initalContext = new InitialContext(env);
-        } 
+        }
         return initalContext;
     }
-    
+
     private ContextSelector<EJBClientContext> setupEJBClientContextSelector() throws IOException {
         return EJBClientContextSelector.setup("cluster/ejb3/stateful/failover/sfsb-failover-jboss-ejb-client.properties");
 
@@ -115,33 +115,33 @@ public class RemoteLocalCallsTestCase {
     public void testRemoteIfLocalCallsEJBctx() throws Exception {
         final ContextSelector<EJBClientContext> previousSelector = this.setupEJBClientContextSelector();
         InitialContext ctx = ejbInitialContext;
-        
+
         try {
             String lookupStr = "ejb:/" + ARCHIVE_NAME + "//" + StatefulBean.class.getSimpleName() + "!"
                     + RemoteInterface.class.getName() + "?stateful";
             RemoteInterface stateful1 = (RemoteInterface) ctx.lookup(lookupStr);
             RemoteInterface stateful2 = (RemoteInterface) ctx.lookup(lookupStr);
-    
-            lookupStr = "ejb:/" +  ARCHIVE_NAME + "//" + StatefulClusteredBean.class.getSimpleName() + "!"
+
+            lookupStr = "ejb:/" + ARCHIVE_NAME + "//" + StatefulClusteredBean.class.getSimpleName() + "!"
                     + RemoteInterface.class.getName() + "?stateful";
             RemoteInterface statefulClustered1 = (RemoteInterface) ctx.lookup(lookupStr);
             RemoteInterface statefulClustered2 = (RemoteInterface) ctx.lookup(lookupStr);
-    
-            lookupStr = "ejb:/" +  ARCHIVE_NAME + "//" + StatelessBean.class.getSimpleName() + "!"
+
+            lookupStr = "ejb:/" + ARCHIVE_NAME + "//" + StatelessBean.class.getSimpleName() + "!"
                     + RemoteInterface.class.getName();
             RemoteInterface stateless1 = (RemoteInterface) ctx.lookup(lookupStr);
             RemoteInterface stateless2 = (RemoteInterface) ctx.lookup(lookupStr);
-    
-            lookupStr = "ejb:/" +  ARCHIVE_NAME + "//" + StatelessClusteredBean.class.getSimpleName() + "!"
+
+            lookupStr = "ejb:/" + ARCHIVE_NAME + "//" + StatelessClusteredBean.class.getSimpleName() + "!"
                     + RemoteInterface.class.getName();
             RemoteInterface statelessClustered1 = (RemoteInterface) ctx.lookup(lookupStr);
             RemoteInterface statelessClustered2 = (RemoteInterface) ctx.lookup(lookupStr);
-    
-            lookupStr = "ejb:/" +  ARCHIVE_NAME + "//" + ServiceBean.class.getSimpleName() + "!"
+
+            lookupStr = "ejb:/" + ARCHIVE_NAME + "//" + ServiceBean.class.getSimpleName() + "!"
                     + ServiceRemoteInterface.class.getName();
             ServiceRemoteInterface service1 = (ServiceRemoteInterface) ctx.lookup(lookupStr);
             ServiceRemoteInterface service2 = (ServiceRemoteInterface) ctx.lookup(lookupStr);
-    
+
             stateful1.test();
             stateful2.test();
             statefulClustered1.test();
@@ -152,13 +152,13 @@ public class RemoteLocalCallsTestCase {
             statelessClustered2.test();
             service1.test();
             service2.test();
-    
+
             Assert.assertFalse(stateful1.hashCode() == stateful2.hashCode());
             Assert.assertFalse(statefulClustered1.hashCode() == statefulClustered2.hashCode());
             Assert.assertTrue(stateless1.hashCode() == stateless2.hashCode());
             Assert.assertTrue(statelessClustered1.hashCode() == statelessClustered2.hashCode());
             Assert.assertTrue(service1.hashCode() == service2.hashCode());
-    
+
             Assert.assertFalse(stateful1.equals(stateful2));
             Assert.assertFalse(statefulClustered1.equals(statefulClustered2));
             Assert.assertTrue(stateless1.equals(stateless2));
@@ -171,7 +171,7 @@ public class RemoteLocalCallsTestCase {
             }
         }
     }
-    
+
     @Test
     @OperateOnDeployment("localcall")
     public void testRemoteIfLocalCalls(@ArquillianResource ManagementClient mngmtClient) throws Exception {
@@ -256,7 +256,7 @@ public class RemoteLocalCallsTestCase {
         InitialContext ctx = getInitialContext(remoteStringUrl);
         SynchronizationSingletonInterface synchro = (SynchronizationSingletonInterface) ctx.lookup(
                 ARCHIVE_NAME + "/" + SynchronizationSingleton.class.getSimpleName() + "!"
-                + SynchronizationSingletonInterface.class.getName());
+                        + SynchronizationSingletonInterface.class.getName());
 
         synchro.resetLatches();
         asyncClusteredBean.resetMethodCalled();

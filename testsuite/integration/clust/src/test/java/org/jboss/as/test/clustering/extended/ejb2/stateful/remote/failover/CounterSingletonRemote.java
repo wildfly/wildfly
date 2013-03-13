@@ -28,7 +28,8 @@ import javax.ejb.Remote;
  * @author Ondrej Chaloupka
  */
 @Remote
-public interface CounterSingletonRemote {   
+public interface CounterSingletonRemote {
     int getDestroyCount();
-    void resetDestroyCount() ;
+
+    void resetDestroyCount();
 }

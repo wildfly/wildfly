@@ -22,11 +22,6 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
-
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
@@ -41,6 +36,7 @@ import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
 import org.jboss.as.test.clustering.ViewChangeListener;
 import org.jboss.as.test.clustering.ViewChangeListenerBean;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
@@ -52,6 +48,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -64,7 +61,8 @@ import org.junit.runner.RunWith;
  * @see https://issues.jboss.org/browse/AS7-3492
  */
 @RunWith(Arquillian.class)
-public class LocalEJBClientFailoverTestCase {
+@Ignore("https://issues.jboss.org/browse/AS7-5318")
+public class LocalEJBClientFailoverTestCase extends ClusterAbstractTestCase {
 
     private static final Logger logger = Logger.getLogger(LocalEJBClientFailoverTestCase.class);
 
@@ -91,7 +89,7 @@ public class LocalEJBClientFailoverTestCase {
     private boolean nodeNameAppDeployedOnContainerTwo;
 
     @Deployment(name = CLIENT_ARQ_DEPLOYMENT, testable = false, managed = false)
-    @TargetsContainer(ClusteringTestConstants.CONTAINER_2)
+    @TargetsContainer(CONTAINER_2)
     public static Archive<?> createClientApplication() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, CLIENT_APP_MODULE_NAME + ".jar");
         jar.addClasses(ClientSFSB.class, ClientSFSBRemote.class, NodeNameRetriever.class);
@@ -99,15 +97,16 @@ public class LocalEJBClientFailoverTestCase {
         return jar;
     }
 
+
     @Deployment(name = NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1, testable = false, managed = false)
-    @TargetsContainer(ClusteringTestConstants.CONTAINER_1)
+    @TargetsContainer(CONTAINER_1)
     public static Archive<?> createNodeNameApplicationForContainer1() {
         return createNodeNameApplication();
     }
 
     @Deployment(name = NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2, testable = false, managed = false)
-    @TargetsContainer(ClusteringTestConstants.CONTAINER_2)
-    public static Archive<?> createNodeNameApplicationForContainer2() {
+    @TargetsContainer(CONTAINER_2)
+    public static Archive createNodeNameApplicationForContainer2() {
         return createNodeNameApplication();
     }
 
@@ -133,44 +132,24 @@ public class LocalEJBClientFailoverTestCase {
     @After
     public void afterTest() throws Exception {
         if (clientAppDeployed) {
-            try {
-                this.deployer.undeploy(CLIENT_ARQ_DEPLOYMENT);
-            } catch (Exception e) {
-                logger.error("Could not undeploy " + CLIENT_ARQ_DEPLOYMENT, e);
-            }
+            undeploy(CLIENT_ARQ_DEPLOYMENT);
         }
+
         if (nodeNameAppDeployedOnContainerOne) {
-            try {
-                this.deployer.undeploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1);
-            } catch (Exception e) {
-                logger.error("Could not undeploy " + NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1, e);
-            }
+            undeploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1);
         }
 
         if (nodeNameAppDeployedOnContainerTwo) {
-            try {
-                this.deployer.undeploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2);
-            } catch (Exception e) {
-                logger.error("Could not undeploy " + NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2, e);
-            }
+            undeploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2);
         }
 
         if (containerOneStarted) {
-            try {
-                this.container.stop(CONTAINER_1);
-            } catch (Exception e) {
-                logger.error("Failed to stop " + CONTAINER_1, e);
-            }
+            stop(CONTAINER_1);
         }
 
         if (containerTwoStarted) {
-            try {
-                this.container.stop(CONTAINER_2);
-            } catch (Exception e) {
-                logger.error("Failed to stop " + CONTAINER_2, e);
-            }
+            stop(CONTAINER_2);
         }
-
     }
 
     /**
@@ -188,26 +167,23 @@ public class LocalEJBClientFailoverTestCase {
      */
     @Test
     public void testFailoverWhenLocalTargetApplicationIsUndeployed() throws Exception {
-        // Container is unmanaged, so start it ourselves
-        this.container.start(CONTAINER_1);
+
         containerOneStarted = true;
-        // start the other container too
-        this.container.start(CONTAINER_2);
         containerTwoStarted = true;
 
-        this.deployer.deploy(CLIENT_ARQ_DEPLOYMENT);
+        deploy(CLIENT_ARQ_DEPLOYMENT);
         clientAppDeployed = true;
-        this.deployer.deploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1);
+        deploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1);
         nodeNameAppDeployedOnContainerOne = true;
-        this.deployer.deploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2);
+        deploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2);
         nodeNameAppDeployedOnContainerTwo = true;
 
         final ContextSelector<EJBClientContext> previousSelector = EJBClientContextSelector.setup("cluster/ejb3/stateful/failover/local-ejb-sfsb-failover-jboss-ejb-client.properties");
         try {
             final ViewChangeListener listener = directory.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
-            
+
             this.establishView(listener, NODE_1, NODE_2);
-            
+
             final ClientSFSBRemote clientSFSB = clientDirectory.lookupStateful(ClientSFSB.class, ClientSFSBRemote.class);
             // invoke on non-clustered SFSB which invokes/delegates to clustered SFSB on same node
             final String sfsbNodeName = clientSFSB.invokeAndFetchNodeNameFromClusteredSFSBRemoteBean();
@@ -218,7 +194,7 @@ public class LocalEJBClientFailoverTestCase {
             // now undeploy the clustered sfsb app on the node which has the client application
             this.deployer.undeploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2);
             nodeNameAppDeployedOnContainerTwo = false;
-            
+
             this.establishView(listener, NODE_1);
 
             // now invoke again on the same non-clustered sfsb

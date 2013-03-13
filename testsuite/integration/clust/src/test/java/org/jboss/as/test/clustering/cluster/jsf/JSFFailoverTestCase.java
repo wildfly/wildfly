@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.clustering.cluster.jsf;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
@@ -31,7 +29,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
@@ -47,8 +44,6 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -60,6 +55,7 @@ import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.ViewChangeListener;
 import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.as.test.clustering.ViewChangeListenerServlet;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.web.ClusteredWebSimpleTestCase;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -73,18 +69,11 @@ import org.junit.runner.RunWith;
 /**
  * Weld numberguess example converted to a test
  *
+ * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class JSFFailoverTestCase {
-
-    /**
-     * Controller for testing failover and undeploy *
-     */
-    @ArquillianResource
-    private ContainerController controller;
-    @ArquillianResource
-    private Deployer deployer;
+public class JSFFailoverTestCase extends ClusterAbstractTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -92,15 +81,14 @@ public class JSFFailoverTestCase {
         return createDeployment();
     }
 
-
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(CONTAINER_2)
-    public static Archive<?> DEPLOYMENT_1() {
+    public static Archive<?> deployment1() {
         return createDeployment();
     }
 
     private static Archive<?> createDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "numberguess-jsf.war");
         war.addClasses(Game.class, Generator.class, MaxNumber.class, Random.class);
         war.addClasses(ViewChangeListenerServlet.class, ViewChangeListener.class, ViewChangeListenerBean.class);
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
@@ -109,6 +97,12 @@ public class JSFFailoverTestCase {
         war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
         return war;
+    }
+
+    @Override
+    protected void setUp() {
+        super.setUp();
+        deploy(DEPLOYMENTS);
     }
 
     /**
@@ -135,8 +129,7 @@ public class JSFFailoverTestCase {
         if (setCookie != null) {
             String setCookieValue = setCookie.getValue();
             state.sessionId = setCookieValue.substring(setCookieValue.indexOf('=') + 1, setCookieValue.indexOf(';'));
-        }
-        else if (sessionId != null) {
+        } else if (sessionId != null) {
             // We don't get a cookie back if we have sent it, so just set it to whatever we had before
             state.sessionId = sessionId;
         }
@@ -166,6 +159,7 @@ public class JSFFailoverTestCase {
 
     /**
      * Creates an HTTP POST request with a number guess.
+     *
      * @param url
      * @param sessionId
      * @param viewState
@@ -176,7 +170,7 @@ public class JSFFailoverTestCase {
     private static HttpUriRequest buildPostRequest(String url, String sessionId, String viewState, String guess) throws UnsupportedEncodingException {
         HttpPost post = new HttpPost(url);
 
-        List<NameValuePair> list = new LinkedList<NameValuePair> ();
+        List<NameValuePair> list = new LinkedList<NameValuePair>();
 
         list.add(new BasicNameValuePair("javax.faces.ViewState", viewState));
         list.add(new BasicNameValuePair("numberGuess", "numberGuess"));
@@ -193,6 +187,7 @@ public class JSFFailoverTestCase {
 
     /**
      * Creates an HTTP GET request, with a potential JSESSIONID cookie.
+     *
      * @param url
      * @param sessionId
      * @return
@@ -204,17 +199,6 @@ public class JSFFailoverTestCase {
         }
 
         return request;
-    }
-
-    @Test
-    @InSequence(1)
-    public void testStartContainersAndDeploymentsForGracefulSimpleFailover() {
-        // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER_1);
-        deployer.deploy(DEPLOYMENT_1);
-
-        controller.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2);
     }
 
     /**
@@ -229,10 +213,10 @@ public class JSFFailoverTestCase {
      *
      * @throws java.io.IOException
      * @throws InterruptedException
-     * @throws URISyntaxException 
+     * @throws URISyntaxException
      */
     @Test
-    @InSequence(2)
+    @InSequence(1)
     public void testGracefulSimpleFailover(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
@@ -243,7 +227,7 @@ public class JSFFailoverTestCase {
         String url1 = baseURL1.toString() + "home.jsf";
         String url2 = baseURL2.toString() + "home.jsf";
 
-        System.out.println("URLs are: " + url1 + ", " + url2);
+        log.info("URLs are: " + url1 + ", " + url2);
 
         try {
             HttpResponse response;
@@ -257,7 +241,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             // We get a cookie!
             String sessionId = state.sessionId;
 
@@ -274,13 +258,13 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("100", state.biggest);
             Assert.assertEquals("9", state.remainingGuesses);
 
             // Gracefully shutdown the 1st container.
-            controller.stop(CONTAINER_1);
+            stop(CONTAINER_1);
 
             this.establishView(client, baseURL2, NODE_2);
 
@@ -292,7 +276,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             // If the state would not be replicated, we would have 9 remaining guesses.
             Assert.assertEquals("Session failed to replicate after container 1 was shutdown.", "8", state.remainingGuesses);
 
@@ -309,12 +293,12 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals("7", state.remainingGuesses);
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("98", state.biggest);
 
-            controller.start(CONTAINER_1);
+            start(CONTAINER_1);
 
             this.establishView(client, baseURL2, NODE_1, NODE_2);
 
@@ -326,7 +310,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals("Session failed to replicate after container 1 was brought up.", "6", state.remainingGuesses);
             Assert.assertEquals(sessionId, state.sessionId);
             Assert.assertEquals("3", state.smallest);
@@ -340,7 +324,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals(sessionId, state.sessionId);
             Assert.assertEquals("5", state.remainingGuesses);
             Assert.assertEquals("3", state.smallest);
@@ -349,24 +333,7 @@ public class JSFFailoverTestCase {
             HttpClientUtils.closeQuietly(client);
         }
 
-        // Is would be done automatically, keep for 2nd test is added
-        deployer.undeploy(DEPLOYMENT_1);
-        controller.stop(CONTAINER_1);
-        deployer.undeploy(DEPLOYMENT_2);
-        controller.stop(CONTAINER_2);
-
         // Assert.fail("Show me the logs please!");
-    }
-
-    @Test
-    @InSequence(10)
-    public void testStartContainersAndDeploymentsForGracefulUndeployFailover() {
-        // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER_1);
-        deployer.deploy(DEPLOYMENT_1);
-
-        controller.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2);
     }
 
     /**
@@ -381,10 +348,10 @@ public class JSFFailoverTestCase {
      *
      * @throws java.io.IOException
      * @throws InterruptedException
-     * @throws URISyntaxException 
+     * @throws URISyntaxException
      */
     @Test
-    @InSequence(11)
+    @InSequence(2)
     public void testGracefulUndeployFailover(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
@@ -407,7 +374,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             // We get a cookie!
             String sessionId = state.sessionId;
 
@@ -424,16 +391,16 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("100", state.biggest);
             Assert.assertEquals("9", state.remainingGuesses);
 
             // Gracefully undeploy from the 1st container.
-            deployer.undeploy(DEPLOYMENT_1);
+            undeploy(DEPLOYMENT_1);
 
             this.establishView(client, baseURL2, NODE_2);
-            
+
             // Now we do a JSF POST request with a cookie on to the second node, guessing 100, expecting to find a replicated state.
             response = client.execute(buildPostRequest(url2, state.sessionId, state.jsfViewState, "100"));
             try {
@@ -442,7 +409,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             // If the state would not be replicated, we would have 9 remaining guesses.
             Assert.assertEquals("Session failed to replicate after container 1 was shutdown.", "8", state.remainingGuesses);
 
@@ -459,13 +426,13 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals("7", state.remainingGuesses);
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("98", state.biggest);
 
             // Redeploy
-            deployer.deploy(DEPLOYMENT_1);
+            deploy(DEPLOYMENT_1);
 
             this.establishView(client, baseURL2, NODE_1, NODE_2);
 
@@ -477,7 +444,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals("Session failed to replicate after container 1 was brought up.", "6", state.remainingGuesses);
             Assert.assertEquals(sessionId, state.sessionId);
             Assert.assertEquals("3", state.smallest);
@@ -491,7 +458,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals(sessionId, state.sessionId);
             Assert.assertEquals("5", state.remainingGuesses);
             Assert.assertEquals("3", state.smallest);
@@ -500,13 +467,13 @@ public class JSFFailoverTestCase {
             HttpClientUtils.closeQuietly(client);
         }
 
-        // Is would be done automatically, keep for when 3nd test is added
-        deployer.undeploy(DEPLOYMENT_1);
-        controller.stop(CONTAINER_1);
-        deployer.undeploy(DEPLOYMENT_2);
-        controller.stop(CONTAINER_2);
-
         // Assert.fail("Show me the logs please!");
+    }
+
+    @Test
+    @InSequence(3)
+    public void testUndeploy() {
+        undeploy(DEPLOYMENTS);
     }
 
     /**
@@ -523,4 +490,5 @@ public class JSFFailoverTestCase {
     private void establishView(HttpClient client, URL baseURL, String... members) throws URISyntaxException, IOException {
         ClusterHttpClientUtil.establishView(client, baseURL, "web", members);
     }
+
 }

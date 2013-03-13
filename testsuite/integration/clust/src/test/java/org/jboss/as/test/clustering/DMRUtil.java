@@ -16,17 +16,17 @@ import org.jboss.dmr.ModelNode;
  */
 public class DMRUtil {
     private static final Logger log = Logger.getLogger(DMRUtil.class);
-    
+
     private static final String IDLE_TIMEOUT_ATTR = "idle-timeout";
     private static final String PASSIVATE_EVENTS_ON_REPLICATE_ATTR = "passivate-events-on-replicate";
-    
+
     /**
      * Hidden constructor.
      */
     private DMRUtil() {
-        
+
     }
-    
+
     /**
      * Returning modelnode address for DRM to be able to set cache attributes (client drm call).
      */
@@ -50,7 +50,7 @@ public class DMRUtil {
         operation.get("value").set(1L);
         // ModelNode result = client.execute(operation);
         ModelNode result = ManagementOperations.executeOperationRaw(client, operation);
-        Assert.assertEquals("Setting of passivation idle timeout attribute was not sucessful" ,SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals("Setting of passivation idle timeout attribute was not sucessful", SUCCESS, result.get(OUTCOME).asString());
         log.info("modelnode operation " + WRITE_ATTRIBUTE_OPERATION + " " + IDLE_TIMEOUT_ATTR + " =1: " + result);
     }
 
@@ -84,11 +84,11 @@ public class DMRUtil {
         Assert.assertEquals("Unset of attribute " + attrName + " on server was not sucessful", SUCCESS, result.get(OUTCOME).asString());
         log.info("unset modelnode operation " + UNDEFINE_ATTRIBUTE_OPERATION + " on " + attrName + ": " + result);
     }
-    
+
     public static void unsetIdleTimeoutPassivationAttribute(ModelControllerClient client) throws Exception {
         unsetPassivationAttributes(client, IDLE_TIMEOUT_ATTR);
     }
-    
+
     public static void unsetPassivationOnReplicate(ModelControllerClient client) throws Exception {
         unsetPassivationAttributes(client, PASSIVATE_EVENTS_ON_REPLICATE_ATTR);
     }

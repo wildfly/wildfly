@@ -32,6 +32,7 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
@@ -40,6 +41,8 @@ import org.jboss.msc.value.InjectedValue;
  * @author Paul Ferraro
  */
 public class MyServiceActivator implements ServiceActivator {
+
+    private static final Logger log = Logger.getLogger(MyServiceActivator.class);
 
     public static final String PREFERRED_NODE = NODE_2;
 
@@ -55,9 +58,9 @@ public class MyServiceActivator implements ServiceActivator {
         SingletonService<Environment> singleton = new SingletonService<Environment>(service, name, quorum);
         singleton.setElectionPolicy(new PreferredSingletonElectionPolicy(new SimpleSingletonElectionPolicy(), new NamePreference(PREFERRED_NODE + "/" + SingletonService.DEFAULT_CONTAINER)));
         singleton.build(context.getServiceTarget())
-            .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, env)
-            .setInitialMode(ServiceController.Mode.ACTIVE)
-            .install()
+                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, env)
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install()
         ;
     }
 }

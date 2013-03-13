@@ -22,12 +22,12 @@
 
 package org.jboss.as.test.clustering.extended.ejb2.stateless;
 
-import javax.ejb.*;
+import javax.ejb.EJBHome;
 
 /**
  * @author Ondrej Chaloupka
  */
 public interface StatelessRemoteHome extends EJBHome {
     public StatelessRemote create() throws java.rmi.RemoteException, javax.ejb.CreateException;
-    
+
 }

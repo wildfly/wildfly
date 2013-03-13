@@ -29,47 +29,59 @@ import org.jboss.as.test.shared.TimeoutUtil;
  * @author Radoslav Husar
  * @version Feb 2012
  */
-public class ClusteringTestConstants {
+public interface ClusteringTestConstants {
 
     /**
      * Test configuration.
      */
-    public static final String TEST_CACHE_MODE = System.getProperty("stack");
+    String TEST_CACHE_MODE = System.getProperty("stack");
 
     /**
      * Manual container with unmanaged deployments names.
      */
-    public static final String CONTAINER_SINGLE = "container-single";
-    public static final String CONTAINER_1 = "container-0";
-    public static final String CONTAINER_2 = "container-1";
-    public static final String[] CONTAINERS = new String[] { CONTAINER_1, CONTAINER_2 };
+    String CONTAINER_SINGLE = "container-single";
+    String CONTAINER_1 = "container-0";
+    String CONTAINER_2 = "container-1";
+    String[] CONTAINERS = new String[] { CONTAINER_1, CONTAINER_2 };
 
     /**
      * Deployment names.
      */
-    public static final String DEPLOYMENT_1 = "deployment-0";
-    public static final String DEPLOYMENT_2 = "deployment-1";
-    public static final String[] DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2 };
+    String DEPLOYMENT_1 = "deployment-0";
+    String DEPLOYMENT_2 = "deployment-1";
+    String[] DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2 };
+
+    /**
+     * Some helper deployment names.
+     */
+    String DEPLOYMENT_HELPER_1 = "deployment-helper-0";
+    String DEPLOYMENT_HELPER_2 = "deployment-helper-1";
+    String[] DEPLOYMENT_HELPERS = new String[] { DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2 };
 
     /**
      * Node names passed in arquillian.xml via -Djboss.node.name property.
      */
-    public static final String NODE_1 = "node-0";
-    public static final String NODE_2 = "node-1";
-    public static final String[] NODES = new String[] { NODE_1, NODE_2 };
+    String NODE_1 = "node-0";
+    String NODE_2 = "node-1";
+    String[] NODES = new String[] { NODE_1, NODE_2 };
 
     /**
      * Name of cluster for remote client.
      */
-    public static final String CLUSTER_NAME = "ejb";
-    
+    String CLUSTER_NAME = "ejb";
+
     /**
      * Timeouts.
      */
-    public static final int GRACE_TIME_TO_REPLICATE = 3000;
+    int GRACE_TIME_TO_REPLICATE = 3000;
 
-    public static final int CLUSTER_ESTABLISHMENT_WAIT_MS = TimeoutUtil.adjust(100);
-    public static final int CLUSTER_ESTABLISHMENT_LOOP_COUNT = 20;
-    public static final int WAIT_FOR_PASSIVATION_MS = TimeoutUtil.adjust(5);
-    public static final int HTTP_REQUEST_WAIT_TIME_S = TimeoutUtil.adjust(5);
+    /**
+     * TODO: This will be removed.
+     */
+    int GRACE_TIME_TO_MEMBERSHIP_CHANGE = 10000;
+
+    int CLUSTER_ESTABLISHMENT_WAIT_MS = TimeoutUtil.adjust(100);
+    int CLUSTER_ESTABLISHMENT_LOOP_COUNT = 20;
+    int WAIT_FOR_PASSIVATION_MS = TimeoutUtil.adjust(5);
+    int HTTP_REQUEST_WAIT_TIME_S = TimeoutUtil.adjust(5);
 }

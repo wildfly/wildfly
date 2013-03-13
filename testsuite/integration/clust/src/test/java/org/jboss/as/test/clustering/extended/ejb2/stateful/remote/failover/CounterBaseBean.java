@@ -7,11 +7,11 @@ import org.jboss.as.test.clustering.NodeNameGetter;
  */
 public abstract class CounterBaseBean {
     private int count;
-    
+
     public void ejbCreate() throws java.rmi.RemoteException, javax.ejb.CreateException {
         // Creating method for home interface...
     }
-    
+
     public CounterResult increment() {
         this.count++;
         return new CounterResult(this.count, getNodeName());

@@ -35,13 +35,13 @@ import org.jboss.logging.Logger;
  */
 public abstract class StatefulBeanBase {
     private static Logger log = Logger.getLogger(StatefulBeanBase.class);
-    
+
     protected int number;
     protected String passivatedBy = "unknown";
     protected String actIfIsNode;
     protected int postActivateCalled = 0;
     protected int prePassivateCalled = 0;
-       
+
     /**
      * Getting number.
      */
@@ -71,22 +71,22 @@ public abstract class StatefulBeanBase {
     public void setPassivationNode(String nodeName) {
         this.actIfIsNode = nodeName;
     }
-    
-    /** 
+
+    /**
      * Creating method for home interface...
      */
     public void ejbCreate() throws java.rmi.RemoteException, javax.ejb.CreateException {
     }
-    
-    /** 
+
+    /**
      * @Override on SessionBean
      */
     public void ejbActivate() throws EJBException, RemoteException {
         postActivateCalled++;
-        log.info("Activating with number: " + number + " and was passivated by " + getPassivatedBy() + ", postActivate method called " + postActivateCalled + " times");        
+        log.info("Activating with number: " + number + " and was passivated by " + getPassivatedBy() + ", postActivate method called " + postActivateCalled + " times");
     }
 
-    /** 
+    /**
      * @Override on SessionBean
      */
     public void ejbPassivate() throws EJBException, RemoteException {
@@ -97,20 +97,20 @@ public abstract class StatefulBeanBase {
         if (NodeNameGetter.getNodeName().equals(actIfIsNode)) {
             passivatedBy = NodeNameGetter.getNodeName();
             log.info("I'm node " + actIfIsNode + " => changing passivatedBy to " + passivatedBy);
-        }        
+        }
     }
 
-    /** 
+    /**
      * @Override on SessionBean
      */
     public void ejbRemove() throws EJBException, RemoteException {
-        
+
     }
 
-    /** 
+    /**
      * @Override on SessionBean
      */
     public void setSessionContext(SessionContext arg0) throws EJBException, RemoteException {
-        
+
     }
 }

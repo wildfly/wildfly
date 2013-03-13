@@ -27,8 +27,12 @@ package org.jboss.as.test.clustering.extended.ejb2.stateful.passivation;
  */
 public interface StatefulRemote extends javax.ejb.EJBObject {
     int getNumber();
+
     String setNumber(int number);
+
     String incrementNumber();
+
     void setPassivationNode(String node);
+
     String getPassivatedBy();
 }

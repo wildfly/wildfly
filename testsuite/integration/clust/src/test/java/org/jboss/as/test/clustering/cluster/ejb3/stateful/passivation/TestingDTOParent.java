@@ -29,21 +29,24 @@ import java.io.Serializable;
  */
 public class TestingDTOParent implements Serializable {
     private static final long serialVersionUID = 1L;
-    
+
     private String data;
     private transient String transientData;
-       
+
     public String getData() {
         return data;
     }
+
     public void setData(String data) {
         this.data = data;
     }
+
     public String getTransientData() {
         return transientData;
     }
+
     public void setTransientData(String transientData) {
         this.transientData = transientData;
     }
-    
+
 }

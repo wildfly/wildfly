@@ -33,37 +33,37 @@ import org.jboss.logging.Logger;
  */
 public class StatefulBeanNestedParent {
     private static final Logger log = Logger.getLogger(StatefulBeanNestedParent.class);
-    
+
     private int passivatedCalled = 0;
     private int activatedCalled = 0;
-    
+
     public void reset() {
         passivatedCalled = 0;
         activatedCalled = 0;
     }
-    
+
     public String getNodeName() {
         return NodeNameGetter.getNodeName();
     }
-    
+
     public int getPassivatedCalled() {
         return passivatedCalled;
     }
-    
+
     public int getActivatedCalled() {
         return activatedCalled;
     }
-    
+
     @PrePassivate
     public void prePassivate() {
         passivatedCalled++;
         log.info(this.getClass().getSimpleName() + " prePassivated() called " + passivatedCalled + " times");
     }
-    
+
     @PostActivate
     public void postActivate() {
         activatedCalled++;
         log.info(this.getClass().getSimpleName() + " postActivate() called " + activatedCalled + " times");
     }
-    
+
 }

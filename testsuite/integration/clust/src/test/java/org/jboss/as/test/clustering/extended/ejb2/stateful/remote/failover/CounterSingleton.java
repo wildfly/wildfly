@@ -34,12 +34,12 @@ import org.apache.log4j.Logger;
 public class CounterSingleton implements CounterSingletonRemote {
     public static AtomicInteger destroyCounter = new AtomicInteger(0);
     private static final Logger log = Logger.getLogger(CounterSingleton.class);
-    
+
     public int getDestroyCount() {
         log.info("destroyCounter: " + destroyCounter.get());
         return destroyCounter.get();
     }
-    
+
     public void resetDestroyCount() {
         destroyCounter.set(0);
     }

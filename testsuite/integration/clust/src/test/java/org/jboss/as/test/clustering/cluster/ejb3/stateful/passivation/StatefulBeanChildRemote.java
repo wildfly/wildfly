@@ -30,25 +30,35 @@ import javax.ejb.Remote;
 @Remote
 public interface StatefulBeanChildRemote {
     int getInt();
+
     void setInt(int parentInt);
-    
+
     String getNodeName();
-    
+
     // standard dto
     void setDTOStringData(String str);
+
     String getDTOStringData();
+
     void setDTONumberData(int number);
+
     int getDTONumberData();
-    
+
     // dto defined as transient
     void setTransientDTOStringData(String str);
-    String getTransientDTOStringData();   
+
+    String getTransientDTOStringData();
+
     void setTransientDTONumberData(int number);
-    int getTransientDTONumberData();    
+
+    int getTransientDTONumberData();
 
     // dto defined in parent class
     void setParentDTOStringData(String str);
+
     String getParentDTOStringData();
+
     void setParentDTOTransientStringData(String str);
+
     String getParentDTOTransientStringData();
 }

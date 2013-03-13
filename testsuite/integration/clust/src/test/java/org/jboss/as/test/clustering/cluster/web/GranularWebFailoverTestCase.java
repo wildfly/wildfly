@@ -32,8 +32,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
-
 /**
  * @author Radoslav Husar
  * @version April 2012
@@ -43,6 +41,16 @@ public class GranularWebFailoverTestCase extends ClusteredWebFailoverAbstractCas
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
+        return createDeployment();
+    }
+
+    @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
+    @TargetsContainer(CONTAINER_2)
+    public static Archive<?> deployment1() {
+        return createDeployment();
+    }
+
+    private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "granular-distributable.war");
         war.addClass(SimpleServlet.class);
         // Take web.xml from the managed test.
@@ -50,20 +58,7 @@ public class GranularWebFailoverTestCase extends ClusteredWebFailoverAbstractCas
         war.addAsWebInfResource(ClusteredWebSimpleTestCase.class.getPackage(), "jboss-web_granular.xml", "jboss-web.xml");
         war.addClasses(ViewChangeListenerServlet.class, ViewChangeListener.class, ViewChangeListenerBean.class);
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
-        System.out.println(war.toString(true));
-        return war;
-    }
-
-    @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
-    public static Archive<?> deployment1() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "granular-distributable.war");
-        war.addClass(SimpleServlet.class);
-        war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(ClusteredWebSimpleTestCase.class.getPackage(), "jboss-web_granular.xml", "jboss-web.xml");
-        war.addClasses(ViewChangeListenerServlet.class, ViewChangeListener.class, ViewChangeListenerBean.class);
-        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
-        System.out.println(war.toString(true));
+        log.info(war.toString(true));
         return war;
     }
 }

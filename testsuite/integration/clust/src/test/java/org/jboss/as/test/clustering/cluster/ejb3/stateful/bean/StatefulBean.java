@@ -38,7 +38,7 @@ public class StatefulBean implements Stateful {
 
     @EJB
     private Nested nested;
-    
+
     public int increment() {
         return this.nested.increment();
     }

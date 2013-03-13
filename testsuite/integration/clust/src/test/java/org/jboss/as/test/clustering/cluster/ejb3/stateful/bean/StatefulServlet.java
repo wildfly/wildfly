@@ -36,9 +36,8 @@ import org.jboss.as.test.clustering.LocalEJBDirectory;
 
 /**
  * @author Paul Ferraro
- *
  */
-@WebServlet(urlPatterns = { "/count" })
+@WebServlet(urlPatterns = {"/count"})
 public class StatefulServlet extends HttpServlet {
     private static final long serialVersionUID = -592774116315946908L;
 

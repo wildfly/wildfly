@@ -33,22 +33,21 @@ import org.jboss.ejb3.annotation.Clustered;
 
 /**
  * @author Paul Ferraro
- *
  */
 @Stateful
 @StatefulTimeout(value = 1000L, unit = TimeUnit.MILLISECONDS)
 @Clustered
 public class NestedBean {
     public static volatile boolean preDestroy = false;
-    
+
     @EJB
     private ClusteredBean inner;
-    
+
     @PreDestroy
     public void preDestroy() {
         preDestroy = true;
     }
-    
+
     public int increment() {
         return this.inner.increment();
     }

@@ -35,7 +35,7 @@ import javax.servlet.http.HttpSession;
 /**
  * @author Paul Ferraro
  */
-@WebServlet(urlPatterns = { "/simple" })
+@WebServlet(urlPatterns = {"/simple"})
 public class SimpleServlet extends HttpServlet {
     private static final long serialVersionUID = -592774116315946908L;
     public static final String REQUEST_DURATION_PARAM = "requestduration";

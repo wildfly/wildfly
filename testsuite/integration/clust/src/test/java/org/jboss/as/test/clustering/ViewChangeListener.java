@@ -21,7 +21,9 @@
  */
 package org.jboss.as.test.clustering;
 
-
+/**
+ * @author Paul Ferraro
+ */
 public interface ViewChangeListener {
     void establishView(String cluster, String... members) throws InterruptedException;
 }

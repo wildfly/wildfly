@@ -32,7 +32,7 @@ import org.jboss.logging.Logger;
 
 /**
  * Simple Stateful bean to be nested in other bean.
- * 
+ *
  * @author Ondrej Chaloupka
  */
 @Stateful
@@ -40,24 +40,24 @@ import org.jboss.logging.Logger;
 @LocalBean
 public class StatefulBeanNested extends StatefulBeanNestedParent {
     private static final Logger log = Logger.getLogger(StatefulBeanNested.class);
-    
+
     @EJB
     StatefulBeanDeepNestedRemote deepNestedBean;
-    
+
     public String getNodeName() {
         String nodeName = NodeNameGetter.getNodeName();
         log.info("Bean " + this.getClass().getSimpleName() + " was called on " + nodeName);
         return nodeName;
     }
-    
+
     public int getDeepNestedPassivatedCalled() {
         return deepNestedBean.getPassivatedCalled();
     }
-    
+
     public int getDeepNestedActivatedCalled() {
         return deepNestedBean.getActivatedCalled();
     }
-    
+
     public void resetDeepNested() {
         deepNestedBean.reset();
     }

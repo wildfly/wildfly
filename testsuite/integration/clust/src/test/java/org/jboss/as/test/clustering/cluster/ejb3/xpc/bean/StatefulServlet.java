@@ -38,19 +38,21 @@ import javax.sql.DataSource;
 import static org.junit.Assert.assertTrue;
 
 import org.jboss.as.test.clustering.LocalEJBDirectory;
+import org.jboss.logging.Logger;
 
 /**
  * @author Paul Ferraro
- *
  */
-@WebServlet(urlPatterns = { "/count" })
+@WebServlet(urlPatterns = {"/count"})
 public class StatefulServlet extends HttpServlet {
     private static final long serialVersionUID = -592774116315946908L;
+
+    private static final Logger log = Logger.getLogger(StatefulServlet.class);
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession(true);
-        Stateful bean = (Stateful)session.getAttribute("bean");
+        Stateful bean = (Stateful) session.getAttribute("bean");
         if (bean == null) {
             try {
                 bean = new LocalEJBDirectory("stateful").lookupStateful(StatefulBean.class, Stateful.class);
@@ -60,64 +62,54 @@ public class StatefulServlet extends HttpServlet {
         }
 
         String command = req.getParameter("command");
-        System.out.println(StatefulServlet.class.getName() + ": command = " + command);
+        log.info(StatefulServlet.class.getName() + ": command = " + command);
         String answer = null;
 
-        if("createEmployee".equals(command)) {
-            bean.createEmployee("Tom Brady","New England Patriots", 1);
+        if ("createEmployee".equals(command)) {
+            bean.createEmployee("Tom Brady", "New England Patriots", 1);
             answer = bean.getEmployee(1).getName();
-        }
-        else if("getEmployee".equals(command)) {
+        } else if ("getEmployee".equals(command)) {
             Employee employee = bean.getEmployee(1);
             if (employee == null) {
                 throw new ServletException("couldn't load Employee entity (with id=1) from database");
             }
             answer = employee.getName();
-        }
-        else if("deleteEmployee".equals(command)) {
+        } else if ("deleteEmployee".equals(command)) {
             bean.deleteEmployee(1);
             answer = command;
-        }
-        else if ("getEmployeesInSecondLevelCache".equals(command)) {
+        } else if ("getEmployeesInSecondLevelCache".equals(command)) {
             long count = bean.getEmployeesInMemory();
-            if(count == -1) {
+            if (count == -1) {
                 throw new ServletException("couldn't get number of employees in second level cache");
             }
             answer = "" + count;
-        }
-        else if("getSecondBeanEmployee".equals(command)) {
+        } else if ("getSecondBeanEmployee".equals(command)) {
             Employee employee = bean.getSecondBeanEmployee(1);
             answer = employee.getName();
-        }
-        else if("destroy".equals(command)) {
+        } else if ("destroy".equals(command)) {
             bean.destroy();
             answer = command;
-        }
-        else if("flush".equals(command)) {
+        } else if ("flush".equals(command)) {
             bean.flush();
-        }
-        else if("echo".equals(command)) {
+        } else if ("echo".equals(command)) {
             bean.echo(req.getParameter("message"));
-        }
-        else if("clear".equals(command)) {
+        } else if ("clear".equals(command)) {
             bean.clear();
-        }
-        else if("deleteEmployeeViaJDBC".equals(command)) {
+        } else if ("deleteEmployeeViaJDBC".equals(command)) {
             // delete all employees in db
             int deleted = bean.executeNativeSQL("delete from Employee where id=1");
             if (deleted < 1) {
                 throw new ServletException("couldn't delete entity in database, deleted row count =" + deleted);
             }
-        }
-        else {
-            throw new ServletException("unknown command name=" +command );
+        } else {
+            throw new ServletException("unknown command name=" + command);
         }
 
-        if( answer != null) {
+        if (answer != null) {
             resp.setHeader("answer", answer);
         }
         resp.getWriter().write("Success");
         session.setAttribute("bean", bean);
-        System.out.println(StatefulServlet.class.getName() + ": command = " + command + " finished");
+        log.info(StatefulServlet.class.getName() + ": command = " + command + " finished");
     }
 }

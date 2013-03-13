@@ -31,19 +31,21 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 /**
- * Verify the integration between JdbcCacheStore and XADataSource. XADataSource's 
- * connection should be properly enlisted with the ongoing transaction when 
+ * Verify the integration between JdbcCacheStore and XADataSource. XADataSource's
+ * connection should be properly enlisted with the ongoing transaction when
  * Infinispan internally calls its getConnection() method.
- * 
+ * <p/>
  * These tests should be failing until ISPN-604 is resolved.
- * 
+ *
  * @author Martin Gencur
  */
 @RunWith(Arquillian.class)
+@Ignore("https://issues.jboss.org/browse/ISPN-604")
 public class TransactionalJdbcStoreTestCase {
 
     @Deployment
@@ -55,37 +57,31 @@ public class TransactionalJdbcStoreTestCase {
         return war;
     }
 
-    @Ignore("ISPN-604")
     @Test
     public void testTxPutCommit() throws Exception {
         getIspnBeanFromJndi().testTxPutCommit();
     }
 
-    @Ignore("ISPN-604")
     @Test
     public void testTxPutRollback() throws Exception {
         getIspnBeanFromJndi().testTxPutRollback();
     }
 
-    @Ignore("ISPN-604")
     @Test
     public void testTxRemoveCommit() throws Exception {
         getIspnBeanFromJndi().testTxRemoveCommit();
     }
 
-    @Ignore("ISPN-604")
     @Test
     public void testTxRemoveRollback() throws Exception {
         getIspnBeanFromJndi().testTxRemoveRollback();
     }
 
-    @Ignore("ISPN-604")
     @Test
     public void testTxAlterCommit() throws Exception {
         getIspnBeanFromJndi().testTxAlterCommit();
     }
 
-    @Ignore("ISPN-604")
     @Test
     public void testTxAlterRollback() throws Exception {
         getIspnBeanFromJndi().testTxAlterRollback();

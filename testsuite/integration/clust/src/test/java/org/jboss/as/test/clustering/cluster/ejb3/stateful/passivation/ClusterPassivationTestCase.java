@@ -22,28 +22,15 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.stateful.passivation;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CLUSTER_ESTABLISHMENT_LOOP_COUNT;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CLUSTER_ESTABLISHMENT_WAIT_MS;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CLUSTER_NAME;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.HTTP_REQUEST_WAIT_TIME_S;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.WAIT_FOR_PASSIVATION_MS;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
 import javax.naming.NamingException;
 
 import org.junit.Assert;
 
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -59,6 +46,7 @@ import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.NodeInfoServlet;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.ejb.client.ClusterContext;
 import org.jboss.ejb.client.ContextSelector;
@@ -76,21 +64,18 @@ import org.junit.runner.RunWith;
 
 /**
  * Clustering ejb passivation simple test.
- * Part of migration of tests from prior AS testsuites [JBQA-5855].
- * 
+ *
  * @author Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ClusterPassivationTestCase {
+public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
     private static Logger log = Logger.getLogger(ClusterPassivationTestCase.class);
     public static final String ARCHIVE_NAME = "cluster-passivation-test";
     public static final String ARCHIVE_NAME_HELPER = "cluster-passivation-test-helper";
 
-    private static final String HELPER_DEPLOYMENT = "helper-";
-    
     private static EJBDirectory context;
-    
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         context = new RemoteEJBDirectory(ARCHIVE_NAME);
@@ -100,11 +85,6 @@ public class ClusterPassivationTestCase {
     public static void destroy() throws NamingException {
         context.close();
     }
-
-    @ArquillianResource
-    private ContainerController controller;
-    @ArquillianResource
-    private Deployer deployer;
 
     // Properties pass amongst tests
     private static ContextSelector<EJBClientContext> previousSelector;
@@ -126,15 +106,15 @@ public class ClusterPassivationTestCase {
         Archive<?> archive = createDeployment();
         return archive;
     }
-    
-    @Deployment(name = HELPER_DEPLOYMENT +  DEPLOYMENT_1, managed = true, testable = false)
+
+    @Deployment(name = DEPLOYMENT_HELPER_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> helpDeployment0() {
         Archive<?> archive = createHelperDeployment();
         return archive;
     }
 
-    @Deployment(name = HELPER_DEPLOYMENT + DEPLOYMENT_2, managed = true, testable = false)
+    @Deployment(name = DEPLOYMENT_HELPER_2, managed = false, testable = false)
     @TargetsContainer(CONTAINER_2)
     public static Archive<?> helpDeployment1() {
         Archive<?> archive = createHelperDeployment();
@@ -148,7 +128,7 @@ public class ClusterPassivationTestCase {
         log.info(war.toString(true));
         return war;
     }
-    
+
     private static Archive<?> createHelperDeployment() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME_HELPER + ".jar");
         jar.addClasses(StatefulBeanDeepNested.class, StatefulBeanDeepNestedRemote.class, StatefulBeanNestedParent.class, NodeNameGetter.class);
@@ -175,20 +155,22 @@ public class ClusterPassivationTestCase {
 
     /**
      * Start servers whether their are not started.
-     * 
+     *
      * @param client1 client for server1
      * @param client2 client for server2
      */
     private void startServers(ManagementClient client1, ManagementClient client2) {
         if (client1 == null || !client1.isServerInRunningState()) {
             log.info("Starting server: " + CONTAINER_1);
-            controller.start(CONTAINER_1);
-            deployer.deploy(DEPLOYMENT_1);
+            start(CONTAINER_1);
+            deploy(DEPLOYMENT_HELPER_1);
+            deploy(DEPLOYMENT_1);
         }
         if (client2 == null || !client2.isServerInRunningState()) {
             log.info("Starting server: " + CONTAINER_2);
-            controller.start(CONTAINER_2);
-            deployer.deploy(DEPLOYMENT_2);
+            start(CONTAINER_2);
+            deploy(DEPLOYMENT_HELPER_2);
+            deploy(DEPLOYMENT_2);
         }
     }
 
@@ -212,22 +194,21 @@ public class ClusterPassivationTestCase {
     @Test
     @InSequence(-2)
     public void arquillianStartServers() {
-        // Container is unmanaged, need to start manually.
-        // This is a little hacky - need for URL and client injection. @see https://community.jboss.org/thread/176096
         startServers(null, null);
     }
 
     /**
-     * Associtation of node names to deployment,container names and client context
+     * Association of node names to deployment,container names and client context
      */
     @Test
     @InSequence(-1)
-    public void defineMaps(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+    public void defineMaps(
+            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
 
-        String nodeName1 = HttpRequest.get(baseURL1.toString() + NodeInfoServlet.URL , HTTP_REQUEST_WAIT_TIME_S, TimeUnit.SECONDS);
+        String nodeName1 = HttpRequest.get(baseURL1.toString() + NodeInfoServlet.URL, HTTP_REQUEST_WAIT_TIME_S, TimeUnit.SECONDS);
         node2deployment.put(nodeName1, DEPLOYMENT_1);
         node2container.put(nodeName1, CONTAINER_1);
         container2node.put(CONTAINER_1, nodeName1);
@@ -250,7 +231,7 @@ public class ClusterPassivationTestCase {
         // Loading context from file to get ejb:// remote context
         setupEJBClientContextSelector(); // setting context from .properties file
         final StatefulBeanRemote statefulBeanRemote = context.lookupStateful(StatefulBean.class, StatefulBeanRemote.class);
-        log.debug("Passivated (" + (isPassivation ? "TRUE" : "FALSE") + ") by on start: " + statefulBeanRemote.getPassivatedBy());
+        log.info("Passivated (" + (isPassivation ? "TRUE" : "FALSE") + ") by on start: " + statefulBeanRemote.getPassivatedBy());
 
         // Calling on server one
         int clientNumber = 40;
@@ -266,7 +247,7 @@ public class ClusterPassivationTestCase {
         // A small hack - deleting node (by name) from cluster which this client knows
         // It means that the next request (ejb call) will be passed to the server #2
         EJBClientContext.requireCurrent().getClusterContext(CLUSTER_NAME).removeClusterNode(calledNodeFirst);
-        
+
         if (isPassivation) {
             // this was redefined in @PrePassivate method on first server - checking whether second server knows about it
             Assert.assertEquals("Supposing to get passivation node which was set", calledNodeFirst, statefulBeanRemote.getPassivatedBy());
@@ -274,22 +255,22 @@ public class ClusterPassivationTestCase {
             Assert.assertTrue("Passivation of nested bean was not propagated", statefulBeanRemote.getNestedBeanPassivatedCalled() > 0);
             Assert.assertTrue("Activation of nested bean was not propagated", statefulBeanRemote.getNestedBeanActivatedCalled() > 0);
             Assert.assertTrue("Passivation of deep nested bean was not propagated", statefulBeanRemote.getDeepNestedBeanPassivatedCalled() > 0);
-            Assert.assertTrue("Activation of deep nested bean was not propagated",statefulBeanRemote.getDeepNestedBeanActivatedCalled() > 0);
+            Assert.assertTrue("Activation of deep nested bean was not propagated", statefulBeanRemote.getDeepNestedBeanActivatedCalled() > 0);
             Assert.assertTrue("Passivation of remote bean was not propagated", statefulBeanRemote.getRemoteNestedBeanPassivatedCalled() > 0);
             Assert.assertTrue("Activation of remote bean was not propagated", statefulBeanRemote.getRemoteNestedBeanActivatedCalled() > 0);
             statefulBeanRemote.resetNestedBean();
         } else {
             Assert.assertEquals("We suppose that the passivation is not provided", "unknown", statefulBeanRemote.getPassivatedBy());
             Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getNestedBeanPassivatedCalled());
-            Assert.assertEquals("No passivation should be done", 0,  statefulBeanRemote.getNestedBeanActivatedCalled());
+            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getNestedBeanActivatedCalled());
             Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getDeepNestedBeanPassivatedCalled());
             Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getDeepNestedBeanActivatedCalled());
             Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getRemoteNestedBeanPassivatedCalled());
-            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getRemoteNestedBeanActivatedCalled());            
+            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getRemoteNestedBeanActivatedCalled());
         }
-        
+
         String calledNodeSecond = statefulBeanRemote.incrementNumber(); // 42
-        Assert.assertEquals("Nested bean has to be calledn on the same node as parent one", calledNodeSecond, statefulBeanRemote.getNestedBeanNodeName());
+        Assert.assertEquals("Nested bean has to be called on the same node as parent one", calledNodeSecond, statefulBeanRemote.getNestedBeanNodeName());
         statefulBeanRemote.setPassivationNode(calledNodeSecond);
         log.info("Called node name second: " + calledNodeSecond);
         Thread.sleep(WAIT_FOR_PASSIVATION_MS); // waiting for passivation
@@ -314,18 +295,18 @@ public class ClusterPassivationTestCase {
             Assert.assertTrue("Passivation of nested bean was not propagated", statefulBeanRemote.getNestedBeanPassivatedCalled() > 0);
             Assert.assertTrue("Activation of nested bean was not propagated", statefulBeanRemote.getNestedBeanActivatedCalled() > 0);
             Assert.assertTrue("Passivation of deep nested bean was not propagated", statefulBeanRemote.getDeepNestedBeanPassivatedCalled() > 0);
-            Assert.assertTrue("Activation of deep nested bean was not propagated",statefulBeanRemote.getDeepNestedBeanActivatedCalled() > 0);
+            Assert.assertTrue("Activation of deep nested bean was not propagated", statefulBeanRemote.getDeepNestedBeanActivatedCalled() > 0);
             Assert.assertTrue("Passivation of remote bean was not propagated", statefulBeanRemote.getRemoteNestedBeanPassivatedCalled() > 0);
             Assert.assertTrue("Activation of remote bean was not propagated", statefulBeanRemote.getRemoteNestedBeanActivatedCalled() > 0);
             statefulBeanRemote.resetNestedBean();
         } else {
             Assert.assertEquals("We suppose that the passivation is not provided.", "unknown", statefulBeanRemote.getPassivatedBy());
-            Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getNestedBeanPassivatedCalled());
-            Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getNestedBeanActivatedCalled());
-            Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getDeepNestedBeanPassivatedCalled());
-            Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getDeepNestedBeanActivatedCalled());
-            Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getRemoteNestedBeanPassivatedCalled());
-            Assert.assertEquals("No passivation should be done",0, statefulBeanRemote.getRemoteNestedBeanActivatedCalled());
+            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getNestedBeanPassivatedCalled());
+            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getNestedBeanActivatedCalled());
+            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getDeepNestedBeanPassivatedCalled());
+            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getDeepNestedBeanActivatedCalled());
+            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getRemoteNestedBeanPassivatedCalled());
+            Assert.assertEquals("No passivation should be done", 0, statefulBeanRemote.getRemoteNestedBeanActivatedCalled());
         }
         Thread.sleep(WAIT_FOR_PASSIVATION_MS); // waiting for passivation
         Assert.assertEquals(++clientNumber, statefulBeanRemote.getNumber()); // 43
@@ -333,7 +314,7 @@ public class ClusterPassivationTestCase {
 
     @Test
     @InSequence(1)
-    @Ignore("AS7-4266")
+    @Ignore("https://issues.jboss.org/browse/AS7-4266")
     public void testPassivationOverNodesPassivated(
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
@@ -365,8 +346,8 @@ public class ClusterPassivationTestCase {
         runPassivation(isPassivated);
         startServers(client1, client2);
     }
-    
-  
+
+
     @Test
     @InSequence(3)
     /**
@@ -384,12 +365,12 @@ public class ClusterPassivationTestCase {
         DMRUtil.setPassivationOnReplicate(client1.getControllerClient(), isPassivated);
         DMRUtil.setPassivationIdleTimeout(client2.getControllerClient());
         DMRUtil.setPassivationOnReplicate(client2.getControllerClient(), isPassivated);
-        
+
         log.info("Setting context selector...");
         setupEJBClientContextSelector();
-        
+
         final StatefulBeanChildRemote sb = context.lookupStateful(StatefulBeanChild.class, StatefulBeanChildRemote.class);
-        
+
         String stringData = "42";
         int intData = 42;
         String calledNodeName = sb.getNodeName();
@@ -397,7 +378,7 @@ public class ClusterPassivationTestCase {
         // redefine node2client maps
         node2client.put(container2node.get(CONTAINER_1), client1);
         node2client.put(container2node.get(CONTAINER_2), client2);
-        
+
         // 1. integer defined in sfsb bean
         sb.setInt(intData);
         // 2. DTO defined in sfsb
@@ -409,22 +390,22 @@ public class ClusterPassivationTestCase {
         // 4. DTO defined in parent of sfsb
         sb.setParentDTOStringData(stringData);
         sb.setParentDTOTransientStringData(stringData);
-                
+
         // waiting for passivation
         Thread.sleep(WAIT_FOR_PASSIVATION_MS);
-                
+
         // Stopping called node
         unsetPassivationAttributes(node2client.get(calledNodeName).getControllerClient());
-        deployer.undeploy(node2deployment.get(calledNodeName));
-        controller.stop(node2container.get(calledNodeName));
+        undeploy(node2deployment.get(calledNodeName));
+        stop(node2container.get(calledNodeName));
         log.info("Node " + calledNodeName + " was stopped.");
-        
+
         // checking data
         Assert.assertEquals("Int sfsb data wasn't passivated correctly", intData, sb.getInt());
         Assert.assertEquals("String data of dto defined in sfsb wasn't passivated correctly", stringData, sb.getDTOStringData());
         Assert.assertEquals("Int data of dto defined in sfsb wasn't passivated correctly", intData, sb.getDTONumberData());
         Assert.assertNull("String data of transient dto defined in sfsb has to be null after passivation", sb.getTransientDTOStringData());
-        Assert.assertEquals("Int data of transient dto has to be 0 after passivation", 0,sb.getTransientDTONumberData());
+        Assert.assertEquals("Int data of transient dto has to be 0 after passivation", 0, sb.getTransientDTONumberData());
         Assert.assertEquals("String data of dto defined in parent of sfsb wasn't passivated correctly", stringData, sb.getParentDTOStringData());
         Assert.assertNull("Transient string data of dto defined in parent of sfsb has to be null after passivation", sb.getParentDTOTransientStringData());
     }
@@ -441,41 +422,22 @@ public class ClusterPassivationTestCase {
             EJBClientContext.setSelector(previousSelector);
         }
 
+        // Start containers to clean them
+        start(CONTAINERS);
+
         // unset & undeploy & stop
-        // the try blocks were added to be sure that the attemp for undeploy will be provided although that
+        // the try blocks were added to be sure that the attempt for undeploy will be provided although that
         // client1/2 does not respond - e.g. after failed reload operation
         if(client1.isServerInRunningState()) {
             unsetPassivationAttributes(client1.getControllerClient());
-        }
-        try {
-            deployer.undeploy(DEPLOYMENT_1);
-        } catch (Exception e) {
-            log.warnf("Deployment %s can't be undeployed from container %s because of exception %s. " +
-            		"Ignore this warning when server was already stopped by other test before.", DEPLOYMENT_1, CONTAINER_1, e.getClass().getName() + ": " + e.getMessage());
-        } finally {
-            try {
-                controller.stop(CONTAINER_1);
-            } catch (Exception e) {
-                log.warnf("Container %s can't be stopped because of exception %s. " +
-                        "Ignore this warning when server was already stopped by other test before.", CONTAINER_1, e.getClass().getName() + ": " + e.getMessage());
-            }
         }
         
         if(client2.isServerInRunningState()) {
             unsetPassivationAttributes(client2.getControllerClient());
         }
-        try {
-            deployer.undeploy(DEPLOYMENT_2);
-        } catch (Exception e) {
-            log.warnf("Deployment %s can't be undeployed from container %s because of exception %s. " +
-                    "Ignore this warning when server was already stopped by other test before.", DEPLOYMENT_2, CONTAINER_2, e.getClass().getName() + ": " + e.getMessage());
-        } finally {
-            try {
-                controller.stop(CONTAINER_2);
-            } catch (Exception e) {
-                log.warnf("Container %s can't be stopped because of exception %s. " +
-                        "Ignore this warning when server was already stopped by other test before.", CONTAINER_2, e.getClass().getName() + ": " + e.getMessage());
-            }
-        }
+
+        // Undeploy
+        undeploy(DEPLOYMENTS);
+        undeploy(DEPLOYMENT_HELPERS);
     }
 }
