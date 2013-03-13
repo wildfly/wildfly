@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.util.List;
 
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.notification.NotificationSupport;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -293,6 +294,11 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     @Override
     public void report(MessageSeverity severity, String message) {
         primaryContext.report(severity, message);
+    }
+
+    @Override
+    public NotificationSupport getNotificationSupport() {
+        return primaryContext.getNotificationSupport();
     }
 
     @Override

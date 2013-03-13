@@ -48,6 +48,7 @@ import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.notification.NotificationSupport;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.DelegatingImmutableManagementResourceRegistration;
@@ -674,6 +675,11 @@ final class OperationContextImpl extends AbstractOperationContext {
         } catch (Throwable t) {
             // ignored
         }
+    }
+
+    @Override
+    public NotificationSupport getNotificationSupport() {
+        return modelController.getNotificationSupport();
     }
 
     @Override

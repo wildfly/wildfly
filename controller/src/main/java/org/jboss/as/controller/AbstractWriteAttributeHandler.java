@@ -38,7 +38,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.notification.Notification;
-import org.jboss.as.controller.notification.NotificationService;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -149,7 +148,7 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
                         sourceAddress,
                         MESSAGES.attributeValueWritten(attributeName, currentValue, newVal.get()),
                         data);
-                NotificationService.emitNotification(context, notification);
+                context.getNotificationSupport().emit(notification);
             }
         });
     }

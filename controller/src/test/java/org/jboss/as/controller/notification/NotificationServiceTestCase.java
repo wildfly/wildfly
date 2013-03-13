@@ -80,7 +80,7 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                         Notification notification = new Notification(MY_TYPE, pathAddress(operation.get(OP_ADDR)), "notification message");
-                        NotificationService.emitNotification(context, notification);
+                        context.getNotificationSupport().emit(notification);
                         context.stepCompleted();
                     }
                 }
@@ -91,10 +91,8 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
                 new OperationStepHandler() {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        ServiceController<?> notificationService = context.getServiceRegistry(false).getService(NotificationService.SERVICE_NAME);
-                        NotificationSupport notificationSupport = NotificationSupport.class.cast(notificationService.getValue());
                         PathAddress source = pathAddress(operation.get(OP_ADDR));
-                        notificationSupport.registerNotificationHandler(source, delegatingNotificationHandler, delegatingNotificationHandler);
+                        context.getNotificationSupport().registerNotificationHandler(source, delegatingNotificationHandler, delegatingNotificationHandler);
                         context.stepCompleted();
                         notificationHandlerRegisteredLatch.get().countDown();
                     }
@@ -106,17 +104,13 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
                 new OperationStepHandler() {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        ServiceController<?> notificationService = context.getServiceRegistry(false).getService(NotificationService.SERVICE_NAME);
-                        NotificationSupport notificationSupport = NotificationSupport.class.cast(notificationService.getValue());
                         PathAddress source = pathAddress(operation.get(OP_ADDR));
-                        notificationSupport.unregisterNotificationHandler(source, delegatingNotificationHandler, delegatingNotificationHandler);
+                        context.getNotificationSupport().unregisterNotificationHandler(source, delegatingNotificationHandler, delegatingNotificationHandler);
                         context.stepCompleted();
                         notificationHandlerUnregisteredLatch.get().countDown();
                     }
                 }
         );
-
-        NotificationService.installNotificationService(getContainer().subTarget());
     }
 
     @Test
