@@ -33,12 +33,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.domain.http.server.DomainUtil.writeResponse;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
+
+import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.blocking.BlockingHttpHandler;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
 import io.undertow.util.Methods;
-import io.undertow.util.StatusCodes;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,7 +60,7 @@ import org.xnio.streams.ChannelInputStream;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-class DomainApiHandler implements BlockingHttpHandler {
+class DomainApiHandler implements HttpHandler {
 
     /**
      * Represents all possible management operations that can be executed using HTTP GET
@@ -95,7 +95,7 @@ class DomainApiHandler implements BlockingHttpHandler {
     }
 
     @Override
-    public void handleBlockingRequest(HttpServerExchange exchange) {
+    public void handleRequest(HttpServerExchange exchange) {
 
         ModelNode dmr;
         ModelNode response;
@@ -128,7 +128,7 @@ class DomainApiHandler implements BlockingHttpHandler {
 
         boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();
 
-        writeResponse(exchange, get, pretty, response, StatusCodes.CODE_200.getCode(), encode);
+        writeResponse(exchange, get, pretty, response, 200, encode);
     }
 
     private ModelNode convertPostRequest(HttpServerExchange exchange, boolean encode) throws IOException {

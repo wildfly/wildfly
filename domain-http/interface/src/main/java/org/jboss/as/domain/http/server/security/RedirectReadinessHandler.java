@@ -24,11 +24,7 @@ package org.jboss.as.domain.http.server.security;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.HttpHandlers;
 import io.undertow.util.Headers;
-
-import java.io.IOException;
-
 import org.jboss.as.domain.http.server.Common;
 import org.jboss.as.domain.management.SecurityRealm;
 
@@ -50,9 +46,9 @@ public class RedirectReadinessHandler extends RealmReadinessHandler {
      * @see org.jboss.as.domain.http.server.RealmReadinessHandler#rejectRequest(org.jboss.com.sun.net.httpserver.HttpExchange)
      */
     @Override
-    void rejectRequest(HttpServerExchange exchange) throws IOException {
+    void rejectRequest(HttpServerExchange exchange) throws Exception {
         exchange.getResponseHeaders().add(Headers.LOCATION, redirectTo);
 
-        HttpHandlers.executeHandler(Common.TEMPORARY_REDIRECT, exchange);
+        Common.TEMPORARY_REDIRECT.handleRequest(exchange);
     }
 }

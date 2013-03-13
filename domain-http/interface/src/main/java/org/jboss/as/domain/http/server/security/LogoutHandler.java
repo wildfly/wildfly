@@ -32,8 +32,8 @@ import io.undertow.security.impl.DigestAuthenticationMechanism;
 import io.undertow.security.impl.DigestQop;
 import io.undertow.security.impl.SimpleNonceManager;
 import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpHandlers;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.HttpHandlers;
 import io.undertow.util.HeaderMap;
 
 import java.io.PrintStream;
@@ -66,7 +66,7 @@ public class LogoutHandler implements HttpHandler {
     }
 
     @Override
-    public void handleRequest(HttpServerExchange exchange) {
+    public void handleRequest(HttpServerExchange exchange) throws Exception {
         final HeaderMap requestHeaders = exchange.getRequestHeaders();
         final HeaderMap responseHeaders = exchange.getResponseHeaders();
 
@@ -96,7 +96,7 @@ public class LogoutHandler implements HttpHandler {
         if (host == null) {
             host = requestHeaders.getFirst(HOST);
             if (host == null) {
-                HttpHandlers.executeHandler(Common.INTERNAL_SERVER_ERROR, exchange);
+                Common.INTERNAL_SERVER_ERROR.handleRequest(exchange);
 
                 return;
             }

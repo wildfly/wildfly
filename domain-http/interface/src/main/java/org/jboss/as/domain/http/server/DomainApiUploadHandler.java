@@ -26,13 +26,12 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintWriter;
 
+import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.blocking.BlockingHttpHandler;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormData.FormValue;
 import io.undertow.server.handlers.form.FormDataParser;
 import io.undertow.util.Headers;
-import io.undertow.util.StatusCodes;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.dmr.ModelNode;
@@ -48,7 +47,7 @@ import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-class DomainApiUploadHandler implements BlockingHttpHandler{
+class DomainApiUploadHandler implements HttpHandler {
 
     private final ModelControllerClient modelController;
 
@@ -57,9 +56,9 @@ class DomainApiUploadHandler implements BlockingHttpHandler{
     }
 
     @Override
-    public void handleBlockingRequest(HttpServerExchange exchange) throws Exception {
+    public void handleRequest(HttpServerExchange exchange) throws Exception {
         final FormDataParser parser = exchange.getAttachment(FormDataParser.ATTACHMENT_KEY);
-        FormData data = parser.parse().get();
+        FormData data = parser.parseBlocking();
         for (String fieldName : data) {
             //Get all the files
             FormValue value = data.getFirst(fieldName);
@@ -98,7 +97,7 @@ class DomainApiUploadHandler implements BlockingHttpHandler{
 
     static void writeResponse(HttpServerExchange exchange, ModelNode response, String contentType) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, contentType  + ";" + Common.UTF_8);
-        exchange.setResponseCode(StatusCodes.CODE_200.getCode());
+        exchange.setResponseCode(200);
 
         //TODO Content-Length?
 

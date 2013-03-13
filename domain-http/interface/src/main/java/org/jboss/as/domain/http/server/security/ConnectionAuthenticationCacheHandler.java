@@ -30,12 +30,11 @@ import io.undertow.security.api.SecurityNotification.EventType;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerConnection;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.HttpHandlers;
 import io.undertow.util.AttachmentKey;
 
 /**
  * A temporary {@link HttpHandler} to cache the currently authenticated user against the connection.
- *
+ * <p/>
  * Longer term this will be eliminated but for now this is just to match the existing behaviour and minimise hitting the
  * CallbackHandlers.
  *
@@ -55,12 +54,12 @@ public class ConnectionAuthenticationCacheHandler implements HttpHandler {
     }
 
     @Override
-    public void handleRequest(HttpServerExchange exchange) {
+    public void handleRequest(HttpServerExchange exchange) throws Exception {
         SecurityContext securityContext = exchange.getAttachment(SecurityContext.ATTACHMENT_KEY);
         securityContext.registerNotificationHandler(NOTIFICATION_HANDLER);
         exchange.putAttachment(AuthenticatedSessionManager.ATTACHMENT_KEY, SESSION_MANAGER);
 
-        HttpHandlers.executeHandler(next, exchange);
+        next.handleRequest(exchange);
     }
 
     private class SecurityNotificationHandler implements NotificationHandler {

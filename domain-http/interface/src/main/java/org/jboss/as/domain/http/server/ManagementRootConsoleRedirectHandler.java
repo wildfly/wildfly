@@ -26,12 +26,10 @@ import static org.jboss.as.domain.http.server.Common.MOVED_PERMANENTLY;
 import static org.jboss.as.domain.http.server.Common.NOT_FOUND;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.HttpHandlers;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 class ManagementRootConsoleRedirectHandler implements HttpHandler {
@@ -44,21 +42,20 @@ class ManagementRootConsoleRedirectHandler implements HttpHandler {
     }
 
     @Override
-    public void handleRequest(HttpServerExchange exchange) {
+    public void handleRequest(HttpServerExchange exchange) throws Exception {
         if (!exchange.getRequestMethod().equals(HTTP_GET)) {
-            HttpHandlers.executeHandler(METHOD_NOT_ALLOWED_HANDLER, exchange);
+            METHOD_NOT_ALLOWED_HANDLER.handleRequest(exchange);
             return;
         }
 
         String requestUrl = exchange.getRequestURL();
-        if (consoleHandler != null && "/".equals(requestUrl)) {
+        if (consoleHandler != null && "/".equals(exchange.getCanonicalPath())) {
             StringBuilder redirect = new StringBuilder(requestUrl);
             redirect.append(consoleHandler.getContext()).append(consoleHandler.getDefaultPath());
             exchange.getResponseHeaders().add(Headers.LOCATION, redirect.toString());
-
-            HttpHandlers.executeHandler(MOVED_PERMANENTLY, exchange);
+            MOVED_PERMANENTLY.handleRequest(exchange);
             return;
         }
-        HttpHandlers.executeHandler(NOT_FOUND, exchange);
+        NOT_FOUND.handleRequest(exchange);
     }
 }
