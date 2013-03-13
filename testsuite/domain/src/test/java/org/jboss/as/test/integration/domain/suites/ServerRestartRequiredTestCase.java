@@ -285,6 +285,23 @@ public class ServerRestartRequiredTestCase {
         Assert.assertEquals(RESTART_REQUIRED, resultTwo.asString());
     }
 
+    @Test
+    public void testRestartGroup() throws Exception {
+
+        final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("restart-servers");
+        operation.get(OP_ADDR).add(SERVER_GROUP, "reload-test-group");
+
+        executeOperation(operation, client);
+
+        // Check the states
+        waitUntilState(client, reloadOneAddress, "STARTED");
+        waitUntilState(client, reloadTwoAddress, "STARTED");
+
+    }
+
     private void checkReloadOneAndTwo(final ModelControllerClient client) throws Exception {
         // check the process state for reload-one
         final ModelNode serverOne = new ModelNode();

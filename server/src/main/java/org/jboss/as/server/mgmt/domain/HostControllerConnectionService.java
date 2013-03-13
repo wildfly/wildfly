@@ -76,19 +76,23 @@ public class HostControllerConnectionService implements Service<HostControllerCl
     private final String userName;
     private final String serverProcessName;
     private final byte[] initialAuthKey;
+    private final int initialOperationID;
     private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("host-controller-connection-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
     private final ExecutorService executor = Executors.newCachedThreadPool(threadFactory);
     private final boolean managementSubsystemEndpoint;
 
     private HostControllerClient client;
 
-    public HostControllerConnectionService(final String hostName, final int port, final String serverName, final String serverProcessName, final byte[] authKey, final boolean managementSubsystemEndpoint) {
+    public HostControllerConnectionService(final String hostName, final int port, final String serverName, final String serverProcessName,
+                                           final byte[] authKey, final int initialOperationID,
+                                           final boolean managementSubsystemEndpoint) {
         this.port = port;
         this.hostName = hostName;
         this.serverName = serverName;
         this.userName = "=" + serverName;
         this.serverProcessName = serverProcessName;
         this.initialAuthKey = authKey;
+        this.initialOperationID = initialOperationID;
         this.managementSubsystemEndpoint = managementSubsystemEndpoint;
     }
 
@@ -105,7 +109,7 @@ public class HostControllerConnectionService implements Service<HostControllerCl
             configuration.setConnectionTimeout(SERVER_CONNECTION_TIMEOUT);
             configuration.setSslContext(getAcceptingSSLContext());
             // Create the connection
-            final HostControllerConnection connection = new HostControllerConnection(serverProcessName, userName, configuration, executor);
+            final HostControllerConnection connection = new HostControllerConnection(serverProcessName, userName, initialOperationID, configuration, executor);
             // Trigger the started notification based on the process state listener
             final ControlledProcessStateService processService = processStateServiceInjectedValue.getValue();
             processService.addPropertyChangeListener(new PropertyChangeListener() {

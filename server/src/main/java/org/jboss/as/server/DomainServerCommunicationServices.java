@@ -61,14 +61,16 @@ public class DomainServerCommunicationServices  implements ServiceActivator, Ser
     private final String serverName;
     private final String serverProcessName;
     private final byte[] authKey;
+    private final int initialOperationID;
     private final boolean managementSubsystemEndpoint;
 
-    DomainServerCommunicationServices(ModelNode endpointConfig, InetSocketAddress managementSocket, String serverName, String serverProcessName, byte[] authKey, boolean managementSubsystemEndpoint) {
+    DomainServerCommunicationServices(ModelNode endpointConfig, InetSocketAddress managementSocket, String serverName, String serverProcessName, byte[] authKey, int initialOperationID, boolean managementSubsystemEndpoint) {
         this.endpointConfig = endpointConfig;
         this.managementSocket = managementSocket;
         this.serverName = serverName;
         this.serverProcessName = serverProcessName;
         this.authKey = authKey;
+        this.initialOperationID = initialOperationID;
         this.managementSubsystemEndpoint = managementSubsystemEndpoint;
     }
 
@@ -87,7 +89,7 @@ public class DomainServerCommunicationServices  implements ServiceActivator, Ser
             // Install the communication services
             final int port = managementSocket.getPort();
             final String host = managementSocket.getAddress().getHostAddress();
-            HostControllerConnectionService service = new HostControllerConnectionService(host, port, serverName, serverProcessName, authKey, managementSubsystemEndpoint);
+            HostControllerConnectionService service = new HostControllerConnectionService(host, port, serverName, serverProcessName, authKey, initialOperationID, managementSubsystemEndpoint);
             serviceTarget.addService(HostControllerConnectionService.SERVICE_NAME, service)
                     .addDependency(endpointName, Endpoint.class, service.getEndpointInjector())
                     .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, service.getProcessStateServiceInjectedValue())
@@ -107,13 +109,14 @@ public class DomainServerCommunicationServices  implements ServiceActivator, Ser
      * @param serverName the server name
      * @param serverProcessName the server process name
      * @param authKey the authentication key
+     * @param initialOperationID the host-controller operation id for starting this server
      * @param managementSubsystemEndpoint whether to use the mgmt subsystem endpoint or not
      * @return the service activator
      */
     public static ServiceActivator create(final ModelNode endpointConfig, final InetSocketAddress managementSocket, final String serverName, final String serverProcessName,
-                                          final byte[] authKey, final boolean managementSubsystemEndpoint) {
+                                          final byte[] authKey, final int initialOperationID,  boolean managementSubsystemEndpoint) {
 
-        return new DomainServerCommunicationServices(endpointConfig, managementSocket, serverName, serverProcessName, authKey, managementSubsystemEndpoint);
+        return new DomainServerCommunicationServices(endpointConfig, managementSocket, serverName, serverProcessName, authKey, initialOperationID, managementSubsystemEndpoint);
     }
 
 }

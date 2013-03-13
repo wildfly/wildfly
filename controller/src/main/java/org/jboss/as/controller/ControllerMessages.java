@@ -2635,4 +2635,8 @@ public interface ControllerMessages {
      */
     @Message(id = 14898, value = "%s must be declared or the %s and the %s need to be provided.")
     XMLStreamException discoveryOptionsMustBeDeclared(String discoveryOptionsName, String hostName, String portName, @Param Location location);
+
+    @Message(id = 14899, value = "read only context")
+    IllegalStateException readOnlyContext();
+
 }
