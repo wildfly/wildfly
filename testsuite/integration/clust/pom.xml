@@ -86,12 +86,15 @@
                                 <phase>none</phase>
                             </execution>
 
-                            <!-- TCP clustering tests with manual containers with unmanaged deployment. -->
+                            <!-- TCP clustering tests with custom containers with manual deployments. -->
                             <execution>
-                                <id>ts.surefire.clust.multinode-manual-tcp-sync</id>
+                                <id>ts.surefire.clust.custom-manual-tcp-sync</id>
                                 <phase>test</phase> 
                                 <goals><goal>test</goal></goals>
                                 <configuration>
+                                    <!-- Force the order of tests -->
+                                    <runOrder>reversealphabetical</runOrder>
+
                                     <!-- Tests to execute. -->
                                     <includes>
                                         <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
