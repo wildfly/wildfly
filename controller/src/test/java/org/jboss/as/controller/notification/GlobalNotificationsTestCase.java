@@ -92,7 +92,6 @@ public class GlobalNotificationsTestCase extends AbstractControllerTestBase {
     protected void initModel(Resource rootResource, final ManagementResourceRegistration rootRegistration) {
         // register the global operations to be able to call :read-attribute and :write-attribute
         GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
-        NotificationService.installNotificationService(getContainer().subTarget());
 
         notificationEmittedLatch.set(new CountDownLatch(1));
 
@@ -111,9 +110,7 @@ public class GlobalNotificationsTestCase extends AbstractControllerTestBase {
                 new OperationStepHandler() {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        ServiceController<?> notificationService = context.getServiceRegistry(false).getService(NotificationService.SERVICE_NAME);
-                        NotificationSupport notificationSupport = NotificationSupport.class.cast(notificationService.getValue());
-                        notificationSupport.registerNotificationHandler(resourceAddressPattern, notificationHandler, notificationFilter.get());
+                        context.getNotificationSupport().registerNotificationHandler(resourceAddressPattern, notificationHandler, notificationFilter.get());
                         context.stepCompleted();
                     }
                 }

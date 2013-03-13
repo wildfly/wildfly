@@ -34,7 +34,6 @@ import java.util.List;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.notification.Notification;
-import org.jboss.as.controller.notification.NotificationService;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
@@ -82,7 +81,7 @@ public abstract class AbstractRemoveStepHandler implements OperationStepHandler 
                 Notification notification = new Notification(RESOURCE_REMOVED_NOTIFICATION,
                         sourceAddress,
                         MESSAGES.resourceWasRemoved(sourceAddress));
-                NotificationService.emitNotification(context, notification);
+                context.getNotificationSupport().emit(notification);
             }
         });
     }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.notification;
 
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.controller.PathAddress;
 
 /**
@@ -67,4 +69,13 @@ public interface NotificationSupport {
      * @param notification the notification to emit
      */
     void emit(final Notification notification);
+
+    class Factory {
+        private Factory() {
+        }
+
+        public static NotificationSupport create(ExecutorService executorService) {
+            return new NotificationSupportImpl(executorService);
+        }
+    }
 }
