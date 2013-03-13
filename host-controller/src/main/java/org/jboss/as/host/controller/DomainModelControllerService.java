@@ -470,6 +470,10 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                         return internalExecute(operation, handler, control, attachments, step);
                                     }
 
+                                    @Override
+                                    public ModelNode joinActiveOperation(ModelNode operation, OperationMessageHandler handler, ModelController.OperationTransactionControl control, OperationAttachments attachments, OperationStepHandler step, int permit) {
+                                        return executeReadOnlyOperation(operation, handler, control, attachments, step, permit);
+                                    }
                                 }),
                                 DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.DOMAIN_CHANNEL, null, null);
                         serverInventory = getFuture(inventoryFuture);
@@ -483,6 +487,11 @@ public class DomainModelControllerService extends AbstractControllerService impl
                     @Override
                     public ModelNode execute(ModelNode operation, OperationMessageHandler handler, ModelController.OperationTransactionControl control, OperationAttachments attachments, OperationStepHandler step) {
                         return internalExecute(operation, handler, control, attachments, step);
+                    }
+
+                    @Override
+                    public ModelNode joinActiveOperation(ModelNode operation, OperationMessageHandler handler, ModelController.OperationTransactionControl control, OperationAttachments attachments, OperationStepHandler step, int permit) {
+                        return executeReadOnlyOperation(operation, handler, control, attachments, step, permit);
                     }
                 }, this, expressionResolver);
 

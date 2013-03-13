@@ -139,6 +139,19 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
          */
         ModelNode execute(ModelNode operation, OperationMessageHandler handler, ModelController.OperationTransactionControl control, OperationAttachments attachments, OperationStepHandler step);
 
+        /**
+         * Join an existing operation, which is currently being executed.
+         *
+         * @param operation the operation
+         * @param handler the message handler
+         * @param control the transaction control
+         * @param attachments the operation attachments
+         * @param step the step to be executed
+         * @param permit the operation permit to join
+         * @return the result
+         */
+        ModelNode joinActiveOperation(ModelNode operation, OperationMessageHandler handler, ModelController.OperationTransactionControl control, OperationAttachments attachments, OperationStepHandler step, int permit);
+
     }
 
     class InitiateRegistrationHandler implements ManagementRequestHandler<Void, RegistrationContext> {

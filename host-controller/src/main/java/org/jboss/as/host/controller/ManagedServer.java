@@ -30,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.controller.CurrentOperationIdHolder;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
@@ -114,13 +115,16 @@ class ManagedServer {
     private final ManagedServer.ManagedServerBootConfiguration bootConfiguration;
 
     private final ManagedServerProxy protocolClient;
-    private final TransformationTarget transformationTarget;
     private final TransformingProxyController proxyController;
 
     private volatile boolean requiresReload;
 
     private volatile InternalState requiredState = InternalState.STOPPED;
     private volatile InternalState internalState = InternalState.STOPPED;
+
+    // Get the current operation id when the server is created
+    // This is only used when starting a server, reconnection might not be triggered using a mgmt operation
+    private final int operationID = CurrentOperationIdHolder.getCurrentOperationID();
 
     ManagedServer(final String hostControllerName, final String serverName, final byte[] authKey,
                   final ProcessControllerClient processControllerClient, final InetSocketAddress managementSocket,
@@ -137,7 +141,6 @@ class ManagedServer {
         this.processControllerClient = processControllerClient;
         this.managementSocket = managementSocket;
         this.bootConfiguration = bootConfiguration;
-        this.transformationTarget = transformationTarget;
 
         this.authKey = authKey;
 
@@ -702,7 +705,7 @@ class ManagedServer {
             final boolean useSubsystemEndpoint = bootConfiguration.isManagementSubsystemEndpoint();
             final ModelNode endpointConfig = bootConfiguration.getSubsystemEndpointConfiguration();
             // Send std.in
-            final ServiceActivator hostControllerCommActivator = DomainServerCommunicationServices.create(endpointConfig, managementSocket, serverName, serverProcessName, authKey, useSubsystemEndpoint);
+            final ServiceActivator hostControllerCommActivator = DomainServerCommunicationServices.create(endpointConfig, managementSocket, serverName, serverProcessName, authKey, operationID, useSubsystemEndpoint);
             final ServerStartTask startTask = new ServerStartTask(hostControllerName, serverName, 0, Collections.<ServiceActivator>singletonList(hostControllerCommActivator), bootUpdates, launchProperties);
             final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
             final OutputStream os = processControllerClient.sendStdin(serverProcessName);

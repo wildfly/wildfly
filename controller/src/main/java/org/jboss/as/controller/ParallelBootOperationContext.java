@@ -50,13 +50,21 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     private final OperationContext primaryContext;
     private final List<ParsedBootOp> runtimeOps;
 
+    private Step lockStep;
+    private final int operationId;
+    private final ModelControllerImpl controller;
+
     ParallelBootOperationContext(final ModelController.OperationTransactionControl transactionControl,
                                  final ControlledProcessState processState, final OperationContext primaryContext,
-                                 final List<ParsedBootOp> runtimeOps, final Thread controllingThread) {
+                                 final List<ParsedBootOp> runtimeOps, final Thread controllingThread,
+                                 final ModelControllerImpl controller, final int operationId) {
         super(primaryContext.getProcessType(), primaryContext.getRunningMode(), transactionControl, processState, true);
         this.primaryContext = primaryContext;
         this.runtimeOps = runtimeOps;
         AbstractOperationContext.controllingThread.set(controllingThread);
+        //
+        this.controller = controller;
+        this.operationId = operationId;
     }
 
     void close() {
@@ -131,6 +139,7 @@ class ParallelBootOperationContext extends AbstractOperationContext {
 
     @Override
     public ManagementResourceRegistration getResourceRegistrationForUpdate() {
+        acquireControllerLock();
         ManagementResourceRegistration parent = primaryContext.getResourceRegistrationForUpdate();
         return  parent.getSubModel(activeStep.address);
     }
@@ -142,21 +151,27 @@ class ParallelBootOperationContext extends AbstractOperationContext {
 
     @Override
     public ServiceRegistry getServiceRegistry(boolean modify) throws UnsupportedOperationException {
+        if(modify) {
+            acquireControllerLock();
+        }
         return primaryContext.getServiceRegistry(modify);
     }
 
     @Override
     public ServiceController<?> removeService(ServiceName name) throws UnsupportedOperationException {
+        acquireControllerLock();
         return primaryContext.removeService(name);
     }
 
     @Override
     public void removeService(ServiceController<?> controller) throws UnsupportedOperationException {
+        acquireControllerLock();
         primaryContext.removeService(controller);
     }
 
     @Override
     public ServiceTarget getServiceTarget() throws UnsupportedOperationException {
+        acquireControllerLock();
         return primaryContext.getServiceTarget();
     }
 
@@ -176,17 +191,28 @@ class ParallelBootOperationContext extends AbstractOperationContext {
 
     @Override
     public void acquireControllerLock() {
-        // ignore; ParallelBootOperationStepHandler should already have the controller lock
+        if(lockStep == null) {
+            try {
+                controller.acquireLock(operationId, true, this);
+                lockStep = activeStep;
+            } catch (InterruptedException e) {
+                cancelled = true;
+                Thread.currentThread().interrupt();
+                throw MESSAGES.operationCancelledAsynchronously();
+            }
+        }
     }
 
     @Override
     public Resource createResource(PathAddress address) throws UnsupportedOperationException {
+        acquireControllerLock();
         PathAddress fullAddress = activeStep.address.append(address);
         return primaryContext.createResource(fullAddress);
     }
 
     @Override
     public void addResource(PathAddress address, Resource toAdd) {
+        acquireControllerLock();
         PathAddress fullAddress = activeStep.address.append(address);
         primaryContext.addResource(fullAddress, toAdd);
     }
@@ -214,12 +240,14 @@ class ParallelBootOperationContext extends AbstractOperationContext {
 
     @Override
     public Resource readResourceForUpdate(PathAddress address) {
+        acquireControllerLock();
         PathAddress fullAddress = activeStep.address.append(address);
         return primaryContext.readResourceForUpdate(fullAddress);
     }
 
     @Override
     public Resource removeResource(PathAddress address) throws UnsupportedOperationException {
+        acquireControllerLock();
         PathAddress fullAddress = activeStep.address.append(address);
         return primaryContext.removeResource(fullAddress);
     }
@@ -283,7 +311,10 @@ class ParallelBootOperationContext extends AbstractOperationContext {
 
     @Override
     void releaseStepLocks(Step step) {
-        // Our steps took no locks
+        if(lockStep == step) {
+            controller.releaseLock(operationId);
+            lockStep = null;
+        }
     }
 
     @Override

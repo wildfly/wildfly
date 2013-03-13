@@ -111,11 +111,13 @@ final class OperationContextImpl extends AbstractOperationContext {
     private Step containerMonitorStep;
     private volatile Boolean requiresModelUpdateAuthorization;
 
+    private final Integer operationId;
+
     OperationContextImpl(final ModelControllerImpl modelController, final ProcessType processType,
                          final RunningMode runningMode, final EnumSet<ContextFlag> contextFlags,
                             final OperationMessageHandler messageHandler, final OperationAttachments attachments,
                             final Resource model, final ModelController.OperationTransactionControl transactionControl,
-                            final ControlledProcessState processState, final boolean booting) {
+                            final ControlledProcessState processState, final boolean booting, final Integer operationId) {
         super(processType, runningMode, transactionControl, processState, booting);
         this.model = model;
         this.originalModel = model;
@@ -125,6 +127,8 @@ final class OperationContextImpl extends AbstractOperationContext {
         this.affectsModel = booting ? new ConcurrentHashMap<PathAddress, Object>(16 * 16) : new HashMap<PathAddress, Object>(1);
         this.contextFlags = contextFlags;
         this.serviceTarget = new ContextServiceTarget(modelController);
+
+        this.operationId = operationId;
     }
 
     public InputStream getAttachmentStream(final int index) {
@@ -358,7 +362,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                 throw MESSAGES.invalidModificationAfterCompletedStep();
             }
             try {
-                modelController.acquireLock(respectInterruption);
+                modelController.acquireLock(operationId, respectInterruption, this);
                 lockStep = activeStep;
             } catch (InterruptedException e) {
                 cancelled = true;
@@ -673,7 +677,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     void releaseStepLocks(AbstractOperationContext.Step step) {
         try {
             if (this.lockStep == step) {
-                modelController.releaseLock();
+                modelController.releaseLock(operationId);
                 lockStep = null;
             }
             if (this.containerMonitorStep == step) {

@@ -86,7 +86,6 @@ public class StartServersHandler implements OperationStepHandler {
             throw new OperationFailedException(new ModelNode(MESSAGES.cannotStartServersInvalidMode(context.getRunningMode())));
         }
 
-
         final ModelNode domainModel = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
         context.addStep(new OperationStepHandler() {
             @Override
@@ -97,7 +96,7 @@ public class StartServersHandler implements OperationStepHandler {
                 if(hostModel.hasDefined(SERVER_CONFIG)) {
                     final ModelNode servers = hostModel.get(SERVER_CONFIG).clone();
                     if (hostControllerEnvironment.isRestart() || runningModeControl.getRestartMode() == RestartMode.HC_ONLY){
-                        restartedHcStartOrReconnectServers(servers, domainModel);
+                        restartedHcStartOrReconnectServers(servers, domainModel, context);
                     } else {
                         cleanStartServers(servers, domainModel, context);
                     }
@@ -122,7 +121,7 @@ public class StartServersHandler implements OperationStepHandler {
         }
     }
 
-    private void restartedHcStartOrReconnectServers(final ModelNode servers, final ModelNode domainModel){
+    private void restartedHcStartOrReconnectServers(final ModelNode servers, final ModelNode domainModel, final OperationContext context){
         Map<String, ProcessInfo> processInfos = serverInventory.determineRunningProcesses();
         for(final String serverName : servers.keys()) {
             ProcessInfo info = processInfos.get(serverInventory.getServerProcessName(serverName));
