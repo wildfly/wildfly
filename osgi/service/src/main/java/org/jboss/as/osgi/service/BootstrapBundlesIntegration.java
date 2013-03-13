@@ -118,7 +118,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
         builder.addDependency(OSGiConstants.SUBSYSTEM_STATE_SERVICE_NAME, SubsystemState.class, injectedSubsystemState);
         builder.addDependency(OSGiConstants.REPOSITORY_SERVICE_NAME, XRepository.class, injectedRepository);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
-        builder.addDependency(IntegrationServices.BUNDLE_STORAGE, BundleStorage.class, injectedStorageProvider);
+        builder.addDependency(IntegrationServices.BUNDLE_STORAGE_PLUGIN, BundleStorage.class, injectedStorageProvider);
         builder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, injectedSystemContext);
         builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, injectedEnvironment);
     }
