@@ -30,6 +30,10 @@ import java.io.PrintWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * {@link Sanitizer} subclass that replaces all instance of {@code pattern} with
+ * the {@code replacement} text.
+ */
 public class PatternSanitizer extends AbstractSanitizer {
 
     private final Pattern pattern;
