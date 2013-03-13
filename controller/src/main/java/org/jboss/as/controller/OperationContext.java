@@ -25,6 +25,7 @@ package org.jboss.as.controller;
 import java.io.InputStream;
 
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.notification.NotificationSupport;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -562,6 +563,7 @@ public interface OperationContext extends ExpressionResolver {
      */
     void report(MessageSeverity severity, String message);
 
+    NotificationSupport getNotificationSupport();
 
     /**
      * Marks a resource to indicate that it's backing service(s) will be restarted.

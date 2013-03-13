@@ -35,7 +35,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.notification.Notification;
-import org.jboss.as.controller.notification.NotificationService;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -106,7 +105,7 @@ public class AbstractAddStepHandler implements OperationStepHandler {
                 Notification notification = new Notification(RESOURCE_ADDED_NOTIFICATION,
                         sourceAddress,
                         MESSAGES.resourceWasAdded(sourceAddress));
-                NotificationService.emitNotification(context, notification);
+                context.getNotificationSupport().emit(notification);
             }
         });
     }
