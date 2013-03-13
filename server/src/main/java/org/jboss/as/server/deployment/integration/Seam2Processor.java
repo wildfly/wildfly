@@ -22,6 +22,12 @@
 
 package org.jboss.as.server.deployment.integration;
 
+import java.io.Closeable;
+import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -30,14 +36,12 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
-import org.jboss.as.server.deployment.module.VFSResourceLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.modules.ResourceLoader;
-import org.jboss.modules.ResourceLoaderSpec;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -49,12 +53,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
-
-import java.io.Closeable;
-import java.io.File;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Recognize Seam deployments and add org.jboss.seam.int module to it.
@@ -83,7 +81,7 @@ public class Seam2Processor implements DeploymentUnitProcessor {
     public static final ModuleIdentifier VFS_MODULE = ModuleIdentifier.create("org.jboss.vfs");
 
     private ServiceTarget serviceTarget; // service target from the service that added this dup
-    private ResourceLoaderSpec seamIntResourceLoader;
+    private ResourceRoot seamIntResourceRoot;
 
     public Seam2Processor(ServiceTarget serviceTarget) {
         this.serviceTarget = serviceTarget;
@@ -96,9 +94,9 @@ public class Seam2Processor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      *          for any error
      */
-    protected synchronized ResourceLoaderSpec getSeamIntResourceLoader() throws DeploymentUnitProcessingException {
+    protected synchronized ResourceRoot getSeamIntResourceRoot() throws DeploymentUnitProcessingException {
         try {
-            if (seamIntResourceLoader == null) {
+            if (seamIntResourceRoot == null) {
                 final ModuleLoader moduleLoader = Module.getBootModuleLoader();
                 Module extModule = moduleLoader.loadModule(EXT_CONTENT_MODULE);
                 URL url = extModule.getExportedResource(SEAM_INT_JAR);
@@ -124,10 +122,10 @@ public class Seam2Processor implements DeploymentUnitProcessor {
                 builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
                 serviceTarget = null; // our cleanup service install work is done
 
-                ResourceLoader resourceLoader = new VFSResourceLoader(SEAM_INT_JAR, vf);
-                seamIntResourceLoader = ResourceLoaderSpec.createResourceLoaderSpec(resourceLoader);
+                MountHandle dummy = new MountHandle(null); // actual close is done by the MSC service above
+                seamIntResourceRoot = new ResourceRoot(vf, dummy);
             }
-            return seamIntResourceLoader;
+            return seamIntResourceRoot;
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException(e);
         }
@@ -154,8 +152,10 @@ public class Seam2Processor implements DeploymentUnitProcessor {
                 if (root.getChild(path).exists()) {
                     final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
                     final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-                    moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, VFS_MODULE, false, false, false, false));
-                    moduleSpecification.addResourceLoader(getSeamIntResourceLoader());
+                    moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, VFS_MODULE, false, false, false, false)); // for VFS scanner
+
+                    unit.addToAttachmentList(Attachments.RESOURCE_ROOTS, getSeamIntResourceRoot());
+
                     return;
                 }
             }
