@@ -675,6 +675,9 @@ abstract class AbstractOperationContext implements OperationContext {
 
     abstract void waitForRemovals() throws InterruptedException;
 
+    // Maybe expose this through the OperationContext at one point
+    public abstract int getLocalOperationId();
+
     class Step {
         private final OperationStepHandler handler;
         final ModelNode response;

@@ -74,13 +74,16 @@ class HostControllerConnection extends FutureManagementChannel {
     private final String serverProcessName;
     private final ProtocolConnectionManager connectionManager;
     private final ManagementChannelHandler channelHandler;
+    private final int initialOperationID;
 
     private ProtocolConnectionConfiguration configuration;
 
-    HostControllerConnection(final String serverProcessName, final String userName, final ProtocolConnectionConfiguration configuration, final ExecutorService executorService) {
+    HostControllerConnection(final String serverProcessName, final String userName, final int initialOperationID,
+                             final ProtocolConnectionConfiguration configuration, final ExecutorService executorService) {
         this.userName = userName;
         this.serverProcessName = serverProcessName;
         this.configuration = configuration;
+        this.initialOperationID = initialOperationID;
         this.channelHandler = new ManagementChannelHandler(this, executorService);
         this.connectionManager = ProtocolConnectionManager.create(configuration, this, new ReconnectTask());
     }
@@ -224,8 +227,8 @@ class HostControllerConnection extends FutureManagementChannel {
 
         @Override
         protected void sendRequest(final ActiveOperation.ResultHandler<ModelNode> resultHandler, final ManagementRequestContext<Void> context, final FlushableDataOutput output) throws IOException {
-            // output.write(DomainServerProtocol.PARAM_SERVER_NAME);
             output.writeUTF(serverProcessName);
+            output.writeInt(initialOperationID);
         }
 
         @Override

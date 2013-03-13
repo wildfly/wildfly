@@ -229,6 +229,14 @@ public abstract class AbstractControllerService implements Service<ModelControll
         return controller.internalExecute(operation, handler, control, attachments, prepareStep);
     }
 
+    /**
+     * @deprecated internal use only
+     */
+    @Deprecated
+    protected ModelNode executeReadOnlyOperation(final ModelNode operation, final OperationMessageHandler handler, final ModelController.OperationTransactionControl control, final OperationAttachments attachments, final OperationStepHandler prepareStep, int lockPermit) {
+        return controller.executeReadOnlyOperation(operation, handler, control, attachments, prepareStep, lockPermit);
+    }
+
     protected void finishBoot() throws ConfigurationPersistenceException {
         controller.finishBoot();
         configurationPersister.successfulBoot();
