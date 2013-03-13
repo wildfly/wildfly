@@ -191,7 +191,7 @@ public class RaOperationUtil {
 
         boolean application = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, recoveryEnvModel, APPLICATION);
         CommonSecurity security = null;
-        if (securityDomain != null || securityDomainAndApplication != null) {
+        if (securityDomain != null || securityDomainAndApplication != null || application) {
             security = new CommonSecurityImpl(securityDomain, securityDomainAndApplication, application);
         }
         Long backgroundValidationMillis = ModelNodeUtil.getLongIfSetOrGetDefault(context, recoveryEnvModel, BACKGROUNDVALIDATIONMILLIS);
