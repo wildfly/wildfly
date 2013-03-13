@@ -35,6 +35,9 @@ import java.util.zip.ZipOutputStream;
 
 import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
 
+/**
+ * Abstracts the zipfile used for packaging the JDR Report.
+ */
 public class JdrZipFile {
 
     ZipOutputStream zos;
@@ -64,10 +67,21 @@ public class JdrZipFile {
         zos = new ZipOutputStream(new FileOutputStream(this.name));
     }
 
+    /**
+     * @return the full pathname to the zipfile on disk
+     */
     public String name() {
         return this.name;
     }
 
+    /**
+     * Adds the contents of the {@link InputStream} to the path in the zip.
+     *
+     * This method allows for absolute control of the destination of the content to be stored.
+     * It is not common to use this method.
+     * @param is content to write
+     * @param path destination to write to in the zip file
+     */
     public void add(InputStream is, String path) {
         byte [] buffer = new byte[1024];
 
@@ -97,16 +111,44 @@ public class JdrZipFile {
         }
     }
 
+    /**
+     * Adds the content of the {@link InputStream} to the zip in a location that mirrors where {@link VirtualFile file} is located.
+     *
+     * For example if {@code file} is at {@code /tmp/foo/bar} and {@code $JBOSS_HOME} is {@code tmp} then the destination will be {@code JBOSSHOME/foo/bar}
+     *
+     * @param file {@link VirtualFile} where metadata is read from
+     * @param is content to write to the zip file
+     * @throws Exception
+     */
     public void add(VirtualFile file, InputStream is) throws Exception {
         String name = "JBOSS_HOME" + file.getPathName().substring(this.jbossHome.length());
         this.add(is, name);
     }
 
+    /**
+     * Adds content to the zipfile at path
+     *
+     * path is prepended with the directory reserved for generated text files in JDR
+     *
+     * @param content
+     * @param path
+     * @throws Exception
+     */
     public void add(String content, String path) throws Exception {
         String name = "sos_strings/as7/" + path;
         this.add(new ByteArrayInputStream(content.getBytes()), name);
     }
 
+
+    /**
+     * Adds content to the zipfile in a file named logName
+     *
+     * path is prepended with the directory reserved for JDR log files
+     *
+     * @param content
+     * @param logName
+     * @throws Exception
+     */
     public void addLog(String content, String logName) throws Exception {
         String name = "sos_logs/" + logName;
         this.add(new ByteArrayInputStream(content.getBytes()), name);

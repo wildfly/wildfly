@@ -21,6 +21,7 @@
  */
 package org.jboss.as.jdr.util;
 
+import org.apache.commons.io.IOUtils;
 import org.jboss.vfs.VirtualFileFilter;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -39,6 +40,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
+import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
+
+/**
+ * {@link Sanitizer} subclass that removes the contents of the matched xpath expression
+ * in {@code pattern}.
+ */
 public class XMLSanitizer extends AbstractSanitizer {
 
     private XPathExpression expression;
@@ -61,8 +68,10 @@ public class XMLSanitizer extends AbstractSanitizer {
     }
 
     public InputStream sanitize(InputStream in) throws Exception {
+        byte [] content = IOUtils.toByteArray(in);
         try {
-            Document doc = builder.parse(in);
+            // storing the entire file in memory in case we need to bail.
+            Document doc = builder.parse(new ByteArrayInputStream(content));
             Object result = expression.evaluate(doc, XPathConstants.NODESET);
             NodeList nodes = (NodeList) result;
             for (int i = 0; i < nodes.getLength(); i++) {
@@ -74,7 +83,8 @@ public class XMLSanitizer extends AbstractSanitizer {
             transformer.transform(source, outStream);
             return new ByteArrayInputStream(output.toByteArray());
         } catch (Exception e) {
-            return in;
+            ROOT_LOGGER.debug("Error while sanitizing an xml document", e);
+            return new ByteArrayInputStream(content);
         }
     }
 }
