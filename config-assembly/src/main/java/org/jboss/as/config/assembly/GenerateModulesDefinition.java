@@ -187,7 +187,8 @@ public class GenerateModulesDefinition {
             dependencies.add(moduleId);
 
             String path = moduleId.getName().replace('.', '/') + '/' + moduleId.getSlot();
-            File moduleFile = new File(resourcesDir + File.separator + "modules" + File.separator + path + File.separator + "module.xml");
+            String modulespath = "modules" + File.separator + "system" + File.separator + "layers" + File.separator + "base";
+            File moduleFile = new File(resourcesDir + File.separator + modulespath + File.separator + path + File.separator + "module.xml");
 
             ModuleParser moduleParser = new ModuleParser(moduleFile);
             moduleParser.parse();
