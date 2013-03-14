@@ -63,6 +63,7 @@
         <maven.compiler.target>1.7</maven.compiler.target>
         <maven.compiler.source>1.7</maven.compiler.source>
         <version.surefire.plugin>2.11</version.surefire.plugin>
+        <version.checkstyle.plugin>2.10</version.checkstyle.plugin>
         <!--
             Dependency versions. Please keep alphabetical.
 
@@ -152,7 +153,7 @@
         <version.org.jacorb>2.3.2.jbossorg-4</version.org.jacorb>
         <version.org.javassist>3.17.1-GA</version.org.javassist>
         <version.org.jdom>1.1.2</version.org.jdom>
-        <version.org.jboss.arquillian.core>1.0.0.Final</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.core>1.0.3.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.osgi>2.0.0.CR1</version.org.jboss.arquillian.osgi>
         <version.org.jboss.as.console>1.5.2.Final</version.org.jboss.as.console>
         <version.org.jboss.as.jbossweb-native>2.0.10.Final</version.org.jboss.as.jbossweb-native>
@@ -199,8 +200,8 @@
         <version.org.jboss.seam.int>6.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>2.2.2.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
-        <version.org.jboss.shrinkwrap.shrinkwrap>1.0.0</version.org.jboss.shrinkwrap.shrinkwrap>
-        <version.org.jboss.shrinkwrap.resolver>1.0.0-beta-5</version.org.jboss.shrinkwrap.resolver>
+        <version.org.jboss.shrinkwrap.shrinkwrap>1.1.2</version.org.jboss.shrinkwrap.shrinkwrap>
+        <version.org.jboss.shrinkwrap.resolver>2.0.0-beta-2</version.org.jboss.shrinkwrap.resolver>
         <version.org.jboss.slf4j.slf4j-jboss-logmanager>1.0.3.GA</version.org.jboss.slf4j.slf4j-jboss-logmanager>
         <version.org.jboss.logging.jul-to-slf4j-stub>1.0.1.Final</version.org.jboss.logging.jul-to-slf4j-stub>
         <!-- Include the artifactId for org.jboss.spec project versions because artifactId contains the API spec version -->

@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -37,84 +38,84 @@ import org.junit.runner.RunWith;
 
 /**
  * AS7-5768 -Support for RA module deployment
- * 
+ *
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
- * 
+ *         <p/>
  *         Tests for module deployment of resource adapter archive in
  *         uncompressed form with classes, packed in .jar file
- * 
- *         Structure of module is: 
- *         modulename 
+ *         <p/>
+ *         Structure of module is:
+ *         modulename
  *         modulename/main
- *         modulename/main/module.xml 
+ *         modulename/main/module.xml
  *         modulename/main/META-INF
- *         modulename/main/META-INF/ra.xml 
+ *         modulename/main/META-INF/ra.xml
  *         modulename/main/module.jar
  */
 @RunWith(Arquillian.class)
 @ServerSetup(TwoRaJarTestCase.ModuleAcDeploymentTestCaseSetup1.class)
 public class TwoRaJarTestCase extends TwoRaFlatTestCase {
 
-	static class ModuleAcDeploymentTestCaseSetup1 extends
-			ModuleDeploymentTestCaseSetup {
+    static class ModuleAcDeploymentTestCaseSetup1 extends
+            ModuleDeploymentTestCaseSetup {
 
-		public static ModelNode address1;
+        public static ModelNode address1;
 
-		@Override
-		public void doSetup(ManagementClient managementClient) throws Exception {
+        @Override
+        public void doSetup(ManagementClient managementClient) throws Exception {
 
-			addModule(defaultPath, "module-jar.xml");
-			fillModuleWithJar("ra1.xml");
-			setConfiguration("second.xml");
-			address1 = address.clone();
-			setConfiguration("basic.xml");
+            addModule(defaultPath, "module-jar.xml");
+            fillModuleWithJar("ra1.xml");
+            setConfiguration("second.xml");
+            address1 = address.clone();
+            setConfiguration("basic.xml");
 
-		}
+        }
 
-		@Override
-		public void tearDown(ManagementClient managementClient,
-				String containerId) throws Exception {
-			remove(address1);
-			super.tearDown(managementClient, containerId);
-		}
+        @Override
+        public void tearDown(ManagementClient managementClient,
+                             String containerId) throws Exception {
+            remove(address1);
+            super.tearDown(managementClient, containerId);
+        }
 
-	}
+    }
 
-	/**
-	 * Define the deployment
-	 * 
-	 * @return The deployment archive
-	 */
-	@Deployment
-	public static JavaArchive createDeployment() throws Exception {
-		JavaArchive ja = createDeployment(TwoRaFlatTestCase.class);
-		ja.addClass(TwoRaJarTestCase.class);
-		return ja;
-	}
+    /**
+     * Define the deployment
+     *
+     * @return The deployment archive
+     */
+    @Deployment(name = "two-ra-flat")
+    @TargetsContainer("jboss")
+    public static JavaArchive createDeployment() throws Exception {
+        JavaArchive ja = createDeployment(TwoRaFlatTestCase.class);
+        ja.addClass(TwoRaJarTestCase.class);
+        return ja;
+    }
 
-	/**
-	 * Tests connection in pool
-	 * 
-	 * @throws Exception
-	 *             in case of error
-	 */
-	@Test
-	@RunAsClient
-	public void testConnection2() throws Exception {
-		final ModelNode address1 = ModuleAcDeploymentTestCaseSetup1.address1
-				.clone();
-		address1.add("connection-definitions", cf1);
-		address1.protect();
-		final ModelNode operation1 = new ModelNode();
-		operation1.get(OP).set("test-connection-in-pool");
-		operation1.get(OP_ADDR).set(address1);
-		executeOperation(operation1);
+    /**
+     * Tests connection in pool
+     *
+     * @throws Exception in case of error
+     */
+    @Test
+    @RunAsClient
+    public void testConnection2() throws Exception {
+        final ModelNode address1 = ModuleAcDeploymentTestCaseSetup1.address1
+                .clone();
+        address1.add("connection-definitions", cf1);
+        address1.protect();
+        final ModelNode operation1 = new ModelNode();
+        operation1.get(OP).set("test-connection-in-pool");
+        operation1.get(OP_ADDR).set(address1);
+        executeOperation(operation1);
 
-	}
+    }
 
-	@Override
-	protected ModelNode getAddress() {
-		return ModuleAcDeploymentTestCaseSetup1.getAddress();
-	}
+    @Override
+    protected ModelNode getAddress() {
+        return ModuleAcDeploymentTestCaseSetup1.getAddress();
+    }
 
 }

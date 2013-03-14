@@ -21,6 +21,14 @@
  */
 package org.jboss.as.test.integration.jca.moduledeployment;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.List;
+
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
@@ -33,21 +41,7 @@ import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-
 import org.xnio.IoUtils;
-
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 
 /**
  * AS7-5768 -Support for RA module deployment
@@ -56,164 +50,166 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
  */
 public class ModuleDeploymentTestCaseSetup extends JcaMgmtServerSetupTask {
 
-	protected File testModuleRoot;
-	protected File slot;
-	public static ModelNode address;
-	protected final String defaultPath = "org/jboss/ironjacamar/ra16out";
+    protected File testModuleRoot;
+    protected File slot;
+    public static ModelNode address;
+    protected final String defaultPath = "org/jboss/ironjacamar/ra16out";
 
-	public void addModule(final String moduleName) throws Exception {
-		addModule(moduleName, "module.xml");
-	}
+    public void addModule(final String moduleName) throws Exception {
+        addModule(moduleName, "module.xml");
+    }
 
-	public void addModule(final String moduleName, String moduleXml)
-			throws Exception {
-		removeModule(moduleName);
-		createTestModule(moduleXml);
-	}
+    public void addModule(final String moduleName, String moduleXml)
+            throws Exception {
+        removeModule(moduleName);
+        createTestModule(moduleXml);
+    }
 
-	public void removeModule(final String moduleName) throws Exception {
-		testModuleRoot = new File(getModulePath(), moduleName);
-		deleteRecursively(testModuleRoot);
-	}
+    public void removeModule(final String moduleName) throws Exception {
+        testModuleRoot = new File(getModulePath(), moduleName);
+        deleteRecursively(testModuleRoot);
+    }
 
-	private void deleteRecursively(File file) {
-		if (file.exists()) {
-			if (file.isDirectory()) {
-				for (String name : file.list()) {
-					deleteRecursively(new File(file, name));
-				}
-			}
-			file.delete();
-		}
-	}
+    private void deleteRecursively(File file) {
+        if (file.exists()) {
+            if (file.isDirectory()) {
+                for (String name : file.list()) {
+                    deleteRecursively(new File(file, name));
+                }
+            }
+            file.delete();
+        }
+    }
 
-	private void createTestModule(String moduleXml) throws IOException {
-		if (testModuleRoot.exists()) {
-			throw new IllegalArgumentException(testModuleRoot
-					+ " already exists");
-		}
-		File file = new File(testModuleRoot, "main");
-		if (!file.mkdirs()) {
-			throw new IllegalArgumentException("Could not create " + file);
-		}
-		slot = file;
-		URL url = this.getClass().getResource(moduleXml);
-		if (url == null) {
-			throw new IllegalStateException("Could not find module.xml");
-		}
-		copyFile(new File(file, "module.xml"), url.openStream());
+    private void createTestModule(String moduleXml) throws IOException {
+        if (testModuleRoot.exists()) {
+            throw new IllegalArgumentException(testModuleRoot
+                    + " already exists");
+        }
+        File file = new File(testModuleRoot, "main");
+        if (!file.mkdirs()) {
+            throw new IllegalArgumentException("Could not create " + file);
+        }
+        slot = file;
+        URL url = this.getClass().getResource(moduleXml);
+        if (url == null) {
+            throw new IllegalStateException("Could not find module.xml");
+        }
+        copyFile(new File(file, "module.xml"), url.openStream());
 
-	}
+    }
 
-	protected void copyFile(File target, InputStream src) throws IOException {
-		final BufferedOutputStream out = new BufferedOutputStream(
-				new FileOutputStream(target));
-		try {
-			int i = src.read();
-			while (i != -1) {
-				out.write(i);
-				i = src.read();
-			}
-		} finally {
-			IoUtils.safeClose(out);
-		}
-	}
+    protected void copyFile(File target, InputStream src) throws IOException {
+        final BufferedOutputStream out = new BufferedOutputStream(
+                new FileOutputStream(target));
+        try {
+            int i = src.read();
+            while (i != -1) {
+                out.write(i);
+                i = src.read();
+            }
+        } finally {
+            IoUtils.safeClose(out);
+        }
+    }
 
-	private File getModulePath() {
-		String modulePath = System.getProperty("module.path", null);
-		if (modulePath == null) {
-			String jbossHome = System.getProperty("jboss.home", null);
-			if (jbossHome == null) {
-				throw new IllegalStateException(
-						"Neither -Dmodule.path nor -Djboss.home were set");
-			}
-			modulePath = jbossHome + File.separatorChar + "modules";
-		} else {
-			modulePath = modulePath.split(File.pathSeparator)[0];
-		}
-		File moduleDir = new File(modulePath);
-		if (!moduleDir.exists()) {
-			throw new IllegalStateException(
-					"Determined module path does not exist");
-		}
-		if (!moduleDir.isDirectory()) {
-			throw new IllegalStateException(
-					"Determined module path is not a dir");
-		}
-		return moduleDir;
-	}
+    private File getModulePath() {
+        String modulePath = System.getProperty("module.path", null);
+        if (modulePath == null) {
+            String jbossHome = System.getProperty("jboss.home", null);
+            if (jbossHome == null) {
+                throw new IllegalStateException(
+                        "Neither -Dmodule.path nor -Djboss.home were set");
+            }
+            modulePath = jbossHome + File.separatorChar + "modules";
+        } else {
+            modulePath = modulePath.split(File.pathSeparator)[0];
+        }
+        File moduleDir = new File(modulePath);
+        if (!moduleDir.exists()) {
+            throw new IllegalStateException(
+                    "Determined module path does not exist");
+        }
+        if (!moduleDir.isDirectory()) {
+            throw new IllegalStateException(
+                    "Determined module path is not a dir");
+        }
+        return moduleDir;
+    }
 
-	@Override
-	public void tearDown(ManagementClient managementClient, String containerId)
-			throws Exception {
-		takeSnapShot();
-		remove(address);
-		removeModule(defaultPath);
-	}
+    @Override
+    public void tearDown(ManagementClient managementClient, String containerId)
+            throws Exception {
+        takeSnapShot();
+        remove(address);
+        removeModule(defaultPath);
+    }
 
-	@Override
-	protected void doSetup(ManagementClient managementClient) throws Exception {
+    @Override
+    protected void doSetup(ManagementClient managementClient) throws Exception {
 
-		addModule(defaultPath);
+        addModule(defaultPath);
 
-	}
+    }
 
-	protected void setConfiguration(String fileName) throws Exception {
-		String xml = FileUtils.readFile(this.getClass(), fileName);
-		List<ModelNode> operations = xmlToModelOperations(xml,
-				Namespace.CURRENT.getUriString(),
-				new ResourceAdapterSubsystemParser());
-		address = operations.get(1).get("address");
+    protected void setConfiguration(String fileName) throws Exception {
+        String xml = FileUtils.readFile(this.getClass(), fileName);
+        List<ModelNode> operations = xmlToModelOperations(xml,
+                Namespace.CURRENT.getUriString(),
+                new ResourceAdapterSubsystemParser());
+        address = operations.get(1).get("address");
         operations.remove(0);
         for (ModelNode op : operations) {
             executeOperation(op);
         }
-		//executeOperation(operationListToCompositeOperation(operations));
+        //executeOperation(operationListToCompositeOperation(operations));
 
     }
 
-	/**
-	 * Creates module structure for uncompressed RA archive. RA classes are in
-	 * flat form too
-	 *
-	 * @throws Exception
-	 */
-	protected void fillModuleWithFlatClasses(String raFile) throws Exception {
+    /**
+     * Creates module structure for uncompressed RA archive. RA classes are in
+     * flat form too
+     *
+     * @throws Exception
+     */
+    protected void fillModuleWithFlatClasses(String raFile) throws Exception {
 
-		ResourceAdapterArchive rar = ShrinkWrap
-				.create(ResourceAdapterArchive.class);
-		JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ra16out.jar");
-		jar.addPackage(MultipleConnectionFactory1.class.getPackage()).addClass(
-				javax.jms.MessageListener.class);
-		rar.addAsManifestResource(this.getClass().getPackage(), raFile,
-				"ra.xml");
-		rar.as(ExplodedExporter.class).exportExploded(testModuleRoot, "main");
-		jar.as(ExplodedExporter.class).exportExploded(testModuleRoot, "main");
-	}
+        ResourceAdapterArchive rar = ShrinkWrap
+                .create(ResourceAdapterArchive.class);
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ra16out.jar");
+        jar.addPackage(MultipleConnectionFactory1.class.getPackage()).addClass(
+                javax.jms.MessageListener.class);
+        rar.addAsManifestResource(this.getClass().getPackage(), raFile,
+                "ra.xml");
+        rar.as(ExplodedExporter.class).exportExploded(testModuleRoot, "main");
+        jar.as(ExplodedExporter.class).exportExploded(testModuleRoot, "main");
+    }
 
-	/**
-	 * Creates module structure for uncompressed RA archive.
-	 * RA classes are packed in .jar archive
-	 * @throws Exception
-	 */
-	protected void fillModuleWithJar(String raFile) throws Exception {
-		ResourceAdapterArchive rar = ShrinkWrap
-				.create(ResourceAdapterArchive.class);
-		JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ra16out.jar");
-		jar.addPackage(MultipleConnectionFactory1.class.getPackage());
-		rar.addAsManifestResource(
-				PureJarTestCase.class.getPackage(), raFile, "ra.xml");
-		rar.as(ExplodedExporter.class).exportExploded(testModuleRoot, "main");
+    /**
+     * Creates module structure for uncompressed RA archive.
+     * RA classes are packed in .jar archive
+     *
+     * @throws Exception
+     */
+    protected void fillModuleWithJar(String raFile) throws Exception {
+        ResourceAdapterArchive rar = ShrinkWrap
+                .create(ResourceAdapterArchive.class);
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ra16out.jar");
+        jar.addPackage(MultipleConnectionFactory1.class.getPackage());
+        rar.addAsManifestResource(
+                PureJarTestCase.class.getPackage(), raFile, "ra.xml");
+        rar.as(ExplodedExporter.class).exportExploded(testModuleRoot, "main");
 
-		copyFile(new File(slot, "ra16out.jar"), jar.as(ZipExporter.class).exportAsInputStream());
-	}
+        copyFile(new File(slot, "ra16out.jar"), jar.as(ZipExporter.class).exportAsInputStream());
+    }
 
-	/**
-	 * Returns basic address
-	 * @return address
-	 */
-	public static ModelNode getAddress() {
-		return address;
-	}
+    /**
+     * Returns basic address
+     *
+     * @return address
+     */
+    public static ModelNode getAddress() {
+        return address;
+    }
 
 }
