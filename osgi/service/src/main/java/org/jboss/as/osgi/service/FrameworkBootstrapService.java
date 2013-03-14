@@ -117,7 +117,6 @@ public class FrameworkBootstrapService implements Service<Void> {
 
             ServiceTarget serviceTarget = context.getChildTarget();
             JAXPServiceProvider.addService(serviceTarget);
-            ResolverService.addService(serviceTarget);
             RepositoryService.addService(serviceTarget);
 
             Activation activation = subsystemState.getActivationPolicy();

@@ -31,6 +31,8 @@
         <!-- Insert resources here -->
     </resources>
 
+    <!-- export all -->
+    
     <dependencies>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.osgi.metadata"/>
