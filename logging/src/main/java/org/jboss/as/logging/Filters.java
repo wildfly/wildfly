@@ -126,7 +126,12 @@ class Filters {
             return String.format("%s(%s)", NOT, filterToFilterSpec(value.get(CommonAttributes.NOT.getName())));
         } else if (value.hasDefined(CommonAttributes.REPLACE.getName())) {
             final ModelNode replace = value.get(CommonAttributes.REPLACE.getName());
-            final boolean replaceAll = replace.get(CommonAttributes.REPLACE_ALL.getName()).asBoolean();
+            final boolean replaceAll;
+            if (replace.hasDefined(CommonAttributes.REPLACE_ALL.getName())) {
+                replaceAll = replace.get(CommonAttributes.REPLACE_ALL.getName()).asBoolean();
+            } else {
+                replaceAll = CommonAttributes.REPLACE_ALL.getDefaultValue().asBoolean();
+            }
             final StringBuilder result = new StringBuilder();
             if (replaceAll) {
                 result.append(SUBSTITUTE_ALL);
