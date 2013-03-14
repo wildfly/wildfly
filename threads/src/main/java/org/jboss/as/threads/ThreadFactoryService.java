@@ -22,13 +22,15 @@
 
 package org.jboss.as.threads;
 
-import java.security.AccessController;
 import java.util.concurrent.ThreadFactory;
+import org.jboss.as.util.security.GetAccessControlContextAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.threads.JBossThreadFactory;
+
+import static java.security.AccessController.doPrivileged;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -65,7 +67,7 @@ public final class ThreadFactoryService implements Service<ThreadFactory> {
 
     public synchronized void start(final StartContext context) throws StartException {
         final ThreadGroup threadGroup = new ThreadGroup(threadGroupName);
-        value = new JBossThreadFactory(threadGroup, Boolean.FALSE, priority, namePattern, null, null, AccessController.getContext());
+        value = new JBossThreadFactory(threadGroup, Boolean.FALSE, priority, namePattern, null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
     }
 
     public synchronized void stop(final StopContext context) {

@@ -21,7 +21,6 @@
 */
 package org.jboss.as.controller.remote;
 
-import java.security.AccessController;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -31,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
+import org.jboss.as.util.security.GetAccessControlContextAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -38,6 +38,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.controller.ControllerLogger.SERVER_MANAGEMENT_LOGGER;
 import org.jboss.threads.JBossThreadFactory;
 
@@ -82,7 +83,7 @@ public abstract class AbstractModelControllerOperationHandlerFactoryService impl
         if(executor.getOptionalValue() == null) {
             // Create the default executor
             final BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>(WORK_QUEUE_SIZE);
-            final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup(getThreadGroupName()), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+            final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup(getThreadGroupName()), Boolean.FALSE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
             final ThreadPoolExecutor executorService = new ThreadPoolExecutor(POOL_CORE_SIZE, POOL_MAX_SIZE,
                                                             60L, TimeUnit.SECONDS, workQueue,
                                                             threadFactory);

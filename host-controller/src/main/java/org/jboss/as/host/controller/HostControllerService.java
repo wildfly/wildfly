@@ -22,12 +22,12 @@
 
 package org.jboss.as.host.controller;
 
+import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.server.ServerLogger.AS_ROOT_LOGGER;
 import static org.jboss.as.server.ServerLogger.CONFIG_LOGGER;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.security.AccessController;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -42,6 +42,7 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.BootstrapListener;
 import org.jboss.as.server.FutureServiceContainer;
+import org.jboss.as.util.security.GetAccessControlContextAction;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
@@ -169,7 +170,7 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
     }
 
     static final class HostControllerExecutorService implements Service<ExecutorService> {
-        final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("Host Controller Service Threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+        final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("Host Controller Service Threads"), Boolean.FALSE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
         private ExecutorService executorService;
 
         @Override

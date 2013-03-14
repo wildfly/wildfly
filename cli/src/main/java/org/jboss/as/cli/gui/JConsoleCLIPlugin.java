@@ -23,7 +23,6 @@ import com.sun.tools.jconsole.JConsolePlugin;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.io.IOException;
-import java.security.AccessController;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -43,6 +42,7 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.impl.ExistingChannelModelControllerClient;
+import org.jboss.as.util.security.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
@@ -50,6 +50,8 @@ import org.jboss.remotingjmx.RemotingMBeanServerConnection;
 import org.jboss.threads.JBossThreadFactory;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
+
+import static java.security.AccessController.doPrivileged;
 
 /**
  *
@@ -134,7 +136,7 @@ public class JConsoleCLIPlugin extends JConsolePlugin {
 
     private ExecutorService createExecutor() {
         final ThreadGroup group = new ThreadGroup("management-client-thread");
-        final ThreadFactory threadFactory = new JBossThreadFactory(group, Boolean.FALSE, null, "%G " + executorCount.incrementAndGet() + "-%t", null, null, AccessController.getContext());
+        final ThreadFactory threadFactory = new JBossThreadFactory(group, Boolean.FALSE, null, "%G " + executorCount.incrementAndGet() + "-%t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
         return new ThreadPoolExecutor(2, DEFAULT_MAX_THREADS, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), threadFactory);
     }
 

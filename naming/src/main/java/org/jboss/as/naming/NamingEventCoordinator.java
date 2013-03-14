@@ -22,7 +22,6 @@
 
 package org.jboss.as.naming;
 
-import java.security.AccessController;
 import java.util.concurrent.ThreadFactory;
 import org.jboss.as.naming.util.FastCopyHashMap;
 
@@ -42,7 +41,10 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import org.jboss.as.util.security.GetAccessControlContextAction;
 import org.jboss.threads.JBossThreadFactory;
+
+import static java.security.AccessController.doPrivileged;
 
 /**
  * Coordinator responsible for passing @(code NamingEvent} instances to registered @{code NamingListener} instances.  Two
@@ -55,7 +57,7 @@ public class NamingEventCoordinator {
     private volatile Map<TargetScope, List<ListenerHolder>> holdersByTarget = Collections.emptyMap();
     private volatile Map<NamingListener, ListenerHolder> holdersByListener = Collections.emptyMap();
 
-    private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("NamingEventCoordinator-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+    private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("NamingEventCoordinator-threads"), Boolean.FALSE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
 
     private final Executor executor = Executors.newSingleThreadExecutor(threadFactory);
 
