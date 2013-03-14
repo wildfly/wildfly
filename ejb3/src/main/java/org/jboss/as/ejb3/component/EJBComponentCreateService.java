@@ -243,7 +243,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private static String[] toString(Class<?>[] a) {
         final String[] result = new String[a.length];
         for (int i = 0; i < result.length; i++) {
-            result[i] = a[i].getName();
+            result[i] = a[i].getCanonicalName();
         }
         return result;
     }
