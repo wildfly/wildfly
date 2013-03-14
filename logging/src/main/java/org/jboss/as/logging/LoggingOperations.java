@@ -350,7 +350,13 @@ final class LoggingOperations {
             super.validateUpdatedModel(context, model);
             final ModelNode submodel = model.getModel();
             if (submodel.hasDefined(CommonAttributes.FILTER.getName())) {
-                final String filterSpec = Filters.filterToFilterSpec(CommonAttributes.FILTER.resolveModelAttribute(context, submodel));
+                ModelNode filter = CommonAttributes.FILTER.resolveModelAttribute(context, submodel);
+                if(filter.hasDefined(CommonAttributes.REPLACE.getName())){
+                    ModelNode replace = filter.get(CommonAttributes.REPLACE.getName());
+                    if(replace.get(CommonAttributes.PATTERN.getName()).asString() == "undefined" || replace.get(CommonAttributes.REPLACEMENT.getName()).asString() == "undefined")
+                        throw new OperationFailedException("filter pattern or replacement is undefined!", replace);
+                }
+                final String filterSpec = Filters.filterToFilterSpec(filter);
                 submodel.remove(CommonAttributes.FILTER.getName());
                 submodel.get(CommonAttributes.FILTER_SPEC.getName()).set(filterSpec);
             }
