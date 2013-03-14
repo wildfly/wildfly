@@ -124,7 +124,7 @@ public class JSFFailoverTestCase {
         Pattern smallestPattern = Pattern.compile("<span id=\"numberGuess:smallest\">([^<]+)</span>");
         Pattern biggestPattern = Pattern.compile("<span id=\"numberGuess:biggest\">([^<]+)</span>");
         Pattern remainingPattern = Pattern.compile("You have (\\d+) guesses remaining.");
-        Pattern viewStatePattern = Pattern.compile("id=\"javax.faces.ViewState\" value=\"([^\"]*)\"");
+        Pattern viewStatePattern = Pattern.compile("id=\".*javax.faces.ViewState.*\" value=\"([^\"]*)\"");
 
         Matcher matcher;
 
@@ -229,7 +229,7 @@ public class JSFFailoverTestCase {
      *
      * @throws java.io.IOException
      * @throws InterruptedException
-     * @throws URISyntaxException 
+     * @throws URISyntaxException
      */
     @Test
     @InSequence(2)
@@ -257,7 +257,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             // We get a cookie!
             String sessionId = state.sessionId;
 
@@ -274,7 +274,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("100", state.biggest);
             Assert.assertEquals("9", state.remainingGuesses);
@@ -292,7 +292,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             // If the state would not be replicated, we would have 9 remaining guesses.
             Assert.assertEquals("Session failed to replicate after container 1 was shutdown.", "8", state.remainingGuesses);
 
@@ -309,7 +309,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals("7", state.remainingGuesses);
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("98", state.biggest);
@@ -326,7 +326,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals("Session failed to replicate after container 1 was brought up.", "6", state.remainingGuesses);
             Assert.assertEquals(sessionId, state.sessionId);
             Assert.assertEquals("3", state.smallest);
@@ -340,7 +340,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals(sessionId, state.sessionId);
             Assert.assertEquals("5", state.remainingGuesses);
             Assert.assertEquals("3", state.smallest);
@@ -381,7 +381,7 @@ public class JSFFailoverTestCase {
      *
      * @throws java.io.IOException
      * @throws InterruptedException
-     * @throws URISyntaxException 
+     * @throws URISyntaxException
      */
     @Test
     @InSequence(11)
@@ -407,7 +407,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             // We get a cookie!
             String sessionId = state.sessionId;
 
@@ -424,7 +424,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("100", state.biggest);
             Assert.assertEquals("9", state.remainingGuesses);
@@ -433,7 +433,7 @@ public class JSFFailoverTestCase {
             deployer.undeploy(DEPLOYMENT_1);
 
             this.establishView(client, baseURL2, NODE_2);
-            
+
             // Now we do a JSF POST request with a cookie on to the second node, guessing 100, expecting to find a replicated state.
             response = client.execute(buildPostRequest(url2, state.sessionId, state.jsfViewState, "100"));
             try {
@@ -442,7 +442,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             // If the state would not be replicated, we would have 9 remaining guesses.
             Assert.assertEquals("Session failed to replicate after container 1 was shutdown.", "8", state.remainingGuesses);
 
@@ -459,7 +459,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals("7", state.remainingGuesses);
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("98", state.biggest);
@@ -477,7 +477,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals("Session failed to replicate after container 1 was brought up.", "6", state.remainingGuesses);
             Assert.assertEquals(sessionId, state.sessionId);
             Assert.assertEquals("3", state.smallest);
@@ -491,7 +491,7 @@ public class JSFFailoverTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             Assert.assertEquals(sessionId, state.sessionId);
             Assert.assertEquals("5", state.remainingGuesses);
             Assert.assertEquals("3", state.smallest);
