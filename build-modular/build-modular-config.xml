@@ -89,7 +89,7 @@
 
 	<target name="build-standalone-server" depends="init.standalone" description="Build the standalone server">
 		<!-- make output file directory -->
-		<mkdir dir="${server.output.dir}" />
+		<mkdir dir="${server.output.dir}/modules/system/layers/base" />
 		<delete>
 			<fileset dir="${server.output.dir}">
 				<include name="**/*" />
@@ -110,8 +110,8 @@
 		<copy file="${generated.standalone.configuration}" tofile="${server.output.dir}/standalone/configuration/standalone.xml" />
 
 		<!-- Copy the generated modules from the standard build -->
-		<copy todir="${server.output.dir}/modules">
-	        <fileset dir="${server.input.dir}/modules" includesfile="${generated.standalone.dependencies}"/>
+		<copy todir="${server.output.dir}/modules/system/layers/base">
+	        <fileset dir="${server.input.dir}/modules/system/layers/base" includesfile="${generated.standalone.dependencies}"/>
 		</copy>
 
 		<!-- These files contain digested passwords, which should not be visible to external users -->
@@ -147,7 +147,7 @@
 	<target name="build-domain-server" depends="init.domain" description="Build the domain server" if="domain.enabled.true">
 
 		<!-- Copy the non-generated server files from the standard build -->
-		<copy todir="${server.output.dir}">
+		<copy todir="${server.output.dir}/modules/system/layers/base">
 			<fileset dir="${server.input.dir}">
 				<include name="domain/**" />
 				<include name="bin/domain*.*" />
@@ -159,8 +159,8 @@
 		<copy file="${generated.domain.configuration}" tofile="${server.output.dir}/domain/configuration/domain.xml" />
 
 		<!-- Copy the generated modules from the standard build -->
-		<copy todir="${server.output.dir}/modules">
-	        <fileset dir="${server.input.dir}/modules" includesfile="${generated.domain.dependencies}"/>
+		<copy todir="${server.output.dir}/modules/system/layers/base">
+	        <fileset dir="${server.input.dir}/modules/system/layers/base" includesfile="${generated.domain.dependencies}"/>
 		</copy>
 
 		<!-- These files contain digested passwords, which should not be visible to external users -->
