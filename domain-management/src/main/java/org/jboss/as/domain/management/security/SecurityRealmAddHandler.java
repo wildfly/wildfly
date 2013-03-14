@@ -35,11 +35,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PATH;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PASSWORD;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.PROPERTY;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PLUG_IN;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.PROPERTY;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
-import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -408,10 +407,10 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         ServiceBuilder<?> sslBuilder = serviceTarget.addService(sslServiceName, sslIdentityService);
 
         if (keystoreServiceName != null) {
-            sslBuilder.addDependency(keystoreServiceName, KeyStore.class, sslIdentityService.getKeyStoreInjector());
+            sslBuilder.addDependency(keystoreServiceName, FileKeystore.class, sslIdentityService.getKeyStoreInjector());
         }
         if (truststoreServiceName != null) {
-            sslBuilder.addDependency(truststoreServiceName, KeyStore.class, sslIdentityService.getTrustStoreInjector());
+            sslBuilder.addDependency(truststoreServiceName, FileKeystore.class, sslIdentityService.getTrustStoreInjector());
         }
 
         final ServiceController<?> serviceController = sslBuilder.setInitialMode(ON_DEMAND).install();
