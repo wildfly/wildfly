@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
-import io.undertow.util.StatusCodes;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -50,7 +49,7 @@ public class DomainUtil {
 
 
         //TODO Content-Length?
-        if (isGet && status == StatusCodes.CODE_200.getCode()) {
+        if (isGet && status == 200) {
             response = response.get(RESULT);
         }
 

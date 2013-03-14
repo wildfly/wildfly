@@ -23,24 +23,24 @@ package org.jboss.as.domain.http.server.security;
 
 import io.undertow.security.api.SecurityContext;
 import io.undertow.security.idm.Account;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.blocking.BlockingHttpHandler;
 
 /**
  * HttpHandler to ensure the Subject for the current authenticated user is correctly associated for the request.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class SubjectAssociationHandler implements BlockingHttpHandler {
+public class SubjectAssociationHandler implements HttpHandler {
 
-    private final BlockingHttpHandler wrapped;
+    private final HttpHandler wrapped;
 
-    public SubjectAssociationHandler(final BlockingHttpHandler toWrap) {
+    public SubjectAssociationHandler(final HttpHandler toWrap) {
         this.wrapped = toWrap;
     }
 
     @Override
-    public void handleBlockingRequest(HttpServerExchange exchange) throws Exception {
+    public void handleRequest(HttpServerExchange exchange) throws Exception {
         SecurityContext securityContext = exchange.getAttachment(SecurityContext.ATTACHMENT_KEY);
         try {
             if (securityContext != null) {
@@ -49,7 +49,7 @@ public class SubjectAssociationHandler implements BlockingHttpHandler {
                     SecurityActions.setSecurityContextSubject(((SubjectAccount) account).getSubject());
                 }
             }
-            wrapped.handleBlockingRequest(exchange);
+            wrapped.handleRequest(exchange);
         } finally {
             SecurityActions.clearSubjectSecurityContext();
         }

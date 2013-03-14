@@ -22,14 +22,13 @@
 
 package org.jboss.as.domain.http.server.security;
 
-import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.HttpHandlers;
-
 import java.io.IOException;
 
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
 import org.jboss.as.domain.management.SecurityRealm;
+
+import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 
 /**
  * Filter to redirect to the error context while the security realm is not ready.
@@ -47,9 +46,9 @@ abstract class RealmReadinessHandler implements HttpHandler {
     }
 
     @Override
-    public void handleRequest(HttpServerExchange exchange) {
+    public void handleRequest(HttpServerExchange exchange) throws Exception {
         if (securityRealm == null || securityRealm.isReady()) {
-            HttpHandlers.executeHandler(next, exchange);
+            next.handleRequest(exchange);
         } else {
             try {
                 rejectRequest(exchange);
@@ -64,13 +63,13 @@ abstract class RealmReadinessHandler implements HttpHandler {
     /**
      * Method to be implemented by sub classes to handle the rejection process due to the realm not being ready to authenticate
      * clients.
-     *
+     * <p/>
      * Possible examples are sending a redirect to a page to inform the user that it is not possible due to no users being
      * defined or sending a DMR response indicating a failure.
      *
      * @param exchange
      * @throws IOException
      */
-    abstract void rejectRequest(HttpServerExchange exchange) throws IOException;
+    abstract void rejectRequest(HttpServerExchange exchange) throws Exception;
 
 }

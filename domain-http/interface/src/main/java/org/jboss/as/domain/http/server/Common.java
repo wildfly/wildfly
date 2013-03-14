@@ -21,15 +21,14 @@
 */
 package org.jboss.as.domain.http.server;
 
-import static io.undertow.server.handlers.ResponseCodeHandler.HANDLE_404;
 import io.undertow.io.IoCallback;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.util.Headers;
-import io.undertow.util.StatusCodes;
+
+import static io.undertow.server.handlers.ResponseCodeHandler.HANDLE_404;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class Common {
@@ -56,7 +55,7 @@ public class Common {
         byte[] bytes = msg.getBytes();
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, TEXT_PLAIN + ";" + UTF_8);
         exchange.getResponseHeaders().put(Headers.CONTENT_LENGTH, String.valueOf(bytes.length));
-        exchange.setResponseCode(StatusCodes.CODE_500.getCode());
+        exchange.setResponseCode(500);
 
         exchange.getResponseSender().send(msg, IoCallback.END_EXCHANGE);
     }

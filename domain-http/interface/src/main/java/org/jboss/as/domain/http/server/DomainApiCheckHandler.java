@@ -24,9 +24,8 @@ package org.jboss.as.domain.http.server;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.HttpHandlers;
+import io.undertow.server.handlers.BlockingHandler;
 import io.undertow.server.handlers.ResponseCodeHandler;
-import io.undertow.server.handlers.blocking.BlockingHandler;
 import io.undertow.server.handlers.form.MultiPartHandler;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
@@ -48,7 +47,7 @@ class DomainApiCheckHandler implements HttpHandler {
     private static final String UPLOAD_REQUEST = PATH + "/add-content";
 
     private final ControlledProcessStateService controlledProcessStateService;
-    private final BlockingHandler domainApiHandler;
+    private final HttpHandler domainApiHandler;
     private final MultiPartHandler uploadHandler = new MultiPartHandler();;
 
 
@@ -59,7 +58,7 @@ class DomainApiCheckHandler implements HttpHandler {
     }
 
     @Override
-    public void handleRequest(HttpServerExchange exchange) {
+    public void handleRequest(HttpServerExchange exchange) throws Exception {
         if (!commonChecks(exchange)) {
             return;
         }
@@ -67,7 +66,7 @@ class DomainApiCheckHandler implements HttpHandler {
         boolean isUpload = UPLOAD_REQUEST.equals(exchange.getCanonicalPath());
         if (Methods.POST.equals(exchange.getRequestMethod())) {
             if (isUpload) {
-                HttpHandlers.executeHandler(uploadHandler, exchange);
+                uploadHandler.handleRequest(exchange);
                 return;
             }
             if (!checkPostContentType(exchange)) {
@@ -76,10 +75,10 @@ class DomainApiCheckHandler implements HttpHandler {
 
         }
 
-        HttpHandlers.executeHandler(domainApiHandler, exchange);
+        domainApiHandler.handleRequest(exchange);
     }
 
-    private boolean checkPostContentType(HttpServerExchange exchange) {
+    private boolean checkPostContentType(HttpServerExchange exchange) throws Exception {
         HeaderMap headers = exchange.getRequestHeaders();
         String contentType = extractContentType(headers.getFirst(Headers.CONTENT_TYPE));
         if (!(Common.APPLICATION_JSON.equals(contentType) || Common.APPLICATION_DMR_ENCODED.equals(contentType))) {
@@ -89,7 +88,7 @@ class DomainApiCheckHandler implements HttpHandler {
             // acceptable to the origin server, the server SHOULD respond with a
             // status code of 415 (Unsupported Media Type).
             ROOT_LOGGER.debug("Request rejected due to unsupported media type - should be one of (application/json,application/dmr-encoded).");
-            HttpHandlers.executeHandler(Common.UNSUPPORTED_MEDIA_TYPE, exchange);
+            Common.UNSUPPORTED_MEDIA_TYPE.handleRequest(exchange);
             return false;
         }
         return true;
@@ -100,7 +99,7 @@ class DomainApiCheckHandler implements HttpHandler {
         return pos < 0 ? fullContentType : fullContentType.substring(0, pos).trim();
     }
 
-    private boolean commonChecks(HttpServerExchange exchange) {
+    private boolean commonChecks(HttpServerExchange exchange) throws Exception {
      // AS7-2284 If we are starting or stopping, tell caller the service is unavailable and to try again
         // later. If "stopping" it's either a reload, in which case trying again will eventually succeed,
         // or it's a true process stop eventually the server will have stopped.
@@ -109,7 +108,7 @@ class DomainApiCheckHandler implements HttpHandler {
         if (currentState == ControlledProcessState.State.STARTING
                 || currentState == ControlledProcessState.State.STOPPING) {
             exchange.getResponseHeaders().add(Headers.RETRY_AFTER, "2"); //  2 secs is just a guesstimate
-            HttpHandlers.executeHandler(Common.SERVICE_UNAVAIABLE, exchange);
+            Common.SERVICE_UNAVAIABLE.handleRequest(exchange);
             return false;
         }
 
@@ -123,7 +122,7 @@ class DomainApiCheckHandler implements HttpHandler {
             } else {
                 ROOT_LOGGER.debug("Request rejected as method not one of (GET,POST).");
             }
-            HttpHandlers.executeHandler(Common.METHOD_NOT_ALLOWED_HANDLER, exchange);
+            Common.METHOD_NOT_ALLOWED_HANDLER.handleRequest(exchange);
             return false;
         }
 
@@ -143,7 +142,7 @@ class DomainApiCheckHandler implements HttpHandler {
             // This will reject multi-origin Origin headers due to the exact match.
             if (origin.equals(allowedOrigin) == false) {
                 ROOT_LOGGER.debug("Request rejected due to HOST/ORIGIN mis-match.");
-                HttpHandlers.executeHandler(ResponseCodeHandler.HANDLE_403, exchange);
+                ResponseCodeHandler.HANDLE_403.handleRequest(exchange);
                 return false;
             }
         }
