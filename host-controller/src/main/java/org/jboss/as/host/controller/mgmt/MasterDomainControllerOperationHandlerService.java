@@ -24,7 +24,8 @@ package org.jboss.as.host.controller.mgmt;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 
-import java.security.AccessController;
+import static java.security.AccessController.doPrivileged;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
@@ -53,6 +54,7 @@ import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementPongRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
+import org.jboss.as.util.security.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -74,7 +76,7 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
     private final HostControllerRegistrationHandler.OperationExecutor operationExecutor;
     private final TransactionalOperationExecutor txOperationExecutor;
     private final ManagementPongRequestHandler pongRequestHandler = new ManagementPongRequestHandler();
-    private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("slave-request-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+    private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("slave-request-threads"), Boolean.FALSE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
     private volatile ExecutorService slaveRequestExecutor;
     private final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry;
 

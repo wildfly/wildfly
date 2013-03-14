@@ -22,12 +22,12 @@
 
 package org.jboss.as.host.controller;
 
+import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import javax.net.SocketFactory;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.security.AccessController;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -39,6 +39,7 @@ import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.process.ProcessMessageHandler;
 import org.jboss.as.process.protocol.ProtocolClient;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.util.security.GetAccessControlContextAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -78,7 +79,7 @@ class ProcessControllerConnectionService implements Service<ProcessControllerCon
     public synchronized void start(StartContext context) throws StartException {
         final ProcessControllerClient client;
         try {
-            final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("ProcessControllerConnection-thread"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+            final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("ProcessControllerConnection-thread"), Boolean.FALSE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
             final ThreadPoolExecutor executorService = new ThreadPoolExecutor(THREAD_POOL_CORE_SIZE, THREAD_POOL_MAX_SIZE, 30L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(WORK_QUEUE_SIZE), threadFactory);
 
             final ProtocolClient.Configuration configuration = new ProtocolClient.Configuration();

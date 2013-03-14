@@ -22,9 +22,9 @@
 
 package org.jboss.as.host.controller.operations;
 
+import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.host.controller.HostControllerLogger.AS_ROOT_LOGGER;
 
-import java.security.AccessController;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -47,6 +47,7 @@ import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.server.mgmt._UndertowHttpManagementService;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
+import org.jboss.as.util.security.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -124,7 +125,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
         AS_ROOT_LOGGER.creatingHttpManagementService(interfaceName, port, securePort);
 
         final ThreadFactory httpMgmtThreads = new JBossThreadFactory(new ThreadGroup("HttpManagementService-threads"),
-                Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+                Boolean.FALSE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
 
         ConsoleMode consoleMode = ConsoleMode.CONSOLE;
         if (runningMode == RunningMode.ADMIN_ONLY) {

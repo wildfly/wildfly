@@ -24,7 +24,6 @@ package org.jboss.as.cli.impl;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.AccessController;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -43,6 +42,7 @@ import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
+import org.jboss.as.util.security.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
@@ -53,6 +53,8 @@ import org.jboss.remoting3.RemotingOptions;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.jboss.threads.JBossThreadFactory;
 import org.xnio.OptionMap;
+
+import static java.security.AccessController.doPrivileged;
 
 /**
  * @author Alexey Loubyansky
@@ -68,7 +70,7 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
     static {
         final BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>();
         final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("cli-remoting"), Boolean.FALSE, null,
-                "%G - %t", null, null, AccessController.getContext());
+                "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
         executorService = new ThreadPoolExecutor(2, 4, 60L, TimeUnit.SECONDS, workQueue, threadFactory);
         // Allow the core threads to time out as well
         executorService.allowCoreThreadTimeOut(true);
