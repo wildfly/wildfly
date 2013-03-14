@@ -118,7 +118,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
         Pattern smallestPattern = Pattern.compile("<span id=\"numberGuess:smallest\">([^<]+)</span>");
         Pattern biggestPattern = Pattern.compile("<span id=\"numberGuess:biggest\">([^<]+)</span>");
         Pattern remainingPattern = Pattern.compile("You have (\\d+) guesses remaining.");
-        Pattern viewStatePattern = Pattern.compile("id=\"javax.faces.ViewState\" value=\"([^\"]*)\"");
+        Pattern viewStatePattern = Pattern.compile("id=\".*javax.faces.ViewState.*\" value=\"([^\"]*)\"");
 
         Matcher matcher;
 
