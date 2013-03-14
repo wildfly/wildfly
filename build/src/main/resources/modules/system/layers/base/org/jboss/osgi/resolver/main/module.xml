@@ -31,6 +31,11 @@
         <!-- Insert resources here -->
     </resources>
 
+    <exports>
+        <exclude path="org/apache/felix/resolver"/>
+        <exclude path="org/jboss/osgi/resolver/felix"/>
+    </exports>
+    
     <dependencies>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>

@@ -70,9 +70,6 @@ public interface OSGiConstants {
     /** The {@link org.jboss.osgi.repository.XRepository} service */
     ServiceName REPOSITORY_SERVICE_NAME = SERVICE_BASE_NAME.append("repository");
 
-    /** The {@link org.jboss.as.osgi.service.ResolverService} service */
-    ServiceName RESOLVER_SERVICE_NAME = SERVICE_BASE_NAME.append("resolver");
-
     /** The {@link org.jboss.as.osgi.parser.SubsystemState} service */
     ServiceName SUBSYSTEM_STATE_SERVICE_NAME = SERVICE_BASE_NAME.append("subsystemstate");
 }
