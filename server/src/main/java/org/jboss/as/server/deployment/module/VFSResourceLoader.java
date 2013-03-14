@@ -30,6 +30,7 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.CodeSource;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -177,16 +178,20 @@ public class VFSResourceLoader extends AbstractResourceLoader {
 
     /** {@inheritDoc} */
     public Resource getResource(final String name) {
-        try {
-            final VirtualFile file = root.getChild(PathUtils.canonicalize(name));
-            if (!file.exists()) {
-                return null;
+        return doPrivileged(new PrivilegedAction<Resource>() {
+            public Resource run() {
+                try {
+                    final VirtualFile file = root.getChild(PathUtils.canonicalize(name));
+                    if (!file.exists()) {
+                        return null;
+                    }
+                    return new VFSEntryResource(file, file.toURL());
+                } catch (MalformedURLException e) {
+                    // must be invalid...?  (todo: check this out)
+                    return null;
+                }
             }
-            return new VFSEntryResource(file, file.toURL());
-        } catch (MalformedURLException e) {
-            // must be invalid...?  (todo: check this out)
-            return null;
-        }
+        });
     }
 
     /** {@inheritDoc} */
