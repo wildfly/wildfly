@@ -25,10 +25,8 @@ package org.jboss.as.controller.operations.validation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -45,7 +43,7 @@ public class ObjectTypeValidator extends ModelTypeValidator implements AllowedVa
     private final List<ModelNode> nodeValues;
 
     public ObjectTypeValidator(final boolean nullable, final AttributeDefinition... attributes) {
-        super(nullable, true, false, ModelType.OBJECT, findModelTypes(attributes));
+        super(nullable, true, false, ModelType.OBJECT);
         allowedValues = new HashMap<String, AttributeDefinition>(attributes.length);
         nodeValues = new ArrayList<ModelNode>(attributes.length);
         for (AttributeDefinition attribute : attributes) {
@@ -71,14 +69,5 @@ public class ObjectTypeValidator extends ModelTypeValidator implements AllowedVa
     @Override
     public List<ModelNode> getAllowedValues() {
         return nodeValues;
-    }
-
-    private static ModelType[] findModelTypes(final AttributeDefinition... attributes) {
-        final Set<ModelType> result = new HashSet<ModelType>();
-        for (AttributeDefinition attr : attributes) {
-            if (attr.getType() != ModelType.OBJECT)
-                result.add(attr.getType());
-        }
-        return result.toArray(new ModelType[result.size()]);
     }
 }
