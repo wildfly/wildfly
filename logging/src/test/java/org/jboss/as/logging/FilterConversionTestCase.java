@@ -26,12 +26,10 @@ import static org.junit.Assert.*;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.Level;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**

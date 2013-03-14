@@ -33,8 +33,10 @@ import org.jboss.as.controller.CaseParameterCorrector;
 import org.jboss.as.controller.DefaultAttributeMarshaller;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.ObjectTypeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.logging.correctors.FileCorrector;
 import org.jboss.as.logging.resolvers.FileResolver;
@@ -174,7 +176,7 @@ public interface CommonAttributes {
             .setValidator(new FileValidator())
             .build();
 
-    SimpleAttributeDefinition MATCH = SimpleAttributeDefinitionBuilder.create("match", ModelType.STRING, true)
+    SimpleAttributeDefinition MATCH = SimpleAttributeDefinitionBuilder.create("match", ModelType.STRING)
             .setAllowExpression(false)
             .build();
 
@@ -183,7 +185,7 @@ public interface CommonAttributes {
             .setDefaultValue(new ModelNode(true))
             .build();
 
-    SimpleAttributeDefinition MAX_LEVEL = SimpleAttributeDefinitionBuilder.create("max-level", ModelType.STRING, true)
+    SimpleAttributeDefinition MAX_LEVEL = SimpleAttributeDefinitionBuilder.create("max-level", ModelType.STRING)
             .setAllowExpression(false)
             .setCorrector(CaseParameterCorrector.TO_UPPER)
             .setValidator(new LogLevelValidator(true))
@@ -194,13 +196,13 @@ public interface CommonAttributes {
             .setDefaultValue(new ModelNode(true))
             .build();
 
-    SimpleAttributeDefinition MIN_LEVEL = SimpleAttributeDefinitionBuilder.create("min-level", ModelType.STRING, true)
+    SimpleAttributeDefinition MIN_LEVEL = SimpleAttributeDefinitionBuilder.create("min-level", ModelType.STRING)
             .setAllowExpression(false)
             .setCorrector(CaseParameterCorrector.TO_UPPER)
             .setValidator(new LogLevelValidator(true))
             .build();
 
-    SimpleAttributeDefinition NEW_LEVEL = SimpleAttributeDefinitionBuilder.create("new-level", ModelType.STRING, true)
+    SimpleAttributeDefinition NEW_LEVEL = SimpleAttributeDefinitionBuilder.create("new-level", ModelType.STRING)
             .setAllowExpression(false)
             .setCorrector(CaseParameterCorrector.TO_UPPER)
             .setValidator(new LogLevelValidator(true))
@@ -222,11 +224,55 @@ public interface CommonAttributes {
     ObjectTypeAttributeDefinition LEVEL_RANGE_LEGACY = ObjectTypeAttributeDefinition.Builder.of("level-range", MIN_LEVEL, MIN_INCLUSIVE, MAX_LEVEL, MAX_INCLUSIVE)
             .setAllowExpression(false)
             .setAllowNull(true)
+            .setValidator(new ObjectTypeValidator(false, MIN_LEVEL, MIN_INCLUSIVE, MAX_LEVEL, MAX_INCLUSIVE) {
+                @Override
+                public void validateParameter(final String parameterName, final ModelNode value) throws OperationFailedException {
+                    super.validateParameter(parameterName, value);
+                    final ModelNode clonedValue = value.clone();
+                    final AttributeDefinition[] allowedValues = {MIN_LEVEL, MIN_INCLUSIVE, MAX_LEVEL, MAX_INCLUSIVE};
+                    for (AttributeDefinition valueType : allowedValues) {
+                        final ModelNode syntheticValue;
+                        // Does the value the type
+                        if (clonedValue.has(valueType.getName())) {
+                            syntheticValue = clonedValue.get(valueType.getName());
+                        } else if (valueType.getDefaultValue() != null) {
+                            // Use the default value
+                            syntheticValue = valueType.getDefaultValue();
+                        } else {
+                            // Use an undefined value
+                            syntheticValue = new ModelNode();
+                        }
+                        valueType.getValidator().validateParameter(valueType.getName(), syntheticValue);
+                    }
+                }
+            })
             .build();
 
     ObjectTypeAttributeDefinition REPLACE = ObjectTypeAttributeDefinition.Builder.of("replace", PATTERN, REPLACEMENT, REPLACE_ALL)
             .setAllowExpression(false)
             .setAllowNull(true)
+            .setValidator(new ObjectTypeValidator(false, PATTERN, REPLACEMENT, REPLACE_ALL) {
+                @Override
+                public void validateParameter(final String parameterName, final ModelNode value) throws OperationFailedException {
+                    super.validateParameter(parameterName, value);
+                    final ModelNode clonedValue = value.clone();
+                    final AttributeDefinition[] allowedValues = {PATTERN, REPLACEMENT, REPLACE_ALL};
+                    for (AttributeDefinition valueType : allowedValues) {
+                        final ModelNode syntheticValue;
+                        // Does the value the type
+                        if (clonedValue.has(valueType.getName())) {
+                            syntheticValue = clonedValue.get(valueType.getName());
+                        } else if (valueType.getDefaultValue() != null) {
+                            // Use the default value
+                            syntheticValue = valueType.getDefaultValue();
+                        } else {
+                            // Use an undefined value
+                            syntheticValue = new ModelNode();
+                        }
+                        valueType.getValidator().validateParameter(valueType.getName(), syntheticValue);
+                    }
+                }
+            })
             .build();
 
     ObjectTypeAttributeDefinition NOT = ObjectTypeAttributeDefinition.Builder.of("not", ACCEPT, CHANGE_LEVEL, DENY, LEVEL, LEVEL_RANGE_LEGACY, MATCH, REPLACE)
