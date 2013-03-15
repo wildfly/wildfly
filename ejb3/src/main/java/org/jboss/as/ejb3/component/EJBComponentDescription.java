@@ -308,7 +308,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     configuration.addTimeoutViewInterceptor(configuration.getNamespaceContextInterceptorFactory(), InterceptorOrder.View.JNDI_NAMESPACE_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
                     if (isSecurityEnabled()) {
-                        configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(), InterceptorOrder.View.SECURITY_CONTEXT);
+                        configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(true), InterceptorOrder.View.SECURITY_CONTEXT);
                     }
                     for (final Method method : configuration.getClassIndex().getClassMethods()) {
                         configuration.addTimeoutViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(method)), InterceptorOrder.View.COMPONENT_DISPATCHER);

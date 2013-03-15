@@ -40,6 +40,14 @@ import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
  */
 public class SecurityContextInterceptorFactory extends ComponentInterceptorFactory {
 
+    private static final String DEFAULT_DOMAIN = "other";
+
+    private final boolean securityRequired;
+
+    public SecurityContextInterceptorFactory(final boolean securityRequired) {
+        this.securityRequired = securityRequired;
+    }
+
     @Override
     protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
         if (component instanceof EJBComponent == false) {
@@ -48,9 +56,9 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
         final EJBComponent ejbComponent = (EJBComponent) component;
         final ServerSecurityManager securityManager = ejbComponent.getSecurityManager();
         final EJBSecurityMetaData securityMetaData = ejbComponent.getSecurityMetaData();
-        final String securityDomain = securityMetaData.getSecurityDomain();
+        String securityDomain =  securityMetaData.getSecurityDomain();
         if (securityDomain == null) {
-            throw MESSAGES.invalidSecurityForDomainSet(ejbComponent.getComponentName());
+            securityDomain = DEFAULT_DOMAIN;
         }
         if (ROOT_LOGGER.isTraceEnabled()) {
             ROOT_LOGGER.trace("Using security domain: " + securityDomain + " for EJB " + ejbComponent.getComponentName());
@@ -69,7 +77,8 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
         SecurityContextInterceptorHolder holder = new SecurityContextInterceptorHolder();
         holder.setSecurityManager(securityManager).setSecurityDomain(securityDomain)
         .setRunAs(runAs).setRunAsPrincipal(runAsPrincipal)
-        .setExtraRoles(extraRoles).setPrincipalVsRolesMap(principalVsRolesMap);
+        .setExtraRoles(extraRoles).setPrincipalVsRolesMap(principalVsRolesMap)
+        .setSkipAuthentication(securityRequired == false);
 
         return new SecurityContextInterceptor(holder);
     }

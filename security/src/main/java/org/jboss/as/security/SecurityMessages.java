@@ -288,4 +288,11 @@ public interface SecurityMessages {
     @Message(id = 13328, value = "No authentication cache for security domain '%s' available")
     OperationFailedException noAuthenticationCacheAvailable(String securityDomain);
 
+    /**
+     * Create an IllegalStateFoundException to indicate no UserPrincipal was found on the underlying connection.
+     * @return the exception
+     */
+    @Message(id= 13329, value = "No UserPrincipalFound constructing RemotingConnectionPrincipal.")
+    IllegalStateException noUserPrincipalFound();
+
 }

@@ -36,6 +36,7 @@ class SecurityContextInterceptorHolder {
     String securityDomain, runAs, runAsPrincipal;
     Set<String> extraRoles;
     Map<String, Set<String>> principalVsRolesMap;
+    boolean skipAuthentication;
 
     public SecurityContextInterceptorHolder() {
     }
@@ -68,5 +69,11 @@ class SecurityContextInterceptorHolder {
     public SecurityContextInterceptorHolder setPrincipalVsRolesMap(Map<String, Set<String>> pr) {
         this.principalVsRolesMap = pr;
         return this;
+    }
+
+    public SecurityContextInterceptorHolder setSkipAuthentication(boolean skipAuthentication) {
+        this.skipAuthentication = skipAuthentication;
+        return this;
+
     }
 }

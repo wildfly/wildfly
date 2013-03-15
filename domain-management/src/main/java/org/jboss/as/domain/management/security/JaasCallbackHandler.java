@@ -155,6 +155,7 @@ public class JaasCallbackHandler implements Service<CallbackHandlerService>, Cal
         if ((securityManager = securityManagerValue.getOptionalValue()) != null) {
             try {
                 securityManager.push(name, userName, password, subject);
+                securityManager.authenticate();
                 verifyPasswordCallback.setVerified(true);
                 subject.getPrivateCredentials().add(new PasswordCredential(userName, password));
                 if (subjectCallback != null) {

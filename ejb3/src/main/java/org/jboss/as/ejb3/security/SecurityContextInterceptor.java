@@ -46,8 +46,11 @@ public class SecurityContextInterceptor implements Interceptor {
             @Override
             public Void run() {
                 try {
-                    holder.securityManager.push(holder.securityDomain, holder.runAs, holder.runAsPrincipal, holder.extraRoles);
-                    if(holder.principalVsRolesMap != null){
+                    holder.securityManager.push(holder.securityDomain);
+                    if (holder.skipAuthentication == false) {
+                        holder.securityManager.authenticate(holder.runAs, holder.runAsPrincipal, holder.extraRoles);
+                    }
+                    if (holder.principalVsRolesMap != null) {
                         SecurityRolesAssociation.setSecurityRoles(holder.principalVsRolesMap);
                     }
                 } catch (SecurityException e) {

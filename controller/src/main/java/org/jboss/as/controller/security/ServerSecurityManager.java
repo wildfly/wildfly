@@ -38,8 +38,11 @@ import javax.security.auth.Subject;
  */
 public interface ServerSecurityManager {
 
-    void push(final String securityDomain, final String runAs, final String runAsPrincipal, final Set<String> extraRoles);
+    void push(final String securityDomain);
     void push(final String securityDomain, String userName, char[] password, final Subject subject);
+
+    void authenticate();
+    void authenticate(final String runAs, final String runAsPrincipal, final Set<String> extraRoles);
 
     void pop();
 

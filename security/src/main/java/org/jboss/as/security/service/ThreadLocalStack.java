@@ -50,7 +50,7 @@ class ThreadLocalStack<T> {
         return rtn;
     }
 
-    public T get() {
+    public T peek() {
         LinkedList<T> list = stack.get();
         if (list == null) {
             return null;
