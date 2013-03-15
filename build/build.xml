@@ -181,9 +181,7 @@
 
         <module-def name="javax.xml.stream.api"/>
 
-        <module-def name="org.apache.log4j">
-            <maven-resource group="log4j" artifact="log4j"/>
-        </module-def>
+        <module-def name="org.apache.log4j"/>
 
         <module-def name="org.jboss.as.controller">
             <maven-resource group="org.jboss.as" artifact="jboss-as-controller"/>
