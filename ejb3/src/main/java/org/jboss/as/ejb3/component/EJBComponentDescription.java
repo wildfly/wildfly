@@ -72,6 +72,7 @@ import org.jboss.as.ejb3.component.interceptors.EjbExceptionTransformingIntercep
 import org.jboss.as.ejb3.component.interceptors.LoggingInterceptor;
 import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
 import org.jboss.as.ejb3.component.invocationmetrics.ExecutionTimeInterceptor;
+import org.jboss.as.ejb3.component.invocationmetrics.WaitTimeInterceptor;
 import org.jboss.as.ejb3.deployment.ApplicableMethodInformation;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
@@ -414,7 +415,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 if (!ejbSetupActions.isEmpty()) {
                     viewConfiguration.addViewInterceptor(AdditionalSetupInterceptor.factory(ejbSetupActions), InterceptorOrder.View.EE_SETUP);
                 }
-
+                viewConfiguration.addViewInterceptor(WaitTimeInterceptor.FACTORY, InterceptorOrder.View.EJB_WAIT_TIME_INTERCEPTOR);
                 viewConfiguration.addViewInterceptor(shutDownInterceptorFactory, InterceptorOrder.View.SHUTDOWN_INTERCEPTOR);
             }
         });
