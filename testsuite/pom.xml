@@ -1122,6 +1122,7 @@
                                                     <fileset dir="../clustering/singleton/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../clustering/web-infinispan/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../clustering/web-spi/src/main/java"><include name="**/*.java"/></fileset>
+                                                    <fileset dir="../cmp/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../configadmin/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../config-assembly/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../connector/src/main/java"><include name="**/*.java"/></fileset>
