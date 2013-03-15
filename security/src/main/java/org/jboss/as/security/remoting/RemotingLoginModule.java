@@ -22,16 +22,20 @@
 
 package org.jboss.as.security.remoting;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.security.acl.Group;
 
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 
 import org.jboss.as.security.SecurityLogger;
-import org.jboss.as.security.SecurityMessages;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.security.UserPrincipal;
 import org.jboss.security.SimpleGroup;
+import org.jboss.security.auth.callback.ObjectCallback;
 import org.jboss.security.auth.spi.AbstractServerLoginModule;
 
 /**
@@ -56,8 +60,9 @@ public class RemotingLoginModule extends AbstractServerLoginModule {
             return true;
         }
 
-        Connection con = SecurityActions.remotingContextGetConnection();
-        if (con != null) {
+        Object credential = getCredential();
+        if (credential instanceof RemotingConnectionCredential) {
+            Connection con = ((RemotingConnectionCredential) credential).getConnection();
             UserPrincipal up = null;
             for (Principal current : con.getPrincipals()) {
                 if (current instanceof UserPrincipal) {
@@ -74,20 +79,36 @@ public class RemotingLoginModule extends AbstractServerLoginModule {
                         log.debug("Storing username '" + userName + "' and empty password");
                     // Add the username and an empty password to the shared state map
                     sharedState.put("javax.security.auth.login.name", identity);
-                    sharedState.put("javax.security.auth.login.password", "");
+                    sharedState.put("javax.security.auth.login.password", credential);
                 }
                 loginOk = true;
                 return true;
-            } else {
-                // Don't know of scenarios where we would have a connection but no UserPrinicpal so
-                // completely fail the auth attempt.
-                throw SecurityMessages.MESSAGES.remotingConnectionWithNoUserPrincipal();
             }
         }
 
         // We return false to allow the next module to attempt authentication, maybe a
         // username and password has been supplied to a web auth.
         return false;
+    }
+
+    protected Object getCredential() throws LoginException {
+        NameCallback nc = new NameCallback("Alias: ");
+        ObjectCallback oc = new ObjectCallback("Credential: ");
+        Callback[] callbacks = { nc, oc };
+
+        try {
+            callbackHandler.handle(callbacks);
+
+            return oc.getCredential();
+        } catch (IOException ioe) {
+            LoginException le = new LoginException();
+            le.initCause(ioe);
+            throw le;
+        } catch (UnsupportedCallbackException uce) {
+            LoginException le = new LoginException();
+            le.initCause(uce);
+            throw le;
+        }
     }
 
     @Override
