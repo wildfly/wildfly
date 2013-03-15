@@ -105,12 +105,21 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                         existing.add(file);
                     }
                     if(deployment.getName().endsWith(".war")) {
-                        //war's can also have a META-INF/beans.xml that does not show up as an
+                        //war's can also have a META-INF/beans.xml and META-INF/classes/beans.xml that does not show up as an
                         //existing beans.xml, as they already have a WEB-INF/beans.xml
                         ResourceRoot deploymentRoot = deployment.getAttachment(Attachments.DEPLOYMENT_ROOT);
                         VirtualFile beans = deploymentRoot.getRoot().getChild(META_INF_BEANS_XML);
                         if(beans.exists()) {
                             existing.add(beans.toURL());
+                        }
+                        for(ResourceRoot root : deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS)) {
+                            if (root.getRootName().equals("classes")) {
+                                VirtualFile classesBeans = root.getRoot().getChild(META_INF_BEANS_XML);
+                                if (classesBeans.exists()) {
+                                    existing.add(classesBeans.toURL());
+                                }
+                                break;
+                            }
                         }
                     }
 
