@@ -1,0 +1,51 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2011, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<subsystem xmlns="urn:jboss:domain:cmp:1.1">
+    <key-generators>
+        <uuid name="uuid1"/>
+        <uuid name="uuid2" jndi-name="java:jboss/uuid2"/>
+        <hilo name="hilo1">
+            <block-size>10</block-size>
+            <create-table>true</create-table>
+            <create-table-ddl>create table HILOSEQUENCES1</create-table-ddl>
+            <data-source>java:/jdbc/DB1</data-source>
+            <drop-table>true</drop-table>
+            <id-column>HIGHVALUES1</id-column>
+            <sequence-column>SEQUENCENAME1</sequence-column>
+            <sequence-name>general1</sequence-name>
+            <table-name>HILOSEQUENCES1</table-name>
+        </hilo>
+        <hilo name="hilo2" jndi-name="java:jboss/hilo2">
+            <block-size>11</block-size>
+            <create-table>false</create-table>
+            <create-table-ddl>create table HILOSEQUENCES2</create-table-ddl>
+            <data-source>java:/jdbc/DB2</data-source>
+            <drop-table>false</drop-table>
+            <id-column>HIGHVALUES2</id-column>
+            <sequence-column>SEQUENCENAME2</sequence-column>
+            <sequence-name>general2</sequence-name>
+            <table-name>HILOSEQUENCES2</table-name>
+        </hilo>
+    </key-generators>
+</subsystem>
+

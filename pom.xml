@@ -916,6 +916,12 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-cmp</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-configadmin</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -6077,6 +6083,7 @@
                 <module>client/jms</module>
                 <module>client/shade</module>
                 <module>clustering</module>
+                <module>cmp</module>
                 <module>configadmin</module>
                 <module>config-assembly</module>
                 <module>connector</module>

@@ -23,10 +23,12 @@
 package org.jboss.as.controller;
 
 import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.Closeable;
 import java.net.InetAddress;
+import java.util.List;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamWriter;
@@ -443,4 +445,11 @@ public interface ControllerLogger extends BasicLogger {
     @Message(id = 13404, value = "Extension '%s' is deprecated and may not be supported in future versions")
     @LogMessage(level = WARN)
     void extensionDeprecated(String extensionName);
+
+    @Message(id = 13405, value = "Subsystems %s provided by legacy extension '%s' are not supported on servers running this version. " +
+            "The extension is only supported for use by hosts running a previous release in a mixed-version managed domain. " +
+            "On this server the extension will not register any subsystems, and future attempts to create or address " +
+            "subsystem resources on this server will result in failure.")
+    @LogMessage(level = INFO)
+    void ignoringUnsupportedLegacyExtension(List<String> subsystemNames, String extensionName);
 }
