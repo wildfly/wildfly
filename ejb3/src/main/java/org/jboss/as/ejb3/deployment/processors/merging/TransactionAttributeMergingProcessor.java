@@ -37,11 +37,11 @@ import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
+import org.jboss.as.ejb3.util.MethodInfoHelper;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.ejb3.annotation.TransactionTimeout;
-import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.jboss.ejb3.TransactionTimeoutMetaData;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.ContainerTransactionMetaData;
@@ -62,7 +62,6 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class TransactionAttributeMergingProcessor extends AbstractMergingProcessor<EJBComponentDescription> {
-
 
     public TransactionAttributeMergingProcessor() {
         super(EJBComponentDescription.class);
@@ -99,8 +98,8 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
 
         for (Map.Entry<Method, List<TransactionAttributeType>> entry : data.getMethodAnnotations().entrySet()) {
             if (!entry.getValue().isEmpty()) {
-                final MethodIdentifier method = MethodIdentifier.getIdentifierForMethod(entry.getKey());
-                componentConfiguration.getTransactionAttributes().setAttribute(methodIntf, entry.getValue().get(0), entry.getKey().getDeclaringClass().getName(), method.getName(), method.getParameterTypes());
+                String[] parameterTypes = MethodInfoHelper.getCanonicalParameterTypes(entry.getKey());
+                componentConfiguration.getTransactionAttributes().setAttribute(methodIntf, entry.getValue().get(0), entry.getKey().getDeclaringClass().getName(), entry.getKey().getName(), parameterTypes);
             }
         }
     }
@@ -117,9 +116,9 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
 
         for (Map.Entry<Method, List<Integer>> entry : data.getMethodAnnotations().entrySet()) {
             if (!entry.getValue().isEmpty()) {
-                final MethodIdentifier method = MethodIdentifier.getIdentifierForMethod(entry.getKey());
                 final String className = entry.getKey().getDeclaringClass().getName();
-                componentConfiguration.getTransactionTimeouts().setAttribute(methodIntf, entry.getValue().get(0), className, method.getName(), method.getParameterTypes());
+                String[] parameterTypes = MethodInfoHelper.getCanonicalParameterTypes(entry.getKey());
+                componentConfiguration.getTransactionTimeouts().setAttribute(methodIntf, entry.getValue().get(0), className, entry.getKey().getName(), parameterTypes);
             }
         }
     }
