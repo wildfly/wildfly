@@ -911,6 +911,11 @@
                 </dependency>
 
                 <dependency>
+                   <groupId>org.jboss.as</groupId>
+                   <artifactId>jboss-as-cmp</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-configadmin</artifactId>
                 </dependency>
@@ -2891,6 +2896,10 @@
                                         <group>
                                             <title>Module org.jboss.as.configadmin</title>
                                             <packages>org.jboss.as.configadmin:org.jboss.as.configadmin.parser:org.jboss.as.configadmin.service</packages>
+                                        </group>
+                                        <group>
+                                            <title>Module org.jboss.as.cmp</title>
+                                            <packages>org.jboss.as.cmp:org.jboss.as.cmp.subsystem</packages>
                                         </group>
                                         <group>
                                             <title>Module org.jboss.as.connector</title>

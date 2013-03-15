@@ -1543,6 +1543,17 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.as</groupId>
+      <artifactId>jboss-as-cmp</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License, Version 2.1</name>
+          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.as</groupId>
       <artifactId>jboss-as-config-assembly</artifactId>
       <licenses>
         <license>
