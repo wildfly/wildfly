@@ -98,8 +98,8 @@ public class HttpServiceTestCase {
     @Test
     public void testServletAccess() throws Exception {
         BundleContext context = bundle.getBundleContext();
-        ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
-        HttpService httpService = (HttpService) context.getService(sref);
+        ServiceReference<HttpService> sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
+        HttpService httpService = context.getService(sref);
         String reqspec = "/servlet?test=param&param=Kermit";
         try {
             // Verify that the alias is not yet available
@@ -123,8 +123,8 @@ public class HttpServiceTestCase {
     @Test
     public void testResourceAccess() throws Exception {
         BundleContext context = bundle.getBundleContext();
-        ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
-        HttpService httpService = (HttpService) context.getService(sref);
+        ServiceReference<HttpService> sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
+        HttpService httpService = context.getService(sref);
         String reqspec = "/resource/message.txt";
         try {
             // Verify that the alias is not yet available
@@ -147,8 +147,8 @@ public class HttpServiceTestCase {
     @Test
     public void testServletInitProps() throws Exception {
         BundleContext context = bundle.getBundleContext();
-        ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
-        HttpService httpService = (HttpService) context.getService(sref);
+        ServiceReference<HttpService> sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
+        HttpService httpService = context.getService(sref);
         String reqspec = "/servlet?test=init&init=someKey";
         try {
             // Verify that the alias is not yet available
@@ -169,8 +169,8 @@ public class HttpServiceTestCase {
     @Test
     public void testServletInstance() throws Exception {
         BundleContext context = bundle.getBundleContext();
-        ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
-        HttpService httpService = (HttpService) context.getService(sref);
+        ServiceReference<HttpService> sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
+        HttpService httpService = context.getService(sref);
         String reqspec = "/servlet?test=instance";
         try {
             // Verify that the alias is not yet available
@@ -188,8 +188,8 @@ public class HttpServiceTestCase {
     @Test
     public void testServletContext() throws Exception {
         BundleContext context = bundle.getBundleContext();
-        ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
-        HttpService httpService = (HttpService) context.getService(sref);
+        ServiceReference<HttpService> sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
+        HttpService httpService = context.getService(sref);
         String reqspec = "/servlet2?test=param&param=Kermit";
         try {
             // Verify that the alias is not yet available

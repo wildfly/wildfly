@@ -46,8 +46,8 @@ public class PersistenceService implements Callable<Boolean> {
     public Boolean call() throws Exception {
         EntityManagerFactory emf = null;
         try {
-            ServiceReference sref = context.getServiceReference(EntityManagerFactory.class.getName());
-            emf = (EntityManagerFactory) context.getService(sref);
+            ServiceReference<EntityManagerFactory> sref = context.getServiceReference(EntityManagerFactory.class);
+            emf = context.getService(sref);
 
             Employee emp = new Employee();
             emp.setId(100);

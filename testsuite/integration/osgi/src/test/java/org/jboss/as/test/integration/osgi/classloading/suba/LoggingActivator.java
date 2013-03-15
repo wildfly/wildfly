@@ -29,8 +29,10 @@ import org.osgi.util.tracker.ServiceTracker;
 
 public class LoggingActivator implements BundleActivator {
 
-    private ServiceTracker tracker;
+    private ServiceTracker<?, ?> tracker;
+
     @Override
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void start(BundleContext context) throws Exception {
         tracker = new ServiceTracker(context, LogService.class.getName(), null) {
             @Override

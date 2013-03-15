@@ -124,7 +124,7 @@ public class JNDITestCase {
         BundleContext context = bundle.getBundleContext();
         Dictionary<String, Object> props = new Hashtable<String, Object>();
         props.put("osgi.jndi.url.scheme", new String [] {"testscheme"});
-        ServiceRegistration reg = context.registerService(ObjectFactory.class.getName(), of, props);
+        ServiceRegistration<ObjectFactory> reg = context.registerService(ObjectFactory.class, of, props);
 
         boolean found = false;
         int i=0;

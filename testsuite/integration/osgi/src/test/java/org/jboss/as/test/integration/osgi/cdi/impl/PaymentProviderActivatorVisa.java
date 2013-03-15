@@ -31,10 +31,10 @@ import org.osgi.framework.ServiceRegistration;
  */
 public class PaymentProviderActivatorVisa implements BundleActivator {
 
-    private ServiceRegistration registration;
+    private ServiceRegistration<PaymentProvider> registration;
 
     public void start(BundleContext context) {
-        registration = context.registerService(PaymentProvider.class.getName(), new PaymentProvider() {
+        registration = context.registerService(PaymentProvider.class, new PaymentProvider() {
             public String getName() {
                 return "Visa";
             }

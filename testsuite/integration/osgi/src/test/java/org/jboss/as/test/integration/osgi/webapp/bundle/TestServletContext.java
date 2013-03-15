@@ -60,6 +60,7 @@ public class TestServletContext extends HttpServlet {
             String symbolicName = bundleContext.getBundle().getSymbolicName();
             Filter filter = bundleContext.createFilter("(&(objectClass=" + ServletContext.class.getName() + ")" + "(osgi.web.symbolicname=" + symbolicName + "))");
 
+            @SuppressWarnings({ "unchecked", "rawtypes" })
             ServiceTracker tracker = new ServiceTracker(bundleContext, filter, null);
             tracker.open();
 
@@ -72,7 +73,7 @@ public class TestServletContext extends HttpServlet {
             if (!testValue.equals(attrVal))
                 throw new RuntimeException("Error: Servlet Context service not the same as the actual Servlet Context: " + attrVal);
 
-            ServiceReference sref = tracker.getServiceReference();
+            ServiceReference<?> sref = tracker.getServiceReference();
             writer.write("ServletContext: " + sref.getProperty("osgi.web.symbolicname") + "|" + sref.getProperty("osgi.web.contextpath"));
             tracker.close();
         } catch (InvalidSyntaxException e) {
