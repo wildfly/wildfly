@@ -48,7 +48,7 @@ public class EchoService implements Echo, Service<Echo> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "example", "target", "service");
 
     private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
-    private ServiceRegistration registration;
+    private ServiceRegistration<Echo> registration;
 
     public static void addService(ServiceTarget serviceTarget) {
         EchoService service = new EchoService();
@@ -69,7 +69,7 @@ public class EchoService implements Echo, Service<Echo> {
     @Override
     public void start(StartContext context) throws StartException {
         BundleContext syscontext = injectedBundleContext.getValue();
-        registration = syscontext.registerService(Echo.class.getName(), this, null);
+        registration = syscontext.registerService(Echo.class, this, null);
     }
 
     @Override

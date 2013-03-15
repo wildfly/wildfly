@@ -42,9 +42,10 @@ import org.osgi.util.tracker.ServiceTracker;
  */
 public class ConfigAdminBundleActivatorB implements BundleActivator {
 
-    private ServiceTracker tracker;
+    private ServiceTracker<?, ?> tracker;
 
     @Override
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void start(BundleContext context) throws Exception {
         Hashtable<String, String> props = new Hashtable<String, String>();
         props.put(Constants.SERVICE_PID, context.getBundle().getLocation());

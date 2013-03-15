@@ -53,6 +53,7 @@ public class ComplexManagedBean {
     private List<PaymentProvider> providers = new ArrayList<PaymentProvider>();
 
     @PostConstruct
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void start() {
         ServiceTracker tracker = new ServiceTracker(context, PaymentProvider.class.getName(), null) {
 

@@ -36,8 +36,8 @@ public class SimpleRestEndpoint {
             log.warnf("BundleContext not injected");
             context = getBundleContextFromClass(Echo.class);
         }
-        ServiceReference sref = context.getServiceReference(Echo.class.getName());
-        return (Echo) context.getService(sref);
+        ServiceReference<Echo> sref = context.getServiceReference(Echo.class);
+        return context.getService(sref);
     }
 
     private BundleContext getBundleContextFromClass(Class<?> clazz) {

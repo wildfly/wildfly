@@ -83,8 +83,8 @@ public class ClientModuleTwoActivator implements ServiceActivator
       public void start(StartContext context) throws StartException
       {
          BundleContext systemContext = injectedBundleContext.getValue();
-         ServiceReference sref = systemContext.getServiceReference(Echo.class.getName());
-         Echo service = (Echo)systemContext.getService(sref);
+         ServiceReference<Echo> sref = systemContext.getServiceReference(Echo.class);
+         Echo service = systemContext.getService(sref);
          service.echo("hello world");
       }
    }

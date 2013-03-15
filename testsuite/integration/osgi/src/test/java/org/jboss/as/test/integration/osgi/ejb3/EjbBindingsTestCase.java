@@ -95,7 +95,7 @@ public class EjbBindingsTestCase {
             Assert.assertEquals("ACTIVE", Bundle.ACTIVE, bundle.getState());
 
             // This service is registered by the {@link BeansActivatorA}
-            ServiceReference sref = context.getServiceReference(Callable.class.getName());
+            ServiceReference<?> sref = context.getServiceReference(Callable.class.getName());
             Callable<Boolean> service = (Callable<Boolean>) context.getService(sref);
             Assert.assertTrue(service.call());
 
@@ -116,7 +116,7 @@ public class EjbBindingsTestCase {
             Assert.assertEquals("ACTIVE", Bundle.ACTIVE, bundle.getState());
 
             // This service is registered by the {@link BeansActivatorA}
-            ServiceReference sref = context.getServiceReference(Callable.class.getName());
+            ServiceReference<?> sref = context.getServiceReference(Callable.class.getName());
             Callable<Boolean> service = (Callable<Boolean>) context.getService(sref);
             Assert.assertTrue(service.call());
 
@@ -146,7 +146,7 @@ public class EjbBindingsTestCase {
             Assert.assertEquals("ACTIVE", Bundle.ACTIVE, bundle.getState());
 
             // This service is registered by the {@link BeansActivatorA}
-            ServiceReference sref = context.getServiceReference(Callable.class.getName());
+            ServiceReference<?> sref = context.getServiceReference(Callable.class.getName());
             Callable<Boolean> service = (Callable<Boolean>) context.getService(sref);
             Assert.assertTrue(service.call());
 

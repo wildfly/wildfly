@@ -58,8 +58,8 @@ public class SimpleStatelessSessionBean implements Echo {
                 Bundle bundle = getTargetBundle();
                 bundle.start();
                 BundleContext context = bundle.getBundleContext();
-                ServiceReference sref = context.getServiceReference(Echo.class.getName());
-                Echo service = (Echo) context.getService(sref);
+                ServiceReference<Echo> sref = context.getServiceReference(Echo.class);
+                Echo service = context.getService(sref);
                 return service.echo(message);
             } catch (BundleException ex) {
                 throw new IllegalStateException("Cannot invoke target service", ex);
