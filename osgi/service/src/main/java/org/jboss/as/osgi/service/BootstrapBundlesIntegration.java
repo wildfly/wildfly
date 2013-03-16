@@ -336,15 +336,15 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
         }
 
         @Override
-        protected ServiceController<Void> installActivateService(ServiceTarget serviceTarget, Set<ServiceName> resolvedServices) {
-            return new BootstrapActivateIntegration(getServiceName().getParent(), resolvedServices).install(serviceTarget, getServiceListener());
+        protected ServiceController<Void> installActivateService(ServiceTarget serviceTarget, Set<XBundle> resolvedBundles) {
+            return new BootstrapActivateIntegration(getServiceName().getParent(), resolvedBundles).install(serviceTarget, getServiceListener());
         }
     }
 
     class BootstrapActivateIntegration extends BootstrapBundlesActivate<Void> {
 
-        BootstrapActivateIntegration(ServiceName baseName, Set<ServiceName> installedServices) {
-            super(baseName, installedServices);
+        BootstrapActivateIntegration(ServiceName baseName, Set<XBundle> resolvedBundles) {
+            super(baseName, resolvedBundles);
         }
 
         @Override

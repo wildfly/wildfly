@@ -72,7 +72,6 @@ import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResolveContext;
 import org.jboss.osgi.resolver.XResolver;
 import org.jboss.vfs.VFSUtils;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.startlevel.BundleStartLevel;
@@ -292,19 +291,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
 
             // In case of failure we go back to NEVER
 
-            if (failed.size() == 0) {
-                // The Bundle.ACTIVE service is not tracked by the {@link StabilityMonitor}
-                // Wait for it to come up explicitly
-                ServiceName activeName = bundleManager.getServiceName(bundle, Bundle.ACTIVE);
-                ServiceContainer serviceContainer = bundleManager.getServiceContainer();
-                ServiceController<?> activeService = serviceContainer.getRequiredService(activeName);
-                try {
-                    FutureServiceValue<?> future = new FutureServiceValue<>(activeService, State.UP);
-                    future.get(2, TimeUnit.SECONDS);
-                } catch (Exception ex) {
-                    // ignore
-                }
-            } else {
+            if (failed.size() > 0) {
                 // Collect the first start exception
                 StartException startex = null;
                 for (ServiceController<?> aux : failed) {

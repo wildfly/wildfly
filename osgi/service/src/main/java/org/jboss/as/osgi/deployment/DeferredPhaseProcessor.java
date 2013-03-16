@@ -25,7 +25,6 @@ package org.jboss.as.osgi.deployment;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.osgi.OSGiConstants;
-import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -34,10 +33,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
-import org.osgi.framework.Bundle;
 
 /**
  * Handle deferred deployemnt phases.
@@ -54,11 +51,6 @@ public class DeferredPhaseProcessor implements DeploymentUnitProcessor {
         XBundle bundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
         if (bundle == null || bundle.isFragment())
             return;
-
-        // Add a dependency on the Bundle RESOLVED service
-        BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
-        ServiceName bundleResolve = bundleManager.getServiceName(bundle, Bundle.RESOLVED);
-        phaseContext.addDeploymentDependency(bundleResolve, AttachmentKey.create(Object.class));
 
         // Add a dependency on the Module service
         XBundleRevision brev = bundle.getBundleRevision();

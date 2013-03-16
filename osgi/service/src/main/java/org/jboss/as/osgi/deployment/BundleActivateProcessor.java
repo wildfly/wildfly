@@ -82,17 +82,14 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
 
     static class BundleActivateService implements Service<XBundle> {
 
-        private final InjectedValue<XBundle> injectedBundle = new InjectedValue<XBundle>();
         private final InjectedValue<Component> injectedComponent = new InjectedValue<Component>();
         private final DeploymentUnit depUnit;
+        private final XBundle bundle;
 
         static ServiceController<XBundle> addService(ServiceTarget serviceTarget, DeploymentUnit depUnit, XBundle bundle) {
-            BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
-            ServiceName resolvedBundle = bundleManager.getServiceName(bundle, Bundle.RESOLVED);
             ServiceName serviceName = depUnit.getServiceName().append("Activate");
-            BundleActivateService service = new BundleActivateService(depUnit);
+            BundleActivateService service = new BundleActivateService(depUnit, bundle);
             ServiceBuilder<XBundle> builder = serviceTarget.addService(serviceName, service);
-            builder.addDependency(resolvedBundle, XBundle.class, service.injectedBundle);
             // Add a dependency on the BundleActivator component
             OSGiMetaData metadata = depUnit.getAttachment(OSGiConstants.OSGI_METADATA_KEY);
             if (metadata != null && metadata.getBundleActivator() != null) {
@@ -108,13 +105,13 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
             return builder.install();
         }
 
-        private BundleActivateService(DeploymentUnit depUnit) {
+        private BundleActivateService(DeploymentUnit depUnit, XBundle bundle) {
             this.depUnit = depUnit;
+            this.bundle = bundle;
         }
 
         @Override
         public void start(StartContext context) throws StartException {
-            XBundle bundle = injectedBundle.getValue();
             Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
             BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
             Component activatorComponent = injectedComponent.getOptionalValue();
@@ -136,7 +133,6 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
 
         @Override
         public void stop(StopContext context) {
-            XBundle bundle = injectedBundle.getValue();
             try {
                 // Server shutdown should not modify the persistent start setting
                 BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
@@ -149,7 +145,7 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
 
         @Override
         public XBundle getValue() {
-            return injectedBundle.getValue();
+            return bundle;
         }
     }
 }
