@@ -29,6 +29,7 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
@@ -48,6 +49,7 @@ public class TransactionUtil {
 
     private static volatile TransactionSynchronizationRegistry transactionSynchronizationRegistry;
     private static volatile TransactionManager transactionManager;
+    private static final String ARJUNA_REAPER_THREAD_NAME = "Transaction Reaper Worker";
 
     public static void setTransactionManager(TransactionManager tm) {
         if (transactionManager == null) {
@@ -173,7 +175,7 @@ public class TransactionUtil {
     }
 
     private static class SessionSynchronization implements Synchronization {
-        private EntityManager manager;
+        private EntityManager manager;  // the underlying entity manager
         private boolean closeAtTxCompletion;
         private String scopedPuName;
 
@@ -187,13 +189,47 @@ public class TransactionUtil {
         }
 
         public void afterCompletion(int status) {
-            if (closeAtTxCompletion) {
-                if (JPA_LOGGER.isDebugEnabled())
-                    JPA_LOGGER.debugf("%s: closing entity managersession", getEntityManagerDetails(manager));
-                manager.close();
+            /**
+             * If its not safe (safeToClose returns false) to close the EntityManager now,
+             * any connections joined to the JTA transaction
+             * will be released by the JCA connection pool manager.  When the JTA Transaction is no longer
+             * referencing the EntityManager, it will be eligible for garbage collection.
+             * See AS7-6586 for more details.
+             */
+            if (closeAtTxCompletion && safeToClose(status)) {
+                try {
+                    if (JPA_LOGGER.isDebugEnabled())
+                        JPA_LOGGER.debugf("%s: closing entity managersession", getEntityManagerDetails(manager));
+                    manager.close();
+                } catch (Exception ignored) {
+                    if (JPA_LOGGER.isDebugEnabled())
+                        JPA_LOGGER.debugf(ignored, "ignoring error that occurred while closing EntityManager for %s (", scopedPuName);
+                }
             }
             // The TX reference to the entity manager, should be cleared by the TM
 
+        }
+
+        /**
+         * AS7-6586 requires that the container avoid closing the EntityManager while the application
+         * may be using the EntityManager in a different thread.  If the transaction has been rolled
+         * back, will check if the current thread is the Arjuna transaction manager Reaper thread.  It is not
+         * safe to call EntityManager.close from the Reaper thread, so false is returned.
+         *
+         * TODO: switch to depend on JBTM-1556 instead of checking the current thread name.
+         *
+         * @param status of transaction.
+         * @return
+         */
+        private boolean safeToClose(int status) {
+            boolean isItSafe = true;
+            if (Status.STATUS_COMMITTED != status) {
+                String currentThreadName = currentThread();
+                boolean isBackgroundReaperThread = currentThreadName != null &&
+                        currentThreadName.startsWith(ARJUNA_REAPER_THREAD_NAME);
+                isItSafe = !isBackgroundReaperThread;
+            }
+            return isItSafe;
         }
     }
 
