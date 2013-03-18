@@ -523,13 +523,18 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
             synchronized (reverse) {
                 reverse.remove(session);
             }
-            // Invalidate this session, but do not propagate to other nodes
-            ClusteredSession<OutgoingDistributableSessionData> clusteredSession =
-                    (ClusteredSession<OutgoingDistributableSessionData>) session ;
-            boolean notify = true ;
-            boolean localCall = false ;
-            boolean localOnly = true ;
-            clusteredSession.expire(notify, localCall, localOnly, ClusteredSessionNotificationCause.INVALIDATE);
+            if (session instanceof ClusteredSession) {
+                // Invalidate this session, but do not propagate to other nodes
+                ClusteredSession<OutgoingDistributableSessionData> clusteredSession =
+                        (ClusteredSession<OutgoingDistributableSessionData>) session ;
+                boolean notify = true ;
+                boolean localCall = false ;
+                boolean localOnly = true ;
+                clusteredSession.expire(notify, localCall, localOnly, ClusteredSessionNotificationCause.INVALIDATE);
+            } else {
+                // Invalidate this session
+                session.expire();
+            }
         }
 
         // NOTE: Clients may still possess the old single sign on cookie,
