@@ -257,7 +257,9 @@ public class ConfigAdminServiceImpl implements ConfigAdminInternal, Service<Conf
     @Override
     public void removeListener(ConfigAdminListener listener) {
         LOGGER.debugf("Remove listener: %s", listener);
-        listeners.remove(listener);
+        synchronized (configurations) {
+            listeners.remove(listener);
+        }
     }
 
     private ModelNode getSubsystemAddress() {
