@@ -45,6 +45,7 @@ import javax.naming.Reference;
 import javax.naming.event.NamingListener;
 import javax.naming.spi.ResolveResult;
 
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -56,7 +57,7 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public class ServiceBasedNamingStore implements NamingStore {
     private final Name EMPTY_NAME = new CompositeName();
-
+    private Name baseName;
     private final ServiceRegistry serviceRegistry;
     private final ServiceName serviceNameBase;
 
@@ -312,5 +313,45 @@ public class ServiceBasedNamingStore implements NamingStore {
 
     protected ServiceRegistry getServiceRegistry() {
         return serviceRegistry;
+    }
+
+    @Override
+    public Name getBaseName() throws NamingException {
+        if (baseName == null) {
+            baseName = setBaseName();
+        }
+        return baseName;
+    }
+
+    private Name setBaseName() throws NamingException {
+        if (serviceNameBase.equals(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME)
+                || ContextNames.EXPORTED_CONTEXT_SERVICE_NAME.isParentOf(serviceNameBase)) {
+            return new CompositeName("java:jboss/exported");
+        }
+        if (serviceNameBase.equals(ContextNames.JBOSS_CONTEXT_SERVICE_NAME)
+                || ContextNames.JBOSS_CONTEXT_SERVICE_NAME.isParentOf(serviceNameBase)) {
+            return new CompositeName("java:jboss");
+        }
+        if (serviceNameBase.equals(ContextNames.APPLICATION_CONTEXT_SERVICE_NAME)
+                || ContextNames.APPLICATION_CONTEXT_SERVICE_NAME.isParentOf(serviceNameBase)) {
+            return new CompositeName("java:app");
+        }
+        if (serviceNameBase.equals(ContextNames.MODULE_CONTEXT_SERVICE_NAME)
+                || ContextNames.MODULE_CONTEXT_SERVICE_NAME.isParentOf(serviceNameBase)) {
+            return new CompositeName("java:module");
+        }
+        if (serviceNameBase.equals(ContextNames.COMPONENT_CONTEXT_SERVICE_NAME)
+                || ContextNames.COMPONENT_CONTEXT_SERVICE_NAME.isParentOf(serviceNameBase)) {
+            return new CompositeName("java:comp");
+        }
+        if (serviceNameBase.equals(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME)
+                || ContextNames.GLOBAL_CONTEXT_SERVICE_NAME.isParentOf(serviceNameBase)) {
+            return new CompositeName("java:global");
+        }
+        if (serviceNameBase.equals(ContextNames.JAVA_CONTEXT_SERVICE_NAME)
+                || ContextNames.JAVA_CONTEXT_SERVICE_NAME.isParentOf(serviceNameBase)) {
+            return new CompositeName("java:");
+        }
+        return new CompositeName();
     }
 }
