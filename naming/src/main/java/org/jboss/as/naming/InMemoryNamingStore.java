@@ -71,20 +71,50 @@ public class InMemoryNamingStore implements WritableNamingStore {
 
     private final ReentrantLock writeLock = new ReentrantLock();
 
+    private final Name baseName;
+
     /**
-     * Construct instance with no event support.
+     * Construct instance with no event support, and an empty base name.
      */
     public InMemoryNamingStore() {
-        this(null);
+        this(null, new CompositeName());
     }
 
     /**
-     * Construct instance with an event coordinator.
+     * Construct instance with an event coordinator, and an empty base name.
      *
      * @param eventCoordinator The event coordinator
      */
     public InMemoryNamingStore(final NamingEventCoordinator eventCoordinator) {
+        this(eventCoordinator, new CompositeName());
+    }
+
+    /**
+     * Construct instance with no event support, and the specified base name.
+     *
+     * @param baseName
+     */
+    public InMemoryNamingStore(final Name baseName) {
+        this(null, baseName);
+    }
+
+    /**
+     * Construct instance with an event coordinator, and the specified base name.
+     *
+     * @param eventCoordinator
+     * @param baseName
+     */
+    public InMemoryNamingStore(final NamingEventCoordinator eventCoordinator, final Name baseName) {
         this.eventCoordinator = eventCoordinator;
+        if(baseName == null) {
+            throw new NullPointerException(NamingMessages.MESSAGES.cannotBeNull("baseName"));
+        }
+        this.baseName = baseName;
+    }
+
+    /** {@inheritDoc} */
+    public Name getBaseName() throws NamingException {
+        return baseName;
     }
 
     /** {@inheritDoc} */
@@ -186,7 +216,7 @@ public class InMemoryNamingStore implements WritableNamingStore {
      */
     public List<Binding> listBindings(final Name name) throws NamingException {
         final Name nodeName = name.isEmpty() ? new CompositeName("") : name;
-        return root.accept(new ListBindingsVisitor(name));
+        return root.accept(new ListBindingsVisitor(nodeName));
     }
 
     public Context createSubcontext(final Name name) throws NamingException {

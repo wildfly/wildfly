@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Locale;
 
 import javax.naming.Name;
 
@@ -124,7 +123,7 @@ public final class JndiPermission extends Permission
 
         public static Action forName(final String actionName) {
             for(Action action : Action.values()) {
-                if(action.actionName.equals(actionName))
+                if(action.actionName.equalsIgnoreCase(actionName))
                     return action;
             }
             return null;
@@ -432,8 +431,7 @@ public final class JndiPermission extends Permission
 
         String[] sa = actions.split(",");
         for (String s : sa) {
-            String key = s.trim().toLowerCase(Locale.ENGLISH);
-            action = Action.forName(key);
+            action = Action.forName(s.trim());
             if (action == null) {
                 throw MESSAGES.invalidPermissionAction(s);
             }

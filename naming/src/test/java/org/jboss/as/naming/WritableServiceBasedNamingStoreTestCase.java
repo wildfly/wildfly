@@ -22,11 +22,16 @@
 
 package org.jboss.as.naming;
 
+import java.security.AccessControlException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import javax.naming.CompositeName;
 import javax.naming.Name;
 import javax.naming.NameNotFoundException;
+
+import org.jboss.as.naming.JndiPermission.Action;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.deployment.RuntimeBindReleaseService;
@@ -36,6 +41,7 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
+import static org.jboss.as.naming.SecurityHelper.testActionWithPermission;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -223,6 +229,82 @@ public class WritableServiceBasedNamingStoreTestCase {
             store.rebind(new CompositeName("test"), new Object());
             fail("Should have failed with a read-only context exception");
         } catch (UnsupportedOperationException expected) {
+        }
+    }
+
+    /**
+     * Binds an entry and then do lookups with several permissions
+     * @throws Exception
+     */
+    @Test
+    public void testPermissions() throws Exception {
+
+        final NamingContext namingContext = new NamingContext(store, null);
+        final String name = "a/b";
+        final Object value = new Object();
+        ArrayList<JndiPermission> permissions = new ArrayList<JndiPermission>();
+
+        // simple bind test, note that permission must have absolute path
+        WritableServiceBasedNamingStore.pushOwner(owner);
+        try {
+            permissions.add(new JndiPermission(store.getBaseName()+"/"+name,"bind,list,listBindings"));
+            store.bind(new CompositeName(name), value);
+        } finally {
+            WritableServiceBasedNamingStore.popOwner();
+        }
+
+        // all of these lookup should work
+        permissions.set(0,new JndiPermission(store.getBaseName()+"/"+name,Action.LOOKUP));
+        assertEquals(value, testActionWithPermission(Action.LOOKUP, permissions, namingContext, name));
+        permissions.set(0,new JndiPermission(store.getBaseName()+"/-",Action.LOOKUP));
+        assertEquals(value, testActionWithPermission(Action.LOOKUP, permissions, namingContext, name));
+                permissions.set(0,new JndiPermission(store.getBaseName()+"/a/*",Action.LOOKUP));
+        assertEquals(value, testActionWithPermission(Action.LOOKUP, permissions, namingContext, name));
+        permissions.set(0,new JndiPermission(store.getBaseName()+"/a/-",Action.LOOKUP));
+        assertEquals(value, testActionWithPermission(Action.LOOKUP, permissions, namingContext, name));
+        permissions.set(0,new JndiPermission("<<ALL BINDINGS>>",Action.LOOKUP));
+        assertEquals(value, testActionWithPermission(Action.LOOKUP, permissions, namingContext, name));
+        permissions.set(0,new JndiPermission(store.getBaseName()+"/"+name,Action.LOOKUP));
+        assertEquals(value, testActionWithPermission(Action.LOOKUP, permissions, namingContext, store.getBaseName()+"/"+name));
+        NamingContext aNamingContext = (NamingContext) namingContext.lookup("a");
+        permissions.set(0,new JndiPermission(store.getBaseName()+"/"+name,Action.LOOKUP));
+        assertEquals(value, testActionWithPermission(Action.LOOKUP, permissions, aNamingContext, "b"));
+        // this lookup should not work, no permission
+        try {
+            testActionWithPermission(Action.LOOKUP, Collections.<JndiPermission>emptyList(), namingContext, name);
+            fail("Should have failed due to missing permission");
+        } catch (AccessControlException e) {
+
+        }
+        // a permission which only allows entries in store.getBaseName()
+        try {
+            permissions.set(0,new JndiPermission(store.getBaseName()+"/*",Action.LOOKUP));
+            testActionWithPermission(Action.LOOKUP, permissions, namingContext, name);
+            fail("Should have failed due to missing permission");
+        } catch (AccessControlException e) {
+
+        }
+        // permissions which are not absolute paths (do not include store base name, i.e. java:)
+        try {
+            permissions.set(0,new JndiPermission(name,Action.LOOKUP));
+            testActionWithPermission(Action.LOOKUP, permissions, namingContext, name);
+            fail("Should have failed due to missing permission");
+        } catch (AccessControlException e) {
+
+        }
+        try {
+            permissions.set(0,new JndiPermission("/"+name,Action.LOOKUP));
+            testActionWithPermission(Action.LOOKUP, permissions, namingContext, name);
+            fail("Should have failed due to missing permission");
+        } catch (AccessControlException e) {
+
+        }
+        try {
+            permissions.set(0,new JndiPermission("/-",Action.LOOKUP));
+            testActionWithPermission(Action.LOOKUP, permissions, namingContext, name);
+            fail("Should have failed due to missing permission");
+        } catch (AccessControlException e) {
+
         }
     }
 }
