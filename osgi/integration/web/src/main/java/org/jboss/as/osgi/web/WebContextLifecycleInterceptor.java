@@ -98,7 +98,7 @@ class WebContextLifecycleInterceptor extends AbstractLifecycleInterceptor implem
                 case Bundle.ACTIVE:
                     try {
                         injectBundleContext(activator.getServletContext(), bundle.getBundleContext());
-                        if (!activator.start(4, TimeUnit.SECONDS)) {
+                        if (!activator.start(30, TimeUnit.SECONDS)) {
                             throw new LifecycleInterceptorException(OSGiMessages.MESSAGES.startContextFailed());
                         }
                     } catch (TimeoutException ex) {
@@ -106,7 +106,7 @@ class WebContextLifecycleInterceptor extends AbstractLifecycleInterceptor implem
                     }
                     break;
                 case Bundle.RESOLVED:
-                    activator.stop(4, TimeUnit.SECONDS);
+                    activator.stop(30, TimeUnit.SECONDS);
                     uninjectBundleContext(activator.getServletContext());
                     break;
             }
