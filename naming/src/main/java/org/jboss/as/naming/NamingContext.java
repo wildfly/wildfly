@@ -539,9 +539,25 @@ public class NamingContext implements EventContext {
     }
 
     private void check(Name name, Action... actions) throws NamingException {
-        Name absoluteName = getAbsoluteName(name);
-
-        JndiPermission.check(absoluteName, actions);
+        final SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            // build absolute name (including store's base name)
+            Name absoluteName = (Name) namingStore.getBaseName().clone();
+            if (name.isEmpty()) {
+                absoluteName.addAll(prefix);
+            } else {
+                final String firstComponent = name.get(0);
+                if (firstComponent.startsWith("java:")) {
+                    absoluteName = name;
+                } else if (firstComponent.isEmpty()) {
+                    absoluteName.addAll(name.getSuffix(1));
+                } else {
+                    absoluteName.addAll(prefix);
+                    absoluteName.addAll(name);
+                }
+            }
+            sm.checkPermission(new JndiPermission(absoluteName, actions));
+        }
     }
 
     Name getPrefix() {

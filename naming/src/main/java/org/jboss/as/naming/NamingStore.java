@@ -40,6 +40,13 @@ import javax.naming.event.NamingListener;
 public interface NamingStore {
 
     /**
+     * Retrieves the store's base name, which is the prefix for the absolute name of each entry in the store.
+     * @return
+     * @throws NamingException
+     */
+    Name getBaseName() throws NamingException;
+
+    /**
      * Look up an object from the naming store.  An entry for this name must already exist.
      *
      * @param name The entry name
