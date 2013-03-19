@@ -33,6 +33,7 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.as.controller.notification.Notification;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -452,4 +453,8 @@ public interface ControllerLogger extends BasicLogger {
             "subsystem resources on this server will result in failure.")
     @LogMessage(level = INFO)
     void ignoringUnsupportedLegacyExtension(List<String> subsystemNames, String extensionName);
+
+    @Message(id = 13406, value = "Failed to emit notification %s")
+    @LogMessage(level = WARN)
+    void failedToEmitNotification(Notification notification, @Cause Throwable cause);
 }
