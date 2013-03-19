@@ -64,23 +64,46 @@ public final class WebBundleURIParser {
             return null;
         }
 
-        String query = uri.getQuery();
+        // If the scheme specific part is an URI we use that
+        String schemeSpecificPart = uri.getSchemeSpecificPart();
+        try {
+            uri = new URI(schemeSpecificPart);
+        } catch (URISyntaxException ex) {
+            // ignore
+        }
+
         String symbolicName = null;
-        for (String part : query.split("&")) {
-            int valueIndex = part.indexOf("=") + 1;
-            if (part.startsWith(Constants.BUNDLE_SYMBOLICNAME)) {
-                symbolicName = part.substring(valueIndex);
+        String contextPath = null;
+
+        String query = uri.getQuery();
+        if (query != null) {
+            for (String part : query.split("&")) {
+                int valueIndex = part.indexOf("=") + 1;
+                if (part.startsWith(Constants.BUNDLE_SYMBOLICNAME)) {
+                    symbolicName = part.substring(valueIndex);
+                } else if (part.startsWith(WebExtension.WEB_CONTEXTPATH)) {
+                    contextPath = part.substring(valueIndex);
+                }
             }
         }
 
-        String contextPath = uri.getHost();
-        if (contextPath.endsWith(".war"))
-            contextPath = contextPath.substring(0, contextPath.length() - 4);
+        // Derive the context path from the URI
+        if (contextPath == null) {
+            contextPath = uri.getHost();
+            if (contextPath.endsWith(".war")) {
+                contextPath = contextPath.substring(0, contextPath.length() - 4);
+            } else {
+                int index = contextPath.indexOf(".jar");
+                if (index > 0) {
+                    contextPath = contextPath.substring(0, index);
+                }
+            }
+        }
 
         OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
         builder.addBundleManifestVersion(2);
         builder.addBundleSymbolicName(symbolicName);
-        builder.addManifestHeader(WebExtension.WEB_CONTEXT_PATH, contextPath);
+        builder.addManifestHeader(WebExtension.WEB_CONTEXTPATH, contextPath);
         builder.addImportPackages(WebServlet.class, Servlet.class, HttpServlet.class);
         builder.addImportPackages(Bundle.class);
         builder.addBundleClasspath("WEB-INF/classes");

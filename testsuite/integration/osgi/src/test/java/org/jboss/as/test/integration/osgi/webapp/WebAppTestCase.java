@@ -35,10 +35,11 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.osgi.web.WebExtension;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.osgi.api.Echo;
 import org.jboss.as.test.integration.osgi.deployment.bundle.DeferredFailActivator;
-import org.jboss.as.test.integration.osgi.webapp.bundle.AnnotatedServlet;
+import org.jboss.as.test.integration.osgi.webapp.bundle.SimpleAnnotatedServlet;
 import org.jboss.as.test.integration.osgi.webapp.bundle.SimpleServlet;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
@@ -52,9 +53,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.FrameworkUtil;
 
 /**
  * Test webapp deployemnts as OSGi bundles
@@ -110,7 +111,7 @@ public class WebAppTestCase {
         deployer.deploy(SIMPLE_WAR);
         try {
             String result = performCall("/simple/servlet?input=Hello");
-            Assert.assertEquals("Simple Servlet called with input=Hello", result);
+            Assert.assertEquals("null called with: Hello", result);
             // Test resource access
             result = performCall("/simple/message.txt");
             Assert.assertEquals("Hello from Resource", result);
@@ -124,7 +125,7 @@ public class WebAppTestCase {
         deployer.deploy(BUNDLE_A_WAR);
         try {
             String result = performCall("/bundle-a/servlet?input=Hello");
-            Assert.assertEquals("Simple Servlet called with input=Hello", result);
+            Assert.assertEquals("bundle-a.war called with: Hello", result);
             result = performCall("/bundle-a/message.txt");
             Assert.assertEquals("Hello from Resource", result);
         } finally {
@@ -137,7 +138,7 @@ public class WebAppTestCase {
         deployer.deploy(BUNDLE_B_WAR);
         try {
             String result = performCall("/bundle-b/servlet?input=Hello");
-            Assert.assertEquals("Simple Servlet called with input=Hello", result);
+            Assert.assertEquals("bundle-b.war called with: Hello", result);
             result = performCall("/bundle-b/message.txt");
             Assert.assertEquals("Hello from Resource", result);
         } finally {
@@ -150,7 +151,7 @@ public class WebAppTestCase {
         deployer.deploy(BUNDLE_G_WAR);
         try {
             String result = performCall("/bundle-g/servlet?input=Hello");
-            Assert.assertEquals("Simple Servlet called with input=Hello", result);
+            Assert.assertEquals("bundle-g.war called with: Hello", result);
             result = performCall("/bundle-g/message.txt");
             Assert.assertEquals("Hello from Resource", result);
         } finally {
@@ -163,7 +164,7 @@ public class WebAppTestCase {
         deployer.deploy(BUNDLE_H_WAR);
         try {
             String result = performCall("/bundle-h/servlet?input=Hello");
-            Assert.assertEquals("Simple Servlet called with input=Hello", result);
+            Assert.assertEquals("bundle-h.war called with: Hello", result);
             result = performCall("/bundle-h/message.txt");
             Assert.assertEquals("Hello from Resource", result);
         } finally {
@@ -176,7 +177,7 @@ public class WebAppTestCase {
         deployer.deploy(BUNDLE_C_WAB);
         try {
             String result = performCall("/bundle-c/servlet?input=Hello");
-            Assert.assertEquals("Simple Servlet called with input=Hello", result);
+            Assert.assertEquals("bundle-c.wab called with: Hello", result);
             result = performCall("/bundle-c/message.txt");
             Assert.assertEquals("Hello from Resource", result);
         } finally {
@@ -192,7 +193,7 @@ public class WebAppTestCase {
             Bundle bundle = context.getBundle(BUNDLE_D_WAB);
 
             String result = performCall("/bundle-d/servlet?input=Hello");
-            Assert.assertEquals("Simple Servlet called with input=Hello", result);
+            Assert.assertEquals("bundle-d.wab called with: Hello", result);
             result = performCall("/bundle-d/message.txt");
             Assert.assertEquals("Hello from Resource", result);
 
@@ -217,7 +218,7 @@ public class WebAppTestCase {
             Assert.assertEquals("ACTIVE", Bundle.ACTIVE, bundle.getState());
 
             result = performCall("/bundle-d/servlet?input=Hello");
-            Assert.assertEquals("Simple Servlet called with input=Hello", result);
+            Assert.assertEquals("bundle-d.wab called with: Hello", result);
             result = performCall("/bundle-d/message.txt");
             Assert.assertEquals("Hello from Resource", result);
         } finally {
@@ -230,7 +231,7 @@ public class WebAppTestCase {
         deployer.deploy(BUNDLE_E_JAR);
         try {
             String result = performCall("/bundle-e/servlet?input=Hello");
-            Assert.assertEquals("Simple Servlet called with input=Hello", result);
+            Assert.assertEquals("bundle-e.jar called with: Hello", result);
             result = performCall("/bundle-e/message.txt");
             Assert.assertEquals("Hello from Resource", result);
         } finally {
@@ -245,7 +246,13 @@ public class WebAppTestCase {
         try {
             Assert.assertEquals("INSTALLED", Bundle.INSTALLED, bundle.getState());
             try {
-                performCall("/bundle-d/servlet?input=Hello");
+                performCall("/bundle-c/servlet?input=Hello");
+                Assert.fail("IOException expected");
+            } catch (IOException ex) {
+                // expected
+            }
+            try {
+                performCall("/bundle-c/message.txt");
                 Assert.fail("IOException expected");
             } catch (IOException ex) {
                 // expected
@@ -255,7 +262,7 @@ public class WebAppTestCase {
             Assert.assertEquals("ACTIVE", Bundle.ACTIVE, bundle.getState());
 
             String result = performCall("/bundle-c/servlet?input=Hello");
-            Assert.assertEquals("Simple Servlet called with input=Hello", result);
+            Assert.assertEquals("bundle-c.wab called with: Hello", result);
             result = performCall("/bundle-c/message.txt");
             Assert.assertEquals("Hello from Resource", result);
         } finally {
@@ -271,7 +278,7 @@ public class WebAppTestCase {
         try {
             Assert.assertEquals("INSTALLED", Bundle.INSTALLED, bundle.getState());
             try {
-                performCall("/bundle-d/servlet?input=Hello");
+                performCall("/bundle-f/servlet?input=Hello");
                 Assert.fail("IOException expected");
             } catch (IOException ex) {
                 // expected
@@ -285,7 +292,7 @@ public class WebAppTestCase {
             }
             Assert.assertEquals("RESOLVED", Bundle.RESOLVED, bundle.getState());
             try {
-                performCall("/bundle-d/servlet?input=Hello");
+                performCall("/bundle-f/servlet?input=Hello");
                 Assert.fail("IOException expected");
             } catch (IOException ex) {
                 // expected
@@ -294,9 +301,9 @@ public class WebAppTestCase {
             bundle.start();
             Assert.assertEquals("ACTIVE", Bundle.ACTIVE, bundle.getState());
 
-            String result = performCall("/bundle-c/servlet?input=Hello");
-            Assert.assertEquals("Simple Servlet called with input=Hello", result);
-            result = performCall("/bundle-c/message.txt");
+            String result = performCall("/bundle-f/servlet?input=Hello");
+            Assert.assertEquals("bundle-f.wab called with: Hello", result);
+            result = performCall("/bundle-f/message.txt");
             Assert.assertEquals("Hello from Resource", result);
         } finally {
             bundle.uninstall();
@@ -311,7 +318,7 @@ public class WebAppTestCase {
     @Deployment(name = SIMPLE_WAR, managed = false, testable = false)
     public static Archive<?> getSimpleWar() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, SIMPLE_WAR);
-        archive.addClasses(AnnotatedServlet.class, Echo.class);
+        archive.addClasses(SimpleAnnotatedServlet.class, Echo.class);
         archive.addAsWebResource(STRING_ASSET, "message.txt");
         return archive;
     }
@@ -319,7 +326,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_A_WAR, managed = false, testable = false)
     public static Archive<?> getBundleA() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, BUNDLE_A_WAR);
-        archive.addClasses(AnnotatedServlet.class, Echo.class);
+        archive.addClasses(SimpleAnnotatedServlet.class, Echo.class);
         archive.addAsWebResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
@@ -329,6 +336,7 @@ public class WebAppTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(PostConstruct.class, WebServlet.class);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
+                builder.addImportPackages(FrameworkUtil.class);
                 builder.addBundleClasspath("WEB-INF/classes");
                 return builder.openStream();
             }
@@ -339,7 +347,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_B_WAR, managed = false, testable = false)
     public static Archive<?> getBundleB() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_B_WAR);
-        archive.addClasses(AnnotatedServlet.class, Echo.class);
+        archive.addClasses(SimpleAnnotatedServlet.class, Echo.class);
         archive.addAsResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
@@ -349,6 +357,7 @@ public class WebAppTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(PostConstruct.class, WebServlet.class);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
+                builder.addImportPackages(FrameworkUtil.class);
                 return builder.openStream();
             }
         });
@@ -358,7 +367,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_C_WAB, managed = false, testable = false)
     public static Archive<?> getBundleC() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_C_WAB);
-        archive.addClasses(AnnotatedServlet.class, Echo.class);
+        archive.addClasses(SimpleAnnotatedServlet.class, Echo.class);
         archive.addAsResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
@@ -368,6 +377,7 @@ public class WebAppTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(PostConstruct.class, WebServlet.class);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
+                builder.addImportPackages(FrameworkUtil.class);
                 return builder.openStream();
             }
         });
@@ -377,7 +387,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_D_WAB, managed = false, testable = false)
     public static Archive<?> getBundleD() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_D_WAB);
-        archive.addClasses(AnnotatedServlet.class, Echo.class);
+        archive.addClasses(SimpleAnnotatedServlet.class, Echo.class);
         archive.addAsResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
@@ -387,7 +397,8 @@ public class WebAppTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(PostConstruct.class, WebServlet.class);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
-                builder.addManifestHeader("Web-ContextPath", "/bundle-d");
+                builder.addImportPackages(FrameworkUtil.class);
+                builder.addManifestHeader(WebExtension.WEB_CONTEXTPATH, "/bundle-d");
                 return builder.openStream();
             }
         });
@@ -397,7 +408,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_E_JAR, managed = false, testable = false)
     public static Archive<?> getBundleE() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_E_JAR);
-        archive.addClasses(AnnotatedServlet.class, Echo.class);
+        archive.addClasses(SimpleAnnotatedServlet.class, Echo.class);
         archive.addAsResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
@@ -407,7 +418,8 @@ public class WebAppTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(PostConstruct.class, WebServlet.class);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
-                builder.addManifestHeader("Web-ContextPath", "/bundle-e");
+                builder.addImportPackages(FrameworkUtil.class);
+                builder.addManifestHeader(WebExtension.WEB_CONTEXTPATH, "/bundle-e");
                 return builder.openStream();
             }
         });
@@ -417,7 +429,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_F_WAB, managed = false, testable = false)
     public static Archive<?> getBundleF() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_F_WAB);
-        archive.addClasses(AnnotatedServlet.class, Echo.class, DeferredFailActivator.class);
+        archive.addClasses(SimpleAnnotatedServlet.class, Echo.class, DeferredFailActivator.class);
         archive.addAsResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
@@ -428,7 +440,7 @@ public class WebAppTestCase {
                 builder.addBundleActivator(DeferredFailActivator.class);
                 builder.addImportPackages(PostConstruct.class, WebServlet.class);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
-                builder.addImportPackages(BundleActivator.class);
+                builder.addImportPackages(FrameworkUtil.class);
                 return builder.openStream();
             }
         });
@@ -438,7 +450,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_G_WAR, managed = false, testable = false)
     public static Archive<?> getBundleG() {
         final JavaArchive libjar = ShrinkWrap.create(JavaArchive.class, LIB_G_JAR);
-        libjar.addClasses(AnnotatedServlet.class, Echo.class);
+        libjar.addClasses(SimpleAnnotatedServlet.class, Echo.class);
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, BUNDLE_G_WAR);
         archive.addAsLibraries(libjar);
         archive.addAsWebResource(STRING_ASSET, "message.txt");
@@ -450,6 +462,7 @@ public class WebAppTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(PostConstruct.class, WebServlet.class);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
+                builder.addImportPackages(FrameworkUtil.class);
                 builder.addBundleClasspath("WEB-INF/lib/" + LIB_G_JAR);
                 return builder.openStream();
             }
@@ -484,6 +497,7 @@ public class WebAppTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
+                builder.addImportPackages(FrameworkUtil.class);
                 builder.addBundleClasspath("WEB-INF/lib/" + LIB_G_JAR);
                 return builder.openStream();
             }

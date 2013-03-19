@@ -31,10 +31,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.as.test.integration.osgi.api.Echo;
+import org.osgi.framework.FrameworkUtil;
 
 @SuppressWarnings("serial")
-@WebServlet(name = "AnnotatedServlet", urlPatterns = { "/servlet" })
-public class AnnotatedServlet extends HttpServlet {
+@WebServlet(name = "SimpleServlet", urlPatterns = { "/servlet" })
+public class SimpleAnnotatedServlet extends HttpServlet {
 
     private volatile Echo echo;
 
@@ -43,7 +44,13 @@ public class AnnotatedServlet extends HttpServlet {
         echo = new Echo() {
             @Override
             public String echo(String msg) {
-                return "Simple Servlet called with input=" + msg;
+                String bundle = null;
+                try {
+                    bundle = FrameworkUtil.getBundle(SimpleAnnotatedServlet.class).getSymbolicName();
+                } catch (Throwable th) {
+                    // simple war does not see the OSGi API
+                }
+                return bundle + " called with: " + msg;
             }
         };
     }
