@@ -40,7 +40,7 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface OperationContext extends ExpressionResolver {
+public interface OperationContext extends ExpressionResolver, NotificationSupport {
 
     /**
      * Add an execution step to this operation process.  Runtime operation steps are automatically added after
@@ -562,8 +562,6 @@ public interface OperationContext extends ExpressionResolver {
      * @param message the message
      */
     void report(MessageSeverity severity, String message);
-
-    NotificationSupport getNotificationSupport();
 
     /**
      * Marks a resource to indicate that it's backing service(s) will be restarted.

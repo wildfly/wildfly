@@ -110,7 +110,7 @@ public class GlobalNotificationsTestCase extends AbstractControllerTestBase {
                 new OperationStepHandler() {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        context.getNotificationSupport().registerNotificationHandler(resourceAddressPattern, notificationHandler, notificationFilter.get());
+                        context.registerNotificationHandler(resourceAddressPattern, notificationHandler, notificationFilter.get());
                         context.stepCompleted();
                     }
                 }
