@@ -580,6 +580,7 @@ class ModelControllerImpl implements ModelController {
         return serviceTarget;
     }
 
+    @Override
     public NotificationSupport getNotificationSupport() {
         return notificationSupport;
     }

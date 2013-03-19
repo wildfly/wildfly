@@ -50,7 +50,9 @@ public class Common {
     static final String APPLICATION_JSON = "application/json";
     static final String TEXT_PLAIN = "text/plain";
     static final String TEXT_HTML = "text/html";
-
+    static final String LINK = "Link";
+    static final String TEXT_EVENT_STREAM = "text/event-stream";
+    static final String NO_CACHE = "No-Cache";
 
     static String UTF_8 = "utf-8";
     static final String GMT = "GMT";
