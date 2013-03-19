@@ -80,7 +80,7 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                         Notification notification = new Notification(MY_TYPE, pathAddress(operation.get(OP_ADDR)), "notification message");
-                        context.getNotificationSupport().emit(notification);
+                        context.emit(notification);
                         context.stepCompleted();
                     }
                 }
@@ -92,7 +92,7 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                         PathAddress source = pathAddress(operation.get(OP_ADDR));
-                        context.getNotificationSupport().registerNotificationHandler(source, delegatingNotificationHandler, delegatingNotificationHandler);
+                        context.registerNotificationHandler(source, delegatingNotificationHandler, delegatingNotificationHandler);
                         context.stepCompleted();
                         notificationHandlerRegisteredLatch.get().countDown();
                     }
@@ -105,7 +105,7 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                         PathAddress source = pathAddress(operation.get(OP_ADDR));
-                        context.getNotificationSupport().unregisterNotificationHandler(source, delegatingNotificationHandler, delegatingNotificationHandler);
+                        context.unregisterNotificationHandler(source, delegatingNotificationHandler, delegatingNotificationHandler);
                         context.stepCompleted();
                         notificationHandlerUnregisteredLatch.get().countDown();
                     }

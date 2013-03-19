@@ -81,7 +81,7 @@ public abstract class AbstractRemoveStepHandler implements OperationStepHandler 
                 Notification notification = new Notification(RESOURCE_REMOVED_NOTIFICATION,
                         sourceAddress,
                         MESSAGES.resourceWasRemoved(sourceAddress));
-                context.getNotificationSupport().emit(notification);
+                context.emit(notification);
             }
         });
     }

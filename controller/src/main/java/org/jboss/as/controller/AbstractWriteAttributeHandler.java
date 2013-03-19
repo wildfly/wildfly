@@ -148,7 +148,7 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
                         sourceAddress,
                         MESSAGES.attributeValueWritten(attributeName, currentValue, newVal.get()),
                         data);
-                context.getNotificationSupport().emit(notification);
+                context.emit(notification);
             }
         });
     }
