@@ -45,6 +45,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.resolver.XBundle;
+import org.jboss.osgi.resolver.XBundleRevision;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
@@ -66,17 +67,17 @@ public class PersistenceUnitProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         final ServiceName puServiceName = depUnit.getAttachment(JpaAttachments.PERSISTENCE_UNIT_SERVICE_KEY);
-        final XBundle bundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
-        if (bundle == null || puServiceName == null)
+        final XBundleRevision brev = depUnit.getAttachment(OSGiConstants.BUNDLE_REVISION_KEY);
+        if (brev == null || puServiceName == null)
             return;
 
         BundleContext syscontext = depUnit.getAttachment(OSGiConstants.SYSTEM_CONTEXT_KEY);
         BundleListener listener = new SynchronousBundleListener() {
             @Override
             public void bundleChanged(BundleEvent event) {
-                if (event.getBundle() == bundle && event.getType() == BundleEvent.STARTED) {
+                if (event.getBundle() == brev.getBundle() && event.getType() == BundleEvent.STARTED) {
                     BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
-                    EntityManagerFactoryRegistration.addService(phaseContext.getServiceTarget(), bundleManager, puServiceName, bundle);
+                    EntityManagerFactoryRegistration.addService(phaseContext.getServiceTarget(), bundleManager, puServiceName, brev);
                 }
             }
         };
@@ -99,10 +100,10 @@ public class PersistenceUnitProcessor implements DeploymentUnitProcessor {
         private final XBundle bundle;
         private ServiceRegistration<EntityManagerFactory> registration;
 
-        static void addService(ServiceTarget serviceTarget, BundleManager bundleManager, ServiceName puServiceName, XBundle bundle) {
-            ServiceName bundleName = bundleManager.getServiceName(bundle);
-            ServiceName serviceName = bundleName.append(EntityManagerFactory.class.getSimpleName());
-            EntityManagerFactoryRegistration service = new EntityManagerFactoryRegistration(bundle);
+        static void addService(ServiceTarget serviceTarget, BundleManager bundleManager, ServiceName puServiceName, XBundleRevision brev) {
+            ServiceName revisionName = bundleManager.getServiceName(brev);
+            ServiceName serviceName = revisionName.append(EntityManagerFactory.class.getSimpleName());
+            EntityManagerFactoryRegistration service = new EntityManagerFactoryRegistration(brev.getBundle());
             ServiceBuilder<ServiceRegistration<EntityManagerFactory>> builder = serviceTarget.addService(serviceName, service);
             builder.addDependency(puServiceName, PersistenceUnitService.class, service.injectedPersistenceUnitService);
             builder.setInitialMode(Mode.PASSIVE);

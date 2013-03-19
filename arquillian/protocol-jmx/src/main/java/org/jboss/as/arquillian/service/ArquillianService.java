@@ -52,7 +52,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.resolver.XBundle;
+import org.jboss.osgi.resolver.XBundleRevision;
 import org.osgi.framework.BundleContext;
 
 import static java.lang.System.getSecurityManager;
@@ -223,9 +223,9 @@ public class ArquillianService implements Service<ArquillianService> {
         private ContextManager initializeContextManager(final ArquillianConfig config, final Map<String, Object> properties) {
             final ContextManagerBuilder builder = new ContextManagerBuilder();
             final DeploymentUnit depUnit = config.getDeploymentUnit();
-            final XBundle bundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
+            final XBundleRevision brev = depUnit.getAttachment(OSGiConstants.BUNDLE_REVISION_KEY);
             final Module module = depUnit.getAttachment(Attachments.MODULE);
-            if (bundle == null && module != null) {
+            if (brev == null && module != null) {
                 builder.add(new TCCLSetupAction(module.getClassLoader()));
             }
             builder.addAll(depUnit);

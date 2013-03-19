@@ -39,32 +39,37 @@ import org.jboss.as.test.integration.osgi.deployment.bundle.ServletV101;
 import org.jboss.as.test.integration.osgi.deployment.bundle.ServletV200;
 import org.jboss.as.test.integration.osgi.deployment.suba.ResourceRevisionAccess;
 import org.jboss.as.test.osgi.FrameworkUtils;
-import org.jboss.osgi.metadata.ManifestBuilder;
+import org.jboss.modules.ModuleClassLoader;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleReference;
+import org.osgi.framework.wiring.BundleRevisions;
 import org.osgi.framework.wiring.FrameworkWiring;
 
 /**
- * Test simple OSGi bundle redeployment
+ * Test simple OSGi bundle update
  *
  * @author thomas.diesler@jboss.com
- * @since 29-Aug-2012
+ * @since 19-Mar-2013
  */
 @RunWith(Arquillian.class)
-public class BundleReplaceTestCase {
+public class BundleUpdateTestCase {
 
     static final String BUNDLE_V100_WAB = "webapp-v100.wab";
     static final String BUNDLE_V101_WAB = "webapp-v101.wab";
-    static final String WEBAPP_V200_WAR = "webapp-v200.war";
+    static final String BUNDLE_V100_JAR = "bundle-v100.jar";
+    static final String BUNDLE_V101_JAR = "bundle-v101.jar";
+    static final String BUNDLE_V200_WAB = "bundle-v200.wab";
     static final String V200_JAR = "v200.jar";
     static final String V201_JAR = "v201.jar";
 
@@ -79,7 +84,7 @@ public class BundleReplaceTestCase {
 
     @Deployment
     public static Archive<?> getDeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "deployment-replace-tests");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "deployment-update-tests");
         archive.addClasses(ServerDeploymentHelper.class, HttpRequest.class, FrameworkUtils.class);
         archive.setManifest(new Asset() {
             @Override
@@ -96,49 +101,91 @@ public class BundleReplaceTestCase {
     }
 
     @Test
-    public void testDirectBundleReplace() throws Exception {
-
-        ServerDeploymentHelper server = new ServerDeploymentHelper(managementClient.getControllerClient());
-        String runtimeName = server.deploy(BUNDLE_V100_WAB, deployer.getDeployment(BUNDLE_V100_WAB));
+    public void testSimpleBundleUpdate() throws Exception {
+        Bundle bundleA = context.installBundle(BUNDLE_V100_JAR, deployer.getDeployment(BUNDLE_V100_JAR));
         try {
+            BundleRevisions brevs = bundleA.adapt(BundleRevisions.class);
+            Assert.assertEquals(1, brevs.getRevisions().size());
+
+            bundleA.update(deployer.getDeployment(BUNDLE_V101_JAR));
+            Assert.assertEquals(2, brevs.getRevisions().size());
+        } finally {
+            bundleA.uninstall();
+        }
+    }
+
+    @Test
+    public void testActiveBundleUpdate() throws Exception {
+        Bundle bundleA = context.installBundle(BUNDLE_V100_JAR, deployer.getDeployment(BUNDLE_V100_JAR));
+        try {
+            bundleA.start();
+            Assert.assertEquals(Bundle.ACTIVE, bundleA.getState());
+
+            BundleRevisions brevs = bundleA.adapt(BundleRevisions.class);
+            Assert.assertEquals(1, brevs.getRevisions().size());
+
+            bundleA.update(deployer.getDeployment(BUNDLE_V101_JAR));
+            Assert.assertEquals(2, brevs.getRevisions().size());
+            Assert.assertEquals(Bundle.ACTIVE, bundleA.getState());
+        } finally {
+            bundleA.uninstall();
+        }
+    }
+
+    @Test
+    public void testDependentJarUpdate() throws Exception {
+        Bundle bundleA = context.installBundle(V200_JAR, deployer.getDeployment(V200_JAR));
+        Bundle bundleB = context.installBundle(BUNDLE_V200_WAB, deployer.getDeployment(BUNDLE_V200_WAB));
+        try {
+            bundleB.start();
+
+            String result = performCall("bundle-v200", "simple", null);
+            Assert.assertEquals("Revision deployment.v200.jar:main", result);
+            result = performCall("bundle-v200", "message.txt", null);
+            Assert.assertEquals("Resource V2.0.0", result);
+
+            bundleA.update(deployer.getDeployment(V201_JAR));
+
+            // The wiring should not be effected
+            result = performCall("bundle-v200", "simple", null);
+            Assert.assertEquals("Revision deployment.v200.jar:main", result);
+            result = performCall("bundle-v200", "message.txt", null);
+            Assert.assertEquals("Resource V2.0.0", result);
+
+            bundleB.uninstall();
+            bundleB = context.installBundle(BUNDLE_V200_WAB, deployer.getDeployment(BUNDLE_V200_WAB));
+            bundleB.start();
+
+            // The wiring should have changed
+            result = performCall("bundle-v200", "simple", null);
+            Assert.assertEquals("Revision deployment.v200-rev1.jar:main", result);
+            result = performCall("bundle-v200", "message.txt", null);
+            Assert.assertEquals("Resource V2.0.0", result);
+        } finally {
+            bundleB.uninstall();
+            bundleA.uninstall();
+        }
+    }
+
+    @Test
+    @Ignore
+    public void testWebAppBundleUpdate() throws Exception {
+        Bundle bundleA = context.installBundle(BUNDLE_V100_WAB, deployer.getDeployment(BUNDLE_V100_WAB));
+        try {
+            bundleA.start();
+
             String result = performCall("simple-bundle", "simple", null);
             Assert.assertEquals("ServletV100", result);
             result = performCall("simple-bundle", "message.txt", null);
             Assert.assertEquals("Resource V1.0.0", result);
 
-            runtimeName = server.replace(BUNDLE_V101_WAB, BUNDLE_V100_WAB, deployer.getDeployment(BUNDLE_V101_WAB), true);
+            bundleA.update(deployer.getDeployment(BUNDLE_V101_WAB));
             result = performCall("simple-bundle", "simple", null);
             Assert.assertEquals("ServletV101", result);
             result = performCall("simple-bundle", "message.txt", null);
             Assert.assertEquals("Resource V1.0.1", result);
         } finally {
-            server.undeploy(runtimeName);
-        }
-    }
-
-    @Test
-    public void testDependentJarReplace() throws Exception {
-
-        ServerDeploymentHelper server = new ServerDeploymentHelper(managementClient.getControllerClient());
-        String jarName = server.deploy(V200_JAR, deployer.getDeployment(V200_JAR));
-        String webappName = server.deploy(WEBAPP_V200_WAR, deployer.getDeployment(WEBAPP_V200_WAR));
-        try {
-            String result = performCall("webapp-v200", "simple", null);
-            Assert.assertEquals("Revision deployment.v200.jar:main", result);
-            result = performCall("webapp-v200", "message.txt", null);
-            Assert.assertEquals("Resource V2.0.0", result);
-
-            jarName = server.replace(V200_JAR, V201_JAR, deployer.getDeployment(V201_JAR), true);
-
-            // The wiring should not be effected
-            result = performCall("webapp-v200", "simple", null);
-            Assert.assertEquals("Revision deployment.v200.jar:main", result);
-            result = performCall("webapp-v200", "message.txt", null);
-            Assert.assertEquals("Resource V2.0.0", result);
-
-        } finally {
-            server.undeploy(webappName);
-            server.undeploy(jarName);
+            bundleA.uninstall();
         }
     }
 
@@ -188,15 +235,58 @@ public class BundleReplaceTestCase {
         return archive;
     }
 
-    @Deployment(name = WEBAPP_V200_WAR, managed = false, testable = false)
-    public static Archive<?> getWebV200War() {
-        final WebArchive archive = ShrinkWrap.create(WebArchive.class, WEBAPP_V200_WAR);
-        archive.addClasses(ServletV200.class);
-        archive.addAsWebResource(new StringAsset("Resource V2.0.0"), "message.txt");
+    @Deployment(name = BUNDLE_V100_JAR, managed = false, testable = false)
+    public static JavaArchive getBundleV200() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_V100_JAR);
+        archive.addClasses(ResourceRevisionAccess.class);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
-                ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "deployment.v200.jar");
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(BUNDLE_V100_JAR);
+                builder.addBundleVersion("1.0.0");
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages(BundleReference.class);
+                builder.addExportPackages(ResourceRevisionAccess.class);
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Deployment(name = BUNDLE_V101_JAR, managed = false, testable = false)
+    public static JavaArchive getBundleV201() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_V101_JAR);
+        archive.addClasses(ResourceRevisionAccess.class);
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(BUNDLE_V101_JAR);
+                builder.addBundleVersion("1.0.1");
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages(BundleReference.class);
+                builder.addExportPackages(ResourceRevisionAccess.class);
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Deployment(name = BUNDLE_V200_WAB, managed = false, testable = false)
+    public static Archive<?> getWebV200War() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_V200_WAB);
+        archive.addClasses(ServletV200.class);
+        archive.addAsResource(new StringAsset("Resource V2.0.0"), "message.txt");
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(BUNDLE_V200_WAB);
+                builder.addBundleVersion("2.0.0");
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages(BundleReference.class);
+                builder.addImportPackages(ResourceRevisionAccess.class);
                 return builder.openStream();
             }
         });
@@ -208,9 +298,14 @@ public class BundleReplaceTestCase {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, V200_JAR);
         archive.addClasses(ResourceRevisionAccess.class);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
-                ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.jboss.modules");
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(V200_JAR);
+                builder.addBundleVersion("2.0.0");
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages(ModuleClassLoader.class);
+                builder.addExportPackages(ResourceRevisionAccess.class);
                 return builder.openStream();
             }
         });
@@ -222,9 +317,14 @@ public class BundleReplaceTestCase {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, V201_JAR);
         archive.addClasses(ResourceRevisionAccess.class);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
-                ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.jboss.modules");
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(V201_JAR);
+                builder.addBundleVersion("2.0.1");
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages(ModuleClassLoader.class);
+                builder.addExportPackages(ResourceRevisionAccess.class);
                 return builder.openStream();
             }
         });

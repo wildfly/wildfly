@@ -92,7 +92,7 @@ class WebContextLifecycleInterceptor extends AbstractLifecycleInterceptor implem
     public void invoke(int state, InvocationContext context) {
         XBundle bundle = (XBundle) context.getBundle();
         XBundleRevision brev = bundle.getBundleRevision();
-        ContextActivator activator = brev.getAttachment(ContextActivator.class);
+        ContextActivator activator = brev.getAttachment(WebExtension.CONTEXT_ACTIVATOR_KEY);
         if (activator != null) {
             switch (state) {
                 case Bundle.ACTIVE:
@@ -120,8 +120,10 @@ class WebContextLifecycleInterceptor extends AbstractLifecycleInterceptor implem
     }
 
     private void uninjectBundleContext(ServletContext webContext) {
-        OSGiLogger.LOGGER.debugf("Uninjecting bundle context from %s", webContext);
-        webContext.removeAttribute(WebExtension.OSGI_BUNDLECONTEXT);
+        if (webContext != null) {
+            OSGiLogger.LOGGER.debugf("Uninjecting bundle context from %s", webContext);
+            webContext.removeAttribute(WebExtension.OSGI_BUNDLECONTEXT);
+        }
     }
 
     private void registerServletContextService(ServletContext servletContext, BundleContext bundleContext) {

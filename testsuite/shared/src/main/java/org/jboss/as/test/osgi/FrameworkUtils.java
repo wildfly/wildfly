@@ -22,6 +22,7 @@
 package org.jboss.as.test.osgi;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +37,7 @@ import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.VersionRange;
 import org.osgi.framework.startlevel.FrameworkStartLevel;
+import org.osgi.framework.wiring.FrameworkWiring;
 import org.osgi.util.tracker.ServiceTracker;
 
 
@@ -45,7 +47,7 @@ import org.osgi.util.tracker.ServiceTracker;
  * @author thomas.diesler@jboss.com
  * @since 24-May-2011
  */
-public final class FrameworkUtils {
+public class FrameworkUtils {
 
     // Hide ctor
     private FrameworkUtils() {
@@ -67,19 +69,15 @@ public final class FrameworkUtils {
         return !result.isEmpty() ? result.toArray(new Bundle[result.size()]) : null;
     }
 
-    public static int getFrameworkStartLevel(final BundleContext context)  {
+    public static int getFrameworkStartLevel(BundleContext context)  {
         return context.getBundle().adapt(FrameworkStartLevel.class).getStartLevel();
     }
 
-    public static void setFrameworkStartLevel(final BundleContext context, final int level) throws InterruptedException, TimeoutException {
+    public static void setFrameworkStartLevel(BundleContext context, int level) throws InterruptedException, TimeoutException {
         setFrameworkStartLevel(context, level, 10, TimeUnit.SECONDS);
     }
 
-    /**
-     * Changes the framework start level and waits for the STARTLEVEL_CHANGED event
-     * Note, changing the framework start level is an asynchronous operation.
-     */
-    public static void setFrameworkStartLevel(final BundleContext context, final int level, final long timeout, final TimeUnit units) throws InterruptedException, TimeoutException {
+    public static void setFrameworkStartLevel(BundleContext context, final int level, long timeout, TimeUnit units) throws InterruptedException, TimeoutException {
         final FrameworkStartLevel startLevel = context.getBundle().adapt(FrameworkStartLevel.class);
         if (level != startLevel.getStartLevel()) {
             final CountDownLatch latch = new CountDownLatch(1);
@@ -94,6 +92,21 @@ public final class FrameworkUtils {
             if (latch.await(timeout, units) == false)
                 throw new TimeoutException("Timeout changing start level");
         }
+    }
+
+    public static void refreshBundles(BundleContext context, Collection<Bundle> bundles, long timeout, TimeUnit units) throws InterruptedException, TimeoutException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        FrameworkListener listener = new FrameworkListener() {
+            @Override
+            public void frameworkEvent(FrameworkEvent event) {
+                if (event.getType() == FrameworkEvent.PACKAGES_REFRESHED) {
+                    latch.countDown();
+                }
+            }
+        };
+        FrameworkWiring fwrkWiring = context.getBundle().adapt(FrameworkWiring.class);
+        fwrkWiring.refreshBundles(bundles, listener);
+        latch.await(10, TimeUnit.SECONDS);
     }
 
     public static <T> T waitForService(BundleContext context, Class<T> clazz) {

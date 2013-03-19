@@ -64,6 +64,7 @@ import org.jboss.osgi.framework.spi.FrameworkModuleLoaderPlugin;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
 import org.jboss.osgi.resolver.XIdentityCapability;
+import org.osgi.framework.wiring.BundleRevisions;
 import org.osgi.framework.wiring.BundleWire;
 
 /**
@@ -143,10 +144,11 @@ final class ModuleLoaderIntegration extends FrameworkModuleLoaderPlugin {
             ModuleIdentifier identifier = deployment.getAttachment(ModuleIdentifier.class);
             if (identifier == null) {
                 XIdentityCapability icap = brev.getIdentityCapability();
-                List<XBundleRevision> allrevs = bundle.getAllBundleRevisions();
+                BundleRevisions brevs = bundle.adapt(BundleRevisions.class);
+                int revsize = brevs.getRevisions().size();
                 String name = icap.getSymbolicName();
-                if (allrevs.size() > 1) {
-                    name += "-rev" + (allrevs.size() - 1);
+                if (revsize > 1) {
+                    name += "-rev" + (revsize - 1);
                 }
                 identifier = ModuleIdentifier.create(MODULE_PREFIX + name, "" + icap.getVersion());
             }
