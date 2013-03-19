@@ -24,6 +24,10 @@
 
 <module xmlns="urn:jboss:module:1.1" name="org.jboss.as.domain-http-error-context" slot="eap">
 
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
     <resources>
         <resource-root path="dir"/>
         <!-- Insert resources here -->
