@@ -449,7 +449,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
     private void audit(String level, AuditManager auditManager, Principal userPrincipal) {
         AuditEvent auditEvent = new AuditEvent(AuditLevel.SUCCESS);
         Map<String, Object> ctxMap = new HashMap<String, Object>();
-        ctxMap.put("principal", userPrincipal != null ? userPrincipal : "null");
+        ctxMap.put("principal", userPrincipal != null ? userPrincipal.getName() : "null");
         ctxMap.put("Source", getClass().getCanonicalName());
         ctxMap.put("Action", "authentication");
         auditEvent.setContextMap(ctxMap);
