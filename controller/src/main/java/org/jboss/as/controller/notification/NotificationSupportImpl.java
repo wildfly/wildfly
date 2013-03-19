@@ -22,7 +22,8 @@
 
 package org.jboss.as.controller.notification;
 
-import java.security.AccessController;
+import static org.jboss.as.controller.ControllerLogger.SERVER_MANAGEMENT_LOGGER;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,17 +31,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.threads.JBossThreadFactory;
 
 /**
  * This service manages notification handler registration and emit notifications on behalf of resources.
  *
  * Registration and unregistration operation are synchronous.
- * Emission of notifications is performed asynchronously in a separate thread.
+ * Emission of notifications is performed asynchronously if an executor service is passed to the constructor. Otherwise, it happens synchronously.
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat Inc.
  */
@@ -52,18 +50,10 @@ public class NotificationSupportImpl implements NotificationSupport {
     /**
      * Create a new notification support object
      *
-     * @param executorService an optional executor service. If {@code null} is passed, the constructor creates a fixed
-     *                        thread pool (of 1 threads) to ensure that notification emission is always done asynchronously.
+     * @param executorService an optional executor service. If {@code null} is passed, the emission of notification happens synchronously.
      */
     public NotificationSupportImpl(ExecutorService executorService) {
-        System.out.println("executorService = [" + executorService + "]");
-        if (executorService != null) {
-            this.executor = executorService;
-        } else {
-            final ThreadFactory notificationThreads = new JBossThreadFactory(new ThreadGroup("NotificationService-threads"),
-                    Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
-            executor = Executors.newFixedThreadPool(1, notificationThreads);
-        }
+        this.executor = executorService;
     }
 
     @Override
@@ -87,14 +77,26 @@ public class NotificationSupportImpl implements NotificationSupport {
 
     @Override
     public void emit(final Notification notification) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                for (NotificationHandler handler : findMatchingNotificationHandlers(notification)) {
-                    handler.handleNotification(notification);
+        if (executor == null) {
+            fireNotification(notification);
+        } else {
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    fireNotification(notification);
                 }
+            });
+        }
+    }
+
+    private void fireNotification(final Notification notification) {
+        try {
+            for (NotificationHandler handler : findMatchingNotificationHandlers(notification)) {
+                handler.handleNotification(notification);
             }
-        });
+        } catch (Throwable t) {
+            SERVER_MANAGEMENT_LOGGER.failedToEmitNotification(notification, t);
+        }
     }
 
     /**
