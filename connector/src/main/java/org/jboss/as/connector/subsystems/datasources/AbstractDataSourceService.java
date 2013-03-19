@@ -410,7 +410,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             }
 
             setMcfProperties(xaManagedConnectionFactory, xaDataSourceConfig, xaDataSourceConfig.getStatement());
-            xaManagedConnectionFactory.setUserTransactionJndiName("java:comp/UserTransaction");
+            xaManagedConnectionFactory.setUserTransactionJndiName("java:jboss/UserTransaction");
             return xaManagedConnectionFactory;
 
         }
@@ -419,7 +419,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         protected ManagedConnectionFactory createMcf(org.jboss.jca.common.api.metadata.ds.DataSource arg0, String arg1,
                 ClassLoader arg2) throws NotFoundException, DeployException {
             final LocalManagedConnectionFactory managedConnectionFactory = new LocalManagedConnectionFactory();
-            managedConnectionFactory.setUserTransactionJndiName("java:comp/UserTransaction");
+            managedConnectionFactory.setUserTransactionJndiName("java:jboss/UserTransaction");
             managedConnectionFactory.setDriverClass(dataSourceConfig.getDriverClass());
 
             if (dataSourceConfig.getUrlDelimiter() != null) {
