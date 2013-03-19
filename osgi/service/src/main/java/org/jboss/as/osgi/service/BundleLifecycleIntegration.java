@@ -28,6 +28,7 @@ import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -277,12 +278,14 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
             }
 
             depUnit.getAttachment(Attachments.DEFERRED_ACTIVATION_COUNT).incrementAndGet();
-            phaseService.setMode(Mode.ACTIVE);
-            final StabilityMonitor monitor = new StabilityMonitor();
+
+            StabilityMonitor monitor = new StabilityMonitor();
             monitor.addController(phaseService);
-            final Set<ServiceController<?>> failed = new HashSet<ServiceController<?>>();
+            Set<ServiceController<?>> failed = new HashSet<ServiceController<?>>();
+            Set<ServiceController<?>> problems = new HashSet<ServiceController<?>>();
             try {
-                monitor.awaitStability(failed, null);
+                phaseService.setMode(Mode.ACTIVE);
+                monitor.awaitStability(failed, problems);
             } catch (final InterruptedException ex) {
                 // ignore
             } finally {
@@ -291,10 +294,14 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
 
             // In case of failure we go back to NEVER
 
-            if (failed.size() > 0) {
+            if (failed.size() > 0 || problems.size() > 0) {
+                List<ServiceController<?>> combined = new ArrayList<ServiceController<?>>();
+                combined.addAll(failed);
+                combined.addAll(problems);
+
                 // Collect the first start exception
                 StartException startex = null;
-                for (ServiceController<?> aux : failed) {
+                for (ServiceController<?> aux : combined) {
                     if (aux.getStartException() != null) {
                         startex = aux.getStartException();
                         break;
