@@ -34,6 +34,7 @@ import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.web.host.ContextActivator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -42,6 +43,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.osgi.framework.spi.FrameworkBuilder;
 import org.jboss.osgi.framework.spi.FrameworkBuilder.FrameworkPhase;
 import org.jboss.osgi.framework.spi.IntegrationServices;
+import org.jboss.osgi.resolver.XAttachmentKey;
 
 /**
  * A WebApp extension to the OSGi subsystem
@@ -51,6 +53,8 @@ import org.jboss.osgi.framework.spi.IntegrationServices;
  * @since 11-Jul-2012
  */
 public class WebExtension extends AbstractSubsystemExtension {
+
+    static final XAttachmentKey<ContextActivator> CONTEXT_ACTIVATOR_KEY = XAttachmentKey.create(ContextActivator.class);
 
     public static final String OSGI_BUNDLECONTEXT = "osgi-bundlecontext";
     public static final String WEB_CONTEXT_PATH = "Web-ContextPath";

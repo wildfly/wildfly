@@ -26,19 +26,19 @@ import static org.jboss.as.server.deployment.Attachments.BUNDLE_STATE_KEY;
 
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.InitialDeploymentTracker;
-import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments.BundleState;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.framework.spi.BundleStorage;
 import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.jboss.osgi.framework.spi.StorageState;
+import org.jboss.osgi.resolver.XBundleRevision;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 
@@ -50,7 +50,6 @@ import org.osgi.framework.BundleException;
  */
 public class BundleInstallProcessor implements DeploymentUnitProcessor {
 
-    private final AttachmentKey<ServiceName> BUNDLE_INSTALL_SERVICE = AttachmentKey.create(ServiceName.class);
     private final InitialDeploymentTracker deploymentTracker;
 
     public BundleInstallProcessor(InitialDeploymentTracker deploymentTracker) {
@@ -64,23 +63,21 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
         if (deployment == null)
             return;
 
-        ServiceName serviceName;
+        ServiceController<? extends XBundleRevision> controller;
         try {
             BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
             BundleContext syscontext = depUnit.getAttachment(OSGiConstants.SYSTEM_CONTEXT_KEY);
             if (deploymentTracker.hasDeploymentName(depUnit.getName())) {
                 restoreStorageState(phaseContext, deployment);
             }
-            serviceName = bundleManager.installBundle(syscontext, deployment, phaseContext.getServiceTarget(), null);
+            controller = bundleManager.createBundleRevision(syscontext, deployment, phaseContext.getServiceTarget(), null);
         } catch (BundleException ex) {
             throw new DeploymentUnitProcessingException(ex);
         }
 
         // Add a dependency on the next phase for this bundle to be installed
-        phaseContext.addDeploymentDependency(serviceName, OSGiConstants.BUNDLE_KEY);
-
+        phaseContext.addDeploymentDependency(controller.getName(), OSGiConstants.BUNDLE_REVISION_KEY);
         depUnit.putAttachment(BUNDLE_STATE_KEY, BundleState.INSTALLED);
-        depUnit.putAttachment(BUNDLE_INSTALL_SERVICE, serviceName);
     }
 
     @Override

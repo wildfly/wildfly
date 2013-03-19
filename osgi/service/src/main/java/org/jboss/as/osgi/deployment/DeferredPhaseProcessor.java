@@ -33,7 +33,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
 
 /**
@@ -48,17 +47,16 @@ public class DeferredPhaseProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        XBundle bundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
-        if (bundle == null || bundle.isFragment())
+        XBundleRevision brev = depUnit.getAttachment(OSGiConstants.BUNDLE_REVISION_KEY);
+        if (brev == null || brev.isFragment())
             return;
 
         // Add a dependency on the Module service
-        XBundleRevision brev = bundle.getBundleRevision();
         ServiceName moduleService = ServiceModuleLoader.moduleServiceName(brev.getModuleIdentifier());
         phaseContext.addDeploymentDependency(moduleService, Attachments.MODULE);
 
         // Defer the module phase if the bundle is not resolved
-        if (bundle.isResolved() == false) {
+        if (brev.getBundle().isResolved() == false) {
             depUnit.putAttachment(Attachments.DEFERRED_ACTIVATION_COUNT, new AtomicInteger());
             DeploymentUtils.addDeferredModule(depUnit);
         }

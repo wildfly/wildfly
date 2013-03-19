@@ -68,15 +68,24 @@ import org.jboss.osgi.framework.spi.BundleLifecycle;
 import org.jboss.osgi.framework.spi.BundleLifecyclePlugin;
 import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.framework.spi.FutureServiceValue;
+import org.jboss.osgi.framework.spi.IntegrationConstants;
+import org.jboss.osgi.framework.spi.IntegrationServices;
+import org.jboss.osgi.framework.spi.LockManager;
+import org.jboss.osgi.framework.spi.LockManager.LockContext;
+import org.jboss.osgi.framework.spi.LockManager.LockableItem;
+import org.jboss.osgi.framework.spi.LockManager.Method;
 import org.jboss.osgi.resolver.XBundle;
+import org.jboss.osgi.resolver.XBundleRevision;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResolveContext;
 import org.jboss.osgi.resolver.XResolver;
 import org.jboss.vfs.VFSUtils;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.startlevel.BundleStartLevel;
 import org.osgi.framework.startlevel.FrameworkStartLevel;
+import org.osgi.framework.wiring.BundleRevisions;
 import org.osgi.service.resolver.ResolutionException;
 
 /**
@@ -88,18 +97,22 @@ import org.osgi.service.resolver.ResolutionException;
  */
 public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
 
-    private static Map<String, Deployment> deploymentMap = new HashMap<String, Deployment>();
+    private static final String RUNTIME_NAME_KEY = "runtimeName";
+
+    private static final Map<String, Deployment> deploymentMap = new HashMap<String, Deployment>();
 
     private final InjectedValue<ModelController> injectedController = new InjectedValue<ModelController>();
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
     private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
     private final InjectedValue<XResolver> injectedResolver = new InjectedValue<XResolver>();
+    private final InjectedValue<LockManager> injectedLockManager = new InjectedValue<LockManager>();
     private ServerDeploymentManager deploymentManager;
 
     @Override
     protected void addServiceDependencies(ServiceBuilder<BundleLifecycle> builder) {
         super.addServiceDependencies(builder);
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, injectedController);
+        builder.addDependency(IntegrationServices.LOCK_MANAGER_PLUGIN, LockManager.class, injectedLockManager);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
         builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, injectedEnvironment);
         builder.addDependency(Services.RESOLVER, XResolver.class, injectedResolver);
@@ -116,7 +129,8 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
     @Override
     protected BundleLifecycle createServiceValue(StartContext startContext) throws StartException {
         BundleLifecycle defaultService = super.createServiceValue(startContext);
-        return new BundleLifecycleImpl(defaultService);
+        LockManager lockManager = injectedLockManager.getValue();
+        return new BundleLifecycleImpl(defaultService, lockManager);
     }
 
     public static Deployment getDeployment(String runtimeName) {
@@ -140,19 +154,22 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
     class BundleLifecycleImpl implements BundleLifecycle {
 
         private final BundleLifecycle defaultService;
+        private final LockManager lockManager;
 
-        public BundleLifecycleImpl(BundleLifecycle defaultService) {
+        public BundleLifecycleImpl(BundleLifecycle defaultService, LockManager lockManager) {
             this.defaultService = defaultService;
+            this.lockManager = lockManager;
         }
 
         @Override
-        public void install(BundleContext context, Deployment dep) throws BundleException {
+        @SuppressWarnings("unchecked")
+        public ServiceController<? extends XBundleRevision> createBundleRevision(BundleContext context, Deployment dep) throws BundleException {
             // Do the install directly if we have a running management op
             // https://issues.jboss.org/browse/AS7-5642
+            BundleManager bundleManager = injectedBundleManager.getValue();
             if (OperationAssociation.INSTANCE.getAssociation() != null) {
                 LOGGER.warnCannotDeployBundleFromManagementOperation(dep);
-                BundleManager bundleManager = injectedBundleManager.getValue();
-                bundleManager.installBundle(context, dep, null, null);
+                return bundleManager.createBundleRevision(context, dep, null, null);
             } else {
                 LOGGER.debugf("Install deployment: %s", dep);
                 String runtimeName = getRuntimeName(dep);
@@ -170,6 +187,9 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                 } catch (Exception ex) {
                     throw MESSAGES.cannotDeployBundle(ex, dep);
                 }
+                ServiceName serviceName = bundleManager.getServiceName(dep);
+                ServiceController<?> controller = bundleManager.getServiceContainer().getService(serviceName);
+                return (ServiceController<? extends XBundleRevision>) controller;
             }
         }
 
@@ -201,6 +221,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public void start(XBundle bundle, int options) throws BundleException {
             Deployment deployment = bundle.adapt(Deployment.class);
             DeploymentUnit depUnit = deployment.getAttachment(DeploymentUnit.class);
@@ -228,13 +249,14 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
             }
 
             final ServiceName deploymentServiceName;
-            if(depUnit.getParent() == null) {
+            if (depUnit.getParent() == null) {
                 deploymentServiceName = depUnit.getServiceName();
             } else {
                 deploymentServiceName = depUnit.getParent().getServiceName();
             }
-            ServiceController<DeploymentUnit> deploymentService = (ServiceController<DeploymentUnit>) injectedBundleManager.getValue().getServiceContainer().getRequiredService(deploymentServiceName);
 
+            ServiceContainer serviceContainer = injectedBundleManager.getValue().getServiceContainer();
+            ServiceController<DeploymentUnit> deploymentService = (ServiceController<DeploymentUnit>) serviceContainer.getRequiredService(deploymentServiceName);
             activateDeferredPhase(bundle, options, depUnit, phaseService, deploymentService);
         }
 
@@ -250,17 +272,49 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
 
         @Override
         public void uninstall(XBundle bundle, int options) throws BundleException {
-            LOGGER.tracef("Uninstall deployment: %s", bundle);
+            defaultService.uninstall(bundle, options);
+        }
+
+        @Override
+        public void removeBundleRevision(XBundleRevision brev) {
+            ServerDeploymentHelper server = new ServerDeploymentHelper(deploymentManager);
             try {
-                ServerDeploymentHelper server = new ServerDeploymentHelper(deploymentManager);
-                Deployment dep = bundle.adapt(Deployment.class);
+                Deployment dep = brev.getAttachment(IntegrationConstants.DEPLOYMENT_KEY);
                 server.undeploy(getRuntimeName(dep));
             } catch (Exception ex) {
-                LOGGER.warnCannotUndeployBundle(ex, bundle);
+                LOGGER.warnCannotUndeployBundleRevision(ex, brev);
             }
         }
 
-        private void activateDeferredPhase(XBundle bundle, int options, DeploymentUnit depUnit, ServiceController<Phase> phaseService, ServiceController<DeploymentUnit> parentDeploymentService) throws BundleException {
+        @Override
+        public LockContext lockBundle(Method method, XBundle bundle, LockableItem[] items) {
+            if (method == Method.START || method == Method.STOP) {
+                LockContext context = bundle.getAttachment(IntegrationConstants.LOCK_CONTEXT_KEY);
+                Method cachedMethod = context != null ? context.getMethod() : null;
+                if (cachedMethod == Method.UPDATE || cachedMethod == Method.UNINSTALL) {
+                    return null;
+                }
+            }
+            LockContext context = lockManager.lockItems(method, items);
+            if (method == Method.UPDATE || method == Method.UNINSTALL) {
+                bundle.addAttachment(IntegrationConstants.LOCK_CONTEXT_KEY, context);
+            }
+            return context;
+        }
+
+        @Override
+        public void unlockBundle(XBundle bundle, LockContext context) {
+            if (context != null) {
+                lockManager.unlockItems(context);
+                Method method = context.getMethod();
+                if (method == Method.UPDATE || method == Method.UNINSTALL) {
+                    bundle.removeAttachment(IntegrationConstants.LOCK_CONTEXT_KEY);
+                }
+            }
+        }
+
+        private void activateDeferredPhase(XBundle bundle, int options, DeploymentUnit depUnit, ServiceController<Phase> phaseService,
+                ServiceController<DeploymentUnit> parentDeploymentService) throws BundleException {
 
             // If the Framework's current start level is less than this bundle's start level
             BundleManager bundleManager = injectedBundleManager.getValue();
@@ -350,18 +404,34 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
          * Maps the bundle.location to a deployment runtime name
          */
         private String getRuntimeName(Deployment dep) {
-            // Strip the query off the location if it is a valid URI
-            String location = dep.getLocation();
-            try {
-                new URI(location);
-                int queryIndex = location.indexOf('?');
-                if (queryIndex > 0) {
-                    location = location.substring(0, queryIndex);
+            String runtimeName = dep.getAttachment(RUNTIME_NAME_KEY, String.class);
+            if (runtimeName == null) {
+                runtimeName = dep.getLocation();
+                try {
+                    // Strip the query off the location if it is a valid URI
+                    new URI(runtimeName);
+                    int queryIndex = runtimeName.indexOf('?');
+                    if (queryIndex > 0) {
+                        runtimeName = runtimeName.substring(0, queryIndex);
+                    }
+                } catch (URISyntaxException ex) {
+                    // ignore
                 }
-            } catch (URISyntaxException ex) {
-                // ignore
+                if (dep.isBundleUpdate()) {
+                    String suffix = "";
+                    Bundle bundle = dep.getAttachment(Bundle.class);
+                    BundleRevisions brevs = bundle.adapt(BundleRevisions.class);
+                    int revid = brevs.getRevisions().size();
+                    int dotindex = runtimeName.length() - 4;
+                    if (dotindex > 0 && runtimeName.charAt(dotindex) == '.') {
+                        suffix = runtimeName.substring(runtimeName.length() - 4);
+                        runtimeName = runtimeName.substring(0, dotindex);
+                    }
+                    runtimeName += "-rev" + revid + suffix;
+                }
+                dep.addAttachment(RUNTIME_NAME_KEY, runtimeName, String.class);
             }
-            return location;
+            return runtimeName;
         }
 
         @SuppressWarnings("unchecked")
