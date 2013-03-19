@@ -44,6 +44,7 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.impl.ExistingChannelModelControllerClient;
 import org.jboss.as.controller.client.impl.InputStreamEntry;
+import org.jboss.as.controller.notification.NotificationSupport;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
@@ -355,6 +356,10 @@ public class ModelControllerClientTestCase {
             return null;
         }
 
+        @Override
+        public NotificationSupport getNotificationSupport() {
+            return null;
+        }
     }
 
     static class TestEntry extends FilterInputStream implements InputStreamEntry {
