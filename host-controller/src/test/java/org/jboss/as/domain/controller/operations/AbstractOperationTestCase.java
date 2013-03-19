@@ -67,6 +67,9 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
+import org.jboss.as.controller.notification.Notification;
+import org.jboss.as.controller.notification.NotificationFilter;
+import org.jboss.as.controller.notification.NotificationHandler;
 import org.jboss.as.controller.notification.NotificationSupport;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -450,8 +453,15 @@ public abstract class AbstractOperationTestCase {
         }
 
         @Override
-        public NotificationSupport getNotificationSupport() {
-            return null;
+        public void registerNotificationHandler(PathAddress source, NotificationHandler handler, NotificationFilter filter) {
+        }
+
+        @Override
+        public void unregisterNotificationHandler(PathAddress source, NotificationHandler handler, NotificationFilter filter) {
+        }
+
+        @Override
+        public void emit(Notification notification) {
         }
 
         public boolean markResourceRestarted(PathAddress resource, Object owner) {
