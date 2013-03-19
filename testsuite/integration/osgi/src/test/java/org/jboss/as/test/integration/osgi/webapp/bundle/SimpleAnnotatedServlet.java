@@ -34,8 +34,8 @@ import org.jboss.as.test.integration.osgi.api.Echo;
 import org.osgi.framework.FrameworkUtil;
 
 @SuppressWarnings("serial")
-@WebServlet(name = "AnnotatedServlet", urlPatterns = { "/servlet" })
-public class AnnotatedServlet extends HttpServlet {
+@WebServlet(name = "SimpleServlet", urlPatterns = { "/servlet" })
+public class SimpleAnnotatedServlet extends HttpServlet {
 
     private volatile Echo echo;
 
@@ -46,7 +46,7 @@ public class AnnotatedServlet extends HttpServlet {
             public String echo(String msg) {
                 String bundle = null;
                 try {
-                    bundle = FrameworkUtil.getBundle(AnnotatedServlet.class).getSymbolicName();
+                    bundle = FrameworkUtil.getBundle(SimpleAnnotatedServlet.class).getSymbolicName();
                 } catch (Throwable th) {
                     // simple war does not see the OSGi API
                 }
