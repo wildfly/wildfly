@@ -1438,6 +1438,10 @@
                         <artifactId>saaj-api</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jvnet</groupId>
+                        <artifactId>mimepull</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jvnet.mimepull</groupId>
                         <artifactId>mimepull</artifactId>
                     </exclusion>
@@ -3044,6 +3048,10 @@
                         <groupId>org.apache.felix</groupId>
                         <artifactId>org.osgi.compendium</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.osgi</groupId>
+                        <artifactId>org.osgi.compendium</artifactId>
+                    </exclusion>
                 </exclusions>
                 <version>${version.org.apache.felix.log}</version>
             </dependency>
@@ -3513,24 +3521,64 @@
                 <groupId>org.hornetq</groupId>
                 <artifactId>hornetq-server</artifactId>
                 <version>${version.org.hornetq}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-processor</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.jdeparser</groupId>
+                        <artifactId>jdeparser</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
                 <groupId>org.hornetq</groupId>
                 <artifactId>hornetq-commons</artifactId>
                 <version>${version.org.hornetq}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-processor</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.jdeparser</groupId>
+                        <artifactId>jdeparser</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
                <groupId>org.hornetq</groupId>
                <artifactId>hornetq-journal</artifactId>
                <version>${version.org.hornetq}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-processor</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.jdeparser</groupId>
+                        <artifactId>jdeparser</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
                 <groupId>org.hornetq</groupId>
                 <artifactId>hornetq-core-client</artifactId>
                 <version>${version.org.hornetq}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-processor</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.jdeparser</groupId>
+                        <artifactId>jdeparser</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -3546,6 +3594,14 @@
                         <groupId>org.jboss.naming</groupId>
                         <artifactId>jnpserver</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-processor</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.jdeparser</groupId>
+                        <artifactId>jdeparser</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -3553,12 +3609,32 @@
                 <groupId>org.hornetq</groupId>
                 <artifactId>hornetq-jms-client</artifactId>
                 <version>${version.org.hornetq}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-processor</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.jdeparser</groupId>
+                        <artifactId>jdeparser</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
                 <groupId>org.hornetq</groupId>
                 <artifactId>hornetq-ra</artifactId>
                 <version>${version.org.hornetq}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-processor</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.jdeparser</groupId>
+                        <artifactId>jdeparser</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -4178,6 +4254,14 @@
                         <artifactId>log4j</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jfree</groupId>
+                        <artifactId>jfreechart</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jfree</groupId>
+                        <artifactId>jcommon</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.ironjacamar</groupId>
                         <artifactId>ironjacamar-spec-api</artifactId>
                     </exclusion>
@@ -4292,6 +4376,10 @@
                     <exclusion>
                         <groupId>org.hornetq</groupId>
                         <artifactId>hornetq-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.jdeparser</groupId>
+                        <artifactId>jdeparser</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4508,6 +4596,10 @@
                         <artifactId>arjunacore</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jboss.jdeparser</groupId>
+                        <artifactId>jdeparser</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.logging</groupId>
                         <artifactId>jboss-logging-processor</artifactId>
                     </exclusion>
@@ -4522,6 +4614,14 @@
                     <exclusion>
                         <groupId>org.jboss.remoting</groupId>
                         <artifactId>jboss-remoting</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jfree</groupId>
+                        <artifactId>jfreechart</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jfree</groupId>
+                        <artifactId>jcommon</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>tanukisoft</groupId>
@@ -4590,6 +4690,10 @@
                         <artifactId>arjunacore</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jboss.jdeparser</groupId>
+                        <artifactId>jdeparser</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.logging</groupId>
                         <artifactId>jboss-logging-processor</artifactId>
                     </exclusion>
@@ -4608,6 +4712,14 @@
                     <exclusion>
                         <groupId>org.jboss.remoting</groupId>
                         <artifactId>jboss-remoting</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jfree</groupId>
+                        <artifactId>jfreechart</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jfree</groupId>
+                        <artifactId>jcommon</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>tanukisoft</groupId>
@@ -4765,6 +4877,10 @@
                     <exclusion>
                         <groupId>org.hornetq</groupId>
                         <artifactId>hornetq-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.jbossts.jta</groupId>
+                        <artifactId>jta</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4930,6 +5046,12 @@
                 <groupId>org.jboss.osgi.metadata</groupId>
                 <artifactId>jbosgi-metadata</artifactId>
                 <version>${version.org.jboss.osgi.metadata}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.jdeparser</groupId>
+                        <artifactId>jdeparser</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -5411,6 +5533,12 @@
                 <groupId>org.jboss.spec.javax.xml.soap</groupId>
                 <artifactId>jboss-saaj-api_1.3_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jvnet</groupId>
+                        <artifactId>mimepull</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -6180,6 +6308,10 @@
                 <artifactId>picketlink-core</artifactId>
                 <version>${version.org.picketlink}</version>
                 <exclusions>
+                  <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                  </exclusion>
                   <exclusion>
                     <groupId>commons-logging</groupId>
                     <artifactId>commons-logging-api</artifactId>
