@@ -39,6 +39,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -154,10 +155,14 @@ public class TxTimeoutTestCase {
      * Ensures that the entity manager is not closed by the reaper thread.
      * The transaction times out for this test, but the EntityManager.close should be ignored from the reaper thread.
      *
+     * Ignoring this test, since it will be faster to only run test_negativeTxTimeoutVerifyReaperThreadCanceledTxTest,
+     * which has the same test actions (with the addition of the tx reaper thread test)
+     *
      * @throws Exception
      */
     @Test
     @InSequence(2)
+    @Ignore
     public void test_negativeTxTimeoutTest() throws Exception {
         TestEntityManager.clearState();
         assertFalse("entity manager state is not reset", TestEntityManager.getClosedByReaperThread());
