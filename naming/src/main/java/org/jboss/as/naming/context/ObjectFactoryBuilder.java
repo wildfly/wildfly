@@ -251,7 +251,11 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
                     clazz = Class.forName(className, true, loader);
                 }
                 return new ReferenceUrlContextFactoryWrapper((ObjectFactory) clazz.newInstance(), url);
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (IllegalAccessException e) {
+                NamingException ne = new NamingException(className);
+                ne.setRootCause(e);
+                throw ne;
+            } catch (InstantiationException e) {
                 NamingException ne = new NamingException(className);
                 ne.setRootCause(e);
                 throw ne;
