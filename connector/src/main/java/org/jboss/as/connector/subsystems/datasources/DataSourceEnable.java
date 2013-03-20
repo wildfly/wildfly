@@ -82,6 +82,8 @@ public class DataSourceEnable implements OperationStepHandler {
         } else if (model.hasDefined(ENABLED) && !model.get(ENABLED).asBoolean()) {
             // Just clear the "false" value that gets stored by default
             model.get(ENABLED).set(new ModelNode());
+        } else {
+            model.get(ENABLED).set(true);
         }
 
         if (context.isNormalServer()) {
