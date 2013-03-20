@@ -85,7 +85,7 @@ public class SFSB1 {
 
         while(!done) {
             try {
-                Thread.sleep(5000);
+                Thread.sleep(250);
                 entityManager.find(Employee.class, id);
                 int status = transactionSynchronizationRegistry.getTransactionStatus();
                 switch(status) {
@@ -96,10 +96,10 @@ public class SFSB1 {
                         done = true;
                         break;
                     case Status.STATUS_ACTIVE:
-                        System.out.println("tx is still active, sleep for 5 more seconds and check tx status again.");
+                        System.out.println("tx is still active, sleep for 250ms and check tx status again.");
                         break;
                     default:
-                        System.out.println("tx status = " + status +", sleep for 5 more seconds check tx status again.");
+                        System.out.println("tx status = " + status +", sleep for 250ms and check tx status again.");
                         break;
                 }
 
