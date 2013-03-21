@@ -46,6 +46,7 @@ enum Attribute {
     DATASOURCE_JNDI_NAME("datasource-jndi-name"),
     TABLE_PREFIX("table-prefix"),
     DROP_TABLE("drop-table"),
+    ENABLE_ASYNC_IO("enable-async-io"),
     ;
     private final String name;
 

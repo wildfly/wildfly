@@ -45,6 +45,7 @@ public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
 
     private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
     private final boolean useHornetqJournalStore;
+    private final boolean enableAsyncIO;
     private final String path;
     private final String pathRef;
 
@@ -54,8 +55,9 @@ public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
 
     private volatile PathManager.Callback.Handle callbackHandle;
 
-    public ArjunaObjectStoreEnvironmentService(final boolean useHornetqJournalStore, final String path, final String pathRef, final boolean useJdbcStore, final String dataSourceJndiName, final JdbcStoreConfig jdbcSoreConfig) {
+    public ArjunaObjectStoreEnvironmentService(final boolean useHornetqJournalStore, final boolean enableAsyncIO, final String path, final String pathRef, final boolean useJdbcStore, final String dataSourceJndiName, final JdbcStoreConfig jdbcSoreConfig) {
         this.useHornetqJournalStore = useHornetqJournalStore;
+        this.enableAsyncIO = enableAsyncIO;
         this.path = path;
         this.pathRef = pathRef;
         this.useJdbcStore = useJdbcStore;
@@ -81,6 +83,7 @@ public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
             HornetqJournalEnvironmentBean hornetqJournalEnvironmentBean = BeanPopulator.getDefaultInstance(
                     com.arjuna.ats.internal.arjuna.objectstore.hornetq.HornetqJournalEnvironmentBean.class
             );
+            hornetqJournalEnvironmentBean.setAsyncIO(enableAsyncIO);
             hornetqJournalEnvironmentBean.setStoreDir(objectStoreDir+"/HornetqObjectStore");
             defaultActionStoreObjectStoreEnvironmentBean.setObjectStoreType(
                     "com.arjuna.ats.internal.arjuna.objectstore.hornetq.HornetqObjectStoreAdaptor"
