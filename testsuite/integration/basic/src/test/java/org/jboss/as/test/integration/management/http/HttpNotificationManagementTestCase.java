@@ -27,7 +27,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_ADDED_NOTIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.test.integration.management.http.HttpClientUtils.delete;
@@ -43,7 +45,6 @@ import java.net.URL;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -65,7 +66,7 @@ import org.junit.runner.RunWith;
 public class HttpNotificationManagementTestCase {
 
     private static final int MANAGEMENT_PORT = 9990;
-    private static final String NOTIFICATION_CONTEXT = "/notification";
+    private static final String NOTIFICATION_CONTEXT = "/management/notification";
 
     @ArquillianResource
     URL url;
@@ -163,6 +164,21 @@ public class HttpNotificationManagementTestCase {
         response = post(client, notificationsURL, true);
         assertEquals(200, response.getStatusLine().getStatusCode());
         assertEquals(0, response.getEntity().getContentLength());
+
+        ModelNode remove = add.clone();
+        remove.get(OP).set(REMOVE);
+        result = managementClient.getControllerClient().execute(remove);
+        assertEquals(result.toJSONString(true), SUCCESS, result.get(OUTCOME).asString());
+
+        response = post(client, notificationsURL, false);
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        assertNotEquals(0, response.getEntity().getContentLength());
+        notifications = ModelNode.fromJSONStream(response.getEntity().getContent());
+        assertNotNull(notifications);
+        notification = notifications.get(0);
+        assertNotNull(notification);
+        assertEquals(RESOURCE_REMOVED_NOTIFICATION, notification.get(TYPE).asString());
+        assertEquals(pathAddress(add.get(OP_ADDR)), pathAddress(notification.get("resource")));
     }
 
 }
