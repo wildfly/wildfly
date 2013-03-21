@@ -69,14 +69,14 @@ public class TransactionExtension implements Extension {
 
     private static final String RESOURCE_NAME = TransactionExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     private static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
     static final PathElement LOG_STORE_PATH = PathElement.pathElement(LogStoreConstants.LOG_STORE, LogStoreConstants.LOG_STORE);
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME);
-    static final PathElement PARTECIPANT_PATH = PathElement.pathElement(LogStoreConstants.PARTICIPANTS);
+    static final PathElement PARTICIPANT_PATH = PathElement.pathElement(LogStoreConstants.PARTICIPANTS);
     static final PathElement TRANSACTION_PATH = PathElement.pathElement(LogStoreConstants.TRANSACTIONS);
 
 
@@ -134,7 +134,7 @@ public class TransactionExtension implements Extension {
             transactionChild.registerSubModel(LogStoreTransactionParticipantDefinition.INSTANCE);
         }
 
-        subsystem.registerXMLElementWriter(TransactionSubsystem13Parser.INSTANCE);
+        subsystem.registerXMLElementWriter(TransactionSubsystemXMLPersister.INSTANCE);
 
         if (context.isRegisterTransformers()) {
             // Register the model transformers
@@ -150,6 +150,7 @@ public class TransactionExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_1.getUriString(), TransactionSubsystem11Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_2.getUriString(), TransactionSubsystem12Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_3.getUriString(), TransactionSubsystem13Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_2_0.getUriString(), TransactionSubsystem20Parser.INSTANCE);
     }
 
     // Transformation
@@ -162,6 +163,18 @@ public class TransactionExtension implements Extension {
     private static void registerTransformers(final SubsystemRegistration subsystem) {
 
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        // Transformations to the 1.2.0 Model:
+        // 1) always discard enable-async-io as it was not possible to disable AIO in a legacy system and the default value is false (it changes server behaviour in this aspect)
+        // 2) reject if it is still defined
+
+        subsystemRoot.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.ALWAYS, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO);
+
+        final ModelVersion version120 = ModelVersion.create(1, 2, 0);
+        final TransformationDescription description120 = subsystemRoot.build();
+        TransformationDescription.Tools.register(description120, subsystem, version120);
 
         subsystemRoot.getAttributeBuilder()
                 .setDiscard(UnneededJDBCStoreChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.attributes_1_2)
@@ -249,4 +262,5 @@ public class TransactionExtension implements Extension {
         }
 
     }
+
 }
