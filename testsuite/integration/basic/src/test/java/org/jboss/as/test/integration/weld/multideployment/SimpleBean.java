@@ -29,4 +29,7 @@ import javax.inject.Named;
  */
 @Named
 public class SimpleBean {
+
+    public void ping() {
+    }
 }
