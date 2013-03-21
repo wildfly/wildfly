@@ -39,6 +39,7 @@ import org.jboss.as.server.moduleservice.ExtensionIndex;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.filter.PathFilters;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
@@ -70,7 +71,10 @@ public final class ModuleExtensionListProcessor implements DeploymentUnitProcess
                             entry.getImplementationVersion(), entry.getImplementationVendorId());
 
                     if (extension != null) {
-                        moduleSpecification.addLocalDependency(new ModuleDependency(moduleLoader, extension, false, false, true, false));
+                        ModuleDependency dependency = new ModuleDependency(moduleLoader, extension, false, false, true, false);
+                        dependency.addImportFilter(PathFilters.getMetaInfSubdirectoriesFilter(), true);
+                        dependency.addImportFilter(PathFilters.getMetaInfFilter(), true);
+                        moduleSpecification.addLocalDependency(dependency);
                         nextPhaseDeps.add(ServiceModuleLoader.moduleSpecServiceName(extension));
                         nextPhaseDeps.add(ServiceModuleLoader.moduleSpecServiceName(extension));
                     } else {
