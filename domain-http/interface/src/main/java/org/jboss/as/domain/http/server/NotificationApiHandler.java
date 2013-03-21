@@ -78,7 +78,7 @@ public class NotificationApiHandler implements HttpHandler {
      */
     public static final int MAX_NOTIFICATIONS = 1024;
 
-    static final String PATH = "/notification";
+    static final String PATH = "/management/notification";
     private static final String HANDLER_PREFIX = "handler";
     private static final String NOTIFICATIONS = "notifications";
     public static final String RESOURCES = "resources";
@@ -106,90 +106,98 @@ public class NotificationApiHandler implements HttpHandler {
         }
     }
     private void doHandle(final HttpServerExchange http) throws IOException {
-        HttpString method = http.getRequestMethod();
-
         final String path = http.getRequestPath();
-        // FIXME check for trailing /
-        if (path.equals(PATH)) {
-            if (POST.equals(method)) {
-                // POST /notification => create a handler resource that listens to a list of resources
-                String handlerID = generateHandlerID();
-                ModelNode operation;
-                try (InputStream in = new ChannelInputStream(http.getRequestChannel())) {
-                    operation = ModelNode.fromJSONStream(in);
-                }
-                registerNotificationHandler(handlerID, operation);
-                http.getResponseHeaders().add(LOCATION, getHandlerURL(handlerID));
-                http.getResponseHeaders().add(tryFromString(LINK), getHandlerNotificationsURL(handlerID));
-                sendResponse(http, CREATED);
-                return;
-            } else {
-                sendResponse(http, METHOD_NOT_ALLOWED);
-                return;
-            }
+        // /management/notification
+        if (path.equals(PATH) || path.equals(PATH + "/")) {
+            handleNotificationRegistration(http);
         } else {
             String[] splits = path.split("/");
-            final String handlerID = splits[2];
-            // /notification/${handlerID}
-            if (splits.length == 3) {
-                if (GET.equals(method)) {
-                    // GET /notification/${handlerID} => returns a representation of the handler
-                    ModelNode addresses = getAddressesListeningTo(handlerID);
-                    if (addresses == null) {
-                        sendResponse(http, NOT_FOUND);
-                        return;
-                    } else {
-                        http.getResponseHeaders().add(tryFromString(LINK), getHandlerNotificationsURL(handlerID));
-                        sendResponse(http, OK, addresses.toJSONString(true), APPLICATION_JSON);
-                        return;
-                    }
-                } else if (POST.equals(method)) {
-                    // POST /notification/${handlerID} => update the resources that the handler listens to.
-                    ModelNode operation = ModelNode.fromJSONStream(http.getInputStream());
-                    unregisterNotificationHandler(handlerID);
-                    registerNotificationHandler(handlerID, operation);
-                    sendResponse(http, OK);
-                    return;
-                } else if (DELETE.equals(method)) {
-                    // DELETE /notification/${handlerID} => unregister the handler and delete it
-                    boolean unregistered = unregisterNotificationHandler(handlerID);
-                    if (unregistered) {
-                        sendResponse(http, NO_CONTENT);
-                        return;
-                    } else {
-                        sendResponse(http, NOT_FOUND);
-                        return;
-                    }
-                } else {
-                    sendResponse(http, METHOD_NOT_ALLOWED);
-                    return;
-                }
-            } else if (splits.length == 4 && splits[3].equals(NOTIFICATIONS)) {
-                if (POST.equals(method)) {
-                    // POST /notification/${handlerID}/notifications => returns a representation of the notifications received by the handler
-                    // and clears it.
-                    ModelNode notifications = fetchNotifications(handlerID);
-                    if (notifications == null) {
-                        sendResponse(http, NOT_FOUND);
-                        return;
-                    } else {
-                        sendResponse(http, OK, notifications.isDefined()? notifications.toJSONString(true) : null, APPLICATION_JSON);
-                        return;
-                    }
-                } else {
-                    sendResponse(http, METHOD_NOT_ALLOWED);
-                    return;
-                }
+            if (splits.length == 4) {
+                // /management/notification/${handlerID}
+                final String handlerID = splits[3];
+                handleNotificationHandlerResource(http, handlerID);
+            } else if (splits.length == 5 && splits[4].equals(NOTIFICATIONS)) {
+                // /management/notification/${handlerID}/notifications
+                final String handlerID = splits[3];
+                handleNotificationsResource(http, handlerID);
+            } else {
+                sendResponse(http, NOT_FOUND);
             }
         }
-        sendResponse(http, NOT_FOUND);
+    }
+
+    /**
+     * POST /management/notification => create a handler resource that listens to a list of resources
+     */
+    private void handleNotificationRegistration(final HttpServerExchange http) throws IOException {
+        if (POST.equals(http.getRequestMethod())) {
+            String handlerID = generateHandlerID();
+            ModelNode operation;
+            try (InputStream in = new ChannelInputStream(http.getRequestChannel())) {
+                operation = ModelNode.fromJSONStream(in);
+            }
+            registerNotificationHandler(handlerID, operation);
+            http.getResponseHeaders().add(LOCATION, getHandlerURL(handlerID));
+            http.getResponseHeaders().add(tryFromString(LINK), getHandlerNotificationsURL(handlerID));
+            sendResponse(http, CREATED);
+        } else {
+            sendResponse(http, METHOD_NOT_ALLOWED);
+        }
+    }
+
+    /**
+     * GET    /management/notification/${handlerID} => returns a representation of the handler
+     * POST   /management/notification/${handlerID} => update the resources that the handler listens to
+     * DELETE /management/notification/${handlerID} => unregister the handler and delete it
+     */
+    private void handleNotificationHandlerResource(final HttpServerExchange http, final String handlerID) throws IOException {
+        HttpString method = http.getRequestMethod();
+        if (GET.equals(method)) {
+            ModelNode addresses = getAddressesListeningTo(handlerID);
+            if (addresses == null) {
+                sendResponse(http, NOT_FOUND);
+            } else {
+                http.getResponseHeaders().add(tryFromString(LINK), getHandlerNotificationsURL(handlerID));
+                sendResponse(http, OK, addresses.toJSONString(true), APPLICATION_JSON);
+            }
+        } else if (POST.equals(method)) {
+            ModelNode operation = ModelNode.fromJSONStream(http.getInputStream());
+            unregisterNotificationHandler(handlerID);
+            registerNotificationHandler(handlerID, operation);
+            sendResponse(http, OK);
+        } else if (DELETE.equals(method)) {
+            boolean unregistered = unregisterNotificationHandler(handlerID);
+            if (unregistered) {
+                sendResponse(http, NO_CONTENT);
+            } else {
+                sendResponse(http, NOT_FOUND);
+            }
+        } else {
+            sendResponse(http, METHOD_NOT_ALLOWED);
+        }
+    }
+
+    /**
+     * POST /management/notification/${handlerID}/notifications => returns a representation of the notifications received by the handler
+     */
+    private void handleNotificationsResource(final HttpServerExchange http, final String handlerID) throws IOException {
+        if (POST.equals(http.getRequestMethod())) {
+            ModelNode notifications = fetchNotifications(handlerID);
+            if (notifications == null) {
+                sendResponse(http, NOT_FOUND);
+            } else {
+                sendResponse(http, OK, notifications.isDefined()? notifications.toJSONString(true) : null, APPLICATION_JSON);
+            }
+        } else {
+            sendResponse(http, METHOD_NOT_ALLOWED);
+        }
     }
 
     private String generateHandlerID() {
         return HANDLER_PREFIX + handlerCounter.incrementAndGet();
     }
 
-    private ModelNode getAddressesListeningTo(String handlerID) {
+    private ModelNode getAddressesListeningTo(final String handlerID) {
         if (!handlers.containsKey(handlerID)) {
             return null;
         }
@@ -201,7 +209,7 @@ public class NotificationApiHandler implements HttpHandler {
         return node;
     }
 
-    private ModelNode fetchNotifications(String handlerID) {
+    private ModelNode fetchNotifications(final String handlerID) {
         if (!handlers.containsKey(handlerID)) {
             return null;
         }
@@ -226,7 +234,7 @@ public class NotificationApiHandler implements HttpHandler {
         handlers.put(handlerID, handler);
     }
 
-    private boolean unregisterNotificationHandler(String handlerID) {
+    private boolean unregisterNotificationHandler(final String handlerID) {
         HttpNotificationHandler handler = handlers.remove(handlerID);
         if (handler != null) {
             for (PathAddress address : handler.getListeningAddresses()) {
@@ -236,12 +244,12 @@ public class NotificationApiHandler implements HttpHandler {
         return handler != null;
     }
 
-    private void sendResponse(final HttpServerExchange http, final int responseCode) throws IOException {
+    private void sendResponse(final HttpServerExchange http, final int responseCode) {
         http.setResponseCode(responseCode);
         http.endExchange();
     }
 
-    private void sendResponse(final HttpServerExchange http, final int responseCode, String body, String contentType) throws IOException {
+    private void sendResponse(final HttpServerExchange http, final int responseCode, final String body, final String contentType) throws IOException {
         if (body == null) {
             sendResponse(http, responseCode);
             return;
@@ -257,13 +265,25 @@ public class NotificationApiHandler implements HttpHandler {
         http.endExchange();
     }
 
-    static class HttpNotificationHandler implements NotificationHandler {
+    private static String getHandlerURL(final String handlerID) {
+        return PATH + "/" + handlerID;
+    }
+
+    private static String getHandlerNotificationsURL(final String handlerID) {
+        return format("%s/%s/%s; rel=%s",
+                PATH,
+                handlerID,
+                NOTIFICATIONS,
+                NOTIFICATIONS);
+    }
+
+    private static class HttpNotificationHandler implements NotificationHandler {
 
         private final String handlerID;
         private final Set<PathAddress> addresses;
         private final Queue<ModelNode> notifications = new ArrayBlockingQueue<>(MAX_NOTIFICATIONS);
 
-        public HttpNotificationHandler(String handlerID, Set<PathAddress> addresses) {
+        public HttpNotificationHandler(final String handlerID, final Set<PathAddress> addresses) {
             this.handlerID = handlerID;
             this.addresses = addresses;
         }
@@ -281,7 +301,7 @@ public class NotificationApiHandler implements HttpHandler {
         }
 
         @Override
-        public void handleNotification(Notification notification) {
+        public void handleNotification(final Notification notification) {
             if (notifications.size() == MAX_NOTIFICATIONS) {
                 notifications.poll();
             }
@@ -295,17 +315,5 @@ public class NotificationApiHandler implements HttpHandler {
                     ", addresses=" + addresses +
                     "]@" + System.identityHashCode(this);
         }
-    }
-
-    private static String getHandlerURL(final String handlerID) {
-        return PATH + "/" + handlerID;
-    }
-
-    private static String getHandlerNotificationsURL(final String handlerID) {
-        return format("%s/%s/%s; rel=%s",
-                PATH,
-                handlerID,
-                NOTIFICATIONS,
-                NOTIFICATIONS);
     }
 }
