@@ -32,6 +32,7 @@ import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinit
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.DEFAULT_TIMEOUT;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.ENABLE_STATISTICS;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.ENABLE_TSM_STATUS;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO;
@@ -114,6 +115,16 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void testParser_1_3() throws Exception {
+        standardSubsystemTest("full-1.3.xml");
+    }
+
+    @Test
+    public void testAsyncIOExpressions() throws Exception {
+        standardSubsystemTest("async-io-expressions.xml");
+    }
+
+    @Test
     public void testTransformers110() throws Exception {
         String subsystemXml = readResource("subsystem.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
@@ -150,7 +161,6 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         checkSubsystemModelTransformation(mainServices, modelVersion);
     }
-
 
     @Test
     public void testTransformersFull110() throws Exception {
