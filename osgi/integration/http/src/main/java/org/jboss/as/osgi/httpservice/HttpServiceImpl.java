@@ -21,15 +21,12 @@
  */
 package org.jboss.as.osgi.httpservice;
 
-import static org.jboss.as.web.WebLogger.WEB_LOGGER;
+import static org.jboss.as.osgi.httpservice.WebLogger.WEB_LOGGER;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Dictionary;
 import java.util.Enumeration;
-import java.util.Map;
-import java.util.WeakHashMap;
-
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -39,21 +36,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.catalina.Host;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.Wrapper;
-import org.apache.catalina.core.ApplicationContext;
-import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.startup.ContextConfig;
-import org.apache.tomcat.util.http.mapper.Mapper;
 import org.jboss.as.osgi.OSGiMessages;
 import org.jboss.as.osgi.httpservice.HttpServiceFactory.GlobalRegistry;
 import org.jboss.as.osgi.httpservice.HttpServiceFactory.Registration;
 import org.jboss.as.osgi.httpservice.HttpServiceFactory.Registration.Type;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.web.WebMessages;
-import org.jboss.as.web.WebServer;
-import org.jboss.as.web.deployment.WebCtxLoader;
+import org.jboss.as.web.host.CommonWebServer;
+import org.jboss.as.web.host.ServletBuilder;
+import org.jboss.as.web.host.WebDeploymentBuilder;
+import org.jboss.as.web.host.WebDeploymentController;
+import org.jboss.as.web.host.WebHost;
 import org.osgi.framework.Bundle;
 import org.osgi.service.http.HttpContext;
 import org.osgi.service.http.HttpService;
@@ -70,16 +62,16 @@ final class HttpServiceImpl implements HttpService {
 
     private final GlobalRegistry registry;
     private final ServerEnvironment serverEnvironment;
-    private final WebServer webServer;
-    private final Host virtualHost;
+    private final CommonWebServer webServer;
+    private final WebHost virtualHost;
     private final Bundle bundle;
 
     // This map holds the shared ApplicationContexts to be used with the associated HttpContext.
     // It is a WeakHashMap which means that the ApplicationContexts are remembered for as long
     // as the HttpContext exists.
-    private final Map<HttpContext, ApplicationContext> contexts = new WeakHashMap<HttpContext, ApplicationContext>();
+    //private final Map<HttpContext, ApplicationContext> contexts = new WeakHashMap<HttpContext, ApplicationContext>();
 
-    HttpServiceImpl(ServerEnvironment serverEnvironment, WebServer webServer, Host virtualHost, Bundle bundle) {
+    HttpServiceImpl(ServerEnvironment serverEnvironment, CommonWebServer webServer, WebHost virtualHost, Bundle bundle) {
         this.registry = GlobalRegistry.INSTANCE;
         this.virtualHost = virtualHost;
         this.webServer = webServer;
@@ -93,8 +85,8 @@ final class HttpServiceImpl implements HttpService {
         validateAlias(alias, false);
         validateServlet(servlet);
 
-        Wrapper wrapper = registerInternal(alias, servlet, initparams, httpContext, Type.SERVLET);
-        wrapper.allocate(); // Causes servlet.init() to be called, which must be done before we return
+        registerInternal(alias, servlet, initparams, httpContext, Type.SERVLET);
+
     }
 
     @Override
@@ -102,20 +94,20 @@ final class HttpServiceImpl implements HttpService {
         validateAlias(alias, false);
         validateName(name);
 
-        if (httpContext == null)
-            httpContext = createDefaultHttpContext();
+        if (httpContext == null) { httpContext = createDefaultHttpContext(); }
         ResourceServlet servlet = new ResourceServlet(name, httpContext);
 
         registerInternal(alias, servlet, null, null, Type.RESOURCE);
     }
 
     @SuppressWarnings("rawtypes")
-    private synchronized Wrapper registerInternal(String alias, Servlet servlet, Dictionary initparams, HttpContext httpContext, Type type) throws NamespaceException {
+    private synchronized ServletBuilder registerInternal(String alias, Servlet servlet, Dictionary initparams, HttpContext httpContext, Type type) throws NamespaceException {
         File storageDir = new File(serverEnvironment.getServerTempDir() + File.separator + alias + File.separator + "osgiservlet-root");
         storageDir.mkdirs();
 
-        ShareableContext ctx;
-        ApplicationContext actx = null;
+        //ShareableContext ctx;
+        WebDeploymentBuilder deploymentBuilder = new WebDeploymentBuilder();
+        /*ApplicationContext actx = null;
         if (httpContext != null) {
             actx = contexts.get(httpContext);
             ctx = new ShareableContext(actx);
@@ -123,60 +115,65 @@ final class HttpServiceImpl implements HttpService {
             ctx = new ShareableContext(null);
             httpContext = new DefaultHttpContext(bundle);
         }
-
-        ctx.setDocBase(storageDir.getPath());
-        ctx.setPath(alias);
-        ctx.addLifecycleListener(new ContextConfig());
-        WebCtxLoader loader = new WebCtxLoader(servlet.getClass().getClassLoader());
-        loader.setContainer(virtualHost);
-        ctx.setLoader(loader);
-
-        ctx.addMimeMapping("html", "text/html");
-        ctx.addMimeMapping("jpg", "image/jpeg");
-        ctx.addMimeMapping("png", "image/png");
-        ctx.addMimeMapping("gif", "image/gif");
-        ctx.addMimeMapping("css", "text/css");
-        ctx.addMimeMapping("js", "text/javascript");
-
-        virtualHost.addChild(ctx);
-
-        WEB_LOGGER.registerWebapp(ctx.getName());
-        try {
-            ctx.create();
-        } catch (Exception ex) {
-            throw new NamespaceException(WebMessages.MESSAGES.createContextFailed(), ex);
+        */
+        if (httpContext == null) {
+            httpContext = new DefaultHttpContext(bundle);
         }
-        try {
-            ctx.start();
-        } catch (LifecycleException ex) {
-            throw new NamespaceException(WebMessages.MESSAGES.startContextFailed(), ex);
-        }
+
+        deploymentBuilder.setDocumentRoot(storageDir);
+        deploymentBuilder.setContextRoot(alias);
+        //ctx.addLifecycleListener(new ContextConfig());
+
+        deploymentBuilder.setClassLoader(servlet.getClass().getClassLoader());
+
+        deploymentBuilder.addMimeMapping("html", "text/html");
+        deploymentBuilder.addMimeMapping("jpg", "image/jpeg");
+        deploymentBuilder.addMimeMapping("png", "image/png");
+        deploymentBuilder.addMimeMapping("gif", "image/gif");
+        deploymentBuilder.addMimeMapping("css", "text/css");
+        deploymentBuilder.addMimeMapping("js", "text/javascript");
 
         String wrapperName = alias.substring(1);
-        Wrapper wrapper = ctx.createWrapper();
-        wrapper.setName(wrapperName);
+        ServletBuilder wrapper = new ServletBuilder();
+
+        wrapper.setServletName(wrapperName);
         wrapper.setServlet(new SecurityServletWrapper(servlet, httpContext));
-        wrapper.setServletClass(servlet.getClass().getName());
+        wrapper.setServletClass(servlet.getClass());
 
         // Init parameters
         if (initparams != null) {
             Enumeration keys = initparams.keys();
-            while(keys.hasMoreElements()) {
+            while (keys.hasMoreElements()) {
                 String key = (String) keys.nextElement();
                 String val = (String) initparams.get(key);
-                wrapper.addInitParameter(key, val);
+                wrapper.addInitParam(key, val);
             }
         }
-        registry.register(alias, bundle, ctx, servlet, type);
 
-        String pattern = "/*";
-        ctx.addChild(wrapper);
-        ctx.addServletMapping(pattern, wrapper.getName());
+        wrapper.setForceInit(true);
+        wrapper.addUrlMapping("/*");
+        deploymentBuilder.addServlet(wrapper);
+
+        WebDeploymentController deploymentController;
+        try {
+            deploymentController = virtualHost.addWebDeployment(deploymentBuilder);
+            WEB_LOGGER.registerWebapp(deploymentBuilder.getContextRoot());
+            deploymentController.create();
+        } catch (Exception ex) {
+            throw new NamespaceException(WEB_LOGGER.createContextFailed(), ex);
+        }
+        try {
+            deploymentController.start();
+        } catch (Exception ex) {
+            throw new NamespaceException(WEB_LOGGER.startContextFailed(), ex);
+        }
+
+        registry.register(alias, bundle, deploymentController, servlet, type);
 
         // Must be added to the main mapper as no dynamic servlets usually
-        Mapper mapper = webServer.getService().getMapper();
-        mapper.addWrapper(virtualHost.getName(), ctx.getPath(), pattern, wrapper, false);
-
+        /*Mapper mapper = webServer.getService().getMapper();
+        mapper.addWrapper(virtualHost.getName(), ctx.getPath(), pattern, wrapper, false);*/
+/*
         if (httpContext != null && actx == null) {
             // We have a new shared context, save it for later use
 
@@ -184,7 +181,7 @@ final class HttpServiceImpl implements HttpService {
             // as soon as the last instance of a particular httpContext is gone, the
             // shared context is garbage collected too.
             contexts.put(httpContext, ctx.getApplicationContext());
-        }
+        }*/
 
         return wrapper;
     }
@@ -210,10 +207,10 @@ final class HttpServiceImpl implements HttpService {
     }
 
     void unregisterInternal(Registration reg) {
-        StandardContext context = reg.getContext();
+        WebDeploymentController context = reg.getContext();
         try {
             context.stop();
-        } catch (LifecycleException e) {
+        } catch (Exception e) {
             WEB_LOGGER.stopContextFailed(e);
         }
         try {
@@ -226,31 +223,25 @@ final class HttpServiceImpl implements HttpService {
     private void validateAlias(String alias, boolean exists) throws NamespaceException {
         // An alias must begin with slash ('/') and must not end with slash ('/'), with the exception
         // that an alias of the form "/" is used to denote the root alias
-        if (alias == null || !alias.startsWith("/"))
-            throw new IllegalArgumentException(OSGiMessages.MESSAGES.invalidServletAlias(alias));
-        if (alias.length() > 1 && alias.endsWith("/"))
-            throw new IllegalArgumentException(OSGiMessages.MESSAGES.invalidServletAlias(alias));
+        if (alias == null || !alias.startsWith("/")) { throw new IllegalArgumentException(OSGiMessages.MESSAGES.invalidServletAlias(alias)); }
+        if (alias.length() > 1 && alias.endsWith("/")) { throw new IllegalArgumentException(OSGiMessages.MESSAGES.invalidServletAlias(alias)); }
 
-        if (exists && !registry.exists(alias))
-            throw new IllegalArgumentException(OSGiMessages.MESSAGES.aliasMappingDoesNotExist(alias));
-        if (!exists && registry.exists(alias))
-            throw new NamespaceException(OSGiMessages.MESSAGES.aliasMappingAlreadyExists(alias));
+        if (exists && !registry.exists(alias)) { throw new IllegalArgumentException(OSGiMessages.MESSAGES.aliasMappingDoesNotExist(alias)); }
+        if (!exists && registry.exists(alias)) { throw new NamespaceException(OSGiMessages.MESSAGES.aliasMappingAlreadyExists(alias)); }
     }
 
     private void validateName(String name) throws NamespaceException {
         // The name parameter must also not end with slash ('/') with the exception
         // that a name of the form "/" is used to denote the root of the bundle.
-        if (name == null || (name.length() > 1 && name.endsWith("/")))
-            throw new NamespaceException(OSGiMessages.MESSAGES.invalidResourceName(name));
+        if (name == null || (name.length() > 1 && name.endsWith("/"))) { throw new NamespaceException(OSGiMessages.MESSAGES.invalidResourceName(name)); }
     }
 
     private void validateServlet(Servlet servlet) throws ServletException {
         // A single servlet instance can only be registered once.
-        if (registry.contains(servlet))
-            throw new ServletException(OSGiMessages.MESSAGES.servletAlreadyRegistered(servlet.getServletInfo()));
+        if (registry.contains(servlet)) { throw new ServletException(OSGiMessages.MESSAGES.servletAlreadyRegistered(servlet.getServletInfo())); }
     }
 
-    static class ShareableContext extends StandardContext {
+ /*   static class ShareableContext extends StandardContext {
         ShareableContext(ApplicationContext existingContext) {
             context = existingContext;
         }
@@ -262,7 +253,7 @@ final class HttpServiceImpl implements HttpService {
 
             return context; // will not be null at this point
         }
-    }
+    }*/
 
     /* This wrapper class takes care of handling the security through the HttpContext.
      */
@@ -271,12 +262,10 @@ final class HttpServiceImpl implements HttpService {
         private final Servlet delegate;
 
         SecurityServletWrapper(Servlet servlet, HttpContext ctx) {
-            if (servlet == null)
-                throw new NullPointerException();
+            if (servlet == null) { throw new NullPointerException(); }
             delegate = servlet;
 
-            if (ctx == null)
-                throw new NullPointerException();
+            if (ctx == null) { throw new NullPointerException(); }
             httpContext = ctx;
         }
 
@@ -305,8 +294,7 @@ final class HttpServiceImpl implements HttpService {
             if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
                 HttpServletRequest httpRequest = (HttpServletRequest) request;
                 HttpServletResponse httpResponse = (HttpServletResponse) response;
-                if (!httpContext.handleSecurity(httpRequest, httpResponse))
-                    return;
+                if (!httpContext.handleSecurity(httpRequest, httpResponse)) { return; }
 
                 Object u = httpRequest.getAttribute(HttpContext.REMOTE_USER);
                 String remoteUser = u instanceof String ? (String) u : null;
@@ -342,5 +330,5 @@ final class HttpServiceImpl implements HttpService {
         public String getRemoteUser() {
             return remoteUser;
         }
-   }
+    }
 }

@@ -3,7 +3,9 @@ package org.jboss.as.web.host;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Stuart Douglas
@@ -14,6 +16,7 @@ public class WebDeploymentBuilder {
     private String contextRoot;
     private File documentRoot;
     private final List<ServletBuilder> servlets = new ArrayList<>();
+    private final Map<String,String> mimeTypes = new HashMap<>();
 
     public ClassLoader getClassLoader() {
         return classLoader;
@@ -48,5 +51,12 @@ public class WebDeploymentBuilder {
     public WebDeploymentBuilder setDocumentRoot(final File documentRoot) {
         this.documentRoot = documentRoot;
         return this;
+    }
+
+    public Map<String, String> getMimeTypes() {
+        return mimeTypes;
+    }
+    public void addMimeMapping(String type,String mapping){
+        mimeTypes.put(type,mapping);
     }
 }

@@ -117,7 +117,7 @@
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-web-common</artifactId>
     </dependency>
-
+    <!-- TODO remove when undertow is merged in-->
     <dependency>
        <groupId>org.jboss.as</groupId>
        <artifactId>jboss-as-web</artifactId>
