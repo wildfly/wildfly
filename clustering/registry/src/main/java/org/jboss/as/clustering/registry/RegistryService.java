@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.registry;
 
+import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,12 +54,14 @@ import org.jboss.msc.value.Value;
 @org.infinispan.notifications.Listener(sync = false)
 public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<K, V> {
 
-    static final Address LOCAL_ADDRESS = new Address() {
+    private static final class LocalAddress implements Address, Serializable {
         @Override
         public int compareTo(Address address) {
             return this.equals(address) ? 0 : -1;
         }
-    };
+    }
+
+    static final Address LOCAL_ADDRESS = new LocalAddress();
 
     private final CacheInvoker invoker = new BatchCacheInvoker();
     private final Value<Cache<Address, Map.Entry<K, V>>> cache;

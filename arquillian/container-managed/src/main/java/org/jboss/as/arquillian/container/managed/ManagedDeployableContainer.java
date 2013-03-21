@@ -294,6 +294,12 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 shutdown.interrupt();
             }
         } catch (Exception e) {
+            try {
+                if(process != null) {
+                    process.destroy();
+                    process.waitFor();
+                }
+            }catch (Exception ignore) {}
             throw new LifecycleException("Could not stop container", e);
         }
     }
