@@ -40,6 +40,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.jboss.util.NotImplementedException;
+import org.xnio.IoUtils;
 
 /**
  * A JBossAS deployable container
@@ -162,7 +163,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
 
     private void safeCloseClient() {
         try {
-            getManagementClient().close();
+            IoUtils.safeClose(getManagementClient());
         } catch (final Exception e) {
             Logger.getLogger(this.getClass().getName()).log(Level.WARNING,
                 "Caught exception closing ModelControllerClient", e);
