@@ -30,14 +30,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import javax.servlet.Servlet;
 
-import org.apache.catalina.Host;
-import org.apache.catalina.core.StandardContext;
 import org.jboss.as.osgi.OSGiMessages;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.web.WebServer;
+import org.jboss.as.web.host.CommonWebServer;
+import org.jboss.as.web.host.WebDeploymentController;
+import org.jboss.as.web.host.WebHost;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
@@ -53,12 +52,12 @@ import org.osgi.service.http.NamespaceException;
 final class HttpServiceFactory implements ServiceFactory {
 
     private final GlobalRegistry registry;
-    private final WebServer webServer;
-    private final Host virtualHost;
+    private final CommonWebServer webServer;
+    private final WebHost virtualHost;
     private final ServerEnvironment serverEnvironment;
 
-    HttpServiceFactory(WebServer webServer, Host virtualHost, ServerEnvironment serverEnvironment) {
-        this.registry= GlobalRegistry.INSTANCE;
+    HttpServiceFactory(CommonWebServer webServer, WebHost virtualHost, ServerEnvironment serverEnvironment) {
+        this.registry = GlobalRegistry.INSTANCE;
         this.webServer = webServer;
         this.virtualHost = virtualHost;
         this.serverEnvironment = serverEnvironment;
@@ -84,15 +83,13 @@ final class HttpServiceFactory implements ServiceFactory {
     static class GlobalRegistry {
 
         static GlobalRegistry INSTANCE = new GlobalRegistry();
-
         private Map<String, Registration> registrations = new HashMap<String, Registration>();
 
         private GlobalRegistry() {
         }
 
-        synchronized Registration register(String alias, Bundle bundle, StandardContext context, Servlet servlet, Registration.Type type) throws NamespaceException {
-            if (exists(alias))
-                throw new NamespaceException(OSGiMessages.MESSAGES.aliasMappingAlreadyExists(alias));
+        synchronized Registration register(String alias, Bundle bundle, WebDeploymentController context, Servlet servlet, Registration.Type type) throws NamespaceException {
+            if (exists(alias)) { throw new NamespaceException(OSGiMessages.MESSAGES.aliasMappingAlreadyExists(alias)); }
 
             LOGGER.infoRegisterHttpServiceAlias(alias);
 
@@ -104,8 +101,7 @@ final class HttpServiceFactory implements ServiceFactory {
 
         synchronized boolean contains(Servlet servlet) {
             for (Registration reg : registrations.values()) {
-                if (servlet.equals(reg.getServlet()))
-                    return true;
+                if (servlet.equals(reg.getServlet())) { return true; }
             }
             return false;
         }
@@ -144,17 +140,13 @@ final class HttpServiceFactory implements ServiceFactory {
     }
 
     static class Registration {
-        enum Type {
-            SERVLET, RESOURCE
-        }
-
         private final String alias;
         private final Bundle bundle;
-        private final StandardContext context;
+        private final WebDeploymentController context;
         private final Servlet servlet;
         private final Type type;
 
-        Registration(String alias, Bundle bundle, StandardContext context, Servlet servlet, Type type) {
+        Registration(String alias, Bundle bundle, WebDeploymentController context, Servlet servlet, Type type) {
             this.alias = alias;
             this.bundle = bundle;
             this.context = context;
@@ -170,7 +162,7 @@ final class HttpServiceFactory implements ServiceFactory {
             return bundle;
         }
 
-        StandardContext getContext() {
+        WebDeploymentController getContext() {
             return context;
         }
 
@@ -185,6 +177,10 @@ final class HttpServiceFactory implements ServiceFactory {
         @Override
         public String toString() {
             return "Registration [alias=" + alias + ",bundle=" + bundle + ",type=" + type + "]";
+        }
+
+        enum Type {
+            SERVLET, RESOURCE
         }
     }
 }

@@ -23,7 +23,8 @@
 package org.jboss.as.osgi.httpservice;
 
 import java.util.concurrent.TimeUnit;
-import org.apache.catalina.core.StandardContext;
+
+import org.jboss.as.web.host.WebDeploymentController;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
@@ -42,7 +43,7 @@ import org.osgi.framework.BundleContext;
  */
 public final class HttpBundleActivator implements BundleActivator {
 
-    private ServiceController<StandardContext> controller;
+    private ServiceController<WebDeploymentController> controller;
 
     @Override
     public void start(BundleContext context) throws Exception {
@@ -57,7 +58,7 @@ public final class HttpBundleActivator implements BundleActivator {
         if (controller != null) {
             // Wait for the {@link HttpServiceFactoryService} to get removed
             // [AS7-5828] HttpService may fail to start due to already existing service
-            FutureServiceValue<StandardContext> future = new FutureServiceValue<StandardContext>(controller, State.REMOVED);
+            FutureServiceValue<WebDeploymentController> future = new FutureServiceValue<WebDeploymentController>(controller, State.REMOVED);
             controller.setMode(Mode.REMOVE);
             future.get(10, TimeUnit.SECONDS);
         }

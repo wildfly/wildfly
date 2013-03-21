@@ -18,7 +18,7 @@ public class ServletBuilder {
     private Class<?> servletClass;
     private Servlet servlet;
     private String servletName;
-
+    private boolean forceInit;
     private final List<String> urlMappings = new ArrayList<>();
     private final Map<String, String> initParams = new LinkedHashMap<>();
 
@@ -73,4 +73,11 @@ public class ServletBuilder {
     public Map<String, String> getInitParams() {
         return Collections.unmodifiableMap(initParams);
     }
+    public boolean isForceInit() {
+          return forceInit;
+      }
+
+      public void setForceInit(boolean forceInit) {
+          this.forceInit = forceInit;
+      }
 }

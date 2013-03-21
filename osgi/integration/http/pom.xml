@@ -40,11 +40,19 @@
     <dependencies>
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-web</artifactId>
+            <artifactId>jboss-as-web-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-osgi-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-processor</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.servlet</groupId>
+            <artifactId>jboss-servlet-api_3.0_spec</artifactId>
         </dependency>
     </dependencies>
 
@@ -81,13 +89,11 @@
                             org.jboss.osgi.framework,
                             org.jboss.osgi.framework.spi,
                             org.jboss.osgi.resolver,
-                            !org.apache.catalina*, 
-                            !org.apache.tomcat*, 
-                            !org.jboss.as.controller*, 
+                            !org.jboss.as.controller*,
                             !org.jboss.as.osgi*, 
                             !org.jboss.as.server*, 
-                            !org.jboss.as.web*, 
-							</Import-Package>
+                            !org.jboss.as.web*,
+                        </Import-Package>
                     </instructions>
                 </configuration>
             </plugin>

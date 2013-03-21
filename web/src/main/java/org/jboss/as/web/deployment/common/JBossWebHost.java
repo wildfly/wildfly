@@ -65,9 +65,16 @@ public class JBossWebHost implements WebHost, Service<WebHost> {
             for (Map.Entry<String, String> param : params.entrySet()) {
                 wsfsWrapper.addInitParameter(param.getKey(), param.getValue());
             }
+            wsfsWrapper.setParent(context);
             context.addChild(wsfsWrapper);
             for (String urlPattern : urlPatterns) {
                 context.addServletMapping(urlPattern, servletName);
+            }
+            for (Map.Entry<String,String> entry : webDeploymentBuilder.getMimeTypes().entrySet()){
+                context.addMimeMapping(entry.getKey(),entry.getValue());
+            }
+            if (servlet.isForceInit()){
+                wsfsWrapper.allocate();
             }
         }
         return new WebDeploymentControllerImpl(context, host);

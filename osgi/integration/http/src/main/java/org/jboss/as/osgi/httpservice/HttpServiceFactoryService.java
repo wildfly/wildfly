@@ -22,21 +22,17 @@
 
 package org.jboss.as.osgi.httpservice;
 
-import static org.jboss.as.web.WebSubsystemServices.JBOSS_WEB;
-
 import java.util.Hashtable;
 
-import org.apache.catalina.Host;
-import org.apache.catalina.core.StandardContext;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.mgmt._UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
-import org.jboss.as.web.VirtualHost;
-import org.jboss.as.web.WebServer;
-import org.jboss.as.web.WebSubsystemServices;
+import org.jboss.as.web.host.CommonWebServer;
+import org.jboss.as.web.host.WebDeploymentController;
+import org.jboss.as.web.host.WebHost;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
@@ -60,42 +56,40 @@ import org.osgi.service.http.HttpService;
  * @author David Bosschaert
  * @since 19-Jul-2012
  */
-final class HttpServiceFactoryService implements Service<StandardContext> {
+final class HttpServiceFactoryService implements Service<WebDeploymentController> {
 
-    static final ServiceName JBOSS_WEB_HTTPSERVICE_FACTORY = JBOSS_WEB.append("httpservice", "factory");
-
+    static final ServiceName JBOSS_WEB_HTTPSERVICE_FACTORY = CommonWebServer.SERVICE_NAME.append("httpservice", "factory");
     // [TODO] Make these configurable
     static final String VIRTUAL_HOST = "default-host";
-
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
     private final InjectedValue<PathManager> injectedPathManager = new InjectedValue<PathManager>();
-    private final InjectedValue<VirtualHost> injectedVirtualHost = new InjectedValue<VirtualHost>();
+    private final InjectedValue<WebHost> injectedVirtualHost = new InjectedValue<WebHost>();
     private final InjectedValue<HttpManagement> injectedHttpManagement = new InjectedValue<HttpManagement>();
-    private final InjectedValue<WebServer> injectedWebServer = new InjectedValue<WebServer>();
+    private final InjectedValue<CommonWebServer> injectedWebServer = new InjectedValue<CommonWebServer>();
     private ServiceRegistration registration;
 
-    static ServiceController<StandardContext> addService(ServiceTarget serviceTarget) {
+    private HttpServiceFactoryService() {
+    }
+
+    static ServiceController<WebDeploymentController> addService(ServiceTarget serviceTarget) {
         HttpServiceFactoryService service = new HttpServiceFactoryService();
-        ServiceBuilder<StandardContext> builder = serviceTarget.addService(JBOSS_WEB_HTTPSERVICE_FACTORY, service);
+        ServiceBuilder<WebDeploymentController> builder = serviceTarget.addService(JBOSS_WEB_HTTPSERVICE_FACTORY, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
         builder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.injectedPathManager);
-        builder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(VIRTUAL_HOST), VirtualHost.class, service.injectedVirtualHost);
-        builder.addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.injectedWebServer);
+        builder.addDependency(WebHost.SERVICE_NAME.append(VIRTUAL_HOST), WebHost.class, service.injectedVirtualHost);
+        builder.addDependency(CommonWebServer.SERVICE_NAME, CommonWebServer.class, service.injectedWebServer);
         builder.addDependency(DependencyType.OPTIONAL, _UndertowHttpManagementService.SERVICE_NAME, HttpManagement.class, service.injectedHttpManagement);
         builder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, service.injectedSystemContext);
         return builder.install();
     }
 
-    private HttpServiceFactoryService() {
-    }
-
     @Override
     public void start(StartContext startContext) throws StartException {
         ServerEnvironment serverEnvironment = injectedServerEnvironment.getValue();
-        Host virtualHost = injectedVirtualHost.getValue().getHost();
+        WebHost virtualHost = injectedVirtualHost.getValue();
         BundleContext syscontext = injectedSystemContext.getValue();
-        WebServer webServer = injectedWebServer.getValue();
+        CommonWebServer webServer = injectedWebServer.getValue();
 
         Hashtable<String, Object> props = new Hashtable<String, Object>();
         props.put("provider", getClass().getPackage().getName());
@@ -110,7 +104,7 @@ final class HttpServiceFactoryService implements Service<StandardContext> {
     }
 
     @Override
-    public StandardContext getValue() throws IllegalStateException {
+    public WebDeploymentController getValue() throws IllegalStateException {
         return null;
     }
 }

@@ -1301,7 +1301,7 @@
                 <version>${project.version}</version>
             </dependency>
             
-						<dependency>
+            <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-version</artifactId>
                 <version>${project.version}</version>
