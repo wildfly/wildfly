@@ -22,11 +22,7 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import static org.jboss.as.controller.OperationContext.ResultAction.KEEP;
-import static org.jboss.as.controller.PathAddress.pathAddress;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_ADDED_NOTIFICATION;
+import static org.jboss.as.controller.notification.NotificationResultHandlers.RESOURCE_ADDED_RESULT_HANDLER;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +30,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.jboss.as.controller.notification.Notification;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -95,19 +90,7 @@ public class AbstractAddStepHandler implements OperationStepHandler {
             }, OperationContext.Stage.RUNTIME);
         }
 
-        context.completeStep(new OperationContext.ResultHandler() {
-            @Override
-            public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
-                if (resultAction != KEEP) {
-                    return;
-                }
-                PathAddress sourceAddress = pathAddress(operation.get(OP_ADDR));
-                Notification notification = new Notification(RESOURCE_ADDED_NOTIFICATION,
-                        sourceAddress,
-                        MESSAGES.resourceWasAdded(sourceAddress));
-                context.emit(notification);
-            }
-        });
+        context.completeStep(RESOURCE_ADDED_RESULT_HANDLER);
     }
 
     /**

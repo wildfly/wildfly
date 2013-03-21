@@ -24,16 +24,14 @@ package org.jboss.as.controller;
 
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import static org.jboss.as.controller.OperationContext.ResultAction.KEEP;
 import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION;
+import static org.jboss.as.controller.notification.NotificationResultHandlers.RESOURCE_REMOVED_RESULT_HANDLER;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.notification.Notification;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
@@ -71,19 +69,7 @@ public abstract class AbstractRemoveStepHandler implements OperationStepHandler 
             }, OperationContext.Stage.RUNTIME);
         }
 
-        context.completeStep(new OperationContext.ResultHandler() {
-            @Override
-            public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
-                if (resultAction != KEEP) {
-                    return;
-                }
-                PathAddress sourceAddress = pathAddress(operation.get(OP_ADDR));
-                Notification notification = new Notification(RESOURCE_REMOVED_NOTIFICATION,
-                        sourceAddress,
-                        MESSAGES.resourceWasRemoved(sourceAddress));
-                context.emit(notification);
-            }
-        });
+        context.completeStep(RESOURCE_REMOVED_RESULT_HANDLER);
     }
 
     protected void performRemove(OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
