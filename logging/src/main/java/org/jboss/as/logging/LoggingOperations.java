@@ -22,11 +22,9 @@
 
 package org.jboss.as.logging;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import static org.jboss.as.controller.OperationContext.ResultAction.KEEP;
-import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_ADDED_NOTIFICATION;
+import static org.jboss.as.controller.notification.NotificationResultHandlers.RESOURCE_ADDED_RESULT_HANDLER;
+import static org.jboss.as.controller.notification.NotificationResultHandlers.RESOURCE_REMOVED_RESULT_HANDLER;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -39,7 +37,6 @@ import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.notification.Notification;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.as.server.ServerEnvironment;
@@ -207,19 +204,7 @@ final class LoggingOperations {
                     @Override
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                         performRuntime(context, operation, logContextConfiguration, name, model);
-                        context.completeStep(new ResultHandler() {
-                            @Override
-                            public void handleResult(ResultAction resultAction, OperationContext context, ModelNode operation) {
-                                if (resultAction != KEEP) {
-                                    return;
-                                }
-                                PathAddress sourceAddress = pathAddress(operation.get(OP_ADDR));
-                                Notification notification = new Notification(RESOURCE_ADDED_NOTIFICATION,
-                                        sourceAddress,
-                                        MESSAGES.resourceWasAdded(sourceAddress));
-                                context.emit(notification);
-                            }
-                        });
+                        context.completeStep(RESOURCE_ADDED_RESULT_HANDLER);
                     }
                 }, Stage.RUNTIME);
             }
@@ -288,7 +273,7 @@ final class LoggingOperations {
                     @Override
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                         performRuntime(context, operation, logContextConfiguration, name, model);
-                        context.stepCompleted();
+                        context.completeStep(RESOURCE_REMOVED_RESULT_HANDLER);
                     }
                 }, Stage.RUNTIME);
             }
