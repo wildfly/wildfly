@@ -31,6 +31,8 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
 
     private String javaHome = System.getenv("JAVA_HOME");
 
+    private String controllerJavaHome = System.getenv("JAVA_HOME");
+
     private String modulePath = System.getProperty("module.path");
 
     private String javaVmArguments = "-Xmx512m -XX:MaxPermSize=128m";
@@ -72,6 +74,9 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
         if (javaHome != null) {
             Validate.configurationDirectoryExists(javaHome, "javaHome must exist");
         }
+        if (controllerJavaHome != null) {
+            Validate.configurationDirectoryExists(javaHome, "controllerJavaHome must exist");
+        }
     }
 
     /**
@@ -102,6 +107,19 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
         this.javaHome = javaHome;
     }
 
+    /**
+     * @return the controllerJavaHome
+     */
+    public String getControllerJavaHome() {
+        return controllerJavaHome;
+    }
+
+    /**
+     * @param javaHome the javaHome to set
+     */
+    public void setControllerJavaHome(String controllerJavaHome) {
+        this.controllerJavaHome = controllerJavaHome;
+    }
     /**
      * @return the javaVmArguments
      */

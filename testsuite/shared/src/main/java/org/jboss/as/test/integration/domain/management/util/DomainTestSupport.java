@@ -62,6 +62,10 @@ public class DomainTestSupport {
     public static final String slaveAddress = System.getProperty("jboss.test.host.slave.address", "127.0.0.1");
     public static final long domainBootTimeout = Long.valueOf(System.getProperty("jboss.test.domain.boot.timeout", "60000"));
     public static final long domainShutdownTimeout = Long.valueOf(System.getProperty("jboss.test.domain.shutdown.timeout", "20000"));
+    public static final String masterJvmHome = System.getProperty("jboss.test.host.master.jvmhome");
+    public static final String slaveJvmHome = System.getProperty("jboss.test.host.slave.jvmhome");
+    public static final String masterControllerJvmHome = System.getProperty("jboss.test.host.master.controller.jvmhome");
+    public static final String slaveControllerJvmHome = System.getProperty("jboss.test.host.slave.controller.jvmhome");
 
     static {
         DEFAULT_CONFIG = DomainTestSupport.Configuration.create("domain-configs/domain-standard.xml", "host-configs/host-master.xml", "host-configs/host-slave.xml", JBossAsManagedConfigurationParameters.STANDARD, JBossAsManagedConfigurationParameters.STANDARD);
@@ -106,7 +110,8 @@ public class DomainTestSupport {
         // TODO this should not be necessary
         new File(masterDir, "configuration").mkdirs();
         masterConfig.setDomainDirectory(masterDir.getAbsolutePath());
-
+        if (masterJvmHome != null) masterConfig.setJavaHome(masterJvmHome);
+        if (masterControllerJvmHome != null) masterConfig.setControllerJavaHome(masterControllerJvmHome);
         return masterConfig;
     }
 
@@ -131,7 +136,8 @@ public class DomainTestSupport {
         new File(slaveDir, "configuration").mkdirs();
         slaveConfig.setDomainDirectory(slaveDir.getAbsolutePath());
         System.out.println(slaveConfig.getDomainDirectory());
-
+        if (slaveJvmHome != null) slaveConfig.setJavaHome(slaveJvmHome);
+        if (slaveControllerJvmHome != null) slaveConfig.setControllerJavaHome(slaveControllerJvmHome);
         return slaveConfig;
     }
 
