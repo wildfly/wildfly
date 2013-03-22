@@ -93,6 +93,7 @@
                             !org.jboss.as.osgi*, 
                             !org.jboss.as.server*, 
                             !org.jboss.as.web*,
+                            !io.undertow*,
                         </Import-Package>
                     </instructions>
                 </configuration>

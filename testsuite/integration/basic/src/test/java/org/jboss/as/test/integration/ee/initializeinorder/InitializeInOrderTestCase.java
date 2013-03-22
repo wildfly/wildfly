@@ -66,14 +66,12 @@ public class InitializeInOrderTestCase {
 
     @Test
     public void testPostConstruct() throws NamingException {
-        System.out.println("initOrder = " + initOrder);
         Assert.assertEquals(2, initOrder.size());
         Assert.assertEquals("MyServlet", initOrder.get(0));
         Assert.assertEquals("MyEjb", initOrder.get(1));
     }
     
     public static void recordInit(final String clazz) {
-        System.out.println("adding class: " +clazz);
         initOrder.add(clazz);
     }
 
