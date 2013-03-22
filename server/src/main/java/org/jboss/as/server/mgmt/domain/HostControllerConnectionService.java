@@ -36,6 +36,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.threads.JBossThreadFactory;
+import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Sequence;
@@ -76,15 +77,15 @@ public class HostControllerConnectionService implements Service<HostControllerCl
     private final String userName;
     private final String serverProcessName;
     private final byte[] initialAuthKey;
-    private final int initialOperationID;
     private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("host-controller-connection-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
     private final ExecutorService executor = Executors.newCachedThreadPool(threadFactory);
+    private final int connectOperationID;
     private final boolean managementSubsystemEndpoint;
 
     private HostControllerClient client;
 
     public HostControllerConnectionService(final String hostName, final int port, final String serverName, final String serverProcessName,
-                                           final byte[] authKey, final int initialOperationID,
+                                           final byte[] authKey, final int connectOperationID,
                                            final boolean managementSubsystemEndpoint) {
         this.port = port;
         this.hostName = hostName;
@@ -92,7 +93,7 @@ public class HostControllerConnectionService implements Service<HostControllerCl
         this.userName = "=" + serverName;
         this.serverProcessName = serverProcessName;
         this.initialAuthKey = authKey;
-        this.initialOperationID = initialOperationID;
+        this.connectOperationID = connectOperationID;
         this.managementSubsystemEndpoint = managementSubsystemEndpoint;
     }
 
@@ -109,18 +110,22 @@ public class HostControllerConnectionService implements Service<HostControllerCl
             configuration.setConnectionTimeout(SERVER_CONNECTION_TIMEOUT);
             configuration.setSslContext(getAcceptingSSLContext());
             // Create the connection
-            final HostControllerConnection connection = new HostControllerConnection(serverProcessName, userName, initialOperationID, configuration, executor);
+            final HostControllerConnection connection = new HostControllerConnection(serverProcessName, userName, connectOperationID, configuration, executor);
             // Trigger the started notification based on the process state listener
             final ControlledProcessStateService processService = processStateServiceInjectedValue.getValue();
             processService.addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(final PropertyChangeEvent evt) {
+                    final ControlledProcessState.State old = (ControlledProcessState.State) evt.getOldValue();
                     final ControlledProcessState.State current = (ControlledProcessState.State) evt.getNewValue();
-                    if(current == ControlledProcessState.State.RUNNING) {
-                        // Send the started notification
-                        connection.started();
-                    } else {
-                        // TODO send a stopping message
+                    if (old == ControlledProcessState.State.STARTING) {
+                        // After starting reload has to be cleared, may still require a restart
+                        if(current == ControlledProcessState.State.RUNNING
+                                || current == ControlledProcessState.State.RESTART_REQUIRED) {
+                            connection.started();
+                        } else {
+                            IoUtils.safeClose(connection);
+                        }
                     }
                 }
             });

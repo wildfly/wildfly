@@ -56,22 +56,28 @@ public class DomainServerCommunicationServices  implements ServiceActivator, Ser
 
     private static final long serialVersionUID = 1593964083902839384L;
 
+    // Shared operation ID for connection, this will get updated for start and reload
+    private static volatile int initialOperationID;
+
     private final ModelNode endpointConfig;
     private final InetSocketAddress managementSocket;
     private final String serverName;
     private final String serverProcessName;
     private final byte[] authKey;
-    private final int initialOperationID;
+
     private final boolean managementSubsystemEndpoint;
 
-    DomainServerCommunicationServices(ModelNode endpointConfig, InetSocketAddress managementSocket, String serverName, String serverProcessName, byte[] authKey, int initialOperationID, boolean managementSubsystemEndpoint) {
+    DomainServerCommunicationServices(ModelNode endpointConfig, InetSocketAddress managementSocket, String serverName, String serverProcessName, byte[] authKey, boolean managementSubsystemEndpoint) {
         this.endpointConfig = endpointConfig;
         this.managementSocket = managementSocket;
         this.serverName = serverName;
         this.serverProcessName = serverProcessName;
         this.authKey = authKey;
-        this.initialOperationID = initialOperationID;
         this.managementSubsystemEndpoint = managementSubsystemEndpoint;
+    }
+
+    public static void updateOperationID(final int operationID) {
+        initialOperationID = operationID;
     }
 
     @Override
@@ -109,14 +115,13 @@ public class DomainServerCommunicationServices  implements ServiceActivator, Ser
      * @param serverName the server name
      * @param serverProcessName the server process name
      * @param authKey the authentication key
-     * @param initialOperationID the host-controller operation id for starting this server
      * @param managementSubsystemEndpoint whether to use the mgmt subsystem endpoint or not
      * @return the service activator
      */
     public static ServiceActivator create(final ModelNode endpointConfig, final InetSocketAddress managementSocket, final String serverName, final String serverProcessName,
-                                          final byte[] authKey, final int initialOperationID,  boolean managementSubsystemEndpoint) {
+                                          final byte[] authKey, final boolean managementSubsystemEndpoint) {
 
-        return new DomainServerCommunicationServices(endpointConfig, managementSocket, serverName, serverProcessName, authKey, initialOperationID, managementSubsystemEndpoint);
+        return new DomainServerCommunicationServices(endpointConfig, managementSocket, serverName, serverProcessName, authKey, managementSubsystemEndpoint);
     }
 
 }

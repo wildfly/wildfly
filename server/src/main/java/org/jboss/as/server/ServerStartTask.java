@@ -79,9 +79,10 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
     private final String home;
     private final List<ServiceActivator> startServices;
     private final List<ModelNode> updates;
+    private final int initialOperationID;
     private final Properties properties = new Properties();
 
-    public ServerStartTask(final String hostControllerName, final String serverName, final int portOffset,
+    public ServerStartTask(final String hostControllerName, final String serverName, final int portOffset, final int initialOperationID,
                            final List<ServiceActivator> startServices, final List<ModelNode> updates, final Map<String, String> launchProperties) {
         assert serverName != null && serverName.length() > 0  : "Server name \"" + serverName + "\" is invalid; cannot be null or blank";
         assert hostControllerName != null && hostControllerName.length() > 0 : "Host Controller name \"" + hostControllerName + "\" is invalid; cannot be null or blank";
@@ -90,7 +91,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         this.portOffset = portOffset;
         this.startServices = startServices;
         this.updates = updates;
-
+        this.initialOperationID = initialOperationID;
         this.hostControllerName = hostControllerName;
 
         this.home = SecurityActions.getSystemProperty("jboss.home.dir");
@@ -126,6 +127,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         final ServerEnvironment providedEnvironment = new ServerEnvironment(hostControllerName, properties,
 
         SecurityActions.getSystemEnvironment(), null, null, ServerEnvironment.LaunchType.DOMAIN, RunningMode.NORMAL, productConfig);
+        DomainServerCommunicationServices.updateOperationID(initialOperationID);
 
         // TODO perhaps have ConfigurationPersisterFactory as a Service
         final List<ServiceActivator> services = new ArrayList<ServiceActivator>(startServices);

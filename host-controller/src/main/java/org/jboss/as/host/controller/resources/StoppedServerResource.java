@@ -22,26 +22,34 @@
 
 package org.jboss.as.host.controller.resources;
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.host.controller.descriptions.HostResolver;
-import org.jboss.as.host.controller.operations.ServerStatusHandler;
-import static org.jboss.as.host.controller.resources.ServerConfigResourceDefinition.registerServerLifecycleOperations;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.operations.LaunchTypeHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
- * {@code ResourceDescription} describing a stopped (running) server.
+ * {@code ResourceDescription} describing a stopped server instance.
  *
  * @author Emanuel Muckenhuber
  */
 public class StoppedServerResource extends SimpleResourceDefinition {
 
     private static final PathElement SERVER = PathElement.pathElement(ModelDescriptionConstants.RUNNING_SERVER);
+
+    private static final OperationDefinition RELOAD = new SimpleOperationDefinitionBuilder("reload", HostResolver.getResolver("host.server"))
+            .setPrivateEntry()
+            .build();
 
     private final ServerInventory serverInventory;
     public StoppedServerResource(final ServerInventory serverInventory) {
@@ -53,11 +61,17 @@ public class StoppedServerResource extends SimpleResourceDefinition {
     public void registerOperations(final ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
 
-        // start,stop,restart
-        registerServerLifecycleOperations(resourceRegistration, serverInventory);
+        // TODO also allow start,stop,restart,reload operations here
+        // registerServerLifecycleOperations(resourceRegistration, serverInventory);
 
-        resourceRegistration.registerMetric(ServerConfigResourceDefinition.STATUS, new ServerStatusHandler(serverInventory));
-        resourceRegistration.registerMetric(ServerRootResourceDefinition.LAUNCH_TYPE, new LaunchTypeHandler(ServerEnvironment.LaunchType.DOMAIN));
+        resourceRegistration.registerReadOnlyAttribute(ServerRootResourceDefinition.LAUNCH_TYPE, new LaunchTypeHandler(ServerEnvironment.LaunchType.DOMAIN));
+        resourceRegistration.registerReadOnlyAttribute(ServerRootResourceDefinition.SERVER_STATE, new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                context.getResult().set("STOPPED");
+                context.stepCompleted();
+            }
+        });
 
     }
 

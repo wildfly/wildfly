@@ -30,6 +30,8 @@ import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.dmr.ModelNode;
 
+import java.io.IOException;
+
 /**
  * @author Emanuel Muckenhuber
  */
@@ -82,6 +84,21 @@ public final class TransactionalProtocolHandlers {
      */
     public static TransactionalProtocolClient.Operation wrap(final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
         return new TransactionalOperationImpl(operation, messageHandler, attachments);
+    }
+
+    /**
+     * Execute blocking for a prepared result.
+     *
+     * @param operation the operation to execute
+     * @param client the protocol client
+     * @return the prepared operation
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public static TransactionalProtocolClient.PreparedOperation<TransactionalProtocolClient.Operation> executeBlocking(final ModelNode operation, TransactionalProtocolClient client) throws IOException, InterruptedException {
+        final BlockingQueueOperationListener<TransactionalProtocolClient.Operation> listener = new BlockingQueueOperationListener<>();
+        client.execute(listener, operation, OperationMessageHandler.DISCARD, OperationAttachments.EMPTY);
+        return listener.retrievePreparedOperation();
     }
 
 }

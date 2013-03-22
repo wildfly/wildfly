@@ -40,6 +40,7 @@ import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
 import org.jboss.as.controller.transform.TransformationTarget;
@@ -217,19 +218,13 @@ class ManagedServer {
     }
 
     /**
-     * Set the server into the reloading state.
+     * Reload a managed server.
      *
+     * @param permit the controller permit
      * @return whether the state was changed successfully or not
      */
-    protected synchronized boolean reloading() {
-        return internalSetState(null, InternalState.SERVER_STARTED, InternalState.RELOADING);
-    }
-
-    /**
-     * Cancel the reloading state.
-     */
-    protected synchronized void cancelReloading() {
-        internalSetState(null, InternalState.RELOADING, InternalState.SERVER_STARTED);
+    protected synchronized boolean reload(int permit) {
+        return internalSetState(new ReloadTask(permit), InternalState.SERVER_STARTED, InternalState.RELOADING);
     }
 
     /**
@@ -374,22 +369,24 @@ class ManagedServer {
         final InternalState current = this.internalState;
         // Create the remote controller client
         final TransactionalProtocolClient remoteClient = TransactionalProtocolHandlers.createClient(channelAssociation);
-        if(current == InternalState.RELOADING) {
+        if      (current == InternalState.RELOADING) {
             internalSetState(new TransitionTask() {
                 @Override
-                public void execute(ManagedServer server) throws Exception {
+                public boolean execute(ManagedServer server) throws Exception {
                     // Update the current remote connection
                     protocolClient.connected(remoteClient);
                     // clear reload required state
                     requiresReload = false;
+                    return true;
                 }
-            }, InternalState.RELOADING, InternalState.SERVER_STARTED);
+            }, InternalState.RELOADING, InternalState.SERVER_STARTING);
         } else {
             internalSetState(new TransitionTask() {
                 @Override
-                public void execute(final ManagedServer server) throws Exception {
+                public boolean execute(final ManagedServer server) throws Exception {
                     // Update the current remote connection
                     protocolClient.connected(remoteClient);
+                    return true;
                 }
             // TODO we just check that we are in the correct state, perhaps introduce a new state
             }, InternalState.SEND_STDIN, InternalState.SERVER_STARTING);
@@ -426,7 +423,7 @@ class ManagedServer {
                 return true;
             }
             // In case we are reloading, it will reconnect automatically
-            if( state == InternalState.RELOADING) {
+            if (state == InternalState.RELOADING) {
                 return true;
             }
             try {
@@ -527,7 +524,9 @@ class ManagedServer {
         if(internalState == current) {
             try {
                 if(task != null) {
-                    task.execute(this);
+                    if(! task.execute(this)) {
+                        return true; // Not a failure condition
+                    }
                 }
                 this.internalState = next;
                 return true;
@@ -612,9 +611,9 @@ class ManagedServer {
                 }
                 break;
             } case RELOADING: {
-                if(required == InternalState.SERVER_STARTED) {
+                if (required == InternalState.SERVER_STARTED) {
                     return InternalState.SERVER_STARTED;
-                } else if( required == InternalState.STOPPED) {
+                } else if (required == InternalState.STOPPED) {
                     return InternalState.PROCESS_STOPPING;
                 }
                 break;
@@ -718,31 +717,32 @@ class ManagedServer {
 
     interface TransitionTask {
 
-        void execute(ManagedServer server) throws Exception;
+        boolean execute(ManagedServer server) throws Exception;
 
     }
-
 
     private class ProcessAddTask implements TransitionTask {
 
         @Override
-        public void execute(ManagedServer server) throws Exception {
+        public boolean execute(ManagedServer server) throws Exception {
             assert Thread.holdsLock(ManagedServer.this); // Call under lock
             final List<String> command = bootConfiguration.getServerLaunchCommand();
             final Map<String, String> env = bootConfiguration.getServerLaunchEnvironment();
             final HostControllerEnvironment environment = bootConfiguration.getHostControllerEnvironment();
             // Add the process to the process controller
             processControllerClient.addProcess(serverProcessName, authKey, command.toArray(new String[command.size()]), environment.getHomeDir().getAbsolutePath(), env);
+            return true;
         }
 
     }
 
     private class ProcessRemoveTask implements TransitionTask {
         @Override
-        public void execute(ManagedServer server) throws Exception {
+        public boolean execute(ManagedServer server) throws Exception {
             assert Thread.holdsLock(ManagedServer.this); // Call under lock
             // Remove process
             processControllerClient.removeProcess(serverProcessName);
+            return true;
         }
     }
 
@@ -750,10 +750,11 @@ class ManagedServer {
     private class ProcessStartTask implements TransitionTask {
 
         @Override
-        public void execute(ManagedServer server) throws Exception {
+        public boolean execute(ManagedServer server) throws Exception {
             assert Thread.holdsLock(ManagedServer.this); // Call under lock
             // Start the process
             processControllerClient.startProcess(serverProcessName);
+            return true;
         }
 
     }
@@ -761,7 +762,7 @@ class ManagedServer {
     private class SendStdInTask implements TransitionTask {
 
         @Override
-        public void execute(ManagedServer server) throws Exception {
+        public boolean execute(ManagedServer server) throws Exception {
             assert Thread.holdsLock(ManagedServer.this); // Call under lock
             // Get the standalone boot updates
             final List<ModelNode> bootUpdates = Collections.emptyList(); // bootConfiguration.getBootUpdates();
@@ -769,8 +770,8 @@ class ManagedServer {
             final boolean useSubsystemEndpoint = bootConfiguration.isManagementSubsystemEndpoint();
             final ModelNode endpointConfig = bootConfiguration.getSubsystemEndpointConfiguration();
             // Send std.in
-            final ServiceActivator hostControllerCommActivator = DomainServerCommunicationServices.create(endpointConfig, managementSocket, serverName, serverProcessName, authKey, operationID, useSubsystemEndpoint);
-            final ServerStartTask startTask = new ServerStartTask(hostControllerName, serverName, 0, Collections.<ServiceActivator>singletonList(hostControllerCommActivator), bootUpdates, launchProperties);
+            final ServiceActivator hostControllerCommActivator = DomainServerCommunicationServices.create(endpointConfig, managementSocket, serverName, serverProcessName, authKey, useSubsystemEndpoint);
+            final ServerStartTask startTask = new ServerStartTask(hostControllerName, serverName, 0, operationID, Collections.<ServiceActivator>singletonList(hostControllerCommActivator), bootUpdates, launchProperties);
             final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
             final OutputStream os = processControllerClient.sendStdin(serverProcessName);
             marshaller.start(Marshalling.createByteOutput(os));
@@ -778,14 +779,15 @@ class ManagedServer {
             marshaller.finish();
             marshaller.close();
             os.close();
+            return true;
         }
     }
 
     private class ServerStartedTask implements TransitionTask {
 
         @Override
-        public void execute(ManagedServer server) throws Exception {
-            //
+        public boolean execute(ManagedServer server) throws Exception {
+            return true;
         }
 
     }
@@ -793,22 +795,52 @@ class ManagedServer {
     private class ServerStopTask implements TransitionTask {
 
         @Override
-        public void execute(ManagedServer server) throws Exception {
+        public boolean execute(ManagedServer server) throws Exception {
             assert Thread.holdsLock(ManagedServer.this); // Call under lock
             // Stop process
             processControllerClient.stopProcess(serverProcessName);
+            return true;
         }
     }
 
     private class ReconnectTask implements TransitionTask {
 
         @Override
-        public void execute(ManagedServer server) throws Exception {
+        public boolean execute(ManagedServer server) throws Exception {
             assert Thread.holdsLock(ManagedServer.this); // Call under lock
             // Reconnect
             final String hostName = InetAddress.getByName(managementSocket.getHostName()).getHostName();
             final int port = managementSocket.getPort();
             processControllerClient.reconnectProcess(serverProcessName, NetworkUtils.formatPossibleIpv6Address(hostName), port, bootConfiguration.isManagementSubsystemEndpoint(), authKey);
+            return true;
+        }
+    }
+
+    private class ReloadTask implements TransitionTask {
+
+        private final int permit;
+        private ReloadTask(int permit) {
+            this.permit = permit;
+        }
+
+        @Override
+        public boolean execute(ManagedServer server) throws Exception {
+
+            final ModelNode operation = new ModelNode();
+            operation.get(ModelDescriptionConstants.OP).set("reload");
+            operation.get(ModelDescriptionConstants.OP_ADDR).setEmptyList();
+            operation.get("operation-id").set(permit);
+
+            try {
+                final TransactionalProtocolClient.PreparedOperation<?> prepared = TransactionalProtocolHandlers.executeBlocking(operation, protocolClient);
+                if (prepared.isFailed()) {
+                    return false;
+                }
+                prepared.commit(); // Just commit and discard the result
+            } catch (IOException ignore) {
+                //
+            }
+            return true;
         }
     }
 
