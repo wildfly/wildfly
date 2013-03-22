@@ -10,14 +10,16 @@ import javax.naming.NamingException;
 import org.apache.catalina.Host;
 import org.apache.catalina.Loader;
 import org.apache.catalina.Wrapper;
+import org.apache.catalina.core.ApplicationContext;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
 import org.jboss.as.web.VirtualHost;
 import org.jboss.as.web.deployment.WebCtxLoader;
+import org.jboss.as.web.host.ApplicationContextWrapper;
 import org.jboss.as.web.host.ServletBuilder;
-import org.jboss.as.web.host.WebDeploymentController;
 import org.jboss.as.web.host.WebDeploymentBuilder;
+import org.jboss.as.web.host.WebDeploymentController;
 import org.jboss.as.web.host.WebHost;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -70,10 +72,10 @@ public class JBossWebHost implements WebHost, Service<WebHost> {
             for (String urlPattern : urlPatterns) {
                 context.addServletMapping(urlPattern, servletName);
             }
-            for (Map.Entry<String,String> entry : webDeploymentBuilder.getMimeTypes().entrySet()){
-                context.addMimeMapping(entry.getKey(),entry.getValue());
+            for (Map.Entry<String, String> entry : webDeploymentBuilder.getMimeTypes().entrySet()) {
+                context.addMimeMapping(entry.getKey(), entry.getValue());
             }
-            if (servlet.isForceInit()){
+            if (servlet.isForceInit()) {
                 wsfsWrapper.allocate();
             }
         }
@@ -128,6 +130,26 @@ public class JBossWebHost implements WebHost, Service<WebHost> {
         }
     }
 
+    static class ShareableContext extends StandardContext {
+
+        private volatile ApplicationContextWrapper wrapper;
+
+        ShareableContext(final ApplicationContextWrapper wrapper) {
+            this.wrapper = wrapper;
+        }
+
+        ApplicationContext getApplicationContext() {
+            if(wrapper != null) {
+                synchronized (this) {
+                    if(wrapper != null) {
+                        context = (ApplicationContext) wrapper.wrap(getServletContext());
+                        wrapper = null;
+                    }
+                }
+            }
+            return context;
+        }
+    }
 
     private static class WebDeploymentControllerImpl implements WebDeploymentController {
 

@@ -15,6 +15,7 @@ public class WebDeploymentBuilder {
     private ClassLoader classLoader;
     private String contextRoot;
     private File documentRoot;
+    private ApplicationContextWrapper applicationContextWrapper;
     private final List<ServletBuilder> servlets = new ArrayList<>();
     private final Map<String,String> mimeTypes = new HashMap<>();
 
@@ -58,5 +59,13 @@ public class WebDeploymentBuilder {
     }
     public void addMimeMapping(String type,String mapping){
         mimeTypes.put(type,mapping);
+    }
+
+    public ApplicationContextWrapper getApplicationContextWrapper() {
+        return applicationContextWrapper;
+    }
+
+    public void setApplicationContextWrapper(final ApplicationContextWrapper applicationContextWrapper) {
+        this.applicationContextWrapper = applicationContextWrapper;
     }
 }
