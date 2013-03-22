@@ -22,6 +22,7 @@
 
 package org.jboss.as.host.controller;
 
+import org.jboss.as.controller.CurrentOperationIdHolder;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
@@ -274,6 +275,26 @@ public class ServerInventoryImpl implements ServerInventory {
         synchronized (shutdownCondition) {
             shutdownCondition.notifyAll();
         }
+    }
+
+    @Override
+    public ServerStatus reloadServer(final String serverName, final boolean blocking) {
+        if (shutdown || connectionFinished) {
+            throw HostControllerMessages.MESSAGES.hostAlreadyShutdown();
+        }
+        final ManagedServer server = servers.get(serverName);
+        if (server == null) {
+            return ServerStatus.STOPPED;
+        }
+        if (server.reload(CurrentOperationIdHolder.getCurrentOperationID())) {
+            // Reload with current permit
+            if (blocking) {
+                server.awaitState(ManagedServer.InternalState.SERVER_STARTED);
+            } else {
+                server.awaitState(ManagedServer.InternalState.SERVER_STARTING);
+            }
+        }
+        return determineServerStatus(serverName);
     }
 
     @Override

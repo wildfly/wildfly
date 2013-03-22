@@ -705,6 +705,11 @@ public class DomainModelControllerService extends AbstractControllerService impl
             return serverInventory.getProcessServerName(processName);
         }
 
+        @Override
+        public ServerStatus reloadServer(String serverName, boolean blocking) {
+            return serverInventory.reloadServer(serverName, blocking);
+        }
+
         public void processInventory(Map<String, ProcessInfo> processInfos) {
             serverInventory.processInventory(processInfos);
         }

@@ -105,6 +105,7 @@ import org.jboss.as.server.operations.LaunchTypeHandler;
 import org.jboss.as.server.operations.ProcessTypeHandler;
 import org.jboss.as.server.operations.RootResourceHack;
 import org.jboss.as.server.operations.RunningModeReadHandler;
+import org.jboss.as.server.operations.ServerDomainProcessReloadHandler;
 import org.jboss.as.server.operations.ServerProcessReloadHandler;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.as.server.operations.ServerShutdownHandler;
@@ -268,15 +269,20 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerOperationHandler(RootResourceHack.DEFINITION, RootResourceHack.INSTANCE);
 
         // Reload op available in standalone and domain
-        final ServerProcessReloadHandler reloadHandler = new ServerProcessReloadHandler(Services.JBOSS_AS, runningModeControl, processState);
-        if(isDomain) {
-            // Just with a different definition
-            resourceRegistration.registerOperationHandler(ServerProcessReloadHandler.DOMAIN_DEFINITION, reloadHandler, false);
-            // Trick the resource-description for domain servers to be included in the server-resource
-            resourceRegistration.registerOperationHandler(getOperationDefinition("start"), NOOP);
-            resourceRegistration.registerOperationHandler(getOperationDefinition("stop"), NOOP);
-            resourceRegistration.registerOperationHandler(getOperationDefinition("restart"), NOOP);
+        if (isDomain) {
+
+            // TODO enable the descriptions so that they show up in the resource description
+            final ServerDomainProcessReloadHandler reloadHandler = new ServerDomainProcessReloadHandler(Services.JBOSS_AS, runningModeControl, processState);
+            resourceRegistration.registerOperationHandler(ServerDomainProcessReloadHandler.DOMAIN_DEFINITION, reloadHandler, false);
+
+//            // Trick the resource-description for domain servers to be included in the server-resource
+//            resourceRegistration.registerOperationHandler(getOperationDefinition("start"), NOOP);
+//            resourceRegistration.registerOperationHandler(getOperationDefinition("stop"), NOOP);
+//            resourceRegistration.registerOperationHandler(getOperationDefinition("restart"), NOOP);
+//            resourceRegistration.registerOperationHandler(getOperationDefinition("destroy"), NOOP);
+//            resourceRegistration.registerOperationHandler(getOperationDefinition("kill"), NOOP);
         } else {
+            final ServerProcessReloadHandler reloadHandler = new ServerProcessReloadHandler(Services.JBOSS_AS, runningModeControl, processState);
             resourceRegistration.registerOperationHandler(ServerProcessReloadHandler.DEFINITION, reloadHandler, false);
         }
 

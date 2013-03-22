@@ -166,6 +166,14 @@ public interface ServerInventory {
     void reconnectServer(String serverName, ModelNode domainModel, byte[] authKey, boolean running, boolean stopping);
 
     /**
+     * Reload a server with the given name.
+     *
+     * @param serverName the name of the server
+     * @blockign whether to block until the server is started
+     */
+    ServerStatus reloadServer(String serverName, boolean blocking);
+
+    /**
      * Destroy a stopping server process. In case the the server is not stopping, this will attempt to stop the server
      * and this method has to be called again.
      *

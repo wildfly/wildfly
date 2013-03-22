@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.domain.suites;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BLOCKING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -48,6 +49,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.checkState;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForResult;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.getServerConfigAddress;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.startServer;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.waitUntilState;
 
@@ -179,6 +182,21 @@ public class ServerManagementTestCase {
 
         Assert.assertFalse(exists(client, newServerConfigAddress));
         Assert.assertFalse(exists(client, newRunningServerAddress));
+    }
+
+    @Test
+    public void testReloadServer() throws Exception {
+        final DomainClient client = domainSlaveLifecycleUtil.getDomainClient();
+        final ModelNode address = getServerConfigAddress("slave", "main-three");
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("reload");
+        operation.get(OP_ADDR).set(address);
+        operation.get(BLOCKING).set(true);
+
+        executeForResult(client, operation);
+
+        Assert.assertTrue(checkState(client, address, "STARTED"));
     }
 
     @Ignore("AS7-2653")
