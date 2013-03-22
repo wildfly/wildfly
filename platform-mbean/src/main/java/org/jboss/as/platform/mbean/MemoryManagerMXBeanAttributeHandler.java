@@ -38,9 +38,9 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class MemoryManagerMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
+class MemoryManagerMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
 
-    public static MemoryManagerMXBeanAttributeHandler INSTANCE = new MemoryManagerMXBeanAttributeHandler();
+    static final MemoryManagerMXBeanAttributeHandler INSTANCE = new MemoryManagerMXBeanAttributeHandler();
 
     private MemoryManagerMXBeanAttributeHandler() {
 

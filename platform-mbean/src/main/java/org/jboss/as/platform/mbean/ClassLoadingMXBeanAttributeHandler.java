@@ -39,9 +39,9 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ClassLoadingMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
+class ClassLoadingMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
 
-    public static ClassLoadingMXBeanAttributeHandler INSTANCE = new ClassLoadingMXBeanAttributeHandler();
+    static final ClassLoadingMXBeanAttributeHandler INSTANCE = new ClassLoadingMXBeanAttributeHandler();
 
     private ClassLoadingMXBeanAttributeHandler() {
         writeAttributeValidator.registerValidator(ModelDescriptionConstants.VALUE, new ModelTypeValidator(ModelType.BOOLEAN));

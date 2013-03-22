@@ -36,9 +36,9 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class MemoryMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
+class MemoryMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
 
-    public static MemoryMXBeanAttributeHandler INSTANCE = new MemoryMXBeanAttributeHandler();
+    static final MemoryMXBeanAttributeHandler INSTANCE = new MemoryMXBeanAttributeHandler();
 
     private MemoryMXBeanAttributeHandler() {
         writeAttributeValidator.registerValidator(ModelDescriptionConstants.VALUE, new ModelTypeValidator(ModelType.BOOLEAN));

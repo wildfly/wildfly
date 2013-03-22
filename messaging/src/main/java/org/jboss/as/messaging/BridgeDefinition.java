@@ -53,7 +53,6 @@ import org.jboss.dmr.ModelNode;
  */
 public class BridgeDefinition extends SimpleResourceDefinition {
 
-    public static final String[] OPERATIONS = {START, STOP};
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.BRIDGE);
 
     private final boolean registerRuntimeOnly;
@@ -67,7 +66,7 @@ public class BridgeDefinition extends SimpleResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    public static SimpleAttributeDefinition DISCOVERY_GROUP_NAME = create(CommonAttributes.DISCOVERY_GROUP_NAME, STRING)
+    public static final SimpleAttributeDefinition DISCOVERY_GROUP_NAME = create(CommonAttributes.DISCOVERY_GROUP_NAME, STRING)
             .setAllowNull(true)
             .setAlternatives(STATIC_CONNECTORS)
             .setAttributeMarshaller(AttributeMarshallers.DISCOVERY_GROUP_MARSHALLER)

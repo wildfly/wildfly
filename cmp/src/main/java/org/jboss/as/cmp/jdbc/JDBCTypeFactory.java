@@ -62,7 +62,7 @@ public final class JDBCTypeFactory {
     /**
      * This implementation uses field's value as its state.
      */
-    public static CMPFieldStateFactory EQUALS = new CMPFieldStateFactory() {
+    public static final CMPFieldStateFactory EQUALS = new CMPFieldStateFactory() {
         public Object getFieldState(Object fieldValue) {
             return fieldValue;
         }
@@ -76,7 +76,7 @@ public final class JDBCTypeFactory {
      * This implementation will always suppose that the state is invalid unless
      * both states are null.
      */
-    private static CMPFieldStateFactory INVALID_UNLESS_NULL = new CMPFieldStateFactory() {
+    private static final CMPFieldStateFactory INVALID_UNLESS_NULL = new CMPFieldStateFactory() {
         public Object getFieldState(Object fieldValue) {
             return fieldValue;
         }
@@ -90,7 +90,7 @@ public final class JDBCTypeFactory {
      * Field state factory for java.util.Map implementations. The state is
      * a deep copy of the value.
      */
-    private static CMPFieldStateFactory MAP = new CMPFieldStateFactory() {
+    private static final CMPFieldStateFactory MAP = new CMPFieldStateFactory() {
         public Object getFieldState(Object fieldValue) {
             return cloneValue(fieldValue, Map.class);
         }
@@ -104,7 +104,7 @@ public final class JDBCTypeFactory {
      * Field state factory for java.util.List implementations. The state is
      * a deep copy of the value.
      */
-    private static CMPFieldStateFactory LIST = new CMPFieldStateFactory() {
+    private static final CMPFieldStateFactory LIST = new CMPFieldStateFactory() {
         public Object getFieldState(Object fieldValue) {
             return cloneValue(fieldValue, Collection.class);
         }
@@ -118,7 +118,7 @@ public final class JDBCTypeFactory {
      * Field state factory for java.util.Set implementations. The state is
      * a deep copy of the value.
      */
-    private static CMPFieldStateFactory SET = new CMPFieldStateFactory() {
+    private static final CMPFieldStateFactory SET = new CMPFieldStateFactory() {
         public Object getFieldState(Object fieldValue) {
             return cloneValue(fieldValue, Collection.class);
         }
@@ -131,7 +131,7 @@ public final class JDBCTypeFactory {
     /**
      * Field state factory for arrays. The state is a deep copy of the value.
      */
-    private static CMPFieldStateFactory ARRAY = new CMPFieldStateFactory() {
+    private static final CMPFieldStateFactory ARRAY = new CMPFieldStateFactory() {
         public Object getFieldState(Object fieldValue) {
             Object state = null;
             if (fieldValue != null) {

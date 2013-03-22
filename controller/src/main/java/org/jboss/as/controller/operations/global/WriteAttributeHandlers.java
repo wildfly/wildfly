@@ -55,7 +55,7 @@ public class WriteAttributeHandlers {
     @Deprecated
     @SuppressWarnings("deprecation")
     public static class WriteAttributeOperationHandler implements OperationStepHandler {
-        public static WriteAttributeOperationHandler INSTANCE = new WriteAttributeOperationHandler();
+        public static final WriteAttributeOperationHandler INSTANCE = new WriteAttributeOperationHandler();
 
         final ParametersValidator nameValidator = new ParametersValidator();
         final ParameterValidator valueValidator;

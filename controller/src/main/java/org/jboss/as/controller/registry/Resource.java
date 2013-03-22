@@ -193,10 +193,7 @@ public interface Resource extends Cloneable {
         public static final ResourceFilter ALL_BUT_RUNTIME_AND_PROXIES_FILTER = new ResourceFilter() {
             @Override
             public boolean accepts(PathAddress address, Resource resource) {
-                if(resource.isRuntime() || resource.isProxy()) {
-                    return false;
-                }
-                return true;
+                return !(resource.isRuntime() || resource.isProxy());
             }
         };
 

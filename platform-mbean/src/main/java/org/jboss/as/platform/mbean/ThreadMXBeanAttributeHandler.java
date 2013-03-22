@@ -37,9 +37,9 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ThreadMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
+class ThreadMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
 
-    public static ThreadMXBeanAttributeHandler INSTANCE = new ThreadMXBeanAttributeHandler();
+    static final ThreadMXBeanAttributeHandler INSTANCE = new ThreadMXBeanAttributeHandler();
 
     private final ParametersValidator enabledValidator = new ParametersValidator();
 

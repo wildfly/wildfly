@@ -61,7 +61,7 @@ public class RootResourceHack implements OperationStepHandler {
     public static final String NAME = "root-resource-hack";
 
     //Private method does not need resources for description
-    public static OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(NAME, null)
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(NAME, null)
         .setPrivateEntry()
         .setRuntimeOnly()
         .build();

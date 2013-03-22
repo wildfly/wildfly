@@ -37,9 +37,9 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class CompilationMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
+class CompilationMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
 
-    public static CompilationMXBeanAttributeHandler INSTANCE = new CompilationMXBeanAttributeHandler();
+    static final CompilationMXBeanAttributeHandler INSTANCE = new CompilationMXBeanAttributeHandler();
 
     private CompilationMXBeanAttributeHandler() {
 

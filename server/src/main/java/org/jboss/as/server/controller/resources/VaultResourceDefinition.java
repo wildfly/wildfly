@@ -52,13 +52,13 @@ import org.jboss.dmr.ModelType;
  */
 public class VaultResourceDefinition extends SimpleResourceDefinition {
 
-    public static SimpleAttributeDefinition CODE = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.CODE, ModelType.STRING, true)
+    public static final SimpleAttributeDefinition CODE = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.CODE, ModelType.STRING, true)
             .addFlag(Flag.RESTART_ALL_SERVICES)
             .setValidator(new ModelTypeValidator(ModelType.STRING, true))
             .setAllowExpression(true)
             .build();
 
-    public static PropertiesAttributeDefinition VAULT_OPTIONS = new PropertiesAttributeDefinition.Builder(ModelDescriptionConstants.VAULT_OPTIONS, true)
+    public static final PropertiesAttributeDefinition VAULT_OPTIONS = new PropertiesAttributeDefinition.Builder(ModelDescriptionConstants.VAULT_OPTIONS, true)
             .addFlag(Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setCorrector(MapAttributeDefinition.LIST_TO_MAP_CORRECTOR)

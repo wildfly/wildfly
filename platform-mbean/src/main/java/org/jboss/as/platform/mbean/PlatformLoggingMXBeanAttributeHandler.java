@@ -32,9 +32,9 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class PlatformLoggingMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
+class PlatformLoggingMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
 
-    public static PlatformLoggingMXBeanAttributeHandler INSTANCE = new PlatformLoggingMXBeanAttributeHandler();
+    static final PlatformLoggingMXBeanAttributeHandler INSTANCE = new PlatformLoggingMXBeanAttributeHandler();
 
     private PlatformLoggingMXBeanAttributeHandler() {
     }

@@ -40,9 +40,9 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class MemoryPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
+class MemoryPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
 
-    public static MemoryPoolMXBeanAttributeHandler INSTANCE = new MemoryPoolMXBeanAttributeHandler();
+    static final MemoryPoolMXBeanAttributeHandler INSTANCE = new MemoryPoolMXBeanAttributeHandler();
 
     private final ParametersValidator usageValidator = new ParametersValidator();
 

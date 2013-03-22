@@ -129,7 +129,7 @@ final class LoggerOperations {
     /**
      * A default log handler write attribute step handler.
      */
-    public static class LoggerWriteAttributeHandler extends LoggingOperations.LoggingWriteAttributeHandler {
+    static class LoggerWriteAttributeHandler extends LoggingOperations.LoggingWriteAttributeHandler {
 
         protected LoggerWriteAttributeHandler(final AttributeDefinition[] attributes) {
             super(attributes);
@@ -173,7 +173,7 @@ final class LoggerOperations {
     /**
      * A step handler to remove a logger
      */
-    static OperationStepHandler REMOVE_LOGGER = new LoggingOperations.LoggingRemoveOperationStepHandler() {
+    static final OperationStepHandler REMOVE_LOGGER = new LoggingOperations.LoggingRemoveOperationStepHandler() {
 
         @Override
         public void performRemove(final OperationContext context, final ModelNode operation, final LogContextConfiguration logContextConfiguration, final String name, final ModelNode model) throws OperationFailedException {
@@ -195,7 +195,7 @@ final class LoggerOperations {
     /**
      * A step handler to add a handler.
      */
-    public static OperationStepHandler ADD_HANDLER = new LoggerUpdateOperationStepHandler() {
+    static final OperationStepHandler ADD_HANDLER = new LoggerUpdateOperationStepHandler() {
 
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
@@ -219,7 +219,7 @@ final class LoggerOperations {
     /**
      * A step handler to remove a handler.
      */
-    public static OperationStepHandler REMOVE_HANDLER = new LoggerUpdateOperationStepHandler() {
+    static final OperationStepHandler REMOVE_HANDLER = new LoggerUpdateOperationStepHandler() {
 
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
@@ -250,7 +250,7 @@ final class LoggerOperations {
     /**
      * A step handler to remove a handler.
      */
-    public static OperationStepHandler CHANGE_LEVEL = new LoggerUpdateOperationStepHandler() {
+    static final OperationStepHandler CHANGE_LEVEL = new LoggerUpdateOperationStepHandler() {
 
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {

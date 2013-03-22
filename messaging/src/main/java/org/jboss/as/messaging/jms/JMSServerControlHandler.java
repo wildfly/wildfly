@@ -55,7 +55,7 @@ import org.jboss.msc.service.ServiceName;
  */
 public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
 
-    public static JMSServerControlHandler INSTANCE = new JMSServerControlHandler();
+    public static final JMSServerControlHandler INSTANCE = new JMSServerControlHandler();
 
     public static final String LIST_CONNECTIONS_AS_JSON = "list-connections-as-json";
     public static final String LIST_CONSUMERS_AS_JSON = "list-consumers-as-json";

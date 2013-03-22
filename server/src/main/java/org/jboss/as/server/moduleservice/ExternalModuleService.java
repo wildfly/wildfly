@@ -52,7 +52,7 @@ import java.io.File;
  */
 public class ExternalModuleService implements Service<ExternalModuleService> {
 
-    public static String EXTERNAL_MODULE_PREFIX = ServiceModuleLoader.MODULE_PREFIX + "external.";
+    public static final String EXTERNAL_MODULE_PREFIX = ServiceModuleLoader.MODULE_PREFIX + "external.";
 
     private volatile ServiceContainer serviceContainer;
 

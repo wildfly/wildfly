@@ -44,7 +44,7 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
     /**
      * Map of the top level class loader to all class loaders in a deployment
      */
-    public static Map<ClassLoader, Set<ClassLoader>> deploymentClassLoaders = new ConcurrentHashMap<ClassLoader, Set<ClassLoader>>();
+    public static final Map<ClassLoader, Set<ClassLoader>> deploymentClassLoaders = new ConcurrentHashMap<ClassLoader, Set<ClassLoader>>();
 
     /**
      * Maps a top level class loader to all CL's in the deployment

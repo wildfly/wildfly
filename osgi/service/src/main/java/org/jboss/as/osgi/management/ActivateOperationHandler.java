@@ -38,7 +38,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class ActivateOperationHandler extends AbstractRuntimeOnlyHandler  {
 
-    public static ActivateOperationHandler INSTANCE = new ActivateOperationHandler();
+    public static final ActivateOperationHandler INSTANCE = new ActivateOperationHandler();
 
     private ActivateOperationHandler() {
     }

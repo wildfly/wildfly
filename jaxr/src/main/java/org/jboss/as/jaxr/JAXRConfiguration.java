@@ -38,7 +38,7 @@ public class JAXRConfiguration {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jaxr", "configuration");
 
-    public static String[] OPTIONAL_ATTRIBUTES = new String[]{
+    public static final String[] OPTIONAL_ATTRIBUTES = new String[]{
             ModelConstants.CONNECTION_FACTORY,
             ModelConstants.CONNECTION_FACTORY_IMPL
     };

@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
  */
 public class Filters {
 
-    public static VirtualFileFilter TRUE = MatchAllVirtualFileFilter.INSTANCE;
+    public static final VirtualFileFilter TRUE = MatchAllVirtualFileFilter.INSTANCE;
 
     public static VirtualFileFilter not(final VirtualFileFilter filter) {
         return new VirtualFileFilter() {

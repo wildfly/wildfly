@@ -54,9 +54,9 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class AddressControlHandler extends AbstractRuntimeOnlyHandler {
+class AddressControlHandler extends AbstractRuntimeOnlyHandler {
 
-    public static AddressControlHandler INSTANCE = new AddressControlHandler();
+    static final AddressControlHandler INSTANCE = new AddressControlHandler();
 
     private AddressControlHandler() {
     }

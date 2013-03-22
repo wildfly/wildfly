@@ -43,7 +43,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ProfileResourceDefinition extends SimpleResourceDefinition {
+class ProfileResourceDefinition extends SimpleResourceDefinition {
 
     private static OperationDefinition DESCRIBE = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.DESCRIBE, DomainResolver.getResolver(PROFILE, false))
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.READ_WHOLE_CONFIG)
@@ -54,7 +54,7 @@ public class ProfileResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     //This attribute exists in 7.1.2 and 7.1.3 but was always nillable
-    public static SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING)
+    private static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING)
             .setValidator(new StringLengthValidator(1, true))
             .setAllowNull(true)
             .setResourceOnly()

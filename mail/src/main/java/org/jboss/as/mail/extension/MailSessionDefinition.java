@@ -48,7 +48,8 @@ import org.jboss.msc.service.ServiceName;
  * @created 19.12.11 21:04
  */
 class MailSessionDefinition extends SimpleResourceDefinition {
-    public static MailSessionDefinition INSTANCE = new MailSessionDefinition();
+
+    static final MailSessionDefinition INSTANCE = new MailSessionDefinition();
 
     private final List<AccessConstraintDefinition> accessConstraints;
 

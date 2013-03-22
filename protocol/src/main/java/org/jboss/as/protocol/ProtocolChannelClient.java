@@ -93,7 +93,7 @@ public class ProtocolChannelClient implements Closeable {
     }
 
     public static final class Configuration extends ProtocolConnectionConfiguration {
-        public static int WINDOW_SIZE = ProtocolConnectionConfiguration.DEFAULT_WINDOW_SIZE;
+        public static final int WINDOW_SIZE = ProtocolConnectionConfiguration.DEFAULT_WINDOW_SIZE;
 
         //Flags to avoid spamming logs with warnings every time someone tries to set these
         private static volatile boolean warnedExecutor;

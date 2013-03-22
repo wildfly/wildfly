@@ -304,7 +304,7 @@ final class HandlerOperations {
     /**
      * A default log handler write attribute step handler.
      */
-    public static class LogHandlerWriteAttributeHandler extends LoggingOperations.LoggingWriteAttributeHandler {
+    static class LogHandlerWriteAttributeHandler extends LoggingOperations.LoggingWriteAttributeHandler {
         private final PropertySorter propertySorter;
 
         protected LogHandlerWriteAttributeHandler(final AttributeDefinition... attributes) {
@@ -394,12 +394,12 @@ final class HandlerOperations {
     /**
      * A step handler to remove a handler
      */
-    public static OperationStepHandler CHANGE_LEVEL = new HandlerUpdateOperationStepHandler(PropertySorter.NO_OP, LEVEL);
+    static OperationStepHandler CHANGE_LEVEL = new HandlerUpdateOperationStepHandler(PropertySorter.NO_OP, LEVEL);
 
     /**
      * A step handler to remove a handler
      */
-    public static OperationStepHandler REMOVE_HANDLER = new LoggingOperations.LoggingRemoveOperationStepHandler() {
+    static final OperationStepHandler REMOVE_HANDLER = new LoggingOperations.LoggingRemoveOperationStepHandler() {
 
         @Override
         public void performRemove(final OperationContext context, final ModelNode operation, final LogContextConfiguration logContextConfiguration, final String name, final ModelNode model) throws OperationFailedException {
@@ -427,7 +427,7 @@ final class HandlerOperations {
     /**
      * The handler for adding a subhandler to an {@link org.jboss.logmanager.handlers.AsyncHandler}.
      */
-    public static final OperationStepHandler ADD_SUBHANDLER = new HandlerUpdateOperationStepHandler() {
+    static final OperationStepHandler ADD_SUBHANDLER = new HandlerUpdateOperationStepHandler() {
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
             HANDLER_NAME.validateAndSet(operation, model);
@@ -451,7 +451,7 @@ final class HandlerOperations {
     /**
      * The handler for removing a subhandler to an {@link org.jboss.logmanager.handlers.AsyncHandler}.
      */
-    public static final OperationStepHandler REMOVE_SUBHANDLER = new HandlerUpdateOperationStepHandler() {
+    static final OperationStepHandler REMOVE_SUBHANDLER = new HandlerUpdateOperationStepHandler() {
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
             HANDLER_NAME.validateAndSet(operation, model);
@@ -483,7 +483,7 @@ final class HandlerOperations {
      */
     public static OperationStepHandler CHANGE_FILE = new HandlerUpdateOperationStepHandler(PropertySorter.NO_OP, FILE);
 
-    public static LoggingOperations.LoggingUpdateOperationStepHandler ENABLE_HANDLER = new LoggingOperations.LoggingUpdateOperationStepHandler() {
+    static final LoggingOperations.LoggingUpdateOperationStepHandler ENABLE_HANDLER = new LoggingOperations.LoggingUpdateOperationStepHandler() {
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
             // Set the enable attribute to true
@@ -496,7 +496,7 @@ final class HandlerOperations {
         }
     };
 
-    public static LoggingOperations.LoggingUpdateOperationStepHandler DISABLE_HANDLER = new LoggingOperations.LoggingUpdateOperationStepHandler() {
+    static final LoggingOperations.LoggingUpdateOperationStepHandler DISABLE_HANDLER = new LoggingOperations.LoggingUpdateOperationStepHandler() {
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
             // Set the enable attribute to false

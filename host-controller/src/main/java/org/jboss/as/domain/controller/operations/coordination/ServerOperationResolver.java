@@ -97,7 +97,7 @@ import org.jboss.dmr.Property;
  */
 public class ServerOperationResolver {
 
-    public static AttachmentKey<Set<ModelNode>> DONT_PROPAGATE_TO_SERVERS_ATTACHMENT = AttachmentKey.create(Set.class);
+    public static final AttachmentKey<Set<ModelNode>> DONT_PROPAGATE_TO_SERVERS_ATTACHMENT = AttachmentKey.create(Set.class);
 
     private enum DomainKey {
 

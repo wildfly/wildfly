@@ -38,9 +38,9 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class GarbageCollectorMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
+class GarbageCollectorMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
 
-    public static GarbageCollectorMXBeanAttributeHandler INSTANCE = new GarbageCollectorMXBeanAttributeHandler();
+    static final GarbageCollectorMXBeanAttributeHandler INSTANCE = new GarbageCollectorMXBeanAttributeHandler();
 
 
     private GarbageCollectorMXBeanAttributeHandler() {

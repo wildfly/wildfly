@@ -68,7 +68,7 @@ public class PoolConfigurationRWHandler {
 
     // TODO this seems to just do what the default handler does, so registering it is probably unnecessary
     public static class PoolConfigurationReadHandler implements OperationStepHandler {
-        public static PoolConfigurationReadHandler INSTANCE = new PoolConfigurationReadHandler();
+        public static final PoolConfigurationReadHandler INSTANCE = new PoolConfigurationReadHandler();
 
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             final String parameterName = operation.require(NAME).asString();
@@ -151,7 +151,7 @@ public class PoolConfigurationRWHandler {
     }
 
     public static class LocalAndXaDataSourcePoolConfigurationWriteHandler extends PoolConfigurationWriteHandler {
-        public static LocalAndXaDataSourcePoolConfigurationWriteHandler INSTANCE = new LocalAndXaDataSourcePoolConfigurationWriteHandler();
+        public static final LocalAndXaDataSourcePoolConfigurationWriteHandler INSTANCE = new LocalAndXaDataSourcePoolConfigurationWriteHandler();
 
         protected LocalAndXaDataSourcePoolConfigurationWriteHandler() {
             super();
@@ -175,7 +175,7 @@ public class PoolConfigurationRWHandler {
     }
 
     public static class RaPoolConfigurationWriteHandler extends PoolConfigurationWriteHandler {
-        public static RaPoolConfigurationWriteHandler INSTANCE = new RaPoolConfigurationWriteHandler();
+        public static final RaPoolConfigurationWriteHandler INSTANCE = new RaPoolConfigurationWriteHandler();
 
         protected RaPoolConfigurationWriteHandler() {
             super();

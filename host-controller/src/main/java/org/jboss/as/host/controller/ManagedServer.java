@@ -92,17 +92,17 @@ class ManagedServer {
     /**
      * Prefix applied to a server's name to create it's process name.
      */
-    public static String SERVER_PROCESS_NAME_PREFIX = "Server:";
+    private static final String SERVER_PROCESS_NAME_PREFIX = "Server:";
 
-    public static String getServerProcessName(String serverName) {
+    static String getServerProcessName(String serverName) {
         return SERVER_PROCESS_NAME_PREFIX + serverName;
     }
 
-    public static boolean isServerProcess(String serverProcessName) {
+    static boolean isServerProcess(String serverProcessName) {
         return serverProcessName.startsWith(SERVER_PROCESS_NAME_PREFIX);
     }
 
-    public static String getServerName(String serverProcessName) {
+    static String getServerName(String serverProcessName) {
         return serverProcessName.substring(SERVER_PROCESS_NAME_PREFIX.length());
     }
 
@@ -617,7 +617,7 @@ class ManagedServer {
     /**
      * The managed server boot configuration.
      */
-    public interface ManagedServerBootConfiguration {
+    interface ManagedServerBootConfiguration {
         /**
          * Get the server launch environment.
          *

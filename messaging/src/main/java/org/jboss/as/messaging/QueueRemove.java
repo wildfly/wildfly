@@ -40,11 +40,9 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class QueueRemove extends AbstractRemoveStepHandler {
+class QueueRemove extends AbstractRemoveStepHandler {
 
-    public static final String OPERATION_NAME = REMOVE;
-
-    public static QueueRemove INSTANCE = new QueueRemove();
+    static final QueueRemove INSTANCE = new QueueRemove();
 
     private QueueRemove() {
     }

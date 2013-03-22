@@ -34,9 +34,9 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class OperatingSystemMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
+class OperatingSystemMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
 
-    public static OperatingSystemMXBeanAttributeHandler INSTANCE = new OperatingSystemMXBeanAttributeHandler();
+    static final OperatingSystemMXBeanAttributeHandler INSTANCE = new OperatingSystemMXBeanAttributeHandler();
 
     private OperatingSystemMXBeanAttributeHandler() {
 

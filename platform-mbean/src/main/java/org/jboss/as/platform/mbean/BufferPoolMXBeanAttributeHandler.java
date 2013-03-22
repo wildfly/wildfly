@@ -37,9 +37,9 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BufferPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
+class BufferPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
 
-    public static BufferPoolMXBeanAttributeHandler INSTANCE = new BufferPoolMXBeanAttributeHandler();
+    static final BufferPoolMXBeanAttributeHandler INSTANCE = new BufferPoolMXBeanAttributeHandler();
 
     private BufferPoolMXBeanAttributeHandler() {
     }

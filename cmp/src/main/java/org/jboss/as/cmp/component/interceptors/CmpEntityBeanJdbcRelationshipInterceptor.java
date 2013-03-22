@@ -100,7 +100,7 @@ public class CmpEntityBeanJdbcRelationshipInterceptor implements Interceptor {
         }
     }
 
-    public static InterceptorFactory FACTORY = new InterceptorFactory() {
+    public static final InterceptorFactory FACTORY = new InterceptorFactory() {
         public Interceptor create(InterceptorFactoryContext context) {
             return INSTANCE;
         }

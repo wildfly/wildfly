@@ -263,7 +263,7 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
         return isAllowExpression() ? convertStringExpression(parameterElementValue) : parameterElementValue;
     }
 
-    public static ParameterCorrector LIST_TO_MAP_CORRECTOR = new ParameterCorrector() {
+    public static final ParameterCorrector LIST_TO_MAP_CORRECTOR = new ParameterCorrector() {
         public ModelNode correct(ModelNode newValue, ModelNode currentValue) {
             if (newValue.isDefined()) {
                 if (newValue.getType() == ModelType.LIST) {

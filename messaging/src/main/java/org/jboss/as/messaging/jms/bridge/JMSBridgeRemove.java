@@ -41,11 +41,9 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author Jeff Mesnil (c) 2011 Red Hat Inc.
  */
-public class JMSBridgeRemove extends AbstractRemoveStepHandler {
+class JMSBridgeRemove extends AbstractRemoveStepHandler {
 
-    public static final String OPERATION_NAME = REMOVE;
-
-    public static JMSBridgeRemove INSTANCE = new JMSBridgeRemove();
+    static final JMSBridgeRemove INSTANCE = new JMSBridgeRemove();
 
     private JMSBridgeRemove() {
     }

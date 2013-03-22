@@ -39,7 +39,7 @@ public class NonTxEmCloser {
      * Each thread will have its own list of SB invocations in progress.
      * Key = scoped persistence unit name
      */
-    public static ThreadLocalStack<Map<String, EntityManager>> nonTxStack = new ThreadLocalStack<Map<String, EntityManager>>();
+    public static final ThreadLocalStack<Map<String, EntityManager>> nonTxStack = new ThreadLocalStack<Map<String, EntityManager>>();
 
     /**
      * entered new session bean invocation, start new collection for tracking transactional entity managers created

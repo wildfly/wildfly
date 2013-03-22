@@ -32,7 +32,7 @@ import org.jboss.as.controller.OperationContext;
 public class OperationAttachments {
 
 
-    public static OperationContext.AttachmentKey<List<DomainOperationTransformer>> SLAVE_SERVER_OPERATION_TRANSFORMERS = OperationContext.AttachmentKey.create(List.class);
+    public static final OperationContext.AttachmentKey<List<DomainOperationTransformer>> SLAVE_SERVER_OPERATION_TRANSFORMERS = OperationContext.AttachmentKey.create(List.class);
 
 
     private OperationAttachments() {

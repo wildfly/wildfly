@@ -64,7 +64,7 @@ import org.jboss.dmr.ModelType;
  */
 public class DeploymentAttributes {
 
-    public static ResourceDescriptionResolver DEPLOYMENT_RESOLVER = ServerDescriptions.getResourceDescriptionResolver(DEPLOYMENT, false);
+    public static final ResourceDescriptionResolver DEPLOYMENT_RESOLVER = ServerDescriptions.getResourceDescriptionResolver(DEPLOYMENT, false);
 
     //Top level attributes
     public static final SimpleAttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING, false)
@@ -201,21 +201,21 @@ public class DeploymentAttributes {
     @SuppressWarnings("unchecked")
     public static final Map<String, AttributeDefinition> ALL_CONTENT_ATTRIBUTES = createAttributeMap(MANAGED_CONTENT_ATTRIBUTES, UNMANAGED_CONTENT_ATTRIBUTES);
 
-    public static OperationDefinition DEPLOY_DEFINITION = new SimpleOperationDefinition(ModelDescriptionConstants.DEPLOY, DEPLOYMENT_RESOLVER);
-    public static OperationDefinition UNDEPLOY_DEFINITION = new SimpleOperationDefinition(ModelDescriptionConstants.UNDEPLOY, DEPLOYMENT_RESOLVER);
-    public static OperationDefinition REDEPLOY_DEFINITION = new SimpleOperationDefinition(ModelDescriptionConstants.REDEPLOY, DEPLOYMENT_RESOLVER);
+    public static final OperationDefinition DEPLOY_DEFINITION = new SimpleOperationDefinition(ModelDescriptionConstants.DEPLOY, DEPLOYMENT_RESOLVER);
+    public static final OperationDefinition UNDEPLOY_DEFINITION = new SimpleOperationDefinition(ModelDescriptionConstants.UNDEPLOY, DEPLOYMENT_RESOLVER);
+    public static final OperationDefinition REDEPLOY_DEFINITION = new SimpleOperationDefinition(ModelDescriptionConstants.REDEPLOY, DEPLOYMENT_RESOLVER);
 
     /** Server add deployment definition */
-    public static OperationDefinition SERVER_DEPLOYMENT_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, DEPLOYMENT_RESOLVER)
+    public static final OperationDefinition SERVER_DEPLOYMENT_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, DEPLOYMENT_RESOLVER)
             .setParameters(SERVER_ADD_ATTRIBUTES)
             .build();
 
     /** Server group add deployment definition */
-    public static OperationDefinition SERVER_GROUP_DEPLOYMENT_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, DEPLOYMENT_RESOLVER)
+    public static final OperationDefinition SERVER_GROUP_DEPLOYMENT_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, DEPLOYMENT_RESOLVER)
             .setParameters(SERVER_GROUP_ADD_ATTRIBUTES)
             .build();
 
-    public static OperationDefinition DOMAIN_DEPLOYMENT_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, DEPLOYMENT_RESOLVER)
+    public static final OperationDefinition DOMAIN_DEPLOYMENT_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, DEPLOYMENT_RESOLVER)
             .setParameters(DOMAIN_ADD_ATTRIBUTES)
             .build();
 
@@ -226,16 +226,16 @@ public class DeploymentAttributes {
 
 
     //Upload deployment bytes definitions
-    public static AttributeDefinition BYTES_NOT_NULL = SimpleAttributeDefinitionBuilder.create(DeploymentAttributes.CONTENT_BYTES)
+    public static final AttributeDefinition BYTES_NOT_NULL = SimpleAttributeDefinitionBuilder.create(DeploymentAttributes.CONTENT_BYTES)
             .setAllowNull(false)
             .build();
-    public static OperationDefinition UPLOAD_BYTES_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES, DEPLOYMENT_RESOLVER)
+    public static final OperationDefinition UPLOAD_BYTES_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES, DEPLOYMENT_RESOLVER)
             .setParameters(BYTES_NOT_NULL)
             .setReplyParameters(UPLOAD_HASH_REPLY)
             .setRuntimeOnly()
             .addAccessConstraint(ApplicationTypeAccessConstraintDefinition.DEPLOYMENT)
             .build();
-    public static OperationDefinition DOMAIN_UPLOAD_BYTES_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES, DEPLOYMENT_RESOLVER)
+    public static final OperationDefinition DOMAIN_UPLOAD_BYTES_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES, DEPLOYMENT_RESOLVER)
             .setParameters(BYTES_NOT_NULL)
             .setReplyParameters(UPLOAD_HASH_REPLY)
             .withFlag(Flag.MASTER_HOST_CONTROLLER_ONLY)
@@ -244,16 +244,16 @@ public class DeploymentAttributes {
             .build();
 
     //Upload deployment url definitions
-    public static AttributeDefinition URL_NOT_NULL = SimpleAttributeDefinitionBuilder.create(DeploymentAttributes.CONTENT_URL)
+    public static final AttributeDefinition URL_NOT_NULL = SimpleAttributeDefinitionBuilder.create(DeploymentAttributes.CONTENT_URL)
             .setAllowNull(false)
             .build();
-    public static OperationDefinition UPLOAD_URL_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL, DEPLOYMENT_RESOLVER)
+    public static final OperationDefinition UPLOAD_URL_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL, DEPLOYMENT_RESOLVER)
             .setParameters(URL_NOT_NULL)
             .setReplyParameters(UPLOAD_HASH_REPLY)
             .setRuntimeOnly()
             .addAccessConstraint(ApplicationTypeAccessConstraintDefinition.DEPLOYMENT)
             .build();
-    public static OperationDefinition DOMAIN_UPLOAD_URL_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL, DEPLOYMENT_RESOLVER)
+    public static final OperationDefinition DOMAIN_UPLOAD_URL_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL, DEPLOYMENT_RESOLVER)
             .setParameters(URL_NOT_NULL)
             .setReplyParameters(UPLOAD_HASH_REPLY)
             .withFlag(Flag.MASTER_HOST_CONTROLLER_ONLY)
@@ -262,17 +262,17 @@ public class DeploymentAttributes {
             .build();
 
     //Upload deployment stream definition
-    public static AttributeDefinition INPUT_STREAM_INDEX_NOT_NULL = SimpleAttributeDefinitionBuilder.create(DeploymentAttributes.CONTENT_INPUT_STREAM_INDEX)
+    public static final AttributeDefinition INPUT_STREAM_INDEX_NOT_NULL = SimpleAttributeDefinitionBuilder.create(DeploymentAttributes.CONTENT_INPUT_STREAM_INDEX)
             .setAllowNull(false)
             .build();
     //public static Map<String, AttributeDefinition> UPLOAD_INPUT_STREAM_INDEX_ATTRIBUTES = Collections.singletonMap(INPUT_STREAM_INDEX_NOT_NULL.getName(), INPUT_STREAM_INDEX_NOT_NULL);
-    public static OperationDefinition UPLOAD_STREAM_ATTACHMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_STREAM, DEPLOYMENT_RESOLVER)
+    public static final OperationDefinition UPLOAD_STREAM_ATTACHMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_STREAM, DEPLOYMENT_RESOLVER)
             .setParameters(INPUT_STREAM_INDEX_NOT_NULL)
             .setReplyParameters(UPLOAD_HASH_REPLY)
             .setRuntimeOnly()
             .addAccessConstraint(ApplicationTypeAccessConstraintDefinition.DEPLOYMENT)
             .build();
-    public static OperationDefinition DOMAIN_UPLOAD_STREAM_ATTACHMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_STREAM, DEPLOYMENT_RESOLVER)
+    public static final OperationDefinition DOMAIN_UPLOAD_STREAM_ATTACHMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_STREAM, DEPLOYMENT_RESOLVER)
             .setParameters(INPUT_STREAM_INDEX_NOT_NULL)
             .setReplyParameters(UPLOAD_HASH_REPLY)
             .withFlag(Flag.MASTER_HOST_CONTROLLER_ONLY)
@@ -281,19 +281,19 @@ public class DeploymentAttributes {
             .build();
 
     //Replace deployment definition
-    public static Map<String, AttributeDefinition> REPLACE_DEPLOYMENT_ATTRIBUTES = createAttributeMap(NAME, TO_REPLACE, CONTENT_ALL_NILLABLE, RUNTIME_NAME_NILLABLE);
-    public static OperationDefinition REPLACE_DEPLOYMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REPLACE_DEPLOYMENT, DEPLOYMENT_RESOLVER)
+    public static final Map<String, AttributeDefinition> REPLACE_DEPLOYMENT_ATTRIBUTES = createAttributeMap(NAME, TO_REPLACE, CONTENT_ALL_NILLABLE, RUNTIME_NAME_NILLABLE);
+    public static final OperationDefinition REPLACE_DEPLOYMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REPLACE_DEPLOYMENT, DEPLOYMENT_RESOLVER)
             .setParameters(REPLACE_DEPLOYMENT_ATTRIBUTES.values().toArray(new AttributeDefinition[REPLACE_DEPLOYMENT_ATTRIBUTES.size()]))
             .build();
 
-    public static Map<String, AttributeDefinition> SERVER_GROUP_REPLACE_DEPLOYMENT_ATTRIBUTES = createAttributeMap(NAME, TO_REPLACE, RUNTIME_NAME_NILLABLE);
-    public static OperationDefinition SERVER_GROUP_REPLACE_DEPLOYMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REPLACE_DEPLOYMENT, DEPLOYMENT_RESOLVER)
+    public static final Map<String, AttributeDefinition> SERVER_GROUP_REPLACE_DEPLOYMENT_ATTRIBUTES = createAttributeMap(NAME, TO_REPLACE, RUNTIME_NAME_NILLABLE);
+    public static final OperationDefinition SERVER_GROUP_REPLACE_DEPLOYMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REPLACE_DEPLOYMENT, DEPLOYMENT_RESOLVER)
             .setParameters(SERVER_GROUP_REPLACE_DEPLOYMENT_ATTRIBUTES.values().toArray(new AttributeDefinition[SERVER_GROUP_REPLACE_DEPLOYMENT_ATTRIBUTES.size()]))
             .build();
 
     //Full replace deployment definition
-    public static Map<String, AttributeDefinition> FULL_REPLACE_DEPLOYMENT_ATTRIBUTES = createAttributeMap(NAME, RUNTIME_NAME_NILLABLE, CONTENT_ALL);
-    public static OperationDefinition FULL_REPLACE_DEPLOYMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT, DEPLOYMENT_RESOLVER)
+    public static final Map<String, AttributeDefinition> FULL_REPLACE_DEPLOYMENT_ATTRIBUTES = createAttributeMap(NAME, RUNTIME_NAME_NILLABLE, CONTENT_ALL);
+    public static final OperationDefinition FULL_REPLACE_DEPLOYMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT, DEPLOYMENT_RESOLVER)
             .setParameters(FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.values().toArray(new AttributeDefinition[FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.size()]))
             .addAccessConstraint(ApplicationTypeAccessConstraintDefinition.DEPLOYMENT)
             .build();
