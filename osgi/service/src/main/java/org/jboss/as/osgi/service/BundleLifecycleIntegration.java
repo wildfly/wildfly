@@ -227,7 +227,15 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                 return;
             }
 
-            activateDeferredPhase(bundle, options, depUnit, phaseService);
+            final ServiceName deploymentServiceName;
+            if(depUnit.getParent() == null) {
+                deploymentServiceName = depUnit.getServiceName();
+            } else {
+                deploymentServiceName = depUnit.getParent().getServiceName();
+            }
+            ServiceController<DeploymentUnit> deploymentService = (ServiceController<DeploymentUnit>) injectedBundleManager.getValue().getServiceContainer().getRequiredService(deploymentServiceName);
+
+            activateDeferredPhase(bundle, options, depUnit, phaseService, deploymentService);
         }
 
         @Override
@@ -252,7 +260,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
             }
         }
 
-        private void activateDeferredPhase(XBundle bundle, int options, DeploymentUnit depUnit, ServiceController<Phase> phaseService) throws BundleException {
+        private void activateDeferredPhase(XBundle bundle, int options, DeploymentUnit depUnit, ServiceController<Phase> phaseService, ServiceController<DeploymentUnit> parentDeploymentService) throws BundleException {
 
             // If the Framework's current start level is less than this bundle's start level
             BundleManager bundleManager = injectedBundleManager.getValue();
@@ -280,6 +288,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
             depUnit.getAttachment(Attachments.DEFERRED_ACTIVATION_COUNT).incrementAndGet();
 
             StabilityMonitor monitor = new StabilityMonitor();
+            monitor.addController(parentDeploymentService);
             monitor.addController(phaseService);
             Set<ServiceController<?>> failed = new HashSet<ServiceController<?>>();
             Set<ServiceController<?>> problems = new HashSet<ServiceController<?>>();
