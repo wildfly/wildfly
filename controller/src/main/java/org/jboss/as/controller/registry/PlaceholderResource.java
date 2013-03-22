@@ -41,7 +41,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 public class PlaceholderResource implements Resource {
 
     private static final ModelNode MODEL = new ModelNode();
-    public static PlaceholderResource INSTANCE = new PlaceholderResource();
+    public static final PlaceholderResource INSTANCE = new PlaceholderResource();
 
     static {
         MODEL.protect();

@@ -44,9 +44,9 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class RuntimeMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
+class RuntimeMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
 
-    public static RuntimeMXBeanAttributeHandler INSTANCE = new RuntimeMXBeanAttributeHandler();
+    static final RuntimeMXBeanAttributeHandler INSTANCE = new RuntimeMXBeanAttributeHandler();
 
     static final AttributeDefinition OBJECT_NAME = SimpleAttributeDefinitionBuilder.create(PlatformMBeanConstants.OBJECT_NAME, ModelType.STRING)
             .setStorageRuntime()

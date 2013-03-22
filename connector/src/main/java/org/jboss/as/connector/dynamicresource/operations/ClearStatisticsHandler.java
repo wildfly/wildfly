@@ -44,7 +44,7 @@ import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
  */
 public class ClearStatisticsHandler implements OperationStepHandler {
 
-    public static OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(Constants.CLEAR_STATISTICS, ResourceAdaptersExtension.getResourceDescriptionResolver(CONNECTIONDEFINITIONS_NAME))
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(Constants.CLEAR_STATISTICS, ResourceAdaptersExtension.getResourceDescriptionResolver(CONNECTIONDEFINITIONS_NAME))
             .build();
 
     private final List<StatisticsPlugin> stats;

@@ -38,7 +38,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class NativeManagementWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
 
-    public static OperationStepHandler INSTANCE = new NativeManagementWriteAttributeHandler();
+    public static final OperationStepHandler INSTANCE = new NativeManagementWriteAttributeHandler();
 
     private NativeManagementWriteAttributeHandler() {
         super(NativeManagementResourceDefinition.ATTRIBUTE_DEFINITIONS);

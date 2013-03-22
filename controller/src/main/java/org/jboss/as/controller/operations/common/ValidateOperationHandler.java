@@ -52,8 +52,8 @@ import org.jboss.dmr.ModelType;
  */
 public class ValidateOperationHandler implements OperationStepHandler {
 
-    public static ValidateOperationHandler INSTANCE = new ValidateOperationHandler(false);
-    public static ValidateOperationHandler SLAVE_HC_INSTANCE = new ValidateOperationHandler(true);
+    public static final ValidateOperationHandler INSTANCE = new ValidateOperationHandler(false);
+    public static final ValidateOperationHandler SLAVE_HC_INSTANCE = new ValidateOperationHandler(true);
 
     private static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.VALUE, ModelType.OBJECT)
             .setAllowNull(false)

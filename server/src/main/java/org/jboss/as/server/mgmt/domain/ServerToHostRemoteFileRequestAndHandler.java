@@ -55,7 +55,7 @@ public class ServerToHostRemoteFileRequestAndHandler extends RemoteFileRequestAn
         }
     };
 
-    public static ServerToHostRemoteFileRequestAndHandler INSTANCE = new ServerToHostRemoteFileRequestAndHandler(MAPPER);
+    public static final ServerToHostRemoteFileRequestAndHandler INSTANCE = new ServerToHostRemoteFileRequestAndHandler(MAPPER);
 
     private ServerToHostRemoteFileRequestAndHandler(RemoteFileProtocolIdMapper mapper) {
         super(mapper);

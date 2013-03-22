@@ -36,9 +36,9 @@ import org.jboss.modules.ModuleLoader;
  * @author Stuart Douglas
  */
 public class JacORBDependencyProcessor implements DeploymentUnitProcessor {
-    public static ModuleIdentifier CORBA_ID = ModuleIdentifier.create("org.omg.api");
-    public static ModuleIdentifier JAVAX_RMI_API_ID = ModuleIdentifier.create("javax.rmi.api");
-    public static ModuleIdentifier JACORB_ID = ModuleIdentifier.create("org.jacorb");
+    public static final ModuleIdentifier CORBA_ID = ModuleIdentifier.create("org.omg.api");
+    public static final ModuleIdentifier JAVAX_RMI_API_ID = ModuleIdentifier.create("javax.rmi.api");
+    public static final ModuleIdentifier JACORB_ID = ModuleIdentifier.create("org.jacorb");
 
 
     @Override

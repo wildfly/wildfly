@@ -36,7 +36,7 @@ import org.jboss.invocation.InterceptorFactory;
  */
 public class SFSBPreCreateInterceptor implements Interceptor {
 
-    public static InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new SFSBPreCreateInterceptor());
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new SFSBPreCreateInterceptor());
 
     @Override
     public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
