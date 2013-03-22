@@ -23,6 +23,7 @@ package org.jboss.as.test.integration.deployment.classloading.war;
 
 import javax.ejb.Stateless;
 
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -47,6 +48,7 @@ public class WarInEarChildFirstClassLoadingTestCase {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
         ear.addAsModule(war);
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "cp.jar");
+        earLib.addAsManifestResource(new StringAsset("Dependencies: \n"), "MANIFEST.MF"); //AS7-5547, make sure an empty dependencies entry is fine
         earLib.addClasses(TestBB.class, WebInfLibClass.class);
         ear.addAsLibrary(earLib);
         return ear;
