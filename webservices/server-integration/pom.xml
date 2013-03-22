@@ -32,7 +32,6 @@
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-webservices-server-integration</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
     <packaging>jar</packaging>
@@ -73,9 +72,16 @@
                     </includes>
                     <enableAssertions>false</enableAssertions>
                     <systemPropertyVariables>
-                      <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
-                      <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
+                        <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
+                        <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
                     </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <fork>true</fork>
                 </configuration>
             </plugin>
         </plugins>
@@ -161,5 +167,4 @@
     </dependency>
 
  </dependencies>
-
 </project>
