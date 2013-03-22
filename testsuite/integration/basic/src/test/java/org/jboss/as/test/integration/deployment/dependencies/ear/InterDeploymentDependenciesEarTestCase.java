@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.integration.deployment.dependencies.ear;
 
-import static org.junit.Assert.*;
-
 import java.util.Hashtable;
 
 import javax.naming.Context;
@@ -44,10 +42,13 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 /**
  * Test for inter-deployment dependencies in EAR files. It also contains a module dependency simple test - EJB module depends on
  * WEB module in app1.ear.
- * 
+ *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
@@ -68,7 +69,7 @@ public class InterDeploymentDependenciesEarTestCase {
 
     /**
      * Creates app1.ear deployment.
-     * 
+     *
      * @return
      */
     @Deployment(name = DEP_APP1, managed = false)
@@ -85,7 +86,7 @@ public class InterDeploymentDependenciesEarTestCase {
 
     /**
      * Creates app2.ear deployment.
-     * 
+     *
      * @return
      */
     @Deployment(name = DEP_APP2, managed = false)
@@ -101,7 +102,7 @@ public class InterDeploymentDependenciesEarTestCase {
 
     /**
      * Tests enterprise application dependencies.
-     * 
+     *
      * @throws NamingException
      */
     @Test
@@ -131,11 +132,47 @@ public class InterDeploymentDependenciesEarTestCase {
         deployer.undeploy(DEP_APP2);
     }
 
+    @Test
+    public void testWithRestart() throws NamingException {
+        try {
+            deployer.deploy(DEP_APP2);
+            fail("Application deployment must fail if the dependencies are not satifsied.");
+        } catch (Exception e) {
+            LOGGER.debug("Expected fail", e);
+        } finally {
+            deployer.undeploy(DEP_APP2);
+        }
+        deployer.deploy(DEP_APP1);
+        deployer.deploy(DEP_APP2);
+
+        LogAccess helloApp1 = lookupEJB(DEP_APP1);
+        LogAccess helloApp2 = lookupEJB(DEP_APP2);
+        assertEquals(SleeperContextListener.class.getSimpleName() + LogAccessBean.class.getSimpleName(), helloApp1.getLog());
+        assertEquals(LogAccessBean.class.getSimpleName(), helloApp2.getLog());
+
+        deployer.undeploy(DEP_APP1);
+        deployer.deploy(DEP_APP1);
+
+        helloApp1 = lookupEJB(DEP_APP1);
+        helloApp2 = lookupEJB(DEP_APP2);
+        assertEquals(SleeperContextListener.class.getSimpleName() + LogAccessBean.class.getSimpleName(), helloApp1.getLog());
+        assertEquals(LogAccessBean.class.getSimpleName(), helloApp2.getLog());
+
+        deployer.undeploy(DEP_APP1);
+        try {
+            helloApp2.getLog();
+            fail("Calling EJB from dependent application should fail");
+        } catch (IllegalStateException e) {
+            //OK
+        }
+        deployer.undeploy(DEP_APP2);
+    }
+
     // Private methods -------------------------------------------------------
 
     /**
      * Lookups LogAccess bean for given application name.
-     * 
+     *
      * @param appName application name
      * @return
      * @throws NamingException
@@ -150,7 +187,7 @@ public class InterDeploymentDependenciesEarTestCase {
 
     /**
      * Creates a shared lib with logger.
-     * 
+     *
      * @return
      */
     private static JavaArchive createLogLibrary() {
@@ -159,7 +196,7 @@ public class InterDeploymentDependenciesEarTestCase {
 
     /**
      * Creates testing web-app (module for app1.ear)
-     * 
+     *
      * @return
      */
     private static Archive<?> createWar() {
@@ -171,7 +208,7 @@ public class InterDeploymentDependenciesEarTestCase {
 
     /**
      * Creates a testing EJB module (for app1 and app2)
-     * 
+     *
      * @return
      */
     private static Archive<?> createBeanJar() {
