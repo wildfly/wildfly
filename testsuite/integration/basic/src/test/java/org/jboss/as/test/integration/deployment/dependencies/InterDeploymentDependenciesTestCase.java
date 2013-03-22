@@ -56,13 +56,47 @@ public class InterDeploymentDependenciesTestCase {
             } finally {
                 deployer.undeploy("dependent");
             }
-            if(!failed) {
+            if (!failed) {
                 Assert.fail("Deployment did not fail");
             }
             deployer.deploy("dependee");
             deployer.deploy("dependent");
 
             StringView ejb = (StringView) new InitialContext().lookup("java:global/dependent/DependentEjb");
+            Assert.assertEquals("hello", ejb.getString());
+
+        } finally {
+            deployer.undeploy("dependent");
+            deployer.undeploy("dependee");
+        }
+
+    }
+
+    @Test
+    public void testDeploymentDependenciesWithRestart() throws NamingException {
+        try {
+            boolean failed = true;
+            try {
+                deployer.deploy("dependent");
+                failed = false;
+            } catch (Exception e) {
+
+            } finally {
+                deployer.undeploy("dependent");
+            }
+            if (!failed) {
+                Assert.fail("Deployment did not fail");
+            }
+            deployer.deploy("dependee");
+            deployer.deploy("dependent");
+
+            StringView ejb = (StringView) new InitialContext().lookup("java:global/dependent/DependentEjb");
+            Assert.assertEquals("hello", ejb.getString());
+
+            deployer.undeploy("dependee");
+            deployer.deploy("dependee");
+
+            ejb = (StringView) new InitialContext().lookup("java:global/dependent/DependentEjb");
             Assert.assertEquals("hello", ejb.getString());
 
         } finally {

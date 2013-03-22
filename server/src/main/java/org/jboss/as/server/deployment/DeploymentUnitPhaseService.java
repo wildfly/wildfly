@@ -28,13 +28,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -59,6 +62,12 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
     private final Phase phase;
     private final AttachmentKey<T> valueKey;
     private final List<AttachedDependency> injectedAttachedDependencies = new ArrayList<AttachedDependency>();
+    /**
+     * boolean value that tracks if this phase has already been run.
+     *
+     * If anything attempts to restart the phase a complete deployment restart is performed instead.
+     */
+    private final AtomicBoolean runOnce = new AtomicBoolean();
 
     private DeploymentUnitPhaseService(final DeploymentUnit deploymentUnit, final Phase phase, final AttachmentKey<T> valueKey) {
         this.deploymentUnit = deploymentUnit;
@@ -76,6 +85,34 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
 
     @SuppressWarnings("unchecked")
     public synchronized void start(final StartContext context) throws StartException {
+        if(runOnce.get()) {
+            //this only happens on deployment restart, which we don't support at the moment.
+            //instead we are going to restart the complete deployment.
+
+            //we get the deployment unit service name
+            //add a listener to perform a restart when the service goes down
+            //then stop the deployment unit service
+            final ServiceName serviceName;
+            if(deploymentUnit.getParent() == null) {
+                serviceName = deploymentUnit.getServiceName();
+            } else {
+                serviceName = deploymentUnit.getParent().getServiceName();
+            }
+            ServiceController<?> controller = context.getController().getServiceContainer().getRequiredService(serviceName);
+            controller.addListener(new AbstractServiceListener<Object>() {
+
+                @Override
+                public void transition(final ServiceController<?> controller, final ServiceController.Transition transition) {
+                    if(transition.getAfter().equals(ServiceController.Substate.DOWN)) {
+                        controller.setMode(Mode.ACTIVE);
+                        controller.removeListener(this);
+                    }
+                }
+            });
+            controller.setMode(Mode.NEVER);
+            return;
+        }
+        runOnce.set(true);
         final DeployerChains chains = deployerChainsInjector.getValue();
         final DeploymentUnit deploymentUnit = this.deploymentUnit;
         final List<RegisteredDeploymentUnitProcessor> list = chains.getChain(phase);
