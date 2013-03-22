@@ -46,7 +46,7 @@ import org.jboss.as.controller.transform.description.TransformationDescriptionBu
  */
 public class ThreadsExtension implements Extension {
 
-    public static String SUBSYSTEM_NAME = "threads";
+    public static final String SUBSYSTEM_NAME = "threads";
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
     static final String RESOURCE_NAME = ThreadsExtension.class.getPackage().getName() + ".LocalDescriptions";

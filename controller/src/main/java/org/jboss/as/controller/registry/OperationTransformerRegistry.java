@@ -423,7 +423,7 @@ public class OperationTransformerRegistry {
 
     }
 
-    static OperationTransformer FORWARD_TRANSFORMER = new OperationTransformer() {
+    static final OperationTransformer FORWARD_TRANSFORMER = new OperationTransformer() {
 
         @Override
         public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
@@ -431,9 +431,9 @@ public class OperationTransformerRegistry {
         }
     };
 
-    static OperationTransformer DISCARD_TRANSFORMER = OperationTransformer.DISCARD;
+    static final OperationTransformer DISCARD_TRANSFORMER = OperationTransformer.DISCARD;
 
-    public static OperationTransformerEntry DISCARD = new OperationTransformerEntry(DISCARD_TRANSFORMER, true);
-    public static OperationTransformerEntry FORWARD = new OperationTransformerEntry(FORWARD_TRANSFORMER, false);
+    public static final OperationTransformerEntry DISCARD = new OperationTransformerEntry(DISCARD_TRANSFORMER, true);
+    public static final OperationTransformerEntry FORWARD = new OperationTransformerEntry(FORWARD_TRANSFORMER, false);
 
 }

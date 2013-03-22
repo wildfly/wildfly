@@ -59,7 +59,7 @@ import org.jboss.msc.service.ServiceName;
  */
 public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
 
-    public static HornetQServerControlHandler INSTANCE = new HornetQServerControlHandler();
+    static final HornetQServerControlHandler INSTANCE = new HornetQServerControlHandler();
 
     public static final AttributeDefinition STARTED = new SimpleAttributeDefinition(CommonAttributes.STARTED, ModelType.BOOLEAN,
             false, AttributeAccess.Flag.STORAGE_RUNTIME);

@@ -39,7 +39,7 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class SpecifiedInterfaceAddHandler extends InterfaceAddHandler {
 
-    public static SpecifiedInterfaceAddHandler INSTANCE = new SpecifiedInterfaceAddHandler();
+    public static final SpecifiedInterfaceAddHandler INSTANCE = new SpecifiedInterfaceAddHandler();
 
     protected SpecifiedInterfaceAddHandler() {
         super(true);

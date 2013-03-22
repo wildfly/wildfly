@@ -186,7 +186,7 @@ public interface Resource extends Cloneable {
 
     public static class Tools {
 
-        public static ResourceFilter ALL_BUT_RUNTIME_AND_PROXIES_FILTER = new ResourceFilter() {
+        public static final ResourceFilter ALL_BUT_RUNTIME_AND_PROXIES_FILTER = new ResourceFilter() {
             @Override
             public boolean accepts(PathAddress address, Resource resource) {
                 if(resource.isRuntime() || resource.isProxy()) {

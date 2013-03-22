@@ -23,8 +23,6 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP;
 import static org.jboss.as.messaging.CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_REF_STRING;
 import static org.jboss.as.messaging.CommonAttributes.HA;
@@ -51,7 +49,6 @@ import org.jboss.dmr.ModelNode;
  */
 public class BridgeDefinition extends SimpleResourceDefinition {
 
-    public static final String[] OPERATIONS = {START, STOP};
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.BRIDGE);
 
     private final boolean registerRuntimeOnly;
@@ -65,7 +62,7 @@ public class BridgeDefinition extends SimpleResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    public static SimpleAttributeDefinition DISCOVERY_GROUP_NAME = create(CommonAttributes.DISCOVERY_GROUP_NAME, STRING)
+    public static final SimpleAttributeDefinition DISCOVERY_GROUP_NAME = create(CommonAttributes.DISCOVERY_GROUP_NAME, STRING)
             .setAllowNull(true)
             .setAlternatives(STATIC_CONNECTORS)
             .setAttributeMarshaller(AttributeMarshallers.DISCOVERY_GROUP_MARSHALLER)

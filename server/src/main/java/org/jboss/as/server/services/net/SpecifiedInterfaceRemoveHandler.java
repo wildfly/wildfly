@@ -32,7 +32,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class SpecifiedInterfaceRemoveHandler extends InterfaceRemoveHandler {
 
-    public static SpecifiedInterfaceRemoveHandler INSTANCE = new SpecifiedInterfaceRemoveHandler();
+    public static final SpecifiedInterfaceRemoveHandler INSTANCE = new SpecifiedInterfaceRemoveHandler();
 
     protected SpecifiedInterfaceRemoveHandler() {
     }

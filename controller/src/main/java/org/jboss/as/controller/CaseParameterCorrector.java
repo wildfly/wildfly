@@ -38,7 +38,7 @@ public class CaseParameterCorrector {
     /**
      * Converts the string value of the {@code newValue} into uppercase only if the value is not already in uppercase.
      */
-    public static ParameterCorrector TO_UPPER = new ParameterCorrector() {
+    public static final ParameterCorrector TO_UPPER = new ParameterCorrector() {
         @Override
         public ModelNode correct(final ModelNode newValue, final ModelNode currentValue) {
             if (newValue.getType() == ModelType.UNDEFINED) {
@@ -59,7 +59,7 @@ public class CaseParameterCorrector {
     /**
      * Converts the string value of the {@code newValue} into lowercase only if the value is not already in lowercase.
      */
-    public static ParameterCorrector TO_LOWER = new ParameterCorrector() {
+    public static final ParameterCorrector TO_LOWER = new ParameterCorrector() {
         @Override
         public ModelNode correct(final ModelNode newValue, final ModelNode currentValue) {
             if (newValue.getType() == ModelType.UNDEFINED) {

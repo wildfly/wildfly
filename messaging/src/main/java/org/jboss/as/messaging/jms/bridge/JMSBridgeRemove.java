@@ -23,7 +23,6 @@
 package org.jboss.as.messaging.jms.bridge;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -41,11 +40,9 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author Jeff Mesnil (c) 2011 Red Hat Inc.
  */
-public class JMSBridgeRemove extends AbstractRemoveStepHandler {
+class JMSBridgeRemove extends AbstractRemoveStepHandler {
 
-    public static final String OPERATION_NAME = REMOVE;
-
-    public static JMSBridgeRemove INSTANCE = new JMSBridgeRemove();
+    static final JMSBridgeRemove INSTANCE = new JMSBridgeRemove();
 
     private JMSBridgeRemove() {
     }

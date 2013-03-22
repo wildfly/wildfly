@@ -36,7 +36,7 @@ import org.jboss.dmr.ModelType;
  */
 public class PropagatingCorrector implements ParameterCorrector {
 
-    public static PropagatingCorrector INSTANCE = new PropagatingCorrector();
+    public static final PropagatingCorrector INSTANCE = new PropagatingCorrector();
 
     /* (non-Javadoc)
      * @see org.jboss.as.controller.AttributeValueCorrector#correct(org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode)

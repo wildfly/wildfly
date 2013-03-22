@@ -26,7 +26,6 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -40,11 +39,9 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class QueueRemove extends AbstractRemoveStepHandler {
+class QueueRemove extends AbstractRemoveStepHandler {
 
-    public static final String OPERATION_NAME = REMOVE;
-
-    public static QueueRemove INSTANCE = new QueueRemove();
+    static final QueueRemove INSTANCE = new QueueRemove();
 
     private QueueRemove() {
     }

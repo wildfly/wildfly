@@ -37,7 +37,7 @@ import org.jboss.weld.bootstrap.api.SingletonProvider;
  */
 public class TCCLSingletonService implements Service<TCCLSingletonService> {
 
-    public static ServiceName SERVICE_NAME = Services.JBOSS_AS.append("weld", "singleton");
+    public static final ServiceName SERVICE_NAME = Services.JBOSS_AS.append("weld", "singleton");
 
     @Override
     public void start(StartContext context) throws StartException {

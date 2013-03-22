@@ -49,8 +49,8 @@ import org.jboss.modules.ModuleLoader;
  */
 public class ApplicationClientDependencyProcessor implements DeploymentUnitProcessor {
 
-    public static ModuleIdentifier CORBA_ID = ModuleIdentifier.create("org.omg.api");
-    public static ModuleIdentifier XNIO = ModuleIdentifier.create("org.jboss.xnio");
+    public static final ModuleIdentifier CORBA_ID = ModuleIdentifier.create("org.omg.api");
+    public static final ModuleIdentifier XNIO = ModuleIdentifier.create("org.jboss.xnio");
 
 
     public ApplicationClientDependencyProcessor() {

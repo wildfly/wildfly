@@ -36,7 +36,7 @@ public class ArgumentValueState extends DefaultParsingState {
 
     public static final String ID = "ARG_VALUE";
 
-    public static ArgumentValueState INSTANCE = new ArgumentValueState();
+    public static final ArgumentValueState INSTANCE = new ArgumentValueState();
 
     public ArgumentValueState() {
         super(ID);
