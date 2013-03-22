@@ -331,6 +331,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
                     .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class,
                             activator.getCcmInjector()).addDependency(NamingService.SERVICE_NAME)
                     .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
+                    .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"))
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
             createJNDIAliases(jndiName, jndiAliases, controller);
