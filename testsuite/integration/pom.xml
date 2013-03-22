@@ -56,7 +56,7 @@
                 <module>osgi</module>
                 <module>iiop</module>
                 <module>xts</module>
-                <!--module>clust</module-->
+                <module>clust</module>
                 <module>multinode</module>
                 <module>manualmode</module>
             </modules>
