@@ -85,7 +85,9 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
 
     @SuppressWarnings("unchecked")
     public synchronized void start(final StartContext context) throws StartException {
-        if(runOnce.get()) {
+        boolean allowRestart = restartAllowed();
+        if(runOnce.get() && !allowRestart) {
+            ServerLogger.DEPLOYMENT_LOGGER.deploymentRestartDetected(deploymentUnit.getName());
             //this only happens on deployment restart, which we don't support at the moment.
             //instead we are going to restart the complete deployment.
 
@@ -205,6 +207,17 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
 
             phaseServiceBuilder.install();
         }
+    }
+
+    private Boolean restartAllowed() {
+        final DeploymentUnit parent;
+        if (deploymentUnit.getParent() == null) {
+            parent = deploymentUnit;
+        } else {
+            parent = deploymentUnit.getParent();
+        }
+        Boolean allowed = parent.getAttachment(Attachments.ALLOW_PHASE_RESTART);
+        return allowed != null && allowed;
     }
 
     public synchronized void stop(final StopContext context) {

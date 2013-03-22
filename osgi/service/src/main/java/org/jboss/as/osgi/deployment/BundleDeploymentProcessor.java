@@ -128,6 +128,13 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
             // Attach the bundle deployment
             depUnit.putAttachment(OSGiConstants.DEPLOYMENT_KEY, deployment);
             deployment.addAttachment(DeploymentUnit.class, depUnit);
+            final DeploymentUnit parent;
+            if(depUnit.getParent() == null) {
+                parent = depUnit;
+            } else {
+                parent = depUnit.getParent();
+            }
+            parent.putAttachment(Attachments.ALLOW_PHASE_RESTART, true);
         }
     }
 
