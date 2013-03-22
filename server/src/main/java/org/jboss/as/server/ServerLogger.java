@@ -401,4 +401,8 @@ public interface ServerLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.INFO)
     @Message(id = 15970, value = "Defer %s for %s making it %s")
     void infoDeferDeploymentPhase(Phase phase, String deploymentName, Mode mode);
+
+    @LogMessage(level = Logger.Level.INFO)
+    @Message(id = 15971, value = "Deployment restart detected for deployment %s, performing full redeploy instead.")
+    void deploymentRestartDetected(String deployment);
 }

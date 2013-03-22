@@ -103,6 +103,8 @@ public final class Attachments {
      */
     public static final AttachmentKey<ServiceVerificationHandler> SERVICE_VERIFICATION_HANDLER = AttachmentKey.create(ServiceVerificationHandler.class);
 
+
+    public static final AttachmentKey<Boolean> ALLOW_PHASE_RESTART = AttachmentKey.create(Boolean.class);
     //
     // STRUCTURE
     //
