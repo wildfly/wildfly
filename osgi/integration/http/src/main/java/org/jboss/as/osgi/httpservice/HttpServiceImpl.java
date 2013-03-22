@@ -27,6 +27,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Dictionary;
 import java.util.Enumeration;
+import java.util.Map;
+import java.util.WeakHashMap;
+
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -41,6 +44,7 @@ import org.jboss.as.osgi.httpservice.HttpServiceFactory.GlobalRegistry;
 import org.jboss.as.osgi.httpservice.HttpServiceFactory.Registration;
 import org.jboss.as.osgi.httpservice.HttpServiceFactory.Registration.Type;
 import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.web.host.ApplicationContextWrapper;
 import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.as.web.host.ServletBuilder;
 import org.jboss.as.web.host.WebDeploymentBuilder;
@@ -69,7 +73,7 @@ final class HttpServiceImpl implements HttpService {
     // This map holds the shared ApplicationContexts to be used with the associated HttpContext.
     // It is a WeakHashMap which means that the ApplicationContexts are remembered for as long
     // as the HttpContext exists.
-    //private final Map<HttpContext, ApplicationContext> contexts = new WeakHashMap<HttpContext, ApplicationContext>();
+    private final Map<HttpContext, ShareableContextWrapper> contexts = new WeakHashMap<HttpContext, ShareableContextWrapper>();
 
     HttpServiceImpl(ServerEnvironment serverEnvironment, CommonWebServer webServer, WebHost virtualHost, Bundle bundle) {
         this.registry = GlobalRegistry.INSTANCE;
@@ -107,21 +111,21 @@ final class HttpServiceImpl implements HttpService {
 
         //ShareableContext ctx;
         WebDeploymentBuilder deploymentBuilder = new WebDeploymentBuilder();
-        /*ApplicationContext actx = null;
+        ShareableContextWrapper scWrapper = null;
         if (httpContext != null) {
-            actx = contexts.get(httpContext);
-            ctx = new ShareableContext(actx);
+            scWrapper = contexts.get(httpContext);
         } else {
-            ctx = new ShareableContext(null);
+            scWrapper = new ShareableContextWrapper();
             httpContext = new DefaultHttpContext(bundle);
         }
-        */
-        if (httpContext == null) {
-            httpContext = new DefaultHttpContext(bundle);
+        if(scWrapper == null) {
+            contexts.put(httpContext, scWrapper);
         }
+
 
         deploymentBuilder.setDocumentRoot(storageDir);
         deploymentBuilder.setContextRoot(alias);
+        deploymentBuilder.setApplicationContextWrapper(scWrapper);
         //ctx.addLifecycleListener(new ContextConfig());
 
         deploymentBuilder.setClassLoader(servlet.getClass().getClassLoader());
@@ -173,15 +177,6 @@ final class HttpServiceImpl implements HttpService {
         // Must be added to the main mapper as no dynamic servlets usually
         /*Mapper mapper = webServer.getService().getMapper();
         mapper.addWrapper(virtualHost.getName(), ctx.getPath(), pattern, wrapper, false);*/
-/*
-        if (httpContext != null && actx == null) {
-            // We have a new shared context, save it for later use
-
-            // The shared Servlet Context is put on a weak has map, which means that
-            // as soon as the last instance of a particular httpContext is gone, the
-            // shared context is garbage collected too.
-            contexts.put(httpContext, ctx.getApplicationContext());
-        }*/
 
         return wrapper;
     }
@@ -241,19 +236,18 @@ final class HttpServiceImpl implements HttpService {
         if (registry.contains(servlet)) { throw new ServletException(OSGiMessages.MESSAGES.servletAlreadyRegistered(servlet.getServletInfo())); }
     }
 
- /*   static class ShareableContext extends StandardContext {
-        ShareableContext(ApplicationContext existingContext) {
-            context = existingContext;
-        }
+    static class ShareableContextWrapper implements ApplicationContextWrapper {
 
-        ApplicationContext getApplicationContext() {
-            if (context == null)
-                // initialize the servlet context
-                getServletContext();
+        private Object sharedContext;
 
-            return context; // will not be null at this point
+        @Override
+        public synchronized Object wrap(final Object context) {
+            if(sharedContext == null) {
+                this.sharedContext = context;
+            }
+            return sharedContext;
         }
-    }*/
+    }
 
     /* This wrapper class takes care of handling the security through the HttpContext.
      */
