@@ -21,7 +21,8 @@
  */
 package org.jboss.as.test.smoke.subsystem.xml;
 
-import static org.junit.Assert.assertNotNull;
+import java.io.File;
+import java.net.URL;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -30,12 +31,12 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
-import java.io.File;
-import java.net.URL;
 
 import org.jboss.metadata.parser.util.XMLResourceResolver;
 import org.junit.Test;
 import org.w3c.dom.Document;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  * A XSDValidationUnitTestCase.
@@ -47,12 +48,12 @@ import org.w3c.dom.Document;
 public class XSDValidationUnitTestCase extends AbstractValidationUnitTest {
     @Test
     public void testJBossXsds() throws Exception {
-        for (File xsdFile : jbossSchemaFiles())
+        for (File xsdFile : jbossSchemaFiles(false))
             validateXsd(xsdFile);
     }
 
     private void validateXsd(final File xsdFile) throws Exception {
-	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         DocumentBuilder parser = factory.newDocumentBuilder();
         Document document = parser.parse(xsdFile);

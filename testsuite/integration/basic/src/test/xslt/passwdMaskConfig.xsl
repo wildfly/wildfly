@@ -2,7 +2,7 @@
 <!-- Edited by XMLSpy® -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:do="urn:jboss:domain:2.0"
-                xmlns:ds="urn:jboss:domain:datasources:1.1"
+                xmlns:ds="urn:jboss:domain:datasources:2.0"
                 xmlns="urn:jboss:domain:2.0"
         >
     <xsl:output indent="yes"/>

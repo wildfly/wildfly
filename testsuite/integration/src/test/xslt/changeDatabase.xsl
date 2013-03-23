@@ -55,7 +55,7 @@
 
 <xsl:stylesheet version="2.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:ds="urn:jboss:domain:datasources:1.1">
+                xmlns:ds="urn:jboss:domain:datasources:2.0">
     <xsl:output method="xml" indent="yes"/>
 
     <xsl:param name="ds.jdbc.url" select="'wilma'"/>
