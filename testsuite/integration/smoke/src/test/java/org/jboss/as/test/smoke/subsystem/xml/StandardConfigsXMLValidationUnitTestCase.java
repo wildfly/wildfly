@@ -55,7 +55,7 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     @BeforeClass
     public static void setUp() {
         final List<Source> sources = new LinkedList<Source>();
-        for (File file : jbossSchemaFiles()) {
+        for (File file : jbossSchemaFiles(true)) {
             sources.add(new StreamSource(file));
         }
         SCHEMAS = sources.toArray(new StreamSource[0]);
@@ -149,6 +149,7 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         schemaFactory.setResourceResolver(DEFAULT_RESOURCE_RESOLVER);
         Schema schema = schemaFactory.newSchema(SCHEMAS);
         Validator validator = schema.newValidator();
+        validator.setErrorHandler(new ErrorHandlerImpl());
         validator.setFeature("http://apache.org/xml/features/validation/schema", true);
         validator.setResourceResolver(DEFAULT_RESOURCE_RESOLVER);
         validator.validate(new StreamSource(getXmlFile(xmlName)));

@@ -46,12 +46,12 @@ import static junit.framework.Assert.assertNotNull;
 public class XSDValidationUnitTestCase extends AbstractValidationUnitTest {
     @Test
     public void testJBossXsds() throws Exception {
-        for (File xsdFile : jbossSchemaFiles())
+        for (File xsdFile : jbossSchemaFiles(false))
             validateXsd(xsdFile);
     }
 
     private void validateXsd(final File xsdFile) throws Exception {
-	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         DocumentBuilder parser = factory.newDocumentBuilder();
         Document document = parser.parse(xsdFile);

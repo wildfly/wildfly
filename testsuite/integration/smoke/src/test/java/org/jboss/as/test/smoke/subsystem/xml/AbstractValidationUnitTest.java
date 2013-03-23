@@ -34,19 +34,20 @@ import org.xml.sax.SAXParseException;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.fail;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Date: 23.06.2011
@@ -60,7 +61,9 @@ public class AbstractValidationUnitTest {
 
     private static final Set<String> EXCLUDED_SCHEMA_FILES = new HashSet<String>();
     private static final Map<String, File> JBOSS_SCHEMAS_MAP = new HashMap<String, File>();
+    private static final Map<String, File> CURRENT_JBOSS_SCHEMAS_MAP = new HashMap<String, File>();
     private static Map<String, String> NAMESPACE_MAP = new HashMap<String, String>();
+    private static Map<String, String> OUTDATED_NAMESPACES = new HashMap<String, String>();
 
 
     private static final File JBOSS_DIST_DIR;
@@ -87,18 +90,49 @@ public class AbstractValidationUnitTest {
         NAMESPACE_MAP.put("http://www.jboss.org/j2ee/schema/jboss-common_6_0.xsd", "jboss-common_6_0.xsd");
 
         String asDir = System.getProperty(JBOSS_DIST_PROP_NAME);
-        if( null == asDir ){
-                JBOSS_DIST_DIR = null;
-        }else{
-                JBOSS_DIST_DIR = new File(asDir);
-                if( ! JBOSS_DIST_DIR.exists() )
-                        throw new IllegalStateException("Directory set in '"+JBOSS_DIST_PROP_NAME+"' does not exist: " + JBOSS_DIST_DIR.getAbsolutePath());
+        if (null == asDir) {
+            JBOSS_DIST_DIR = null;
+        } else {
+            JBOSS_DIST_DIR = new File(asDir);
+            if (!JBOSS_DIST_DIR.exists())
+                throw new IllegalStateException("Directory set in '" + JBOSS_DIST_PROP_NAME + "' does not exist: " + JBOSS_DIST_DIR.getAbsolutePath());
 
-                final File schemaDir = new File(JBOSS_DIST_DIR, SCHEMAS_LOCATION);
-                final File[] xsds = schemaDir.listFiles(new SchemaFilter(EXCLUDED_SCHEMA_FILES.toArray(new String[EXCLUDED_SCHEMA_FILES.size()])));
-                for (File xsd : xsds) {
-                        JBOSS_SCHEMAS_MAP.put(xsd.getName(), xsd);
+            final File schemaDir = new File(JBOSS_DIST_DIR, SCHEMAS_LOCATION);
+
+            final File[] xsds = schemaDir.listFiles(new SchemaFilter(EXCLUDED_SCHEMA_FILES.toArray(new String[EXCLUDED_SCHEMA_FILES.size()])));
+            for (File xsd : xsds) {
+                JBOSS_SCHEMAS_MAP.put(xsd.getName(), xsd);
+            }
+            Map<String, BigDecimal> mostRecentVersions = new HashMap<String, BigDecimal>();
+            Map<String, String> mostRecentNames = new HashMap<String, String>();
+            Pattern pattern = Pattern.compile("(.*?)_(\\d)_(\\d).xsd");
+            for(Map.Entry<String, File> entry : JBOSS_SCHEMAS_MAP.entrySet()) {
+                final Matcher match = pattern.matcher(entry.getKey());
+                if(!match.matches()) {
+                    continue;
                 }
+                String name = match.group(1);
+                String major = match.group(2);
+                String minor = match.group(3);
+                BigDecimal version = new BigDecimal(major + "." + minor);
+                BigDecimal current = mostRecentVersions.get(name);
+                if(current == null || version.compareTo(current) > 0) {
+                    mostRecentVersions.put(name, version);
+                    mostRecentNames.put(name, entry.getKey());
+                }
+            }
+            for (Map.Entry<String, File> entry : JBOSS_SCHEMAS_MAP.entrySet()) {
+                final Matcher match = pattern.matcher(entry.getKey());
+                if (!match.matches()) {
+                    continue;
+                }
+                String name = match.group(1);
+                if (!mostRecentNames.get(name).equals(entry.getKey())) {
+                    OUTDATED_NAMESPACES.put(entry.getKey(), mostRecentNames.get(name));
+                } else {
+                    CURRENT_JBOSS_SCHEMAS_MAP.put(entry.getKey(), entry.getValue());
+                }
+            }
         }
     }
 
@@ -144,32 +178,17 @@ public class AbstractValidationUnitTest {
      * @return the base directory.
      */
     protected static File getBaseDir() {
-				assertNotNull("'"+JBOSS_DIST_PROP_NAME+"' is not set.", JBOSS_DIST_DIR);
-				assertTrue("Directory set in '"+JBOSS_DIST_PROP_NAME+"' does not exist: " + JBOSS_DIST_DIR.getAbsolutePath(), JBOSS_DIST_DIR.exists());
+        assertNotNull("'" + JBOSS_DIST_PROP_NAME + "' is not set.", JBOSS_DIST_DIR);
+        assertTrue("Directory set in '" + JBOSS_DIST_PROP_NAME + "' does not exist: " + JBOSS_DIST_DIR.getAbsolutePath(), JBOSS_DIST_DIR.exists());
         return JBOSS_DIST_DIR;
     }
 
-		private static Map<String, File> getSchemas(){
-				assertFalse("No schemas found under " + getBaseDir().getAbsolutePath(), JBOSS_SCHEMAS_MAP.isEmpty());
-				return JBOSS_SCHEMAS_MAP;
-		}
-
-    /**
-     * A map of the schemas keyed by the schema name.
-     *
-     * @return a map of the schemas.
-     */
-    static Map<String, File> jbossSchemas() {
-        return Collections.unmodifiableMap(getSchemas());
-    }
-
-    /**
-     * A collection of the schema names.
-     *
-     * @return a collection of schema names.
-     */
-    Set<String> jbossSchemaNames() {
-        return getSchemas().keySet();
+    private static Map<String, File> getSchemas(boolean currentSchemaOnly) {
+        assertFalse("No schemas found under " + getBaseDir().getAbsolutePath(), JBOSS_SCHEMAS_MAP.isEmpty());
+        if(currentSchemaOnly) {
+            return CURRENT_JBOSS_SCHEMAS_MAP;
+        }
+        return JBOSS_SCHEMAS_MAP;
     }
 
     /**
@@ -177,18 +196,20 @@ public class AbstractValidationUnitTest {
      *
      * @return a collection of the schema files.
      */
-    static Collection<File> jbossSchemaFiles() {
-        return getSchemas().values();
+    static Collection<File> jbossSchemaFiles(boolean currentSchemasOnly) {
+        return getSchemas(currentSchemasOnly).values();
     }
 
     /**
      * Attempts to discover the path to the XSD file.
      *
      * @param xsdName the xsd file name.
-     *
      * @return the file.
      */
     static URL discoverXsd(final String xsdName) {
+        if (OUTDATED_NAMESPACES.containsKey(xsdName)) {
+            throw new RuntimeException("Default configs are not in line with most recent schemas " + xsdName + " has been superseded by " + OUTDATED_NAMESPACES.get(xsdName));
+        }
         final File file = JBOSS_SCHEMAS_MAP.get(xsdName);
         URL url = null;
         try {
@@ -267,6 +288,7 @@ public class AbstractValidationUnitTest {
             if (e.getSystemId() != null)
                 sb.append(" systemId='").append(e.getSystemId()).append('\'');
             sb.append(' ').append(e.getLocalizedMessage());
+            sb.append(" a possible cause may be that a subsystem is not using the most up to date schema.");
             return sb.toString();
         }
     }
