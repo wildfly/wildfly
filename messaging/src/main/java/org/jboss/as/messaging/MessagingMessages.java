@@ -534,4 +534,21 @@ public interface MessagingMessages {
 
     @Message(id = 11677, value = "Can not change the clustered attribute to false: The hornetq-server resource at %s has cluster-connection children resources and will remain clustered.")
     String canNotChangeClusteredAttribute(PathAddress address);
+
+    /**
+     * Create a failure description message indicating that the there are no connectors defined.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 11678, value = "No connectors definition present.")
+    OperationFailedException noConnectors();
+
+    /**
+     * Create a failure description message indicating that the there are no connectors defined.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 11679, value = "The broadcast group '%s' defines reference to nonexistent connector '%s'. Available connectors '%s'.")
+    OperationFailedException wrongConnectorRefInBroadCastGroup(final String bgName, final String connectorRef, final Collection<String> presentConnectors);
+
 }

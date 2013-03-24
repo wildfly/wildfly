@@ -40,7 +40,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
-
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 /**
  * The {@code JMSServerManager} service.
  *
@@ -72,7 +72,9 @@ public class JMSService implements Service<JMSServerManager> {
                 final ClassLoader loader = getClass().getClassLoader();
                 SecurityActions.setContextClassLoader(loader);
                 jmsServer.start();
-
+                if(!jmsServer.isStarted()){
+                    throw MESSAGES.failedToStartService(null);
+                }
                 // FIXME - this check is a work-around for AS7-3658
                 if (!hornetQServer.getValue().getConfiguration().isBackup()) {
                     hornetQServer.getValue().getRemotingService().allowInvmSecurityOverride(new HornetQPrincipal(HornetQDefaultCredentials.getUsername(), HornetQDefaultCredentials.getPassword()));
@@ -93,6 +95,8 @@ public class JMSService implements Service<JMSServerManager> {
                 SecurityActions.setContextClassLoader(null);
             }
             this.jmsServer = jmsServer;
+        } catch(StartException e){
+            throw e;
         } catch (Exception e) {
             throw new StartException(e);
         }
