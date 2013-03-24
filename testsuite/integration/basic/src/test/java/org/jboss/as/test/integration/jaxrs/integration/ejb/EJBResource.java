@@ -33,7 +33,7 @@ import javax.ws.rs.Produces;
 
 @Path("ejbInterceptor")
 @Produces({"text/plain"})
-@Stateless
+@Stateless(name = "CustomName")
 @Interceptors(EjbInterceptor.class)
 public class EJBResource implements EjbInterface {
 
