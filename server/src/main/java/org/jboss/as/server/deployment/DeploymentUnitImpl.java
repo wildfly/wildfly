@@ -97,7 +97,7 @@ class DeploymentUnitImpl extends SimpleAttachable implements DeploymentUnit {
             parent.destroy();
             parent = null;
         }
-
+       attachments.clear();
     }
 
 }

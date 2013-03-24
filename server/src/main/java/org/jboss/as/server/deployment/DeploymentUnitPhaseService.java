@@ -179,7 +179,9 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
             final RegisteredDeploymentUnitProcessor prev = iterator.previous();
             safeUndeploy(deploymentUnitContext, phase, prev);
         }
-        deploymentUnit = null;
+        if (context.getController().getMode() == Mode.REMOVE){
+            deploymentUnit = null;
+        }
     }
 
     private Mode getDeferableInitialMode(final DeploymentUnit deploymentUnit, List<String> deferredModules) {
