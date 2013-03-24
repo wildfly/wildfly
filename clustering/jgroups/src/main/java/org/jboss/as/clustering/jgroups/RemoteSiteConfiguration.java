@@ -30,5 +30,5 @@ public interface RemoteSiteConfiguration {
 
     ChannelFactory getChannelFactory();
 
-    String getCluster();
+    String getClusterName();
 }

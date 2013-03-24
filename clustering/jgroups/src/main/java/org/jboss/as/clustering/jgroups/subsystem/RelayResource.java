@@ -83,6 +83,6 @@ public class RelayResource extends SimpleResourceDefinition {
     @Override
     public void registerChildren(ManagementResourceRegistration registration) {
         registration.registerSubModel(new RemoteSiteResource());
-        registration.registerSubModel(PropertyResource.INSTANCE);
+        registration.registerSubModel(PropertyResourceDefinition.INSTANCE);
     }
 }

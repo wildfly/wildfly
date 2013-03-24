@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:jgroups:1.2" default-stack="${test.expr:maximal}">
+<subsystem xmlns="urn:jboss:domain:jgroups:2.0" default-stack="${test.expr:maximal}">
     <stack name="minimal">
         <transport type="UDP"/>
     </stack>

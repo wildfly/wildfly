@@ -40,14 +40,15 @@ public enum Namespace {
     INFINISPAN_1_2(1, 2, new InfinispanSubsystemXMLReader_1_2()),
     INFINISPAN_1_3(1, 3, new InfinispanSubsystemXMLReader_1_3()),
     INFINISPAN_1_4(1, 4, new InfinispanSubsystemXMLReader_1_4()),
-    INFINISPAN_1_5(1, 5, new InfinispanSubsystemXMLReader_1_5()),
+
+    INFINISPAN_2_0(2, 0, new InfinispanSubsystemXMLReader_2_0()),
     ;
     private static final String URN_PATTERN = "urn:jboss:domain:%s:%d.%d";
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = INFINISPAN_1_5;
+    public static final Namespace CURRENT = INFINISPAN_2_0;
 
     private final int major;
     private final int minor;
