@@ -160,7 +160,7 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
-        KernelServices legacyServices = mainServices.getLegacyServices(version);
+        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
         Assert.assertNotNull(legacyServices);
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
@@ -168,7 +168,7 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
         PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME));
         ModelTestUtils.checkFailedTransformedBootOperations(
                 mainServices,
-                version,
+                version_1_1_0,
                 builder.parseXmlResource("subsystem-jgroups-test.xml"),
                 new FailedOperationTransformationConfig()
                     .addFailedAttribute(

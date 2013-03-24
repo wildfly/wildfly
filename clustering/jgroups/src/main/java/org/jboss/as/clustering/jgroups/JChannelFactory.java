@@ -103,7 +103,7 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
             for (final RemoteSiteConfiguration remoteSite: remoteSites) {
                 final String siteName = remoteSite.getName();
                 sites.add(siteName);
-                final String cluster = remoteSite.getCluster();
+                final String cluster = remoteSite.getClusterName();
                 final String clusterName = (cluster != null) ? cluster : siteName;
                 final RelayConfig.BridgeConfig bridge = new RelayConfig.BridgeConfig(clusterName) {
                     @Override

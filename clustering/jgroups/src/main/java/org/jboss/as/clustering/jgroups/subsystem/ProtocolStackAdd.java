@@ -539,11 +539,11 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
     static class RemoteSite implements RemoteSiteConfiguration {
         private final Value<ChannelFactory> channelFactory;
         private final String name;
-        private final String cluster;
+        private final String clusterName;
 
         RemoteSite(String name, String clusterName, Value<ChannelFactory> channelFactory) {
             this.name = name;
-            this.cluster = clusterName;
+            this.clusterName = clusterName;
             this.channelFactory = channelFactory;
         }
 
@@ -558,8 +558,8 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         }
 
         @Override
-        public String getCluster() {
-            return this.cluster;
+        public String getClusterName() {
+            return this.clusterName;
         }
     }
 
