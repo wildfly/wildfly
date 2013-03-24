@@ -74,6 +74,7 @@ class TestControllerClient extends AbstractModelControllerClient {
             final Channel channel = openChannel(connection, "management", OptionMap.EMPTY);
             if(setChannel(channel)) {
                 channel.receiveMessage(channelHandler.getReceiver());
+                channel.addCloseHandler(channelHandler);
             } else {
                 channel.closeAsync();
             }
