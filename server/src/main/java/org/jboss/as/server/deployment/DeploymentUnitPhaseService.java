@@ -55,7 +55,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
     private static final AttachmentKey<AttachmentList<DeploymentUnit>> UNVISITED_DEFERRED_MODULES = AttachmentKey.createList(DeploymentUnit.class);
 
     private final InjectedValue<DeployerChains> deployerChainsInjector = new InjectedValue<DeployerChains>();
-    private final DeploymentUnit deploymentUnit;
+    private DeploymentUnit deploymentUnit;
     private final Phase phase;
     private final AttachmentKey<T> valueKey;
     private final List<AttachedDependency> injectedAttachedDependencies = new ArrayList<AttachedDependency>();
@@ -179,6 +179,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
             final RegisteredDeploymentUnitProcessor prev = iterator.previous();
             safeUndeploy(deploymentUnitContext, phase, prev);
         }
+        deploymentUnit = null;
     }
 
     private Mode getDeferableInitialMode(final DeploymentUnit deploymentUnit, List<String> deferredModules) {

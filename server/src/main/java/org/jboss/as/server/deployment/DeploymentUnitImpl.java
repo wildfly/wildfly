@@ -33,9 +33,9 @@ import org.jboss.msc.service.ServiceRegistry;
  * @author John E. Bailey
  */
 class DeploymentUnitImpl extends SimpleAttachable implements DeploymentUnit {
-    private final DeploymentUnit parent;
     private final String name;
-    private final ServiceRegistry serviceRegistry;
+    private DeploymentUnit parent;
+    private ServiceRegistry serviceRegistry;
 
     /**
      * Construct a new instance.
@@ -90,6 +90,14 @@ class DeploymentUnitImpl extends SimpleAttachable implements DeploymentUnit {
     @Override
     public ModelNode createDeploymentSubModel(final String subsystemName, final PathElement address) {
         return DeploymentModelUtils.createDeploymentSubModel(subsystemName, address, this);
+    }
+
+    public void destroy() {
+        if (parent != null) {
+            parent.destroy();
+            parent = null;
+        }
+
     }
 
 }

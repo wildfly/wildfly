@@ -48,7 +48,7 @@ public class JBossWebRealmService implements Service<Realm> {
 
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
 
-    private final DeploymentUnit deploymentUnit;
+    private DeploymentUnit deploymentUnit;
 
     public JBossWebRealmService(DeploymentUnit deploymentUnit) {
         this.deploymentUnit = deploymentUnit;
@@ -82,6 +82,7 @@ public class JBossWebRealmService implements Service<Realm> {
         // remove handler
         Set handlerKeys = PolicyContext.getHandlerKeys();
         handlerKeys.remove(SecurityConstants.WEB_REQUEST_KEY);
+        deploymentUnit = null;
     }
 
     /** {@inheritDoc} */

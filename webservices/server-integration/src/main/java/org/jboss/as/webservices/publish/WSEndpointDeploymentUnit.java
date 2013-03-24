@@ -127,4 +127,8 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public void destroy() {
+        //noting to destroy
+    }
 }

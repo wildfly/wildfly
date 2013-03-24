@@ -43,7 +43,7 @@ import org.jboss.weld.injection.spi.JpaInjectionServices;
 
 public class WeldJpaInjectionServices implements JpaInjectionServices {
 
-    private final DeploymentUnit deploymentUnit;
+    private DeploymentUnit deploymentUnit;
     private final ServiceRegistry serviceRegistry;
 
     public WeldJpaInjectionServices(DeploymentUnit deploymentUnit, ServiceRegistry serviceRegistry) {
@@ -87,6 +87,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
 
     @Override
     public void cleanup() {
+        deploymentUnit = null;
     }
 
     private String getScopedPUName(final DeploymentUnit deploymentUnit, final String persistenceUnitName) {
