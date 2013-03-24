@@ -37,7 +37,7 @@ import org.jboss.as.server.ServerMessages;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public class SimpleAttachable implements Attachable {
-    private final Map<AttachmentKey<?>, Object> attachments = new HashMap<AttachmentKey<?>, Object>();
+    protected final Map<AttachmentKey<?>, Object> attachments = new HashMap<AttachmentKey<?>, Object>();
 
     /** {@inheritDoc} */
     public synchronized boolean hasAttachment(AttachmentKey<?> key) {

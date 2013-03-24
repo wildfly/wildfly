@@ -582,6 +582,7 @@ public class JBossContextConfig extends ContextConfig {
         if (DELETE_WORK_DIR_ONCONTEXTDESTROY) {
            super.destroy();
         }
+        deploymentUnitContext = null;
     }
 
     /**

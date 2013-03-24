@@ -80,4 +80,10 @@ public interface DeploymentUnit extends Attachable {
      */
     ModelNode createDeploymentSubModel(final String subsystemName, final PathElement address);
 
+
+    /**
+     * Destroy deployment unit
+     */
+    void destroy();
+
 }

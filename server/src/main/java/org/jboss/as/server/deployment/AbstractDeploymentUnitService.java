@@ -88,6 +88,7 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
         final String deploymentName = context.getController().getName().getSimpleName();
         final String managementName = deploymentUnit.getAttachment(Attachments.MANAGEMENT_NAME);
         ServerLogger.DEPLOYMENT_LOGGER.stoppedDeployment(managementName, deploymentName, (int) (context.getElapsedTime() / 1000000L));
+        deploymentUnit.destroy();
         deploymentUnit = null;
         monitor.removeController(context.getController());
         monitor = null;
