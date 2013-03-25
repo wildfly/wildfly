@@ -67,7 +67,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 @ServerSetup(WebTestsSecurityDomainSetup.class)
 @Category(CommonCriteria.class)
-public class TransportGuaranteeTestCase  {
+public class TransportGuaranteeTestCase {
 
 
     private static final Logger log = Logger.getLogger(TransportGuaranteeTestCase.class);
@@ -100,14 +100,13 @@ public class TransportGuaranteeTestCase  {
 
         log.info("starting deployAnnWar()");
 
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         WebArchive war = ShrinkWrap.create(WebArchive.class, TG_ANN + WAR);
         war.addClass(TransportGuaranteeAnnotatedServlet.class);
 
-        war.addAsResource(tccl.getResource("web/sec/tg/users.properties"), "users.properties");
-        war.addAsResource(tccl.getResource("web/sec/tg/roles.properties"), "roles.properties");
-        war.setWebXML(tccl.getResource("web/sec/tg/annotated/web.xml"));
-        war.addAsWebInfResource("web/sec/tg/jboss-web.xml", "jboss-web.xml");
+        war.addAsResource(TransportGuaranteeTestCase.class.getPackage(), "users.properties", "users.properties");
+        war.addAsResource(TransportGuaranteeTestCase.class.getPackage(), "roles.properties", "roles.properties");
+        war.setWebXML(TransportGuaranteeTestCase.class.getPackage(), "annotated-web.xml");
+        war.addAsWebInfResource(TransportGuaranteeTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
 
         log.info(war.toString());
         return war;
@@ -117,15 +116,13 @@ public class TransportGuaranteeTestCase  {
     @Deployment(name = TG_DD + WAR, order = 2, testable = false)
     public static WebArchive deployDdWar() {
 
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         WebArchive war = ShrinkWrap.create(WebArchive.class, TG_DD + WAR);
         war.addClass(TransportGuaranteeServlet.class);
 
-        war.addAsResource(tccl.getResource("web/sec/tg/users.properties"), "users.properties");
-        war.addAsResource(tccl.getResource("web/sec/tg/roles.properties"), "roles.properties");
-
-        war.setWebXML(tccl.getResource("web/sec/tg/dd/web.xml"));
-        war.addAsWebInfResource("web/sec/tg/jboss-web.xml", "jboss-web.xml");
+        war.addAsResource(TransportGuaranteeTestCase.class.getPackage(), "users.properties", "users.properties");
+        war.addAsResource(TransportGuaranteeTestCase.class.getPackage(), "roles.properties", "roles.properties");
+        war.setWebXML(TransportGuaranteeTestCase.class.getPackage(), "dd-web.xml");
+        war.addAsWebInfResource(TransportGuaranteeTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
 
         log.info(war.toString());
         return war;
@@ -134,15 +131,14 @@ public class TransportGuaranteeTestCase  {
     @Deployment(name = TG_MIXED + WAR, order = 3, testable = false)
     public static WebArchive deployMixedWar() {
 
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         WebArchive war = ShrinkWrap.create(WebArchive.class, TG_MIXED + WAR);
         war.addClass(TransportGuaranteeMixedServlet.class);
 
-        war.addAsResource(tccl.getResource("web/sec/tg/users.properties"), "users.properties");
-        war.addAsResource(tccl.getResource("web/sec/tg/roles.properties"), "roles.properties");
+        war.addAsResource(TransportGuaranteeTestCase.class.getPackage(), "users.properties", "users.properties");
+        war.addAsResource(TransportGuaranteeTestCase.class.getPackage(), "roles.properties", "roles.properties");
 
-        war.setWebXML(tccl.getResource("web/sec/tg/mixed/web.xml"));
-        war.addAsWebInfResource("web/sec/tg/jboss-web.xml", "jboss-web.xml");
+        war.setWebXML(TransportGuaranteeTestCase.class.getPackage(), "mixed-web.xml");
+        war.addAsWebInfResource(TransportGuaranteeTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
 
         log.info(war.toString());
         return war;
@@ -158,17 +154,16 @@ public class TransportGuaranteeTestCase  {
 
         serverManager = new ServerManager(managementClient);
 
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
 
-        FileUtils.copyURLToFile(tccl.getResource("web/sec/tg/localhost.keystore"), keyStoreFile);
+        FileUtils.copyURLToFile(TransportGuaranteeTestCase.class.getResource("localhost.keystore"), keyStoreFile);
 
         try {
             serverManager.addConnector(Connector.HTTPSJIO, httpsPort,
                     null, null, keyStoreFile.getAbsolutePath(),
                     "password");
         } catch (Exception e) {
-            log.error("Cannot create https connector - HTTPSJIO",e);
-            Assert.fail("Cannot create https connector - HTTPSJIO, cause "+e.getMessage());
+            log.error("Cannot create https connector - HTTPSJIO", e);
+            Assert.fail("Cannot create https connector - HTTPSJIO, cause " + e.getMessage());
         }
 
         // set test URL
