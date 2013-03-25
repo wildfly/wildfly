@@ -104,6 +104,7 @@ public interface EJB3SubsystemModel {
     String VALUE = "value";
     String TYPE = "type";
 
+    String DATABASE = "database";
     String DATABASE_DATA_STORE = "database-data-store";
 
     PathElement REMOTE_SERVICE_PATH = PathElement.pathElement(SERVICE, REMOTE);

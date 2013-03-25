@@ -53,11 +53,19 @@ public class DatabaseDataStoreResourceDefinition extends SimpleResourceDefinitio
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
+    public static final SimpleAttributeDefinition DATABASE =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DATABASE, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
+
+
     public static final Map<String, AttributeDefinition> ATTRIBUTES ;
 
     static {
         Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
         map.put(DATASOURCE_JNDI_NAME.getName(), DATASOURCE_JNDI_NAME);
+        map.put(DATABASE.getName(), DATABASE);
 
         ATTRIBUTES = Collections.unmodifiableMap(map);
     }

@@ -41,6 +41,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DATABASE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DATABASE_DATA_STORE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DATASOURCE_JNDI_NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_DATA_STORE;
@@ -197,6 +198,7 @@ public class EJB3Subsystem15Parser extends EJB3Subsystem14Parser {
     private void parseDatabaseDataStore(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
         String name = null;
         String datasourceJndiName = null;
+        String database = null;
         final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.NAME, EJB3SubsystemXMLAttribute.DATASOURCE_JNDI_NAME);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -217,6 +219,12 @@ public class EJB3Subsystem15Parser extends EJB3Subsystem14Parser {
                     }
                     datasourceJndiName = DatabaseDataStoreResourceDefinition.DATASOURCE_JNDI_NAME.parse(value, reader).asString();
                     break;
+                case DATABASE:
+                    if (database != null) {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                    database = DatabaseDataStoreResourceDefinition.DATABASE.parse(value, reader).asString();
+                    break;
                 default:
                     throw unexpectedAttribute(reader, i);
             }
@@ -232,7 +240,9 @@ public class EJB3Subsystem15Parser extends EJB3Subsystem14Parser {
         databaseDataStore.get(OP).set(ADD);
         databaseDataStore.get(ADDRESS).set(address);
         databaseDataStore.get(DATASOURCE_JNDI_NAME).set(datasourceJndiName);
-
+        if(database != null) {
+            databaseDataStore.get(DATABASE).set(database);
+        }
         operations.add(databaseDataStore);
         requireNoContent(reader);
     }

@@ -27,6 +27,7 @@
 
     <resources>
         <!-- Insert resources here -->
+        <resource-root path="timers" />
     </resources>
 
     <dependencies>
@@ -92,7 +93,7 @@
         <!-- For parser DUP -->
         <module name="org.jboss.vfs"/>
         <module name="org.picketbox"/>
-        
+
         <module name="org.omg.api"/>
         <module name="org.picketbox"/>
     </dependencies>

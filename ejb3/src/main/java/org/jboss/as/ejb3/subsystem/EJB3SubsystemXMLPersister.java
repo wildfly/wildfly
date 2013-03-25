@@ -456,6 +456,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
                 ModelNode store = property.getValue();
                 writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
                 DatabaseDataStoreResourceDefinition.DATASOURCE_JNDI_NAME.marshallAsAttribute(store, writer);
+                DatabaseDataStoreResourceDefinition.DATABASE.marshallAsAttribute(store, writer);
                 writer.writeEndElement();
             }
         }
