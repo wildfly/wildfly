@@ -23,11 +23,8 @@
 package org.jboss.as.test.integration.jca.security;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
@@ -36,11 +33,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
-import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -49,23 +42,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertNotNull;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CODE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.Constants.CLASSIC;
-import static org.jboss.as.security.Constants.FLAG;
-import static org.jboss.as.security.Constants.LOGIN_MODULES;
-import static org.jboss.as.security.Constants.MODULE_OPTIONS;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 
 /**
  * Data source with security domain test JBQA-5952
- * 
+ *
  * @author <a href="mailto:vrastsel@redhat.com"> Vladimir Rastseluev</a>
  */
 @RunWith(Arquillian.class)
@@ -105,7 +85,7 @@ public class DsWithSecurityDomainTestCase {
                 DsWithSecurityDomainTestCase.class);
         jar.addClasses(AbstractLoginModuleSecurityDomainTestCaseSetup.class, AbstractSecurityDomainSetup.class);
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "test.ear").addAsLibrary(jar)
-                .addAsManifestResource("jca/security/data-sources/security-ds.xml", "security-ds.xml"); 
+                .addAsManifestResource(DsWithSecurityDomainTestCase.class.getPackage(), "security-ds.xml", "security-ds.xml");
 
         return ear;
     }

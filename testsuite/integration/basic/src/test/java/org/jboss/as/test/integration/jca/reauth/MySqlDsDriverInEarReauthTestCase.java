@@ -43,7 +43,7 @@ import org.junit.Ignore;
 /**
  * Tests re-authentication support for MySQL data source. JDBC driver and DS configuration deployed inside .ear archive.
  * JBQA-5119,JBQA 5916.
- * 
+ *
  * @author Vladimir Rastseluev
  */
 
@@ -56,7 +56,7 @@ public class MySqlDsDriverInEarReauthTestCase {
     @Deployment
     public static Archive<?> deploy() throws Exception {
 
-        
+
         File jdbcJar = new File(System.getProperty("jbossas.ts.integ.dir", "."),
                 "/basic/src/test/resources/mysql-connector-java-5.1.15.jar");
 
@@ -66,7 +66,7 @@ public class MySqlDsDriverInEarReauthTestCase {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "test.ear")
                 .addAsLibrary(ja)
                 .addAsLibrary(jt)
-                .addAsManifestResource("jca/mysql-ds.xml", "mysql-ds.xml")
+                .addAsManifestResource(MySqlDsDriverInEarReauthTestCase.class.getPackage(), "mysql-ds.xml", "mysql-ds.xml")
                 .addAsManifestResource(
                         new StringAsset(
                                 "Dependencies: org.jboss.ironjacamar.jdbcadapters\n"),

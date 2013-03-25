@@ -92,10 +92,10 @@ public class RunAsTestCase {
                 .addPackage(HttpRequest.class.getPackage()).addClass(WhoAmI.class).addClass(Util.class).addClass(Entry.class)
                 .addClasses(RunAsTestCase.class, Base64.class)
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
-                .addAsResource("ejb3/security/users.properties", "users.properties")
-                .addAsResource("ejb3/security/roles.properties", "roles.properties")
-                .addAsWebInfResource("ejb3/security/web.xml", "web.xml")
-                .addAsWebInfResource("ejb3/security/jboss-web.xml", "jboss-web.xml")
+                .addAsResource(RunAsTestCase.class.getPackage(), "users.properties", "users.properties")
+                .addAsResource(RunAsTestCase.class.getPackage(), "roles.properties", "roles.properties")
+                .addAsWebInfResource(RunAsTestCase.class.getPackage(), "web.xml", "web.xml")
+                .addAsWebInfResource(RunAsTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml")
                 .addAsWebInfResource(RunAsTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
         war.addPackage(CommonCriteria.class.getPackage());

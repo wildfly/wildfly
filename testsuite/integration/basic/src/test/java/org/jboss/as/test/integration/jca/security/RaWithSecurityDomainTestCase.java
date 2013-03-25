@@ -84,8 +84,8 @@ public class RaWithSecurityDomainTestCase {
                 .addPackage(MultipleConnectionFactory1.class.getPackage());
         jar.addClasses(AbstractLoginModuleSecurityDomainTestCaseSetup.class, AbstractSecurityDomainSetup.class);
         final ResourceAdapterArchive rar = ShrinkWrap.create(ResourceAdapterArchive.class, "test.rar").addAsLibrary(jar)
-                .addAsManifestResource("jca/security/ra/ra.xml", "ra.xml")
-                .addAsManifestResource("jca/security/ra/ironjacamar.xml", "ironjacamar.xml");
+                .addAsManifestResource(RaWithSecurityDomainTestCase.class.getPackage(), "ra.xml", "ra.xml")
+                .addAsManifestResource(RaWithSecurityDomainTestCase.class.getPackage(), "ironjacamar.xml", "ironjacamar.xml");
 
         return rar;
     }

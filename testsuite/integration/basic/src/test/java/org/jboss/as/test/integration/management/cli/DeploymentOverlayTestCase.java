@@ -89,38 +89,38 @@ public class DeploymentOverlayTestCase {
         // deployment1
         war = ShrinkWrap.create(WebArchive.class, "deployment0.war");
         war.addClass(SimpleServlet.class);
-        war.addAsWebInfResource("cli/deployment-overlay/web.xml", "web.xml");
+        war.addAsWebInfResource(DeploymentOverlayTestCase.class.getPackage(), "web.xml", "web.xml");
         war1 = new File(tempDir + File.separator + war.getName());
         new ZipExporterImpl(war).exportTo(war1, true);
 
         war = ShrinkWrap.create(WebArchive.class, "deployment1.war");
         war.addClass(SimpleServlet.class);
-        war.addAsWebInfResource("cli/deployment-overlay/web.xml", "web.xml");
+        war.addAsWebInfResource(DeploymentOverlayTestCase.class.getPackage(), "web.xml", "web.xml");
         war2 = new File(tempDir + File.separator + war.getName());
         new ZipExporterImpl(war).exportTo(war2, true);
 
         war = ShrinkWrap.create(WebArchive.class, "another.war");
         war.addClass(SimpleServlet.class);
-        war.addAsWebInfResource("cli/deployment-overlay/web.xml", "web.xml");
+        war.addAsWebInfResource(DeploymentOverlayTestCase.class.getPackage(), "web.xml", "web.xml");
         war3 = new File(tempDir + File.separator + war.getName());
         new ZipExporterImpl(war).exportTo(war3, true);
 
-        final URL overrideXmlUrl = DeploymentOverlayTestCase.class.getClassLoader().getResource("cli/deployment-overlay/override.xml");
+        final URL overrideXmlUrl = DeploymentOverlayTestCase.class.getResource("override.xml");
         if(overrideXmlUrl == null) {
-            Assert.fail("Failed to locate cli/deployment-overlay/override.xml");
+            Assert.fail("Failed to locate override.xml");
         }
         overrideXml = new File(overrideXmlUrl.toURI());
         if(!overrideXml.exists()) {
-            Assert.fail("Failed to locate cli/deployment-overlay/override.xml");
+            Assert.fail("Failed to locate override.xml");
         }
 
-        final URL webXmlUrl = DeploymentOverlayTestCase.class.getClassLoader().getResource("cli/deployment-overlay/web.xml");
+        final URL webXmlUrl = DeploymentOverlayTestCase.class.getResource("web.xml");
         if(webXmlUrl == null) {
-            Assert.fail("Failed to locate cli/deployment-overlay/web.xml");
+            Assert.fail("Failed to locateweb.xml");
         }
         webXml = new File(webXmlUrl.toURI());
         if(!webXml.exists()) {
-            Assert.fail("Failed to locate cli/deployment-overlay/web.xml");
+            Assert.fail("Failed to locate web.xml");
         }
     }
 

@@ -31,6 +31,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
+import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,7 +48,7 @@ import static org.junit.Assert.fail;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class RaCfgMetricUnitTestCase extends DsMgmtTestBase {
+public class RaCfgMetricUnitTestCase extends JCAMetrictsTestBase {
 
     public static void setBaseAddress(String rar) {
         baseAddress = new ModelNode();
@@ -66,8 +67,7 @@ public class RaCfgMetricUnitTestCase extends DsMgmtTestBase {
      */
     protected void setModel(String modelName) throws Exception {
         setBaseAddress(modelName + ".rar");
-        String xml = readXmlResource(System.getProperty("jbossas.ts.integ.dir") + "/basic/src/test/resources/jca/metrics/ra/"
-                + modelName + ".xml");
+        String xml = FileUtils.readFile(RaCfgMetricUnitTestCase.class, "ra/"+ modelName + ".xml");
         List<ModelNode> operations = xmlToModelOperations(xml, Namespace.RESOURCEADAPTERS_1_0.getUriString(),
                 new ResourceAdapterSubsystemParser());
         executeOperation(operationListToCompositeOperation(operations));

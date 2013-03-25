@@ -54,9 +54,7 @@ public class RemoteNamingTestCase {
     @Deployment
     public static Archive<?> deploy() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "test.jar");
-        jar.addClasses(BindingActivator.class);
-        jar.addAsManifestResource("naming/remote/simple/services", "services");
-        jar.addAsManifestResource("naming/remote/simple/MANIFEST.MF", "MANIFEST.MF");
+        jar.addClasses(BindingEjb.class);
         return jar;
     }
 
