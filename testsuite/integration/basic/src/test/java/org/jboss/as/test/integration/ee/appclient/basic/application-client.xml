@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<application-client version="6"
-                    xmlns="http://java.sun.com/xml/ns/javaee"
+<application-client version="7"
+                    xmlns="http://xmlns.jcp.org/xml/ns/javaee"
                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application-client_6.xsd">
+                    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/application-client_7.xsd">
     <env-entry>
         <env-entry-name>stringValue</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
