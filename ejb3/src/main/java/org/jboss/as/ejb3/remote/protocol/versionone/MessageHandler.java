@@ -29,7 +29,7 @@ import java.io.IOException;
 /**
  * User: jpai
  */
-interface MessageHandler {
+public interface MessageHandler {
 
     void processMessage(final ChannelAssociation channelAssociation, final MessageInputStream messageInputStream) throws IOException;
 

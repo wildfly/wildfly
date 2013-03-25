@@ -37,7 +37,6 @@ import org.jboss.ejb.client.EJBClientTransactionContext;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -146,11 +145,11 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         return endpointValue;
     }
 
-    public Injector<TransactionManager> getTransactionManagerInjector() {
+    public InjectedValue<TransactionManager> getTransactionManagerInjector() {
         return this.txManager;
     }
 
-    public Injector<TransactionSynchronizationRegistry> getTxSyncRegistryInjector() {
+    public InjectedValue<TransactionSynchronizationRegistry> getTxSyncRegistryInjector() {
         return this.txSyncRegistry;
     }
 
@@ -299,24 +298,28 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         return executorService;
     }
 
-    public Injector<DeploymentRepository> getDeploymentRepositoryInjector() {
+    public InjectedValue<DeploymentRepository> getDeploymentRepositoryInjector() {
         return this.deploymentRepositoryInjectedValue;
     }
 
-    public Injector<EJBRemoteTransactionsRepository> getEJBRemoteTransactionsRepositoryInjector() {
+    public InjectedValue<EJBRemoteTransactionsRepository> getEJBRemoteTransactionsRepositoryInjector() {
         return this.ejbRemoteTransactionsRepositoryInjectedValue;
     }
 
-    public Injector<RegistryCollector> getClusterRegistryCollectorInjector() {
+    public InjectedValue<RegistryCollector> getClusterRegistryCollectorInjector() {
         return this.clusterRegistryCollector;
     }
 
-    public Injector<ServerEnvironment> getServerEnvironmentInjector() {
+    public InjectedValue<ServerEnvironment> getServerEnvironmentInjector() {
         return this.serverEnvironment;
     }
 
-    public Injector<RemoteAsyncInvocationCancelStatusService> getAsyncInvocationCancelStatusInjector() {
+    public InjectedValue<RemoteAsyncInvocationCancelStatusService> getAsyncInvocationCancelStatusInjector() {
         return this.remoteAsyncInvocationCancelStatus;
+    }
+
+    public String[] getSupportedMarshallingStrategies() {
+        return supportedMarshallingStrategies;
     }
 
     private boolean isSupportedMarshallingStrategy(final String strategy) {
