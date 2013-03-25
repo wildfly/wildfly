@@ -58,6 +58,7 @@ import org.jboss.metadata.web.spec.AbsoluteOrderingMetaData;
 import org.jboss.metadata.web.spec.OrderingElementMetaData;
 import org.jboss.metadata.web.spec.Web25MetaData;
 import org.jboss.metadata.web.spec.Web30MetaData;
+import org.jboss.metadata.web.spec.Web31MetaData;
 import org.jboss.metadata.web.spec.WebCommonMetaData;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
@@ -244,8 +245,8 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         WebCommonMetaData mergedFragmentMetaData = new WebCommonMetaData();
         if (specMetaData == null) {
             // If there is no web.xml, it has to be considered to be the latest version
-            specMetaData = new Web30MetaData();
-            specMetaData.setVersion("3.0");
+            specMetaData = new Web31MetaData();
+            specMetaData.setVersion("3.1");
         }
         // Augment with meta data from annotations in /WEB-INF/classes
         WebMetaData annotatedMetaData = annotationsMetaData.get("classes");
