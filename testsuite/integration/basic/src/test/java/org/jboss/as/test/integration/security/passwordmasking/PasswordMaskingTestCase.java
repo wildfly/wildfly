@@ -31,7 +31,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -48,7 +47,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(Arquillian.class)
 public class PasswordMaskingTestCase {
-   
+
    @ArquillianResource URL baseURL;
 
    @Deployment
@@ -57,7 +56,7 @@ public class PasswordMaskingTestCase {
 
       WebArchive war = ShrinkWrap.create(WebArchive.class, "passwordMasking" + ".war");
       war.addClass(PasswordMaskingTestServlet.class);
-      war.setWebXML(Utils.getResource("security/deployments/passwordMasking/web.xml"));
+      war.setWebXML(PasswordMaskingTestCase.class.getPackage(), "web.xml");
 
       return war;
    }
