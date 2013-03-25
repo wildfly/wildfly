@@ -31,6 +31,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.NoopOperationStepHandler;
+import org.jboss.as.controller.NotificationDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -38,6 +39,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.parsing.Attribute;
@@ -71,6 +73,10 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
 public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
+
+    public static final String SERVER_STARTED_NOTIFICATION = "server-started";
+    public static final String SERVER_STOPPED_NOTIFICATION = "server-stopped";
+    public static final String SERVER_RESTARTED_NOTIFICATION = "server-restarted";
 
     public static final AttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING).setResourceOnly().build();
 
@@ -161,6 +167,19 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
 
         if (serverInventory != null) {
             registerServerLifecycleOperations(resourceRegistration, serverInventory);
+        }
+    }
+
+    @Override
+    public void registerNotifications(ManagementResourceRegistration resourceRegistration) {
+        super.registerNotifications(resourceRegistration);
+
+        if (serverInventory != null) {
+            ResourceDescriptionResolver resolver = HostResolver.getResolver(SERVER_CONFIG, false);
+
+            resourceRegistration.registerNotification(NotificationDefinition.Builder.create(SERVER_STARTED_NOTIFICATION, resolver).build());
+            resourceRegistration.registerNotification(NotificationDefinition.Builder.create(SERVER_STOPPED_NOTIFICATION, resolver).build());
+            resourceRegistration.registerNotification(NotificationDefinition.Builder.create(SERVER_RESTARTED_NOTIFICATION, resolver).build());
         }
     }
 

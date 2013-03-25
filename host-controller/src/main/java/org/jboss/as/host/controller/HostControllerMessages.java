@@ -735,4 +735,13 @@ public interface HostControllerMessages {
 
     @Message(id=16540, value="There is no resource called %s")
     OperationFailedException noResourceFor(PathAddress address);
+
+    @Message(id=16541, value="The server has been started")
+    String serverHasBeenStarted();
+
+    @Message(id=16542, value="The server has been stopped")
+    String serverHasBeenStopped();
+
+    @Message(id=16543, value="The server has been restarted")
+    String serverHasBeenRestarted();
 }

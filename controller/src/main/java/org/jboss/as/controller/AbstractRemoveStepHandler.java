@@ -26,12 +26,13 @@ import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.notification.NotificationResultHandlers.RESOURCE_REMOVED_RESULT_HANDLER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.notification.NotificationResultHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
@@ -69,8 +70,9 @@ public abstract class AbstractRemoveStepHandler implements OperationStepHandler 
             }, OperationContext.Stage.RUNTIME);
         }
 
-        context.completeStep(RESOURCE_REMOVED_RESULT_HANDLER);
-    }
+        PathAddress address = pathAddress(operation.require(OP_ADDR));
+        context.completeStep(new NotificationResultHandler(RESOURCE_REMOVED_NOTIFICATION, MESSAGES.resourceWasRemoved(address)));
+   }
 
     protected void performRemove(OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);

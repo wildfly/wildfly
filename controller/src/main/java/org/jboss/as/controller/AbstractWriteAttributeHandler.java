@@ -24,9 +24,13 @@ package org.jboss.as.controller;
 
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.OperationContext.ResultAction.KEEP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.notification.NotificationResultHandlers.AttributeValueWrittenResultHandler;
+import static org.jboss.as.controller.operations.global.GlobalNotifications.NEW_VALUE;
+import static org.jboss.as.controller.operations.global.GlobalNotifications.OLD_VALUE;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,6 +38,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.notification.Notification;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -277,5 +282,38 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
             this.handback = handback;
         }
 
+    }
+
+    /**
+     * Emit a {@code ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION} if the result action is kept.
+     */
+    private static final class AttributeValueWrittenResultHandler implements OperationContext.ResultHandler {
+
+        private final String attributeName;
+        private final ModelNode currentValue;
+        private final ModelNode newValue;
+
+        public AttributeValueWrittenResultHandler(String attributeName, ModelNode currentValue, ModelNode newValue) {
+            this.attributeName = attributeName;
+            this.currentValue = currentValue;
+            this.newValue = newValue;
+        }
+
+        @Override
+        public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+            if (resultAction != KEEP) {
+                return;
+            }
+            PathAddress sourceAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
+            ModelNode data = new ModelNode();
+            data.get(NAME).set(attributeName);
+            data.get(OLD_VALUE).set(currentValue);
+            data.get(NEW_VALUE).set(newValue);
+            Notification notification = new Notification(ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION,
+                    sourceAddress,
+                    MESSAGES.attributeValueWritten(attributeName, currentValue, newValue),
+                    data);
+            context.emit(notification);
+        }
     }
 }
