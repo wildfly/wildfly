@@ -22,59 +22,29 @@
 
 package org.jboss.as.ee.component;
 
-import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
-import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ee.component.interceptors.UserInterceptorFactory;
-import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
-import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
-import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
-import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.as.server.deployment.reflect.ProxyMetadataSource;
-import org.jboss.invocation.ImmediateInterceptorFactory;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.invocation.proxy.ProxyConfiguration;
-import org.jboss.invocation.proxy.ProxyFactory;
-import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.ConstructedValue;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 
-import static org.jboss.as.ee.EeLogger.SERVER_DEPLOYMENT_LOGGER;
 import static org.jboss.as.ee.EeMessages.MESSAGES;
-import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
  * A description of a generic Java EE component.  The description is pre-classloading so it references everything by name.
@@ -83,9 +53,9 @@ import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
  */
 public class ComponentDescription implements ResourceInjectionTarget {
 
-    private static final DefaultComponentConfigurator FIRST_CONFIGURATOR = new DefaultComponentConfigurator();
-    private static final AtomicInteger PROXY_ID = new AtomicInteger(0);
-    private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
+    private static final DefaultComponentConfigurator DEFAULT_COMPONENT_CONFIGURATOR = new DefaultComponentConfigurator();
+    private static final DefaultInterceptorConfigurator DEFAULT_INTERCEPTOR_CONFIGURATOR = new DefaultInterceptorConfigurator();
+    private static final DefaultComponentViewConfigurator DEFAULT_COMPONENT_VIEW_CONFIGURATOR = new DefaultComponentViewConfigurator();
 
     private final ServiceName serviceName;
     private ServiceName contextServiceName;
@@ -152,7 +122,9 @@ public class ComponentDescription implements ResourceInjectionTarget {
         serviceName = BasicComponent.serviceNameOf(deploymentUnitServiceName, componentName);
         this.componentName = componentName;
         this.componentClassName = componentClassName;
-        configurators.addLast(FIRST_CONFIGURATOR);
+        configurators.addLast(DEFAULT_COMPONENT_CONFIGURATOR);
+        configurators.addLast(DEFAULT_INTERCEPTOR_CONFIGURATOR);
+        configurators.addLast(DEFAULT_COMPONENT_VIEW_CONFIGURATOR);
     }
 
     public ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
@@ -548,472 +520,6 @@ public class ComponentDescription implements ResourceInjectionTarget {
         return false;
     }
 
-    private static InterceptorFactory weaved(final Collection<InterceptorFactory> interceptorFactories) {
-        return new InterceptorFactory() {
-            @Override
-            public Interceptor create(InterceptorFactoryContext context) {
-                final Interceptor[] interceptors = new Interceptor[interceptorFactories.size()];
-                final Iterator<InterceptorFactory> factories = interceptorFactories.iterator();
-                for (int i = 0; i < interceptors.length; i++) {
-                    interceptors[i] = factories.next().create(context);
-                }
-                return Interceptors.getWeavedInterceptor(interceptors);
-            }
-        };
-    }
-
-    private static class DefaultComponentConfigurator implements ComponentConfigurator {
-
-        public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-            final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
-            final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(REFLECTION_INDEX);
-            final Object instanceKey = BasicComponentInstance.INSTANCE_KEY;
-            final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-            final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
-            final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-            final ProxyMetadataSource proxyReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.PROXY_REFLECTION_INDEX);
-            final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
-
-            final boolean metadataComplete = MetadataCompleteMarker.isMetadataComplete(deploymentUnit);
-
-            // Module stuff
-
-            final Deque<InterceptorFactory> instantiators = new ArrayDeque<InterceptorFactory>();
-            final Deque<InterceptorFactory> injectors = new ArrayDeque<InterceptorFactory>();
-            final Deque<InterceptorFactory> uninjectors = new ArrayDeque<InterceptorFactory>();
-            final Deque<InterceptorFactory> destructors = new ArrayDeque<InterceptorFactory>();
-
-            final ClassReflectionIndex<?> componentClassIndex = deploymentReflectionIndex.getClassIndex(configuration.getComponentClass());
-            final List<InterceptorFactory> componentUserAroundInvoke = new ArrayList<InterceptorFactory>();
-            final List<InterceptorFactory> componentUserAroundTimeout;
-
-            final Map<String, List<InterceptorFactory>> userAroundInvokesByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
-            final Map<String, List<InterceptorFactory>> userAroundTimeoutsByInterceptorClass;
-            final Map<String, List<InterceptorFactory>> userPrePassivatesByInterceptorClass;
-            final Map<String, List<InterceptorFactory>> userPostActivatesByInterceptorClass;
-
-            final Map<String, List<InterceptorFactory>> userPostConstructByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
-            final Map<String, List<InterceptorFactory>> userPreDestroyByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
-
-            final Set<MethodIdentifier> timeoutMethods = description.getTimerMethods();
-            if (description.isTimerServiceRequired()) {
-                componentUserAroundTimeout = new ArrayList<InterceptorFactory>();
-                userAroundTimeoutsByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
-            } else {
-                componentUserAroundTimeout = null;
-                userAroundTimeoutsByInterceptorClass = null;
-            }
-
-
-            if (description.isPassivationApplicable()) {
-                userPrePassivatesByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
-                userPostActivatesByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
-            } else {
-                userPrePassivatesByInterceptorClass = null;
-                userPostActivatesByInterceptorClass = null;
-            }
-
-
-            // Primary instance
-            final ManagedReferenceFactory instanceFactory = configuration.getInstanceFactory();
-            if (instanceFactory != null) {
-                instantiators.addFirst(new ManagedReferenceInterceptorFactory(instanceFactory, instanceKey));
-            } else {
-                //use the default constructor if no instanceFactory has been set
-                final Constructor<Object> constructor = (Constructor<Object>) componentClassIndex.getConstructor(EMPTY_CLASS_ARRAY);
-                if (constructor == null) {
-                    throw MESSAGES.defaultConstructorNotFound(configuration.getComponentClass());
-                }
-                ValueManagedReferenceFactory factory = new ValueManagedReferenceFactory(new ConstructedValue<Object>(constructor, Collections.<Value<?>>emptyList()));
-                instantiators.addFirst(new ManagedReferenceInterceptorFactory(factory, instanceKey));
-            }
-            destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(instanceKey));
-
-            new ClassDescriptionTraversal(configuration.getComponentClass(), applicationClasses) {
-                @Override
-                public void handle(Class<?> clazz, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                    mergeInjectionsForClass(clazz, configuration.getComponentClass(), classDescription, moduleDescription, deploymentReflectionIndex, description, configuration, context, injectors, instanceKey, uninjectors, metadataComplete);
-                }
-            }.run();
-
-
-            //all interceptors with lifecycle callbacks, in the correct order
-            final List<InterceptorDescription> interceptorWithLifecycleCallbacks = new ArrayList<InterceptorDescription>();
-            if (!description.isExcludeDefaultInterceptors()) {
-                interceptorWithLifecycleCallbacks.addAll(description.getDefaultInterceptors());
-            }
-            interceptorWithLifecycleCallbacks.addAll(description.getClassInterceptors());
-
-            for (final InterceptorDescription interceptorDescription : description.getAllInterceptors()) {
-                final String interceptorClassName = interceptorDescription.getInterceptorClassName();
-                final ClassIndex interceptorClass;
-                try {
-                    interceptorClass = classIndex.classIndex(interceptorClassName);
-                } catch (ClassNotFoundException e) {
-                    throw MESSAGES.cannotLoadInterceptor(e, interceptorClassName);
-                }
-
-                final InterceptorEnvironment interceptorEnvironment = moduleDescription.getInterceptorEnvironment().get(interceptorClassName);
-                if (interceptorEnvironment != null) {
-                    //if the interceptor has environment config we merge it into the components environment
-                    description.getBindingConfigurations().addAll(interceptorEnvironment.getBindingConfigurations());
-                    for (final ResourceInjectionConfiguration injection : interceptorEnvironment.getResourceInjections()) {
-                        description.addResourceInjection(injection);
-                    }
-                }
-
-
-                //we store the interceptor instance under the class key
-                final Object contextKey = interceptorClass.getModuleClass();
-                configuration.getInterceptorContextKeys().add(contextKey);
-
-                final ClassReflectionIndex<?> interceptorIndex = deploymentReflectionIndex.getClassIndex(interceptorClass.getModuleClass());
-                final Constructor<?> constructor = interceptorIndex.getConstructor(EMPTY_CLASS_ARRAY);
-                if (constructor == null) {
-                    throw MESSAGES.defaultConstructorNotFoundOnComponent(interceptorClassName, configuration.getComponentClass());
-                }
-
-                instantiators.addFirst(new ManagedReferenceInterceptorFactory(new ValueManagedReferenceFactory(new ConstructedValue(constructor, Collections.<Value<?>>emptyList())), contextKey));
-                destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(contextKey));
-
-                final boolean interceptorHasLifecycleCallbacks = interceptorWithLifecycleCallbacks.contains(interceptorDescription);
-
-                new ClassDescriptionTraversal(interceptorClass.getModuleClass(), applicationClasses) {
-                    @Override
-                    public void handle(final Class<?> clazz, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                        mergeInjectionsForClass(clazz, interceptorClass.getModuleClass(), classDescription, moduleDescription, deploymentReflectionIndex, description, configuration, context, injectors, contextKey, uninjectors, metadataComplete);
-                        final InterceptorClassDescription interceptorConfig;
-                        if (classDescription != null && !metadataComplete) {
-                            interceptorConfig = InterceptorClassDescription.merge(classDescription.getInterceptorClassDescription(), moduleDescription.getInterceptorClassOverride(clazz.getName()));
-                        } else {
-                            interceptorConfig = InterceptorClassDescription.merge(null, moduleDescription.getInterceptorClassOverride(clazz.getName()));
-                        }
-
-                        // Only class level interceptors are processed for postconstruct/predestroy methods.
-                        // Method level interceptors aren't supposed to be processed for postconstruct/predestroy lifecycle
-                        // methods, as per interceptors spec
-                        if (interceptorHasLifecycleCallbacks) {
-                            final MethodIdentifier postConstructMethodIdentifier = interceptorConfig.getPostConstruct();
-                            handleInterceptorClass(clazz, postConstructMethodIdentifier, userPostConstructByInterceptorClass, true, true);
-                            final MethodIdentifier preDestroyMethodIdentifier = interceptorConfig.getPreDestroy();
-                            handleInterceptorClass(clazz, preDestroyMethodIdentifier, userPreDestroyByInterceptorClass, true, true);
-                        }
-                        final MethodIdentifier aroundInvokeMethodIdentifier = interceptorConfig.getAroundInvoke();
-                        handleInterceptorClass(clazz, aroundInvokeMethodIdentifier, userAroundInvokesByInterceptorClass, false, false);
-
-                        if (description.isTimerServiceRequired()) {
-                            final MethodIdentifier aroundTimeoutMethodIdentifier = interceptorConfig.getAroundTimeout();
-                            handleInterceptorClass(clazz, aroundTimeoutMethodIdentifier, userAroundTimeoutsByInterceptorClass, false, false);
-                        }
-
-                        if (description.isPassivationApplicable()) {
-                            handleInterceptorClass(clazz, interceptorConfig.getPrePassivate(), userPrePassivatesByInterceptorClass, false, false);
-                            handleInterceptorClass(clazz, interceptorConfig.getPostActivate(), userPostActivatesByInterceptorClass, false, false);
-                        }
-
-                    }
-
-                    private void handleInterceptorClass(final Class<?> clazz, final MethodIdentifier methodIdentifier, final Map<String, List<InterceptorFactory>> classMap, final boolean changeMethod, final boolean lifecycleMethod) throws DeploymentUnitProcessingException {
-                        if (methodIdentifier != null) {
-                            final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, clazz, methodIdentifier);
-                            if (isNotOverriden(clazz, method, interceptorClass.getModuleClass(), deploymentReflectionIndex)) {
-                                final InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, changeMethod, lifecycleMethod);
-                                List<InterceptorFactory> factories = classMap.get(interceptorClassName);
-                                if (factories == null) {
-                                    classMap.put(interceptorClassName, factories = new ArrayList<InterceptorFactory>());
-                                }
-                                factories.add(interceptorFactory);
-                            }
-                        }
-                    }
-                }.run();
-            }
-
-            final List<InterceptorFactory> userPostConstruct = new ArrayList<InterceptorFactory>();
-            final List<InterceptorFactory> userPreDestroy = new ArrayList<InterceptorFactory>();
-            final List<InterceptorFactory> userPrePassivate = new ArrayList<InterceptorFactory>();
-            final List<InterceptorFactory> userPostActivate = new ArrayList<InterceptorFactory>();
-
-            //now add the lifecycle interceptors in the correct order
-            for (final InterceptorDescription interceptorClass : interceptorWithLifecycleCallbacks) {
-                if (userPostConstructByInterceptorClass.containsKey(interceptorClass.getInterceptorClassName())) {
-                    userPostConstruct.addAll(userPostConstructByInterceptorClass.get(interceptorClass.getInterceptorClassName()));
-                }
-                if (userPreDestroyByInterceptorClass.containsKey(interceptorClass.getInterceptorClassName())) {
-                    userPreDestroy.addAll(userPreDestroyByInterceptorClass.get(interceptorClass.getInterceptorClassName()));
-                }
-                if (description.isPassivationApplicable()) {
-                    if (userPrePassivatesByInterceptorClass.containsKey(interceptorClass.getInterceptorClassName())) {
-                        userPrePassivate.addAll(userPrePassivatesByInterceptorClass.get(interceptorClass.getInterceptorClassName()));
-                    }
-                    if (userPostActivatesByInterceptorClass.containsKey(interceptorClass.getInterceptorClassName())) {
-                        userPostActivate.addAll(userPostActivatesByInterceptorClass.get(interceptorClass.getInterceptorClassName()));
-                    }
-                }
-            }
-
-
-            new ClassDescriptionTraversal(configuration.getComponentClass(), applicationClasses) {
-                @Override
-                public void handle(final Class<?> clazz, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-
-                    final InterceptorClassDescription interceptorConfig = InterceptorClassDescription.merge(mergeInterceptorConfig(clazz, classDescription, description, metadataComplete), moduleDescription.getInterceptorClassOverride(clazz.getName()));
-
-                    handleClassMethod(clazz, interceptorConfig.getPostConstruct(), userPostConstruct, true, true);
-                    handleClassMethod(clazz, interceptorConfig.getPreDestroy(), userPreDestroy, true, true);
-                    handleClassMethod(clazz, interceptorConfig.getAroundInvoke(), componentUserAroundInvoke, false, false);
-
-                    if (description.isTimerServiceRequired()) {
-                        handleClassMethod(clazz, interceptorConfig.getAroundTimeout(), componentUserAroundTimeout, false, false);
-                    }
-
-                    if (description.isPassivationApplicable()) {
-                        handleClassMethod(clazz, interceptorConfig.getPrePassivate(), userPrePassivate, false, false);
-                        handleClassMethod(clazz, interceptorConfig.getPostActivate(), userPostActivate, false, false);
-                    }
-                }
-
-                private void handleClassMethod(final Class<?> clazz, final MethodIdentifier methodIdentifier, final List<InterceptorFactory> interceptors, boolean changeMethod, boolean lifecycleMethod) throws DeploymentUnitProcessingException {
-                    if (methodIdentifier != null) {
-                        final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, clazz, methodIdentifier);
-                        if (isNotOverriden(clazz, method, componentClassIndex.getIndexedClass(), deploymentReflectionIndex)) {
-                            InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, changeMethod, lifecycleMethod);
-                            interceptors.add(interceptorFactory);
-                        }
-                    }
-                }
-            }.run();
-
-            final InterceptorFactory tcclInterceptor = new ImmediateInterceptorFactory(new TCCLInterceptor(module.getClassLoader()));
-
-            // Apply post-construct
-            if (!injectors.isEmpty()) {
-                configuration.addPostConstructInterceptor(weaved(injectors), InterceptorOrder.ComponentPostConstruct.RESOURCE_INJECTION_INTERCEPTORS);
-            }
-            if (!instantiators.isEmpty()) {
-                configuration.addPostConstructInterceptor(weaved(instantiators), InterceptorOrder.ComponentPostConstruct.INSTANTIATION_INTERCEPTORS);
-            }
-            if (!userPostConstruct.isEmpty()) {
-                configuration.addPostConstructInterceptor(weaved(userPostConstruct), InterceptorOrder.ComponentPostConstruct.USER_INTERCEPTORS);
-            }
-            configuration.addPostConstructInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPostConstruct.TERMINAL_INTERCEPTOR);
-            configuration.addPostConstructInterceptor(tcclInterceptor, InterceptorOrder.ComponentPostConstruct.TCCL_INTERCEPTOR);
-
-            // Apply pre-destroy
-            if (!uninjectors.isEmpty()) {
-                configuration.addPreDestroyInterceptor(weaved(uninjectors), InterceptorOrder.ComponentPreDestroy.UNINJECTION_INTERCEPTORS);
-            }
-            if (!destructors.isEmpty()) {
-                configuration.addPreDestroyInterceptor(weaved(destructors), InterceptorOrder.ComponentPreDestroy.DESTRUCTION_INTERCEPTORS);
-            }
-            if (!userPreDestroy.isEmpty()) {
-                configuration.addPreDestroyInterceptor(weaved(userPreDestroy), InterceptorOrder.ComponentPreDestroy.USER_INTERCEPTORS);
-            }
-            configuration.addPreDestroyInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPreDestroy.TERMINAL_INTERCEPTOR);
-            configuration.addPreDestroyInterceptor(tcclInterceptor, InterceptorOrder.ComponentPreDestroy.TCCL_INTERCEPTOR);
-
-            if (description.isPassivationApplicable()) {
-                if (!userPrePassivate.isEmpty()) {
-                    configuration.addPrePassivateInterceptor(weaved(userPrePassivate), InterceptorOrder.ComponentPassivation.USER_INTERCEPTORS);
-                }
-                configuration.addPrePassivateInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPassivation.TERMINAL_INTERCEPTOR);
-                configuration.addPrePassivateInterceptor(tcclInterceptor, InterceptorOrder.ComponentPassivation.TCCL_INTERCEPTOR);
-
-                if (!userPostActivate.isEmpty()) {
-                    configuration.addPostActivateInterceptor(weaved(userPostActivate), InterceptorOrder.ComponentPassivation.USER_INTERCEPTORS);
-                }
-                configuration.addPostActivateInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPassivation.TERMINAL_INTERCEPTOR);
-                configuration.addPostActivateInterceptor(tcclInterceptor, InterceptorOrder.ComponentPassivation.TCCL_INTERCEPTOR);
-            }
-
-            // @AroundInvoke interceptors
-            final List<InterceptorDescription> classInterceptors = description.getClassInterceptors();
-            final Map<MethodIdentifier, List<InterceptorDescription>> methodInterceptors = description.getMethodInterceptors();
-
-            if (description.isIntercepted()) {
-
-                for (final Method method : configuration.getDefinedComponentMethods()) {
-
-                    //now add the interceptor that initializes and the interceptor that actually invokes to the end of the interceptor chain
-
-                    configuration.addComponentInterceptor(method, Interceptors.getInitialInterceptorFactory(), InterceptorOrder.Component.INITIAL_INTERCEPTOR);
-                    configuration.addComponentInterceptor(method, new ManagedReferenceMethodInterceptorFactory(instanceKey, method), InterceptorOrder.Component.TERMINAL_INTERCEPTOR);
-
-                    final MethodIdentifier identifier = MethodIdentifier.getIdentifier(method.getReturnType(), method.getName(), method.getParameterTypes());
-
-                    final List<InterceptorFactory> userAroundInvokes = new ArrayList<InterceptorFactory>();
-                    final List<InterceptorFactory> userAroundTimeouts = new ArrayList<InterceptorFactory>();
-                    final List<InterceptorFactory> userComponentAroundInvokes = new ArrayList<InterceptorFactory>();
-                    final List<InterceptorFactory> userComponentAroundTimeouts = new ArrayList<InterceptorFactory>();
-                    // first add the default interceptors (if not excluded) to the deque
-                    final boolean requiresTimerChain = description.isTimerServiceRequired() && timeoutMethods.contains(identifier);
-                    if (!description.isExcludeDefaultInterceptors() && !description.isExcludeDefaultInterceptors(identifier)) {
-                        for (InterceptorDescription interceptorDescription : description.getDefaultInterceptors()) {
-                            String interceptorClassName = interceptorDescription.getInterceptorClassName();
-                            List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
-                            if (aroundInvokes != null) {
-                                userAroundInvokes.addAll(aroundInvokes);
-                            }
-                            if (requiresTimerChain) {
-                                List<InterceptorFactory> aroundTimeouts = userAroundTimeoutsByInterceptorClass.get(interceptorClassName);
-                                if (aroundTimeouts != null) {
-                                    userAroundTimeouts.addAll(aroundTimeouts);
-                                }
-                            }
-                        }
-                    }
-
-                    // now add class level interceptors (if not excluded) to the deque
-                    if (!description.isExcludeClassInterceptors(identifier)) {
-                        for (InterceptorDescription interceptorDescription : classInterceptors) {
-                            String interceptorClassName = interceptorDescription.getInterceptorClassName();
-                            List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
-                            if (aroundInvokes != null) {
-                                userAroundInvokes.addAll(aroundInvokes);
-                            }
-                            if (requiresTimerChain) {
-                                List<InterceptorFactory> aroundTimeouts = userAroundTimeoutsByInterceptorClass.get(interceptorClassName);
-                                if (aroundTimeouts != null) {
-                                    userAroundTimeouts.addAll(aroundTimeouts);
-                                }
-                            }
-                        }
-                    }
-
-                    // now add method level interceptors for to the deque so that they are triggered after the class interceptors
-                    List<InterceptorDescription> methodLevelInterceptors = methodInterceptors.get(identifier);
-                    if (methodLevelInterceptors != null) {
-                        for (InterceptorDescription methodLevelInterceptor : methodLevelInterceptors) {
-                            String interceptorClassName = methodLevelInterceptor.getInterceptorClassName();
-                            List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
-                            if (aroundInvokes != null) {
-                                userAroundInvokes.addAll(aroundInvokes);
-                            }
-                            if (requiresTimerChain) {
-                                List<InterceptorFactory> aroundTimeouts = userAroundTimeoutsByInterceptorClass.get(interceptorClassName);
-                                if (aroundTimeouts != null) {
-                                    userAroundTimeouts.addAll(aroundTimeouts);
-                                }
-                            }
-                        }
-                    }
-
-                    // finally add the component level around invoke to the deque so that it's triggered last
-                    userComponentAroundInvokes.addAll(componentUserAroundInvoke);
-                    if (componentUserAroundTimeout != null && requiresTimerChain) {
-                        userComponentAroundTimeouts.addAll(componentUserAroundTimeout);
-                    }
-                    configuration.addComponentInterceptor(method, new UserInterceptorFactory(weaved(userAroundInvokes), weaved(userAroundTimeouts)), InterceptorOrder.Component.USER_INTERCEPTORS);
-                    configuration.addComponentInterceptor(method, new UserInterceptorFactory(weaved(userComponentAroundInvokes), weaved(userComponentAroundTimeouts)), InterceptorOrder.Component.USER_COMPONENT_INTERCEPTORS);
-                }
-            }
-
-
-            //views
-            for (ViewDescription view : description.getViews()) {
-                Class<?> viewClass;
-                try {
-                    viewClass = module.getClassLoader().loadClass(view.getViewClassName());
-                } catch (ClassNotFoundException e) {
-                    throw MESSAGES.cannotLoadViewClass(e, view.getViewClassName(), configuration);
-                }
-                final ViewConfiguration viewConfiguration;
-
-                final ProxyConfiguration proxyConfiguration = new ProxyConfiguration();
-                if(viewClass.getName().startsWith("java.")) {
-                    proxyConfiguration.setProxyName("org.jboss.proxy.java.lang." + viewClass.getSimpleName() + "$$$view" + PROXY_ID.incrementAndGet());
-                } else {
-                    proxyConfiguration.setProxyName(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet());
-                }
-                proxyConfiguration.setClassLoader(module.getClassLoader());
-                proxyConfiguration.setProtectionDomain(viewClass.getProtectionDomain());
-                proxyConfiguration.setMetadataSource(proxyReflectionIndex);
-                if (view.isSerializable()) {
-                    proxyConfiguration.addAdditionalInterface(Serializable.class);
-                    if (view.isUseWriteReplace()) {
-                        proxyConfiguration.addAdditionalInterface(WriteReplaceInterface.class);
-                    }
-                }
-
-                //we define it in the modules class loader to prevent permgen leaks
-                if (viewClass.isInterface()) {
-                    proxyConfiguration.setSuperClass(Object.class);
-                    proxyConfiguration.addAdditionalInterface(viewClass);
-                    viewConfiguration = view.createViewConfiguration(viewClass, configuration, new ProxyFactory(proxyConfiguration));
-                } else {
-                    proxyConfiguration.setSuperClass(viewClass);
-                    viewConfiguration = view.createViewConfiguration(viewClass, configuration, new ProxyFactory(proxyConfiguration));
-                }
-                for (final ViewConfigurator configurator : view.getConfigurators()) {
-                    configurator.configure(context, configuration, view, viewConfiguration);
-                }
-                configuration.getViews().add(viewConfiguration);
-            }
-
-            configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
-                @Override
-                public void configureDependency(final ServiceBuilder<?> serviceBuilder, ComponentStartService service) throws DeploymentUnitProcessingException {
-                    for (final Map.Entry<ServiceName, ServiceBuilder.DependencyType> entry : description.getDependencies().entrySet()) {
-                        serviceBuilder.addDependency(entry.getValue(), entry.getKey());
-                    }
-
-                }
-            });
-        }
-
-        /**
-         * Sets up all resource injections for a class. This takes into account injections that have been specified in the module and component deployment descriptors
-         * <p/>
-         * Note that this does not take superclasses into consideration, only injections on the current class
-         *
-         * @param clazz             The class or superclass to perform injection for
-         * @param actualClass       The actual component or interceptor class
-         * @param classDescription  The class description, may be null
-         * @param moduleDescription The module description
-         * @param description       The component description
-         * @param configuration     The component configuration
-         * @param context           The phase context
-         * @param injectors         The list of injectors for the current component
-         * @param instanceKey       The key that identifies the instance to inject in the interceptor context
-         * @param uninjectors       The list of uninjections for the current component
-         * @throws DeploymentUnitProcessingException
-         *
-         */
-        private void mergeInjectionsForClass(final Class<?> clazz, final Class<?> actualClass, final EEModuleClassDescription classDescription, final EEModuleDescription moduleDescription, final DeploymentReflectionIndex deploymentReflectionIndex, final ComponentDescription description, final ComponentConfiguration configuration, final DeploymentPhaseContext context, final Deque<InterceptorFactory> injectors, final Object instanceKey, final Deque<InterceptorFactory> uninjectors, boolean metadataComplete) throws DeploymentUnitProcessingException {
-            final Map<InjectionTarget, ResourceInjectionConfiguration> mergedInjections = new HashMap<InjectionTarget, ResourceInjectionConfiguration>();
-            if (classDescription != null && !metadataComplete) {
-                mergedInjections.putAll(classDescription.getInjectionConfigurations());
-            }
-            mergedInjections.putAll(moduleDescription.getResourceInjections(clazz.getName()));
-            mergedInjections.putAll(description.getResourceInjections(clazz.getName()));
-
-            for (final ResourceInjectionConfiguration injectionConfiguration : mergedInjections.values()) {
-                if(!moduleDescription.isAppClient() && injectionConfiguration.getTarget().isStatic(context.getDeploymentUnit())) {
-                    SERVER_DEPLOYMENT_LOGGER.ignoringStaticInjectionTarget(injectionConfiguration.getTarget());
-                    continue;
-                }
-                if(injectionConfiguration.getTarget() instanceof MethodInjectionTarget) {
-                    //we need to make sure that if this is a method injection it has not been overriden
-                    final MethodInjectionTarget mt = (MethodInjectionTarget)injectionConfiguration.getTarget();
-                    Method method = mt.getMethod(deploymentReflectionIndex, clazz);
-                    if(!isNotOverriden(clazz, method, actualClass, deploymentReflectionIndex)) {
-                        continue;
-                    }
-                }
-
-                final Object valueContextKey = new Object();
-                final InjectedValue<ManagedReferenceFactory> managedReferenceFactoryValue = new InjectedValue<ManagedReferenceFactory>();
-                configuration.getStartDependencies().add(new InjectedConfigurator(injectionConfiguration, configuration, context, managedReferenceFactoryValue));
-                injectors.addFirst(injectionConfiguration.getTarget().createInjectionInterceptorFactory(instanceKey, valueContextKey, managedReferenceFactoryValue, context.getDeploymentUnit(), injectionConfiguration.isOptional()));
-                uninjectors.addLast(new ManagedReferenceReleaseInterceptorFactory(valueContextKey));
-            }
-        }
-
-        private boolean isNotOverriden(final Class<?> clazz, final Method method, final Class<?> actualClass, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
-            return Modifier.isPrivate(method.getModifiers()) || ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, actualClass, method).getDeclaringClass() == clazz;
-        }
-    }
-
     static class InjectedConfigurator implements DependencyConfigurator<ComponentStartService> {
 
         private final ResourceInjectionConfiguration injectionConfiguration;
@@ -1037,6 +543,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
             );
             injectionConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, context, managedReferenceFactoryValue);
         }
+
     }
 
     public String getBeanDeploymentArchiveId() {

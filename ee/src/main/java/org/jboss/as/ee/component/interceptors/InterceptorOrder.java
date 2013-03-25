@@ -58,9 +58,12 @@ public class InterceptorOrder {
          * All user level interceptors are added with the same priority, so they execute
          * in the order that they are added.
          */
-        public static final int USER_INTERCEPTORS = 0xA00;
+        public static final int INTERCEPTOR_USER_INTERCEPTORS = 0xA00;
+        /**
+         * @Around* methods defined on the component class or its superclasses
+         */
         public static final int CDI_INTERCEPTORS = 0xB00;
-        public static final int USER_COMPONENT_INTERCEPTORS = 0xC00; //interceptors defined on the component class, these have to run after CDI interceptors
+        public static final int COMPONENT_USER_INTERCEPTORS = 0xC00; //interceptors defined on the component class, these have to run after CDI interceptors
         public static final int TERMINAL_INTERCEPTOR = 0xD00;
 
         private Component() {
@@ -75,16 +78,19 @@ public class InterceptorOrder {
         public static final int TRANSACTION_INTERCEPTOR = 0x300;
         public static final int JPA_SFSB_PRE_CREATE = 0x400;
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x500;
-        public static final int INSTANTIATION_INTERCEPTORS = 0x600;
-        public static final int RESOURCE_INJECTION_INTERCEPTORS = 0x700;
-        public static final int EJB_SET_CONTEXT_METHOD_INVOCATION_INTERCEPTOR = 0x800;
-        public static final int WELD_INJECTION = 0x900;
-        public static final int JPA_SFSB_CREATE = 0xA00;
-        public static final int USER_INTERCEPTORS = 0xB00;
-        public static final int CDI_INTERCEPTORS = 0xC00;
-        public static final int SFSB_INIT_METHOD = 0xD00;
-        public static final int SETUP_CONTEXT = 0xE00;
-        public static final int TERMINAL_INTERCEPTOR = 0xF00;
+        public static final int INTERCEPTOR_INSTANTIATION_INTERCEPTORS = 0x600;
+        public static final int INTERCEPTOR_RESOURCE_INJECTION_INTERCEPTORS = 0x700;
+        public static final int COMPONENT_INSTANTIATION_INTERCEPTORS = 0x800;
+        public static final int COMPONENT_RESOURCE_INJECTION_INTERCEPTORS = 0x900;
+        public static final int EJB_SET_CONTEXT_METHOD_INVOCATION_INTERCEPTOR = 0xA00;
+        public static final int WELD_INJECTION = 0xB00;
+        public static final int JPA_SFSB_CREATE = 0xC00;
+        public static final int INTERCEPTOR_USER_INTERCEPTORS = 0xD00;
+        public static final int COMPONENT_USER_INTERCEPTORS = 0xD50;
+        public static final int CDI_INTERCEPTORS = 0xE00;
+        public static final int SFSB_INIT_METHOD = 0xF00;
+        public static final int SETUP_CONTEXT = 0x1000;
+        public static final int TERMINAL_INTERCEPTOR = 0x1100;
 
         private ComponentPostConstruct() {
         }
@@ -98,11 +104,14 @@ public class InterceptorOrder {
         public static final int TRANSACTION_INTERCEPTOR = 0x300;
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x400;
         public static final int JPA_SFSB_DESTROY = 0x500;
-        public static final int UNINJECTION_INTERCEPTORS = 0x600;
-        public static final int DESTRUCTION_INTERCEPTORS = 0x700;
-        public static final int USER_INTERCEPTORS = 0x800;
-        public static final int CDI_INTERCEPTORS = 0x900;
-        public static final int TERMINAL_INTERCEPTOR = 0xA00;
+        public static final int INTERCEPTOR_UNINJECTION_INTERCEPTORS = 0x600;
+        public static final int COMPONENT_UNINJECTION_INTERCEPTORS = 0x700;
+        public static final int INTERCEPTOR_DESTRUCTION_INTERCEPTORS = 0x800;
+        public static final int COMPONENT_DESTRUCTION_INTERCEPTORS = 0x900;
+        public static final int INTERCEPTOR_USER_INTERCEPTORS = 0xA00;
+        public static final int COMPONENT_USER_INTERCEPTORS = 0xB00;
+        public static final int CDI_INTERCEPTORS = 0xC00;
+        public static final int TERMINAL_INTERCEPTOR = 0xD00;
 
         private ComponentPreDestroy() {
         }
@@ -115,7 +124,8 @@ public class InterceptorOrder {
         public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x200;
         public static final int TRANSACTION_INTERCEPTOR = 0x300;
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x400;
-        public static final int USER_INTERCEPTORS = 0x800;
+        public static final int INTERCEPTOR_USER_INTERCEPTORS = 0x800;
+        public static final int COMPONENT_USER_INTERCEPTORS = 0x800;
         public static final int CDI_INTERCEPTORS = 0x900;
         public static final int TERMINAL_INTERCEPTOR = 0xA00;
 

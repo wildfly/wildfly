@@ -47,7 +47,12 @@ public class UserInterceptorFactory implements InterceptorFactory {
     @Override
     public Interceptor create(final InterceptorFactoryContext context) {
         final Interceptor aroundInvoke = this.aroundInvoke.create(context);
-        final Interceptor aroundTimeout = this.aroundTimeout.create(context);
+        final Interceptor aroundTimeout;
+        if(this.aroundTimeout != null) {
+            aroundTimeout = this.aroundTimeout.create(context);
+        } else {
+            aroundTimeout = null;
+        }
         return new Interceptor() {
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
