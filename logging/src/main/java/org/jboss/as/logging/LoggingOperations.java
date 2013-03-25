@@ -23,8 +23,8 @@
 package org.jboss.as.logging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.notification.NotificationResultHandlers.RESOURCE_ADDED_RESULT_HANDLER;
-import static org.jboss.as.controller.notification.NotificationResultHandlers.RESOURCE_REMOVED_RESULT_HANDLER;
+import static org.jboss.as.controller.notification.NotificationResultHandler.RESOURCE_ADDED_RESULT_HANDLER;
+import static org.jboss.as.controller.notification.NotificationResultHandler.RESOURCE_REMOVED_RESULT_HANDLER;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
