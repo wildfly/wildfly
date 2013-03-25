@@ -42,7 +42,7 @@ import org.jboss.as.controller.PathAddress;
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat Inc.
  */
-public class NotificationSupportImpl implements NotificationSupport {
+class NotificationSupportImpl implements NotificationSupport {
 
     private final Map<PathAddress, Set<NotificationHandlerEntry>> notificationHandlers = new HashMap<PathAddress, Set<NotificationHandlerEntry>>();
     private final ExecutorService executor;
@@ -52,7 +52,7 @@ public class NotificationSupportImpl implements NotificationSupport {
      *
      * @param executorService an optional executor service. If {@code null} is passed, the emission of notification happens synchronously.
      */
-    public NotificationSupportImpl(ExecutorService executorService) {
+    NotificationSupportImpl(ExecutorService executorService) {
         this.executor = executorService;
     }
 

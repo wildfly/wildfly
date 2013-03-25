@@ -228,6 +228,7 @@ abstract class AbstractOperationContext implements OperationContext {
             doCompleteStep();
             if (resultAction == ResultAction.KEEP) {
                 report(MessageSeverity.INFO, MESSAGES.operationSucceeded());
+
             } else {
                 report(MessageSeverity.INFO, MESSAGES.operationRollingBack());
             }
