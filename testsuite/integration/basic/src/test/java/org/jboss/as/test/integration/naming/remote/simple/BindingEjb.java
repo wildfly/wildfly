@@ -22,6 +22,11 @@
 
 package org.jboss.as.test.integration.naming.remote.simple;
 
+import javax.annotation.PostConstruct;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.naming.InitialContext;
+
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -34,19 +39,15 @@ import org.jboss.msc.value.Values;
 /**
  * @author John Bailey
  */
-public class BindingActivator implements ServiceActivator {
-    public void activate(final ServiceActivatorContext serviceActivatorContext) throws ServiceRegistryException {
+@Singleton
+@Startup
+public class BindingEjb {
 
-        final BinderService binding = new BinderService("test");
-        serviceActivatorContext.getServiceTarget().addService(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME.append("test"), binding)
-            .addDependency(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, binding.getNamingStoreInjector())
-            .addInjection(binding.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue("TestValue")))
-            .install();
+    @PostConstruct
+    public void bind() throws Exception {
 
-        final BinderService nestedBinding = new BinderService("context/test");
-        serviceActivatorContext.getServiceTarget().addService(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME.append("context", "test"), nestedBinding)
-            .addDependency(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, nestedBinding.getNamingStoreInjector())
-            .addInjection(nestedBinding.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue("TestValue")))
-            .install();
+        new InitialContext().bind("java:jboss/exported/test", "TestValue");
+        new InitialContext().bind("java:jboss/exported/context/test", "TestValue");
+
     }
 }

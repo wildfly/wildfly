@@ -66,10 +66,10 @@ public class SecurityRoleLinkTestCase {
         jar.addPackage(CallerRoleCheckerBean.class.getPackage());
         jar.addClasses(Util.class, SecurityRoleLinkTestCaseSetup.class);
         jar.addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class);
-        jar.addAsResource("ejb/security/rolelink/users.properties", "users.properties");
-        jar.addAsResource("ejb/security/rolelink/roles.properties", "roles.properties");
-        jar.addAsManifestResource("ejb/security/rolelink/ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource("ejb/security/rolelink/jboss-ejb3.xml", "jboss-ejb3.xml");
+        jar.addAsResource(SecurityRoleLinkTestCase.class.getPackage(), "users.properties", "users.properties");
+        jar.addAsResource(SecurityRoleLinkTestCase.class.getPackage(),"roles.properties", "roles.properties");
+        jar.addAsManifestResource(SecurityRoleLinkTestCase.class.getPackage(),"ejb-jar.xml", "ejb-jar.xml");
+        jar.addAsManifestResource(SecurityRoleLinkTestCase.class.getPackage(),"jboss-ejb3.xml", "jboss-ejb3.xml");
         jar.addPackage(CommonCriteria.class.getPackage());
 
         return jar;
