@@ -231,9 +231,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         String className = method.getDeclaringClass().getName();
         String methodName = method.getName();
         TransactionAttributeType txAttr = ejbComponentDescription.getTransactionAttributes().getAttribute(methodIntf, className, methodName, toString(method.getParameterTypes()));
-        if (txAttr != TransactionAttributeType.REQUIRED) {
-            txAttrs.put(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)), txAttr);
-        }
+        txAttrs.put(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)), txAttr);
+
         Integer txTimeout = ejbComponentDescription.getTransactionTimeouts().getAttribute(methodIntf, className, methodName, toString(method.getParameterTypes()));
         if (txTimeout != null) {
             txTimeouts.put(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)), txTimeout);
