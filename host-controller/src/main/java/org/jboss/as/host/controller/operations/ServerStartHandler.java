@@ -36,7 +36,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.notification.NotificationResultHandler;
+import org.jboss.as.controller.notification.Notification;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
@@ -119,6 +119,7 @@ public class ServerStartHandler implements OperationStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        context.completeStep(new NotificationResultHandler(SERVER_STARTED_NOTIFICATION, MESSAGES.serverHasBeenStarted()));
+        context.emit(new Notification(SERVER_STARTED_NOTIFICATION, address, MESSAGES.serverHasBeenStarted()));
+        context.stepCompleted();
     }
 }

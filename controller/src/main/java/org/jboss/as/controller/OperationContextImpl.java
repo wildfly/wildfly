@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -119,6 +120,9 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     private final Integer operationId;
 
+    /** List of notifications that will be emitted at the end of the operation execution if it is successful */
+    private final List<Notification> notifications = new ArrayList<>();
+
     OperationContextImpl(final ModelControllerImpl modelController, final ProcessType processType,
                          final RunningMode runningMode, final EnumSet<ContextFlag> contextFlags,
                             final OperationMessageHandler messageHandler, final OperationAttachments attachments,
@@ -191,6 +195,17 @@ final class OperationContextImpl extends AbstractOperationContext {
         return contextFlags.contains(ContextFlag.ALLOW_RESOURCE_SERVICE_RESTART);
     }
 
+    @Override
+    ResultAction executeOperation() {
+        ResultAction resultAction = super.executeOperation();
+        if (resultAction == ResultAction.KEEP) {
+            for (Notification notification : notifications) {
+                modelController.getNotificationSupport().emit(notification);
+            }
+            notifications.clear();
+        }
+        return resultAction;
+    }
 
     public ManagementResourceRegistration getResourceRegistrationForUpdate() {
         final PathAddress address = activeStep.address;
@@ -691,7 +706,8 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     @Override
     public void emit(Notification notification) {
-        modelController.getNotificationSupport().emit(notification);
+        // buffer the notifications but emit them only if the operation execution is successful
+        notifications.add(notification);
     }
 
     @Override

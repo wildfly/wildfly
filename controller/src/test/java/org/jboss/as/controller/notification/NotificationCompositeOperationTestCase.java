@@ -86,14 +86,9 @@ public class NotificationCompositeOperationTestCase extends AbstractControllerTe
                 new OperationStepHandler() {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        // notification is emitted when the context completes the step
-                        context.completeStep(new OperationContext.ResultHandler() {
-                            @Override
-                            public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
-                                Notification notification = new Notification(MY_TYPE, pathAddress(operation.get(OP_ADDR)), operation.get("param").asString());
-                                context.emit(notification);
-                            }
-                        });
+                        Notification notification = new Notification(MY_TYPE, pathAddress(operation.get(OP_ADDR)), operation.get("param").asString());
+                        context.emit(notification);
+                        context.stepCompleted();
                     }
                 }
         );
@@ -156,12 +151,12 @@ public class NotificationCompositeOperationTestCase extends AbstractControllerTe
         System.out.println("operation = " + operation);
         System.out.println("result = " + result);
 
-        // the notifications are received in the order they were emitted in the result handlers, not in the order of the operation execution
+        // the notifications are received in the order they were emitted
         assertTrue("the notification were not emitted", notificationEmittedLatch.get().await(1, SECONDS));
-        assertEquals(2, receivedNotifications.size());
+        assertEquals(receivedNotifications.toString(), 2, receivedNotifications.size());
         System.out.println("receivedNotifications = " + receivedNotifications);
-        assertEquals("param2", receivedNotifications.get(0).getMessage());
-        assertEquals("param1", receivedNotifications.get(1).getMessage());
+        assertEquals("param1", receivedNotifications.get(0).getMessage());
+        assertEquals("param2", receivedNotifications.get(1).getMessage());
 
         executeForResult(createOperation(OPERATION_THAT_UNREGISTERS_A_NOTIFICATION_HANDLER));
         assertTrue("the notification handler was not unregistered", notificationHandlerUnregisteredLatch.get().await(1, SECONDS));
