@@ -41,6 +41,8 @@ enum Namespace {
 
     JAVAEE("http://java.sun.com/xml/ns/javaee"),
 
+    JAVAEE_7_0("http://xmlns.jcp.org/xml/ns/javaee"),
+
     JAXWSCONFIG("urn:jboss:jbossws-jaxws-config:4.0");
 
     /**
