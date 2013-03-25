@@ -22,12 +22,15 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.messaging.HornetQActivationService.rollbackOperationIfServerNotActive;
 import static org.jboss.as.messaging.ManagementUtil.reportListOfString;
 import static org.jboss.as.messaging.ManagementUtil.reportRoles;
 import static org.jboss.as.messaging.ManagementUtil.reportRolesAsJSON;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.dmr.ModelType.BOOLEAN;
 
 import java.util.EnumSet;
 import java.util.Locale;
@@ -61,13 +64,17 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
 
     static final HornetQServerControlHandler INSTANCE = new HornetQServerControlHandler();
 
+    public static final AttributeDefinition ACTIVE = create("active", BOOLEAN)
+            .setStorageRuntime()
+            .build();
+
     public static final AttributeDefinition STARTED = new SimpleAttributeDefinition(CommonAttributes.STARTED, ModelType.BOOLEAN,
             false, AttributeAccess.Flag.STORAGE_RUNTIME);
 
     public static final AttributeDefinition VERSION = new SimpleAttributeDefinition(CommonAttributes.VERSION, ModelType.STRING,
             false, AttributeAccess.Flag.STORAGE_RUNTIME);
 
-    private static final AttributeDefinition[] ATTRIBUTES = { STARTED, VERSION };
+    private static final AttributeDefinition[] ATTRIBUTES = { STARTED, VERSION, ACTIVE };
     public static final String GET_CONNECTORS_AS_JSON = "get-connectors-as-json";
 //    public static final String ENABLE_MESSAGE_COUNTERS = "enable-message-counters";
 //    public static final String DISABLE_MESSAGE_COUNTERS = "disable-message-counters";
@@ -123,14 +130,29 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
 
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
-
         final String operationName = operation.require(OP).asString();
+
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
+        if (hqService == null || hqService.getState() != ServiceController.State.UP) {
+            throw MESSAGES.hornetQServerNotInstalled(hqServiceName.getSimpleName());
+        }
+        HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
+
+        if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {
+            handleReadAttribute(context, operation, hqServer);
+            context.stepCompleted();
+            return;
+        }
+
+        if (rollbackOperationIfServerNotActive(context, operation)) {
+            return;
+        }
+
         final HornetQServerControl serverControl = getServerControl(context, operation);
 
         try {
-            if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {
-                handleReadAttribute(context, operation, serverControl);
-            } else if (GET_CONNECTORS_AS_JSON.equals(operationName)) {
+            if (GET_CONNECTORS_AS_JSON.equals(operationName)) {
                 String json = serverControl.getConnectorsAsJSON();
                 context.getResult().set(json);
             } else if (RESET_ALL_MESSAGE_COUNTERS.equals(operationName)) {
@@ -363,15 +385,18 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
         });
     }
 
-    private void handleReadAttribute(OperationContext context, ModelNode operation, final HornetQServerControl serverControl) throws OperationFailedException {
+    private void handleReadAttribute(OperationContext context, ModelNode operation, final HornetQServer server) throws OperationFailedException {
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
         if (STARTED.getName().equals(name)) {
-            boolean started = serverControl.isStarted();
+            boolean started = server.isStarted();
             context.getResult().set(started);
         } else if (VERSION.getName().equals(name)) {
-            String version = serverControl.getVersion();
+            String version = server.getVersion().getFullVersion();
             context.getResult().set(version);
+        } else if (ACTIVE.getName().equals(name)) {
+            boolean active = server.isActive();
+            context.getResult().set(active);
         } else {
             // Bug
             throw MESSAGES.unsupportedAttribute(name);

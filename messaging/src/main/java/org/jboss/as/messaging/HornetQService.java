@@ -83,8 +83,6 @@ class HornetQService implements Service<HornetQServer> {
      */
     private static final String SOCKET_REF = RemoteTransportDefinition.SOCKET_BINDING.getName();
 
-    private Configuration configuration;
-
     private HornetQServer server;
     private Map<String, SocketBinding> socketBindings = new HashMap<String, SocketBinding>();
     private Map<String, OutboundSocketBinding> outboundSocketBindings = new HashMap<String, OutboundSocketBinding>();
@@ -93,6 +91,7 @@ class HornetQService implements Service<HornetQServer> {
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
     private final PathConfig pathConfig;
+    private final Configuration configuration;
     // mapping between the {broacast|discovery}-groups and the *names* of the JGroups channel they use
     private final Map<String, String> jgroupsChannels = new HashMap<String, String>();
     // mapping between the {broacast|discovery}-groups and the JGroups channel factory for the *stack* they use
@@ -101,7 +100,8 @@ class HornetQService implements Service<HornetQServer> {
     // broadcast-group and discovery-groups configured with JGroups must share the same channel
     private final Map<String, JChannel> channels = new HashMap<String, JChannel>();
 
-    public HornetQService(PathConfig pathConfig) {
+    public HornetQService(Configuration configuration, PathConfig pathConfig) {
+        this.configuration = configuration;
         this.pathConfig = pathConfig;
     }
 
@@ -266,18 +266,12 @@ class HornetQService implements Service<HornetQServer> {
             // security
             HornetQSecurityManagerAS7 hornetQSecurityManagerAS7 = new HornetQSecurityManagerAS7(securityDomainContextValue.getValue());
 
-            // Now start the server
+            // Now create the server
             server = new HornetQServerImpl(configuration, mbeanServer.getOptionalValue(), hornetQSecurityManagerAS7);
             if (HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD.equals(server.getConfiguration().getClusterPassword())) {
                 server.getConfiguration().setClusterPassword(java.util.UUID.randomUUID().toString());
             }
-
-            // FIXME started by the JMSService
-            // HornetQ expects the TCCL to be set to something that can find the
-            // log factory class.
-            // ClassLoader loader = getClass().getClassLoader();
-            // SecurityActions.setContextClassLoader(loader);
-            // server.start();
+            // the server is not started here but by the JMSService to ensure correct dependencies of JMS-related resources.
         } catch (Exception e) {
             throw MESSAGES.failedToStartService(e);
         } finally {
@@ -287,10 +281,7 @@ class HornetQService implements Service<HornetQServer> {
 
     public synchronized void stop(final StopContext context) {
         try {
-            if (server != null) {
-                // FIXME stopped by the JMSService
-                // server.stop();
-            }
+            // server is stopped by the JMSService
             pathConfig.closeCallbacks(pathManager.getValue());
         } catch (Exception e) {
             throw MESSAGES.failedToShutdownServer(e, "HornetQ");
@@ -303,14 +294,6 @@ class HornetQService implements Service<HornetQServer> {
             throw new IllegalStateException();
         }
         return server;
-    }
-
-    public Configuration getConfiguration() {
-        return configuration;
-    }
-
-    public void setConfiguration(Configuration hqConfig) {
-        this.configuration = hqConfig;
     }
 
     public Injector<SecurityDomainContext> getSecurityDomainContextInjector() {

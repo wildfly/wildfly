@@ -25,6 +25,7 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
+import static org.jboss.as.messaging.HornetQActivationService.isHornetQServerActive;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Set;
@@ -97,6 +98,9 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
                 // No, don't barf; just let the update apply to the model and put the server in a reload-required state
                 return true;
             } else {
+                if (!isHornetQServerActive(context, operation)) {
+                    return false;
+                }
                 applyOperationToHornetQService(context, operation, attributeName, hqService);
                 return false;
             }
