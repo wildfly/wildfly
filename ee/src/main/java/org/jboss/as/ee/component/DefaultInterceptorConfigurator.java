@@ -4,7 +4,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
@@ -13,9 +12,9 @@ import java.util.Set;
 
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ee.component.interceptors.OrderedItemContainer;
 import org.jboss.as.ee.component.interceptors.UserInterceptorFactory;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
-import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -24,18 +23,17 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.msc.value.ConstructedValue;
-import org.jboss.msc.value.Value;
 
 import static org.jboss.as.ee.EeMessages.MESSAGES;
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
-* @author Stuart Douglas
-*/
+ * @author Stuart Douglas
+ */
 class DefaultInterceptorConfigurator extends AbstractComponentConfigurator implements ComponentConfigurator {
 
     private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
@@ -62,7 +60,6 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
         final Map<String, List<InterceptorFactory>> userAroundTimeoutsByInterceptorClass;
         final Map<String, List<InterceptorFactory>> userPrePassivatesByInterceptorClass;
         final Map<String, List<InterceptorFactory>> userPostActivatesByInterceptorClass;
-
         final Map<String, List<InterceptorFactory>> userPostConstructByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
         final Map<String, List<InterceptorFactory>> userPreDestroyByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
 
@@ -81,6 +78,22 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
             userPostActivatesByInterceptorClass = null;
         }
 
+        //the actual component creation interceptor
+        //this really belongs in DefaultComponentConfigurator, but all the other AroundConstruct chain is assembled here
+        final InterceptorFactory instantiator;
+        // Primary instance
+        final ComponentFactory instanceFactory = configuration.getInstanceFactory();
+        if (instanceFactory != null) {
+            instantiator = new ComponentInstantiatorInterceptorFactory(instanceFactory, BasicComponentInstance.INSTANCE_KEY, true);
+        } else {
+            final ClassReflectionIndex<?> componentClassIndex = deploymentReflectionIndex.getClassIndex(configuration.getComponentClass());
+            //use the default constructor if no instanceFactory has been set
+            final Constructor<Object> constructor = (Constructor<Object>) componentClassIndex.getConstructor(EMPTY_CLASS_ARRAY);
+            if (constructor == null) {
+                throw MESSAGES.defaultConstructorNotFound(configuration.getComponentClass());
+            }
+            instantiator = new ComponentInstantiatorInterceptorFactory(new ConstructorComponentFactory(constructor), BasicComponentInstance.INSTANCE_KEY, true);
+        }
 
         //all interceptors with lifecycle callbacks, in the correct order
         final List<InterceptorDescription> interceptorWithLifecycleCallbacks = new ArrayList<InterceptorDescription>();
@@ -118,7 +131,7 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
                 throw MESSAGES.defaultConstructorNotFoundOnComponent(interceptorClassName, configuration.getComponentClass());
             }
 
-            instantiators.addFirst(new ManagedReferenceInterceptorFactory(new ValueManagedReferenceFactory(new ConstructedValue(constructor, Collections.<Value<?>>emptyList())), contextKey));
+            instantiators.addFirst(new ComponentInstantiatorInterceptorFactory(new ConstructorComponentFactory(constructor), contextKey, false));
             destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(contextKey));
 
             final boolean interceptorHasLifecycleCallbacks = interceptorWithLifecycleCallbacks.contains(interceptorDescription);
@@ -142,6 +155,8 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
                         handleInterceptorClass(clazz, postConstructMethodIdentifier, userPostConstructByInterceptorClass, true, true);
                         final MethodIdentifier preDestroyMethodIdentifier = interceptorConfig.getPreDestroy();
                         handleInterceptorClass(clazz, preDestroyMethodIdentifier, userPreDestroyByInterceptorClass, true, true);
+                        final MethodIdentifier aroundConstructMethodIdentifier = interceptorConfig.getAroundConstruct();
+                        handleInterceptorClass(clazz, aroundConstructMethodIdentifier, userAroundConstructsByInterceptorClass, true, true);
                     }
                     final MethodIdentifier aroundInvokeMethodIdentifier = interceptorConfig.getAroundInvoke();
                     handleInterceptorClass(clazz, aroundInvokeMethodIdentifier, userAroundInvokesByInterceptorClass, false, false);
@@ -174,6 +189,7 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
             }.run();
         }
 
+        final List<InterceptorFactory> userAroundConstruct = new ArrayList<InterceptorFactory>();
         final List<InterceptorFactory> userPostConstruct = new ArrayList<InterceptorFactory>();
         final List<InterceptorFactory> userPreDestroy = new ArrayList<InterceptorFactory>();
         final List<InterceptorFactory> userPrePassivate = new ArrayList<InterceptorFactory>();
@@ -183,6 +199,9 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
         for (final InterceptorDescription interceptorClass : interceptorWithLifecycleCallbacks) {
             if (userPostConstructByInterceptorClass.containsKey(interceptorClass.getInterceptorClassName())) {
                 userPostConstruct.addAll(userPostConstructByInterceptorClass.get(interceptorClass.getInterceptorClassName()));
+            }
+            if (userAroundConstructsByInterceptorClass.containsKey(interceptorClass.getInterceptorClassName())) {
+                userAroundConstruct.addAll(userAroundConstructsByInterceptorClass.get(interceptorClass.getInterceptorClassName()));
             }
             if (userPreDestroyByInterceptorClass.containsKey(interceptorClass.getInterceptorClassName())) {
                 userPreDestroy.addAll(userPreDestroyByInterceptorClass.get(interceptorClass.getInterceptorClassName()));
@@ -197,6 +216,8 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
             }
         }
 
+        final OrderedItemContainer<InterceptorFactory> aroundConstructInterceptors = new OrderedItemContainer<>();
+
         // Apply post-construct
 
         if (!injectors.isEmpty()) {
@@ -205,10 +226,17 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
         if (!instantiators.isEmpty()) {
             configuration.addPostConstructInterceptor(weaved(instantiators), InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_INSTANTIATION_INTERCEPTORS);
         }
+        if (!userAroundConstruct.isEmpty()) {
+            aroundConstructInterceptors.add(weaved(userAroundConstruct), InterceptorOrder.AroundConstruct.INTERCEPTOR_AROUND_CONSTRUCT);
+        }
+        aroundConstructInterceptors.add(instantiator, InterceptorOrder.AroundConstruct.CONSTRUCT_COMPONENT);
+        aroundConstructInterceptors.add(new ImmediateInterceptorFactory(Interceptors.getTerminalInterceptor()), InterceptorOrder.AroundConstruct.TERMINAL_INTERCEPTOR);
+
+        configuration.addPostConstructInterceptor(new AroundConstructInterceptorFactory(weaved(aroundConstructInterceptors.getSortedItems())), InterceptorOrder.ComponentPostConstruct.AROUND_CONSTRUCT_CHAIN);
+
         if (!userPostConstruct.isEmpty()) {
             configuration.addPostConstructInterceptor(weaved(userPostConstruct), InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_USER_INTERCEPTORS);
         }
-        configuration.addPostConstructInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPostConstruct.TERMINAL_INTERCEPTOR);
 
         // Apply pre-destroy
         if (!uninjectors.isEmpty()) {

@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.ee.component.interceptors.OrderedItemContainer;
-import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.invocation.InterceptorFactory;
@@ -73,7 +72,7 @@ public class ComponentConfiguration {
     private final Map<Method, OrderedItemContainer<InterceptorFactory>> timeoutInterceptors = new IdentityHashMap<Method, OrderedItemContainer<InterceptorFactory>>();
 
     // Component instance management
-    private ManagedReferenceFactory instanceFactory;
+    private ComponentFactory instanceFactory;
 
     private final List<DependencyConfigurator<? extends Service<Component>>> createDependencies = new ArrayList<DependencyConfigurator<? extends Service<Component>>>();
     private final List<DependencyConfigurator<ComponentStartService>> startDependencies = new ArrayList<DependencyConfigurator<ComponentStartService>>();
@@ -365,7 +364,7 @@ public class ComponentConfiguration {
      *
      * @return the instance factory
      */
-    public ManagedReferenceFactory getInstanceFactory() {
+    public ComponentFactory getInstanceFactory() {
         return instanceFactory;
     }
 
@@ -374,7 +373,7 @@ public class ComponentConfiguration {
      *
      * @param instanceFactory the instance factory
      */
-    public void setInstanceFactory(final ManagedReferenceFactory instanceFactory) {
+    public void setInstanceFactory(final ComponentFactory instanceFactory) {
         this.instanceFactory = instanceFactory;
     }
 

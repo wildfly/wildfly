@@ -17,6 +17,7 @@
 
 package org.jboss.as.weld.ejb;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +53,11 @@ public class DelegatingInterceptorInvocationContext implements InvocationContext
 
     public Method getMethod() {
         return delegateInvocationContext.getMethod();
+    }
+
+    @Override
+    public Constructor getConstructor() {
+        return delegateInvocationContext.getConstructor();
     }
 
     public Object[] getParameters() {

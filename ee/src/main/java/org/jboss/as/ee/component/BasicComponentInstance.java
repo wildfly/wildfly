@@ -84,6 +84,10 @@ public class BasicComponentInstance implements ComponentInstance {
      */
     public Object getInstance() {
         final ManagedReference managedReference = this.instanceReference.get();
+        if(managedReference == null) {
+            //can happen if the around construct chain did not complete
+            return null;
+        }
         return managedReference.getInstance();
     }
 

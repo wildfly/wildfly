@@ -29,6 +29,7 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.interceptor.AroundConstruct;
 import javax.interceptor.InvocationContext;
 
 import org.jboss.as.ee.component.Attachments;
@@ -58,7 +59,8 @@ import org.jboss.jandex.Type;
 public class LifecycleAnnotationParsingProcessor implements DeploymentUnitProcessor {
     private static final DotName POST_CONSTRUCT_ANNOTATION = DotName.createSimple(PostConstruct.class.getName());
     private static final DotName PRE_DESTROY_ANNOTATION = DotName.createSimple(PreDestroy.class.getName());
-    private static DotName[] LIFE_CYCLE_ANNOTATIONS = {POST_CONSTRUCT_ANNOTATION, PRE_DESTROY_ANNOTATION};
+    private static final DotName AROUND_CONSTRUCT_ANNOTATION = DotName.createSimple(AroundConstruct.class.getName());
+    private static DotName[] LIFE_CYCLE_ANNOTATIONS = {POST_CONSTRUCT_ANNOTATION, PRE_DESTROY_ANNOTATION, AROUND_CONSTRUCT_ANNOTATION};
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -103,8 +105,10 @@ public class LifecycleAnnotationParsingProcessor implements DeploymentUnitProces
         final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder(classDescription.getInterceptorClassDescription());
         if (annotationType == POST_CONSTRUCT_ANNOTATION) {
             builder.setPostConstruct(methodIdentifier);
-        } else {
+        } else if (annotationType == PRE_DESTROY_ANNOTATION) {
             builder.setPreDestroy(methodIdentifier);
+        } else {
+            builder.setAroundConstruct(methodIdentifier);
         }
         classDescription.setInterceptorClassDescription(builder.build());
     }

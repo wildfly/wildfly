@@ -24,11 +24,12 @@ package org.jboss.as.service.component;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.ComponentFactory;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
+import org.jboss.invocation.InterceptorContext;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceName;
 
@@ -54,22 +55,22 @@ public final class ServiceComponentDescription extends ComponentDescription {
         final ComponentConfiguration configuration = super.createConfiguration(classIndex, moduleClassLoader, moduleLoader);
         // will not be used, but if instance factory is not set then components must have default constructor, which is not a
         // requirement for MBeans
-        configuration.setInstanceFactory(new ManagedReferenceFactory() {
-            @Override
-            public ManagedReference getReference() {
-                return new ManagedReference() {
+        configuration.setInstanceFactory(new ComponentFactory() {
                     @Override
-                    public void release() {
+                    public ManagedReference create(final InterceptorContext context) {
+                        return new ManagedReference() {
+                            @Override
+                            public void release() {
 
-                    }
+                            }
 
-                    @Override
-                    public Object getInstance() {
-                        return null;
+                            @Override
+                            public Object getInstance() {
+                                return null;
+                            }
+                        };
                     }
-                };
-            }
-        });
+                });
         return configuration;
     }
 
