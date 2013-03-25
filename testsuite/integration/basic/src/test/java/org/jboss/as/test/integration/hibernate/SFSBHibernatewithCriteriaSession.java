@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.PreDestroy;
 import javax.ejb.Stateful;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -50,7 +51,7 @@ import org.hibernate.stat.Statistics;
 
 /**
  * Test Criteria API with native Hibernate and also test that Hibernate statistics is able to fetch all kinds of queries
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @Stateful
@@ -63,6 +64,10 @@ public class SFSBHibernatewithCriteriaSession {
 
     protected static final Class[] NO_CLASSES = new Class[0];
     protected static final String NO_MAPPINGS = new String();
+
+    public void cleanup() {
+        sessionFactory.close();
+    }
 
     public void setupConfig() {
         // static {

@@ -41,7 +41,7 @@ import org.hibernate.service.ServiceRegistryBuilder;
 /**
  * Test operations including rollback using Hibernate transaction and Sessionfactory inititated from hibernate.cfg.xml and
  * properties added to Hibernate Configuration in AS7 container without any JPA assistance
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @Stateful
@@ -55,6 +55,10 @@ public class SFSBHibernateTransaction {
 
     protected static final Class[] NO_CLASSES = new Class[0];
     protected static final String NO_MAPPINGS = new String();
+
+    public void cleanup() {
+        sessionFactory.close();
+    }
 
     public void setupConfig() {
         // static {

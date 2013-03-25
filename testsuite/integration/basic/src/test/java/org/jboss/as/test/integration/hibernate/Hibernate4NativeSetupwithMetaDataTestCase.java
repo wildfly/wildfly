@@ -22,9 +22,6 @@
 
 package org.jboss.as.test.integration.hibernate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -49,10 +46,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 /**
  * Test that a Hibernate sessionfactoryImplementor can build metamodel from hibernate.cfg.xml within AS7 container without any
  * JPA assistance
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)
@@ -158,21 +158,24 @@ public class Hibernate4NativeSetupwithMetaDataTestCase {
                 SFSBHibernatewithMetaDataSession.class);
         // setup Configuration and SessionFactory
         sfsb.setupConfig();
-        Set<Satellite> satellites1 = new HashSet<Satellite>();
-        Satellite sat = new Satellite();
-        sat.setId(new Integer(1));
-        sat.setName("MOON");
-        // /sfsb.createSatellite("MOON", new Integer(1));
-        satellites1.add(sat);
-        Planet s1 = sfsb.prepareData("EARTH", "MILKY WAY", "SUN", satellites1, new Integer(1));
+        try {
+            Set<Satellite> satellites1 = new HashSet<Satellite>();
+            Satellite sat = new Satellite();
+            sat.setId(new Integer(1));
+            sat.setName("MOON");
+            // /sfsb.createSatellite("MOON", new Integer(1));
+            satellites1.add(sat);
+            Planet s1 = sfsb.prepareData("EARTH", "MILKY WAY", "SUN", satellites1, new Integer(1));
 
-        ClassMetadata data = sfsb.getPlanetClassMetadata(new Integer(1));
-        assertNotNull(data);
-        assertEquals("planetId", data.getIdentifierPropertyName());
-        Map coldata = sfsb.getCollectionMetaData();
-        Iterator iterator = coldata.keySet().iterator();
-        String key = iterator.next().toString();
-        assertEquals("org.jboss.as.test.integration.hibernate.Planet.satellites", key);
-
+            ClassMetadata data = sfsb.getPlanetClassMetadata(new Integer(1));
+            assertNotNull(data);
+            assertEquals("planetId", data.getIdentifierPropertyName());
+            Map coldata = sfsb.getCollectionMetaData();
+            Iterator iterator = coldata.keySet().iterator();
+            String key = iterator.next().toString();
+            assertEquals("org.jboss.as.test.integration.hibernate.Planet.satellites", key);
+        } finally {
+            sfsb.cleanup();
+        }
     }
 }

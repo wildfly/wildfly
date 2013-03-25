@@ -22,9 +22,6 @@
 
 package org.jboss.as.test.integration.hibernate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -50,10 +47,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 /**
  * Test Criteria API with native Hibernate and also test that Hibernate statistics is able to fetch all kinds of queries
- * 
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)
@@ -159,43 +158,47 @@ public class Hibernate4NativeSetupwithCriteriaTestCase {
                 SFSBHibernatewithCriteriaSession.class);
         // setup Configuration and SessionFactory
         sfsb.setupConfig();
-        Set<Satellite> satellites1 = new HashSet<Satellite>();
-        Satellite sat = new Satellite();
-        sat.setId(new Integer(1));
-        sat.setName("MOON");
-        satellites1.add(sat);
+        try {
+            Set<Satellite> satellites1 = new HashSet<Satellite>();
+            Satellite sat = new Satellite();
+            sat.setId(new Integer(1));
+            sat.setName("MOON");
+            satellites1.add(sat);
 
-        Set<Satellite> satellites2 = new HashSet<Satellite>();
-        Satellite sat2 = new Satellite();
-        sat2.setId(new Integer(2));
-        sat2.setName("TRITON");
-        satellites2.add(sat2);
+            Set<Satellite> satellites2 = new HashSet<Satellite>();
+            Satellite sat2 = new Satellite();
+            sat2.setId(new Integer(2));
+            sat2.setName("TRITON");
+            satellites2.add(sat2);
 
-        Planet s1 = sfsb.prepareData("EARTH", "MILKY WAY", "SUN", satellites1, new Integer(1));
-        Planet s2 = sfsb.prepareData("NEPTUNE", "MILKY WAY", "SUN", satellites2, new Integer(2));
+            Planet s1 = sfsb.prepareData("EARTH", "MILKY WAY", "SUN", satellites1, new Integer(1));
+            Planet s2 = sfsb.prepareData("NEPTUNE", "MILKY WAY", "SUN", satellites2, new Integer(2));
 
-        Query data = sfsb.fetchwithHQL();
-        assertNotNull(data);
+            Query data = sfsb.fetchwithHQL();
+            assertNotNull(data);
 
-        List critdata = sfsb.fetchwithCriteria();
+            List critdata = sfsb.fetchwithCriteria();
 
-        for (Iterator it = critdata.iterator(); it.hasNext();) {
-            Planet planet = (Planet) it.next();
-            assertEquals("EARTH", planet.getPlanetName());
-        }
+            for (Iterator it = critdata.iterator(); it.hasNext(); ) {
+                Planet planet = (Planet) it.next();
+                assertEquals("EARTH", planet.getPlanetName());
+            }
 
-        // fetch statistics
+            // fetch statistics
 
-        Statistics stats = sfsb.getStatistics();
+            Statistics stats = sfsb.getStatistics();
 
-        // fetch queries from statistics
-        String[] queryList = stats.getQueries();
+            // fetch queries from statistics
+            String[] queryList = stats.getQueries();
 
-        // test list of queries obtained from statistics
-        for (int i = 0; i < queryList.length; i++) {
+            // test list of queries obtained from statistics
+            for (int i = 0; i < queryList.length; i++) {
 
-            System.out.println("Query obtained from statistics::" + queryList[i]);
+                System.out.println("Query obtained from statistics::" + queryList[i]);
 
+            }
+        } finally {
+            sfsb.cleanup();
         }
     }
 }

@@ -22,10 +22,6 @@
 
 package org.jboss.as.test.integration.hibernate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.sql.Connection;
 import java.util.HashSet;
 import java.util.Set;
@@ -50,9 +46,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Test that Hibernate statistics is working on native Hibernate and second level cache
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)
@@ -167,41 +167,45 @@ public class Hibernate2LCacheStatsTestCase {
         SFSBHibernate2LcacheStats sfsb = lookup("SFSBHibernate2LcacheStats", SFSBHibernate2LcacheStats.class);
         // setup Configuration and SessionFactory
         sfsb.setupConfig();
-        Set<Satellite> satellites1 = new HashSet<Satellite>();
-        Satellite sat = new Satellite();
-        sat.setId(new Integer(1));
-        sat.setName("MOON");
-        satellites1.add(sat);
+        try {
+            Set<Satellite> satellites1 = new HashSet<Satellite>();
+            Satellite sat = new Satellite();
+            sat.setId(new Integer(1));
+            sat.setName("MOON");
+            satellites1.add(sat);
 
-        Planet s1 = sfsb.prepareData("EARTH", "MILKY WAY", "SUN", satellites1, new Integer(1));
-        Planet s2 = sfsb.getPlanet(s1.getPlanetId());
+            Planet s1 = sfsb.prepareData("EARTH", "MILKY WAY", "SUN", satellites1, new Integer(1));
+            Planet s2 = sfsb.getPlanet(s1.getPlanetId());
 
-        DataSource ds = rawLookup("java:jboss/datasources/ExampleDS", DataSource.class);
-        Connection conn = ds.getConnection();
+            DataSource ds = rawLookup("java:jboss/datasources/ExampleDS", DataSource.class);
+            Connection conn = ds.getConnection();
 
-        int updated = conn.prepareStatement("update PLANET set galaxy_name='ANDROMEDA' where planetId=1").executeUpdate();
-        assertTrue("was able to update added Planet.  update count=" + updated, updated > 0);
-        conn.close();
-        // read updated (dirty) data from second level cache
-        s2 = sfsb.getPlanet(s2.getPlanetId());
-        System.out.println("get sfsb.getPlanet() returned planet with galaxy=" + s2.getGalaxy());
-        assertTrue("was able to read updated Planet entity", s2 != null);
-        assertEquals("Galaxy for Planet " + s2.getPlanetName() + " was read from second level cache = " + s2.getGalaxy(),
-                "MILKY WAY", s2.getGalaxy());
+            int updated = conn.prepareStatement("update PLANET set galaxy_name='ANDROMEDA' where planetId=1").executeUpdate();
+            assertTrue("was able to update added Planet.  update count=" + updated, updated > 0);
+            conn.close();
+            // read updated (dirty) data from second level cache
+            s2 = sfsb.getPlanet(s2.getPlanetId());
+            System.out.println("get sfsb.getPlanet() returned planet with galaxy=" + s2.getGalaxy());
+            assertTrue("was able to read updated Planet entity", s2 != null);
+            assertEquals("Galaxy for Planet " + s2.getPlanetName() + " was read from second level cache = " + s2.getGalaxy(),
+                    "MILKY WAY", s2.getGalaxy());
 
-        assertEquals(s2.getSatellites().size(), 1);
+            assertEquals(s2.getSatellites().size(), 1);
 
-        Statistics stats = sfsb.getStatistics();
+            Statistics stats = sfsb.getStatistics();
 
-        assertEquals(stats.getCollectionLoadCount(), 1);
-        assertEquals(stats.getEntityLoadCount(), 2);
-        assertEquals(stats.getSecondLevelCacheHitCount(), 1);
-        // Collection in secondlevel cache before eviction
-        assertTrue(sfsb.isSatellitesPresentInCache(1));
+            assertEquals(stats.getCollectionLoadCount(), 1);
+            assertEquals(stats.getEntityLoadCount(), 2);
+            assertEquals(stats.getSecondLevelCacheHitCount(), 1);
+            // Collection in secondlevel cache before eviction
+            assertTrue(sfsb.isSatellitesPresentInCache(1));
 
-        Statistics statsAfterEviction = sfsb.getStatisticsAfterEviction();
-        // Collection in secondlevel cache after eviction
-        assertFalse(sfsb.isSatellitesPresentInCache(1));
+            Statistics statsAfterEviction = sfsb.getStatisticsAfterEviction();
+            // Collection in secondlevel cache after eviction
+            assertFalse(sfsb.isSatellitesPresentInCache(1));
+        } finally {
+            sfsb.cleanup();
+        }
 
     }
 }
