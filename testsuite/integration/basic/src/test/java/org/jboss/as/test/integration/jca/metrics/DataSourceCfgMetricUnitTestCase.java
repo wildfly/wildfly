@@ -40,7 +40,7 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DataSourceCfgMetricUnitTestCase  extends DsMgmtTestBase{
+public class DataSourceCfgMetricUnitTestCase  extends JCAMetrictsTestBase {
 
 	@BeforeClass
     public static void before() {

@@ -39,7 +39,7 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DriverCfgMetricUnitTestCase  extends DsMgmtTestBase{
+public class DriverCfgMetricUnitTestCase  extends JCAMetrictsTestBase {
 
 	@BeforeClass
     public static void before() {

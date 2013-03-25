@@ -69,9 +69,9 @@ public class AnnotationAuthorizationTestCase {
                 .addPackage(RolesAllowedOverrideBean.class.getPackage()).addClass(Util.class)
                 .addClasses(AnnotationAuthorizationTestCase.class)
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
-                .addAsResource("ejb3/security/users.properties", "users.properties")
-                .addAsResource("ejb3/security/roles.properties", "roles.properties")
-                .addAsWebInfResource("ejb3/security/jboss-web.xml", "jboss-web.xml")
+                .addAsResource(AnnotationAuthorizationTestCase.class.getPackage(), "users.properties", "users.properties")
+                .addAsResource(AnnotationAuthorizationTestCase.class.getPackage(), "roles.properties", "roles.properties")
+                .addAsWebInfResource(AnnotationAuthorizationTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml")
                 .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
         war.addPackage(CommonCriteria.class.getPackage());
         log.info(war.toString(true));

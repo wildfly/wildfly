@@ -81,10 +81,7 @@ public abstract class AnnSBTest {
            .addClass(SimpleAuthorizationRemote.class)
            .addClass(ParentAnnOnlyCheck.class)
            .addClass(AnnOnlyCheckSLSBForInjection.class)
-           .addClass(AnnOnlyCheckSFSBForInjection.class)
-              //.addClass(Util.class)
-              //.addClass(SecurityTest.class)
-           .addAsManifestResource("ejb3/security/EMPTY_MANIFEST.MF", "MANIFEST.MF");
+           .addClass(AnnOnlyCheckSFSBForInjection.class);
         jar.addAsManifestResource(AnnSBTest.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         jar.addPackage(CommonCriteria.class.getPackage());
         LOG.info(jar.toString(true));
