@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.hibernate.naturalid;
 
-import static org.junit.Assert.assertEquals;
-
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
@@ -43,10 +41,12 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * Test that naturalId API used with Hibernate sessionfactory can be inititated from hibernate.cfg.xml and properties added to
  * Hibernate Configuration in AS7 container
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)
@@ -156,11 +156,15 @@ public class Hibernate4NativeAPINaturalIdTestCase {
         SFSBHibernateSFNaturalId sfsb = lookup("SFSBHibernateSFNaturalId", SFSBHibernateSFNaturalId.class);
         // setup Configuration and SessionFactory
         sfsb.setupConfig();
-        Person s1 = sfsb.createPerson("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 123, 1);
-        Person s2 = sfsb.createPerson("REDHAT", "LINUX", "Worldwide", 435, 3);
-        Person p1 = sfsb.getPersonReference("REDHAT", 435);
-        Person p2 = sfsb.loadPerson("MADHUMITA", 123);
+        try {
+            Person s1 = sfsb.createPerson("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 123, 1);
+            Person s2 = sfsb.createPerson("REDHAT", "LINUX", "Worldwide", 435, 3);
+            Person p1 = sfsb.getPersonReference("REDHAT", 435);
+            Person p2 = sfsb.loadPerson("MADHUMITA", 123);
 
-        assertEquals(p2.getAddress(), "99 Purkynova REDHAT BRNO CZ");
+            assertEquals(p2.getAddress(), "99 Purkynova REDHAT BRNO CZ");
+        } finally {
+            sfsb.cleanup();
+        }
     }
 }

@@ -70,6 +70,10 @@ public class SFSB {
     @Resource(lookup = CONTAINER_JNDI_NAME)
     private CacheContainer container;
 
+    public void cleanup() {
+        sessionFactory.close();
+    }
+
     @TransactionAttribute(TransactionAttributeType.NEVER)
     public void setupConfig() {
         // static {

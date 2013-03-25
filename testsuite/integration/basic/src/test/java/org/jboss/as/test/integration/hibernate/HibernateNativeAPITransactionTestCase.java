@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.hibernate;
 
-import static org.junit.Assert.assertTrue;
-
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
@@ -42,10 +40,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * Test operations including rollback using Hibernate transaction and Sessionfactory inititated from hibernate.cfg.xml and
  * properties added to Hibernate Configuration in AS7 container without any JPA assistance
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)
@@ -150,16 +150,20 @@ public class HibernateNativeAPITransactionTestCase {
         SFSBHibernateTransaction sfsb = lookup("SFSBHibernateTransaction", SFSBHibernateTransaction.class);
         // setup Configuration and SessionFactory
         sfsb.setupConfig();
-        Student s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 1);
-        Student s2 = sfsb.createStudent("REDHAT", "LINUX", "Worldwide", 3);
-        assertTrue("address read from hibernate session associated with hibernate transaction is 99 Purkynova REDHAT BRNO CZ",
-                "99 Purkynova REDHAT BRNO CZ".equals(s1.getAddress()));
-        // update Student
-        Student s3 = sfsb.updateStudent("REDHAT RALEIGH, NORTH CAROLINA", 1);
-        Student st = sfsb.getStudentNoTx(s1.getStudentId());
-        assertTrue(
-                "address read from hibernate session associated with hibernate transaction is REDHAT RALEIGH, NORTH CAROLINA",
-                "REDHAT RALEIGH, NORTH CAROLINA".equals(st.getAddress()));
+        try {
+            Student s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 1);
+            Student s2 = sfsb.createStudent("REDHAT", "LINUX", "Worldwide", 3);
+            assertTrue("address read from hibernate session associated with hibernate transaction is 99 Purkynova REDHAT BRNO CZ",
+                    "99 Purkynova REDHAT BRNO CZ".equals(s1.getAddress()));
+            // update Student
+            Student s3 = sfsb.updateStudent("REDHAT RALEIGH, NORTH CAROLINA", 1);
+            Student st = sfsb.getStudentNoTx(s1.getStudentId());
+            assertTrue(
+                    "address read from hibernate session associated with hibernate transaction is REDHAT RALEIGH, NORTH CAROLINA",
+                    "REDHAT RALEIGH, NORTH CAROLINA".equals(st.getAddress()));
+        } finally {
+            sfsb.cleanup();
+        }
     }
 
     // tests rollback
@@ -167,13 +171,17 @@ public class HibernateNativeAPITransactionTestCase {
     public void testRollBackOperation() throws Exception {
         SFSBHibernateTransaction sfsb = lookup("SFSBHibernateTransaction", SFSBHibernateTransaction.class);
         // setup Configuration and SessionFactory
-        sfsb.setupConfig();
-        Student s2 = sfsb.createStudent("REDHAT", "LINUX", "Worldwide", 3);
-        // force creation of student with same Id to ensure RollBack
-        Student s3 = sfsb.createStudent("Hibernate", "ORM", "JavaWorld", s2.getStudentId());
-        Student st = sfsb.getStudentNoTx(s2.getStudentId());
-        assertTrue("name read from hibernate session associated with hibernate transaction after rollback is REDHAT",
-                "REDHAT".equals(st.getFirstName()));
+        try {
+            sfsb.setupConfig();
+            Student s2 = sfsb.createStudent("REDHAT", "LINUX", "Worldwide", 3);
+            // force creation of student with same Id to ensure RollBack
+            Student s3 = sfsb.createStudent("Hibernate", "ORM", "JavaWorld", s2.getStudentId());
+            Student st = sfsb.getStudentNoTx(s2.getStudentId());
+            assertTrue("name read from hibernate session associated with hibernate transaction after rollback is REDHAT",
+                    "REDHAT".equals(st.getFirstName()));
+        } finally {
+            sfsb.cleanup();
+        }
     }
 
 }

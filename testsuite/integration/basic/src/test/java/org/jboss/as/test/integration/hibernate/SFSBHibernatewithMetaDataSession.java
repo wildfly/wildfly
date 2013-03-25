@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.PreDestroy;
 import javax.ejb.Stateful;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -48,7 +49,7 @@ import org.hibernate.service.ServiceRegistryBuilder;
 
 /**
  * Test that a Hibernate sessionfactoryImplementor can build metamodel from hibernate.cfg.xml within AS7 container without any
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @Stateful
@@ -61,6 +62,10 @@ public class SFSBHibernatewithMetaDataSession {
 
     protected static final Class[] NO_CLASSES = new Class[0];
     protected static final String NO_MAPPINGS = new String();
+
+    public void cleanup() {
+        sessionFactory.close();
+    }
 
     public void setupConfig() {
         // static {

@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.hibernate.envers;
 
-import static org.junit.Assert.assertTrue;
-
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
@@ -42,9 +40,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * Test that Hibernate Envers is working over Native Hibernate API in AS7 container without any JPA assistance
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)
@@ -150,10 +150,14 @@ public class Hibernate4NativeAPIEnversTestCase {
                 SFSBHibernateEnversSessionFactory.class);
         // setup Configuration and SessionFactory
         sfsb.setupConfig();
-        StudentAudited s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 1);
-        StudentAudited s2 = sfsb.updateStudent("REDHAT Brisbane,Australia", 1);
-        StudentAudited st = sfsb.retrieveOldStudentVersion(s2.getStudentId());
-        assertTrue("address read from audit tables after envers implementation is 99 Purkynova REDHAT BRNO CZ",
-                "99 Purkynova REDHAT BRNO CZ".equals(st.getAddress()));
+        try {
+            StudentAudited s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 1);
+            StudentAudited s2 = sfsb.updateStudent("REDHAT Brisbane,Australia", 1);
+            StudentAudited st = sfsb.retrieveOldStudentVersion(s2.getStudentId());
+            assertTrue("address read from audit tables after envers implementation is 99 Purkynova REDHAT BRNO CZ",
+                    "99 Purkynova REDHAT BRNO CZ".equals(st.getAddress()));
+        } finally {
+            sfsb.cleanup();
+        }
     }
 }

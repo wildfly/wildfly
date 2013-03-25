@@ -22,9 +22,6 @@
 
 package org.jboss.as.test.integration.hibernate.secondlevelcache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.sql.Connection;
 
 import javax.naming.InitialContext;
@@ -46,6 +43,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Test that Hibernate second level cache is working native Hibernate
  *
@@ -54,30 +54,30 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class HibernateSecondLevelCacheTestCase {
 
-    private static final String FACTORY_CLASS="<property name=\"hibernate.cache.region.factory_class\">org.jboss.as.jpa.hibernate4.infinispan.InfinispanRegionFactory</property>";
-    private static final String MODULE_DEPENDENCIES ="Dependencies: org.infinispan,org.hibernate.envers export,org.hibernate\n";
+    private static final String FACTORY_CLASS = "<property name=\"hibernate.cache.region.factory_class\">org.jboss.as.jpa.hibernate4.infinispan.InfinispanRegionFactory</property>";
+    private static final String MODULE_DEPENDENCIES = "Dependencies: org.infinispan,org.hibernate.envers export,org.hibernate\n";
 
     private static final String ARCHIVE_NAME = "hibernateSecondLevel_test";
 
     public static final String hibernate_cfg = "<?xml version='1.0' encoding='utf-8'?>"
-        + "<!DOCTYPE hibernate-configuration PUBLIC " + "\"//Hibernate/Hibernate Configuration DTD 3.0//EN\" "
-        + "\"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd\">"
-        + "<hibernate-configuration><session-factory>" + "<property name=\"show_sql\">true</property>"
-        + "<property name=\"hibernate.cache.use_second_level_cache\">true</property>"
-        + "<property name=\"hibernate.show_sql\">true</property>"
-        + FACTORY_CLASS
-        + "<property name=\"hibernate.cache.infinispan.cachemanager\">java:jboss/infinispan/container/hibernate</property>"
-        + "<mapping resource=\"testmapping.hbm.xml\"/>" + "</session-factory></hibernate-configuration>";
+            + "<!DOCTYPE hibernate-configuration PUBLIC " + "\"//Hibernate/Hibernate Configuration DTD 3.0//EN\" "
+            + "\"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd\">"
+            + "<hibernate-configuration><session-factory>" + "<property name=\"show_sql\">true</property>"
+            + "<property name=\"hibernate.cache.use_second_level_cache\">true</property>"
+            + "<property name=\"hibernate.show_sql\">true</property>"
+            + FACTORY_CLASS
+            + "<property name=\"hibernate.cache.infinispan.cachemanager\">java:jboss/infinispan/container/hibernate</property>"
+            + "<mapping resource=\"testmapping.hbm.xml\"/>" + "</session-factory></hibernate-configuration>";
 
     public static final String testmapping = "<?xml version=\"1.0\"?>" + "<!DOCTYPE hibernate-mapping PUBLIC "
-        + "\"-//Hibernate/Hibernate Mapping DTD 3.0//EN\" " + "\"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd\">"
-        + "<hibernate-mapping package=\"org.jboss.as.test.integration.hibernate\">"
-        + "<class name=\"" + Student.class.getName() + "\" lazy=\"false\" table=\"STUDENT\">"
-        + "<cache usage=\"transactional\"/>"
-        + "<id name=\"studentId\" column=\"student_id\">" + "<generator class=\"native\"/>" + "</id>"
-        + "<property name=\"firstName\" column=\"first_name\"/>" + "<property name=\"lastName\" column=\"last_name\"/>"
-        + "<property name=\"address\"/>"
-        + "</class></hibernate-mapping>";
+            + "\"-//Hibernate/Hibernate Mapping DTD 3.0//EN\" " + "\"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd\">"
+            + "<hibernate-mapping package=\"org.jboss.as.test.integration.hibernate\">"
+            + "<class name=\"" + Student.class.getName() + "\" lazy=\"false\" table=\"STUDENT\">"
+            + "<cache usage=\"transactional\"/>"
+            + "<id name=\"studentId\" column=\"student_id\">" + "<generator class=\"native\"/>" + "</id>"
+            + "<property name=\"firstName\" column=\"first_name\"/>" + "<property name=\"lastName\" column=\"last_name\"/>"
+            + "<property name=\"address\"/>"
+            + "</class></hibernate-mapping>";
 
     @ArquillianResource
     private static InitialContext iniCtx;
@@ -92,7 +92,7 @@ public class HibernateSecondLevelCacheTestCase {
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
         // add required jars as manifest dependencies
-                ear.addAsManifestResource(new StringAsset(MODULE_DEPENDENCIES), "MANIFEST.MF");
+        ear.addAsManifestResource(new StringAsset(MODULE_DEPENDENCIES), "MANIFEST.MF");
 
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "beans.jar");
         lib.addClasses(SFSB.class);
@@ -114,8 +114,8 @@ public class HibernateSecondLevelCacheTestCase {
         // shared Hibernate module.
         // also add dependency on org.slf4j
         ear.addAsManifestResource(new StringAsset("<jboss-deployment-structure>" + " <deployment>" + " <dependencies>"
-            + " <module name=\"com.h2database.h2\" />" + " <module name=\"org.slf4j\"/>" + " </dependencies>"
-            + " </deployment>" + "</jboss-deployment-structure>"), "jboss-deployment-structure.xml");
+                + " <module name=\"com.h2database.h2\" />" + " <module name=\"org.slf4j\"/>" + " </dependencies>"
+                + " </deployment>" + "</jboss-deployment-structure>"), "jboss-deployment-structure.xml");
 
         return ear;
     }
@@ -124,7 +124,7 @@ public class HibernateSecondLevelCacheTestCase {
     protected static <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
         try {
             return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + "beans/" + beanName + "!"
-                + interfaceType.getName()));
+                    + interfaceType.getName()));
         } catch (NamingException e) {
             dumpJndi("");
             throw e;
@@ -159,24 +159,28 @@ public class HibernateSecondLevelCacheTestCase {
     @Test
     public void testSecondLevelCache() throws Exception {
         SFSB sfsb = lookup("SFSB",
-            SFSB.class);
+                SFSB.class);
         // setup Configuration and SessionFactory
         sfsb.setupConfig();
-        Student s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 1);
-        Student s2 = sfsb.getStudent(1);
+        try {
+            Student s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 1);
+            Student s2 = sfsb.getStudent(1);
 
-        DataSource ds = rawLookup("java:jboss/datasources/ExampleDS", DataSource.class);
-        Connection conn = ds.getConnection();
-        System.out.println("got JDBC connection");
-        int updated = conn.prepareStatement("update Student set first_name='hacked' where student_id=1").executeUpdate();
-        assertTrue("was able to update added Student.  update count=" + updated, updated > 0);
-        conn.close();
-        System.out.println("updated student first name to 'hacked' (bypassing 2lc by executing sql directly");
-        // read updated (dirty) data from second level cache
-        s2 = sfsb.getStudent(1);
-        System.out.println("get sfsb.getStudent() returned student with first name=" + s2.getFirstName());
-        assertTrue("was able to read updated Student entity", s2 != null);
-        assertEquals("Student first name was read from second level cache = " + s2.getFirstName(), "MADHUMITA", s2.getFirstName());
+            DataSource ds = rawLookup("java:jboss/datasources/ExampleDS", DataSource.class);
+            Connection conn = ds.getConnection();
+            System.out.println("got JDBC connection");
+            int updated = conn.prepareStatement("update Student set first_name='hacked' where student_id=1").executeUpdate();
+            assertTrue("was able to update added Student.  update count=" + updated, updated > 0);
+            conn.close();
+            System.out.println("updated student first name to 'hacked' (bypassing 2lc by executing sql directly");
+            // read updated (dirty) data from second level cache
+            s2 = sfsb.getStudent(1);
+            System.out.println("get sfsb.getStudent() returned student with first name=" + s2.getFirstName());
+            assertTrue("was able to read updated Student entity", s2 != null);
+            assertEquals("Student first name was read from second level cache = " + s2.getFirstName(), "MADHUMITA", s2.getFirstName());
+        } finally {
+            sfsb.cleanup();
+        }
 
     }
 }

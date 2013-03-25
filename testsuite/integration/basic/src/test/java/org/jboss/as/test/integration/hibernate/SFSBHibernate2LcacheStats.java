@@ -52,7 +52,7 @@ import org.hibernate.stat.Statistics;
 import org.infinispan.manager.CacheContainer;
 
 /**
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @Stateful
@@ -67,13 +67,18 @@ public class SFSBHibernate2LcacheStats {
 
     /**
      * Lookup the Infinispan cache container to start it.
-     * 
+     *
      * We also could change the following line in standalone.xml: <cache-container name="hibernate" default-cache="local-query">
      * To: <cache-container name="hibernate" default-cache="local-query" start="EAGER">
      */
     private static final String CONTAINER_JNDI_NAME = "java:jboss/infinispan/container/hibernate";
     @Resource(lookup = CONTAINER_JNDI_NAME)
     private CacheContainer container;
+
+
+    public void cleanup() {
+        sessionFactory.close();
+    }
 
     @TransactionAttribute(TransactionAttributeType.NEVER)
     public void setupConfig() {

@@ -45,7 +45,7 @@ import org.hibernate.service.ServiceRegistryBuilder;
 
 /**
  * Test that Hibernate Envers is working over Native Hibernate API in AS7 container without any JPA assistance
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @Stateful
@@ -60,6 +60,11 @@ public class SFSBHibernateEnversSessionFactory {
 
     protected static final Class[] NO_CLASSES = new Class[0];
     protected static final String NO_MAPPINGS = new String();
+
+
+    public void cleanup() {
+        sessionFactory.close();
+    }
 
     public void setupConfig() {
         // static {

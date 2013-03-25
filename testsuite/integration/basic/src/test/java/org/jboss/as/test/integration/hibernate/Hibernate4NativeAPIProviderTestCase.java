@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.hibernate;
 
-import static org.junit.Assert.assertTrue;
-
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
@@ -42,10 +40,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * Test that a Hibernate sessionfactory can be inititated from hibernate.cfg.xml and properties added to Hibernate Configuration
  * in AS7 container without any JPA assistance
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)
@@ -150,9 +150,13 @@ public class Hibernate4NativeAPIProviderTestCase {
         SFSBHibernateSessionFactory sfsb = lookup("SFSBHibernateSessionFactory", SFSBHibernateSessionFactory.class);
         // setup Configuration and SessionFactory
         sfsb.setupConfig();
-        Student s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 1);
-        Student s2 = sfsb.createStudent("REDHAT", "LINUX", "Worldwide", 3);
-        Student st = sfsb.getStudent(s1.getStudentId());
-        assertTrue("name read from hibernate session is MADHUMITA", "MADHUMITA".equals(st.getFirstName()));
+        try {
+            Student s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 1);
+            Student s2 = sfsb.createStudent("REDHAT", "LINUX", "Worldwide", 3);
+            Student st = sfsb.getStudent(s1.getStudentId());
+            assertTrue("name read from hibernate session is MADHUMITA", "MADHUMITA".equals(st.getFirstName()));
+        } finally {
+            sfsb.cleanup();
+        }
     }
 }
