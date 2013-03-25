@@ -363,6 +363,12 @@
                 <dependency>
                     <groupId>javax.enterprise</groupId>
                     <artifactId>cdi-api</artifactId>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.jboss.spec.javax.interceptor</groupId>
+                            <artifactId>jboss-interceptors-api_1.1_spec</artifactId>
+                        </exclusion>
+                    </exclusions>
                 </dependency>
 
                 <dependency>
@@ -1556,7 +1562,7 @@
 
                 <dependency>
                     <groupId>org.jboss.spec.javax.interceptor</groupId>
-                    <artifactId>jboss-interceptors-api_1.1_spec</artifactId>
+                    <artifactId>jboss-interceptors-api_1.2_spec</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1662,6 +1668,12 @@
                 <dependency>
                     <groupId>org.jboss.weld</groupId>
                     <artifactId>weld-core</artifactId>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.jboss.spec.javax.interceptor</groupId>
+                            <artifactId>jboss-interceptors-api_1.1_spec</artifactId>
+                        </exclusion>
+                    </exclusions>
                 </dependency>
 
                 <dependency>
@@ -1927,7 +1939,7 @@
                                 </configuration>
                             </execution>
                         </executions>
-                        
+
                     </plugin>
                 </plugins>
             </build>
@@ -2298,7 +2310,7 @@
                                         <exclude>org.picketbox:picketbox-commons</exclude>
                                         <exclude>xalan:serializer</exclude>
                                     </dependencySourceExcludes>
-                                    
+
                                     <groups>
                                         <group>
                                             <title>Module io.undertow</title>

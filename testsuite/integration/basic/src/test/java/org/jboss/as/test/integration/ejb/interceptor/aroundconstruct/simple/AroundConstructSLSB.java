@@ -19,29 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.weld.injection;
+package org.jboss.as.test.integration.ejb.interceptor.aroundconstruct.simple;
 
-import org.jboss.as.ee.component.ComponentFactory;
-import org.jboss.as.naming.ManagedReference;
-import org.jboss.invocation.InterceptorContext;
+import javax.annotation.PostConstruct;
+import javax.ejb.Stateless;
+import javax.interceptor.Interceptors;
+
+import org.jboss.as.test.integration.ejb.interceptor.lifecycle.chains.LifecycleInterceptorNoProceed;
 
 /**
- * Managed reference factory that can be used to create and inject components.
- *
  * @author Stuart Douglas
  */
-public class WeldManagedReferenceFactory implements ComponentFactory {
+@Stateless
+@Interceptors(AroundConstructInterceptor.class)
+public class AroundConstructSLSB {
 
-    public static final WeldManagedReferenceFactory INSTANCE = new WeldManagedReferenceFactory();
+    private String message = "";
 
-    private WeldManagedReferenceFactory() {
 
+    public void append(String m) {
+        message += m;
     }
 
-    @Override
-    public ManagedReference create(final InterceptorContext context) {
-        WeldInjectionContext injectionContext = context.getPrivateData(WeldInjectionContext.class);
-        return injectionContext.produce();
+    public String getMessage() {
+        return message;
     }
-
 }

@@ -21,27 +21,25 @@
  */
 package org.jboss.as.weld.injection;
 
-import org.jboss.as.ee.component.ComponentFactory;
-import org.jboss.as.naming.ManagedReference;
+import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
 /**
- * Managed reference factory that can be used to create and inject components.
+ * Interceptor that attaches all the nessesary information for weld injection to the interceptor context
  *
  * @author Stuart Douglas
  */
-public class WeldManagedReferenceFactory implements ComponentFactory {
+public class WeldInjectionContextInterceptor implements Interceptor {
 
-    public static final WeldManagedReferenceFactory INSTANCE = new WeldManagedReferenceFactory();
+    private final WeldComponentService weldComponentService;
 
-    private WeldManagedReferenceFactory() {
-
+    public WeldInjectionContextInterceptor(final WeldComponentService weldComponentService) {
+        this.weldComponentService = weldComponentService;
     }
 
     @Override
-    public ManagedReference create(final InterceptorContext context) {
-        WeldInjectionContext injectionContext = context.getPrivateData(WeldInjectionContext.class);
-        return injectionContext.produce();
+    public Object processInvocation(final InterceptorContext context) throws Exception {
+        context.putPrivateData(WeldInjectionContext.class, weldComponentService.createInjectionContext());
+        return context.proceed();
     }
-
 }

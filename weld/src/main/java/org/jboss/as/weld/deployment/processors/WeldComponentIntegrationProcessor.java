@@ -51,8 +51,12 @@ import org.jboss.as.weld.WeldMessages;
 import org.jboss.as.weld.WeldStartService;
 import org.jboss.as.weld.ejb.EjbRequestScopeActivationInterceptor;
 import org.jboss.as.weld.ejb.Jsr299BindingsInterceptor;
+import org.jboss.as.weld.injection.WeldComponentService;
+import org.jboss.as.weld.injection.WeldInjectionContextInterceptor;
 import org.jboss.as.weld.injection.WeldInjectionInterceptor;
+import org.jboss.as.weld.injection.WeldInterceptorInjectionInterceptor;
 import org.jboss.as.weld.injection.WeldManagedReferenceFactory;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -109,7 +113,6 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
 
                     addWeldIntegration(context.getServiceTarget(), configuration, description, componentClass, beanName, weldBootstrapService, weldStartService, interceptorClasses, classLoader, description.getBeanDeploymentArchiveId());
 
-                    configuration.addPostConstructInterceptor(new WeldInjectionInterceptor.Factory(configuration, interceptorClasses), InterceptorOrder.ComponentPostConstruct.WELD_INJECTION);
 
                     //add a context key for weld interceptor replication
                     if (description instanceof StatefulComponentDescription) {
@@ -128,14 +131,12 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
 
         final ServiceName serviceName = configuration.getComponentDescription().getServiceName().append("WeldInstantiator");
 
-        final WeldManagedReferenceFactory factory = new WeldManagedReferenceFactory(componentClass, beanName, interceptorClasses, classLoader, beanDeploymentArchiveId, description.isCDIInterceptorEnabled());
-
-        ServiceBuilder<WeldManagedReferenceFactory> builder = target.addService(serviceName, factory)
-                .addDependency(weldServiceName, WeldBootstrapService.class, factory.getWeldContainer())
+        final WeldComponentService weldComponentService = new WeldComponentService(componentClass, beanName, interceptorClasses, classLoader, beanDeploymentArchiveId, description.isCDIInterceptorEnabled());
+        ServiceBuilder<WeldComponentService> builder = target.addService(serviceName, weldComponentService)
+                .addDependency(weldServiceName, WeldBootstrapService.class, weldComponentService.getWeldContainer())
                 .addDependency(weldStartService);
 
-
-        configuration.setInstanceFactory(factory);
+        configuration.setInstanceFactory(WeldManagedReferenceFactory.INSTANCE);
         configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
             @Override
             public void configureDependency(final ServiceBuilder<?> serviceBuilder, ComponentStartService service) throws DeploymentUnitProcessingException {
@@ -178,6 +179,10 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
         }
 
         builder.install();
+
+        configuration.addPostConstructInterceptor(new ImmediateInterceptorFactory(new WeldInjectionContextInterceptor(weldComponentService)), InterceptorOrder.ComponentPostConstruct.WELD_INJECTION_CONTEXT_INTERCEPTOR);
+        configuration.addPostConstructInterceptor(new WeldInterceptorInjectionInterceptor.Factory(configuration, interceptorClasses), InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_WELD_INJECTION);
+        configuration.addPostConstructInterceptor(new WeldInjectionInterceptor.Factory(configuration), InterceptorOrder.ComponentPostConstruct.COMPONENT_WELD_INJECTION);
 
     }
 

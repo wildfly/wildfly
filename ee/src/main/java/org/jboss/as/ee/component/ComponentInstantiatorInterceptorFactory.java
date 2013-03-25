@@ -25,7 +25,6 @@ package org.jboss.as.ee.component;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -40,18 +39,22 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-class ManagedReferenceInterceptorFactory implements InterceptorFactory {
+class ComponentInstantiatorInterceptorFactory implements InterceptorFactory {
 
-    private final ManagedReferenceFactory componentInstantiation;
+    private final ComponentFactory componentInstantiation;
     private final Object contextKey;
+    private final boolean setTarget;
+
 
     /**
      * Construct a new instance.
      *
      * @param componentInstantiation the managed reference factory to create from
      * @param contextKey             the context key
+     * @param setTarget
      */
-    public ManagedReferenceInterceptorFactory(final ManagedReferenceFactory componentInstantiation, final Object contextKey) {
+    public ComponentInstantiatorInterceptorFactory(final ComponentFactory componentInstantiation, final Object contextKey, final boolean setTarget) {
+        this.setTarget = setTarget;
         if (componentInstantiation == null) {
             throw MESSAGES.nullVar("componentInstantiation");
         }
@@ -71,32 +74,35 @@ class ManagedReferenceInterceptorFactory implements InterceptorFactory {
             referenceReference = new AtomicReference<ManagedReference>();
             context.getContextData().put(contextKey, referenceReference);
         }
-        return new ManagedReferenceInterceptor(componentInstantiation, referenceReference);
+        return new ManagedReferenceInterceptor(componentInstantiation, referenceReference, setTarget);
     }
 
     static final class ManagedReferenceInterceptor implements Interceptor {
 
-        private final ManagedReferenceFactory componentInstantiator;
+        private final ComponentFactory componentFactory;
         private final AtomicReference<ManagedReference> referenceReference;
+        private final boolean setTarget;
 
-        public ManagedReferenceInterceptor(final ManagedReferenceFactory componentInstantiator, final AtomicReference<ManagedReference> referenceReference) {
-            this.componentInstantiator = componentInstantiator;
+        public ManagedReferenceInterceptor(final ComponentFactory componentFactory, final AtomicReference<ManagedReference> referenceReference, final boolean setTarget) {
+            this.componentFactory = componentFactory;
             this.referenceReference = referenceReference;
+            this.setTarget = setTarget;
         }
 
         public Object processInvocation(final InterceptorContext context) throws Exception {
             final ManagedReference existing = referenceReference.get();
             if (existing == null) {
-                final ManagedReference reference = componentInstantiator.getReference();
+                final ManagedReference reference = componentFactory.create(context);
                 boolean ok = false;
                 try {
                     referenceReference.set(reference);
-                    context.setTarget(reference.getInstance());
+                    if(setTarget) {
+                        context.setTarget(reference.getInstance());
+                    }
                     Object result = context.proceed();
                     ok = true;
                     return result;
                 } finally {
-                    context.setTarget(null);
                     if (!ok) {
                         reference.release();
                         referenceReference.set(null);
