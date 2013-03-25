@@ -72,9 +72,17 @@ public class DatabaseDataStoreAdd extends AbstractAddStepHandler {
     public ServiceController<DatabaseTimerPersistence> installRuntimeServices(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
         final String jndiName = DatabaseDataStoreResourceDefinition.DATASOURCE_JNDI_NAME.resolveModelAttribute(context, model).asString();
 
+        final ModelNode dataBaseValue = DatabaseDataStoreResourceDefinition.DATABASE.resolveModelAttribute(context, model);
+        final String database;
+        if(dataBaseValue.isDefined()) {
+            database = dataBaseValue.asString();
+        } else {
+            database = null;
+        }
+
         final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
 
-        final DatabaseTimerPersistence databaseTimerPersistence = new DatabaseTimerPersistence(name);
+        final DatabaseTimerPersistence databaseTimerPersistence = new DatabaseTimerPersistence(name, database);
         final ServiceName serviceName = TimerPersistence.SERVICE_NAME.append(name);
         final ServiceBuilder<DatabaseTimerPersistence> builder = context.getServiceTarget().addService(serviceName, databaseTimerPersistence);
 

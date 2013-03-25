@@ -75,6 +75,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     private final InjectedValue<ManagedReferenceFactory> dataSourceInjectedValue = new InjectedValue<ManagedReferenceFactory>();
     private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<ModuleLoader>();
     private final String name;
+    private final String database;
     private volatile ManagedReference managedReference;
     private volatile DataSource dataSource;
     private volatile Properties sql;
@@ -88,8 +89,9 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     private static final String LOAD_TIMER = "load-timer";
     private static final String DELETE_TIMER = "delete-timer";
 
-    public DatabaseTimerPersistence(final String name) {
+    public DatabaseTimerPersistence(final String name, final String database) {
         this.name = name;
+        this.database = database;
     }
 
     @Override
@@ -101,7 +103,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
 
         managedReference = dataSourceInjectedValue.getValue().getReference();
         dataSource = (DataSource) managedReference.getInstance();
-        final InputStream stream = DatabaseTimerPersistence.class.getResourceAsStream("sql.properties");
+        final InputStream stream = DatabaseTimerPersistence.class.getClassLoader().getResourceAsStream("timer-sql.properties");
         sql = new Properties();
         try {
             sql.load(stream);
@@ -121,7 +123,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     }
 
     void runCreateTable() {
-        String loadTimer = sql.getProperty(LOAD_TIMER);
+        String loadTimer = sql(LOAD_TIMER);
         Connection connection = null;
         Statement statement = null;
         PreparedStatement preparedStatement = null;
@@ -137,9 +139,16 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             //the query failed, assume it is because the table does not exist
             if (connection != null) {
                 try {
-                    String createTable = sql.getProperty(CREATE_TABLE);
-                    statement = connection.createStatement();
-                    statement.executeUpdate(createTable);
+                    String createTable = sql(CREATE_TABLE);
+                    String[] statements = createTable.split(";");
+                    for (final String sql : statements) {
+                        try {
+                            statement = connection.createStatement();
+                            statement.executeUpdate(sql);
+                        } finally {
+                            safeClose(statement);
+                        }
+                    }
                 } catch (SQLException e1) {
                     EjbLogger.EJB3_LOGGER.couldNotCreateTable(e1);
                 }
@@ -154,9 +163,19 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         }
     }
 
+    private String sql(final String key) {
+        if (database != null) {
+            String result = sql.getProperty(key + "." + database);
+            if (result != null) {
+                return result;
+            }
+        }
+        return sql.getProperty(key);
+    }
+
     @Override
     public void addTimer(final TimerImpl timerEntity) {
-        String createTimer = sql.getProperty(CREATE_TIMER);
+        String createTimer = sql(CREATE_TIMER);
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
@@ -184,13 +203,13 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             connection = dataSource.getConnection();
             if (timerEntity.getState() == TimerState.CANCELED ||
                     timerEntity.getState() == TimerState.EXPIRED) {
-                String deleteTimer = sql.getProperty(DELETE_TIMER);
+                String deleteTimer = sql(DELETE_TIMER);
                 statement = connection.prepareStatement(deleteTimer);
                 statement.setString(1, timerEntity.getTimedObjectId());
                 statement.setString(2, timerEntity.getId());
                 statement.execute();
             } else {
-                String updateTimer = sql.getProperty(UPDATE_TIMER);
+                String updateTimer = sql(UPDATE_TIMER);
                 statement = connection.prepareStatement(updateTimer);
                 statement.setTimestamp(1, timestamp(timerEntity.getNextExpiration()));
                 statement.setTimestamp(2, timestamp(timerEntity.getPreviousRun()));
@@ -215,7 +234,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
 
     @Override
     public List<TimerImpl> loadActiveTimers(final String timedObjectId, final TimerServiceImpl timerService) {
-        String loadTimer = sql.getProperty(LOAD_ALL_TIMERS);
+        String loadTimer = sql(LOAD_ALL_TIMERS);
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
@@ -228,7 +247,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             while (resultSet.next()) {
                 try {
                     final TimerImpl timerImpl = timerFromResult(resultSet, timerService);
-                    if(timerImpl != null) {
+                    if (timerImpl != null) {
                         timers.add(timerImpl);
                     }
                 } catch (Exception e) {
@@ -276,7 +295,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 final String paramString = resultSet.getString(23);
                 final String[] params = paramString == null || paramString.isEmpty() ? new String[0] : paramString.split(";");
                 final Method timeoutMethod = CalendarTimer.getTimeoutMethod(new TimeoutMethod(clazz, methodName, params), timerService.getTimedObjectInvoker().getValue());
-                if(timeoutMethod == null) {
+                if (timeoutMethod == null) {
                     EjbLogger.ROOT_LOGGER.timerReinstatementFailed(resultSet.getString(2), resultSet.getString(1), new NoSuchMethodException());
                 }
                 cb.setTimeoutMethod(timeoutMethod);
@@ -361,7 +380,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     }
 
     private String serialize(final Serializable serializable) {
-        if(serializable == null) {
+        if (serializable == null) {
             return null;
         }
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -378,7 +397,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     }
 
     public Object deSerialize(final String data) throws SQLException {
-        if(data == null) {
+        if (data == null) {
             return null;
         }
         InputStream in = new ByteArrayInputStream(Base64.decode(data));
