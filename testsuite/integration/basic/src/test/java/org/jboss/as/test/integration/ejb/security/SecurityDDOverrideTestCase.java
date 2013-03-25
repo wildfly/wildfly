@@ -62,9 +62,9 @@ public class SecurityDDOverrideTestCase {
         jar.addPackage(PartialDDBean.class.getPackage());
         jar.addClass(Util.class);
         jar.addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class);
-        jar.addAsResource("ejb3/security/users.properties", "users.properties");
-        jar.addAsResource("ejb3/security/roles.properties", "roles.properties");
-        jar.addAsManifestResource("ejb3/security/ejb-jar.xml", "ejb-jar.xml");
+        jar.addAsResource(AnnotationAuthorizationTestCase.class.getPackage(), "users.properties", "users.properties");
+        jar.addAsResource(AnnotationAuthorizationTestCase.class.getPackage(), "roles.properties", "roles.properties");
+        jar.addAsManifestResource(AnnotationAuthorizationTestCase.class.getPackage(), "partial-ejb-jar.xml", "ejb-jar.xml");
         jar.addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
         jar.addPackage(CommonCriteria.class.getPackage());
         logger.info(jar.toString(true));

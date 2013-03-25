@@ -39,7 +39,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class XaDataSourceCfgMetricUnitTestCase extends DsMgmtTestBase {
+public class XaDataSourceCfgMetricUnitTestCase extends JCAMetrictsTestBase {
 
     @BeforeClass
     public static void before() {
