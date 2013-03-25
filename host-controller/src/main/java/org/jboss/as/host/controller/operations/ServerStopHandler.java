@@ -30,7 +30,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
-import org.jboss.as.controller.notification.NotificationResultHandler;
+import org.jboss.as.controller.notification.Notification;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.dmr.ModelNode;
 
@@ -71,6 +71,8 @@ public class ServerStopHandler implements OperationStepHandler {
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
-        context.completeStep(new NotificationResultHandler(SERVER_STOPPED_NOTIFICATION, MESSAGES.serverHasBeenStopped()));
+
+        context.emit(new Notification(SERVER_STOPPED_NOTIFICATION, address, MESSAGES.serverHasBeenStopped()));
+        context.stepCompleted();
     }
 }

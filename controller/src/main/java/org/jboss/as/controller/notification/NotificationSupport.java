@@ -27,7 +27,7 @@ import java.util.concurrent.ExecutorService;
 import org.jboss.as.controller.PathAddress;
 
 /**
- * The {@link NotificationService}'s value can be used to register/unregister notification handlers and emit notifications.
+ * The NotificationSupport can be used to register/unregister notification handlers and emit notifications.
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
