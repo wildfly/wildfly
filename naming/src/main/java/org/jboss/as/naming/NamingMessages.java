@@ -463,4 +463,14 @@ public interface NamingMessages {
      */
     @Message(id = 11874, value = "Binding add operation for external context not supported in Naming Subsystem model version %s")
     String failedToTransformExternalContext(String modelVersion);
+
+    /**
+     * Creates an exception indicating a lookup failed, wrt {@link Resource} injection.
+     *
+     * @param jndiName the JNDI name.
+     *
+     * @return a {@link RuntimeException} for the error.
+     */
+    @Message(id = 11875, value = "Resource lookup for injection failed: %s")
+    RuntimeException resourceLookupForInjectionFailed(String jndiName, @Cause Throwable cause);
 }

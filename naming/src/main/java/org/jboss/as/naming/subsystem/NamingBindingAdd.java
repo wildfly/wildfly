@@ -40,11 +40,11 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ExternalContextObjectFactory;
+import org.jboss.as.naming.ImmediateManagedReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingMessages;
 import org.jboss.as.naming.ServiceBasedNamingStore;
-import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
@@ -183,7 +183,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
             public ManagedReference getReference() {
                 try {
                     final Object value = objectFactoryClassInstance.getObjectInstance(name, null, null, environment);
-                    return new ValueManagedReference(new ImmediateValue<Object>(value));
+                    return new ImmediateManagedReference(value);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -252,7 +252,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
             public ManagedReference getReference() {
                 try {
                     final Object value = objectFactoryClassInstance.getObjectInstance(name, null, null, environment);
-                    return new ValueManagedReference(new ImmediateValue<Object>(value));
+                    return new ImmediateManagedReference(value);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -311,7 +311,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
             public ManagedReference getReference() {
                 try {
                     final Object value = new InitialContext().lookup(lookup);
-                    return new ValueManagedReference(new ImmediateValue<Object>(value));
+                    return new ImmediateManagedReference(value);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
