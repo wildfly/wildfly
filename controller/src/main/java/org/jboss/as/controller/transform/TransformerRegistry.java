@@ -242,8 +242,8 @@ public final class TransformerRegistry {
         return ModelVersion.create(major, minor, micro);
     }
 
-    public static ResourceDefinition loadSubsystemDefinition(final String subsystemName, final ModelVersion version) {
-        return TransformationUtils.loadSubsystemDefinition(subsystemName, version);
+    public static ResourceDefinition loadSubsystemDefinitionFromFile(final Class<?> classForDmrPackage, final String subsystemName, final ModelVersion version) {
+        return TransformationUtils.loadSubsystemDefinitionFromFile(classForDmrPackage, subsystemName, version);
     }
 
     public static Resource modelToResource(final ImmutableManagementResourceRegistration reg, final ModelNode model, boolean includeUndefined) {

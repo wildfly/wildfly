@@ -407,7 +407,7 @@ final class SubsystemTestDelegate {
         ModelNode desc = ((KernelServicesInternal)legacy).readFullModelDescription(pathAddress.toModelNode());
         File file = new File("target/test-classes").getAbsoluteFile();
         Assert.assertTrue(file.exists());
-        for (String part : TransformerRegistry.class.getPackage().getName().split("\\.")) {
+        for (String part : this.getClass().getPackage().getName().split("\\.")) {
             file = new File(file, part);
             if (!file.exists()) {
                 file.mkdir();
@@ -447,8 +447,8 @@ final class SubsystemTestDelegate {
         ModelTestUtils.compare(legacySubsystem, transformed, true);
 
         //2) Check that the transformed model is valid according to the resource definition in the legacy subsystem controller
-        ResourceDefinition rd = TransformerRegistry.loadSubsystemDefinition(mainSubsystemName, modelVersion);
-        Assert.assertNotNull("Could not load legacy dmr for subsystem '"+mainSubsystemName+"' version: '"+modelVersion+"' please add it", rd);
+        ResourceDefinition rd = TransformerRegistry.loadSubsystemDefinitionFromFile(this.getClass(), mainSubsystemName, modelVersion);
+        Assert.assertNotNull("Could not load legacy dmr for subsystem '" + mainSubsystemName + "' version: '" + modelVersion + "' please add it", rd);
         ManagementResourceRegistration rr = ManagementResourceRegistration.Factory.create(rd);
         ModelTestUtils.checkModelAgainstDefinition(transformed, rr);
         return legacyModel;

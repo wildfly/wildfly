@@ -49,13 +49,13 @@ class TransformationUtils {
         //
     }
 
-    public static ModelNode getSubsystemDefinitionForVersion(final String subsystemName, ModelVersion version) {
+    public static ModelNode getSubsystemDefinitionForVersion(final Class<?> classForDmrPackage, final String subsystemName, ModelVersion version) {
 
         StringBuilder key = new StringBuilder(subsystemName).append("-").append(version.getMajor()).append(".").append(version.getMinor());
         key.append('.').append(version.getMicro()).append(".dmr");
         InputStream is = null;
         try {
-            is = TransformerRegistry.class.getResourceAsStream(key.toString());
+            is = classForDmrPackage.getResourceAsStream(key.toString());
             if (is == null) {
                 return null;
             }
@@ -74,8 +74,8 @@ class TransformationUtils {
         return null;
     }
 
-    public static ResourceDefinition loadSubsystemDefinition(final String subsystemName, ModelVersion version) {
-        final ModelNode desc = getSubsystemDefinitionForVersion(subsystemName, version);
+    public static ResourceDefinition loadSubsystemDefinitionFromFile(final Class<?> classForDmrPackage, final String subsystemName, ModelVersion version) {
+        final ModelNode desc = getSubsystemDefinitionForVersion(classForDmrPackage, subsystemName, version);
         if (desc == null) {
             return null;
         }
