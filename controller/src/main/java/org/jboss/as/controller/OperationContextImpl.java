@@ -677,11 +677,6 @@ final class OperationContextImpl extends AbstractOperationContext {
     }
 
     @Override
-    public int getLocalOperationId() {
-        return operationId;
-    }
-
-    @Override
     void releaseStepLocks(AbstractOperationContext.Step step) {
         try {
             if (this.lockStep == step) {
