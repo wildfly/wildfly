@@ -51,6 +51,7 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -94,6 +95,7 @@ public class HornetQBackupActivationTestCase {
         backupClient = null;
     }
 
+    @Ignore
     @Test
     public void testBackupActivation() throws Exception {
         checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
