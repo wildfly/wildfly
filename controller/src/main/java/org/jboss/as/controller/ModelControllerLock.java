@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller;
 
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
 /**
@@ -56,17 +57,17 @@ class ModelControllerLock {
 
     private class Sync extends AbstractQueuedSynchronizer {
 
-        private volatile Object permit;
+        private final AtomicReference<Object> permitHolder = new AtomicReference<>(null);
 
         @Override
         protected boolean tryAcquire(int permit) {
             final int c = getState();
             if (c == 0) {
                 if (compareAndSetState(0, 1)) {
-                    this.permit = permit;
+                    permitHolder.set(permit);
                     return true;
                 }
-            } else if (this.permit.equals(permit)) {
+            } else if (permitHolder.get().equals(permit)) {
                 for (;;) {
                     int current = getState();
                     int next = current + 1; // increase by one
@@ -82,10 +83,11 @@ class ModelControllerLock {
 
         @Override
         protected boolean tryRelease(int permit) {
-            if (this.permit == null) {
+            final Object value = permitHolder.get();
+            if (value == null) {
                 throw new IllegalStateException();
             }
-            if (this.permit.equals(permit)) {
+            if (value.equals(permit)) {
                 for (;;) {
                     int current = getState();
                     int next = current - 1; // count down one
@@ -93,7 +95,7 @@ class ModelControllerLock {
                         throw new IllegalStateException();
                     if (compareAndSetState(current, next)) {
                         if (next == 0) {
-                            this.permit = null;
+                            permitHolder.compareAndSet(value, null);
                             return true;
                         } else {
                             return false;

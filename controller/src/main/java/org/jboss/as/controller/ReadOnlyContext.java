@@ -280,11 +280,6 @@ class ReadOnlyContext extends AbstractOperationContext {
         throw readOnlyContext();
     }
 
-    @Override
-    public int getLocalOperationId() {
-        return operationId;
-    }
-
     IllegalStateException readOnlyContext() {
         return ControllerMessages.MESSAGES.readOnlyContext();
     }

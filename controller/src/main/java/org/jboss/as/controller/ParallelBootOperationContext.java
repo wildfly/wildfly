@@ -354,8 +354,4 @@ class ParallelBootOperationContext extends AbstractOperationContext {
         return primaryContext.detach(key);
     }
 
-    @Override
-    public int getLocalOperationId() {
-        return operationId;
-    }
 }
