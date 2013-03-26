@@ -190,7 +190,7 @@ public class ChildFirstClassLoaderBuilder {
         return this;
     }
 
-    public ChildFirstClassLoaderBuilder addRecursiveMavenResourceURL(String artifactGav)
+    public ChildFirstClassLoaderBuilder addRecursiveMavenResourceURL(String artifactGav, String... excludes)
             throws DependencyCollectionException, DependencyResolutionException, IOException, ClassNotFoundException {
         final String name = "maven-recursive-" + escape(artifactGav);
         final File file = new File(cache, name);
@@ -207,7 +207,7 @@ public class ChildFirstClassLoaderBuilder {
             }
         } else {
             System.out.println("No cached recursive maven urls for " + artifactGav + " found. " + file.getAbsolutePath() + " does not exist.");
-            final List<URL> urls = MavenUtil.createMavenGavRecursiveURLs(artifactGav);
+            final List<URL> urls = MavenUtil.createMavenGavRecursiveURLs(artifactGav, excludes);
             classloaderURLs.addAll(urls);
             final ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
             try {
