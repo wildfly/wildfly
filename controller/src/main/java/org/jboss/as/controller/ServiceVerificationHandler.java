@@ -65,6 +65,8 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
             context.getFailureDescription().set(MESSAGES.operationCancelled());
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             return;
+        } finally {
+            monitor.clear();
         }
 
         if (!failed.isEmpty() || !problems.isEmpty()) {

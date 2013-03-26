@@ -75,9 +75,9 @@ public class BootstrapListener extends AbstractServiceListener<Object> {
 
     protected void done(final long bootstrapTime, final StabilityStatistics statistics) {
         futureContainer.done(serviceContainer);
-        if (statistics.getRemovedCount() > 0) {
-            // Don't print boot statistics if there are removed services.
-            // Most likely server received shutdown signal during the boot process.
+        if (serviceContainer.isShutdown()) {
+            // Do not print boot statistics because server
+            // received shutdown signal during the boot process.
             return;
         }
 

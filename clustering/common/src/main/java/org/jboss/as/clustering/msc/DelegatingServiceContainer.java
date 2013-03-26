@@ -65,6 +65,11 @@ public class DelegatingServiceContainer extends DelegatingServiceTarget implemen
     }
 
     @Override
+    public boolean isShutdown() {
+        return this.container.isShutdown();
+    }
+
+    @Override
     public boolean isShutdownComplete() {
         return this.container.isShutdownComplete();
     }
