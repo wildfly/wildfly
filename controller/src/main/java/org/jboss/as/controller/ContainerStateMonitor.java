@@ -46,16 +46,14 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 public final class ContainerStateMonitor extends AbstractServiceListener<Object> {
 
     private final ServiceRegistry serviceRegistry;
-    private final ServiceController<?> controllerController;
     private final StabilityMonitor monitor = new StabilityMonitor();
     final Set<ServiceController<?>> failed = new HashSet<ServiceController<?>>();
     final Set<ServiceController<?>> problems = new HashSet<ServiceController<?>>();
 
     private Set<ServiceName> previousMissingDepSet = new HashSet<ServiceName>();
 
-    ContainerStateMonitor(final ServiceRegistry registry, final ServiceController<?> controller) {
+    ContainerStateMonitor(final ServiceRegistry registry) {
         serviceRegistry = registry;
-        controllerController = controller;
     }
 
     void acquire() {
@@ -156,6 +154,7 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
         if (resetHistory)  {
             previousMissingDepSet = new HashSet<ServiceName>(missingDeps.keySet());
             failed.clear();
+            problems.clear();
         }
 
         boolean needReport = !missingServices.isEmpty() || !currentFailedControllers.isEmpty() || !noLongerMissingServices.isEmpty();

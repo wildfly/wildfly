@@ -174,7 +174,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
         ManagementResourceRegistration rootResourceRegistration = rootDescriptionProvider != null ? ManagementResourceRegistration.Factory.create(rootDescriptionProvider) : ManagementResourceRegistration.Factory.create(rootResourceDefinition);
         final ModelControllerImpl controller = new ModelControllerImpl(container, target,
                 rootResourceRegistration,
-                new ContainerStateMonitor(container, serviceController),
+                new ContainerStateMonitor(container),
                 configurationPersister, processType, runningModeControl, prepareStep,
                 processState, executorService, expressionResolver);
         initModel(controller.getRootResource(), controller.getRootRegistration());
