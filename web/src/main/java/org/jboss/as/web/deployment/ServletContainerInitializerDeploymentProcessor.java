@@ -168,6 +168,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
     }
 
     public void undeploy(final DeploymentUnit context) {
+        context.removeAttachment(ScisMetaData.ATTACHMENT_KEY);
     }
 
     private ServletContainerInitializer loadSci(ClassLoader classLoader, VirtualFile sci, String jar, boolean error) throws DeploymentUnitProcessingException {
