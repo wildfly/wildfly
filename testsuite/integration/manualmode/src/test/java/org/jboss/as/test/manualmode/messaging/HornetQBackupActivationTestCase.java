@@ -22,8 +22,6 @@
 package org.jboss.as.test.manualmode.messaging;
 
 import static java.util.UUID.randomUUID;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.fail;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -35,7 +33,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -61,6 +61,9 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class HornetQBackupActivationTestCase {
+
+    // maximum time for HornetQ activation to detect node failover/failback
+    private static int ACTIVATION_TIMEOUT = 10000;
 
     public static final String LIVE_SERVER = "jbossas-messaging-live";
     public static final String BACKUP_SERVER = "jbossas-messaging-backup";
@@ -114,7 +117,7 @@ public class HornetQBackupActivationTestCase {
         // shutdown live server
         container.stop(LIVE_SERVER);
         // let some time for the backup to detect the failure
-        waitForHornetQServerActivation(backupClient, true, TimeoutUtil.adjust(1000));
+        waitForHornetQServerActivation(backupClient, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
 
         checkHornetQServerStartedAndActiveAttributes(backupClient, true, true);
         checkQueue(backupClient, queueName, true);
@@ -125,11 +128,11 @@ public class HornetQBackupActivationTestCase {
         // restart the live server
         container.start(LIVE_SERVER);
         // let some time for the backup to detect the live node and failback
-        waitForHornetQServerActivation(liveClient, true, TimeoutUtil.adjust(10000));
+        waitForHornetQServerActivation(liveClient, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
         checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
 
         // let some time for the backup to detect the live node and failback
-        waitForHornetQServerActivation(backupClient, false, TimeoutUtil.adjust(10000));
+        waitForHornetQServerActivation(backupClient, false, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
         // backup server has been restarted in passive mode
         checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
 
