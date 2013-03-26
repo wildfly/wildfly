@@ -92,10 +92,6 @@
                                     <includes>
                                         <include>org/jboss/as/test/manualmode/**/*TestCase.java</include>
                                     </includes>
-                                <!-- we dont have valve support yet -->
-                                    <excludes>
-                                        <exclude>org/jboss/as/test/manualmode/web/**/*.java</exclude>
-                                    </excludes>
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>

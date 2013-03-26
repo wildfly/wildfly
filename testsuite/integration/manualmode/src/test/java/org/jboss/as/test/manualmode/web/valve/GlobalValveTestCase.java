@@ -41,6 +41,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,6 +56,7 @@ import static org.jboss.as.test.manualmode.web.valve.ValveConstants.*;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("AS7-6797 Undertow - valves")
 public class GlobalValveTestCase {
     private static Logger log = Logger.getLogger(GlobalValveTestCase.class);
     

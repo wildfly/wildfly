@@ -55,6 +55,7 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -68,6 +69,7 @@ import org.junit.runner.RunWith;
 @ServerSetup({ JACCForEarModulesTestCase.SecurityDomainsSetup.class })
 @RunAsClient
 @Category(CommonCriteria.class)
+@Ignore("AS7-6796 - Undertow JACC")
 public class JACCForEarModulesTestCase {
 
     private static final String SECURITY_DOMAIN_NAME = "jacc-test";

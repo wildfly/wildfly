@@ -99,6 +99,7 @@ import org.jboss.security.negotiation.AdvancedLdapLoginModule;
 import org.jboss.security.negotiation.NegotiationAuthenticator;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -114,6 +115,7 @@ import org.junit.runner.RunWith;
         AdvancedLdapLoginModuleTestCase.DirectoryServerSetupTask.class, //
         AdvancedLdapLoginModuleTestCase.SecurityDomainsSetup.class })
 @RunAsClient
+@Ignore("AS7-6796 - Undertow SPNEGO")
 public class AdvancedLdapLoginModuleTestCase {
     private static Logger LOGGER = Logger.getLogger(AdvancedLdapLoginModuleTestCase.class);
 
