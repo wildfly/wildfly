@@ -21,18 +21,6 @@
 */
 package org.jboss.as.model.test;
 
-import java.io.File;
-import java.io.PrintStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.apache.maven.repository.internal.MavenServiceLocator;
 import org.apache.maven.wagon.Wagon;
@@ -49,6 +37,7 @@ import org.sonatype.aether.connector.file.FileRepositoryConnectorFactory;
 import org.sonatype.aether.connector.wagon.WagonProvider;
 import org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory;
 import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.graph.DependencyFilter;
 import org.sonatype.aether.graph.DependencyNode;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.RemoteRepository;
@@ -62,10 +51,24 @@ import org.sonatype.aether.transfer.AbstractTransferListener;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferResource;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
+import org.sonatype.aether.util.filter.ExclusionsDependencyFilter;
 import org.sonatype.aether.util.graph.PreorderNodeListGenerator;
 import org.sonatype.aether.util.version.GenericVersionScheme;
 import org.sonatype.aether.version.InvalidVersionSpecificationException;
 import org.sonatype.aether.version.VersionScheme;
+
+import java.io.File;
+import java.io.PrintStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -117,7 +120,7 @@ class MavenUtil {
         return file.toURI().toURL();
     }
 
-    static List<URL> createMavenGavRecursiveURLs(String artifactGav) throws MalformedURLException, DependencyCollectionException, DependencyResolutionException {
+    static List<URL> createMavenGavRecursiveURLs(String artifactGav, String... excludes) throws MalformedURLException, DependencyCollectionException, DependencyResolutionException {
         Artifact artifact = new DefaultArtifact(artifactGav);
         if (artifact.getVersion() == null) {
             throw new IllegalArgumentException("Null version");
@@ -159,7 +162,8 @@ class MavenUtil {
         collectRequest.setRoot(new Dependency(artifact, "compile" ));
         collectRequest.addRepository( central );
         DependencyNode node = REPOSITORY_SYSTEM.collectDependencies( session, collectRequest ).getRoot();
-        DependencyRequest dependencyRequest = new DependencyRequest( node, null );
+        DependencyFilter filter = new ExclusionsDependencyFilter(Arrays.asList(excludes));
+        DependencyRequest dependencyRequest = new DependencyRequest( node, filter );
 
         REPOSITORY_SYSTEM.resolveDependencies( session, dependencyRequest  );
 

@@ -265,6 +265,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+           <groupId>org.jboss.as</groupId>
+           <artifactId>jboss-as-model-test</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-core-model-test-framework</artifactId>
             <scope>test</scope>
