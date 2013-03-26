@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.stateful.passivation;
 
-import javax.naming.InitialContext;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -38,6 +36,8 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.naming.InitialContext;
 
 /**
  * Tests various scenarios for stateful bean passivation
@@ -61,6 +61,7 @@ public class PassivationTestCase {
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"),
                 "MANIFEST.MF");
         jar.addAsManifestResource(PassivationTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+        jar.addAsManifestResource(PassivationTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         log.info(jar.toString(true));
         return jar;
     }
@@ -135,16 +136,24 @@ public class PassivationTestCase {
         final PassivationDisabledBean bean = (PassivationDisabledBean) ctx.lookup("java:module/" + PassivationDisabledBean.class.getSimpleName() + "!" + PassivationDisabledBean.class.getName());
         // make an invocation
         bean.doNothing();
+        // now do the same with a deployment descriptor configured stateful bean
+        final DDBasedSFSB ddBean = (DDBasedSFSB) ctx.lookup("java:module/passivation-disabled-bean" + "!" + DDBasedSFSB.class.getName());
+        ddBean.doNothing();
+
         // now wait for the passivation timeout to come into picture. Our test setup is configured to setup a passivating store with
         // idle timeout = 1 second
         final int sleepTime = TimeoutUtil.adjust(2000);
         Thread.sleep(sleepTime);
         // now invoke on the bean again
         bean.doNothing();
+        ddBean.doNothing();
 
         // make sure bean's passivation and activation callbacks weren't invoked
-        Assert.assertFalse("Stateful bean marked as passivation disabled was incorrectly passivated", bean.wasPassivated());
-        Assert.assertFalse("Stateful bean marked as passivation disabled was incorrectly activated", bean.wasActivated());
+        Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly passivated", bean.wasPassivated());
+        Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly activated", bean.wasActivated());
+
+        Assert.assertFalse("(Deployment descriptor based) Stateful bean marked as passivation disabled was incorrectly passivated", ddBean.wasPassivated());
+        Assert.assertFalse("(Deployment descriptor based) Stateful bean marked as passivation disabled was incorrectly activated", ddBean.wasActivated());
 
     }
 
@@ -158,16 +167,47 @@ public class PassivationTestCase {
         final PassivationEnabledBean bean = (PassivationEnabledBean) ctx.lookup("java:module/" + PassivationEnabledBean.class.getSimpleName() + "!" + PassivationEnabledBean.class.getName());
         // make an invocation
         bean.doNothing();
+        // now do the same with a deployment descriptor configured stateful bean
+        final DDBasedSFSB ddBean = (DDBasedSFSB) ctx.lookup("java:module/passivation-enabled-bean" + "!" + DDBasedSFSB.class.getName());
+        ddBean.doNothing();
         // now wait for the passivation timeout to come into picture. Our test setup is configured to setup a passivating store with
         // idle timeout = 1 second
         final int sleepTime = TimeoutUtil.adjust(2000);
         Thread.sleep(sleepTime);
         // now invoke on the bean again
         bean.doNothing();
+        ddBean.doNothing();
 
         // make sure bean's passivation and activation callbacks were invoked
-        Assert.assertTrue("Stateful bean marked as passivation enabled was not passivated", bean.wasPassivated());
-        Assert.assertTrue("Stateful bean marked as passivation enabled was not activated", bean.wasActivated());
+        Assert.assertTrue("(Annotation based) Stateful bean marked as passivation enabled was not passivated", bean.wasPassivated());
+        Assert.assertTrue("(Annotation based) Stateful bean marked as passivation enabled was not activated", bean.wasActivated());
+
+        Assert.assertTrue("(Deployment descriptor based) Stateful bean marked as passivation enabled was not passivated", ddBean.wasPassivated());
+        Assert.assertTrue("(Deployment descriptor based) Stateful bean marked as passivation enabled was not activated", ddBean.wasActivated());
+
+    }
+
+    /**
+     * Tests that a EJB 3.2 stateful bean which is marked as <code>passivationCapable=true</code> via annotation but overridden
+     * as passivation disabled via deployment descriptor, isn't passivated or activated
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testPassivationDDOverrideBean() throws Exception {
+        final PassivationEnabledBean passivationOverrideBean = (PassivationEnabledBean) ctx.lookup("java:module/passivation-override-bean" + "!" + PassivationEnabledBean.class.getName());
+        // make an invocation
+        passivationOverrideBean.doNothing();
+        // now wait for the passivation timeout to come into picture. Our test setup is configured to setup a passivating store with
+        // idle timeout = 1 second
+        final int sleepTime = TimeoutUtil.adjust(2000);
+        Thread.sleep(sleepTime);
+        // now invoke on the bean again
+        passivationOverrideBean.doNothing();
+
+        // make sure bean's passivation and activation callbacks weren't invoked
+        Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly passivated", passivationOverrideBean.wasPassivated());
+        Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly activated", passivationOverrideBean.wasActivated());
 
     }
 }

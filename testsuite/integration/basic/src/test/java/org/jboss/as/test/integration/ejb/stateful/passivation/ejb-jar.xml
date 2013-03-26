@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+      	  http://xmlns.jcp.org/xml/ns/javaee/ejb-jar_3_2.xsd"
+         version="3.2">
+    <enterprise-beans>
+        <session>
+            <ejb-name>passivation-disabled-bean</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.stateful.passivation.DDBasedSFSB</ejb-class>
+            <passivation-capable>false</passivation-capable>
+        </session>
+        <session>
+            <ejb-name>passivation-enabled-bean</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.stateful.passivation.DDBasedSFSB</ejb-class>
+            <passivation-capable>true</passivation-capable>
+        </session>
+
+        <!-- override passivation-capable for the bean -->
+        <session>
+            <ejb-name>passivation-override-bean</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.stateful.passivation.PassivationEnabledBean</ejb-class>
+            <passivation-capable>false</passivation-capable>
+        </session>
+    </enterprise-beans>
+</ejb-jar>
