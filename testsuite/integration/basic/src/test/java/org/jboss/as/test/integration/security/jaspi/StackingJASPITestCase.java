@@ -52,6 +52,7 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -65,6 +66,7 @@ import org.junit.runner.RunWith;
 @ServerSetup({ StackingJASPITestCase.SecurityDomainsSetup.class })
 @RunAsClient
 @Category(CommonCriteria.class)
+@Ignore("AS7-6796")
 public class StackingJASPITestCase {
 
     private static Logger LOGGER = Logger.getLogger(StackingJASPITestCase.class);

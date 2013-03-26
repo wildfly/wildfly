@@ -100,6 +100,7 @@ import org.junit.runner.RunWith;
         GSSTestServer.class, //
         SPNEGOLoginModuleTestCase.SecurityDomainsSetup.class })
 @RunAsClient
+@Ignore("AS7-6796 - Undertow SPNEGO")
 public class SPNEGOLoginModuleTestCase {
 
     private static Logger LOGGER = Logger.getLogger(SPNEGOLoginModuleTestCase.class);

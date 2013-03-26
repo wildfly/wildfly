@@ -41,6 +41,8 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.*;
+
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,6 +57,7 @@ import static org.jboss.as.test.manualmode.web.valve.authenticator.AuthValveCons
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("AS7-6797 Undertow - valves")
 public class DescriptorValveAuthenticatorTestCase {
 
     private static Logger log = Logger.getLogger(DescriptorValveAuthenticatorTestCase.class);

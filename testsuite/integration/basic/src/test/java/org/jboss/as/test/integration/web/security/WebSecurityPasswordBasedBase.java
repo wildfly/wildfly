@@ -27,7 +27,7 @@ import org.junit.Test;
 
 /**
  * Base class for web security tests that are based on passwords
- * 
+ *
  * @author Anil Saldhana
  */
 public abstract class WebSecurityPasswordBasedBase {
@@ -36,7 +36,7 @@ public abstract class WebSecurityPasswordBasedBase {
 
     /**
      * Print the contents of the {@link WebArchive}
-     * 
+     *
      * @param war
      */
     public static void printWar(WebArchive war) {
@@ -45,7 +45,7 @@ public abstract class WebSecurityPasswordBasedBase {
 
     /**
      * Test with user "anil" who has the right password and the right role to access the servlet
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -60,17 +60,17 @@ public abstract class WebSecurityPasswordBasedBase {
      * <p>
      * Should be a HTTP/403
      * </p>
-     * 
+     *
      * @throws Exception
      */
     @Test
-    public void testPasswordBasedUnsuccessfulAuth() throws Exception {
+    public void testPasswordBasedUnsuccessfulAuthz() throws Exception {
         makeCall("marcus", "marcus", 403);
     }
 
     /**
      * Method that needs to be overridden with the HTTPClient code
-     * 
+     *
      * @param user username
      * @param pass password
      * @param expectedCode http status code
