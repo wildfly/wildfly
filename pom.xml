@@ -98,7 +98,7 @@
         <version.dom4j>1.6.1</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.io.netty>3.6.2.Final</version.io.netty>
-        <version.io.undertow>1.0.0.Alpha2</version.io.undertow>
+        <version.io.undertow>1.0.0.Alpha3</version.io.undertow>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.0-SP4</version.javax.enterprise>
         <version.javax.faces>1.2_15-jbossorg-2</version.javax.faces>
@@ -284,10 +284,10 @@
 
         <!-- tools.jar location, this needs to be overriden on OSX -->
         <com.sun.tools.path>${java.home}/../lib/tools.jar</com.sun.tools.path>
-        
-        <!--  
+
+        <!--
             See ChildFirstClassLoaderBuilder in model-test for the explanation of the org.jboss.model.test.cache.root and org.jboss.model.test.classpath.cache properties.
-            If used in conjunction with org.jboss.model.test.classpath.cache -Dorg.jboss.model.test.cache.strict on the command line, transformers tests must 
+            If used in conjunction with org.jboss.model.test.classpath.cache -Dorg.jboss.model.test.cache.strict on the command line, transformers tests must
             propagate these to the test when run
          -->
         <!-- The name of the root checkout folder to create org.jboss.model.test.classpath.cache under for subsystem-test and core-model-test -->
@@ -1300,7 +1300,7 @@
                 <artifactId>jboss-as-transactions</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-version</artifactId>

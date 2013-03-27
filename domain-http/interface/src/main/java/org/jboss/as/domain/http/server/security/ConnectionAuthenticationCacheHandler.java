@@ -23,7 +23,7 @@ package org.jboss.as.domain.http.server.security;
 
 import io.undertow.security.api.AuthenticatedSessionManager;
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
-import io.undertow.security.api.NotificationHandler;
+import io.undertow.security.api.NotificationReceiver;
 import io.undertow.security.api.SecurityContext;
 import io.undertow.security.api.SecurityNotification;
 import io.undertow.security.api.SecurityNotification.EventType;
@@ -44,7 +44,7 @@ public class ConnectionAuthenticationCacheHandler implements HttpHandler {
 
     AttachmentKey<AuthenticatedSession> SESSION_KEY = AttachmentKey.create(AuthenticatedSession.class);
 
-    private final NotificationHandler NOTIFICATION_HANDLER = new SecurityNotificationHandler();
+    private final NotificationReceiver NOTIFICATION_HANDLER = new SecurityNotificationHandler();
     private final AuthenticatedSessionManager SESSION_MANAGER = new DigestAuthenticatedSessionManager();
 
     private final HttpHandler next;
@@ -56,13 +56,13 @@ public class ConnectionAuthenticationCacheHandler implements HttpHandler {
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         SecurityContext securityContext = exchange.getAttachment(SecurityContext.ATTACHMENT_KEY);
-        securityContext.registerNotificationHandler(NOTIFICATION_HANDLER);
+        securityContext.registerNotificationReceiver(NOTIFICATION_HANDLER);
         exchange.putAttachment(AuthenticatedSessionManager.ATTACHMENT_KEY, SESSION_MANAGER);
 
         next.handleRequest(exchange);
     }
 
-    private class SecurityNotificationHandler implements NotificationHandler {
+    private class SecurityNotificationHandler implements NotificationReceiver {
 
         @Override
         public void handleNotification(SecurityNotification notification) {
