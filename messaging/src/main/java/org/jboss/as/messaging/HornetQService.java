@@ -269,7 +269,7 @@ class HornetQService implements Service<HornetQServer> {
 
             // Now start the server
             server = new HornetQServerImpl(configuration, mbeanServer.getOptionalValue(), hornetQSecurityManagerAS7);
-            if (HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD.equals(server.getConfiguration().getClusterPassword())) {
+            if (HornetQDefaultConfiguration.getDefaultClusterPassword().equals(server.getConfiguration().getClusterPassword())) {
                 server.getConfiguration().setClusterPassword(java.util.UUID.randomUUID().toString());
             }
 
