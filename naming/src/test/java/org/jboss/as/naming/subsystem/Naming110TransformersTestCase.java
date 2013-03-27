@@ -33,7 +33,7 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.CLASS;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.MODULE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY_ENV;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.ENVIRONMENT;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
@@ -70,7 +70,7 @@ public class Naming110TransformersTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem.xml");
+        return readResource("subsystem_with_expressions_compatible_1.2.0.xml");
     }
 
     @Override
@@ -114,7 +114,7 @@ public class Naming110TransformersTestCase extends AbstractSubsystemBaseTest {
 
     private void testTransformers(ModelTestControllerVersion version) throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXmlResource("subsystem.xml");
+                .setSubsystemXmlResource("subsystem_with_expressions_compatible_1.2.0.xml");
 
         builder.createLegacyKernelServicesBuilder(null, version, VERSION_1_1_0)
                 .addMavenResourceURL("org.jboss.as:jboss-as-naming:" + version.getMavenGavVersion())
@@ -183,7 +183,7 @@ public class Naming110TransformersTestCase extends AbstractSubsystemBaseTest {
         bindingAdd.get(BINDING_TYPE).set(OBJECT_FACTORY);
         bindingAdd.get(MODULE).set("org.jboss.as.naming");
         bindingAdd.get(CLASS).set("org.jboss.as.naming.ManagedReferenceObjectFactory");
-        bindingAdd.get(OBJECT_FACTORY_ENV).set(new ModelNode().add("a", "a"));
+        bindingAdd.get(ENVIRONMENT).set(new ModelNode().add("a", "a"));
 
         ModelNode resultNode = mainServices.executeOperation(version_1_1_0,
                 mainServices.transformOperation(version_1_1_0, bindingAdd));
@@ -243,10 +243,10 @@ public class Naming110TransformersTestCase extends AbstractSubsystemBaseTest {
         assertTrue(legacyServices.isSuccessfulBoot());
 
         //Use the real xml with expressions for testing all the attributes
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, VERSION_1_1_0, parse(getSubsystemXml("subsystem.xml")),
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, VERSION_1_1_0, parse(getSubsystemXml("subsystem_with_expressions_compatible_1.2.0.xml")),
                 new FailedOperationTransformationConfig()
                         .addFailedAttribute(PathAddress.pathAddress(NamingExtension.SUBSYSTEM_PATH, NamingSubsystemModel.BINDING_PATH),
-                                new FailedOperationTransformationConfig.NewAttributesConfig(NamingSubsystemModel.OBJECT_FACTORY_ENV))
+                                new FailedOperationTransformationConfig.NewAttributesConfig(NamingSubsystemModel.ENVIRONMENT))
         );
     }
 }
