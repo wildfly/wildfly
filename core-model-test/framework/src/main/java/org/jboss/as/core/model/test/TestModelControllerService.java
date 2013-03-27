@@ -59,6 +59,7 @@ import org.jboss.as.host.controller.HostModelUtil.HostModelRegistrar;
 import org.jboss.as.host.controller.HostPathManagerService;
 import org.jboss.as.host.controller.HostRunningModeControl;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
+import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationEntry;
 import org.jboss.as.host.controller.model.host.HostResourceDefinition;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.model.test.ModelTestModelControllerService;
@@ -294,7 +295,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
             @Override
             public void registerRemoteHost(String hostName, ManagementChannelHandler handler, Transformers transformers,
-                    Long remoteConnectionId) throws SlaveRegistrationException {
+                    Long remoteConnectionId, DomainControllerRuntimeIgnoreTransformationEntry runtimeIgnoreTransformation) throws SlaveRegistrationException {
             }
 
             @Override
@@ -477,9 +478,10 @@ class TestModelControllerService extends ModelTestModelControllerService {
             final IgnoredDomainResourceRegistry ignoredRegistry = new IgnoredDomainResourceRegistry(info);
             final ExtensibleConfigurationPersister persister = new NullConfigurationPersister();
             final HostFileRepository hostFIleRepository = createHostFileRepository();
+            final DomainController domainController = new MockDomainController();
 
-            DomainRootDefinition domainDefinition = new DomainRootDefinition(env, persister, injectedContentRepository.getValue(),
-                    hostFIleRepository, true, info, extensionRegistry, null, pathManagerService);
+            DomainRootDefinition domainDefinition = new DomainRootDefinition(domainController, env, persister, injectedContentRepository.getValue(),
+                    hostFIleRepository, true, info, extensionRegistry, null, pathManagerService, null);
             domainDefinition.initialize(rootRegistration);
             rootResourceDefinition.setDelegate(domainDefinition);
 
@@ -526,5 +528,93 @@ class TestModelControllerService extends ModelTestModelControllerService {
             }
             super.registerAttributes(resourceRegistration);
         }
+    }
+
+
+    private static class MockDomainController implements DomainController {
+
+        @Override
+        public RunningMode getCurrentRunningMode() {
+            return null;
+        }
+
+        @Override
+        public LocalHostControllerInfo getLocalHostInfo() {
+            return null;
+        }
+
+        @Override
+        public void registerRemoteHost(String hostName, ManagementChannelHandler handler, Transformers transformers,
+                Long remoteConnectionId, DomainControllerRuntimeIgnoreTransformationEntry runtimeIgnoreTransformation) throws SlaveRegistrationException {
+        }
+
+        @Override
+        public boolean isHostRegistered(String id) {
+            return false;
+        }
+
+        @Override
+        public void unregisterRemoteHost(String id, Long remoteConnectionId) {
+        }
+
+        @Override
+        public void pingRemoteHost(String hostName) {
+        }
+
+        @Override
+        public void registerRunningServer(ProxyController serverControllerClient) {
+        }
+
+        @Override
+        public void unregisterRunningServer(String serverName) {
+        }
+
+        @Override
+        public ModelNode getProfileOperations(String profileName) {
+            return null;
+        }
+
+        @Override
+        public HostFileRepository getLocalFileRepository() {
+            return null;
+        }
+
+        @Override
+        public HostFileRepository getRemoteFileRepository() {
+            return null;
+        }
+
+        @Override
+        public void stopLocalHost() {
+        }
+
+        @Override
+        public void stopLocalHost(int exitCode) {
+        }
+
+        @Override
+        public ExtensionRegistry getExtensionRegistry() {
+            return null;
+        }
+
+        @Override
+        public ExpressionResolver getExpressionResolver() {
+            return null;
+        }
+
+        @Override
+        public void initializeMasterDomainRegistry(ManagementResourceRegistration root,
+                ExtensibleConfigurationPersister configurationPersister, ContentRepository contentRepository,
+                HostFileRepository fileRepository, ExtensionRegistry extensionRegistry, PathManagerService pathManager) {
+        }
+
+        @Override
+        public void initializeSlaveDomainRegistry(ManagementResourceRegistration root,
+                ExtensibleConfigurationPersister configurationPersister, ContentRepository contentRepository,
+                HostFileRepository fileRepository, LocalHostControllerInfo hostControllerInfo,
+                ExtensionRegistry extensionRegistry, IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
+                PathManagerService pathManager) {
+        }
+
     }
 }

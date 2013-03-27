@@ -36,11 +36,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
-import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
 import org.jboss.as.host.controller.model.host.HostResourceDefinition;
 import org.jboss.as.host.controller.model.jvm.JvmElement;
 import org.jboss.as.host.controller.model.jvm.JvmOptionsBuilderFactory;
@@ -57,7 +57,7 @@ import org.jboss.dmr.Property;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
+public class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
 
     private static final ModelNode EMPTY = new ModelNode();
     static {
@@ -77,7 +77,7 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
     private final ExpressionResolver expressionResolver;
     private final DirectoryGrouping directoryGrouping;
 
-    ManagedServerBootCmdFactory(final String serverName, final ModelNode domainModel, final ModelNode hostModel, final HostControllerEnvironment environment, final ExpressionResolver expressionResolver) {
+    public ManagedServerBootCmdFactory(final String serverName, final ModelNode domainModel, final ModelNode hostModel, final HostControllerEnvironment environment, final ExpressionResolver expressionResolver) {
         this.serverName = serverName;
         this.domainModel = domainModel;
         this.hostModel = hostModel;
@@ -277,7 +277,7 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
     }
 
     private Map<String, String> getAllSystemProperties(boolean boottimeOnly){
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new TreeMap<String, String>();
 
         addSystemProperties(domainModel, props, boottimeOnly);
         addSystemProperties(serverGroup, props, boottimeOnly);

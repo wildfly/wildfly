@@ -82,8 +82,14 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler {
             .setValidator(new StringLengthValidator(1, true))
             .build();
 
+    public static final SimpleAttributeDefinition IGNORE_UNUSED_CONFIG = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.IGNORE_UNUSED_CONFIG, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .setDefaultValue(new ModelNode(false))
+            .build();
+
     public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostResolver.getResolver("host"))
-            .setParameters(PORT, HOST, USERNAME, SECURITY_REALM)
+            .setParameters(PORT, HOST, USERNAME, SECURITY_REALM, IGNORE_UNUSED_CONFIG)
             .build();
 
     private final ManagementResourceRegistration rootRegistration;
@@ -126,6 +132,7 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler {
         PORT.validateAndSet(operation, remoteDC);
         HOST.validateAndSet(operation, remoteDC);
         USERNAME.validateAndSet(operation, remoteDC);
+        IGNORE_UNUSED_CONFIG.validateAndSet(operation, remoteDC);
 
         if (operation.has(SECURITY_REALM.getName())) {
             SECURITY_REALM.validateAndSet(operation, remoteDC);
@@ -171,6 +178,7 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler {
             hostControllerInfo.setRemoteDomainControllerUsername(usernameNode.asString());
         }
 
+        hostControllerInfo.setRemoteDomainControllerIgnoreUnaffectedConfiguration(IGNORE_UNUSED_CONFIG.resolveModelAttribute(context, remoteDC).asBoolean());
         overallConfigPersister.initializeDomainConfigurationPersister(true);
 
         domainController.initializeSlaveDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(), contentRepository, fileRepository,

@@ -32,6 +32,9 @@ public class ServerGroupRemoveHandler extends AbstractRemoveStepHandler {
 
     public static final ServerGroupRemoveHandler INSTANCE = new ServerGroupRemoveHandler();
 
+    private ServerGroupRemoveHandler() {
+    }
+
     protected boolean requiresRuntime(OperationContext context) {
         return false;
     }

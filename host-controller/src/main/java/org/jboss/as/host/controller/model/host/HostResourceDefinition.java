@@ -164,7 +164,9 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
                 RemoteDomainControllerAddHandler.HOST,
                 RemoteDomainControllerAddHandler.PORT,
                 RemoteDomainControllerAddHandler.USERNAME,
-                RemoteDomainControllerAddHandler.SECURITY_REALM)
+                RemoteDomainControllerAddHandler.SECURITY_REALM,
+                RemoteDomainControllerAddHandler.SECURITY_REALM,
+                RemoteDomainControllerAddHandler.IGNORE_UNUSED_CONFIG)
             .build();
 
     public static final ObjectTypeAttributeDefinition DOMAIN_CONTROLLER = new ObjectTypeAttributeDefinition.Builder(ModelDescriptionConstants.DOMAIN_CONTROLLER, DC_LOCAL, DC_REMOTE)
@@ -340,7 +342,7 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
         interfaces.registerOperationHandler(SpecifiedInterfaceResolveHandler.DEFINITION, SpecifiedInterfaceResolveHandler.INSTANCE);
 
         //server configurations
-        hostRegistration.registerSubModel(new ServerConfigResourceDefinition(serverInventory, pathManager));
+        hostRegistration.registerSubModel(new ServerConfigResourceDefinition(hostControllerInfo, serverInventory, pathManager));
         hostRegistration.registerSubModel(new StoppedServerResource(serverInventory));
     }
 }

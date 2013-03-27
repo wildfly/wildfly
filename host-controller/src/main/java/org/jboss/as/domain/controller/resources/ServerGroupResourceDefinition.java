@@ -39,7 +39,9 @@ import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.ServerGroupAddHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupProfileWriteAttributeHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
+import org.jboss.as.domain.controller.operations.ServerGroupSocketBindingGroupWriteAttributeHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentReplaceHandler;
+import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationRegistry;
 import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
@@ -82,13 +84,17 @@ public class ServerGroupResourceDefinition extends SimpleResourceDefinition {
 
     public static final AttributeDefinition[] ADD_ATTRIBUTES = new AttributeDefinition[] {PROFILE, SOCKET_BINDING_GROUP, SOCKET_BINDING_PORT_OFFSET, MANAGEMENT_SUBSYSTEM_ENDPOINT};
 
+    private final boolean master;
     private final ContentRepository contentRepo;
     private final HostFileRepository fileRepository;
+    private final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry;
 
-    public ServerGroupResourceDefinition(final ContentRepository contentRepo, final HostFileRepository fileRepository) {
-        super(PATH, DomainResolver.getResolver(SERVER_GROUP, false), ServerGroupAddHandler.INSTANCE, ServerGroupRemoveHandler.INSTANCE);
+    public ServerGroupResourceDefinition(final boolean master, final ContentRepository contentRepo, final HostFileRepository fileRepository, final DomainControllerRuntimeIgnoreTransformationRegistry registry) {
+        super(PATH, DomainResolver.getResolver(SERVER_GROUP, false), new ServerGroupAddHandler(master), ServerGroupRemoveHandler.INSTANCE);
+        this.master = master;
         this.contentRepo = contentRepo;
         this.fileRepository = fileRepository;
+        this.runtimeIgnoreTransformationRegistry = registry;
     }
 
     @Override
@@ -97,7 +103,9 @@ public class ServerGroupResourceDefinition extends SimpleResourceDefinition {
             if (attr.getName().equals(MANAGEMENT_SUBSYSTEM_ENDPOINT.getName())) {
                 resourceRegistration.registerReadOnlyAttribute(MANAGEMENT_SUBSYSTEM_ENDPOINT, null);
             } else if (attr.getName().equals(PROFILE.getName())) {
-                resourceRegistration.registerReadWriteAttribute(PROFILE, null, ServerGroupProfileWriteAttributeHandler.INSTANCE);
+                resourceRegistration.registerReadWriteAttribute(PROFILE, null, new ServerGroupProfileWriteAttributeHandler(master, runtimeIgnoreTransformationRegistry));
+            } else if (attr.getName().equals(SOCKET_BINDING_GROUP.getName())) {
+                resourceRegistration.registerReadWriteAttribute(SOCKET_BINDING_GROUP, null, new ServerGroupSocketBindingGroupWriteAttributeHandler(master, runtimeIgnoreTransformationRegistry));
             } else {
                 resourceRegistration.registerReadWriteAttribute(attr, null, new ModelOnlyWriteAttributeHandler(attr));
             }

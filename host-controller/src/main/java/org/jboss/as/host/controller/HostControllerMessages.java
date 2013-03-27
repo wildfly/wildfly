@@ -31,15 +31,16 @@ import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.as.server.ServerState;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Param;
 
 /**
@@ -728,4 +729,10 @@ public interface HostControllerMessages {
 
     @Message(id=16538, value="Invalid value for %s. Must only contain all of the existing discovery options")
     OperationFailedException invalidDiscoveryOptionsOrdering(String name);
+
+    @Message(id=16539, value="Can't execute transactional operation '%s' from slave controller")
+    IllegalStateException cannotExecuteTransactionalOperationFromSlave(String operationName);
+
+    @Message(id=16540, value="There is no resource called %s")
+    OperationFailedException noResourceFor(PathAddress address);
 }

@@ -27,6 +27,8 @@ import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -110,10 +112,29 @@ class ModelControllerImpl implements ModelController {
         this.expressionResolver = expressionResolver;
     }
 
+    /**
+     * Executes an operation on the controller
+     * @param operation the operation
+     * @param handler the handler
+     * @param control the transaction control
+     * @param attachments the operation attachments
+     * @return the result of the operation
+     */
     public ModelNode execute(final ModelNode operation, final OperationMessageHandler handler, final OperationTransactionControl control, final OperationAttachments attachments) {
-        return internalExecute(operation, handler, control, attachments, prepareStep);
+        return internalExecute(operation, handler, control, attachments, prepareStep, false);
     }
 
+    /**
+     * Executes an operation on the controller latching onto an existing transaction
+     *
+     * @param operation the operation
+     * @param handler the handler
+     * @param control the transaction control
+     * @param attachments the operation attachments
+     * @param prepareStep the prepare step to be executed before any other steps
+     * @param operationId the id of the current transaction
+     * @return the result of the operation
+     */
     protected ModelNode executeReadOnlyOperation(final ModelNode operation, final OperationMessageHandler handler, final OperationTransactionControl control, final OperationAttachments attachments, final OperationStepHandler prepareStep, final int operationId) {
         final SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
@@ -157,7 +178,18 @@ class ModelControllerImpl implements ModelController {
         return response;
     }
 
-    protected ModelNode internalExecute(final ModelNode operation, final OperationMessageHandler handler, final OperationTransactionControl control, final OperationAttachments attachments, final OperationStepHandler prepareStep) {
+    /**
+     * Executes an operation on the controller
+     * @param operation the operation
+     * @param handler the handler
+     * @param control the transaction control
+     * @param attachments the operation attachments
+     * @param prepareStep the prepare step to be executed before any other steps
+     * @param attemptLock set to {@code true} to try to obtain the controller lock
+     * @return the result of the operation
+     */
+    protected ModelNode internalExecute(final ModelNode operation, final OperationMessageHandler handler, final OperationTransactionControl control,
+                                        final OperationAttachments attachments, final OperationStepHandler prepareStep, final boolean attemptLock) {
         SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
             sm.checkPermission(ModelController.ACCESS_PERMISSION);
@@ -188,16 +220,30 @@ class ModelControllerImpl implements ModelController {
             // Try again if the operation-id is already taken
             if(activeOperations.putIfAbsent(operationID, context) == null) {
                 CurrentOperationIdHolder.setCurrentOperationID(operationID);
+                boolean shouldUnlock = false;
                 try {
+                    if (attemptLock) {
+                        if (!controllerLock.detectDeadlockAndGetLock(operationID)) {
+                            response.get(OUTCOME).set(FAILED);
+                            response.get(FAILURE_DESCRIPTION).set(MESSAGES.cannotGetControllerLock());
+                            return response;
+                        }
+                        shouldUnlock = true;
+                    }
+
                     context.addStep(response, operation, prepareStep, OperationContext.Stage.MODEL);
                     context.executeOperation();
                 } finally {
+                    if (shouldUnlock) {
+                        controllerLock.unlock(operationID);
+                    }
                     activeOperations.remove(operationID);
                     CurrentOperationIdHolder.setCurrentOperationID(null);
                 }
                 break;
             }
         }
+
         if (!response.hasDefined(RESPONSE_HEADERS) || !response.get(RESPONSE_HEADERS).hasDefined(PROCESS_STATE)) {
             ControlledProcessState.State state = processState.getState();
             switch (state) {

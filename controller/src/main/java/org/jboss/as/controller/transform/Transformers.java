@@ -25,6 +25,7 @@ package org.jboss.as.controller.transform;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -87,6 +88,18 @@ public interface Transformers {
      */
     Resource transformRootResource(OperationContext operationContext, Resource resource) throws OperationFailedException;
 
+    /**
+     * Transform a given resource.
+     *
+     * @param operationContext the operation context
+     * @param original the address of the resource to transform
+     * @param resource the resource
+     * @param skipRuntimeIgnoreCheck
+     * @return the transformed resource
+     * @throws OperationFailedException
+     */
+    Resource transformResource(final OperationContext operationContext, PathAddress original, Resource resource, boolean skipRuntimeIgnoreCheck) throws OperationFailedException;
+
     public static class Factory {
         private Factory() {
         }
@@ -96,7 +109,7 @@ public interface Transformers {
         }
 
         public static ResourceTransformationContext create(TransformationTarget target, Resource model, ImmutableManagementResourceRegistration registration, ExpressionResolver resolver, RunningMode runningMode, ProcessType type) {
-            return ResourceTransformationContextImpl.create(target, model, registration, resolver, runningMode, type);
+            return ResourceTransformationContextImpl.create(target, model, registration, resolver, runningMode, type, false);
         }
     }
 

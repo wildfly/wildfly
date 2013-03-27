@@ -58,7 +58,8 @@ public class TransformersImpl implements Transformers {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String operationName = operation.require(OP).asString();
 
-        final OperationTransformer transformer = target.resolveTransformer(address, operationName);
+        TransformationContext opCtx = ResourceTransformationContextImpl.wrapForOperation(context, operation);
+        final OperationTransformer transformer = target.resolveTransformer(opCtx, address, operationName);
         if (transformer == null) {
             ControllerLogger.ROOT_LOGGER.tracef("operation %s does not need transformation", operation);
             return new OperationTransformer.TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
@@ -68,7 +69,6 @@ public class TransformersImpl implements Transformers {
         // Update the operation using the new path address
         operation.get(OP_ADDR).set(transformed.toModelNode()); // TODO should this happen by default?
 
-        TransformationContext opCtx = ResourceTransformationContextImpl.wrapForOperation(context, operation);
         OperationTransformer.TransformedOperation res = transformer.transformOperation(opCtx, transformed, operation);
         context.getLogger().flushLogQueue();
         return res;
@@ -80,17 +80,17 @@ public class TransformersImpl implements Transformers {
         final PathAddress original = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String operationName = operation.require(OP).asString();
 
-        final OperationTransformer transformer = target.resolveTransformer(original, operationName);
-        if (transformer == null) {
-            ControllerLogger.ROOT_LOGGER.tracef("operation %s does not need transformation", operation);
-            return new OperationTransformer.TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
-        }
         // Transform the path address
         final PathAddress transformed = transformAddress(original, target);
         // Update the operation using the new path address
         operation.get(OP_ADDR).set(transformed.toModelNode()); // TODO should this happen by default?
 
-        final TransformationContext context = ResourceTransformationContextImpl.create(operationContext, target, transformed, original);
+        final TransformationContext context = ResourceTransformationContextImpl.create(operationContext, target, transformed, original, false);
+        final OperationTransformer transformer = target.resolveTransformer(context, original, operationName);
+        if (transformer == null) {
+            ControllerLogger.ROOT_LOGGER.tracef("operation %s does not need transformation", operation);
+            return new OperationTransformer.TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+        }
         final OperationTransformer.TransformedOperation op = transformer.transformOperation(context, transformed, operation);
         context.getLogger().flushLogQueue();
         return op;
@@ -98,18 +98,18 @@ public class TransformersImpl implements Transformers {
 
     @Override
     public Resource transformRootResource(OperationContext operationContext, Resource resource) throws OperationFailedException {
-        return transformResource(operationContext, PathAddress.EMPTY_ADDRESS, resource);
+        return transformResource(operationContext, PathAddress.EMPTY_ADDRESS, resource, false);
     }
 
-    public Resource transformResource(final OperationContext operationContext, PathAddress original, Resource resource) throws OperationFailedException {
-        final ResourceTransformer transformer = target.resolveTransformer(original);
+    public Resource transformResource(final OperationContext operationContext, PathAddress original, Resource resource, boolean skipRuntimeIgnoreCheck) throws OperationFailedException {
+        // Transform the path address
+        final PathAddress transformed = transformAddress(original, target);
+        final ResourceTransformationContext context = ResourceTransformationContextImpl.create(operationContext, target, transformed, original, skipRuntimeIgnoreCheck);
+        final ResourceTransformer transformer = target.resolveTransformer(context, original);
         if(transformer == null) {
             ControllerLogger.ROOT_LOGGER.tracef("resource %s does not need transformation", resource);
             return resource;
         }
-        // Transform the path address
-        final PathAddress transformed = transformAddress(original, target);
-        final ResourceTransformationContext context = ResourceTransformationContextImpl.create(operationContext, target, transformed, original);
         transformer.transformResource(context, transformed, resource);
         context.getLogger().flushLogQueue();
         return context.getTransformedRoot();
@@ -118,7 +118,7 @@ public class TransformersImpl implements Transformers {
     @Override
     public Resource transformResource(final ResourceTransformationContext context, Resource resource) throws OperationFailedException {
 
-        final ResourceTransformer transformer = target.resolveTransformer(PathAddress.EMPTY_ADDRESS);
+        final ResourceTransformer transformer = target.resolveTransformer(context, PathAddress.EMPTY_ADDRESS);
         if (transformer == null) {
             ControllerLogger.ROOT_LOGGER.tracef("resource %s does not need transformation", resource);
             return resource;

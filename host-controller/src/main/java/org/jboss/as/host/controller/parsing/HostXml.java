@@ -1063,6 +1063,11 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
 
     private boolean parseRemoteDomainControllerAttributes_2_0(final XMLExtendedStreamReader reader, final ModelNode address,
             final List<ModelNode> list) throws XMLStreamException {
+
+        final ModelNode update = new ModelNode();
+        update.get(OP_ADDR).set(address);
+        update.get(OP).set("write-remote-domain-controller");
+
         // Handle attributes
         String host = null;
         ModelNode port = null;
@@ -1103,15 +1108,15 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                         username = value;
                         break;
                     }
+                    case IGNORE_UNUSED_CONFIG: {
+                        RemoteDomainControllerAddHandler.IGNORE_UNUSED_CONFIG.parseAndSetParameter(value, update, reader);
+                        break;
+                    }
                     default:
                         throw unexpectedAttribute(reader, i);
                 }
             }
         }
-
-        final ModelNode update = new ModelNode();
-        update.get(OP_ADDR).set(address);
-        update.get(OP).set("write-remote-domain-controller");
 
         // Different from parseRemoteDomainControllerAttributes_1_3
         if ((host == null) || (port == null)) {
@@ -1676,6 +1681,8 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             RemoteDomainControllerAddHandler.PORT.marshallAsAttribute(remote, writer);
             RemoteDomainControllerAddHandler.SECURITY_REALM.marshallAsAttribute(remote, writer);
             RemoteDomainControllerAddHandler.USERNAME.marshallAsAttribute(remote, writer);
+            RemoteDomainControllerAddHandler.IGNORE_UNUSED_CONFIG.marshallAsAttribute(remote, writer);
+
             if (ignoredResources != null) {
                 writeIgnoredResources(writer, ignoredResources);
             }

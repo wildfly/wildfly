@@ -226,7 +226,11 @@ public abstract class AbstractControllerService implements Service<ModelControll
     }
 
     protected ModelNode internalExecute(final ModelNode operation, final OperationMessageHandler handler, final ModelController.OperationTransactionControl control, final OperationAttachments attachments, final OperationStepHandler prepareStep) {
-        return controller.internalExecute(operation, handler, control, attachments, prepareStep);
+        return controller.internalExecute(operation, handler, control, attachments, prepareStep, false);
+    }
+
+    protected ModelNode internalExecute(final ModelNode operation, final OperationMessageHandler handler, final ModelController.OperationTransactionControl control, final OperationAttachments attachments, final OperationStepHandler prepareStep, final boolean attemptLock) {
+        return controller.internalExecute(operation, handler, control, attachments, prepareStep, attemptLock);
     }
 
     /**
@@ -276,6 +280,5 @@ public abstract class AbstractControllerService implements Service<ModelControll
     }
 
     protected abstract void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration);
-
 
 }

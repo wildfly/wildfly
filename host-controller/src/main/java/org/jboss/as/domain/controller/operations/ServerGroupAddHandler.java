@@ -30,6 +30,7 @@ import java.util.NoSuchElementException;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.ResultAction;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -44,9 +45,10 @@ import org.jboss.dmr.ModelNode;
  */
 public class ServerGroupAddHandler implements OperationStepHandler {
 
-    public static final ServerGroupAddHandler INSTANCE = new ServerGroupAddHandler();
+    private final boolean master;
 
-    private ServerGroupAddHandler() {
+    public ServerGroupAddHandler(boolean master) {
+        this.master = master;
     }
 
     /** {@inheritDoc */
@@ -64,24 +66,49 @@ public class ServerGroupAddHandler implements OperationStepHandler {
         // Future proofing: We resolve the profile in Stage.MODEL even though system properties may not be available yet
         // solely because currently the attribute doesn't support expressions. In the future if system properties
         // can safely be resolved in stage model, this profile attribute can be changed and this will still work.
-        String profile = PROFILE.resolveModelAttribute(context, model).asString();
+        boolean reloadRequired = false;
+        final String profile = PROFILE.resolveModelAttribute(context, model).asString();
         try {
             context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement(PROFILE.getName(), profile)));
         } catch (Exception e) {
-            throw DomainControllerMessages.MESSAGES.noProfileCalled(profile);
-        }
-
-        if (operation.hasDefined(SOCKET_BINDING_GROUP.getName())) {
-            String socketBindingGroup =  SOCKET_BINDING_GROUP.resolveModelAttribute(context, model).asString();
-
-            try {
-                context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP.getName(), socketBindingGroup)));
-            } catch (NoSuchElementException e) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.unknown(SOCKET_BINDING_GROUP.getName(), socketBindingGroup)));
+            if (master) {
+                throw DomainControllerMessages.MESSAGES.noProfileCalled(profile);
+            } else {
+                //We are a slave HC and we don't have the socket-binding-group required, so put the slave into reload-required
+                reloadRequired = true;
+                context.reloadRequired();
             }
         }
 
-        context.stepCompleted();
+        final String socketBindingGroup;
+        if (operation.hasDefined(SOCKET_BINDING_GROUP.getName())) {
+            socketBindingGroup =  SOCKET_BINDING_GROUP.resolveModelAttribute(context, model).asString();
+            try {
+                context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP.getName(), socketBindingGroup)));
+            } catch (NoSuchElementException e) {
+                if (master) {
+                    throw new OperationFailedException(new ModelNode().set(MESSAGES.unknown(SOCKET_BINDING_GROUP.getName(), socketBindingGroup)));
+                } else {
+                    //We are a slave HC and we don't have the socket-binding-group required, so put the slave into reload-required
+                    reloadRequired = true;
+                    context.reloadRequired();
+                }
+            }
+        } else {
+            socketBindingGroup = null;
+        }
+
+        final boolean revertReloadRequiredOnRollback = reloadRequired;
+        context.completeStep(new OperationContext.ResultHandler() {
+            @Override
+            public void handleResult(ResultAction resultAction, OperationContext context, ModelNode operation) {
+                if (resultAction == ResultAction.ROLLBACK) {
+                    if (revertReloadRequiredOnRollback){
+                        context.revertReloadRequired();
+                    }
+                }
+            }
+        });
     }
 
     protected boolean requiresRuntime(OperationContext context) {

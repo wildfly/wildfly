@@ -45,6 +45,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
+import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
@@ -116,6 +117,7 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
 
     private final ServerInventory serverInventory;
     private final PathManagerService pathManager;
+    private final LocalHostControllerInfo hostControllerInfo;
 
     /**
      * Creates a ServerConfigResourceDefinition.
@@ -123,14 +125,15 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
      *                         in which case no such operations will be registered
      * @param pathManager the {@link PathManagerService} to use for the child {@code path} resources. Cannot be {@code null}
      */
-    public ServerConfigResourceDefinition(final ServerInventory serverInventory, final PathManagerService pathManager) {
+    public ServerConfigResourceDefinition(final LocalHostControllerInfo hostControllerInfo, final ServerInventory serverInventory, final PathManagerService pathManager) {
         super(PathElement.pathElement(SERVER_CONFIG), HostResolver.getResolver(SERVER_CONFIG, false),
-                ServerAddHandler.INSTANCE, ServerRemoveHandler.INSTANCE);
+                ServerAddHandler.create(hostControllerInfo), ServerRemoveHandler.INSTANCE);
 
         assert pathManager != null : "pathManager is null";
 
         this.serverInventory = serverInventory;
         this.pathManager = pathManager;
+        this.hostControllerInfo = hostControllerInfo;
     }
 
     @Override
@@ -139,9 +142,9 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerReadOnlyAttribute(NAME, ReadResourceNameOperationStepHandler.INSTANCE);
 
         resourceRegistration.registerReadWriteAttribute(AUTO_START, null, new ModelOnlyWriteAttributeHandler(AUTO_START));
-        resourceRegistration.registerReadWriteAttribute(SOCKET_BINDING_GROUP, null, ServerRestartRequiredServerConfigWriteAttributeHandler.SOCKET_BINDING_GROUP_INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(SOCKET_BINDING_GROUP, null, ServerRestartRequiredServerConfigWriteAttributeHandler.createSocketBindingGroupInstance(hostControllerInfo));
         resourceRegistration.registerReadWriteAttribute(SOCKET_BINDING_PORT_OFFSET, null, ServerRestartRequiredServerConfigWriteAttributeHandler.SOCKET_BINDING_PORT_OFFSET_INSTANCE);
-        resourceRegistration.registerReadWriteAttribute(GROUP, null, ServerRestartRequiredServerConfigWriteAttributeHandler.GROUP_INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(GROUP, null, ServerRestartRequiredServerConfigWriteAttributeHandler.createGroupInstance(hostControllerInfo));
 
         // For compatibility, register these should-be-removed attributes, with no-op handlers
         resourceRegistration.registerReadWriteAttribute(PRIORITY, NoopOperationStepHandler.WITH_RESULT, NoopOperationStepHandler.WITHOUT_RESULT);

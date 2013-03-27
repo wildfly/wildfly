@@ -57,6 +57,10 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
 
     private boolean adminOnly;
 
+    private boolean readOnlyDomain;
+
+    private boolean readOnlyHost;
+
     public JBossAsManagedConfiguration(JBossAsManagedConfigurationParameters params) {
         this.jbossHome = params.getJBossHome();
         this.modulePath = params.getModuleBaseDir();
@@ -233,4 +237,22 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
     public void setAdminOnly(boolean adminOnly) {
         this.adminOnly = adminOnly;
     }
+
+    public boolean isReadOnlyDomain() {
+        return readOnlyDomain;
+    }
+
+    public void setReadOnlyDomain(boolean readOnlyDomain) {
+        this.readOnlyDomain = readOnlyDomain;
+    }
+
+    public boolean isReadOnlyHost() {
+        return readOnlyHost;
+    }
+
+    public void setReadOnlyHost(boolean readOnlyHost) {
+        this.readOnlyHost = readOnlyHost;
+    }
+
+
 }

@@ -184,6 +184,11 @@ abstract class TransformationRule {
         void setImmutableResource(boolean immutable) {
             this.immutable = immutable;
         }
+
+        @Override
+        public boolean isSkipRuntimeIgnoreCheck() {
+            return delegate.isSkipRuntimeIgnoreCheck();
+        }
     }
 
     private static class ChainedTransformedOperation extends OperationTransformer.TransformedOperation {

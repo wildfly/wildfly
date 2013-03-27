@@ -22,79 +22,50 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.Transformers;
+import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationRegistry;
 import org.jboss.dmr.ModelNode;
 
 /**
  * Step handler responsible for collecting a complete description of the domain model,
- * which is going to be sent back to a remote host-controller.
+ * which is going to be sent back to a remote host-controller. This is called when the
+ * remote slave boots up or when it reconnects to the DC
  *
  * @author John Bailey
+ * @author Kabir Khan
  */
 public class ReadMasterDomainModelHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "read-master-domain-model";
 
-    private final Transformers transformers;
-    public ReadMasterDomainModelHandler(final Transformers transformers) {
-        this.transformers = transformers;
-    }
+    protected final String host;
+    protected final Transformers transformers;
+    protected final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry;
 
-    private Resource transformResource(final OperationContext context, Resource root) throws OperationFailedException {
-        return transformers.transformRootResource(context, root);
+    public ReadMasterDomainModelHandler(final String host, final Transformers transformers, DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry) {
+        this.host = host;
+        this.transformers = transformers;
+        this.runtimeIgnoreTransformationRegistry = runtimeIgnoreTransformationRegistry;
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        // Acquire the lock
+        // Acquire the lock to make sure that nobody can modify the model before the slave has applied it
         context.acquireControllerLock();
-        // Transform the model
-        final Resource untransformedRoot = context.readResource(PathAddress.EMPTY_ADDRESS,true);
-        final Resource root = transformResource(context, untransformedRoot);
-        // Get the list of all resources registered in this model
-        context.getResult().set(describeAsNodeList(root));
-        // The HC registration process will hijack the operationPrepared call and push
-        // the model to a registering host-controller
-        context.stepCompleted();
-    }
 
-    /**
-     * Describe the model as a list of resources with their address and model, which
-     * the HC can directly apply to create the model. Although the format might appear
-     * similar as the operations generated at boot-time this description is only useful
-     * to create the resource tree and cannot be used to invoke any operation.
-     *
-     * @param resource the root resource
-     * @return the list of resources
-     */
-    private List<ModelNode> describeAsNodeList(final Resource resource) {
-        final List<ModelNode> list = new ArrayList<ModelNode>();
-        describe(PathAddress.EMPTY_ADDRESS, resource, list);
-        return list;
-    }
+        final Resource rootResource = context.readResource(PathAddress.EMPTY_ADDRESS,true);
+        final ReadMasterDomainModelUtil readUtil = ReadMasterDomainModelUtil.readMasterDomainResourcesForInitialConnect(context, transformers, rootResource, runtimeIgnoreTransformationRegistry);
+        context.getResult().set(readUtil.getDescribedResources());
 
-    private void describe(final PathAddress base, final Resource resource, List<ModelNode> nodes) {
-        if (resource.isProxy() || resource.isRuntime()) {
-            return; // ignore runtime and proxies
-        } else if (base.size() >= 1 && base.getElement(0).getKey().equals(ModelDescriptionConstants.HOST)) {
-            return; // ignore hosts
-        }
-        final ModelNode description = new ModelNode();
-        description.get("domain-resource-address").set(base.toModelNode());
-        description.get("domain-resource-model").set(resource.getModel());
-        nodes.add(description);
-        for (final String childType : resource.getChildTypes()) {
-            for (final Resource.ResourceEntry entry : resource.getChildren(childType)) {
-                describe(base.append(entry.getPathElement()), entry, nodes);
+        context.completeStep(new OperationContext.ResultHandler() {
+            @Override
+            public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                runtimeIgnoreTransformationRegistry.addKnownDataForSlave(host, readUtil.getNewKnownRootResources());
             }
-        }
+        });
     }
 }

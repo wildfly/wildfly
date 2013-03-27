@@ -79,7 +79,6 @@ public class DomainServerUtils {
         return result;
     }
 
-
     public static Set<ServerIdentity> getServersForType(String type, String ref, ModelNode domainModel, ModelNode hostModel, final String localHostName, final Map<String, ProxyController> serverProxies) {
         Set<String> groups = getGroupsForType(type, ref, domainModel);
         Set<ServerIdentity> allServers = new HashSet<ServerIdentity>();

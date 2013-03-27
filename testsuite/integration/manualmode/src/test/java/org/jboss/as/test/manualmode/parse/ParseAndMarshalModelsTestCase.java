@@ -31,8 +31,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import javax.management.ObjectName;
-import javax.xml.namespace.QName;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -45,6 +43,9 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import javax.management.ObjectName;
+import javax.xml.namespace.QName;
+
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -55,6 +56,7 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ControlledProcessState.State;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
@@ -94,7 +96,9 @@ import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.resources.DomainRootDefinition;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
+import org.jboss.as.host.controller.discovery.DiscoveryOption;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
+import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationEntry;
 import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceRemoveHandler;
@@ -806,7 +810,7 @@ public class ParseAndMarshalModelsTestCase {
                 ));
 
                 //server configurations
-                hostRegistration.registerSubModel(new ServerConfigResourceDefinition(null, MOCK_PATH_MANAGER));
+                hostRegistration.registerSubModel(new ServerConfigResourceDefinition(MOCK_HOST_CONTROLLER_INFO, null, MOCK_PATH_MANAGER));
             }
         });
 
@@ -843,7 +847,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelNode model = new ModelNode();
         final ModelController controller = createController(ProcessType.HOST_CONTROLLER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
-                DomainRootDefinition def = new DomainRootDefinition(null, persister, new MockContentRepository(), new MockFileRepository(), true, null, extensionRegistry, null, MOCK_PATH_MANAGER);
+                DomainRootDefinition def = new DomainRootDefinition(null, null, persister, new MockContentRepository(), new MockFileRepository(), true, null, extensionRegistry, null, MOCK_PATH_MANAGER, null);
                 def.initialize(rootRegistration);
             }
         });
@@ -1085,7 +1089,7 @@ public class ParseAndMarshalModelsTestCase {
             return null;
         }
 
-        public void registerRemoteHost(final String hostName, final ManagementChannelHandler handler, final Transformers transformers, Long remoteConnectionId) throws SlaveRegistrationException {
+        public void registerRemoteHost(final String hostName, final ManagementChannelHandler handler, final Transformers transformers, Long remoteConnectionId, DomainControllerRuntimeIgnoreTransformationEntry runtimeIgnoreTransformation) throws SlaveRegistrationException {
         }
 
         public boolean isHostRegistered(String id) {
@@ -1184,5 +1188,73 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private static PathManagerService MOCK_PATH_MANAGER = new PathManagerService() {
+    };
+
+    final static LocalHostControllerInfo MOCK_HOST_CONTROLLER_INFO = new LocalHostControllerInfo() {
+
+        @Override
+        public boolean isMasterDomainController() {
+            return true;
+        }
+
+        @Override
+        public String getRemoteDomainControllerUsername() {
+            return null;
+        }
+
+        @Override
+        public List<DiscoveryOption> getRemoteDomainControllerDiscoveryOptions() {
+            return null;
+        }
+
+        @Override
+        public State getProcessState() {
+            return null;
+        }
+
+        @Override
+        public String getNativeManagementSecurityRealm() {
+            return null;
+        }
+
+        @Override
+        public int getNativeManagementPort() {
+            return 0;
+        }
+
+        @Override
+        public String getNativeManagementInterface() {
+            return null;
+        }
+
+        @Override
+        public String getLocalHostName() {
+            return null;
+        }
+
+        @Override
+        public String getHttpManagementSecurityRealm() {
+            return null;
+        }
+
+        @Override
+        public int getHttpManagementSecurePort() {
+            return 0;
+        }
+
+        @Override
+        public int getHttpManagementPort() {
+            return 0;
+        }
+
+        @Override
+        public String getHttpManagementInterface() {
+            return null;
+        }
+
+        @Override
+        public boolean isRemoteDomainControllerIgnoreUnaffectedConfiguration() {
+            return false;
+        }
     };
 }

@@ -124,6 +124,8 @@ public final class ManagedServerOperationsFactory {
                                               final DomainController domainController, final ExpressionResolver expressionResolver) {
         final ManagedServerOperationsFactory factory = new ManagedServerOperationsFactory(serverName, domainModel,
                 hostModel, domainController, expressionResolver);
+
+
         return factory.getBootUpdates();
     }
 

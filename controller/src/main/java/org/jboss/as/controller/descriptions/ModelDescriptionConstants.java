@@ -117,6 +117,7 @@ public class ModelDescriptionConstants {
     public static final String IGNORED = "ignored-by-unaffected-host-controller";
     public static final String IGNORED_RESOURCES = "ignored-resources";
     public static final String IGNORED_RESOURCE_TYPE = "ignored-resource-type";
+    public static final String IGNORE_UNUSED_CONFIG = "ignore-unused-configuration";
     public static final String IN_SERIES = "in-series";
     public static final String INCLUDE = "include";
     public static final String INCLUDES = "includes";
@@ -126,6 +127,7 @@ public class ModelDescriptionConstants {
     public static final String INET_ADDRESS = "inet-address";
     public static final String INHERITED = "inherited";
     public static final String INITIAL_CONTEXT_FACTORY = "initial-context-factory";
+    public static final String INITIAL_SERVER_GROUPS = "initial-server-groups";
     public static final String INPUT_STREAM_INDEX = "input-stream-index";
     public static final String INTERFACE = "interface";
     public static final String JAAS = "jaas";

@@ -49,36 +49,38 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
     private final PathAddress read;
     private final OriginalModel originalModel;
     private final TransformersLogger logger;
+    private final boolean skipRuntimeIgnoreCheck;
 
-    static ResourceTransformationContext create(final OperationContext context, final TransformationTarget target) {
-        return create(context, target, PathAddress.EMPTY_ADDRESS, PathAddress.EMPTY_ADDRESS);
+    static ResourceTransformationContext create(final OperationContext context, final TransformationTarget target, final boolean skipRuntimeIgnoreCheck) {
+        return create(context, target, PathAddress.EMPTY_ADDRESS, PathAddress.EMPTY_ADDRESS, skipRuntimeIgnoreCheck);
     }
 
-    static ResourceTransformationContext create(final OperationContext context, final TransformationTarget target, final PathAddress current, final PathAddress read) {
+    static ResourceTransformationContext create(final OperationContext context, final TransformationTarget target, final PathAddress current, final PathAddress read, boolean skipRuntimeIgnoreCheck) {
         final Resource root = Resource.Factory.create();
         final Resource original = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true);
         final ImmutableManagementResourceRegistration registration = context.getRootResourceRegistration().getSubModel(PathAddress.EMPTY_ADDRESS);
         final ExpressionResolver expressionResolver = TransformerExpressionResolver.create(context, target.getTargetType());
         final OriginalModel originalModel = new OriginalModel(original, context.getRunningMode(), context.getProcessType(), target, registration, expressionResolver);
-        return new ResourceTransformationContextImpl(root, current, read, originalModel);
+        return new ResourceTransformationContextImpl(root, current, read, originalModel, skipRuntimeIgnoreCheck);
     }
 
-    static ResourceTransformationContext create(TransformationTarget target, Resource model, ImmutableManagementResourceRegistration registration, ExpressionResolver resolver, RunningMode runningMode, ProcessType type) {
+    static ResourceTransformationContext create(TransformationTarget target, Resource model, ImmutableManagementResourceRegistration registration, ExpressionResolver resolver, RunningMode runningMode, ProcessType type, boolean skipRuntimeIgnoreCheck) {
         final Resource root = Resource.Factory.create();
         final OriginalModel originalModel = new OriginalModel(model, runningMode, type, target, registration, resolver);
-        return new ResourceTransformationContextImpl(root, PathAddress.EMPTY_ADDRESS, originalModel);
+        return new ResourceTransformationContextImpl(root, PathAddress.EMPTY_ADDRESS, originalModel, skipRuntimeIgnoreCheck);
     }
 
-    ResourceTransformationContextImpl(Resource root, PathAddress address, final OriginalModel originalModel) {
-        this(root, address, address, originalModel);
+    ResourceTransformationContextImpl(Resource root, PathAddress address, final OriginalModel originalModel, final boolean skipRuntimeIgnoreCheck) {
+        this(root, address, address, originalModel, skipRuntimeIgnoreCheck);
     }
 
-    ResourceTransformationContextImpl(Resource root, PathAddress address, PathAddress read, final OriginalModel originalModel) {
+    ResourceTransformationContextImpl(Resource root, PathAddress address, PathAddress read, final OriginalModel originalModel, final boolean skipRuntimeIgnoreCheck) {
         this.root = root;
         this.current = address;
         this.read = read;
         this.originalModel = originalModel;
         this.logger = TransformersLogger.getLogger(originalModel.target);
+        this.skipRuntimeIgnoreCheck = skipRuntimeIgnoreCheck;
     }
 
     public Resource createResource(final PathAddress element) {
@@ -160,7 +162,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
             //If this was the root address, replace the resource model
             model.writeModel(toAdd.getModel());
         }
-        return new ResourceTransformationContextImpl(root, absoluteAddress, read, originalModel);
+        return new ResourceTransformationContextImpl(root, absoluteAddress, read, originalModel, skipRuntimeIgnoreCheck);
     }
 
     @Override
@@ -170,7 +172,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
     }
 
     public TransformerEntry resolveTransformerEntry(PathAddress address) {
-        final TransformerEntry entry = originalModel.target.getTransformerEntry(address);
+        final TransformerEntry entry = originalModel.target.getTransformerEntry(this, address);
         if (entry == null) {
             return TransformerEntry.ALL_DEFAULTS;
         }
@@ -179,7 +181,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
 
     @Override
     public ResourceTransformer resolveTransformer(PathAddress address) {
-        final ResourceTransformer transformer = originalModel.target.resolveTransformer(address);
+        final ResourceTransformer transformer = originalModel.target.resolveTransformer(this, address);
         if (transformer == null) {
             final ImmutableManagementResourceRegistration childReg = originalModel.getRegistration(address);
             if (childReg == null) {
@@ -245,7 +247,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
             }
         });
         final ResourceTransformer transformer = resolveTransformer(entry, childAddress);
-        final ResourceTransformationContext childContext = new ResourceTransformationContextImpl(root, currentAddress, childAddress, originalModel);
+        final ResourceTransformationContext childContext = new ResourceTransformationContextImpl(root, currentAddress, childAddress, originalModel, skipRuntimeIgnoreCheck);
         transformer.transformResource(childContext, currentAddress, child);
     }
 
@@ -300,7 +302,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
     static ResourceTransformationContext createAliasContext(final PathAddress address, final ResourceTransformationContext context) {
         if (context instanceof ResourceTransformationContextImpl) {
             final ResourceTransformationContextImpl impl = (ResourceTransformationContextImpl) context;
-            return new ResourceTransformationContextImpl(impl.root, address, impl.read, impl.originalModel);
+            return new ResourceTransformationContextImpl(impl.root, address, impl.read, impl.originalModel, context.isSkipRuntimeIgnoreCheck());
         } else {
             throw new IllegalArgumentException("wrong context type");
         }
@@ -310,7 +312,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
     static TransformationContext wrapForOperation(TransformationContext context, ModelNode operation) {
         if(context instanceof ResourceTransformationContextImpl) {
             final ResourceTransformationContextImpl impl = (ResourceTransformationContextImpl) context;
-            return new ResourceTransformationContextImpl(impl.root, PathAddress.pathAddress(operation.get(OP_ADDR)), impl.originalModel);
+            return new ResourceTransformationContextImpl(impl.root, PathAddress.pathAddress(operation.get(OP_ADDR)), impl.originalModel, context.isSkipRuntimeIgnoreCheck());
         } else {
             return context;
         }
@@ -319,6 +321,12 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
     @Override
     public TransformersLogger getLogger() {
         return logger;
+    }
+
+
+    @Override
+    public boolean isSkipRuntimeIgnoreCheck() {
+        return skipRuntimeIgnoreCheck;
     }
 
     static class OriginalModel {
@@ -348,5 +356,4 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
         }
 
     }
-
 }

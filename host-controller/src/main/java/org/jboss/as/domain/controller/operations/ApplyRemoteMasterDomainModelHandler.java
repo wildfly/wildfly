@@ -29,32 +29,23 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLANS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.domain.controller.DomainControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getRelatedElements;
-import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForGroup;
-import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForType;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -65,21 +56,34 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.coordination.DomainServerUtils;
+import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.host.controller.ManagedServerBootCmdFactory;
+import org.jboss.as.host.controller.ManagedServerBootConfiguration;
+import org.jboss.as.host.controller.ManagedServerOperationsFactory;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.management.client.content.ManagedDMRContentTypeResource;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 /**
- * Step handler responsible for taking in a domain model and updating the local domain model to match.
+ * Step handler responsible for taking in a domain model and updating the local domain model to match. This happens when we connect to the domain controller,
+ * either:
+ * <ul>
+ *      <li>When we are first booting</li>
+ *      <li>When we reconnect to the DC having already booted. In this case we check the resulting boot operations for each running server of the copy of the domain model we
+ *      had with boot operations of the domain model following the applied changes.</li>
+ * </ul>
+ *
+ * {@link ApplyMissingDomainModelResourcesHandler} contains similar functionality for when config is changed at runtime to bring it into the domain model.
  *
  * @author John Bailey
+ * @author Kabir Khan
  */
 public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler {
     public static final String OPERATION_NAME = "apply-remote-domain-model";
@@ -89,23 +93,28 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         .setPrivateEntry()
         .build();
 
+    protected final DomainController domainController;
+    protected final HostControllerEnvironment hostControllerEnvironment;
+    protected final LocalHostControllerInfo localHostInfo;
+    protected final IgnoredDomainResourceRegistry ignoredResourceRegistry;
     private final HostFileRepository fileRepository;
     private final ContentRepository contentRepository;
-    private final IgnoredDomainResourceRegistry ignoredResourceRegistry;
 
-    private final LocalHostControllerInfo localHostInfo;
-
-    public ApplyRemoteMasterDomainModelHandler(final HostFileRepository fileRepository,
+    public ApplyRemoteMasterDomainModelHandler(final DomainController domainController,
+                                               final HostControllerEnvironment hostControllerEnvironment,
+                                               final HostFileRepository fileRepository,
                                                final ContentRepository contentRepository,
                                                final LocalHostControllerInfo localHostInfo,
                                                final IgnoredDomainResourceRegistry ignoredResourceRegistry) {
+        this.domainController = domainController;
+        this.hostControllerEnvironment = hostControllerEnvironment;
         this.fileRepository = fileRepository;
         this.contentRepository = contentRepository;
         this.localHostInfo = localHostInfo;
         this.ignoredResourceRegistry = ignoredResourceRegistry;
     }
 
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
 
         // We get the model as a list of resources descriptions
         final ModelNode domainModel = operation.get(DOMAIN_MODEL);
@@ -122,7 +131,8 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
 
         for (final ModelNode resourceDescription : domainModel.asList()) {
 
-            final PathAddress resourceAddress = PathAddress.pathAddress(resourceDescription.require("domain-resource-address"));
+            final PathAddress resourceAddress = PathAddress.pathAddress(resourceDescription.require(ReadMasterDomainModelUtil.DOMAIN_RESOURCE_ADDRESS));
+
             if (ignoredResourceRegistry.isResourceExcluded(resourceAddress)) {
                 continue;
             }
@@ -132,7 +142,8 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
                 // Extensions are handled in ApplyExtensionsHandler
                 continue;
             }
-            resource.writeModel(resourceDescription.get("domain-resource-model"));
+
+            resource.writeModel(resourceDescription.get(ReadMasterDomainModelUtil.DOMAIN_RESOURCE_MODEL));
 
             // Track deployment and management content hashes and server group deployments so we can pull over the content we need
             if (resourceAddress.size() == 1) {
@@ -181,152 +192,8 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         }
 
         if (!context.isBooting()) {
-            final Resource domainRootResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
-            final ModelNode endRoot = Resource.Tools.readModel(domainRootResource);
-            final Set<ServerIdentity> affectedServers = new HashSet<ServerIdentity>();
-            final ModelNode hostModel = endRoot.require(HOST).asPropertyList().iterator().next().getValue();
-            final ModelNode existingHostModel = startRoot.require(HOST).asPropertyList().iterator().next().getValue();
-
-            final Map<String, ProxyController> serverProxies = DomainServerUtils.getServerProxies(localHostInfo.getLocalHostName(), domainRootResource, context.getResourceRegistration());
-
-            // Extensions are handled in ApplyExtensionsHandler
-
-            final ModelNode startPaths = startRoot.get(PATH);
-            final ModelNode endPaths = endRoot.get(PATH);
-            final Map<String, ModelNode> existingPaths = new HashMap<String, ModelNode>();
-            if (startPaths.isDefined()) for (Property property : startPaths.asPropertyList()) {
-                existingPaths.put(property.getName(), property.getValue());
-            }
-            if (endPaths.isDefined()) for (Property path : endPaths.asPropertyList()) {
-                final String pathName = path.getName();
-                if (existingPaths.containsKey(pathName)) {
-                    if (!path.getValue().equals(existingPaths.get(pathName))) {
-                        affectedServers.addAll(getServersAffectedByPath(pathName, hostModel, true));
-                    }
-                    existingPaths.remove(pathName);
-                } else {
-                    affectedServers.addAll(getServersAffectedByPath(pathName, hostModel, true));
-                }
-            }
-            for (Map.Entry<String, ModelNode> entry : existingPaths.entrySet()) {
-                affectedServers.addAll(getServersAffectedByPath(entry.getKey(), existingHostModel, true));
-            }
-
-            final ModelNode startSysProps = startRoot.get(SYSTEM_PROPERTY);
-            final ModelNode endSysProps = endRoot.get(SYSTEM_PROPERTY);
-            final Map<String, ModelNode> existingProps = new HashMap<String, ModelNode>();
-            if (startSysProps.isDefined()) for (Property property : startSysProps.asPropertyList()) {
-                existingProps.put(property.getName(), property.getValue());
-            }
-            if (endSysProps.isDefined()) for (Property property : endSysProps.asPropertyList()) {
-                if (existingProps.containsKey(property.getName())) {
-                    if (!property.getValue().equals(existingProps.get(property.getName()))) {
-                        affectedServers.addAll(getServerAffectedBySystemProperty(property.getName(), true, endRoot, null, hostModel));
-                    }
-                    existingProps.remove(property.getName());
-                } else {
-                    affectedServers.addAll(getServerAffectedBySystemProperty(property.getName(), true, endRoot, null, hostModel));
-                }
-            }
-            for (Map.Entry<String, ModelNode> entry : existingProps.entrySet()) {
-                affectedServers.addAll(getServerAffectedBySystemProperty(entry.getKey(), true, startRoot, null, existingHostModel));
-            }
-
-            final ModelNode startProfiles = startRoot.get(PROFILE);
-            final ModelNode endProfiles = endRoot.get(PROFILE);
-            final Map<String, ModelNode> existingProfiles = new HashMap<String, ModelNode>();
-            if (startProfiles.isDefined()) for (Property profile : startProfiles.asPropertyList()) {
-                existingProfiles.put(profile.getName(), profile.getValue());
-            }
-            if (endProfiles.isDefined()) for (Property profile : endProfiles.asPropertyList()) {
-                if (existingProfiles.containsKey(profile.getName())) {
-                    if (!profile.getValue().equals(existingProfiles.get(profile.getName()))) {
-                        affectedServers.addAll(getServerAffectedByProfile(profile.getName(), endRoot, hostModel, serverProxies));
-                    }
-                    existingProfiles.remove(profile.getName());
-                } else {
-                    affectedServers.addAll(getServerAffectedByProfile(profile.getName(), endRoot, hostModel, serverProxies));
-                }
-            }
-            for (Map.Entry<String, ModelNode> entry : existingProfiles.entrySet()) {
-                affectedServers.addAll(getServerAffectedByProfile(entry.getKey(), startRoot, existingHostModel, serverProxies));
-            }
-
-            final ModelNode startInterfaces = startRoot.get(INTERFACE);
-            final ModelNode endInterfaces = endRoot.get(INTERFACE);
-            final Map<String, ModelNode> existingInterfaces = new HashMap<String, ModelNode>();
-            if (startInterfaces.isDefined()) for (Property interfaceProp : startInterfaces.asPropertyList()) {
-                existingInterfaces.put(interfaceProp.getName(), interfaceProp.getValue());
-            }
-            if (endInterfaces.isDefined()) for (Property interfaceProp : endInterfaces.asPropertyList()) {
-                if (existingInterfaces.containsKey(interfaceProp.getName())) {
-                    if (!interfaceProp.getValue().equals(existingInterfaces.get(interfaceProp.getName()))) {
-                        affectedServers.addAll(getServersAffectedByInterface(interfaceProp.getName(), hostModel, true));
-                    }
-                    existingInterfaces.remove(interfaceProp.getName());
-                } else {
-                    affectedServers.addAll(getServersAffectedByInterface(interfaceProp.getName(), hostModel, true));
-                }
-            }
-            for (Map.Entry<String, ModelNode> entry : existingInterfaces.entrySet()) {
-                affectedServers.addAll(getServersAffectedByInterface(entry.getKey(), existingHostModel, true));
-            }
-
-            final ModelNode startBindingGroups = startRoot.get(SOCKET_BINDING_GROUP);
-            final ModelNode endBindingGroups = endRoot.get(SOCKET_BINDING_GROUP);
-            final Map<String, ModelNode> existingBindingGroups = new HashMap<String, ModelNode>();
-            if (startBindingGroups.isDefined()) for (Property bindingGroup : startBindingGroups.asPropertyList()) {
-                existingBindingGroups.put(bindingGroup.getName(), bindingGroup.getValue());
-            }
-            if (endBindingGroups.isDefined()) for (Property bindingGroup : endBindingGroups.asPropertyList()) {
-                if (existingBindingGroups.containsKey(bindingGroup.getName())) {
-                    if (!bindingGroup.getValue().equals(existingBindingGroups.get(bindingGroup.getName()))) {
-                        affectedServers.addAll(getServersAffectedBySocketBindingGroup(bindingGroup.getName(), endRoot, hostModel, serverProxies));
-                    }
-                    existingBindingGroups.remove(bindingGroup.getName());
-                } else {
-                    affectedServers.addAll(getServersAffectedBySocketBindingGroup(bindingGroup.getName(), endRoot, hostModel, serverProxies));
-                }
-            }
-            for (Map.Entry<String, ModelNode> entry : existingBindingGroups.entrySet()) {
-                affectedServers.addAll(getServersAffectedBySocketBindingGroup(entry.getKey(), startRoot, existingHostModel, serverProxies));
-            }
-
-            final ModelNode startServerGroups = startRoot.get(SERVER_GROUP);
-            final ModelNode endServerGroups = endRoot.get(SERVER_GROUP);
-            final Map<String, ModelNode> existingServerGroups = new HashMap<String, ModelNode>();
-            if (startServerGroups.isDefined()) for (Property serverGroup : startServerGroups.asPropertyList()) {
-                existingServerGroups.put(serverGroup.getName(), serverGroup.getValue());
-            }
-            if (endServerGroups.isDefined()) for (Property serverGroup : endServerGroups.asPropertyList()) {
-                if (existingServerGroups.containsKey(serverGroup.getName())) {
-                    if (!serverGroup.getValue().equals(existingServerGroups.get(serverGroup.getName()))) {
-                        affectedServers.addAll(getServersForGroup(serverGroup.getName(), hostModel, localHostInfo.getLocalHostName(), serverProxies));
-                    }
-                    existingServerGroups.remove(serverGroup.getName());
-                } else {
-                    affectedServers.addAll(getServersForGroup(serverGroup.getName(), hostModel, localHostInfo.getLocalHostName(), serverProxies));
-                }
-            }
-            for (Map.Entry<String, ModelNode> entry : existingServerGroups.entrySet()) {
-                affectedServers.addAll(getServersForGroup(entry.getKey(), hostModel, localHostInfo.getLocalHostName(), serverProxies));
-            }
-
-            if (!affectedServers.isEmpty()) {
-                ROOT_LOGGER.domainModelChangedOnReConnect(affectedServers);
-                final Set<ServerIdentity> runningServers = DomainServerUtils.getAllRunningServers(hostModel, localHostInfo.getLocalHostName(), serverProxies);
-                for (ServerIdentity serverIdentity : affectedServers) {
-                    if(!runningServers.contains(serverIdentity)) {
-                        continue;
-                    }
-                    final PathAddress serverAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, serverIdentity.getHostName()), PathElement.pathElement(SERVER, serverIdentity.getServerName()));
-                    final OperationStepHandler handler = context.getResourceRegistration().getOperationHandler(serverAddress, ServerRestartRequiredHandler.OPERATION_NAME);
-                    final ModelNode op = new ModelNode();
-                    op.get(OP).set(ServerRestartRequiredHandler.OPERATION_NAME);
-                    op.get(OP_ADDR).set(serverAddress.toModelNode());
-                    context.addStep(op, handler, OperationContext.Stage.MODEL, true);
-                }
-            }
+            //We have reconnected to the DC
+            makeAffectedServersRestartRequired(context, startRoot);
         }
 
         context.stepCompleted();
@@ -357,7 +224,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         }
     }
 
-    private Resource getResource(PathAddress resourceAddress, Resource rootResource, OperationContext context) {
+    protected Resource getResource(PathAddress resourceAddress, Resource rootResource, OperationContext context) {
         if(resourceAddress.size() == 0) {
             return rootResource;
         }
@@ -387,125 +254,6 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         return temp;
     }
 
-    private Collection<ServerIdentity> getServersAffectedByPath(final String pathName, final ModelNode hostModel, final boolean forDomain) {
-        if (forDomain && hostModel.hasDefined(PATH) && hostModel.get(PATH).keys().contains(pathName)) {
-            // Host will take precedence; ignore the domain
-            return Collections.emptySet();
-        } else if (hostModel.hasDefined(SERVER_CONFIG)) {
-            Set<ServerIdentity> servers = new HashSet<ServerIdentity>();
-            for (Property prop : hostModel.get(SERVER_CONFIG).asPropertyList()) {
-
-                String serverName = prop.getName();
-                ModelNode server = prop.getValue();
-
-                String serverGroupName = server.require(GROUP).asString();
-
-                if (server.hasDefined(PATH) && server.get(PATH).keys().contains(pathName)) {
-                    // Server takes precedence; ignore domain
-                    continue;
-                }
-
-                ServerIdentity groupedServer = new ServerIdentity(localHostInfo.getLocalHostName(), serverGroupName, serverName);
-                servers.add(groupedServer);
-            }
-            return servers;
-        }
-        return Collections.emptySet();
-    }
-
-    private Collection<ServerIdentity> getServerAffectedBySystemProperty(final String propName, final boolean isDomain, final ModelNode domain, final String affectedGroup, final ModelNode host) {
-        boolean overridden = false;
-        Set<String> groups = null;
-        if (isDomain) {
-            if (hasSystemProperty(host, propName)) {
-                // host level value takes precedence
-                overridden = true;
-            } else if (affectedGroup != null) {
-                groups = Collections.singleton(affectedGroup);
-            } else if (domain.hasDefined(SERVER_GROUP)) {
-                // Top level domain update applies to all groups where it was not overridden
-                groups = new HashSet<String>();
-                for (Property groupProp : domain.get(SERVER_GROUP).asPropertyList()) {
-                    String groupName = groupProp.getName();
-                    if (!hasSystemProperty(groupProp.getValue(), propName)) {
-                        groups.add(groupName);
-                    }
-                }
-            }
-        }
-        Set<ServerIdentity> servers = null;
-        if (!overridden && host.hasDefined(SERVER_CONFIG)) {
-            servers = new HashSet<ServerIdentity>();
-            for (Property serverProp : host.get(SERVER_CONFIG).asPropertyList()) {
-                String serverName = serverProp.getName();
-                ModelNode server = serverProp.getValue();
-                if (!hasSystemProperty(server, propName)) {
-                    String groupName = server.require(GROUP).asString();
-                    if (groups == null || groups.contains(groupName)) {
-                        servers.add(new ServerIdentity(localHostInfo.getLocalHostName(), groupName, serverName));
-                    }
-                }
-            }
-        }
-        if (servers != null) {
-            return servers;
-        }
-        return Collections.emptySet();
-    }
-
-    private boolean hasSystemProperty(final ModelNode resource, final String propName) {
-        return resource.hasDefined(SYSTEM_PROPERTY) && resource.get(SYSTEM_PROPERTY).hasDefined(propName);
-    }
-
-    private Collection<ServerIdentity> getServerAffectedByProfile(final String profileName, final ModelNode domain, final ModelNode host, final Map<String, ProxyController> serverProxies) {
-        Set<String> relatedProfiles = getRelatedElements(PROFILE, profileName, domain);
-        Set<ServerIdentity> allServers = new HashSet<ServerIdentity>();
-        for (String profile : relatedProfiles) {
-            allServers.addAll(getServersForType(PROFILE, profile, domain, host, localHostInfo.getLocalHostName(), serverProxies));
-        }
-        return allServers;
-    }
-
-    private Collection<ServerIdentity> getServersAffectedByInterface(final String interfaceName, final ModelNode hostModel, final boolean forDomain) {
-        if (forDomain && hostModel.hasDefined(INTERFACE) && hostModel.get(INTERFACE).keys().contains(interfaceName)) {
-            // Host will take precedence; ignore the domain
-            return Collections.emptySet();
-        } else if (hostModel.hasDefined(SERVER_CONFIG)) {
-            Set<ServerIdentity> servers = new HashSet<ServerIdentity>();
-            for (Property prop : hostModel.get(SERVER_CONFIG).asPropertyList()) {
-                String serverName = prop.getName();
-                ModelNode server = prop.getValue();
-
-                String serverGroupName = server.require(GROUP).asString();
-                if (server.hasDefined(INTERFACE) && server.get(INTERFACE).keys().contains(interfaceName)) {
-                    // Server takes precedence; ignore domain
-                    continue;
-                }
-
-                ServerIdentity groupedServer = new ServerIdentity(localHostInfo.getLocalHostName(), serverGroupName, serverName);
-                servers.add(groupedServer);
-            }
-            return servers;
-        }
-        return Collections.emptySet();
-    }
-
-    private Collection<ServerIdentity> getServersAffectedBySocketBindingGroup(final String bindingGroupName, final ModelNode domain, final ModelNode host, final Map<String, ProxyController> serverProxies) {
-        Set<String> relatedBindingGroups = getRelatedElements(SOCKET_BINDING_GROUP, bindingGroupName, domain);
-        Set<ServerIdentity> result = new HashSet<ServerIdentity>();
-        for (String bindingGroup : relatedBindingGroups) {
-            result.addAll(getServersForType(SOCKET_BINDING_GROUP, bindingGroup, domain, host, localHostInfo.getLocalHostName(), serverProxies));
-        }
-        for (Iterator<ServerIdentity> iter = result.iterator(); iter.hasNext(); ) {
-            ServerIdentity gs = iter.next();
-            ModelNode server = host.get(SERVER_CONFIG, gs.getServerName());
-            if (server.hasDefined(SOCKET_BINDING_GROUP) && !bindingGroupName.equals(server.get(SOCKET_BINDING_GROUP).asString())) {
-                iter.remove();
-            }
-        }
-        return result;
-    }
-
     private Set<String> getOurServerGroups(OperationContext context) {
         Set<String> result = new HashSet<String>();
 
@@ -516,5 +264,74 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
             result.add(model.get(GROUP).asString());
         }
         return result;
+    }
+
+    private void makeAffectedServersRestartRequired(OperationContext context, ModelNode startRoot) {
+        final Resource domainRootResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+        final ModelNode endRoot = Resource.Tools.readModel(domainRootResource);
+        final ModelNode hostModel = endRoot.require(HOST).asPropertyList().iterator().next().getValue();
+        final ModelNode existingHostModel = startRoot.require(HOST).asPropertyList().iterator().next().getValue();
+
+        final Set<ServerIdentity> affectedServers;
+        //Path that gets called when missing data is piggy-backed as a result of changes to the domain model
+        affectedServers = new HashSet<ServerIdentity>();
+        for (String serverName : hostModel.get(SERVER_CONFIG).keys()) {
+            ModelNode startOps = createBootOps(context, serverName, startRoot, existingHostModel);
+            ModelNode endOps = createBootOps(context, serverName, endRoot, hostModel);
+            if (bootOpsChanged(startOps, endOps)) {
+                affectedServers.add(createServerIdentity(hostModel, serverName));
+            }
+            ManagedServerBootConfiguration startConfig = new ManagedServerBootCmdFactory(serverName, startRoot, existingHostModel, hostControllerEnvironment, domainController.getExpressionResolver()).createConfiguration();
+            ManagedServerBootConfiguration endConfig = new ManagedServerBootCmdFactory(serverName, endRoot, hostModel, hostControllerEnvironment, domainController.getExpressionResolver()).createConfiguration();
+            if (!startConfig.getServerLaunchCommand().equals(endConfig.getServerLaunchCommand())) {
+                affectedServers.add(createServerIdentity(hostModel, serverName));
+            }
+        }
+
+        final Map<String, ProxyController> serverProxies = DomainServerUtils.getServerProxies(localHostInfo.getLocalHostName(), domainRootResource, context.getResourceRegistration());
+
+        if (!affectedServers.isEmpty()) {
+            ROOT_LOGGER.domainModelChangedOnReConnect(affectedServers);
+            final Set<ServerIdentity> runningServers = DomainServerUtils.getAllRunningServers(hostModel, localHostInfo.getLocalHostName(), serverProxies);
+            for (ServerIdentity serverIdentity : affectedServers) {
+                if(!runningServers.contains(serverIdentity)) {
+                    continue;
+                }
+                //TODO https://issues.jboss.org/browse/AS7-6858 If the launch command did not change, we should put the server into reload-required
+                // If the launch command changed, restart-required is still needed
+                final PathAddress serverAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, serverIdentity.getHostName()), PathElement.pathElement(SERVER, serverIdentity.getServerName()));
+                final OperationStepHandler handler = context.getResourceRegistration().getOperationHandler(serverAddress, ServerRestartRequiredHandler.OPERATION_NAME);
+                final ModelNode op = new ModelNode();
+                op.get(OP).set(ServerRestartRequiredHandler.OPERATION_NAME);
+                op.get(OP_ADDR).set(serverAddress.toModelNode());
+                context.addStep(op, handler, OperationContext.Stage.MODEL, true);
+            }
+        }
+    }
+
+    private ServerIdentity createServerIdentity(ModelNode hostModel, String serverName) {
+        return new ServerIdentity(localHostInfo.getLocalHostName(), hostModel.require(SERVER_CONFIG).require(serverName).require(GROUP).asString(), serverName);
+    }
+
+    private boolean bootOpsChanged(ModelNode startOps, ModelNode endOps) {
+        //The boot ops could be in a different order, so do a compare ignoring the order
+        List<ModelNode> startOpList = startOps.asList();
+        List<ModelNode> endOpList = endOps.asList();
+        if (startOpList.size() != endOpList.size()) {
+            return true;
+        }
+        Set<ModelNode> startOpSet = new HashSet<>(startOpList);
+        Set<ModelNode> endOpSet = new HashSet<>(endOpList);
+        return !startOpSet.equals(endOpSet);
+    }
+
+    private ModelNode createBootOps(final OperationContext context, final String serverName, final ModelNode domainModel, final ModelNode hostModel) {
+        return ManagedServerOperationsFactory.createBootUpdates(serverName, domainModel, hostModel, domainController, new ExpressionResolver() {
+            @Override
+            public ModelNode resolveExpressions(final ModelNode node) throws OperationFailedException {
+                return context.resolveExpressions(node);
+            }
+        });
+
     }
 }

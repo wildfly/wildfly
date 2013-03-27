@@ -949,6 +949,14 @@
         </xs:attribute>
         <xs:attribute name="security-realm" type="xs:string" use="optional" />
         <xs:attribute name="username" type="xs:string" use="optional" />
+        <xs:attribute name="ignore-unused-configuration" type="xs:boolean" default="false">
+            <xs:annotation>
+               <xs:documentation>
+                   Set to true to instruct the master Host Controller to automatically not forward configuration and
+                   operations for profiles, socket binding groups and server groups which do not affect our servers.
+               </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="ignored-resourcesType">

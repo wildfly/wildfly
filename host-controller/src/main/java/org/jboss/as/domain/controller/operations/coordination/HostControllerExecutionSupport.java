@@ -45,8 +45,12 @@ import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.ServerIdentity;
+import org.jboss.as.host.controller.IgnoredNonAffectedServerGroupsUtil;
+import org.jboss.as.host.controller.IgnoredNonAffectedServerGroupsUtil.ServerConfigInfo;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.dmr.ModelNode;
 
@@ -103,10 +107,10 @@ interface HostControllerExecutionSupport {
     /** Provides a reference to a ModelNode representation of the domain model to {@link Factory} */
     interface DomainModelProvider {
         /**
-         * Gets a ModelNode representation of the domain model
-         * @return the model. Cannot be {@code null}
+         * Gets the domain model resource
+         * @return the resource. Cannot be {@code null}
          */
-        ModelNode getDomainModel();
+        Resource getDomainModel();
     }
 
     /** Provides a factory method for creating {@link HostControllerExecutionSupport} instances */
@@ -125,7 +129,9 @@ interface HostControllerExecutionSupport {
         public static HostControllerExecutionSupport create(final ModelNode operation,
                                                             final String hostName,
                                                             final DomainModelProvider domainModelProvider,
-                                                            final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry) {
+                                                            final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
+                                                            final boolean isRemoteDomainControllerIgnoreUnaffectedConfiguration,
+                                                            final ExtensionRegistry extensionRegistry) {
             String targetHost = null;
             String runningServerTarget = null;
             ModelNode runningServerOp = null;
@@ -157,8 +163,8 @@ interface HostControllerExecutionSupport {
             }
             else if (runningServerTarget != null) {
                 // HostControllerExecutionSupport representing a server op
-                final ModelNode domainModel = domainModelProvider.getDomainModel();
-                final String serverGroup = domainModel.require(HOST).require(targetHost).require(SERVER_CONFIG).require(runningServerTarget).require(GROUP).asString();
+                final Resource domainModel = domainModelProvider.getDomainModel();
+                final String serverGroup = domainModel.getChild(PathElement.pathElement(HOST, targetHost)).getChild(PathElement.pathElement(SERVER_CONFIG, runningServerTarget)).getModel().require(GROUP).asString();
                 final ServerIdentity serverIdentity = new ServerIdentity(targetHost, serverGroup, runningServerTarget);
                 result = new DirectServerOpExecutionSupport(serverIdentity, runningServerOp);
             }
@@ -172,7 +178,7 @@ interface HostControllerExecutionSupport {
                             step = step.clone();
                             step.get(OPERATION_HEADERS, CALLER_TYPE).set(USER);
                         }
-                        parsedSteps.add(create(step, hostName, domainModelProvider, ignoredDomainResourceRegistry));
+                        parsedSteps.add(create(step, hostName, domainModelProvider, ignoredDomainResourceRegistry, isRemoteDomainControllerIgnoreUnaffectedConfiguration, extensionRegistry));
                     }
                     result = new MultiStepOpExecutionSupport(parsedSteps);
                 }
@@ -181,7 +187,7 @@ interface HostControllerExecutionSupport {
                     result = new DomainOpExecutionSupport(operation, address);
                 }
             }
-            else if (targetHost == null && ignoredDomainResourceRegistry.isResourceExcluded(address)) {
+            else if (targetHost == null && isResourceExcluded(ignoredDomainResourceRegistry, isRemoteDomainControllerIgnoreUnaffectedConfiguration, domainModelProvider, hostName, address, extensionRegistry)) {
                 result = new IgnoredOpExecutionSupport();
             }
             else {
@@ -190,6 +196,18 @@ interface HostControllerExecutionSupport {
 
             return result;
 
+        }
+
+        private static boolean isResourceExcluded(IgnoredDomainResourceRegistry ignoredDomainResourceRegistry, boolean isRemoteDomainControllerIgnoreUnaffectedConfiguration, DomainModelProvider domainModelProvider, String hostName, PathAddress address, ExtensionRegistry extensionRegistry) {
+            if (ignoredDomainResourceRegistry.isResourceExcluded(address)) {
+                return true;
+            }
+            if (isRemoteDomainControllerIgnoreUnaffectedConfiguration) {
+                IgnoredNonAffectedServerGroupsUtil util = IgnoredNonAffectedServerGroupsUtil.create(extensionRegistry);
+                Set<ServerConfigInfo> serverConfigs = util.getServerConfigsOnSlave(domainModelProvider.getDomainModel().getChild(PathElement.pathElement(HOST, hostName)));
+                return util.ignoreOperation(domainModelProvider.getDomainModel(), serverConfigs, address);
+            }
+            return false;
         }
 
         private static class IgnoredOpExecutionSupport extends SimpleOpExecutionSupport {

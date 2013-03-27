@@ -23,6 +23,8 @@ package org.jboss.as.domain.controller.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED_RESOURCES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORE_UNUSED_CONFIG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INITIAL_SERVER_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
@@ -104,6 +106,8 @@ public class ReadMasterDomainModelHandlerTestCase {
         hostInfo.get(IGNORED_RESOURCES, PROFILE, NAMES).add("ignored");
         hostInfo.get(IGNORED_RESOURCES, EXTENSION, WILDCARD);
         hostInfo.get(IGNORED_RESOURCES, EXTENSION, NAMES).add("ignored");
+        hostInfo.get(IGNORE_UNUSED_CONFIG).set(false);
+        hostInfo.get(INITIAL_SERVER_GROUPS).setEmptyObject();
         hostInfo.get("domain-connection-id").set(1361470170404L);
 
         Resource transformedResource = transformResource(registry, resourceRoot, resourceRegistration, HostInfo.fromModelNode(hostInfo));
@@ -139,7 +143,7 @@ public class ReadMasterDomainModelHandlerTestCase {
     }
 
     protected TransformationTarget create(final TransformerRegistry registry, ModelVersion version, IgnoredTransformationRegistry ignoredTransformationRegistry) {
-        return TransformationTargetImpl.create(registry, version, Collections.<PathAddress, ModelVersion>emptyMap(), ignoredTransformationRegistry, TransformationTargetType.DOMAIN);
+        return TransformationTargetImpl.create(registry, version, Collections.<PathAddress, ModelVersion>emptyMap(), ignoredTransformationRegistry, TransformationTargetType.DOMAIN, null);
     }
 
     private static final DescriptionProvider NOOP_PROVIDER = new DescriptionProvider() {
@@ -150,5 +154,4 @@ public class ReadMasterDomainModelHandlerTestCase {
     };
 
     private static final ResourceDefinition ROOT = new SimpleResourceDefinition(PathElement.pathElement("test"), NOOP_PROVIDER);
-
 }
