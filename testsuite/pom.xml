@@ -537,6 +537,11 @@
             <activation><property><name>ts.xts</name></property></activation>
             <modules><module>integration</module></modules>
         </profile>
+        <profile>
+            <id>integ-rts.module.profile</id>
+            <activation><property><name>ts.rts</name></property></activation>
+            <modules><module>integration</module></modules>
+        </profile>
 
         <profile>
             <id>benchmark.module.profile</id>
@@ -1174,6 +1179,7 @@
                                                     <fileset dir="../web/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../weld/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../xts/src/main/java"><include name="**/*.java"/></fileset>
+                                                    <fileset dir="../rts/src/main/java"><include name="**/*.java"/></fileset>
                                                 </sourcefiles>
                                             </structure>
                                             <html destdir ="${basedir}/target/coverage-report/html"/>

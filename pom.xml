@@ -1361,6 +1361,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-rts</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.narayana.txframework</groupId>
                 <artifactId>txframework</artifactId>
                 <version>${version.org.jboss.jbossts.narayana}</version>
@@ -4454,6 +4460,31 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>restat-integration</artifactId>
+                <version>${version.org.jboss.jbossts.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.narayana.rts</groupId>
+                        <artifactId>restat-util</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>restat-api</artifactId>
+                <version>${version.org.jboss.jbossts.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.narayana.rts</groupId>
+                        <artifactId>restat-util</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>org.jboss.narayana.rts</groupId>
                 <artifactId>restat-util</artifactId>
@@ -6260,6 +6291,7 @@
                 <module>webservices</module>
                 <module>weld</module>
                 <module>xts</module>
+                <module>rts</module>
                 <module>testsuite/shared</module>
                 <module>testsuite</module>
             </modules>

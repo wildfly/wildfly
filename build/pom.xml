@@ -1202,6 +1202,21 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-rts</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.narayana.rts</groupId>
+                    <artifactId>restat-api</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.narayana.rts</groupId>
+                    <artifactId>restat-integration</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.jboss.narayana.txframework</groupId>
                     <artifactId>txframework</artifactId>
                 </dependency>
@@ -3122,6 +3137,10 @@
                                         <group>
                                             <title>Module org.wildfly.xts</title>
                                             <packages>org.jboss.as.xts</packages>
+                                        </group>
+                                        <group>
+                                            <title>Module org.wildfly.rts</title>
+                                            <packages>org.wildfly.extension.rts</packages>
                                         </group>
                                         <group>
                                             <title>Module org.jboss.classfilewriter</title>
