@@ -34,7 +34,7 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.CLASS;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.MODULE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY_ENV;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.ENVIRONMENT;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -123,7 +123,7 @@ public class ObjectFactoryWithEnvironmentBindingTestCase {
             for (Map.Entry<String, String> property : ENVIRONMENT_PROPERTIES.entrySet()) {
                 environment.add(property.getKey(), property.getValue());
             }
-            bindingAdd.get(OBJECT_FACTORY_ENV).set(environment);
+            bindingAdd.get(ENVIRONMENT).set(environment);
             final ModelNode addResult = managementClient.getControllerClient().execute(bindingAdd);
             Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
             LOGGER.info("Object factory bound.");

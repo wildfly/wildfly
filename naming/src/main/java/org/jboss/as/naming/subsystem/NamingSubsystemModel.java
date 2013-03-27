@@ -32,12 +32,15 @@ public interface NamingSubsystemModel {
     String BINDING = "binding";
     String BINDING_TYPE = "binding-type";
 
+    String CACHE = "cache";
     String CLASS = "class";
+
+    String EXTERNAL_CONTEXT = "external-context";
 
     String LOOKUP = "lookup";
 
     String OBJECT_FACTORY = "object-factory";
-    String OBJECT_FACTORY_ENV = "environment";
+    String ENVIRONMENT = "environment";
 
     String MODULE = "module";
 

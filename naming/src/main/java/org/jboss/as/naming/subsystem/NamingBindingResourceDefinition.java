@@ -76,12 +76,17 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
 
-    static final PropertiesAttributeDefinition OBJECT_FACTORY_ENV = new PropertiesAttributeDefinition.Builder(NamingSubsystemModel.OBJECT_FACTORY_ENV, true)
+    static final PropertiesAttributeDefinition ENVIRONMENT = new PropertiesAttributeDefinition.Builder(NamingSubsystemModel.ENVIRONMENT, true)
             .setXmlName("property")
             .setAllowExpression(true)
             .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = {BINDING_TYPE, VALUE, TYPE, CLASS, MODULE, LOOKUP, OBJECT_FACTORY_ENV};
+    static final SimpleAttributeDefinition CACHE = new SimpleAttributeDefinitionBuilder(NamingSubsystemModel.CACHE, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .build();
+
+    static final AttributeDefinition[] ATTRIBUTES = {BINDING_TYPE, VALUE, TYPE, CLASS, MODULE, LOOKUP, ENVIRONMENT, CACHE};
 
 
     private final List<AccessConstraintDefinition> accessConstraints;

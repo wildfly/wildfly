@@ -41,8 +41,10 @@ public enum NamingSubsystemXMLElement {
     LOOKUP("lookup"),
 
     OBJECT_FACTORY("object-factory"),
-    OBJECT_FACTORY_ENV(NamingSubsystemModel.OBJECT_FACTORY_ENV),
-    OBJECT_FACTORY_ENV_PROPERTY("property"),
+    ENVIRONMENT(NamingSubsystemModel.ENVIRONMENT),
+    ENVIRONMENT_PROPERTY("property"),
+
+    EXTERNAL_CONTEXT("external-context"),
     ;
 
     private final String name;

@@ -30,6 +30,7 @@ import java.util.Map;
 public enum NamingSubsystemXMLAttribute {
     UNKNOWN(null),
 
+    CACHE("cache"),
     CLASS("class"),
     LOOKUP("lookup"),
     MODULE("module"),
