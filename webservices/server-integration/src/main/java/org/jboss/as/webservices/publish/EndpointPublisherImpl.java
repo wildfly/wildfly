@@ -60,6 +60,7 @@ import org.jboss.wsf.spi.deployment.DeploymentAspectManager;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.EndpointState;
 import org.jboss.wsf.spi.deployment.WSFServlet;
+import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 import org.jboss.wsf.spi.publish.Context;
 import org.jboss.wsf.spi.publish.EndpointPublisher;
@@ -87,18 +88,24 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
 
     @Override
     public Context publish(String context, ClassLoader loader, Map<String, String> urlPatternToClassNameMap) throws Exception {
-        return publish(getBaseTarget(), context, loader, urlPatternToClassNameMap, null, null);
+        return publish(getBaseTarget(), context, loader, urlPatternToClassNameMap, null, null, null);
     }
 
     @Override
     public Context publish(String context, ClassLoader loader, Map<String, String> urlPatternToClassNameMap, WebservicesMetaData metadata) throws Exception {
-        return publish(getBaseTarget(), context, loader, urlPatternToClassNameMap, null, metadata);
+        return publish(getBaseTarget(), context, loader, urlPatternToClassNameMap, null, metadata, null);
+    }
+
+    @Override
+    public Context publish(String context, ClassLoader loader, Map<String, String> urlPatternToClassNameMap,
+            WebservicesMetaData metadata, JBossWebservicesMetaData jbwsMetadata) throws Exception {
+        return publish(getBaseTarget(), context, loader, urlPatternToClassNameMap, null, metadata, jbwsMetadata);
     }
 
     public Context publish(ServiceTarget target, String context, ClassLoader loader,
-            Map<String, String> urlPatternToClassNameMap, JBossWebMetaData jbwmd, WebservicesMetaData metadata)
+            Map<String, String> urlPatternToClassNameMap, JBossWebMetaData jbwmd, WebservicesMetaData metadata, JBossWebservicesMetaData jbwsMetadata)
             throws Exception {
-        WSEndpointDeploymentUnit unit = new WSEndpointDeploymentUnit(loader, context, urlPatternToClassNameMap, jbwmd, metadata);
+        WSEndpointDeploymentUnit unit = new WSEndpointDeploymentUnit(loader, context, urlPatternToClassNameMap, jbwmd, metadata, jbwsMetadata);
         return new Context(context, publish(target, unit));
     }
 
