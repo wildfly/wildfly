@@ -52,8 +52,8 @@ public class LoginServlet extends HttpServlet {
         if (remoteUser == null)
             throw new ServletException("getRemoteUser returned null");
         String authType = req.getAuthType();
-        if (authType == null || !authType.equals("LOGIN"))
-            throw new ServletException("getAuthType returned null or wrong type");
+        if (authType == null || !authType.equals("BASIC"))
+            throw new ServletException(String.format("getAuthType returned wrong type '%s'", authType));
         if (!req.isUserInRole("gooduser")) {
             resp.sendError(403);
         }
