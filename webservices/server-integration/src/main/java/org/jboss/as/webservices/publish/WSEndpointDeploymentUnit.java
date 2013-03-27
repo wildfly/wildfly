@@ -35,6 +35,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 
 public class WSEndpointDeploymentUnit extends SimpleAttachable implements DeploymentUnit {
@@ -42,11 +43,11 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
     private String deploymentName;
 
     public WSEndpointDeploymentUnit(ClassLoader loader, String context, Map<String,String> urlPatternToClassName, WebservicesMetaData metadata) {
-        this(loader, context, urlPatternToClassName, new JBossWebMetaData(), metadata);
+        this(loader, context, urlPatternToClassName, new JBossWebMetaData(), metadata, null);
     }
 
     public WSEndpointDeploymentUnit(ClassLoader loader, String context, Map<String, String> urlPatternToClassName,
-            JBossWebMetaData jbossWebMetaData, WebservicesMetaData metadata) {
+            JBossWebMetaData jbossWebMetaData, WebservicesMetaData metadata, JBossWebservicesMetaData jbwsMetaData) {
         this.deploymentName = context + ".deployment";
 
         JAXWSDeployment jaxwsDeployment = new JAXWSDeployment();
@@ -66,6 +67,9 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
         this.putAttachment(WSAttachmentKeys.JBOSSWEB_METADATA_KEY, jbossWebMetaData);
         if (metadata != null) {
             this.putAttachment(WSAttachmentKeys.WEBSERVICES_METADATA_KEY, metadata);
+        }
+        if (jbwsMetaData != null) {
+            this.putAttachment(WSAttachmentKeys.JBOSS_WEBSERVICES_METADATA_KEY, jbwsMetaData);
         }
     }
 
