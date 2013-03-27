@@ -110,6 +110,10 @@ public interface ModelControllerClient extends Closeable {
      */
     AsyncFuture<ModelNode> executeAsync(Operation operation, OperationMessageHandler messageHandler);
 
+    void registerNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter);
+
+    void unregisterNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter);
+
     class Factory {
 
         /**

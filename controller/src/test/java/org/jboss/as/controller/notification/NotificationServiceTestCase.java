@@ -26,28 +26,26 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.notification.NotificationFilter.ALL;
+import static org.jboss.as.controller.client.NotificationFilter.ALL;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.client.Notification;
+import org.jboss.as.controller.client.NotificationFilter;
+import org.jboss.as.controller.client.NotificationHandler;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
-import org.jboss.as.controller.operations.global.GlobalNotifications;
-import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.test.AbstractControllerTestBase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.msc.service.ServiceController;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -79,7 +77,7 @@ public class NotificationServiceTestCase extends AbstractControllerTestBase {
                 new OperationStepHandler() {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        Notification notification = new Notification(MY_TYPE, pathAddress(operation.get(OP_ADDR)), "notification message");
+                        Notification notification = new Notification(MY_TYPE, operation.get(OP_ADDR), "notification message");
                         context.emit(notification);
                         context.stepCompleted();
                     }

@@ -31,7 +31,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
-import org.jboss.as.controller.notification.Notification;
+import org.jboss.as.controller.client.Notification;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.dmr.ModelNode;
@@ -84,7 +84,7 @@ public class ServerRestartHandler implements OperationStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        context.emit(new Notification(SERVER_RESTARTED_NOTIFICATION, address, MESSAGES.serverHasBeenRestarted()));
+        context.emit(new Notification(SERVER_RESTARTED_NOTIFICATION, operation.require(OP_ADDR), MESSAGES.serverHasBeenRestarted()));
         context.stepCompleted();
     }
 }
