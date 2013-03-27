@@ -24,9 +24,13 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Notification;
+import org.jboss.as.controller.client.NotificationFilter;
+import org.jboss.as.controller.client.NotificationHandler;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -113,6 +117,45 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             return GET_INPUT_STREAM;
         }
         return handlers.resolveNext();
+    }
+
+    @Override
+    public void registerNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter) {
+        // TODO
+        System.out.println("AbstractModelControllerClient.registerNotificationHandler");
+
+        // create a UUID for the handler and filter
+        long handlerID = UUID.randomUUID().getMostSignificantBits();
+        long filterID = UUID.randomUUID().getLeastSignificantBits();
+        // store the mapping between the ids and their objects
+        ModelNode operation = new ModelNode();
+        operation.get("address").set(address);
+        operation.get("handlerID").set(handlerID);
+        operation.get("filterID").set(filterID);
+
+        // execute the operation with a call back every time a notification is emitted
+        if (false) {
+            ModelNode notif = new ModelNode();
+            Notification notification = Notification.fromModelNode(notif);
+            if (filter.isNotificationEnabled(notification)) {
+                handler.handleNotification(notification);
+            }
+        }
+    }
+
+    @Override
+    public void unregisterNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter) {
+        // TODO
+        System.out.println("AbstractModelControllerClient.unregisterNotificationHandler");
+        // fetch the handler & filter's ID;
+        long handlerID = -1;
+        long filterID = -1;
+
+        ModelNode operation = new ModelNode();
+        operation.get("address").set(address);
+        operation.get("handlerID").set(handlerID);
+        operation.get("filterID").set(filterID);
+        // execute the request to unregister the handlers on the server-side
     }
 
     /**

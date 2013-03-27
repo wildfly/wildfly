@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.notification.Notification;
+import org.jboss.as.controller.client.Notification;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -133,13 +133,12 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
             }, OperationContext.Stage.RUNTIME);
         }
 
-        PathAddress sourceAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
         ModelNode data = new ModelNode();
         data.get(NAME).set(attributeName);
         data.get(OLD_VALUE).set(currentValue);
         data.get(NEW_VALUE).set(newValue);
         Notification notification = new Notification(ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION,
-                sourceAddress,
+                operation.get(OP_ADDR),
                 MESSAGES.attributeValueWritten(attributeName, currentValue, newValue),
                 data);
         context.emit(notification);

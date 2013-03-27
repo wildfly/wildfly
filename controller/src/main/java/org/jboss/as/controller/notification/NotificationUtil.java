@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.Notification;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -41,13 +42,13 @@ public class NotificationUtil {
 
     public static void emitResourceAdded(final OperationContext context, final ModelNode operation) {
         PathAddress address = pathAddress(operation.require(OP_ADDR));
-        Notification notification = new Notification(RESOURCE_ADDED_NOTIFICATION, address, MESSAGES.resourceWasAdded(address));
+        Notification notification = new Notification(RESOURCE_ADDED_NOTIFICATION, address.toModelNode(), MESSAGES.resourceWasAdded(address));
         context.emit(notification);
     }
 
     public static void emitResourceRemoved(final OperationContext context, final ModelNode operation) {
-            PathAddress address = pathAddress(operation.require(OP_ADDR));
-            Notification notification = new Notification(RESOURCE_REMOVED_NOTIFICATION, address, MESSAGES.resourceWasRemoved(address));
-            context.emit(notification);
-        }
+        PathAddress address = pathAddress(operation.require(OP_ADDR));
+        Notification notification = new Notification(RESOURCE_REMOVED_NOTIFICATION, address.toModelNode(), MESSAGES.resourceWasRemoved(address));
+        context.emit(notification);
+    }
 }

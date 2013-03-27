@@ -33,6 +33,9 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.Notification;
+import org.jboss.as.controller.client.NotificationFilter;
+import org.jboss.as.controller.client.NotificationHandler;
 
 /**
  * This service manages notification handler registration and emit notifications on behalf of resources.
@@ -109,7 +112,7 @@ class NotificationSupportImpl implements NotificationSupport {
     private List<NotificationHandler> findMatchingNotificationHandlers(Notification notification) {
         final List<NotificationHandler> handlers = new ArrayList<NotificationHandler>();
         for (Map.Entry<PathAddress, Set<NotificationHandlerEntry>> entries : notificationHandlers.entrySet()) {
-            if (PathAddressUtil.matches(notification.getResource(), entries.getKey())) {
+            if (PathAddressUtil.matches(PathAddress.pathAddress(notification.getResource()), entries.getKey())) {
                 for (NotificationHandlerEntry entry : entries.getValue()) {
                     if (entry.getFilter().isNotificationEnabled(notification)) {
                         handlers.add(entry.getHandler());

@@ -30,7 +30,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
-import org.jboss.as.controller.notification.Notification;
+import org.jboss.as.controller.client.Notification;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.dmr.ModelNode;
 
@@ -72,7 +72,7 @@ public class ServerStopHandler implements OperationStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        context.emit(new Notification(SERVER_STOPPED_NOTIFICATION, address, MESSAGES.serverHasBeenStopped()));
+        context.emit(new Notification(SERVER_STOPPED_NOTIFICATION, operation.require(OP_ADDR), MESSAGES.serverHasBeenStopped()));
         context.stepCompleted();
     }
 }

@@ -25,6 +25,9 @@ package org.jboss.as.controller.notification;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.Notification;
+import org.jboss.as.controller.client.NotificationFilter;
+import org.jboss.as.controller.client.NotificationHandler;
 
 /**
  * The NotificationSupport can be used to register/unregister notification handlers and emit notifications.
@@ -35,7 +38,7 @@ public interface NotificationSupport {
 
     /**
      * Register the given NotificationHandler to receive notifications emitted by the resource at the given source address.
-     * The {@link NotificationHandler#handleNotification(Notification)} method will only be called on the registered handler if the filter's {@link NotificationFilter#isNotificationEnabled(Notification)}
+     * The {@link org.jboss.as.controller.client.NotificationHandler#handleNotification(org.jboss.as.controller.client.Notification)} method will only be called on the registered handler if the filter's {@link org.jboss.as.controller.client.NotificationFilter#isNotificationEnabled(org.jboss.as.controller.client.Notification)}
      * returns @{code true} for the given notification.
      * <br />
      * The source PathAddress can be a pattern if at least one of its element value is a wildcard ({@link org.jboss.as.controller.PathElement#getValue()} is {@code *}).
@@ -48,7 +51,7 @@ public interface NotificationSupport {
      *
      * @param source the path address of the resource that emit notifications.
      * @param handler the notification handler
-     * @param filter the notification filter. Use {@link NotificationFilter#ALL} to let the handler always handle notifications
+     * @param filter the notification filter. Use {@link org.jboss.as.controller.client.NotificationFilter#ALL} to let the handler always handle notifications
      */
     void registerNotificationHandler(PathAddress source, NotificationHandler handler, NotificationFilter filter);
 
@@ -64,7 +67,7 @@ public interface NotificationSupport {
      void unregisterNotificationHandler(PathAddress source, NotificationHandler handler, NotificationFilter filter);
 
     /**
-     * Emit a {@link Notification}.
+     * Emit a {@link org.jboss.as.controller.client.Notification}.
      *
      * @param notification the notification to emit
      */

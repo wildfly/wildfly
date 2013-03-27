@@ -29,6 +29,8 @@ import java.util.regex.Pattern;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NotificationFilter;
+import org.jboss.as.controller.client.NotificationHandler;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
@@ -1616,6 +1618,16 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
         @Override
         public AsyncFuture<ModelNode> executeAsync(Operation operation, OperationMessageHandler messageHandler) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void registerNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void unregisterNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter) {
             throw new UnsupportedOperationException();
         }
 
