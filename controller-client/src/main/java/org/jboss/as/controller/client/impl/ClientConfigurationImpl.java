@@ -23,7 +23,6 @@
 package org.jboss.as.controller.client.impl;
 
 import org.jboss.as.controller.client.ModelControllerClientConfiguration;
-import org.jboss.as.util.security.ReadPropertyAction;
 import org.jboss.threads.JBossThreadFactory;
 
 import javax.net.ssl.SSLContext;
@@ -31,6 +30,7 @@ import javax.security.auth.callback.CallbackHandler;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -171,6 +171,11 @@ public class ClientConfigurationImpl implements ModelControllerClientConfigurati
     }
 
     private static String getStringProperty(final String name) {
-        return getSecurityManager() == null ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
+        return getSecurityManager() == null ? getProperty(name) : doPrivileged(new PrivilegedAction<String>() {
+            @Override
+            public String run() {
+                return getProperty(name);
+            }
+        });
     }
 }
