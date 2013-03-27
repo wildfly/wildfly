@@ -66,7 +66,7 @@ public abstract class AbstractSecurityRealmsServerSetupTask implements ServerSet
      * @see org.jboss.as.arquillian.api.ServerSetupTask#setup(org.jboss.as.arquillian.container.ManagementClient,
      *      java.lang.String)
      */
-    public final void setup(final ManagementClient managementClient, String containerId) throws Exception {
+    public void setup(final ManagementClient managementClient, String containerId) throws Exception {
         this.managementClient = managementClient;
         securityRealms = getSecurityRealms();
 
