@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+   <extension-module>org.wildfly.extension.rts</extension-module>
+   <subsystem xmlns="urn:jboss:domain:rts:1.0">
+       <servlet server="default-server" host="default-host" socket-binding="http"/>
+   </subsystem>
+</config>

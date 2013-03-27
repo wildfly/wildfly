@@ -92,6 +92,10 @@
            paramTemplateFile="configuration/standalone/template.xml" 
            paramSubsystemsFile="configuration/examples/subsystems-xts.xml"
            paramOutputFile="${generated.configs.examples}/standalone-xts.xml"/>
+      <generate-server-config 
+           paramTemplateFile="configuration/standalone/template.xml" 
+           paramSubsystemsFile="configuration/examples/subsystems-rts.xml"
+           paramOutputFile="${generated.configs.examples}/standalone-rts.xml"/>
     		
     </target>
 

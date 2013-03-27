@@ -1032,6 +1032,10 @@
             <maven-resource group="org.wildfly" artifact="wildfly-xts"/>
         </module-def>
 
+        <module-def name="org.wildfly.extension.rts">
+            <maven-resource group="org.wildfly" artifact="wildfly-rts"/>
+        </module-def>
+
         <module-def name="org.jboss.classfilewriter">
             <maven-resource group="org.jboss.classfilewriter" artifact="jboss-classfilewriter"/>
         </module-def>
@@ -1285,6 +1289,12 @@
         <module-def name="org.jboss.narayana.txframework">
             <maven-resource group="org.jboss.narayana.txframework" artifact="txframework"/>
             <maven-resource group="org.jboss.narayana.rts" artifact="restat-util"/>
+        </module-def>
+
+        <module-def name="org.jboss.narayana.rts">
+            <maven-resource group="org.jboss.narayana.rts" artifact="restat-api"/>
+            <maven-resource group="org.jboss.narayana.rts" artifact="restat-util"/>
+            <maven-resource group="org.jboss.narayana.rts" artifact="restat-integration"/>
         </module-def>
 
         <module-def name="org.jgroups">

@@ -56,6 +56,7 @@
                 <module>osgi</module>
                 <module>iiop</module>
                 <module>xts</module>
+                <module>rts</module>
                 <module>clust</module>
                 <module>multinode</module>
                 <module>manualmode</module>
@@ -71,6 +72,7 @@
                 <module>clust</module>
                 <module>iiop</module>
                 <module>xts</module>
+                <module>rts</module>
                 <module>multinode</module>
                 <module>manualmode</module>
             </modules>
@@ -127,6 +129,15 @@
             <activation><property><name>ts.xts</name></property></activation>
             <modules>
                 <module>xts</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.rts -->
+        <profile>
+            <id>ts.integ.group.rts</id>
+            <activation><property><name>ts.rts</name></property></activation>
+            <modules>
+                <module>rts</module>
             </modules>
         </profile>
 
@@ -206,7 +217,10 @@
                                 <resource>
                                     <!-- Add the XTS config to the standalone/config directory, so it will be processed as well -->
                                     <directory>${basedir}/target/jbossas/docs/examples/configs</directory>
-                                    <includes><include>standalone-xts.xml</include></includes>
+                                    <includes>
+                                         <include>standalone-xts.xml</include>
+                                         <include>standalone-rts.xml</include>
+                                    </includes>
                                 </resource>
                             </resources>
                         </configuration>
