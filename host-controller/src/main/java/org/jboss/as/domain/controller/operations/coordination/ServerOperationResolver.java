@@ -25,6 +25,37 @@
  */
 package org.jboss.as.domain.controller.operations.coordination;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
+import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getAllRunningServers;
+import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getRelatedElements;
+import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForGroup;
+import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForType;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,36 +83,6 @@ import org.jboss.as.server.operations.SystemPropertyAddHandler;
 import org.jboss.as.server.operations.SystemPropertyRemoveHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
-import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getAllRunningServers;
-import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getRelatedElements;
-import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForGroup;
-import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForType;
 
 /**
  * Logic for creating a server-level operation that realizes the effect
@@ -179,13 +180,29 @@ public class ServerOperationResolver {
         this.serverProxies = serverProxies;
     }
 
-    public static synchronized void addToDontPropagateToServersAttachment(OperationContext context, ModelNode op) {
-        Set<ModelNode> ops = context.getAttachment(DONT_PROPAGATE_TO_SERVERS_ATTACHMENT);
-        if (ops == null) {
-            ops = new HashSet<ModelNode>();
-            context.attach(DONT_PROPAGATE_TO_SERVERS_ATTACHMENT, ops);
+    public static void addToDontPropagateToServersAttachment(OperationContext context, ModelNode op) {
+        ModelNode cleanOp = cleanOpForDontPropagate(op);
+        Set<ModelNode> ops = Collections.synchronizedSet(new HashSet<ModelNode>(Collections.singleton(cleanOp)));
+        Set<ModelNode> existing = context.attachIfAbsent(DONT_PROPAGATE_TO_SERVERS_ATTACHMENT, ops);
+        if (existing != null){
+            existing.add(cleanOp);
         }
-        ops.add(op);
+    }
+
+    private boolean isDontPropagateToServers(OperationContext context, ModelNode op) {
+        Set<ModelNode> dontPropagate = context.getAttachment(DONT_PROPAGATE_TO_SERVERS_ATTACHMENT);
+        if (dontPropagate != null && dontPropagate.contains(cleanOpForDontPropagate(op))) {
+            return true;
+        }
+        return false;
+    }
+
+    private static ModelNode cleanOpForDontPropagate(ModelNode op) {
+        if (op.has(OPERATION_HEADERS)) {
+            op = op.clone();
+            op.remove(OPERATION_HEADERS);
+        }
+        return op;
     }
 
     public Map<Set<ServerIdentity>, ModelNode> getServerOperations(OperationContext context, ModelNode originalOperation, PathAddress address) {
@@ -201,8 +218,7 @@ public class ServerOperationResolver {
             }
         }
 
-        Set<ModelNode> dontPropagate = context.getAttachment(DONT_PROPAGATE_TO_SERVERS_ATTACHMENT);
-        if (dontPropagate != null && dontPropagate.contains(operation)) {
+        if (isDontPropagateToServers(context, operation)) {
             return Collections.emptyMap();
         }
 
@@ -451,9 +467,25 @@ public class ServerOperationResolver {
             serverOp.get(CONTENT).set(domainDeployment.require(CONTENT));
             result = Collections.singletonMap(servers, serverOp);
         } else if (ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION.equals(operation.require(OP).asString())) {
-            if (PROFILE.equals(operation.get(NAME).asString())) {
+            final String attr = operation.get(NAME).asString();
+            if (PROFILE.equals(attr)) {
                 String groupName = address.getElement(0).getValue();
                 Set<ServerIdentity> servers = getServersForGroup(groupName, host, localHostName, serverProxies);
+                return getServerRestartRequiredOperations(servers);
+            } else if (SOCKET_BINDING_GROUP.equals(attr)) {
+                String groupName = address.getElement(0).getValue();
+                Set<ServerIdentity> servers = getServersForGroup(groupName, host, localHostName, serverProxies);
+                if (servers.size() > 0) {
+                    //Get rid of servers overriding the socket-binding-group
+                    Set<ServerIdentity> affectedServers = new HashSet<>();
+                    for (ServerIdentity server : servers) {
+                        ModelNode serverConfig = host.get(SERVER_CONFIG, server.getServerName());
+                        if (!serverConfig.hasDefined(SOCKET_BINDING_GROUP)) {
+                            affectedServers.add(server);
+                        }
+                    }
+                    servers = affectedServers;
+                }
                 return getServerRestartRequiredOperations(servers);
             }
         }

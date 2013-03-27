@@ -37,6 +37,7 @@ import org.jboss.dmr.ModelNode;
  * for particular resources that the host cannot understand. This is a mechanism to allow hosts running earlier
  * AS releases to function as slaves in domains whose master is in a later release.
  *
+ *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class IgnoredDomainResourceRegistry {
@@ -57,16 +58,17 @@ public class IgnoredDomainResourceRegistry {
      * @return {@code true} if the operation should be ignored; {@code false} otherwise
      */
     public boolean isResourceExcluded(final PathAddress address) {
-        boolean result = false;
         if (!localHostControllerInfo.isMasterDomainController() && address.size() > 0) {
             IgnoredDomainResourceRoot root = this.rootResource;
             PathElement firstElement = address.getElement(0);
             IgnoreDomainResourceTypeResource typeResource = root == null ? null : root.getChildInternal(firstElement.getKey());
             if (typeResource != null) {
-                result = typeResource.hasName(firstElement.getValue());
+                if (typeResource.hasName(firstElement.getValue())) {
+                    return true;
+                }
             }
         }
-        return result;
+        return false;
     }
 
     public void registerResources(final ManagementResourceRegistration parentRegistration) {
@@ -81,7 +83,8 @@ public class IgnoredDomainResourceRegistry {
 
     public ModelNode getIgnoredResourcesAsModel() {
         IgnoredDomainResourceRoot root = this.rootResource;
-        return (root == null ? new ModelNode() : Resource.Tools.readModel(root));
+        ModelNode model =  (root == null ? new ModelNode() : Resource.Tools.readModel(root));
+        return model;
     }
 
     void publish(IgnoredDomainResourceRoot root) {

@@ -211,13 +211,19 @@ public class DomainLifecycleUtil {
             }
             if (configuration.getDomainConfigFile() != null) {
                 String name = copyConfigFile(new File(configuration.getDomainConfigFile()), new File(domainDirectory, "configuration"));
-                cmd.add("-domain-config");
-                cmd.add(name);
+                if (configuration.isReadOnlyDomain()) {
+                    cmd.add("--read-only-domain-config=" + name);
+                } else {
+                    cmd.add("--domain-config=" + name);
+                }
             }
             if (configuration.getHostConfigFile() != null) {
                 String name = copyConfigFile(new File(configuration.getHostConfigFile()), new File(domainDirectory, "configuration"));
-                cmd.add("-host-config");
-                cmd.add(name);
+                if (configuration.isReadOnlyHost()) {
+                    cmd.add("--read-only-host-config=" + name);
+                } else {
+                    cmd.add("--host-config=" + name);
+                }
             }
             if (configuration.getHostControllerManagementAddress() != null) {
                 cmd.add("--interprocess-hc-address");

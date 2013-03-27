@@ -108,4 +108,13 @@ public interface TransformationContext {
      * @return TransformersLogger associated with target host
      */
     TransformersLogger getLogger();
+
+
+    /**
+     * Return {@code true} if we should skip the runtime check for slave HCs set up to ignore
+     * domain resources which do not affect their servers
+     *
+     * @return whether to skip or not
+     */
+    boolean isSkipRuntimeIgnoreCheck();
 }

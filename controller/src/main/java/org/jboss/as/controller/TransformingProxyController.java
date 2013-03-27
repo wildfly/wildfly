@@ -60,8 +60,8 @@ public interface TransformingProxyController extends ProxyController {
     /**
      * Transform the operation.
      *
-     * @param operation the operation to transform.
      * @param context the operation context
+     * @param operation the operation to transform.
      * @return the transformed operation
      * @throws OperationFailedException
      */
@@ -102,6 +102,12 @@ public interface TransformingProxyController extends ProxyController {
                 @Override
                 public Resource transformRootResource(OperationContext operationContext, Resource resource) throws OperationFailedException {
                     return transformers.transformRootResource(operationContext, resource);
+                }
+
+                @Override
+                public Resource transformResource(OperationContext operationContext, PathAddress original, Resource resource, boolean skipRuntimeIgnoreCheck)
+                        throws OperationFailedException {
+                    return transformers.transformResource(operationContext, original, resource, skipRuntimeIgnoreCheck);
                 }
             };
             return create(proxy, delegating);
@@ -148,8 +154,6 @@ public interface TransformingProxyController extends ProxyController {
             // Execute untransformed
             proxy.execute(operation, handler, control, attachments);
         }
-
-
     }
 
 }

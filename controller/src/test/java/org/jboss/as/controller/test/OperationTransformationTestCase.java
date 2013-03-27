@@ -222,10 +222,10 @@ public class OperationTransformationTestCase {
         final PathAddress serverAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, "test"), PathElement.pathElement(ModelDescriptionConstants.RUNNING_SERVER, "test"));
         final PathAddress subsytemAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "test"));
 
-        final OperationTransformer profileTransformer = host.resolveTransformer(profile.append(subsytemAddress), "test");
+        final OperationTransformer profileTransformer = host.resolveTransformer(new MockTransformationContext(), profile.append(subsytemAddress), "test");
         Assert.assertEquals(profileTransformer, OPERATION_TRANSFORMER);
 
-        final OperationTransformer serverTransformer = host.resolveTransformer(serverAddress.append(subsytemAddress), "test");
+        final OperationTransformer serverTransformer = host.resolveTransformer(new MockTransformationContext(), serverAddress.append(subsytemAddress), "test");
         Assert.assertEquals(serverTransformer, OPERATION_TRANSFORMER);
 
     }
@@ -235,7 +235,7 @@ public class OperationTransformationTestCase {
     }
 
     protected TransformationTarget create(final TransformerRegistry registry, ModelVersion version, TransformationTarget.TransformationTargetType type) {
-        return TransformationTargetImpl.create(registry, version, Collections.<PathAddress, ModelVersion>emptyMap(), null, type);
+        return TransformationTargetImpl.create(registry, version, Collections.<PathAddress, ModelVersion>emptyMap(), null, type, null);
     }
 
     protected Resource transform(final TransformationTarget target, final Resource root) throws OperationFailedException {
@@ -318,6 +318,11 @@ public class OperationTransformationTestCase {
         public TransformersLogger getLogger() {
             return TransformersLogger.getLogger(getTarget());
         }
+
+        @Override
+        public boolean isSkipRuntimeIgnoreCheck() {
+            return false;
+        }
     };
 
     private static final ResourceDefinition ROOT = new SimpleResourceDefinition(PathElement.pathElement("test"), new NonResolvingResourceDescriptionResolver());
@@ -328,5 +333,60 @@ public class OperationTransformationTestCase {
             return node;
         }
     };
+
+    private static class MockTransformationContext implements TransformationContext {
+
+        @Override
+        public TransformationTarget getTarget() {
+            return null;
+        }
+
+        @Override
+        public ProcessType getProcessType() {
+            return null;
+        }
+
+        @Override
+        public RunningMode getRunningMode() {
+            return null;
+        }
+
+        @Override
+        public ImmutableManagementResourceRegistration getResourceRegistration(PathAddress address) {
+            return null;
+        }
+
+        @Override
+        public ImmutableManagementResourceRegistration getResourceRegistrationFromRoot(PathAddress address) {
+            return null;
+        }
+
+        @Override
+        public Resource readResource(PathAddress address) {
+            return null;
+        }
+
+        @Override
+        public Resource readResourceFromRoot(PathAddress address) {
+            return null;
+        }
+
+        @Override
+        @Deprecated
+        public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
+            return node.resolve();
+        }
+
+        @Override
+        public TransformersLogger getLogger() {
+            return null;
+        }
+
+        @Override
+        public boolean isSkipRuntimeIgnoreCheck() {
+            return false;
+        }
+
+    }
 
 }

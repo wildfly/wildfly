@@ -73,7 +73,7 @@ class ReadTransformedResourceOperation implements OperationStepHandler {
         Map<PathAddress, ModelVersion> subsystemVersions = new HashMap<PathAddress, ModelVersion>();
         subsystemVersions.put(PathAddress.EMPTY_ADDRESS.append(ModelDescriptionConstants.SUBSYSTEM, subsystem), subsystemModelVersion);
 
-        final TransformationTarget target = TransformationTargetImpl.create(transformerRegistry, coreModelVersion, subsystemVersions, null, TransformationTarget.TransformationTargetType.SERVER);
+        final TransformationTarget target = TransformationTargetImpl.create(transformerRegistry, coreModelVersion, subsystemVersions, null, TransformationTarget.TransformationTargetType.SERVER, null);
         final Transformers transformers = Transformers.Factory.create(target);
 
         final ImmutableManagementResourceRegistration rr = context.getRootResourceRegistration();

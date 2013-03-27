@@ -35,10 +35,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 import org.jboss.modules.ModuleLoadException;
 
 /**
@@ -574,4 +574,8 @@ public interface DomainControllerMessages {
      */
     @Message(id = 10879, value = "Operation '%s' fails because the attributes are not known from the subsytem '%s' model version '%s': %s")
     String unknownAttributesFromSubsystemVersion(String operationName, String subsystemName, ModelVersion version, Collection<String> attributes);
+
+    @Message(id = 10880, value = "No socket-binding-group named: %s")
+    OperationFailedException noSocketBindingGroupCalled(String socketBindingGroup);
+
 }

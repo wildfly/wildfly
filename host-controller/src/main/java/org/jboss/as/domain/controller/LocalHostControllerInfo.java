@@ -23,6 +23,7 @@
 package org.jboss.as.domain.controller;
 
 import java.util.List;
+
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.host.controller.discovery.DiscoveryOption;
 
@@ -112,9 +113,19 @@ public interface LocalHostControllerInfo {
      */
     List<DiscoveryOption> getRemoteDomainControllerDiscoveryOptions();
 
+
+    /**
+     * Gets whether we are set up to automatically ignore configuration from the DC
+     * which does not apply to our servers.
+     *
+     *  @return {@code true} if we should ignore
+     */
+    boolean isRemoteDomainControllerIgnoreUnaffectedConfiguration();
+
     /**
      * Gets the current state of the host controller process.
      * @return the state
      */
     ControlledProcessState.State getProcessState();
+
 }

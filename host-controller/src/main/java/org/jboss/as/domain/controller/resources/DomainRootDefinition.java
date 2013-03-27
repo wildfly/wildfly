@@ -75,8 +75,10 @@ import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.transform.SubsystemDescriptionDump;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.operations.ApplyExtensionsHandler;
+import org.jboss.as.domain.controller.operations.ApplyMissingDomainModelResourcesHandler;
 import org.jboss.as.domain.controller.operations.ApplyRemoteMasterDomainModelHandler;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.DomainSocketBindingGroupRemoveHandler;
@@ -91,6 +93,7 @@ import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadURLH
 import org.jboss.as.domain.controller.transformers.DomainTransformers;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
+import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationRegistry;
 import org.jboss.as.management.client.content.ManagedDMRContentTypeResourceDefinition;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
@@ -166,6 +169,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
             .build();
 
 
+    private final DomainController domainController;
     private final LocalHostControllerInfo hostControllerInfo;
     private final HostControllerEnvironment environment;
     private final ExtensibleConfigurationPersister configurationPersister;
@@ -175,15 +179,19 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
     private final ExtensionRegistry extensionRegistry;
     private final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry;
     private final PathManagerService pathManager;
+    private final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry;
 
-
-    public DomainRootDefinition(final HostControllerEnvironment environment,
+    public DomainRootDefinition(
+            final DomainController domainController,
+            final HostControllerEnvironment environment,
             final ExtensibleConfigurationPersister configurationPersister, final ContentRepository contentRepo,
             final HostFileRepository fileRepository, final boolean isMaster,
             final LocalHostControllerInfo hostControllerInfo,
             final ExtensionRegistry extensionRegistry, final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
-            final PathManagerService pathManager) {
+            final PathManagerService pathManager,
+            final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry) {
         super(PathElement.pathElement("this-will-be-ignored-since-we-are-root"), DomainResolver.getResolver(DOMAIN, false));
+        this.domainController = domainController;
         this.isMaster = isMaster;
         this.environment = environment;
         this.hostControllerInfo = hostControllerInfo;
@@ -193,6 +201,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
         this.extensionRegistry = extensionRegistry;
         this.ignoredDomainResourceRegistry = ignoredDomainResourceRegistry;
         this.pathManager = pathManager;
+        this.runtimeIgnoreTransformationRegistry = runtimeIgnoreTransformationRegistry;
     }
 
     @Override
@@ -255,9 +264,11 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
             final ApplyExtensionsHandler aexh = new ApplyExtensionsHandler(extensionRegistry, hostControllerInfo, ignoredDomainResourceRegistry);
             resourceRegistration.registerOperationHandler(ApplyExtensionsHandler.DEFINITION, aexh);
 
-            ApplyRemoteMasterDomainModelHandler armdmh = new ApplyRemoteMasterDomainModelHandler(fileRepository,
+            ApplyRemoteMasterDomainModelHandler armdmh = new ApplyRemoteMasterDomainModelHandler(domainController, environment, fileRepository,
                     contentRepo, hostControllerInfo, ignoredDomainResourceRegistry);
             resourceRegistration.registerOperationHandler(ApplyRemoteMasterDomainModelHandler.DEFINITION, armdmh);
+            ApplyMissingDomainModelResourcesHandler amdmrh = new ApplyMissingDomainModelResourcesHandler(domainController, environment, hostControllerInfo, ignoredDomainResourceRegistry);
+            resourceRegistration.registerOperationHandler(ApplyMissingDomainModelResourcesHandler.DEFINITION, amdmrh);
         }
         resourceRegistration.registerOperationHandler(DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_DEFINITION, isMaster ? new DeploymentFullReplaceHandler(contentRepo) : new DeploymentFullReplaceHandler(fileRepository));
 
@@ -283,7 +294,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(PathResourceDefinition.createNamed(pathManager));
         resourceRegistration.registerSubModel(DomainDeploymentResourceDefinition.createForDomainRoot(isMaster, contentRepo, fileRepository));
         resourceRegistration.registerSubModel(new DeploymentOverlayDefinition(null, contentRepo, fileRepository));
-        resourceRegistration.registerSubModel(new ServerGroupResourceDefinition(contentRepo, fileRepository));
+        resourceRegistration.registerSubModel(new ServerGroupResourceDefinition(isMaster, contentRepo, fileRepository, runtimeIgnoreTransformationRegistry));
 
         //TODO socket-binding-group currently lives in controller and the child RDs live in domain so they currently need passing in from here
         resourceRegistration.registerSubModel(new SocketBindingGroupResourceDefinition(

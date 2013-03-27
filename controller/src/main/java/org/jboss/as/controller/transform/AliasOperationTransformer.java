@@ -61,7 +61,7 @@ public class AliasOperationTransformer implements CombinedTransformer {
 
         // Hand-off to a local operation transformer at the right address
         final String operationName = operation.get(ModelDescriptionConstants.OP).asString();
-        final OperationTransformer aliasTransformer = context.getTarget().resolveTransformer(transformedAddress, operationName);
+        final OperationTransformer aliasTransformer = context.getTarget().resolveTransformer(context, transformedAddress, operationName);
         if(aliasTransformer != null) {
             return aliasTransformer.transformOperation(context, transformedAddress, operation);
         } else {
@@ -73,7 +73,7 @@ public class AliasOperationTransformer implements CombinedTransformer {
     public void transformResource(final ResourceTransformationContext currentCtx, final PathAddress address, final Resource resource) throws OperationFailedException {
         final PathAddress transformedAddress = transformer.transformAddress(address);
         final ResourceTransformationContext context = ResourceTransformationContextImpl.createAliasContext(transformedAddress, currentCtx);
-        final ResourceTransformer aliasTransformer = context.getTarget().resolveTransformer(transformedAddress);
+        final ResourceTransformer aliasTransformer = context.getTarget().resolveTransformer(null, transformedAddress);
         if(aliasTransformer != null) {
             aliasTransformer.transformResource(context, address, resource);
         } else {

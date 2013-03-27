@@ -32,17 +32,19 @@ import java.util.concurrent.CountDownLatch;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.ProtocolLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
-import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
@@ -109,11 +111,7 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
             final ModelNode result;
             try {
                 // Execute the operation
-                result = controller.execute(
-                        operation,
-                        messageHandlerProxy,
-                        control,
-                        attachmentsProxy);
+                result = internalExecute(operation, context, messageHandlerProxy, control, attachmentsProxy);
             } catch (Exception e) {
                 final ModelNode failure = new ModelNode();
                 failure.get(OUTCOME).set(FAILED);
@@ -130,6 +128,24 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
                 control.operationCompleted(result);
             }
         }
+    }
+
+    /**
+     * Subclasses can override this method to determine how to execute the method, e.g. attach to an existing operation or not
+     *
+     * @param operation the operation being executed
+     * @param messageHandler the operation message handler proxy
+     * @param control the operation transaction control
+     * @param attachments the operation attachments proxy
+     * @return the result of the executed operation
+     */
+    protected ModelNode internalExecute(final ModelNode operation, final ManagementRequestContext<?> context, final OperationMessageHandler messageHandler, final ProxyController.ProxyOperationControl control, OperationAttachments attachments) {
+        // Execute the operation
+        return controller.execute(
+                operation,
+                messageHandler,
+                control,
+                attachments);
     }
 
     /**

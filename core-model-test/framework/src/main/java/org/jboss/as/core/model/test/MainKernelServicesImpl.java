@@ -52,6 +52,7 @@ import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.core.model.bridge.impl.LegacyControllerKernelServicesProxy;
 import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
 import org.jboss.as.host.controller.ignored.IgnoreDomainResourceTypeResource;
+import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationRegistry;
 import org.jboss.as.model.test.ModelTestModelControllerService;
 import org.jboss.as.model.test.StringConfigurationPersister;
 import org.jboss.dmr.ModelNode;
@@ -84,7 +85,7 @@ public class MainKernelServicesImpl extends AbstractKernelServicesImpl {
         OperationTransformerRegistry registry = transformerRegistry.resolveHost(modelVersion, subsystemVersions);
 
         TransformationTarget target = TransformationTargetImpl.create(extensionRegistry.getTransformerRegistry(), modelVersion,
-                subsystemVersions, MOCK_IGNORED_DOMAIN_RESOURCE_REGISTRY, TransformationTarget.TransformationTargetType.DOMAIN);
+                subsystemVersions, MOCK_IGNORED_DOMAIN_RESOURCE_REGISTRY, TransformationTarget.TransformationTargetType.DOMAIN, null);
         TransformationContext transformationContext = createTransformationContext(target);
 
         OperationTransformer operationTransformer = registry.resolveOperationTransformer(address, operation.get(OP).asString()).getTransformer();
@@ -114,10 +115,12 @@ public class MainKernelServicesImpl extends AbstractKernelServicesImpl {
         checkIsMainController();
 
         final TransformationTarget target = TransformationTargetImpl.create(extensionRegistry.getTransformerRegistry(), modelVersion,
-                Collections.<PathAddress, ModelVersion>emptyMap(), MOCK_IGNORED_DOMAIN_RESOURCE_REGISTRY, TransformationTarget.TransformationTargetType.DOMAIN);
+                Collections.<PathAddress, ModelVersion>emptyMap(), MOCK_IGNORED_DOMAIN_RESOURCE_REGISTRY, TransformationTarget.TransformationTargetType.DOMAIN, null);
         final Transformers transformers = Transformers.Factory.create(target);
 
-        ModelNode result = internalExecute(new ModelNode(), new ReadMasterDomainModelHandler(transformers));
+        DomainControllerRuntimeIgnoreTransformationRegistry registry = new DomainControllerRuntimeIgnoreTransformationRegistry();
+        registry.initializeHost("host");
+        ModelNode result = internalExecute(new ModelNode(), new ReadMasterDomainModelHandler("host", transformers, registry));
         if (FAILED.equals(result.get(OUTCOME).asString())) {
             throw new RuntimeException(result.get(FAILURE_DESCRIPTION).asString());
         }

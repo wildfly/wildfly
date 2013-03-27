@@ -21,18 +21,24 @@
 */
 package org.jboss.as.host.controller.operations;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.operations.coordination.ServerOperationResolver;
 import org.jboss.as.host.controller.HostControllerMessages;
+import org.jboss.as.host.controller.MasterDomainControllerClient;
 import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
@@ -44,8 +50,6 @@ import org.jboss.dmr.ModelNode;
  */
 public abstract class ServerRestartRequiredServerConfigWriteAttributeHandler extends ModelOnlyWriteAttributeHandler {
 
-    public static final ServerRestartRequiredServerConfigWriteAttributeHandler GROUP_INSTANCE = new GroupHandler();
-    public static final ServerRestartRequiredServerConfigWriteAttributeHandler SOCKET_BINDING_GROUP_INSTANCE = new SocketBindingGroupHandler();
     public static final ServerRestartRequiredServerConfigWriteAttributeHandler SOCKET_BINDING_PORT_OFFSET_INSTANCE = new SocketBindingPortOffsetHandler();
 
     private final AttributeDefinition attributeDefinition;
@@ -54,6 +58,15 @@ public abstract class ServerRestartRequiredServerConfigWriteAttributeHandler ext
         super(attributeDefinition);
         this.attributeDefinition = attributeDefinition;
     }
+
+    public static ServerRestartRequiredServerConfigWriteAttributeHandler createGroupInstance(LocalHostControllerInfo hostControllerInfo) {
+        return new GroupHandler(hostControllerInfo);
+    }
+
+    public static ServerRestartRequiredServerConfigWriteAttributeHandler createSocketBindingGroupInstance(LocalHostControllerInfo hostControllerInfo) {
+        return new SocketBindingGroupHandler(hostControllerInfo);
+    }
+
 
     @Override
     protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue,
@@ -68,40 +81,65 @@ public abstract class ServerRestartRequiredServerConfigWriteAttributeHandler ext
         // Issue: We resolve in Stage.MODEL even though system properties may not be available yet. Not ideal,
         // but the attributes involved do not support expressions because they are model references
         ModelNode resolvedValue = attributeDefinition.resolveModelAttribute(context, resource.getModel());
-        if (resolvedValue.isDefined()) {
-            validateReferencedNewValueExists(context, resolvedValue);
-        } // else the attribute must support undefined values
+        validateReferencedNewValueExists(context, operation, currentValue, resolvedValue);
     }
 
-    protected abstract void validateReferencedNewValueExists(OperationContext context, ModelNode value) throws OperationFailedException;
+    protected abstract void validateReferencedNewValueExists(OperationContext context, ModelNode operation, ModelNode currentValue, ModelNode value) throws OperationFailedException;
 
     private static class GroupHandler extends ServerRestartRequiredServerConfigWriteAttributeHandler {
-        public GroupHandler() {
+
+        final LocalHostControllerInfo hostControllerInfo;
+
+        public GroupHandler(LocalHostControllerInfo hostControllerInfo) {
             super(ServerConfigResourceDefinition.GROUP);
+            this.hostControllerInfo = hostControllerInfo;
         }
 
         @Override
-        protected void validateReferencedNewValueExists(OperationContext context, ModelNode resolvedValue) throws OperationFailedException{
-
+        protected void validateReferencedNewValueExists(final OperationContext context, final ModelNode operation, final ModelNode currentValue, final ModelNode resolvedValue) throws OperationFailedException{
             final Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false);
+
             //Don't do this on boot since the domain model is not populated yet
             if (!context.isBooting() && root.getChild(PathElement.pathElement(SERVER_GROUP, resolvedValue.asString())) == null) {
-                throw HostControllerMessages.MESSAGES.noServerGroupCalled(resolvedValue.asString());
+                if (hostControllerInfo.isMasterDomainController() || !hostControllerInfo.isRemoteDomainControllerIgnoreUnaffectedConfiguration()) {
+                        throw HostControllerMessages.MESSAGES.noServerGroupCalled(resolvedValue.asString());
+                } else {
+                    //We are a slave HC set up to ignore unaffected resources and we don't have the server-group required, so pull it down
+                    final String serverName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
+                    final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                    String socketBindingGroupName = model.hasDefined(SOCKET_BINDING_GROUP) ? model.get(SOCKET_BINDING_GROUP).asString() : null;
+                    pullDownMissingDataFromDc(context, serverName, resolvedValue.asString(), socketBindingGroupName);
+                }
             }
         }
     }
 
     private static class SocketBindingGroupHandler extends ServerRestartRequiredServerConfigWriteAttributeHandler {
-        public SocketBindingGroupHandler() {
+
+        final LocalHostControllerInfo hostControllerInfo;
+
+        public SocketBindingGroupHandler(LocalHostControllerInfo hostControllerInfo) {
             super(ServerConfigResourceDefinition.SOCKET_BINDING_GROUP);
+            this.hostControllerInfo = hostControllerInfo;
         }
 
         @Override
-        protected void validateReferencedNewValueExists(OperationContext context, ModelNode resolvedValue) throws OperationFailedException{
+        protected void validateReferencedNewValueExists(final OperationContext context, final ModelNode operation, final ModelNode currentValue, final ModelNode resolvedValue) throws OperationFailedException{
             final Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false);
-            //Don't do this on boot since the domain model is not populated yet
-            if (!context.isBooting() && root.getChild(PathElement.pathElement(SOCKET_BINDING_GROUP, resolvedValue.asString())) == null) {
-                throw HostControllerMessages.MESSAGES.noSocketBindingGroupCalled(resolvedValue.asString());
+
+            if (resolvedValue.isDefined()) {
+                //Don't do this on boot since the domain model is not populated yet
+                if (!context.isBooting() && resolvedValue.isDefined() && root.getChild(PathElement.pathElement(SOCKET_BINDING_GROUP, resolvedValue.asString())) == null) {
+                    if (hostControllerInfo.isMasterDomainController() || !hostControllerInfo.isRemoteDomainControllerIgnoreUnaffectedConfiguration()) {
+                        throw HostControllerMessages.MESSAGES.noSocketBindingGroupCalled(resolvedValue.asString());
+                    } else {
+                        //We are a slave HC set up to ignore unaffected resources and we don't have the socket-binding-group required, so pull it down
+                        final String serverName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
+                        final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                        String serverGroupName = model.require(GROUP).asString();
+                        pullDownMissingDataFromDc(context, serverName, serverGroupName, resolvedValue.asString());
+                    }
+                }
             }
         }
     }
@@ -114,8 +152,34 @@ public abstract class ServerRestartRequiredServerConfigWriteAttributeHandler ext
         }
 
         @Override
-        protected void validateReferencedNewValueExists(OperationContext context, ModelNode resolvedValue) throws OperationFailedException {
+        protected void validateReferencedNewValueExists(OperationContext context, ModelNode operation, ModelNode currentValue, ModelNode resolvedValue) throws OperationFailedException {
             // our attribute is not a model reference
         }
+    }
+
+    private static void pullDownMissingDataFromDc(final OperationContext context, final String serverName, final String serverGroupName, final String socketBindingGroupName) {
+        context.addStep(new OperationStepHandler() {
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                //Get the missing data
+                final MasterDomainControllerClient masterDomainControllerClient = (MasterDomainControllerClient)context.getServiceRegistry(false).getRequiredService(MasterDomainControllerClient.SERVICE_NAME).getValue();
+                masterDomainControllerClient.pullDownDataForUpdatedServerConfigAndApplyToModel(context, serverName, serverGroupName, socketBindingGroupName);
+                context.addStep(new OperationStepHandler() {
+                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                        //An extra sanity check, is this necessary?
+                        final Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false);
+                        if (!root.hasChild(PathElement.pathElement(SERVER_GROUP, serverGroupName))) {
+                            throw HostControllerMessages.MESSAGES.noServerGroupCalled(serverGroupName);
+                        }
+                        if (socketBindingGroupName != null) {
+                            if (!root.hasChild(PathElement.pathElement(SOCKET_BINDING_GROUP, socketBindingGroupName))) {
+                                throw HostControllerMessages.MESSAGES.noSocketBindingGroupCalled(socketBindingGroupName);
+                            }
+                        }
+                        context.stepCompleted();
+                    }
+                }, Stage.MODEL);
+                context.stepCompleted();
+            }
+        }, Stage.MODEL);
     }
 }

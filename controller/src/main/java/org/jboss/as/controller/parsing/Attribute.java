@@ -70,6 +70,7 @@ public enum Attribute {
     HOST("host"),
     HTTP("http"),
     HTTPS("https"),
+    IGNORE_UNUSED_CONFIG("ignore-unused-configuration"),
     INITIAL_CONTEXT_FACTORY("initial-context-factory"),
     INTERFACE("interface"),
     JAVA_HOME("java-home"),

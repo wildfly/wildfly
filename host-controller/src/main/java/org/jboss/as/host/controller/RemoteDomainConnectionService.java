@@ -25,17 +25,23 @@ package org.jboss.as.host.controller;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_MODEL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
+import javax.net.ssl.SSLHandshakeException;
+import javax.security.sasl.SaslException;
 import java.io.DataInput;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.security.AccessController;
 import java.util.ArrayList;
@@ -46,29 +52,42 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicReference;
 
-import javax.net.ssl.SSLHandshakeException;
-import javax.security.sasl.SaslException;
-
+import org.jboss.as.controller.CurrentOperationIdHolder;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.ProxyOperationAddressTranslator;
+import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.client.impl.ExistingChannelModelControllerClient;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.controller.remote.TransactionalProtocolOperationHandler;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.operations.ApplyExtensionsHandler;
+import org.jboss.as.domain.controller.operations.ApplyMissingDomainModelResourcesHandler;
 import org.jboss.as.domain.controller.operations.ApplyRemoteMasterDomainModelHandler;
+import org.jboss.as.domain.controller.operations.PullDownDataForServerConfigOnSlaveHandler;
+import org.jboss.as.domain.controller.operations.coordination.DomainControllerLockIdUtils;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.host.controller.discovery.DiscoveryOption;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.mgmt.DomainControllerProtocol;
 import org.jboss.as.host.controller.mgmt.DomainRemoteFileRequestAndHandler;
+import org.jboss.as.host.controller.mgmt.HostControllerRegistrationHandler;
 import org.jboss.as.host.controller.mgmt.HostInfo;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.protocol.ProtocolChannelClient;
@@ -136,13 +155,18 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private final LocalHostControllerInfo localHostInfo;
     private final RemoteFileRepository remoteFileRepository;
     private final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry;
+    private final HostControllerRegistrationHandler.OperationExecutor operationExecutor;
+    private final DomainController domainController;
+    private final HostControllerEnvironment hostControllerEnvironment;
 
     /** Used to invoke ModelController ops on the master */
     private volatile ModelControllerClient masterProxy;
+    private volatile TransactionalDomainControllerClient txMasterProxy;
 
     private final FutureClient futureClient = new FutureClient();
     private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
     private final InjectedValue<SecurityRealm> securityRealmInjector = new InjectedValue<SecurityRealm>();
+    private final InjectedValue<ServerInventory> serverInventoryInjector = new InjectedValue<ServerInventory>();
 
     private ExecutorService executor;
     private ScheduledExecutorService scheduledExecutorService;
@@ -153,7 +177,10 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private RemoteDomainConnectionService(final ModelController controller, final ExtensionRegistry extensionRegistry,
                                           final LocalHostControllerInfo localHostControllerInfo, final ProductConfig productConfig,
                                           final RemoteFileRepository remoteFileRepository,
-                                          final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry){
+                                          final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
+                                          final HostControllerRegistrationHandler.OperationExecutor operationExecutor,
+                                          final DomainController domainController,
+                                          final HostControllerEnvironment hostControllerEnvironment){
         this.controller = controller;
         this.extensionRegistry = extensionRegistry;
         this.productConfig = productConfig;
@@ -161,16 +188,23 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         this.remoteFileRepository = remoteFileRepository;
         remoteFileRepository.setRemoteFileRepositoryExecutor(remoteFileRepositoryExecutor);
         this.ignoredDomainResourceRegistry = ignoredDomainResourceRegistry;
+        this.operationExecutor = operationExecutor;
+        this.domainController = domainController;
+        this.hostControllerEnvironment = hostControllerEnvironment;
     }
 
     public static Future<MasterDomainControllerClient> install(final ServiceTarget serviceTarget, final ModelController controller, final ExtensionRegistry extensionRegistry,
                                                                final LocalHostControllerInfo localHostControllerInfo, final ProductConfig productConfig,
                                                                final String securityRealm, final RemoteFileRepository remoteFileRepository,
-                                                               final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry) {
+                                                               final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
+                                                               final HostControllerRegistrationHandler.OperationExecutor operationExecutor,
+                                                               final DomainController domainController,
+                                                               final HostControllerEnvironment hostControllerEnvironment) {
         RemoteDomainConnectionService service = new RemoteDomainConnectionService(controller, extensionRegistry, localHostControllerInfo,
-                productConfig, remoteFileRepository, ignoredDomainResourceRegistry);
+                productConfig, remoteFileRepository, ignoredDomainResourceRegistry, operationExecutor, domainController, hostControllerEnvironment);
         ServiceBuilder<MasterDomainControllerClient> builder = serviceTarget.addService(MasterDomainControllerClient.SERVICE_NAME, service)
                 .addDependency(ManagementRemotingServices.MANAGEMENT_ENDPOINT, Endpoint.class, service.endpointInjector)
+                .addDependency(ServerInventoryService.SERVICE_NAME, ServerInventory.class, service.serverInventoryInjector)
                 .setInitialMode(ServiceController.Mode.ACTIVE);
 
         if (securityRealm != null) {
@@ -235,6 +269,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                    handler.addHandlerFactory(new TransactionalProtocolOperationHandler(controller, handler));
                    // Use the existing channel strategy
                    masterProxy = ExistingChannelModelControllerClient.createAndAdd(handler);
+                   txMasterProxy = new TransactionalDomainControllerClient(handler);
                    break;
                }
            } catch (Exception e) {
@@ -290,6 +325,29 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     }
 
     @Override
+    public void pullDownDataForUpdatedServerConfigAndApplyToModel(OperationContext context, String serverName, String serverGroupName, String socketBindingGroupName) throws OperationFailedException {
+        ModelNode op = new ModelNode();
+        op.get(OP).set(PullDownDataForServerConfigOnSlaveHandler.OPERATION_NAME);
+        op.get(OP_ADDR).setEmptyList();
+        op.get(SERVER).set(IgnoredNonAffectedServerGroupsUtil.createServerConfigInfo(serverName, serverGroupName, socketBindingGroupName).toModelNode());
+
+        Integer domainControllerLock = context.getAttachment(DomainControllerLockIdUtils.DOMAIN_CONTROLLER_LOCK_ID_ATTACHMENT);
+        if (domainControllerLock != null) {
+            op.get(OPERATION_HEADERS, DomainControllerLockIdUtils.DOMAIN_CONTROLLER_LOCK_ID).set(domainControllerLock);
+        }
+        op.get(OPERATION_HEADERS, DomainControllerLockIdUtils.SLAVE_CONTROLLER_LOCK_ID).set(CurrentOperationIdHolder.getCurrentOperationID());
+
+        ModelNode result = txMasterProxy.executeTransactional(context, op);
+        if (result.get(FAILURE_DESCRIPTION).isDefined()) {
+            throw new OperationFailedException(result.get(FAILURE_DESCRIPTION).asString());
+        }
+
+        ApplyMissingDomainModelResourcesHandler applyMissingDomainModelResourcesHandler = new ApplyMissingDomainModelResourcesHandler(domainController, hostControllerEnvironment, localHostInfo, ignoredDomainResourceRegistry);
+        ModelNode applyMissingResourcesOp = ApplyMissingDomainModelResourcesHandler.createPulledMissingDataOperation(result.get(RESULT));
+        context.addStep(applyMissingResourcesOp, applyMissingDomainModelResourcesHandler, OperationContext.Stage.MODEL, true);
+    }
+
+    @Override
     public void close() throws IOException {
         throw MESSAGES.closeShouldBeManagedByService();
     }
@@ -307,7 +365,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(scheduledThreadFactory);
 
             // Include additional local host information when registering at the DC
-            final ModelNode hostInfo = HostInfo.createLocalHostHostInfo(localHostInfo, productConfig, ignoredDomainResourceRegistry);
+            final ModelNode hostInfo = HostInfo.createLocalHostHostInfo(localHostInfo, productConfig, ignoredDomainResourceRegistry, ReadRootResourceHandler.grabDomainResource(operationExecutor).getChildren(HOST).iterator().next());
             final OptionMap options = OptionMap.builder().set(RemotingOptions.HEARTBEAT_INTERVAL, 15000)
                     .set(Options.READ_TIMEOUT, 45000)
                     .set(RemotingOptions.RECEIVE_WINDOW_SIZE, ProtocolChannelClient.Configuration.WINDOW_SIZE).getMap();
@@ -568,6 +626,162 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             return value == null ? defaultValue : Integer.parseInt(value);
         } catch (NumberFormatException ignored) {
             return defaultValue;
+        }
+    }
+
+    private static class ReadRootResourceHandler implements OperationStepHandler {
+        private Resource resource;
+
+        static Resource grabDomainResource(HostControllerRegistrationHandler.OperationExecutor executor) {
+            ReadRootResourceHandler handler = new ReadRootResourceHandler();
+            executor.execute(new ModelNode(), OperationMessageHandler.DISCARD, ModelController.OperationTransactionControl.COMMIT, null, handler);
+            return handler.resource;
+        }
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            resource = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
+            context.stepCompleted();
+        }
+    }
+
+    /**
+     * The tx handling code is copied from ProxyStepHandler
+     *
+     */
+    private static class TransactionalDomainControllerClient {
+
+        private final RemoteProxyController remoteProxy;
+
+        public TransactionalDomainControllerClient(ManagementChannelHandler handler) {
+            remoteProxy = RemoteProxyController.create(handler, PathAddress.EMPTY_ADDRESS, ProxyOperationAddressTranslator.NOOP);
+
+        }
+
+        private ModelNode executeTransactional(OperationContext context, ModelNode operation) {
+            OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
+
+            final AtomicReference<ModelController.OperationTransaction> txRef = new AtomicReference<ModelController.OperationTransaction>();
+            final AtomicReference<ModelNode> preparedResultRef = new AtomicReference<ModelNode>();
+            final AtomicReference<ModelNode> finalResultRef = new AtomicReference<ModelNode>();
+            final ProxyController.ProxyOperationControl proxyControl = new ProxyController.ProxyOperationControl() {
+
+                @Override
+                public void operationPrepared(ModelController.OperationTransaction transaction, ModelNode result) {
+                    txRef.set(transaction);
+                    preparedResultRef.set(result);
+                }
+
+                @Override
+                public void operationFailed(ModelNode response) {
+                    finalResultRef.set(response);
+                }
+
+                @Override
+                public void operationCompleted(ModelNode response) {
+                    finalResultRef.set(response);
+                }
+            };
+            remoteProxy.execute(operation, messageHandler, proxyControl, new DelegatingOperationAttachments(context));
+
+            ModelNode finalResult = finalResultRef.get();
+            if (finalResult != null) {
+                // operation failed before it could commit
+                return finalResult;
+            }
+            context.addStep(new OperationStepHandler() {
+                @Override
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    completeRemoteTransaction(context, operation, txRef, preparedResultRef, finalResultRef);
+                }
+            }, OperationContext.Stage.MODEL);
+
+            return preparedResultRef.get();
+        }
+
+        private void completeRemoteTransaction(OperationContext context, ModelNode operation,
+                final AtomicReference<ModelController.OperationTransaction> txRef,
+                final AtomicReference<ModelNode> preparedResultRef, final AtomicReference<ModelNode> finalResultRef) {
+
+            boolean completeStepCalled = false;
+            try {
+                context.completeStep(new OperationContext.ResultHandler() {
+                    @Override
+                    public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                        boolean txCompleted = false;
+                        try {
+                            ModelController.OperationTransaction tx = txRef.get();
+                            try {
+                                if (resultAction == OperationContext.ResultAction.KEEP) {
+                                    tx.commit();
+                                } else {
+                                    tx.rollback();
+                                }
+                            } finally {
+                                txCompleted = true;
+                            }
+
+                        } finally {
+                            // Ensure the remote side gets a transaction outcome if
+                            // we can't commit/rollback above
+                            if (!txCompleted && txRef.get() != null) {
+                                txRef.get().rollback();
+                            }
+                        }
+                    }
+                });
+
+                completeStepCalled = true;
+
+            } finally {
+                // Ensure the remote side gets a transaction outcome if we can't
+                // call completeStep above
+                if (!completeStepCalled && txRef.get() != null) {
+                    txRef.get().rollback();
+                }
+            }
+        }
+    }
+
+    private static class DelegatingMessageHandler implements OperationMessageHandler {
+
+        private final OperationContext context;
+
+        DelegatingMessageHandler(final OperationContext context) {
+            this.context = context;
+        }
+
+        @Override
+        public void handleReport(MessageSeverity severity, String message) {
+            context.report(severity, message);
+        }
+    }
+
+    private static class DelegatingOperationAttachments implements OperationAttachments {
+
+        private final OperationContext context;
+        private DelegatingOperationAttachments(final OperationContext context) {
+            this.context = context;
+        }
+
+        @Override
+        public boolean isAutoCloseStreams() {
+            return false;
+        }
+
+        @Override
+        public List<InputStream> getInputStreams() {
+            int count = context.getAttachmentStreamCount();
+            List<InputStream> result = new ArrayList<InputStream>(count);
+            for (int i = 0; i < count; i++) {
+                result.add(context.getAttachmentStream(i));
+            }
+            return result;
+        }
+
+        @Override
+        public void close() throws IOException {
+            //
         }
     }
 }

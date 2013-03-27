@@ -25,11 +25,13 @@
  */
 package org.jboss.as.host.controller;
 
+import java.io.IOException;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.msc.service.ServiceName;
-
-import java.io.IOException;
 
 /**
  * Client for interacting with the master {@link MasterDomainControllerClient} on a remote host.
@@ -60,4 +62,15 @@ public interface MasterDomainControllerClient extends ModelControllerClient {
      * @return the file repository
      */
     HostFileRepository getRemoteFileRepository();
+
+    /**
+     * Pulls down missing data from the domain controller and applies it to the local model as a result of a change to a/an added server-config
+     *
+     * @param context the operation context
+     * @param serverName the name of the server
+     * @param serverGroupName the name of the group
+     * @param socketBindingGroupName the name of the socket binding group override
+     * @throws OperationFailedException
+     */
+    void pullDownDataForUpdatedServerConfigAndApplyToModel(OperationContext context, String serverName, String serverGroupName, String socketBindingGroupName) throws OperationFailedException;
 }

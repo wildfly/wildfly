@@ -88,7 +88,7 @@ public class DomainTestSupport {
         }
     }
 
-    public static JBossAsManagedConfiguration getMasterConfiguration(String domainConfigPath, String hostConfigPath, String testName, JBossAsManagedConfigurationParameters params) throws URISyntaxException {
+    public static JBossAsManagedConfiguration getMasterConfiguration(String domainConfigPath, String hostConfigPath, String testName, JBossAsManagedConfigurationParameters params, boolean readOnlyDomain, boolean readOnlyHost) throws URISyntaxException {
         final String hostName = "master";
         File domains = getBaseDir(testName);
         File extraModules = getAddedModulesDir(testName);
@@ -98,6 +98,8 @@ public class DomainTestSupport {
         configureModulePath(masterConfig, overrideModules, extraModules);
         masterConfig.setHostControllerManagementAddress(masterAddress);
         masterConfig.setHostCommandLineProperties("-Djboss.test.host.master.address=" + masterAddress);
+        masterConfig.setReadOnlyDomain(readOnlyDomain);
+        masterConfig.setReadOnlyHost(readOnlyHost);
         URL url = tccl.getResource(domainConfigPath);
         assert url != null : "cannot find domainConfigPath";
         masterConfig.setDomainConfigFile(new File(url.toURI()).getAbsolutePath());
@@ -115,7 +117,7 @@ public class DomainTestSupport {
         return masterConfig;
     }
 
-    public static JBossAsManagedConfiguration getSlaveConfiguration(String hostConfigPath, String testName, JBossAsManagedConfigurationParameters params) throws URISyntaxException {
+    public static JBossAsManagedConfiguration getSlaveConfiguration(String hostConfigPath, String testName, JBossAsManagedConfigurationParameters params, boolean readOnlyHost) throws URISyntaxException {
         final String hostName = "slave";
         File domains = getBaseDir(testName);
         File extraModules = getAddedModulesDir(testName);
@@ -128,6 +130,7 @@ public class DomainTestSupport {
         slaveConfig.setHostControllerManagementPort(19999);
         slaveConfig.setHostCommandLineProperties("-Djboss.test.host.master.address=" + masterAddress +
                 " -Djboss.test.host.slave.address=" + slaveAddress);
+        slaveConfig.setReadOnlyHost(readOnlyHost);
         URL url = tccl.getResource(hostConfigPath);
         slaveConfig.setHostConfigFile(new File(url.toURI()).getAbsolutePath());
         System.out.println(slaveConfig.getHostConfigFile());
@@ -287,15 +290,21 @@ public class DomainTestSupport {
     private final String testClass;
 
 
+
     protected DomainTestSupport(final String testClass, final String domainConfig, final String masterConfig, final String slaveConfig, JBossAsManagedConfigurationParameters masterParams, JBossAsManagedConfigurationParameters slaveParams) throws Exception {
+        this(testClass, domainConfig, masterConfig, slaveConfig, masterParams, slaveParams, false, false, false);
+    }
+
+    protected DomainTestSupport(final String testClass, final String domainConfig, final String masterConfig, final String slaveConfig, JBossAsManagedConfigurationParameters masterParams,
+            JBossAsManagedConfigurationParameters slaveParams, final boolean readOnlyDomainConfig, final boolean readOnlyMasterHostConfig, final boolean readOnlySlaveHostConfig) throws Exception {
         this.testClass = testClass;
         this.sharedClientConfig = DomainControllerClientConfig.create();
 
-        masterConfiguration = getMasterConfiguration(domainConfig, masterConfig, testClass, masterParams);
+        masterConfiguration = getMasterConfiguration(domainConfig, masterConfig, testClass, masterParams, readOnlyDomainConfig, readOnlyMasterHostConfig);
         domainMasterLifecycleUtil = new DomainLifecycleUtil(masterConfiguration, sharedClientConfig);
 
         if (slaveConfig != null) {
-            slaveConfiguration = getSlaveConfiguration(slaveConfig, testClass, slaveParams);
+            slaveConfiguration = getSlaveConfiguration(slaveConfig, testClass, slaveParams, readOnlySlaveHostConfig);
             domainSlaveLifecycleUtil = new DomainLifecycleUtil(slaveConfiguration, sharedClientConfig);
         } else {
             slaveConfiguration = null;
@@ -304,7 +313,8 @@ public class DomainTestSupport {
     }
 
     public static DomainTestSupport create(final String testClass, final Configuration configuration) throws Exception {
-        return new DomainTestSupport(testClass, configuration.getDomainConfig(), configuration.getMasterConfig(), configuration.getSlaveConfigs(), configuration.getMasterConfigurationParameters(), configuration.getSlaveConfigurationParameters());
+        return new DomainTestSupport(testClass, configuration.getDomainConfig(), configuration.getMasterConfig(), configuration.getSlaveConfigs(),
+                configuration.getMasterConfigurationParameters(), configuration.getSlaveConfigurationParameters(), configuration.isReadOnlyMasterDomain(), configuration.isReadOnlyMasterHost(), configuration.isReadOnlySlaveHost());
     }
 
     public static DomainTestSupport create(final String testClass, final String domainConfig, final String masterConfig, final String slaveConfig, JBossAsManagedConfigurationParameters masterParams, JBossAsManagedConfigurationParameters slaveParams) throws Exception {
@@ -375,14 +385,28 @@ public class DomainTestSupport {
         private String slaveConfig;
         private JBossAsManagedConfigurationParameters masterParams;
         private JBossAsManagedConfigurationParameters slaveParams;
+        private boolean readOnlyMasterDomain;
+        private boolean readOnlyMasterHost;
+        private boolean readOnlySlaveHost;
+
 
         protected Configuration(final String domainConfig, final String masterConfig, final String slaveConfig, JBossAsManagedConfigurationParameters masterParams, JBossAsManagedConfigurationParameters slaveParams) {
+            this(domainConfig, masterConfig, slaveConfig, masterParams, slaveParams, false, false, false);
+        }
+
+        protected Configuration(final String domainConfig, final String masterConfig, final String slaveConfig, JBossAsManagedConfigurationParameters masterParams,
+                JBossAsManagedConfigurationParameters slaveParams, boolean readOnlyMasterDomain, boolean readOnlyMasterHost, boolean readOnlySlaveHost) {
             this.domainConfig = domainConfig;
             this.masterConfig = masterConfig;
             this.slaveConfig = slaveConfig;
             this.masterParams = masterParams;
             this.slaveParams = slaveParams;
+            this.readOnlyMasterDomain = readOnlyMasterDomain;
+            this.readOnlyMasterHost = readOnlyMasterHost;
+            this.readOnlySlaveHost = readOnlySlaveHost;
         }
+
+
 
         public String getDomainConfig() {
             return domainConfig;
@@ -400,15 +424,30 @@ public class DomainTestSupport {
             return slaveParams;
         }
 
-
         public JBossAsManagedConfigurationParameters getSlaveConfigurationParameters() {
             return slaveParams;
+        }
+
+        public boolean isReadOnlyMasterDomain() {
+            return readOnlyMasterDomain;
+        }
+
+        public boolean isReadOnlyMasterHost() {
+            return readOnlyMasterHost;
+        }
+
+        public boolean isReadOnlySlaveHost() {
+            return readOnlySlaveHost;
         }
 
         public static Configuration create(final String domainConfig, final String masterConfig, final String slaveConfig, JBossAsManagedConfigurationParameters masterParams, JBossAsManagedConfigurationParameters slaveParams) {
             return new Configuration(domainConfig, masterConfig, slaveConfig, masterParams, slaveParams);
         }
 
+        public static Configuration create(final String domainConfig, final String masterConfig, final String slaveConfig, JBossAsManagedConfigurationParameters masterParams,
+                JBossAsManagedConfigurationParameters slaveParams, boolean readOnlyMasterDomain, boolean readOnlyMasterHost, boolean readOnlySlaveHost) {
+            return new Configuration(domainConfig, masterConfig, slaveConfig, masterParams, slaveParams, readOnlyMasterDomain, readOnlyMasterHost, readOnlySlaveHost);
+        }
     }
 
 

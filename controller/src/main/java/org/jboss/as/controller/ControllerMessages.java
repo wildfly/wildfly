@@ -2639,4 +2639,6 @@ public interface ControllerMessages {
     @Message(id = 14899, value = "read only context")
     IllegalStateException readOnlyContext();
 
+    @Message(id = 13450, value = "We are trying to read data from the master host controller, which is currently busy executing another set of operations. This is a temporary situation, please retry")
+    String cannotGetControllerLock();
 }

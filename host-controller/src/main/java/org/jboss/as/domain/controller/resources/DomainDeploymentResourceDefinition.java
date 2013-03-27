@@ -25,23 +25,18 @@ import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
-import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentAddHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentAddHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentDeployHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentRedeployHandler;
+import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentUndeployHandler;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.controller.resources.DeploymentResourceDefinition;
-
-/**
- *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- */
-public class DomainDeploymentResourceDefinition extends DeploymentResourceDefinition {
+ class DomainDeploymentResourceDefinition extends DeploymentResourceDefinition {
 
     private OperationDefinition addDefinition;
     private DomainDeploymentResourceDefinition(DeploymentResourceParent parent, OperationDefinition addDefinition, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
@@ -58,7 +53,7 @@ public class DomainDeploymentResourceDefinition extends DeploymentResourceDefini
 
     public static DomainDeploymentResourceDefinition createForServerGroup(ContentRepository contentRepository, HostFileRepository fileRepository) {
         return new DomainDeploymentResourceDefinition(DeploymentResourceParent.SERVER_GROUP, DeploymentAttributes.SERVER_GROUP_DEPLOYMENT_ADD_DEFINITION,
-                new ServerGroupDeploymentAddHandler(fileRepository), ServerGroupRemoveHandler.INSTANCE);
+                new ServerGroupDeploymentAddHandler(fileRepository), ServerGroupDeploymentRemoveHandler.INSTANCE);
     }
 
     @Override

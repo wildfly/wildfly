@@ -22,15 +22,23 @@
 
 package org.jboss.as.controller.transform;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
-import org.jboss.dmr.ModelNode;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Operation transformer responsible for handling a composite operation.
@@ -67,7 +75,7 @@ class CompositeOperationTransformer implements OperationTransformer {
                 // Process nested steps directly
                 result = transformOperation(context, PathAddress.EMPTY_ADDRESS, step, false);
             } else {
-                final OperationTransformer transformer = target.resolveTransformer(stepAddress, operationName);
+                final OperationTransformer transformer = target.resolveTransformer(context, stepAddress, operationName);
                 result = transformer.transformOperation(context, stepAddress, step);
             }
             final ModelNode transformedOperation = result.getTransformedOperation();

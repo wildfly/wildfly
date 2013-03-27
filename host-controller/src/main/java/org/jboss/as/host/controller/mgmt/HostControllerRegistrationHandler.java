@@ -94,12 +94,14 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
     private final OperationExecutor operationExecutor;
     private final DomainController domainController;
     private final Executor registrations;
+    private final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry;
 
-    public HostControllerRegistrationHandler(ManagementChannelHandler handler, DomainController domainController, OperationExecutor operationExecutor, Executor registrations) {
+    public HostControllerRegistrationHandler(ManagementChannelHandler handler, DomainController domainController, OperationExecutor operationExecutor, Executor registrations, DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry) {
         this.handler = handler;
         this.operationExecutor = operationExecutor;
         this.domainController = domainController;
         this.registrations = registrations;
+        this.runtimeIgnoreTransformationRegistry = runtimeIgnoreTransformationRegistry;
     }
 
     @Override
@@ -108,7 +110,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         switch (operationId) {
             case DomainControllerProtocol.REGISTER_HOST_CONTROLLER_REQUEST:
                 // Start the registration process
-                final RegistrationContext context = new RegistrationContext(domainController.getExtensionRegistry().getTransformerRegistry());
+                final RegistrationContext context = new RegistrationContext(domainController.getExtensionRegistry().getTransformerRegistry(), runtimeIgnoreTransformationRegistry);
                 context.activeOperation = handlers.registerActiveOperation(header.getBatchId(), context, context);
                 return new InitiateRegistrationHandler();
             case DomainControllerProtocol.REQUEST_SUBSYSTEM_VERSIONS:
@@ -224,9 +226,11 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
     class HostRegistrationStepHandler implements OperationStepHandler {
         private final TransformerRegistry transformerRegistry;
         private final RegistrationContext registrationContext;
-        protected HostRegistrationStepHandler(final TransformerRegistry transformerRegistry, final RegistrationContext registrationContext) {
+        private final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry;
+        protected HostRegistrationStepHandler(final TransformerRegistry transformerRegistry, final RegistrationContext registrationContext, final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry) {
             this.registrationContext = registrationContext;
             this.transformerRegistry = transformerRegistry;
+            this.runtimeIgnoreTransformationRegistry = runtimeIgnoreTransformationRegistry;
         }
 
         @Override
@@ -257,8 +261,13 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             }
             // Initialize the transformers
             final TransformationTarget target = TransformationTargetImpl.create(transformerRegistry, ModelVersion.create(major, minor, micro),
-                    Collections.<PathAddress, ModelVersion>emptyMap(), hostInfo, TransformationTarget.TransformationTargetType.HOST);
+                    Collections.<PathAddress, ModelVersion>emptyMap(), hostInfo, TransformationTarget.TransformationTargetType.HOST, registrationContext.runtimeIgnoreTransformation);
             final Transformers transformers = Transformers.Factory.create(target);
+            try {
+                SlaveChannelAttachments.attachSlaveInfo(handler.getChannel(), registrationContext.hostName, transformers);
+            } catch (IOException e) {
+                throw new OperationFailedException(e.getLocalizedMessage());
+            }
             // Build the extensions list
             final ModelNode extensions = new ModelNode();
             final Resource transformed = transformers.transformRootResource(context, root);
@@ -272,7 +281,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             // Remotely resolve the subsystem versions and create the transformation
             registrationContext.processSubsystems(transformers, extensions);
             // Now run the read-domain model operation
-            final ReadMasterDomainModelHandler handler = new ReadMasterDomainModelHandler(transformers);
+            final ReadMasterDomainModelHandler handler = new ReadMasterDomainModelHandler(hostInfo.getHostName(), transformers, runtimeIgnoreTransformationRegistry);
             context.addStep(READ_DOMAIN_MODEL, handler, OperationContext.Stage.MODEL);
             // Complete
             context.stepCompleted();
@@ -282,8 +291,9 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
     private class RegistrationContext implements ModelController.OperationTransactionControl, ActiveOperation.CompletedCallback<Void> {
 
         private final TransformerRegistry transformerRegistry;
-        private String hostName;
-        private HostInfo hostInfo;
+        private final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry;
+        private volatile String hostName;
+        private volatile HostInfo hostInfo;
         private ManagementRequestContext<RegistrationContext> responseChannel;
 
         private volatile IOTask<?> task;
@@ -291,15 +301,19 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         private volatile Transformers transformers;
         private ActiveOperation<Void, RegistrationContext> activeOperation;
         private final AtomicBoolean completed = new AtomicBoolean();
+        private volatile DomainControllerRuntimeIgnoreTransformationEntry runtimeIgnoreTransformation;
 
-        private RegistrationContext(TransformerRegistry transformerRegistry) {
+        private RegistrationContext(TransformerRegistry transformerRegistry, DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry) {
             this.transformerRegistry = transformerRegistry;
+            this.runtimeIgnoreTransformationRegistry = runtimeIgnoreTransformationRegistry;
         }
 
         private synchronized void initialize(final String hostName, final ModelNode hostInfo, final ManagementRequestContext<RegistrationContext> responseChannel) {
             this.hostName = hostName;
             this.hostInfo = HostInfo.fromModelNode(hostInfo);
             this.responseChannel = responseChannel;
+            this.runtimeIgnoreTransformation = DomainControllerRuntimeIgnoreTransformationEntry.create(this.hostInfo, transformerRegistry.getExtensionRegistry());
+            runtimeIgnoreTransformationRegistry.initializeHost(hostName);
         }
 
         @Override
@@ -320,6 +334,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         @Override
         public void operationPrepared(final ModelController.OperationTransaction transaction, final ModelNode result) {
             if(failed) {
+                runtimeIgnoreTransformationRegistry.unregisterHost(hostName);
                 transaction.rollback();
             } else {
                 try {
@@ -364,7 +379,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             if (!failed) {
                 try {
                     // The domain model is going to be sent as part of the prepared notification
-                    final OperationStepHandler handler = new HostRegistrationStepHandler(transformerRegistry, this);
+                    final OperationStepHandler handler = new HostRegistrationStepHandler(transformerRegistry, this, runtimeIgnoreTransformationRegistry);
                     ModelNode result = operationExecutor.execute(READ_DOMAIN_MODEL, OperationMessageHandler.logging, this, OperationAttachments.EMPTY, handler);
                     if (FAILED.equals(result.get(OUTCOME).asString())) {
                         failed(SlaveRegistrationException.ErrorCode.UNKNOWN, result.get(FAILURE_DESCRIPTION).asString());
@@ -444,7 +459,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             synchronized (this) {
                 Long pingPongId = hostInfo.getRemoteConnectionId();
                 // Register the slave
-                domainController.registerRemoteHost(hostName, handler, transformers, pingPongId);
+                domainController.registerRemoteHost(hostName, handler, transformers, pingPongId, runtimeIgnoreTransformation);
                 // Complete registration
                 if(! failed) {
                     transaction.commit();

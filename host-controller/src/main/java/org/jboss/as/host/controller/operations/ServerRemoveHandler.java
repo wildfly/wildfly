@@ -19,12 +19,14 @@
 package org.jboss.as.host.controller.operations;
 
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
@@ -51,14 +53,18 @@ public class ServerRemoveHandler extends AbstractRemoveStepHandler {
     /**
      * Create the InterfaceRemoveHandler
      */
-    protected ServerRemoveHandler() {
+    private ServerRemoveHandler() {
     }
 
     @Override
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        final String socketBindingGroupOverride = model.hasDefined(SOCKET_BINDING_GROUP) ? model.get(SOCKET_BINDING_GROUP).asString() : null;
+
+
         super.performRemove(context, operation, model);
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String group = model.get(GROUP).asString();
         final String serverName = address.getLastElement().getValue();
         final PathAddress running = address.subAddress(0, 1).append(PathElement.pathElement(RUNNING_SERVER, serverName));
 
@@ -89,6 +95,7 @@ public class ServerRemoveHandler extends AbstractRemoveStepHandler {
                 context.stepCompleted();
             }
         }, OperationContext.Stage.RUNTIME);
+
     }
 
     protected boolean requiresRuntime(OperationContext context) {

@@ -102,7 +102,6 @@ public class HostModelUtil {
                                           final ControlledProcessState processState,
                                           final PathManagerService pathManager) {
         // Add of the host itself
-        //ManagementResourceRegistration hostRegistration = root.registerSubModel(PathElement.pathElement(HOST, hostName), HostDescriptionProviders.HOST_ROOT_PROVIDER);
         ManagementResourceRegistration hostRegistration = root.registerSubModel(
                 new HostResourceDefinition(hostName, configurationPersister,
                         environment, runningModeControl, localFileRepository,

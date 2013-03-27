@@ -254,6 +254,12 @@ public class LegacyKernelServicesImpl extends AbstractKernelServicesImpl {
             public String getHttpManagementInterface() {
                 return null;
             }
+
+            @Override
+            public boolean isRemoteDomainControllerIgnoreUnaffectedConfiguration() {
+                return false;
+            }
+
         });
 
         for (IgnoreDomainResourceTypeResource resource : ignoredResources) {
@@ -262,4 +268,5 @@ public class LegacyKernelServicesImpl extends AbstractKernelServicesImpl {
 
         return reg;
     }
+
 }

@@ -22,6 +22,21 @@
 
 package org.jboss.as.host.controller;
 
+import java.io.DataInput;
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import javax.net.ssl.SSLContext;
+import javax.security.auth.callback.CallbackHandler;
+
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
@@ -47,20 +62,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
 import org.jboss.threads.AsyncFuture;
-
-import javax.net.ssl.SSLContext;
-import javax.security.auth.callback.CallbackHandler;
-import java.io.DataInput;
-import java.io.IOException;
-import java.net.URI;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * A connection to a remote domain controller. Once successfully connected this {@code ManagementClientChannelStrategy}

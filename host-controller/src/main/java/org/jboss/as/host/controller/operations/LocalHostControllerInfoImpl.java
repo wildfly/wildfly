@@ -24,6 +24,7 @@ package org.jboss.as.host.controller.operations;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.host.controller.HostControllerEnvironment;
@@ -49,6 +50,7 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
     private String remoteDCUser;
     private String remoteSecurityRealm;
     private List<DiscoveryOption> remoteDiscoveryOptions = new ArrayList<DiscoveryOption>();
+    private boolean remoteIgnoreUnaffectedConfiguration;
     private String httpManagementInterface;
     private int httpManagementPort;
     private int httpManagementSecurePort;
@@ -128,6 +130,10 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
         return remoteDiscoveryOptions;
     }
 
+    public boolean isRemoteDomainControllerIgnoreUnaffectedConfiguration() {
+        return remoteIgnoreUnaffectedConfiguration;
+    }
+
     void setMasterDomainController(boolean master) {
         this.master = master;
     }
@@ -176,7 +182,12 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
         this.remoteSecurityRealm = remoteSecurityRealm;
     }
 
+
     void addRemoteDomainControllerDiscoveryOption(DiscoveryOption discoveryOption) {
         this.remoteDiscoveryOptions.add(discoveryOption);
+    }
+
+    void setRemoteDomainControllerIgnoreUnaffectedConfiguration(boolean ignore) {
+        this.remoteIgnoreUnaffectedConfiguration = ignore;
     }
 }

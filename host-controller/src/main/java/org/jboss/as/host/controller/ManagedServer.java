@@ -22,6 +22,12 @@
 
 package org.jboss.as.host.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -37,16 +43,10 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.TransformingProxyController;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
-
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.Transformers;
-import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
-
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
@@ -58,9 +58,6 @@ import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.SimpleClassResolver;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceActivator;
 
 /**
@@ -77,11 +74,8 @@ class ManagedServer {
     private static final MarshallingConfiguration CONFIG;
 
     static {
-        try {
-            MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", Module.getModuleFromCallerModuleLoader(ModuleIdentifier.fromString("org.jboss.marshalling.river")).getClassLoader());
-        } catch (ModuleLoadException e) {
-            throw new RuntimeException(e);
-        }
+        MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader());
+
         final ClassLoader cl = ManagedServer.class.getClassLoader();
         final MarshallingConfiguration config = new MarshallingConfiguration();
         config.setVersion(2);
@@ -113,7 +107,7 @@ class ManagedServer {
 
     private final InetSocketAddress managementSocket;
     private final ProcessControllerClient processControllerClient;
-    private final ManagedServer.ManagedServerBootConfiguration bootConfiguration;
+    private final ManagedServerBootConfiguration bootConfiguration;
 
     private final ManagedServerProxy protocolClient;
     private final TransformingProxyController proxyController;
@@ -129,7 +123,7 @@ class ManagedServer {
 
     ManagedServer(final String hostControllerName, final String serverName, final byte[] authKey,
                   final ProcessControllerClient processControllerClient, final InetSocketAddress managementSocket,
-                  final ManagedServer.ManagedServerBootConfiguration bootConfiguration, final TransformationTarget transformationTarget) {
+                  final ManagedServerBootConfiguration bootConfiguration, final TransformationTarget transformationTarget) {
 
         assert hostControllerName  != null : "hostControllerName is null";
         assert serverName  != null : "serverName is null";
@@ -641,46 +635,6 @@ class ManagedServer {
         return null;
     }
 
-    /**
-     * The managed server boot configuration.
-     */
-    interface ManagedServerBootConfiguration {
-        /**
-         * Get the server launch environment.
-         *
-         * @return the launch environment
-         */
-        Map<String, String> getServerLaunchEnvironment();
-
-        /**
-         * Get server launch command.
-         *
-         * @return the launch command
-         */
-        List<String> getServerLaunchCommand();
-
-        /**
-         * Get the host controller environment.
-         *
-         * @return the host controller environment
-         */
-        HostControllerEnvironment getHostControllerEnvironment();
-
-        /**
-         * Get whether the native management remoting connector should use the endpoint set up by
-         */
-        boolean isManagementSubsystemEndpoint();
-
-        /**
-         * Get the subsystem endpoint configuration, in case we use the subsystem. This will be a
-         * resolved model node with no unresolved expressions. The model will not, however, store defaults.
-         *
-         * @return the subsystem endpoint config
-         */
-        ModelNode getSubsystemEndpointConfiguration();
-
-    }
-
     static enum InternalState {
 
         STOPPED,
@@ -827,8 +781,8 @@ class ManagedServer {
         public boolean execute(ManagedServer server) throws Exception {
 
             final ModelNode operation = new ModelNode();
-            operation.get(ModelDescriptionConstants.OP).set("reload");
-            operation.get(ModelDescriptionConstants.OP_ADDR).setEmptyList();
+            operation.get(OP).set("reload");
+            operation.get(OP_ADDR).setEmptyList();
             operation.get("operation-id").set(permit);
 
             try {

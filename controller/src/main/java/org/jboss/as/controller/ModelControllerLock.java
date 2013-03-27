@@ -34,28 +34,33 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 class ModelControllerLock {
     private final Sync sync = new Sync();
 
-    public void lock(Integer permit) {
+    void lock(Integer permit) {
         if (permit == null) {
             throw new IllegalArgumentException();
         }
         sync.acquire(permit);
     }
 
-    public void lockInterruptibly(Integer permit) throws InterruptedException {
+    void lockInterruptibly(Integer permit) throws InterruptedException {
         if (permit == null) {
             throw new IllegalArgumentException();
         }
         sync.acquireInterruptibly(permit);
     }
 
-    public void unlock(Integer permit) {
+    void unlock(Integer permit) {
         if (permit == null) {
             throw new IllegalArgumentException();
         }
         sync.release(permit);
     }
 
+    boolean detectDeadlockAndGetLock(int permit) {
+        return sync.tryAcquire(permit);
+    }
+
     private class Sync extends AbstractQueuedSynchronizer {
+        private static final long serialVersionUID = 1L;
 
         private final AtomicReference<Object> permitHolder = new AtomicReference<>(null);
 
@@ -106,5 +111,4 @@ class ModelControllerLock {
             return false;
         }
     }
-
 }

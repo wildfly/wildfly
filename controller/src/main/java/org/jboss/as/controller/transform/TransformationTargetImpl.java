@@ -46,10 +46,12 @@ public class TransformationTargetImpl implements TransformationTarget {
     private final OperationTransformerRegistry registry;
     private final TransformationTargetType type;
     private final IgnoredTransformationRegistry transformationExclusion;
+    private final RuntimeIgnoreTransformation runtimeIgnoreTransformation;
 
     private TransformationTargetImpl(final TransformerRegistry transformerRegistry, final ModelVersion version,
                                      final Map<PathAddress, ModelVersion> subsystemVersions, final OperationTransformerRegistry transformers,
-                                     final IgnoredTransformationRegistry transformationExclusion, final TransformationTargetType type) {
+                                     final IgnoredTransformationRegistry transformationExclusion, final TransformationTargetType type,
+                                     final RuntimeIgnoreTransformation runtimeIgnoreTransformation) {
         this.version = version;
         this.transformerRegistry = transformerRegistry;
         this.extensionRegistry = transformerRegistry.getExtensionRegistry();
@@ -60,11 +62,13 @@ public class TransformationTargetImpl implements TransformationTarget {
         this.registry = transformers;
         this.type = type;
         this.transformationExclusion = transformationExclusion == null ? null : transformationExclusion;
+        this.runtimeIgnoreTransformation = runtimeIgnoreTransformation;
     }
 
     public static TransformationTargetImpl create(final TransformerRegistry transformerRegistry, final ModelVersion version,
                                                   final Map<PathAddress, ModelVersion> subsystems,
-                                                  final IgnoredTransformationRegistry transformationExclusion, final TransformationTargetType type) {
+                                                  final IgnoredTransformationRegistry transformationExclusion, final TransformationTargetType type,
+                                                  final RuntimeIgnoreTransformation runtimeIgnoreTransformation) {
         final OperationTransformerRegistry registry;
         switch (type) {
             case SERVER:
@@ -73,7 +77,7 @@ public class TransformationTargetImpl implements TransformationTarget {
             default:
                 registry = transformerRegistry.resolveHost(version, subsystems);
         }
-        return new TransformationTargetImpl(transformerRegistry, version, subsystems, registry, transformationExclusion, type);
+        return new TransformationTargetImpl(transformerRegistry, version, subsystems, registry, transformationExclusion, type, runtimeIgnoreTransformation);
     }
 
     @Override
@@ -91,8 +95,8 @@ public class TransformationTargetImpl implements TransformationTarget {
     }
 
     @Override
-    public ResourceTransformer resolveTransformer(final PathAddress address) {
-        if (transformationExclusion != null && transformationExclusion.isResourceTransformationIgnored(address)) {
+    public ResourceTransformer resolveTransformer(ResourceTransformationContext context, final PathAddress address) {
+        if (ignoreResourceTransformation(context, address)) {
             return ResourceTransformer.DISCARD;
         }
         OperationTransformerRegistry.ResourceTransformerEntry entry = registry.resolveResourceTransformer(address);
@@ -103,8 +107,8 @@ public class TransformationTargetImpl implements TransformationTarget {
     }
 
     @Override
-    public TransformerEntry getTransformerEntry(final PathAddress address) {
-        if (transformationExclusion != null && transformationExclusion.isResourceTransformationIgnored(address)) {
+    public TransformerEntry getTransformerEntry(TransformationContext context, final PathAddress address) {
+        if (ignoreResourceTransformation(context, address)) {
             return TransformerEntry.DISCARD;
         }
         return registry.getTransformerEntry(address);
@@ -116,8 +120,8 @@ public class TransformationTargetImpl implements TransformationTarget {
     }
 
     @Override
-    public OperationTransformer resolveTransformer(final PathAddress address, final String operationName) {
-        if (transformationExclusion != null && transformationExclusion.isOperationTransformationIgnored(address)) {
+    public OperationTransformer resolveTransformer(TransformationContext context, final PathAddress address, final String operationName) {
+        if (ignoreResourceTransformation(context, address)) {
             return OperationTransformer.DEFAULT;
         }
         if(address.size() == 0) {
@@ -162,5 +166,15 @@ public class TransformationTargetImpl implements TransformationTarget {
     @Override
     public boolean isIgnoredResourceListAvailableAtRegistration() {
         return version.getMajor() >= 1 && version.getMinor() >= 4;
+    }
+
+    private boolean ignoreResourceTransformation(TransformationContext context, PathAddress address) {
+        if (transformationExclusion != null && transformationExclusion.isResourceTransformationIgnored(address)) {
+            return true;
+        }
+        if (!context.isSkipRuntimeIgnoreCheck() && runtimeIgnoreTransformation != null && runtimeIgnoreTransformation.ignoreResource(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS), address)) {
+            return true;
+        }
+        return false;
     }
 }

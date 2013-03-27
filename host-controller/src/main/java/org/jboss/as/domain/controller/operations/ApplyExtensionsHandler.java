@@ -64,7 +64,9 @@ import org.jboss.modules.ModuleLoadException;
  */
 public class ApplyExtensionsHandler implements OperationStepHandler {
 
+    static final String APPLY_MISSING = "apply-missing";
     public static final String OPERATION_NAME = "resolve-subsystems";
+
     private final Set<String> appliedExtensions = new HashSet<String>();
     private final ExtensionRegistry extensionRegistry;
     private final LocalHostControllerInfo localHostInfo;
@@ -94,7 +96,7 @@ public class ApplyExtensionsHandler implements OperationStepHandler {
         }
 
         for (final ModelNode resourceDescription : domainModel.asList()) {
-            final PathAddress resourceAddress = PathAddress.pathAddress(resourceDescription.require("domain-resource-address"));
+            final PathAddress resourceAddress = PathAddress.pathAddress(resourceDescription.require(ReadMasterDomainModelUtil.DOMAIN_RESOURCE_ADDRESS));
             if (ignoredResourceRegistry.isResourceExcluded(resourceAddress)) {
                 continue;
             }
@@ -109,7 +111,7 @@ public class ApplyExtensionsHandler implements OperationStepHandler {
             } else {
                 continue;
             }
-            resource.writeModel(resourceDescription.get("domain-resource-model"));
+            resource.writeModel(resourceDescription.get(ReadMasterDomainModelUtil.DOMAIN_RESOURCE_MODEL));
         }
         if (!context.isBooting()) {
             final Resource domainRootResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
