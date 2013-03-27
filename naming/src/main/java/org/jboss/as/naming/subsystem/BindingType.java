@@ -36,7 +36,9 @@ public enum BindingType {
 
     SIMPLE(NamingSubsystemModel.SIMPLE),
     OBJECT_FACTORY(NamingSubsystemModel.OBJECT_FACTORY),
-    LOOKUP(NamingSubsystemModel.LOOKUP);
+    LOOKUP(NamingSubsystemModel.LOOKUP),
+    EXTERNAL_CONTEXT(NamingSubsystemModel.EXTERNAL_CONTEXT),
+    ;
 
 
     private static final Map<String, BindingType> MAP;

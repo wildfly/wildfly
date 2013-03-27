@@ -455,4 +455,12 @@ public interface NamingMessages {
      */
     @Message(id = 11873, value = "Binding add operation for Object Factory With Environment not supported in Naming Subsystem model version %s")
     String failedToTransformObjectFactoryWithEnvironmentNameBindingAddOperation(String modelVersion);
+
+    /**
+     * A external context binding add operation was failed by the operation transformer.
+     * @param modelVersion the model version related with the transformer.
+     * @return
+     */
+    @Message(id = 11874, value = "Binding add operation for external context not supported in Naming Subsystem model version %s")
+    String failedToTransformExternalContext(String modelVersion);
 }

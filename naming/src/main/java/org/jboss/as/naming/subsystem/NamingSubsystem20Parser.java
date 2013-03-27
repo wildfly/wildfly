@@ -22,6 +22,18 @@
 
 package org.jboss.as.naming.subsystem;
 
+import java.util.EnumSet;
+import java.util.List;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
@@ -33,29 +45,19 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.naming.subsystem.NamingExtension.SUBSYSTEM_PATH;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.EXTERNAL_CONTEXT;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.LOOKUP;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
 
-import java.util.EnumSet;
-import java.util.List;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-
 /**
  * @author Eduardo Martins
  */
-public class NamingSubsystem13Parser implements XMLElementReader<List<ModelNode>> {
+public class NamingSubsystem20Parser implements XMLElementReader<List<ModelNode>> {
 
-    public static final NamingSubsystem13Parser INSTANCE = new NamingSubsystem13Parser();
+    public static final NamingSubsystem20Parser INSTANCE = new NamingSubsystem20Parser();
 
-    private NamingSubsystem13Parser() {
+    private NamingSubsystem20Parser() {
     }
 
     /**
@@ -72,7 +74,7 @@ public class NamingSubsystem13Parser implements XMLElementReader<List<ModelNode>
         final EnumSet<NamingSubsystemXMLElement> encountered = EnumSet.noneOf(NamingSubsystemXMLElement.class);
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             switch (NamingSubsystemNamespace.forUri(reader.getNamespaceURI())) {
-                case NAMING_1_3: {
+                case NAMING_2_0: {
                     final NamingSubsystemXMLElement element = NamingSubsystemXMLElement.forName(reader.getLocalName());
                     if (!encountered.add(element)) {
                         throw unexpectedElement(reader);
@@ -121,6 +123,10 @@ public class NamingSubsystem13Parser implements XMLElementReader<List<ModelNode>
                 }
                 case LOOKUP: {
                     this.parseLookupBinding(reader, operations, address);
+                    break;
+                }
+                case EXTERNAL_CONTEXT: {
+                    this.parseExternalContext(reader, operations, address);
                     break;
                 }
                 default: {
@@ -211,6 +217,55 @@ public class NamingSubsystem13Parser implements XMLElementReader<List<ModelNode>
         operations.add(bindingAdd);
     }
 
+
+    private void parseExternalContext(final XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress parentAddress) throws XMLStreamException {
+        final int attCount = reader.getAttributeCount();
+        String name = null;
+        final ModelNode bindingAdd = Util.createAddOperation();
+        bindingAdd.get(BINDING_TYPE).set(EXTERNAL_CONTEXT);
+        final EnumSet<NamingSubsystemXMLAttribute> required = EnumSet.of(NamingSubsystemXMLAttribute.NAME, NamingSubsystemXMLAttribute.CLASS, NamingSubsystemXMLAttribute.MODULE);
+        for (int i = 0; i < attCount; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final NamingSubsystemXMLAttribute attribute = NamingSubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME:
+                    name = value.trim();
+                    break;
+                case MODULE:
+                    NamingBindingResourceDefinition.MODULE.parseAndSetParameter(value, bindingAdd, reader);
+                    break;
+                case CLASS:
+                    NamingBindingResourceDefinition.CLASS.parseAndSetParameter(value, bindingAdd, reader);
+                    break;
+                case CACHE:
+                    NamingBindingResourceDefinition.CACHE.parseAndSetParameter(value, bindingAdd, reader);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        bindingAdd.get(OP_ADDR).set(parentAddress.append(BINDING, name).toModelNode());
+        // if present, parse the optional environment
+        while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+            switch (NamingSubsystemXMLElement.forName(reader.getLocalName())) {
+                case ENVIRONMENT: {
+                    parseObjectFactoryBindingEnvironment(reader, bindingAdd);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+
+        operations.add(bindingAdd);
+    }
+
     /**
      * <p>
      * Parses the optional {@code ObjectFactory environment}.
@@ -218,7 +273,8 @@ public class NamingSubsystem13Parser implements XMLElementReader<List<ModelNode>
      *
      * @param reader     the {@code XMLExtendedStreamReader} used to read the configuration XML.
      * @param bindingAdd where to add
-     * @throws XMLStreamException if an error occurs while parsing the XML.
+     * @throws javax.xml.stream.XMLStreamException
+     *          if an error occurs while parsing the XML.
      */
     private void parseObjectFactoryBindingEnvironment(XMLExtendedStreamReader reader, ModelNode bindingAdd) throws XMLStreamException {
         // no attributes expected

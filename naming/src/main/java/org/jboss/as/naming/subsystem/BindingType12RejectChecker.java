@@ -24,12 +24,6 @@
 
 package org.jboss.as.naming.subsystem;
 
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY_ENV;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
-
-import java.net.URL;
 import java.util.Map;
 
 import org.jboss.as.controller.PathAddress;
@@ -38,11 +32,13 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.naming.NamingMessages;
 import org.jboss.dmr.ModelNode;
 
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.EXTERNAL_CONTEXT;
+
 /**
-* @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
-*/
-class BindingTypeRejectChecker extends RejectAttributeChecker.DefaultRejectAttributeChecker implements RejectAttributeChecker {
-    private String rejectMessage = null;
+ * @author Stuart Douglas
+ */
+class BindingType12RejectChecker extends RejectAttributeChecker.DefaultRejectAttributeChecker implements RejectAttributeChecker {
+
     @Override
     public boolean rejectOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
         return rejectCheck(attributeValue, operation);
@@ -50,15 +46,7 @@ class BindingTypeRejectChecker extends RejectAttributeChecker.DefaultRejectAttri
 
     private boolean rejectCheck(ModelNode attributeValue, ModelNode model) {
         final String type = attributeValue.asString();
-        if (type.equals(SIMPLE) && model.hasDefined(TYPE)) {
-            if (URL.class.getName().equals(model.get(TYPE).asString())) {
-                // simple binding with type URL, not supported on 1.1.0
-                rejectMessage = NamingMessages.MESSAGES.failedToTransformSimpleURLNameBindingAddOperation("1.1.0");
-                return true;
-            }
-        } else if (type.equals(OBJECT_FACTORY) && model.hasDefined(OBJECT_FACTORY_ENV)) {
-            // object factory bind with environment, not supported on 1.1.0
-            rejectMessage = NamingMessages.MESSAGES.failedToTransformObjectFactoryWithEnvironmentNameBindingAddOperation("1.1.0");
+        if (type.equals(EXTERNAL_CONTEXT)) {
             return true;
         }
         return false;
@@ -72,11 +60,11 @@ class BindingTypeRejectChecker extends RejectAttributeChecker.DefaultRejectAttri
     @Override
     public boolean rejectResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
         ModelNode model = context.readResource(address).getModel();
-        return rejectCheck(attributeValue,model);
+        return rejectCheck(attributeValue, model);
     }
 
     @Override
     public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-        return rejectMessage;
+        return NamingMessages.MESSAGES.failedToTransformSimpleURLNameBindingAddOperation("1.2.0");
     }
 }

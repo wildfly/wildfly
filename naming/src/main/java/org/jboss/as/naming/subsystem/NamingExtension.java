@@ -24,7 +24,7 @@ package org.jboss.as.naming.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY_ENV;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.ENVIRONMENT;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -55,16 +55,18 @@ public class NamingExtension implements Extension {
     private static final String NAMESPACE_1_0 = "urn:jboss:domain:naming:1.0";
     private static final String NAMESPACE_1_1 = "urn:jboss:domain:naming:1.1";
     private static final String NAMESPACE_1_2 = "urn:jboss:domain:naming:1.2";
-    static final String NAMESPACE_1_3 = "urn:jboss:domain:naming:1.3";
+    private static final String NAMESPACE_1_3 = "urn:jboss:domain:naming:1.3";
+    static final String NAMESPACE_2_0 = "urn:jboss:domain:naming:2.0";
 
-    static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    static final int MANAGEMENT_API_MINOR_VERSION = 2;
+    static final int MANAGEMENT_API_MAJOR_VERSION = 2;
+    static final int MANAGEMENT_API_MINOR_VERSION = 0;
     static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     static final String RESOURCE_NAME = NamingExtension.class.getPackage().getName() + ".LocalDescriptions";
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME);
 
     public static final ModelVersion VERSION_1_1_0 = ModelVersion.create(1, 1, 0);
+    public static final ModelVersion VERSION_1_2_0 = ModelVersion.create(1, 2, 0);
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, NamingExtension.class.getClassLoader(), true, true);
@@ -89,18 +91,26 @@ public class NamingExtension implements Extension {
             registration.registerOperationHandler(NamingSubsystemRootResourceDefinition.JNDI_VIEW, JndiViewOperation.INSTANCE, false);
         }
 
-        subsystem.registerXMLElementWriter(NamingSubsystem13Parser.INSTANCE);
+        subsystem.registerXMLElementWriter(NamingSubsystemXMLPersister.INSTANCE);
 
         if (context.isRegisterTransformers()) {
             // register 1.1.0 transformer
             ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
             builder.addChildResource(NamingSubsystemModel.BINDING_PATH)
                     .getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, OBJECT_FACTORY_ENV)
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, OBJECT_FACTORY_ENV)
-                    .addRejectCheck(new BindingTypeRejectChecker(), BINDING_TYPE)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, ENVIRONMENT)
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, ENVIRONMENT)
+                    .addRejectCheck(new BindingType11RejectChecker(), BINDING_TYPE)
                     .end();
-            TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 1, 0));
+            TransformationDescription.Tools.register(builder.build(), subsystem, VERSION_1_1_0);
+
+            // register 1.2.0 transformer
+            builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+            builder.addChildResource(NamingSubsystemModel.BINDING_PATH)
+                    .getAttributeBuilder()
+                    .addRejectCheck(new BindingType11RejectChecker(), BINDING_TYPE)
+                    .end();
+            TransformationDescription.Tools.register(builder.build(), subsystem, VERSION_1_2_0);
         }
     }
 
@@ -113,6 +123,7 @@ public class NamingExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_1, NamingSubsystem11Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_2, NamingSubsystem12Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_3, NamingSubsystem13Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_2_0, NamingSubsystem20Parser.INSTANCE);
     }
 
 
