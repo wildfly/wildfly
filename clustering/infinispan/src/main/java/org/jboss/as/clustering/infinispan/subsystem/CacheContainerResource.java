@@ -130,6 +130,34 @@ public class CacheContainerResource extends SimpleResourceDefinition {
             .setParameters(NAME)
             .build();
 
+    // metrics
+    static final SimpleAttributeDefinition CACHE_MANAGER_STATUS =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.CACHE_MANAGER_STATUS, ModelType.STRING, true)
+                    .setStorageRuntime()
+                    .build();
+
+    static final SimpleAttributeDefinition CLUSTER_NAME =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.CLUSTER_NAME, ModelType.STRING, true)
+                    .setStorageRuntime()
+                    .build();
+
+    static final SimpleAttributeDefinition COORDINATOR_ADDRESS =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.COORDINATOR_ADDRESS, ModelType.STRING, true)
+                    .setStorageRuntime()
+                    .build();
+
+    static final SimpleAttributeDefinition IS_COORDINATOR =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.IS_COORDINATOR, ModelType.BOOLEAN, true)
+                    .setStorageRuntime()
+                    .build();
+
+    static final SimpleAttributeDefinition LOCAL_ADDRESS =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.LOCAL_ADDRESS, ModelType.STRING, true)
+                    .setStorageRuntime()
+                    .build();
+
+    static final AttributeDefinition[] CACHE_CONTAINER_METRICS = {CACHE_MANAGER_STATUS, CLUSTER_NAME, COORDINATOR_ADDRESS, IS_COORDINATOR, LOCAL_ADDRESS};
+
     private final ResolvePathHandler resolvePathHandler;
     public CacheContainerResource(final ResolvePathHandler resolvePathHandler) {
         super(CONTAINER_PATH,
@@ -147,6 +175,10 @@ public class CacheContainerResource extends SimpleResourceDefinition {
         final OperationStepHandler writeHandler = new CacheContainerWriteAttributeHandler(CACHE_CONTAINER_ATTRIBUTES);
         for (AttributeDefinition attr : CACHE_CONTAINER_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, CacheContainerReadAttributeHandler.INSTANCE, writeHandler);
+        }
+
+        for (AttributeDefinition attr : CACHE_CONTAINER_METRICS) {
+            resourceRegistration.registerMetric(attr, CacheContainerMetricsHandler.INSTANCE);
         }
     }
 
