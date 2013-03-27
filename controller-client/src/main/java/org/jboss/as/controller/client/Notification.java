@@ -20,9 +20,8 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.notification;
+package org.jboss.as.controller.client;
 
-import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -39,20 +38,20 @@ public class Notification {
     public static final String DATA = "data";
 
     private final String type;
-    private final PathAddress resource;
+    private final ModelNode resource;
     private final String message;
     private final long timestamp;
     private final ModelNode data;
 
-    public Notification(String type, PathAddress resource, String message) {
+    public Notification(String type, ModelNode resource, String message) {
         this(type, resource, message, null);
     }
 
-    public Notification(String type, PathAddress resource, String message, ModelNode data) {
+    public Notification(String type, ModelNode resource, String message, ModelNode data) {
         this(type, resource, message, System.currentTimeMillis(), data);
     }
 
-    private Notification(String type, PathAddress resource, String message, long timestamp, ModelNode data) {
+    private Notification(String type, ModelNode resource, String message, long timestamp, ModelNode data) {
         this.type = type;
         this.resource = resource;
         this.message = message;
@@ -64,7 +63,7 @@ public class Notification {
         return type;
     }
 
-    public PathAddress getResource() {
+    public ModelNode getResource() {
         return resource;
     }
 
@@ -83,7 +82,7 @@ public class Notification {
     public ModelNode toModelNode() {
         ModelNode node = new ModelNode();
         node.get(TYPE).set(type);
-        node.get(RESOURCE).set(resource.toModelNode());
+        node.get(RESOURCE).set(resource);
         node.get(TIMESTAMP).set(timestamp);
         node.get(MESSAGE).set(message);
         if (data != null) {
@@ -95,7 +94,7 @@ public class Notification {
 
     public static Notification fromModelNode(ModelNode node) {
         String type = node.require(TYPE).asString();
-        PathAddress resource = PathAddress.pathAddress(node.require(RESOURCE));
+        ModelNode resource = node.require(RESOURCE);
         long timestamp = node.require(TIMESTAMP).asLong();
         String message = node.require(MESSAGE).asString();
         ModelNode data = node.hasDefined(DATA)? node.get(DATA): null;

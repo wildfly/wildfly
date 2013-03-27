@@ -22,10 +22,14 @@
 
 package org.jboss.as.controller.notification;
 
+import org.jboss.as.controller.client.Notification;
+import org.jboss.as.controller.client.NotificationFilter;
+import org.jboss.as.controller.client.NotificationHandler;
+
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
-public class DelegatingNotificationHandler implements NotificationHandler, NotificationFilter{
+public class DelegatingNotificationHandler implements NotificationHandler, NotificationFilter {
 
     private NotificationHandler delegatingHandler;
     private NotificationFilter delegatingFilter;

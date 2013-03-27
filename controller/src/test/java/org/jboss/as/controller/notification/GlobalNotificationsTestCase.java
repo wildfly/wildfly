@@ -36,7 +36,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.notification.NotificationFilter.ALL;
 import static org.jboss.as.controller.operations.global.GlobalNotifications.NEW_VALUE;
 import static org.jboss.as.controller.operations.global.GlobalNotifications.OLD_VALUE;
 import static org.jboss.dmr.ModelType.LONG;
@@ -46,7 +45,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -60,13 +58,15 @@ import org.jboss.as.controller.ResourceBuilder;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.client.Notification;
+import org.jboss.as.controller.client.NotificationFilter;
+import org.jboss.as.controller.client.NotificationHandler;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.test.AbstractControllerTestBase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 import org.junit.Test;
 
 /**
@@ -152,7 +152,7 @@ public class GlobalNotificationsTestCase extends AbstractControllerTestBase {
             @Override
             public boolean isNotificationEnabled(Notification notification) {
                 return RESOURCE_ADDED_NOTIFICATION.equals(notification.getType()) &&
-                        resourceAddress.equals(notification.getResource());
+                        resourceAddress.equals(pathAddress(notification.getResource()));
             }
         });
 
@@ -168,7 +168,7 @@ public class GlobalNotificationsTestCase extends AbstractControllerTestBase {
             @Override
             public boolean isNotificationEnabled(Notification notification) {
                 return RESOURCE_REMOVED_NOTIFICATION.equals(notification.getType()) &&
-                        resourceAddress.equals(notification.getResource());
+                        resourceAddress.equals(pathAddress(notification.getResource()));
             }
         });
 
@@ -186,7 +186,7 @@ public class GlobalNotificationsTestCase extends AbstractControllerTestBase {
             @Override
             public boolean isNotificationEnabled(Notification notification) {
                 return ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION.equals(notification.getType()) &&
-                        resourceAddress.equals(notification.getResource());
+                        resourceAddress.equals(pathAddress(notification.getResource()));
             }
         });
 
@@ -219,7 +219,7 @@ public class GlobalNotificationsTestCase extends AbstractControllerTestBase {
             @Override
             public boolean isNotificationEnabled(Notification notification) {
                 return ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION.equals(notification.getType()) &&
-                        resourceAddress.equals(notification.getResource());
+                        resourceAddress.equals(pathAddress(notification.getResource()));
             }
         });
 

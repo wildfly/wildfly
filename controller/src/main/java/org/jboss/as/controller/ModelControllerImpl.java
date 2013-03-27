@@ -25,6 +25,7 @@ package org.jboss.as.controller;
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
@@ -52,6 +53,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NotificationFilter;
+import org.jboss.as.controller.client.NotificationHandler;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -456,6 +459,16 @@ class ModelControllerImpl implements ModelController {
                 return executeAsync(operation.getOperation(), messageHandler, operation);
             }
 
+            @Override
+            public void registerNotificationHandler(final ModelNode address, final NotificationHandler handler,final NotificationFilter filter) {
+                ModelControllerImpl.this.getNotificationSupport().registerNotificationHandler(pathAddress(address), handler, filter);
+            }
+
+            @Override
+            public void unregisterNotificationHandler(final ModelNode address, final NotificationHandler handler, final NotificationFilter filter) {
+                ModelControllerImpl.this.getNotificationSupport().unregisterNotificationHandler(pathAddress(address), handler, filter);
+            }
+
             private AsyncFuture<ModelNode> executeAsync(final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
                 if (executor == null) {
                     throw MESSAGES.nullAsynchronousExecutor();
@@ -606,7 +619,7 @@ class ModelControllerImpl implements ModelController {
             if (MGMT_OP_LOGGER.isTraceEnabled()) {
                 MGMT_OP_LOGGER.trace("Executing " + operation.get(OP) + " " + operation.get(OP_ADDR));
             }
-            final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+            final PathAddress address = pathAddress(operation.get(OP_ADDR));
             final String operationName =  operation.require(OP).asString();
             final OperationStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
             if(stepHandler != null) {

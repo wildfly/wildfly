@@ -20,10 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.notification;
+package org.jboss.as.controller.client;
 
 /**
- * A notification handler is registered in the {@link NotificationService} to listen to notifications.
+ * A notification handler is used to be notified of events on the server.
  * Its {@code handleNotification} is called every time a notification is emitted by a resource it was registered for.
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
