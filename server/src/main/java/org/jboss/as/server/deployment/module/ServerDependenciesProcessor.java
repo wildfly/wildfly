@@ -50,7 +50,6 @@ public class ServerDependenciesProcessor implements DeploymentUnitProcessor {
         ModuleIdentifier.create("org.apache.log4j"),
         ModuleIdentifier.create("org.slf4j"),
         ModuleIdentifier.create("org.jboss.logging.jul-to-slf4j-stub"),
-        ModuleIdentifier.create("org.glassfish.javax.json"),
     };
 
     @Override
@@ -61,8 +60,7 @@ public class ServerDependenciesProcessor implements DeploymentUnitProcessor {
         for (ModuleIdentifier moduleId : DEFAULT_MODULES) {
             try {
                 moduleLoader.loadModule(moduleId);
-                boolean importServices = moduleId.getName().endsWith("jdk") || moduleId.getName().equals("org.glassfish.javax.json");
-                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleId, false, false, importServices, false));
+                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleId, false, false, false, false));
             } catch (ModuleLoadException ex) {
                 ServerLogger.ROOT_LOGGER.debugf("Module not found: %s", moduleId);
             }
