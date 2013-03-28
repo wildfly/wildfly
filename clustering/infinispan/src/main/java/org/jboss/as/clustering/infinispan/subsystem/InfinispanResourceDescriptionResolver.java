@@ -126,6 +126,32 @@ public class InfinispanResourceDescriptionResolver extends StandardResourceDescr
         sharedAttributeResolver.put(BaseJDBCStoreResource.ENTRY_TABLE.getName() + "table", "jdbc-store");
         sharedAttributeResolver.put(BaseJDBCStoreResource.BUCKET_TABLE.getName() + "table", "jdbc-store");
 
+        // shared cache metrics
+        sharedAttributeResolver.put(CacheResource.ACTIVATIONS.getName(), "cache");
+        sharedAttributeResolver.put(CacheResource.AVERAGE_READ_TIME.getName(), "cache");
+        sharedAttributeResolver.put(CacheResource.AVERAGE_WRITE_TIME.getName(), "cache");
+        sharedAttributeResolver.put(CacheResource.CACHE_STATUS.getName(), "cache");
+        sharedAttributeResolver.put(CacheResource.ELAPSED_TIME.getName(), "cache");
+        sharedAttributeResolver.put(CacheResource.HIT_RATIO.getName(), "cache");
+        sharedAttributeResolver.put(CacheResource.HITS.getName(), "cache");
+        sharedAttributeResolver.put(CacheResource.INVALIDATIONS.getName(), "cache");
+        sharedAttributeResolver.put(CacheResource.MISSES.getName(), "cache");
+        sharedAttributeResolver.put(CacheResource.NUMBER_OF_ENTRIES.getName(), "cache");
+        sharedAttributeResolver.put(CacheResource.PASSIVATIONS.getName(), "cache");
+        sharedAttributeResolver.put(CacheResource.READ_WRITE_RATIO.getName(), "cache");
+        sharedAttributeResolver.put(CacheResource.REMOVE_HITS.getName(), "cache");
+        sharedAttributeResolver.put(CacheResource.REMOVE_MISSES.getName(), "cache");
+        sharedAttributeResolver.put(CacheResource.STORES.getName(), "cache");
+        sharedAttributeResolver.put(CacheResource.TIME_SINCE_RESET.getName(), "cache");
+
+        sharedAttributeResolver.put(ClusteredCacheResource.AVERAGE_REPLICATION_TIME.getName(), "clustered-cache");
+        sharedAttributeResolver.put(ClusteredCacheResource.REPLICATION_COUNT.getName(), "clustered-cache");
+        sharedAttributeResolver.put(ClusteredCacheResource.REPLICATION_FAILURES.getName(), "clustered-cache");
+        sharedAttributeResolver.put(ClusteredCacheResource.SUCCESS_RATIO.getName(), "clustered-cache");
+
+        sharedAttributeResolver.put(BaseStoreResource.CACHE_LOADER_LOADS.getName(), "store");
+        sharedAttributeResolver.put(BaseStoreResource.CACHE_LOADER_MISSES.getName(), "store");
+
         // shared children - this avoids having to describe the children for each parent resource
         sharedAttributeResolver.put(ModelKeys.TRANSPORT, null);
         sharedAttributeResolver.put(ModelKeys.LOCKING, null);
