@@ -30,6 +30,19 @@ import java.security.PrivilegedAction;
  */
 class SecurityActions {
 
+    static String getSystemProperty(final String name, final String defaultValue) {
+        if( System.getSecurityManager() == null) {
+            return System.getProperty(name, defaultValue);
+        } else {
+            return AccessController.doPrivileged(new PrivilegedAction<String>() {
+                @Override
+                public String run() {
+                    return System.getProperty(name, defaultValue);
+                }
+            });
+        }
+    }
+
     static String getSystemProperty(final String name) {
         if (System.getSecurityManager() == null) {
             return System.getProperty(name);

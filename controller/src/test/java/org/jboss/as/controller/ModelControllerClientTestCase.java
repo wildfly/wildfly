@@ -85,11 +85,11 @@ public class ModelControllerClientTestCase {
         try {
             channels.setupRemoting(new ManagementChannelInitialization() {
                 @Override
-                public HandleableCloseable.Key startReceiving(Channel channel) {
+                public ManagementChannelHandler startReceiving(Channel channel) {
                     final ManagementChannelHandler support = new ManagementChannelHandler(channel, channels.getExecutorService());
                     support.addHandlerFactory(new ModelControllerClientOperationHandler(controller, support));
                     channel.receiveMessage(support.getReceiver());
-                    return null;
+                    return support;
                 }
             });
             channels.startClientConnetion();

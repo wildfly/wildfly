@@ -42,6 +42,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.BootstrapListener;
 import org.jboss.as.server.FutureServiceContainer;
 import org.jboss.as.threads.ThreadFactoryService;
@@ -143,6 +144,7 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
         // Executor Services
         final HostControllerExecutorService executorService = new HostControllerExecutorService();
         serviceTarget.addService(HC_EXECUTOR_SERVICE_NAME, executorService)
+                .addAliases(ManagementRemotingServices.SHUTDOWN_EXECUTOR_NAME) // Use this executor for mgmt shutdown for now
                 .install();
 
         // Install required path services. (Only install those identified as required)

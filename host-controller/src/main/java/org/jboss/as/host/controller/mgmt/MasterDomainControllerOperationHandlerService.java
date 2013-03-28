@@ -21,10 +21,8 @@
 */
 package org.jboss.as.host.controller.mgmt;
 
-import org.jboss.as.controller.remote.ModelControllerClientOperationHandler;
-import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
-
 import org.jboss.as.controller.remote.AbstractModelControllerOperationHandlerFactoryService;
+import org.jboss.as.controller.remote.ModelControllerClientOperationHandler;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
@@ -35,10 +33,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.CloseHandler;
 import org.jboss.threads.JBossThreadFactory;
 
-import java.io.IOException;
 import java.security.AccessController;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
@@ -87,37 +83,15 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
     }
 
     @Override
-    public Channel.Key startReceiving(final Channel channel) {
+    public ManagementChannelHandler startReceiving(final Channel channel) {
         final ManagementChannelHandler handler = new ManagementChannelHandler(ManagementClientChannelStrategy.create(channel), getExecutor());
         // Assemble the request handlers for the domain channel
         handler.addHandlerFactory(new HostControllerRegistrationHandler(handler, domainController, operationExecutor, slaveRequestExecutor));
         handler.addHandlerFactory(new ModelControllerClientOperationHandler(getController(), handler));
         handler.addHandlerFactory(new MasterDomainControllerOperationHandlerImpl(domainController, slaveRequestExecutor));
         handler.addHandlerFactory(pongRequestHandler);
-        final Channel.Key key = channel.addCloseHandler(new CloseHandler<Channel>() {
-            @Override
-            public void handleClose(Channel closed, IOException exception) {
-                handler.shutdown();
-                boolean interrupted = false;
-                try {
-                    if (!handler.awaitCompletion(CHANNEL_SHUTDOWN_TIMEOUT, TimeUnit.MILLISECONDS)) {
-                        ROOT_LOGGER.gracefulManagementChannelHandlerShutdownTimedOut(CHANNEL_SHUTDOWN_TIMEOUT);
-                    }
-                } catch (InterruptedException e) {
-                    interrupted = true;
-                    ROOT_LOGGER.serviceShutdownIncomplete(e);
-                } catch (Exception e) {
-                    ROOT_LOGGER.serviceShutdownIncomplete(e);
-                } finally {
-                    handler.shutdownNow();
-                    if (interrupted) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            }
-        });
         channel.receiveMessage(handler.getReceiver());
-        return key;
+        return handler;
     }
 
 }

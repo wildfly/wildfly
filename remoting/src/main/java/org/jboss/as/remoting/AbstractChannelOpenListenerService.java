@@ -21,11 +21,16 @@
 */
 package org.jboss.as.remoting;
 
+import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import org.jboss.as.remoting.management.ManagementChannelRegistryService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -41,8 +46,6 @@ import org.jboss.remoting3.OpenListener;
 import org.jboss.remoting3.Registration;
 import org.xnio.OptionMap;
 
-import static org.jboss.as.remoting.RemotingMessages.*;
-
 
 /**
  * Abstract service responsible for listening for channel open requests.
@@ -50,7 +53,23 @@ import static org.jboss.as.remoting.RemotingMessages.*;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Emanuel Muckenhuber
  */
-public abstract class AbstractChannelOpenListenerService<T> implements Service<Void>, OpenListener {
+public abstract class AbstractChannelOpenListenerService implements Service<Void>, OpenListener {
+
+    /** How long we wait for active operations to clear before allowing channel close to proceed */
+    protected static final int CHANNEL_SHUTDOWN_TIMEOUT;
+
+    static {
+        String prop = null;
+        int timeout;
+        try {
+            prop = SecurityActions.getSystemProperty("jboss.as.management.channel.close.timeout", "15000");
+            timeout = Integer.parseInt(prop);
+        } catch (NumberFormatException e) {
+            ControllerLogger.ROOT_LOGGER.invalidChannelCloseTimeout(e, "jboss.as.management.channel.close.timeout", prop);
+            timeout = 15000;
+        }
+        CHANNEL_SHUTDOWN_TIMEOUT = timeout;
+    }
 
     protected final Logger log = Logger.getLogger("org.jboss.as.remoting");
 
@@ -59,7 +78,7 @@ public abstract class AbstractChannelOpenListenerService<T> implements Service<V
 
     protected final String channelName;
     private final OptionMap optionMap;
-    private final Set<T> channels = Collections.synchronizedSet(new HashSet<T>());
+    private final Set<ManagementChannelInitialization.ManagementChannelShutdownHandle> handles = Collections.synchronizedSet(new HashSet<ManagementChannelInitialization.ManagementChannelShutdownHandle>());
 
     private volatile boolean closed = true;
 
@@ -99,8 +118,44 @@ public abstract class AbstractChannelOpenListenerService<T> implements Service<V
     }
 
     @Override
-    public synchronized void stop(StopContext context) {
+    public synchronized void stop(final StopContext context) {
         closed = true;
+        final Set<ManagementChannelInitialization.ManagementChannelShutdownHandle> handles = new HashSet<ManagementChannelInitialization.ManagementChannelShutdownHandle>(this.handles);
+        for (final ManagementChannelInitialization.ManagementChannelShutdownHandle handle : handles) {
+            handle.shutdown();
+        }
+        final Runnable shutdownTask = new Runnable() {
+            @Override
+            public void run() {
+                final long end = System.currentTimeMillis() + CHANNEL_SHUTDOWN_TIMEOUT;
+                boolean interrupted = Thread.currentThread().isInterrupted();
+                try {
+                    for (final ManagementChannelInitialization.ManagementChannelShutdownHandle handle : handles) {
+                        final long remaining = end - System.currentTimeMillis();
+                        try {
+                            if (!interrupted && !handle.awaitCompletion(remaining, TimeUnit.MILLISECONDS)) {
+                                ControllerLogger.ROOT_LOGGER.gracefulManagementChannelHandlerShutdownTimedOut(CHANNEL_SHUTDOWN_TIMEOUT);
+                            }
+                        } catch (InterruptedException e) {
+                            interrupted = true;
+                            ControllerLogger.ROOT_LOGGER.gracefulManagementChannelHandlerShutdownFailed(e);
+                        } catch (Exception e) {
+                            ControllerLogger.ROOT_LOGGER.gracefulManagementChannelHandlerShutdownFailed(e);
+                        } finally {
+                            handle.shutdownNow();
+                        }
+                    }
+                } finally {
+                    context.complete();
+                    if (interrupted) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+        };
+        // Execute async shutdown task
+        context.asynchronous();
+        execute(shutdownTask);
     }
 
     @Override
@@ -112,29 +167,42 @@ public abstract class AbstractChannelOpenListenerService<T> implements Service<V
             channel.closeAsync();
             return;
         }
-        final T createdChannel = createChannel(channel);
-        channels.add(createdChannel);
+        final ManagementChannelInitialization.ManagementChannelShutdownHandle handle = handleChannelOpened(channel);
+        handles.add(handle);
         channel.addCloseHandler(new CloseHandler<Channel>() {
             public void handleClose(final Channel closed, final IOException exception) {
-                channels.remove(createdChannel);
-                log.tracef("Handling close for %s", createdChannel);
+                handles.remove(handle);
+                handle.shutdownNow();
+                log.tracef("Handling close for %s", handle);
             }
         });
     }
 
     @Override
     public void registrationTerminated() {
-        final Set<T> copy;
-        synchronized (channels) {
+        final Set<ManagementChannelInitialization.ManagementChannelShutdownHandle> copy;
+        synchronized (handles) {
             // Copy off the set to avoid ConcurrentModificationException
-            copy = new HashSet<T>(channels);
+            copy = new HashSet<ManagementChannelInitialization.ManagementChannelShutdownHandle>(handles);
         }
-        for (final T channel : copy) {
-            closeChannelOnShutdown(channel);
+        for (final ManagementChannelInitialization.ManagementChannelShutdownHandle channel : copy) {
+            channel.shutdownNow();
         }
     }
 
-    protected abstract T createChannel(Channel channel);
+    /**
+     * Handle a channel open event.
+     *
+     * @param channel the opened channel
+     * @return the shutdown handle
+     */
+    protected abstract ManagementChannelInitialization.ManagementChannelShutdownHandle handleChannelOpened(Channel channel);
 
-    protected abstract void closeChannelOnShutdown(T channel);
+    /**
+     * Execute the shutdown task.
+     *
+     * @param runnable the runnable
+     */
+    protected abstract void execute(Runnable runnable);
+
 }

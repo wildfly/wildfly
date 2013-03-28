@@ -59,6 +59,7 @@ import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
 import org.jboss.as.platform.mbean.PlatformMBeanConstants;
 import org.jboss.as.platform.mbean.RootPlatformMBeanResource;
+import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.controller.resources.VersionModelInitializer;
@@ -199,7 +200,9 @@ public final class ServerService extends AbstractControllerService {
 //        final QueuelessThreadPoolService serverExecutorService = new QueuelessThreadPoolService(Integer.MAX_VALUE, false, new TimeSpec(TimeUnit.SECONDS, 5));
 //        serverExecutorService.getThreadFactoryInjector().inject(threadFactory);
         final ServerExecutorService serverExecutorService = new ServerExecutorService(threadFactory);
-        serviceTarget.addService(Services.JBOSS_SERVER_EXECUTOR, serverExecutorService).install();
+        serviceTarget.addService(Services.JBOSS_SERVER_EXECUTOR, serverExecutorService)
+                .addAliases(ManagementRemotingServices.SHUTDOWN_EXECUTOR_NAME) // Use this executor for mgmt shutdown for now
+                .install();
 
         DelegatingResourceDefinition rootResourceDefinition = new DelegatingResourceDefinition();
         ServerService service = new ServerService(configuration, processState, null, bootstrapListener, rootResourceDefinition, runningModeControl, vaultReader, auditLogger, authorizer);

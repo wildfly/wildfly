@@ -44,7 +44,6 @@ import java.util.Set;
 import org.junit.Assert;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.process.Main;
 import org.jboss.as.process.ProcessController;
@@ -92,8 +91,15 @@ public class RespawnTestCase {
     static File domainConfigDir;
     static File hostXml;
 
+    static TestControllerUtils utils;
+    static TestControllerClient client;
+
     @BeforeClass
     public static void createProcessController() throws IOException, URISyntaxException, NoSuchAlgorithmException {
+
+        // Setup client
+        utils = TestControllerUtils.create(DomainTestSupport.masterAddress, HC_PORT, getCallbackHandler());
+        client = new TestControllerClient(utils.getConfiguration(), utils.getExecutor());
 
         final String testName = RespawnTestCase.class.getSimpleName();
         final File domains = new File("target" + File.separator + "domains" + File.separator + testName);
@@ -169,6 +175,8 @@ public class RespawnTestCase {
             processController.shutdown();
             processController = null;
         }
+        IoUtils.safeClose(client);
+        IoUtils.safeClose(utils);
     }
 
     @Test
@@ -283,7 +291,7 @@ public class RespawnTestCase {
         readHostControllerServer(SERVER_TWO);
 
         manageServer("stop", SERVER_ONE);
-        Thread.sleep(10000);
+        Thread.sleep(5000);
         readHostControllerServer(SERVER_TWO);
         manageServer("start", SERVER_ONE);
 
@@ -387,11 +395,8 @@ public class RespawnTestCase {
         if (adminOnly != null) {
             operation.get(ModelDescriptionConstants.ADMIN_ONLY).set(adminOnly);
         }
-        final ModelControllerClient client = ModelControllerClient.Factory.create(DomainTestSupport.masterAddress, HC_PORT, getCallbackHandler());
-        try {
-            Assert.assertEquals(SUCCESS, client.execute(operation).get(OUTCOME).asString());
-        } catch (IOException canHappenWhenShuttingDownController) {
-        }
+        final TestControllerClient client = getControllerClient();
+        Assert.assertEquals(SUCCESS, client.executeAwaitClosed(operation).get(OUTCOME).asString());
     }
 
     private void shutdownHostController(boolean restart) throws Exception {
@@ -408,9 +413,8 @@ public class RespawnTestCase {
         operation.get(OP_ADDR).set(getHostControllerServerConfigAddress(MASTER, serverName));
         operation.get("blocking").set(true);
 
-        final ModelControllerClient client = ModelControllerClient.Factory.create(DomainTestSupport.masterAddress, HC_PORT, getCallbackHandler());
         try {
-            Assert.assertEquals(SUCCESS, client.execute(operation).get(OUTCOME).asString());
+            Assert.assertEquals(SUCCESS, getControllerClient().execute(operation).get(OUTCOME).asString());
         } catch (IOException canHappenWhenShuttingDownController) {
         }
     }
@@ -420,11 +424,11 @@ public class RespawnTestCase {
         boolean hasOne = false;
 
         do {
+            Thread.sleep(250);
             hasOne = lookupServerInModel(MASTER, serverName);
             if (hasOne) {
                 break;
             }
-            Thread.sleep(250);
         } while (System.currentTimeMillis() < time);
         Assert.assertTrue(hasOne);
     }
@@ -434,12 +438,12 @@ public class RespawnTestCase {
         boolean hasOne = false;
         boolean hasTwo = false;
         do {
+            Thread.sleep(250);
             hasOne = lookupServerInModel(MASTER, SERVER_ONE);
             hasTwo = lookupServerInModel(MASTER, SERVER_TWO);
             if (hasOne && hasTwo) {
                 break;
             }
-            Thread.sleep(250);
         } while (System.currentTimeMillis() < time);
         Assert.assertTrue(hasOne);
         Assert.assertTrue(hasTwo);
@@ -450,9 +454,8 @@ public class RespawnTestCase {
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         operation.get(OP_ADDR).set(getHostControllerServerAddress(host, server));
 
-        final ModelControllerClient client = ModelControllerClient.Factory.create(DomainTestSupport.masterAddress, HC_PORT, getCallbackHandler());
         try {
-            final ModelNode result = client.execute(operation);
+            final ModelNode result = getControllerClient().execute(operation);
             if (result.get(OUTCOME).asString().equals(SUCCESS)){
                 final ModelNode model = result.require(RESULT);
                 if (model.hasDefined(NAME) && model.get(NAME).asString().equals(server)) {
@@ -460,8 +463,7 @@ public class RespawnTestCase {
                 }
             }
         } catch (IOException e) {
-        }finally {
-            StreamUtils.safeClose(client);
+            //
         }
         return false;
     }
@@ -488,11 +490,11 @@ public class RespawnTestCase {
         final long time = System.currentTimeMillis() + TIMEOUT;
         List<RunningProcess> runningProcesses;
         do {
+            Thread.sleep(200);
             runningProcesses = processUtil.getRunningProcesses();
             if (processUtil.containsProcesses(runningProcesses, requiredNames)){
                 return runningProcesses;
             }
-            Thread.sleep(200);
         } while(System.currentTimeMillis() < time);
         Assert.fail("Did not have all running processes " + runningProcesses);
         return null;
@@ -502,6 +504,7 @@ public class RespawnTestCase {
         final long time = System.currentTimeMillis() + TIMEOUT;
         List<RunningProcess> runningProcesses;
         do {
+            Thread.sleep(200);
             runningProcesses = processUtil.getRunningProcesses();
             for (Iterator<RunningProcess> it = runningProcesses.iterator() ; it.hasNext() ; ) {
                 RunningProcess proc = it.next();
@@ -512,7 +515,6 @@ public class RespawnTestCase {
             if (processUtil.containsProcesses(runningProcesses, HOST_CONTROLLER, SERVER_ONE, SERVER_TWO)){
                 return runningProcesses;
             }
-            Thread.sleep(200);
         } while(System.currentTimeMillis() < time);
         Assert.fail("Did not have all running processes " + runningProcesses);
         return null;
@@ -541,6 +543,11 @@ public class RespawnTestCase {
         } finally {
             IoUtils.safeClose(in);
         }
+    }
+
+    static TestControllerClient getControllerClient() throws IOException {
+        client.connect(); // Ensure connected
+        return client;
     }
 
     private static abstract class ProcessUtil {
@@ -618,14 +625,14 @@ public class RespawnTestCase {
 
             final long time = System.currentTimeMillis() + TIMEOUT;
             do {
-                List<RunningProcess> runningProcesses = processUtil.getRunningProcesses();
-                if (processUtil.getProcessById(runningProcesses, process.getProcessId()) == null){
-                    return;
-                }
                 try {
                     Thread.sleep(200);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
+                }
+                List<RunningProcess> runningProcesses = processUtil.getRunningProcesses();
+                if (processUtil.getProcessById(runningProcesses, process.getProcessId()) == null){
+                    return;
                 }
             } while(System.currentTimeMillis() < time);
 

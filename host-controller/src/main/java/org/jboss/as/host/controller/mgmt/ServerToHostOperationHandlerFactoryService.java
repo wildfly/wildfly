@@ -41,7 +41,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.HandleableCloseable;
 import org.jboss.threads.JBossThreadFactory;
 
 /**
@@ -103,13 +102,13 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
     }
 
     @Override
-    public HandleableCloseable.Key startReceiving(final Channel channel) {
+    public ManagementChannelHandler startReceiving(final Channel channel) {
         final ManagementChannelHandler channelHandler = new ManagementChannelHandler(channel, executorService);
         final ServerToHostProtocolHandler registrationHandler = new ServerToHostProtocolHandler(serverInventory.getValue(), operationExecutor, domainController, channelHandler, registrations, expressionResolver);
         channelHandler.addHandlerFactory(new ManagementPongRequestHandler());
         channelHandler.addHandlerFactory(registrationHandler);
         channel.receiveMessage(channelHandler.getReceiver());
-        return null;
+        return channelHandler;
     }
 
 }

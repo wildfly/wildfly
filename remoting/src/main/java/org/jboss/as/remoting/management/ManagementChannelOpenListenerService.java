@@ -21,7 +21,7 @@
 */
 package org.jboss.as.remoting.management;
 
-import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import org.jboss.as.remoting.AbstractChannelOpenListenerService;
@@ -34,33 +34,32 @@ import org.xnio.OptionMap;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-class ManagementChannelOpenListenerService extends AbstractChannelOpenListenerService<Channel> {
+class ManagementChannelOpenListenerService extends AbstractChannelOpenListenerService {
 
     private final InjectedValue<ManagementChannelInitialization> operationHandlerFactoryValue = new InjectedValue<ManagementChannelInitialization>();
-
-
+    private final InjectedValue<ExecutorService> executorServiceInjectedValue = new InjectedValue<ExecutorService>();
     ManagementChannelOpenListenerService(String channelName, OptionMap optionMap) {
         super(channelName, optionMap);
     }
 
-    public InjectedValue<ManagementChannelInitialization> getOperationHandlerInjector(){
+    protected InjectedValue<ExecutorService> getExecutorServiceInjectedValue() {
+        return executorServiceInjectedValue;
+    }
+
+    protected InjectedValue<ManagementChannelInitialization> getOperationHandlerInjector(){
         return operationHandlerFactoryValue;
     }
 
     @Override
-    protected Channel createChannel(final Channel channel) {
+    protected ManagementChannelInitialization.ManagementChannelShutdownHandle handleChannelOpened(final Channel channel) {
         final ManagementChannelInitialization initialization = operationHandlerFactoryValue.getValue();
-        initialization.startReceiving(channel);
         log.tracef("Opened %s: %s with handler %s", channelName, channel, initialization);
-        return channel;
+        return initialization.startReceiving(channel);
     }
 
     @Override
-    protected void closeChannelOnShutdown(final Channel channel) {
-        try {
-            channel.close();
-        } catch (IOException e) {
-        }
+    protected void execute(final Runnable runnable) {
+        executorServiceInjectedValue.getValue().execute(runnable);
     }
 
 }

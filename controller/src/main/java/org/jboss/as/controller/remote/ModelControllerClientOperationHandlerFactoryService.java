@@ -22,17 +22,11 @@
 package org.jboss.as.controller.remote;
 
 
-import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.CloseHandler;
-import org.jboss.remoting3.HandleableCloseable;
 import org.jboss.remoting3.security.UserInfo;
-
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Service used to create a new client protocol operation handler per channel
@@ -42,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 public class ModelControllerClientOperationHandlerFactoryService extends AbstractModelControllerOperationHandlerFactoryService {
 
     @Override
-    public HandleableCloseable.Key startReceiving(Channel channel) {
+    public ManagementChannelHandler startReceiving(Channel channel) {
         final ManagementChannelHandler handler = new ManagementChannelHandler(ManagementClientChannelStrategy.create(channel),
                 getExecutor());
         UserInfo userInfo = channel.getConnection().getUserInfo();
@@ -52,31 +46,7 @@ public class ModelControllerClientOperationHandlerFactoryService extends Abstrac
         } else {
             handler.addHandlerFactory(new ModelControllerClientOperationHandler(getController(), handler));
         }
-
-
-        final HandleableCloseable.Key key = channel.addCloseHandler(new CloseHandler<Channel>() {
-            @Override
-            public void handleClose(Channel closed, IOException exception) {
-                handler.shutdown();
-                boolean interrupted = false;
-                try {
-                    if (!handler.awaitCompletion(CHANNEL_SHUTDOWN_TIMEOUT, TimeUnit.MILLISECONDS)) {
-                        ControllerLogger.ROOT_LOGGER.gracefulManagementChannelHandlerShutdownTimedOut(CHANNEL_SHUTDOWN_TIMEOUT);
-                    }
-                } catch (InterruptedException e) {
-                    interrupted = true;
-                    ControllerLogger.ROOT_LOGGER.gracefulManagementChannelHandlerShutdownFailed(e);
-                } catch (Exception e) {
-                    ControllerLogger.ROOT_LOGGER.gracefulManagementChannelHandlerShutdownFailed(e);
-                } finally {
-                    handler.shutdownNow();
-                    if (interrupted) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            }
-        });
         channel.receiveMessage(handler.getReceiver());
-        return key;
+        return handler;
     }
 }
