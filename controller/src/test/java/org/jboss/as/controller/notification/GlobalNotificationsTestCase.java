@@ -34,6 +34,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_ADDED_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.operations.global.GlobalNotifications.NEW_VALUE;
@@ -209,6 +210,7 @@ public class GlobalNotificationsTestCase extends AbstractControllerTestBase {
         assertTrue("the notification handler did not receive the " + ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION, notificationEmittedLatch.get().await(1, SECONDS));
         assertEquals(RESOURCE_ATTRIBUTE.getName(), notification.get().getData().require(NAME).asString());
         // the value was not defined: the notification does not return the default value but undefined instead.
+        System.out.println("notification = " + notification.get());
         assertFalse(notification.get().getData().require(OLD_VALUE).isDefined());
         assertEquals(newValue, notification.get().getData().require(NEW_VALUE).asLong());
     }
@@ -234,5 +236,60 @@ public class GlobalNotificationsTestCase extends AbstractControllerTestBase {
         writeAttribute.get(VALUE).set(incorrectValue);
         executeForFailure(writeAttribute);
         assertFalse("the notification handler did not receive the " + ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION, notificationEmittedLatch.get().await(250, MILLISECONDS));
+    }
+
+    @Test
+    public void test_ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION_NotSentWhenAttributeValueIsTheSame() throws Exception {
+        notificationFilter.set(new NotificationFilter() {
+            @Override
+            public boolean isNotificationEnabled(Notification notification) {
+                return ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION.equals(notification.getType()) &&
+                        resourceAddress.equals(pathAddress(notification.getResource()));
+            }
+        });
+
+        long value = System.currentTimeMillis();
+
+        ModelNode add = createOperation(ADD, resourceAddress);
+        add.get(RESOURCE_ATTRIBUTE.getName()).set(value);
+        executeForResult(add);
+
+        executeForResult(createOperation(OPERATION_THAT_REGISTERS_A_NOTIFICATION_HANDLER));
+
+        ModelNode writeAttribute = createOperation(WRITE_ATTRIBUTE_OPERATION, resourceAddress);
+        writeAttribute.get(NAME).set(RESOURCE_ATTRIBUTE.getName());
+        writeAttribute.get(VALUE).set(value);
+        executeForResult(writeAttribute);
+        assertFalse("the notification handler did receive the " + ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION, notificationEmittedLatch.get().await(250, MILLISECONDS));
+    }
+
+    @Test
+    public void test_ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION_WhenUndefineAttributeIsCalled() throws Exception {
+
+        // 2 notifications: 1 for the write-attribute to set the value and 1 for the undefine-attribute
+        notificationEmittedLatch.set(new CountDownLatch(2));
+        notificationFilter.set(new NotificationFilter() {
+            @Override
+            public boolean isNotificationEnabled(Notification notification) {
+                return ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION.equals(notification.getType()) &&
+                        resourceAddress.equals(pathAddress(notification.getResource()));
+            }
+        });
+
+        long newValue = System.currentTimeMillis();
+
+        executeForResult(createOperation(ADD, resourceAddress));
+        executeForResult(createOperation(OPERATION_THAT_REGISTERS_A_NOTIFICATION_HANDLER));
+
+        ModelNode writeAttribute = createOperation(WRITE_ATTRIBUTE_OPERATION, resourceAddress);
+        writeAttribute.get(NAME).set(RESOURCE_ATTRIBUTE.getName());
+        writeAttribute.get(VALUE).set(newValue);
+        executeForResult(writeAttribute);
+
+        ModelNode undefineAttribute = createOperation(UNDEFINE_ATTRIBUTE_OPERATION, resourceAddress);
+        undefineAttribute.get(NAME).set(RESOURCE_ATTRIBUTE.getName());
+        executeForResult(undefineAttribute);
+
+        assertTrue("the notification handler did not receive the " + ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION, notificationEmittedLatch.get().await(1, SECONDS));
     }
 }

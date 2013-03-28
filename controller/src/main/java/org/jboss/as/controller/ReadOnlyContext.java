@@ -59,7 +59,7 @@ class ReadOnlyContext extends AbstractOperationContext {
     ReadOnlyContext(final ProcessType processType, final RunningMode runningMode, final ModelController.OperationTransactionControl transactionControl,
                     final ControlledProcessState processState, final boolean booting,
                     final OperationContext primaryContext, final ModelControllerImpl controller, final int operationId) {
-        super(processType, runningMode, transactionControl, processState, booting);
+        super(processType, runningMode, transactionControl, processState, controller.getNotificationSupport(), booting);
         this.primaryContext = primaryContext;
         this.controller = controller;
         this.operationId = operationId;
