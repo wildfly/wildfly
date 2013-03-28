@@ -61,7 +61,7 @@ class ParallelBootOperationContext extends AbstractOperationContext {
                                  final ControlledProcessState processState, final OperationContext primaryContext,
                                  final List<ParsedBootOp> runtimeOps, final Thread controllingThread,
                                  final ModelControllerImpl controller, final int operationId) {
-        super(primaryContext.getProcessType(), primaryContext.getRunningMode(), transactionControl, processState, true);
+        super(primaryContext.getProcessType(), primaryContext.getRunningMode(), transactionControl, processState, controller.getNotificationSupport(), true);
         this.primaryContext = primaryContext;
         this.runtimeOps = runtimeOps;
         AbstractOperationContext.controllingThread.set(controllingThread);
