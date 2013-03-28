@@ -285,6 +285,8 @@ public class ServerToHostProtocolHandler implements ManagementRequestHandlerFact
                         }
                     } catch (Exception e) {
                         safeWriteResponse(context, e);
+                    } finally {
+                        resultHandler.done(null);
                     }
                 }
             });

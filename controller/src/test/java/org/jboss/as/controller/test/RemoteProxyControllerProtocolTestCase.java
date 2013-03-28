@@ -61,7 +61,6 @@ import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
-import org.jboss.remoting3.HandleableCloseable;
 import org.jboss.threads.AsyncFutureTask;
 import org.junit.After;
 import org.junit.Assert;
@@ -556,7 +555,7 @@ public class RemoteProxyControllerProtocolTestCase {
             channels = new RemoteChannelPairSetup();
             channels.setupRemoting(new ManagementChannelInitialization() {
                 @Override
-                public HandleableCloseable.Key startReceiving(Channel channel) {
+                public ManagementChannelHandler startReceiving(Channel channel) {
                     final ManagementChannelHandler support = new ManagementChannelHandler(channel, channels.getExecutorService());
                     support.addHandlerFactory(new TransactionalProtocolOperationHandler(proxiedController, support));
                     channel.addCloseHandler(new CloseHandler<Channel>() {
@@ -566,7 +565,7 @@ public class RemoteProxyControllerProtocolTestCase {
                         }
                     });
                     channel.receiveMessage(support.getReceiver());
-                    return null;
+                    return support;
                 }
             });
             channels.startClientConnetion();

@@ -34,6 +34,10 @@ import static java.security.AccessController.doPrivileged;
  */
 class SecurityActions {
 
+    static String getSystemProperty(final String name, final String defaultValue) {
+        return getSecurityManager() == null ? getProperty(name, defaultValue) : doPrivileged(new ReadPropertyAction(name, defaultValue));
+    }
+
     static String getSystemProperty(final String name) {
         return getSecurityManager() == null ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
     }
