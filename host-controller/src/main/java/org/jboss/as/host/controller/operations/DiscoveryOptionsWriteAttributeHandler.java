@@ -24,15 +24,14 @@ package org.jboss.as.host.controller.operations;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISCOVERY_OPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISCOVERY_OPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATIC_DISCOVERY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.util.Collections;
 import java.util.List;
-import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.discovery.DiscoveryOptionsResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -44,29 +43,20 @@ import org.jboss.dmr.Property;
  *
  * @author Farah Juma
  */
-public class DiscoveryOptionsWriteAttributeHandler extends ModelOnlyWriteAttributeHandler {
+public class DiscoveryOptionsWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
 
     public DiscoveryOptionsWriteAttributeHandler() {
         super(DiscoveryOptionsResourceDefinition.DISCOVERY_OPTIONS);
     }
 
+    /**
+     * Validates that the new options list only contains existing options and contains all of them.
+     *
+     * {@inheritDoc}
+     */
     @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        ModelNode newValue = operation.hasDefined(VALUE) ? operation.get(VALUE) : new ModelNode();
-        if (!isValidAttributeValue(context, newValue)) {
-            throw new OperationFailedException(MESSAGES.invalidDiscoveryOptionsOrdering(DISCOVERY_OPTIONS));
-        }
-
-        if (!context.isBooting()) {
-            context.reloadRequired();
-        }
-        super.execute(context, operation);
-    }
-
-    protected boolean isValidAttributeValue(OperationContext context, ModelNode newValue) throws OperationFailedException {
-        final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
-        DiscoveryOptionsResourceDefinition.DISCOVERY_OPTIONS.getValidator()
-            .validateParameter(DISCOVERY_OPTIONS, newValue);
+    protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode oldValue, Resource resource) throws OperationFailedException {
+        final ModelNode model = Resource.Tools.readModel(resource);
 
         // Get the existing discovery option types and names
         ModelNode unorderedDiscoveryOptions = new ModelNode();
@@ -86,6 +76,8 @@ public class DiscoveryOptionsWriteAttributeHandler extends ModelOnlyWriteAttribu
         // Make sure the new value is only made up of existing discovery options
         List<ModelNode> newValueList = newValue.isDefined() ? newValue.asList() : Collections.<ModelNode>emptyList();
         List<ModelNode> unorderedDiscoveryOptionsList = unorderedDiscoveryOptions.isDefined() ? unorderedDiscoveryOptions.asList() : Collections.<ModelNode>emptyList();
-        return (newValueList.size() == unorderedDiscoveryOptionsList.size()) && newValueList.containsAll(unorderedDiscoveryOptionsList);
+        if (newValueList.size() != unorderedDiscoveryOptionsList.size() || !newValueList.containsAll(unorderedDiscoveryOptionsList)) {
+            throw MESSAGES.invalidDiscoveryOptionsOrdering(DISCOVERY_OPTIONS);
+        }
     }
 }
