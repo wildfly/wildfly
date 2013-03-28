@@ -25,6 +25,7 @@ import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 
+import io.undertow.server.handlers.ChannelUpgradeHandler;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -44,6 +45,8 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -53,6 +56,9 @@ import org.jboss.msc.value.InjectedValue;
 public class _UndertowHttpManagementService implements Service<HttpManagement>{
     //TODO get rid of "undertow" when we make the switch
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("serverManagement", "controller", "management", "http", "undertow");
+
+
+    public static final ServiceName HTTP_UPGRADE_SERVICE_NAME = ServiceName.JBOSS.append("management", "http-upgrade");
 
     private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
     private final InjectedValue<SocketBinding> injectedSocketBindingValue = new InjectedValue<SocketBinding>();
@@ -66,6 +72,7 @@ public class _UndertowHttpManagementService implements Service<HttpManagement>{
     private final InjectedValue<ControlledProcessStateService> controlledProcessStateServiceValue = new InjectedValue<ControlledProcessStateService>();
     private final ConsoleMode consoleMode;
     private final String consoleSlot;
+    private final boolean httpUpgrade;
     private ManagementHttpServer serverManagement;
     private SocketBindingManager socketBindingManager;
     private boolean useUnmanagedBindings = false;
@@ -134,9 +141,10 @@ public class _UndertowHttpManagementService implements Service<HttpManagement>{
         }
     };
 
-    public _UndertowHttpManagementService(ConsoleMode consoleMode, String consoleSlot) {
+    public _UndertowHttpManagementService(ConsoleMode consoleMode, String consoleSlot, final boolean httpUpgrade) {
         this.consoleMode = consoleMode;
         this.consoleSlot = consoleSlot;
+        this.httpUpgrade = httpUpgrade;
     }
 
     /**
@@ -179,10 +187,20 @@ public class _UndertowHttpManagementService implements Service<HttpManagement>{
             }
         }
 
+        final ChannelUpgradeHandler upgradeHandler;
+        if(httpUpgrade) {
+            upgradeHandler = new ChannelUpgradeHandler();
+
+            context.getChildTarget().addService(HTTP_UPGRADE_SERVICE_NAME, new ValueService<Object>(new ImmediateValue<Object>(upgradeHandler)))
+                    .install();
+        } else {
+            upgradeHandler = null;
+        }
+
         try {
 
             serverManagement = ManagementHttpServer.create(bindAddress, secureBindAddress, 50, modelControllerClient,
-                    executorService, securityRealmService, controlledProcessStateService, consoleMode, consoleSlot);
+                    executorService, securityRealmService, controlledProcessStateService, consoleMode, consoleSlot, upgradeHandler);
             serverManagement.start();
 
             // Register the now-created sockets with the SBM

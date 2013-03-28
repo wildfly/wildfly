@@ -62,6 +62,7 @@ public class ConnectHandler extends CommandHandlerWithHelp {
 
         int port = -1;
         String host = null;
+        String protocol = "http-remoting";
         final ParsedCommandLine parsedCmd = ctx.getParsedCommandLine();
         final List<String> args = parsedCmd.getOtherProperties();
 
@@ -69,7 +70,16 @@ public class ConnectHandler extends CommandHandlerWithHelp {
             if(args.size() != 1) {
                 throw new CommandFormatException("The command expects only one argument but got " + args);
             }
-            final String arg = args.get(0);
+            final String fullArg = args.get(0);
+            final String arg;
+            final int protocolEnd = fullArg.lastIndexOf("://");
+            if(protocolEnd == -1) {
+                arg = fullArg;
+            } else {
+                arg = fullArg.substring(protocolEnd + 3);
+                protocol = fullArg.substring(0, protocolEnd);
+            }
+
             String portStr = null;
             int colonIndex = arg.lastIndexOf(':');
             if(colonIndex < 0) {
@@ -112,6 +122,6 @@ public class ConnectHandler extends CommandHandlerWithHelp {
             }
         }
 
-        ctx.connectController(host, port);
+        ctx.connectController(protocol, host, port);
     }
 }

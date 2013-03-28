@@ -50,9 +50,11 @@ import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.RemotingOptions;
+import org.jboss.remoting3.remote.HttpUpgradeConnectionProviderFactory;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.jboss.threads.JBossThreadFactory;
 import org.xnio.OptionMap;
+import org.xnio.Options;
 
 import static java.security.AccessController.doPrivileged;
 
@@ -78,6 +80,8 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
         try {
             endpoint = Remoting.createEndpoint("cli-client", OptionMap.EMPTY);
             endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.EMPTY);
+            endpoint.addConnectionProvider("http-remoting", new HttpUpgradeConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
+            endpoint.addConnectionProvider("https-remoting", new HttpUpgradeConnectionProviderFactory(),  OptionMap.create(Options.SSL_ENABLED, Boolean.TRUE));
         } catch (IOException e) {
             throw new IllegalStateException("Failed to create remoting endpoint", e);
         }
@@ -107,7 +111,7 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
     private final ProtocolChannelClient.Configuration channelConfig;
     private boolean closed;
 
-    CLIModelControllerClient(CallbackHandler handler, String hostName, int connectionTimeout,
+    CLIModelControllerClient(final String protocol, CallbackHandler handler, String hostName, int connectionTimeout,
             final ConnectionCloseHandler closeHandler, int port, SSLContext sslContext) throws IOException {
         this.handler = handler;
         this.sslContext = sslContext;
@@ -126,7 +130,7 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
 
         channelConfig = new ProtocolChannelClient.Configuration();
         try {
-            channelConfig.setUri(new URI("remote://" + formatPossibleIpv6Address(hostName) +  ":" + port));
+            channelConfig.setUri(new URI(protocol +"://" + formatPossibleIpv6Address(hostName) +  ":" + port));
         } catch (URISyntaxException e) {
             throw new IOException("Failed to create URI" , e);
         }

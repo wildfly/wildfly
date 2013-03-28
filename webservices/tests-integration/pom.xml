@@ -95,7 +95,7 @@
             <artifactId>jboss-ejb-client</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId>org.jboss.remoting3</groupId>
+                    <groupId>org.jboss.remoting</groupId>
                     <artifactId>jboss-remoting</artifactId>
                 </exclusion>
                 <exclusion>
@@ -135,7 +135,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.jboss.remoting3</groupId>
+            <groupId>org.jboss.remoting</groupId>
             <artifactId>jboss-remoting</artifactId>
         </dependency>
         <dependency>

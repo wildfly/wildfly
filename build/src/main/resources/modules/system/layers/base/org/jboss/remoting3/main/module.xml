@@ -23,16 +23,16 @@
   -->
 
 <module xmlns="urn:jboss:module:1.1" name="org.jboss.remoting3">
+    <!-- This module is deprecated and subject to being removed in a subsequent release.      -->
+
+    <!-- Any use of the Remoting library should now reference the org.jboss.remoting          -->
+    <!-- module instead.                                                                      -->
+
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.jboss.marshalling" export="true"/>
-        <module name="org.jboss.sasl" services="import"/>
-        <module name="org.jboss.xnio" export="true"/>
-        <module name="org.jboss.xnio.nio" services="import"/>
+        <module name="org.jboss.remoting" export="true" />
     </dependencies>
 </module>

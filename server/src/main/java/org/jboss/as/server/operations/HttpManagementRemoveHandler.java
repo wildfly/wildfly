@@ -25,6 +25,9 @@ package org.jboss.as.server.operations;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.remoting.RemotingHttpUpgradeService;
+import org.jboss.as.remoting.RemotingServices;
+import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.mgmt._UndertowHttpManagementService;
 import org.jboss.dmr.ModelNode;
 
@@ -50,6 +53,8 @@ public class HttpManagementRemoveHandler extends AbstractRemoveStepHandler {
 
         removeHttpManagementService(context);
 
+        RemotingServices.removeConnectorServices(context, ManagementRemotingServices.HTTP_CONNECTOR);
+        context.removeService(RemotingHttpUpgradeService.SERVICE_NAME);
     }
 
     @Override

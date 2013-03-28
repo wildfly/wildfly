@@ -26,6 +26,7 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt._UndertowHttpManagementService;
 import org.jboss.dmr.ModelNode;
 
@@ -57,7 +58,8 @@ public class HttpManagementRemoveHandler extends AbstractRemoveStepHandler {
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         HttpManagementAddHandler.populateHostControllerInfo(hostControllerInfo, context, model);
-        HttpManagementAddHandler.installHttpManagementServices(context.getRunningMode(), context.getServiceTarget(), hostControllerInfo, environment, null, false);
+        boolean httpUpgrade = HttpManagementResourceDefinition.HTTP_UPGRADE_ENABLED.resolveModelAttribute(context, model).asBoolean();
+        HttpManagementAddHandler.installHttpManagementServices(context.getRunningMode(), context.getServiceTarget(), hostControllerInfo, environment, null, false, httpUpgrade, context.getServiceRegistry(false), null);
     }
 
     static void clearHostControllerInfo(LocalHostControllerInfoImpl hostControllerInfo) {

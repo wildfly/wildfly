@@ -79,7 +79,13 @@ public class HttpManagementResourceDefinition extends SimpleResourceDefinition {
                 .setDefaultValue(new ModelNode(true))
                 .build();
 
-    public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = new AttributeDefinition[] {INTERFACE, HTTP_PORT, HTTPS_PORT, SECURITY_REALM,CONSOLE_ENABLED};
+    public static final SimpleAttributeDefinition HTTP_UPGRADE_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HTTP_UPGRADE_ENABLED, ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
+                    .setXmlName(Attribute.HTTP_UPGRADE_ENABLED.getLocalName())
+                    .setDefaultValue(new ModelNode(false))
+                    .build();
+
+    public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = new AttributeDefinition[] {INTERFACE, HTTP_PORT, HTTPS_PORT, SECURITY_REALM,CONSOLE_ENABLED,HTTP_UPGRADE_ENABLED};
 
     public HttpManagementResourceDefinition(final LocalHostControllerInfoImpl hostControllerInfo,
                                              final HostControllerEnvironment environment) {

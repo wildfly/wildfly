@@ -72,7 +72,7 @@ import org.xml.sax.InputSource;
 
 /**
  * @author baranowb
- * 
+ *
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -105,7 +105,7 @@ public class JMXPropertyEditorsTestCase {
         final String address = managementClient.getMgmtAddress()+":"+managementClient.getMgmtPort();
 //        return JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remoting-jmx://localhost:9999"))
 //                .getMBeanServerConnection();
-        return JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remoting-jmx://"+address))
+        return JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:http-remoting-jmx://"+address))
                 .getMBeanServerConnection();
 
     }
@@ -1250,7 +1250,7 @@ public class JMXPropertyEditorsTestCase {
                         System.err.println("------- 2");
                         return 1;
                     }
-                    
+
                     Set<Object> keys1 = p1.keySet();
                     for(Object key:keys1){
                         Object v1 = p1.get(key);

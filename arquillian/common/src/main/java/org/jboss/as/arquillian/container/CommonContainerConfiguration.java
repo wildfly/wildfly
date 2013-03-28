@@ -30,6 +30,7 @@ import org.jboss.arquillian.container.spi.client.container.ContainerConfiguratio
  */
 public class CommonContainerConfiguration implements ContainerConfiguration {
 
+    private String managementProtocol = "http-remoting";
     private String managementAddress;
     private int managementPort;
 
@@ -38,7 +39,7 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
 
     public CommonContainerConfiguration() {
         managementAddress = "127.0.0.1";
-        managementPort = 9999;
+        managementPort = 9990;
     }
 
     public String getManagementAddress() {
@@ -79,6 +80,14 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getManagementProtocol() {
+        return managementProtocol;
+    }
+
+    public void setManagementProtocol(final String managementProtocol) {
+        this.managementProtocol = managementProtocol;
     }
 
     @Override

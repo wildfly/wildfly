@@ -626,6 +626,12 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                         }
                         break;
                     }
+                    case HTTP_UPGRADE_ENABLED: {
+                        if (http) {
+                            HttpManagementResourceDefinition.HTTP_UPGRADE_ENABLED.parseAndSetParameter(value, addOp, reader);
+                        }
+                        break;
+                    }
                     default:
                         throw unexpectedAttribute(reader, i);
                 }
@@ -1654,6 +1660,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         writer.writeStartElement(Element.HTTP_INTERFACE.getLocalName());
         HttpManagementResourceDefinition.SECURITY_REALM.marshallAsAttribute(protocol, writer);
         HttpManagementResourceDefinition.CONSOLE_ENABLED.marshallAsAttribute(protocol, writer);
+        HttpManagementResourceDefinition.HTTP_UPGRADE_ENABLED.marshallAsAttribute(protocol, writer);
 
         writer.writeEmptyElement(Element.SOCKET.getLocalName());
         HttpManagementResourceDefinition.INTERFACE.marshallAsAttribute(protocol, writer);

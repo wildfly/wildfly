@@ -22,26 +22,6 @@
 
 package org.jboss.as.test.integration.management.api;
 
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.ModelControllerClientConfiguration;
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
-import org.jboss.as.process.protocol.StreamUtils;
-import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
@@ -50,6 +30,38 @@ import java.lang.reflect.Proxy;
 import java.security.SecureRandom;
 import java.util.Random;
 
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClientConfiguration;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
+import org.jboss.as.process.protocol.StreamUtils;
+import org.jboss.as.test.integration.management.ManagementOperations;
+import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
+
 /**
  * Test supported remoting libraries combinations.
  *
@@ -57,15 +69,51 @@ import java.util.Random;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup(ClientCompatibilityUnitTestCase.ClientCompatibilityUnitTestCaseServerSetup.class)
 public class ClientCompatibilityUnitTestCase {
 
-    private static final String[] excludes = new String[] { "org.jboss.threads:jboss-threads", "org.jboss:jboss-dmr", "org.jboss.logging:jboss-logging" };
+    static class ClientCompatibilityUnitTestCaseServerSetup implements ServerSetupTask {
+
+        @Override
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+
+            ModelNode op = new ModelNode();
+            op.get(ModelDescriptionConstants.OP_ADDR).set(address());
+            op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+            op.get(ModelDescriptionConstants.PORT).set(9999);
+            op.get(ModelDescriptionConstants.INTERFACE).set("management");
+            op.get(ModelDescriptionConstants.SECURITY_REALM).set("ManagementRealm");
+            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+        }
+
+        @Override
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            ModelNode op = new ModelNode();
+            op.get(ModelDescriptionConstants.OP_ADDR).set(address());
+            op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
+            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+        }
+
+        private ModelNode address() {
+            return PathAddress.pathAddress()
+                    .append(CORE_SERVICE, MANAGEMENT)
+                    .append(MANAGEMENT_INTERFACE, NATIVE_INTERFACE).toModelNode();
+        }
+    }
+
+    @Deployment
+    public static final Archive fakeDeployment() {
+        return ShrinkWrap.create(JavaArchive.class);
+    }
+
+    private static final String[] excludes = new String[]{"org.jboss.threads:jboss-threads", "org.jboss:jboss-dmr", "org.jboss.logging:jboss-logging"};
 
     private static final Archive deployment;
+
     static {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class);
         // Create basic archive which exceeds the remoting window size
-        for(int i = 0; i < 10; i ++) {
+        for (int i = 0; i < 10; i++) {
             final byte[] data = new byte[8096];
             new Random(new SecureRandom().nextLong()).nextBytes(data);
             archive.add(new ByteArrayAsset(data), "data" + i);
@@ -74,11 +122,13 @@ public class ClientCompatibilityUnitTestCase {
     }
 
     @Test
+    @Ignore("WFLY-1284")
     public void test700Final() throws Exception {
         test("7.0.0.Final");
     }
 
     @Test
+    @Ignore("WFLY-1284")
     public void test701Final() throws Exception {
         test("7.0.1.Final");
     }
@@ -100,7 +150,7 @@ public class ClientCompatibilityUnitTestCase {
 
     @Test
     public void testCurrent() throws Exception {
-        test(ModelControllerClient.Factory.create("localhost", 9999));
+        test(ModelControllerClient.Factory.create("remote", "localhost", 9999));
     }
 
     protected void test(final String version) throws Exception {
@@ -172,7 +222,7 @@ public class ClientCompatibilityUnitTestCase {
                 return method.invoke(client, args);
             }
         };
-        final Class<?>[] interfaces = new Class<?>[] {ModelControllerClient.class};
+        final Class<?>[] interfaces = new Class<?>[]{ModelControllerClient.class};
         return (ModelControllerClient) Proxy.newProxyInstance(classLoader, interfaces, invocationHandler);
     }
 

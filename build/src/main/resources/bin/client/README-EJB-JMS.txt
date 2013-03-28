@@ -12,8 +12,8 @@ org.jboss:jboss-remote-naming
 org.jboss.logging:jboss-logging
 org.jboss.marshalling:jboss-marshalling
 org.jboss.marshalling:jboss-marshalling-river
-org.jboss.remoting3:jboss-remoting
-org.jboss.remoting3:remoting-jmx
+org.jboss.remoting:jboss-remoting
+org.jboss.remotingjmx:remoting-jmx
 org.jboss.sasl:jboss-sasl
 org.jboss.xnio:xnio-api
 org.jboss.xnio:xnio-nio

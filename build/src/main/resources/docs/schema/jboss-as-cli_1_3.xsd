@@ -23,8 +23,8 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns="urn:jboss:cli:1.2"
-           targetNamespace="urn:jboss:cli:1.2"
+           xmlns="urn:jboss:cli:1.3"
+           targetNamespace="urn:jboss:cli:1.3"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
         >
@@ -70,8 +70,9 @@
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
+                <xs:element name="protocol" type="xs:string" minOccurs="0" default="http-remoting"/>
                 <xs:element name="host" type="xs:string" minOccurs="0" default="localhost"/>
-                <xs:element name="port" type="xs:int" minOccurs="0" default="9999"/>
+                <xs:element name="port" type="xs:int" minOccurs="0" default="9990"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>

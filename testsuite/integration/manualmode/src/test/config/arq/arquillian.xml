@@ -11,10 +11,10 @@
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
-                <property name="managementPort">${as.managementPort:9999}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
 
                 <!-- AS7-4070 -->
-                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9999}</property>
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
@@ -26,14 +26,14 @@
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node1}</property>
-                <property name="managementPort">10099</property>
+                <property name="managementPort">10090</property>
 
                 <!-- AS7-4070 -->
-                <property name="waitForPorts">${as.debug.port.node1} 10099</property>
+                <property name="waitForPorts">${as.debug.port.node1} 10090</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
-        
+
         <container qualifier="jbossas-layered" default="false" mode="manual">
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-layered</property>
@@ -41,11 +41,11 @@
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
-                <property name="managementPort">${as.managementPort:9999}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
                 <property name="modulePath">${basedir}/target/jbossas-layered/modules</property>
 
                 <!-- AS7-4070 -->
-                <property name="waitForPorts">${as.debug.port.node1} 10099</property>
+                <property name="waitForPorts">${as.debug.port.node1} 10090</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
@@ -57,10 +57,10 @@
                 <property name="serverConfig">standalone-full.xml</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
-                <property name="managementPort">${as.managementPort:9999}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
 
                 <!-- AS7-4070 -->
-                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9999}</property>
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
@@ -72,10 +72,10 @@
                 <property name="serverConfig">standalone-full-backup.xml</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
-                <property name="managementPort">${as.managementPort:10099}</property>
+                <property name="managementPort">${as.managementPort:10090}</property>
 
                 <!-- AS7-4070 -->
-                <property name="waitForPorts">${as.debug.port:8987} ${as.managementPort:10099}</property>
+                <property name="waitForPorts">${as.debug.port:8987} ${as.managementPort:10090}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>

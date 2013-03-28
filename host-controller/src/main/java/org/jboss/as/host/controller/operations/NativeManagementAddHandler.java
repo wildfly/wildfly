@@ -30,25 +30,15 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.management.security.SecurityRealmService;
-import org.jboss.as.host.controller.DomainModelControllerService;
-import org.jboss.as.host.controller.jmx.RemotingConnectorService;
-import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryService;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
-import org.jboss.as.protocol.ProtocolChannelClient;
-import org.jboss.as.remoting.EndpointService;
-import org.jboss.as.remoting.management.ManagementChannelRegistryService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.remoting3.RemotingOptions;
-import org.xnio.OptionMap;
-import org.xnio.Options;
 
 /**
  * @author Emanuel Muckenhuber
@@ -56,15 +46,8 @@ import org.xnio.Options;
  */
 public class NativeManagementAddHandler extends AbstractAddStepHandler {
 
-    private static final int heartbeatInterval = 15000;
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
-    private static final int WINDOW_SIZE = ProtocolChannelClient.Configuration.WINDOW_SIZE;
 
-    private static final OptionMap SERVICE_OPTIONS = OptionMap.create(RemotingOptions.TRANSMIT_WINDOW_SIZE, WINDOW_SIZE,
-                                                        RemotingOptions.RECEIVE_WINDOW_SIZE, WINDOW_SIZE);
-
-    private static final OptionMap CONNECTION_OPTIONS = OptionMap.create(RemotingOptions.HEARTBEAT_INTERVAL, heartbeatInterval,
-                                                        Options.READ_TIMEOUT, 45000);
 
     private final LocalHostControllerInfoImpl hostControllerInfo;
 
@@ -93,11 +76,9 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
         populateHostControllerInfo(hostControllerInfo, context, model);
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        ManagementChannelRegistryService.addService(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT);
-        ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                hostControllerInfo.getLocalHostName(), EndpointService.EndpointType.MANAGEMENT, CONNECTION_OPTIONS, null, null);
-
         final boolean onDemand = context.isBooting();
+        NativeManagementServices.installRemotingServicesIfNotInstalled(serviceTarget, hostControllerInfo.getLocalHostName(), verificationHandler, newControllers, context.getServiceRegistry(false), onDemand);
+
         installNativeManagementServices(serviceTarget, hostControllerInfo, verificationHandler, newControllers, onDemand);
     }
 
@@ -124,17 +105,8 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
                 NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(hostControllerInfo.getNativeManagementInterface());
 
         ManagementRemotingServices.installDomainConnectorServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort(), realmSvcName, CONNECTION_OPTIONS, verificationHandler, newControllers);
+                nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort(), realmSvcName, NativeManagementServices.CONNECTION_OPTIONS, verificationHandler, newControllers);
 
-        ManagementRemotingServices.installManagementChannelOpenListenerService(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                ManagementRemotingServices.SERVER_CHANNEL,
-                ServerToHostOperationHandlerFactoryService.SERVICE_NAME, SERVICE_OPTIONS, verificationHandler, newControllers, onDemand);
-
-        ManagementRemotingServices.installManagementChannelServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                new ModelControllerClientOperationHandlerFactoryService(),
-                DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.MANAGEMENT_CHANNEL, verificationHandler, newControllers);
-
-        RemotingConnectorService.addService(serviceTarget, verificationHandler);
     }
 
 }

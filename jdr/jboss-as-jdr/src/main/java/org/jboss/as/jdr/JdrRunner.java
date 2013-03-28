@@ -51,13 +51,13 @@ public class JdrRunner implements JdrReportCollector {
     public JdrRunner() {
     }
 
-    public JdrRunner(String user, String pass, String host, String port) {
+    public JdrRunner(String protocol, String user, String pass, String host, String port) {
         this.env.setUsername(user);
         this.env.setPassword(pass);
         this.env.setHost(host);
         this.env.setPort(port);
         try {
-            ctx = CommandContextFactory.getInstance().newCommandContext(host, Integer.valueOf(port), null, null);
+            ctx = CommandContextFactory.getInstance().newCommandContext(protocol, host, Integer.valueOf(port), null, null);
             ctx.connectController();
             this.env.setClient(ctx.getModelControllerClient());
         }

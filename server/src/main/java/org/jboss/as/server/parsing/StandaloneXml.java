@@ -681,6 +681,12 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
                         }
                         break;
                     }
+                    case HTTP_UPGRADE_ENABLED: {
+                        if (http) {
+                            HttpManagementResourceDefinition.HTTP_UPGRADE_ENABLED.parseAndSetParameter(value, addOp, reader);
+                        }
+                        break;
+                    }
                     default:
                         throw unexpectedAttribute(reader, i);
                 }
@@ -1227,6 +1233,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
         if (!consoleEnabled) {
             HttpManagementResourceDefinition.CONSOLE_ENABLED.marshallAsAttribute(protocol, writer);
         }
+        HttpManagementResourceDefinition.HTTP_UPGRADE_ENABLED.marshallAsAttribute(protocol, writer);
 
         if (HttpManagementResourceDefinition.INTERFACE.isMarshallable(protocol)) {
             writer.writeEmptyElement(Element.SOCKET.getLocalName());

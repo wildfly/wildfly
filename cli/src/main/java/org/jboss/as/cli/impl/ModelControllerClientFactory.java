@@ -38,24 +38,24 @@ public interface ModelControllerClientFactory {
         void handleClose();
     }
 
-    ModelControllerClient getClient(String hostName, int port, CallbackHandler handler,
+    ModelControllerClient getClient(String protocol, String hostName, int port, CallbackHandler handler,
             SSLContext sslContext, int connectionTimeout, ConnectionCloseHandler closeHandler) throws IOException;
 
     ModelControllerClientFactory DEFAULT = new ModelControllerClientFactory() {
         @Override
-        public ModelControllerClient getClient(String hostName, int port, CallbackHandler handler,
+        public ModelControllerClient getClient(String protocol, String hostName, int port, CallbackHandler handler,
                 SSLContext sslContext, int connectionTimeout, ConnectionCloseHandler closeHandler) throws IOException {
-            return ModelControllerClient.Factory.create(hostName, port, handler, sslContext, connectionTimeout);
+            return ModelControllerClient.Factory.create(protocol, hostName, port, handler, sslContext, connectionTimeout);
         }
     };
 
     ModelControllerClientFactory CUSTOM = new ModelControllerClientFactory() {
 
         @Override
-        public ModelControllerClient getClient(final String hostName, final int port,
+        public ModelControllerClient getClient(String protocol, final String hostName, final int port,
                 final CallbackHandler handler, final SSLContext sslContext,
                 final int connectionTimeout, final ConnectionCloseHandler closeHandler) throws IOException {
 
-            return new CLIModelControllerClient(handler, hostName, connectionTimeout, closeHandler, port, sslContext);
+            return new CLIModelControllerClient(protocol, handler, hostName, connectionTimeout, closeHandler, port, sslContext);
         }};
 }

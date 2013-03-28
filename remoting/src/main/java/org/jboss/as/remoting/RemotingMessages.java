@@ -22,6 +22,7 @@
 
 package org.jboss.as.remoting;
 
+import java.io.IOException;
 import java.net.BindException;
 import java.net.URISyntaxException;
 
@@ -108,4 +109,6 @@ public interface RemotingMessages {
     @Message(id = 17130, value = "Invalid Strength '%s' string given")
     IllegalArgumentException illegalStrength(String strength);
 
+    @Message(id = 17131, value = "HTTP Upgrade request missing Sec-JbossRemoting-Key header")
+    IOException upgradeRequestMissingKey();
 }

@@ -109,9 +109,20 @@ public class CLI {
      * @param password The password for logging in.
      */
     public void connect(String controllerHost, int controllerPort, String username, char[] password) {
+        connect("http-remoting", controllerHost, controllerPort, username, password);
+    }
+    /**
+     * Connect to the server using a specified host and port.
+     * @param protocol The protocol
+     * @param controllerHost The host name.
+     * @param controllerPort The port.
+     * @param username The user name for logging in.
+     * @param password The password for logging in.
+     */
+    public void connect(String protocol, String controllerHost, int controllerPort, String username, char[] password) {
         checkAlreadyConnected();
         try {
-            ctx = CommandContextFactory.getInstance().newCommandContext(controllerHost, controllerPort, username, password);
+            ctx = CommandContextFactory.getInstance().newCommandContext(protocol, controllerHost, controllerPort, username, password);
             ctx.connectController();
         } catch (CliInitializationException e) {
             throw new IllegalStateException("Unable to initialize command context.", e);

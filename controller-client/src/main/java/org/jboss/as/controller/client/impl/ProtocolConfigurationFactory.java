@@ -44,7 +44,11 @@ class ProtocolConfigurationFactory {
     static ProtocolChannelClient.Configuration create(final ModelControllerClientConfiguration client) throws URISyntaxException {
         final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
 
-        configuration.setUri(new URI("remote://" + formatPossibleIpv6Address(client.getHost()) +  ":" + client.getPort()));
+        if(client.getProtocol() == null) {
+            configuration.setUri(new URI("http-remoting://" + formatPossibleIpv6Address(client.getHost()) +  ":" + client.getPort()));
+        } else  {
+            configuration.setUri(new URI(client.getProtocol() + "://" + formatPossibleIpv6Address(client.getHost()) +  ":" + client.getPort()));
+        }
         configuration.setOptionMap(DEFAULT_OPTIONS);
         final long timeout = client.getConnectionTimeout();
         if(timeout > 0) {

@@ -63,7 +63,7 @@
             <artifactId>jboss-marshalling</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.remoting3</groupId>
+            <groupId>org.jboss.remoting</groupId>
             <artifactId>jboss-remoting</artifactId>
         </dependency>
         <dependency>

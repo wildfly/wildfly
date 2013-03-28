@@ -87,7 +87,7 @@
         <module name="org.jboss.modules"/>
         <!-- Access to ServiceName -->
         <module name="org.jboss.msc"/>
-        <module name="org.jboss.remoting3"/>
+        <module name="org.jboss.remoting"/>
         <module name="org.jboss.staxmapper"/>
         <!-- For parser DUP -->
         <module name="org.jboss.vfs"/>

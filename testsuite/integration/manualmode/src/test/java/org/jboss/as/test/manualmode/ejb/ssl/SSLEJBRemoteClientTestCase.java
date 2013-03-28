@@ -143,13 +143,13 @@ public class SSLEJBRemoteClientTestCase {
             log.info("*** starting server");
             container.start(DEFAULT_JBOSSAS);
             final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
-            managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort());
+            managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
             log.info("*** will configure server now");
             SSLRealmSetupTool.setup(managementClient);
             log.info("*** restarting server");
             container.stop(DEFAULT_JBOSSAS);
             container.start(DEFAULT_JBOSSAS);
-            managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort());
+            managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
             // write SSL realm config to output - debugging purposes
             SSLRealmSetupTool.readSSLRealmConfig(managementClient);
             previousClientContextSelector = setupEJBClientContextSelector();
@@ -165,7 +165,7 @@ public class SSLEJBRemoteClientTestCase {
             EJBClientContext.setSelector(previousClientContextSelector);
         }
         final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
-        final ManagementClient mClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort());
+        final ManagementClient mClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
         SSLRealmSetupTool.tearDown(mClient, container);
     }
 

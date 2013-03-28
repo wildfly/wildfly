@@ -30,6 +30,13 @@ package org.jboss.as.cli;
 public interface CliConfig {
 
     /**
+     * The default server controller protocol
+     *
+     * @return default server controller protocol
+     */
+    String getDefaultControllerProtocol();
+
+    /**
      * The default server controller host to connect to.
      *
      * @return default server controller host to connect to

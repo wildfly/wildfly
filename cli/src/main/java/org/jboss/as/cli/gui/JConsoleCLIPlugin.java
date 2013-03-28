@@ -101,7 +101,7 @@ public class JConsoleCLIPlugin extends JConsolePlugin {
             return connectUsingRemoting(cmdCtx, (RemotingMBeanServerConnection)mbeanServerConn);
         } else {
             try {
-                cmdCtx.connectController("localhost", 9999);
+                cmdCtx.connectController("http-remoting", "localhost", 9990);
             } catch (Exception e) {
                 String message = "CLI GUI unable to connect to JBoss AS with localhost:9999 \n";
                 message += "Go to Connection -> New Connection and enter a Remote Process \n";

@@ -50,6 +50,12 @@ public interface ModelControllerClientConfiguration extends Closeable {
     int getPort();
 
     /**
+     * Returns the requested protocol. If this is null the remoting protocol will be used.
+     * If this is http or https then HTTP upgrade will be used.
+     */
+    String getProtocol();
+
+    /**
      * Get the connection timeout when trying to connect to the server.
      *
      * @return the connection timeout

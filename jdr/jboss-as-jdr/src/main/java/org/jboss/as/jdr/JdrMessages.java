@@ -64,6 +64,9 @@ interface JdrMessages {
     @Message(id = Message.NONE, value = "port that the management api is bound to. (default: 9990)")
     String jdrPortMessage();
 
+        @Message(id = Message.NONE, value = "Protocol that is used to connect. Can be remote, http or https (default: http)")
+    String jdrProtocolMessage();
+
     @Message(id = 13352, value = "Zipfile could not be created.")
     OperationFailedException couldNotCreateZipfile();
 

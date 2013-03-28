@@ -174,6 +174,8 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     private boolean domainMode;
     /** the controller client */
     private ModelControllerClient client;
+    /** the default controller protocol */
+    private String defaultControllerProtocol;
     /** the default controller host */
     private String defaultControllerHost;
     /** the default controller port */
@@ -244,14 +246,14 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     }
 
     CommandContextImpl(String username, char[] password) throws CliInitializationException {
-        this(null, -1, username, password, false, -1);
+        this(null, null, -1, username, password, false, -1);
     }
 
     /**
      * Default constructor used for both interactive and non-interactive mode.
      *
      */
-    CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password, boolean initConsole, final int connectionTimeout)
+    CommandContextImpl(String defaultControllerProtocol, String defaultControllerHost, int defaultControllerPort, String username, char[] password, boolean initConsole, final int connectionTimeout)
             throws CliInitializationException {
 
         config = CliConfigImpl.load(this);
@@ -272,6 +274,12 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         } else {
             this.defaultControllerPort = config.getDefaultControllerPort();
         }
+        if(defaultControllerProtocol != null) {
+            this.defaultControllerProtocol = defaultControllerProtocol;
+        } else {
+            this.defaultControllerProtocol = config.getDefaultControllerProtocol();
+        }
+
         resolveParameterValues = config.isResolveParameterValues();
         silent = config.isSilent();
         initCommands();
@@ -312,6 +320,9 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         } else {
             this.defaultControllerPort = config.getDefaultControllerPort();
         }
+
+        this.defaultControllerProtocol = config.getDefaultControllerProtocol();
+
         resolveParameterValues = config.isResolveParameterValues();
         silent = config.isSilent();
         initCommands();
@@ -763,17 +774,21 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
     @Override
     public void connectController() throws CommandLineException {
-        connectController(null, -1);
+        connectController(null, null, -1);
     }
 
     @Override
-    public void connectController(String host, int port) throws CommandLineException {
+    public void connectController(String protocol, String host, int port) throws CommandLineException {
         if (host == null) {
             host = defaultControllerHost;
         }
 
         if (port < 0) {
             port = defaultControllerPort;
+        }
+
+        if(protocol == null) {
+            protocol = defaultControllerProtocol;
         }
 
         boolean retry;
@@ -786,7 +801,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
                     log.debug("connecting to " + host + ':' + port + " as " + username);
                 }
                 ModelControllerClient tempClient = ModelControllerClientFactory.CUSTOM.
-                        getClient(host, port, cbh, sslContext, connectionTimeout, this);
+                        getClient(protocol, host, port, cbh, sslContext, connectionTimeout, this);
                 retry = tryConnection(tempClient, host, port);
                 if(!retry) {
                     newClient = tempClient;

@@ -34,7 +34,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandContextFactory;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
@@ -136,7 +135,7 @@ public class ArchiveTestCase {
     @Test
     public void testUnDeployArchive() throws Exception {
 
-        final CommandContext ctx = CommandContextFactory.getInstance().newCommandContext();
+        final CommandContext ctx = CLITestUtil.getCommandContext();
         try {
             ctx.connectController();
             ctx.handle("deploy " + cliArchiveFile.getAbsolutePath() + " --script=install.scr");

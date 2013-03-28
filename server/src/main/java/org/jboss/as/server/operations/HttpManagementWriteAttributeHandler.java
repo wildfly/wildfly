@@ -103,7 +103,7 @@ public class HttpManagementWriteAttributeHandler extends AbstractWriteAttributeH
 
     static void updateHttpManagementService(final OperationContext context, final ModelNode subModel, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
         HttpManagementRemoveHandler.removeHttpManagementService(context);
-        HttpManagementAddHandler.installHttpManagementConnector(context, subModel, context.getServiceTarget(), verificationHandler, null);
+        HttpManagementAddHandler.installHttpManagementConnector(context, subModel, context.getServiceTarget(), verificationHandler, null, false);
     }
 
 }

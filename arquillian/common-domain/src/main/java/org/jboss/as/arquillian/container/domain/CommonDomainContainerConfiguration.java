@@ -47,7 +47,7 @@ public class CommonDomainContainerConfiguration implements ContainerConfiguratio
 
     public CommonDomainContainerConfiguration() {
         managementAddress = getInetAddress("127.0.0.1");
-        managementPort = 9999;
+        managementPort = 9990;
     }
 
     public InetAddress getManagementAddress() {
