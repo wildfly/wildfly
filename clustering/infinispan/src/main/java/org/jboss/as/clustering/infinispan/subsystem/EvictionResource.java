@@ -66,6 +66,14 @@ public class EvictionResource extends SimpleResourceDefinition {
 
     static final AttributeDefinition[] EVICTION_ATTRIBUTES = {EVICTION_STRATEGY, MAX_ENTRIES};
 
+    // metrics
+    static final SimpleAttributeDefinition EVICTIONS =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.EVICTIONS, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
+
+    static final AttributeDefinition[] EVICTION_METRICS = {EVICTIONS};
+
     public EvictionResource() {
         super(EVICTION_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.EVICTION),
@@ -81,6 +89,10 @@ public class EvictionResource extends SimpleResourceDefinition {
         final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(EVICTION_ATTRIBUTES);
         for (AttributeDefinition attr : EVICTION_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
+        }
+        // register any metrics
+        for (AttributeDefinition attr : EVICTION_METRICS) {
+            resourceRegistration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
         }
     }
 

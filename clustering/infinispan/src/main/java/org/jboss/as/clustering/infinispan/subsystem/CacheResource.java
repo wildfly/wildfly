@@ -121,6 +121,78 @@ public class CacheResource extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
+    // metrics
+    static final SimpleAttributeDefinition ACTIVATIONS =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.ACTIVATIONS, ModelType.STRING, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition AVERAGE_READ_TIME =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.AVERAGE_READ_TIME, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition AVERAGE_WRITE_TIME =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.AVERAGE_WRITE_TIME, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition CACHE_STATUS =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.CACHE_STATUS, ModelType.STRING, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition ELAPSED_TIME =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.ELAPSED_TIME, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition HIT_RATIO =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.HIT_RATIO, ModelType.DOUBLE, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition HITS =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.HITS, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition INVALIDATIONS =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.INVALIDATIONS, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition MISSES =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.MISSES, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition NUMBER_OF_ENTRIES =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.NUMBER_OF_ENTRIES, ModelType.INT, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition PASSIVATIONS =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.PASSIVATIONS, ModelType.STRING, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition READ_WRITE_RATIO =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.READ_WRITE_RATIO, ModelType.DOUBLE, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition REMOVE_HITS =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.REMOVE_HITS, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition REMOVE_MISSES =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.REMOVE_MISSES, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition STORES =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.STORES, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition TIME_SINCE_RESET =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.TIME_SINCE_RESET, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
+
+
+    static final AttributeDefinition[] CACHE_METRICS = { /*ACTIVATIONS,*/ AVERAGE_READ_TIME, AVERAGE_WRITE_TIME, CACHE_STATUS,
+            ELAPSED_TIME, HIT_RATIO, HITS, INVALIDATIONS, MISSES, NUMBER_OF_ENTRIES, PASSIVATIONS, READ_WRITE_RATIO, REMOVE_HITS,
+            REMOVE_MISSES, STORES, TIME_SINCE_RESET};
+
+
     private final ResolvePathHandler resolvePathHandler;
     public CacheResource(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler) {
         super(pathElement, descriptionResolver, addHandler, removeHandler);
@@ -135,6 +207,11 @@ public class CacheResource extends SimpleResourceDefinition {
         final OperationStepHandler writeHandler = new CacheWriteAttributeHandler(CACHE_ATTRIBUTES);
         for (AttributeDefinition attr : CACHE_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, CacheReadAttributeHandler.INSTANCE, writeHandler);
+        }
+
+        // register any metrics
+        for (AttributeDefinition attr : CACHE_METRICS) {
+            resourceRegistration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
         }
     }
 

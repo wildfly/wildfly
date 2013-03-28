@@ -90,6 +90,25 @@ public class ClusteredCacheResource extends CacheResource  {
 
     static final AttributeDefinition[] CLUSTERED_CACHE_ATTRIBUTES = { ASYNC_MARSHALLING, MODE, QUEUE_SIZE, QUEUE_FLUSH_INTERVAL, REMOTE_TIMEOUT};
 
+    // metrics
+    static final SimpleAttributeDefinition AVERAGE_REPLICATION_TIME =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.AVERAGE_REPLICATION_TIME, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition REPLICATION_COUNT =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.REPLICATION_COUNT, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition REPLICATION_FAILURES =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.REPLICATION_FAILURES, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition SUCCESS_RATIO =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.SUCCESS_RATIO, ModelType.DOUBLE, true)
+                    .setStorageRuntime()
+                    .build();
+
+    static final AttributeDefinition[] CLUSTERED_CACHE_METRICS = {AVERAGE_REPLICATION_TIME, REPLICATION_COUNT, REPLICATION_FAILURES, SUCCESS_RATIO};
 
     public ClusteredCacheResource(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler) {
         super(pathElement, descriptionResolver, addHandler, removeHandler, resolvePathHandler);
@@ -103,6 +122,11 @@ public class ClusteredCacheResource extends CacheResource  {
         final OperationStepHandler writeHandler = new CacheWriteAttributeHandler(CLUSTERED_CACHE_ATTRIBUTES);
         for (AttributeDefinition attr : CLUSTERED_CACHE_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, CacheReadAttributeHandler.INSTANCE, writeHandler);
+        }
+
+        // register any metrics
+        for (AttributeDefinition attr : CLUSTERED_CACHE_METRICS) {
+            resourceRegistration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
         }
     }
 
