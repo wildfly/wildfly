@@ -84,6 +84,23 @@ public class LockingResource extends SimpleResourceDefinition {
 
     static final AttributeDefinition[] LOCKING_ATTRIBUTES = { ACQUIRE_TIMEOUT, CONCURRENCY_LEVEL, ISOLATION, STRIPING};
 
+    // metrics
+    static final SimpleAttributeDefinition CURRENT_CONCURRENCY_LEVEL =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.CURRENT_CONCURRENCY_LEVEL, ModelType.INT, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition NUMBER_OF_LOCKS_AVAILABLE =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.NUMBER_OF_LOCKS_AVAILABLE, ModelType.INT, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition NUMBER_OF_LOCKS_HELD =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.NUMBER_OF_LOCKS_HELD, ModelType.INT, true)
+                    .setStorageRuntime()
+                    .build();
+
+    static final AttributeDefinition[] LOCKING_METRICS = {CURRENT_CONCURRENCY_LEVEL, NUMBER_OF_LOCKS_AVAILABLE, NUMBER_OF_LOCKS_HELD};
+
+
     public LockingResource() {
         super(LOCKING_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.LOCKING),
@@ -99,6 +116,11 @@ public class LockingResource extends SimpleResourceDefinition {
         final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(LOCKING_ATTRIBUTES);
         for (AttributeDefinition attr : LOCKING_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
+        }
+
+        // register any metrics
+        for (AttributeDefinition attr : LOCKING_METRICS) {
+            resourceRegistration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
         }
     }
 
