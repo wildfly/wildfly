@@ -30,8 +30,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Arrays;
 
-import org.jboss.as.util.security.GetContextClassLoaderAction;
-import org.jboss.as.util.security.SetContextClassLoaderAction;
+import org.wildfly.security.manager.GetContextClassLoaderAction;
+import org.wildfly.security.manager.SetContextClassLoaderAction;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.SimpleDataInput;

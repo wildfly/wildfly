@@ -20,30 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.util.security;
+package org.wildfly.security.manager;
 
 import java.security.PrivilegedAction;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleClassLoader;
 
 /**
- * A security action to get the class loader for a module.
+ * A security action which replaces the system properties map.
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public final class GetModuleClassLoaderAction implements PrivilegedAction<ModuleClassLoader> {
-    private final Module module;
+public final class GetBooleanAction implements PrivilegedAction<Boolean> {
 
-    /**
-     * Construct a new instance.
-     *
-     * @param module the module to read
-     */
-    public GetModuleClassLoaderAction(final Module module) {
-        this.module = module;
+    private final String systemProperty;
+
+    public GetBooleanAction(String systemProperty) {
+        this.systemProperty = systemProperty;
     }
 
-    public ModuleClassLoader run() {
-        return module.getClassLoader();
+    @Override
+    public Boolean run() {
+        return Boolean.getBoolean(systemProperty);
     }
 }

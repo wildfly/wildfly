@@ -20,31 +20,47 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.util.security;
+package org.wildfly.security.manager;
 
-import java.security.PrivilegedAction;
+import java.io.File;
+import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 
 /**
- * An action which gets the current thread's context class loader.
+ * A security action to create a temporary file.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class GetContextClassLoaderAction implements PrivilegedAction<ClassLoader> {
-    private static final GetContextClassLoaderAction INSTANCE = new GetContextClassLoaderAction();
+public final class CreateTempFileAction implements PrivilegedExceptionAction<File> {
 
-    private GetContextClassLoaderAction() {
+    private final String prefix;
+    private final String suffix;
+    private final File directory;
+
+    /**
+     * Construct a new instance.
+     *
+     * @param prefix the prefix to set
+     * @param suffix the suffix to set
+     * @param directory the directory
+     */
+    public CreateTempFileAction(final String prefix, final String suffix, final File directory) {
+        this.prefix = prefix;
+        this.suffix = suffix;
+        this.directory = directory;
     }
 
     /**
-     * Get the singleton instance.
+     * Construct a new instance.
      *
-     * @return the singleton instance
+     * @param prefix the prefix to set
+     * @param suffix the suffix to set
      */
-    public static GetContextClassLoaderAction getInstance() {
-        return INSTANCE;
+    public CreateTempFileAction(final String suffix, final String prefix) {
+        this(prefix, suffix, null);
     }
 
-    public ClassLoader run() {
-        return Thread.currentThread().getContextClassLoader();
+    public File run() throws IOException {
+        return File.createTempFile(prefix, suffix, directory);
     }
 }

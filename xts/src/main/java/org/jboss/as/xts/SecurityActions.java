@@ -21,7 +21,7 @@
  */
 package org.jboss.as.xts;
 
-import org.jboss.as.util.security.SetContextClassLoaderAction;
+import org.wildfly.security.manager.SetContextClassLoaderAction;
 
 import static java.lang.System.getSecurityManager;
 import static java.lang.Thread.currentThread;

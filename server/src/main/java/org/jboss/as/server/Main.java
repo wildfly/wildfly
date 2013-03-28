@@ -34,6 +34,7 @@ import java.util.StringTokenizer;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ExitCodes;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -66,7 +67,6 @@ public final class Main {
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
-
         try {
             if (java.util.logging.LogManager.getLogManager().getClass().getName().equals("org.jboss.logmanager.LogManager")) {
                 // Make sure our original stdio is properly captured.

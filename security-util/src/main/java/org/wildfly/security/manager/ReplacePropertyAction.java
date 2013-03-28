@@ -20,31 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.util.security;
+package org.wildfly.security.manager;
 
 import java.security.PrivilegedAction;
 import java.util.Properties;
 
 /**
- * A security action which replaces the system properties map.
+ * A privileged action for setting a system property only if it is set to another value.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class SetSystemPropertiesAction implements PrivilegedAction<Void> {
-
-    private final Properties properties;
+public final class ReplacePropertyAction implements PrivilegedAction<String> {
+    private final String propertyName;
+    private final String value;
 
     /**
      * Construct a new instance.
      *
-     * @param properties the new properties map
+     * @param propertyName the property name to set
+     * @param value the value to use
      */
-    public SetSystemPropertiesAction(final Properties properties) {
-        this.properties = properties;
+    public ReplacePropertyAction(final String propertyName, final String value) {
+        this.propertyName = propertyName;
+        this.value = value;
     }
 
-    public Void run() {
-        System.setProperties(properties);
-        return null;
+    public String run() {
+        final Properties properties = System.getProperties();
+        synchronized (properties) {
+            if (properties.containsKey(propertyName)) {
+                return (String) properties.setProperty(propertyName, value);
+            } else {
+                return null;
+            }
+        }
     }
 }

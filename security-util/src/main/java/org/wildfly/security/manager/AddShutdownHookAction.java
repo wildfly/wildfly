@@ -20,32 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.util.security;
+package org.wildfly.security.manager;
 
 import java.security.PrivilegedAction;
-import java.security.Provider;
-import java.security.Security;
 
 /**
- * A security action to add a global security provider.
+ * A security action which adds a shutdown hook.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class AddGlobalSecurityProviderAction implements PrivilegedAction<Void> {
+public final class AddShutdownHookAction implements PrivilegedAction<Void> {
 
-    private final Provider provider;
+    private final Thread hook;
 
     /**
      * Construct a new instance.
      *
-     * @param provider the provider to add
+     * @param hook the shutdown hook to add
      */
-    public AddGlobalSecurityProviderAction(final Provider provider) {
-        this.provider = provider;
+    public AddShutdownHookAction(final Thread hook) {
+        this.hook = hook;
     }
 
     public Void run() {
-        Security.addProvider(provider);
+        Runtime.getRuntime().addShutdownHook(hook);
         return null;
     }
 }

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.embedded.ejb3;
 
-import org.jboss.as.util.security.ReadPropertyAction;
+import org.wildfly.security.manager.ReadPropertyAction;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;

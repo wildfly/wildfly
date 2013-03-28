@@ -24,11 +24,11 @@ package org.jboss.as.host.controller.mgmt;
 
 import java.util.Map;
 import java.util.Properties;
-import org.jboss.as.util.security.ClearPropertyAction;
-import org.jboss.as.util.security.GetEnvironmentAction;
-import org.jboss.as.util.security.GetSystemPropertiesAction;
-import org.jboss.as.util.security.ReadPropertyAction;
-import org.jboss.as.util.security.WritePropertyAction;
+import org.wildfly.security.manager.ClearPropertyAction;
+import org.wildfly.security.manager.GetEnvironmentAction;
+import org.wildfly.security.manager.GetSystemPropertiesAction;
+import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.WritePropertyAction;
 
 import static java.lang.System.clearProperty;
 import static java.lang.System.getProperties;

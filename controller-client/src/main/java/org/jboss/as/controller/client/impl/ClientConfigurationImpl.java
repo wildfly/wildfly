@@ -23,8 +23,8 @@
 package org.jboss.as.controller.client.impl;
 
 import org.jboss.as.controller.client.ModelControllerClientConfiguration;
-import org.jboss.as.util.security.GetAccessControlContextAction;
-import org.jboss.as.util.security.ReadPropertyAction;
+import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.ReadPropertyAction;
 import org.jboss.threads.JBossThreadFactory;
 
 import javax.net.ssl.SSLContext;

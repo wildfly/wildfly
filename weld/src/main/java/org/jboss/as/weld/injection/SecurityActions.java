@@ -24,8 +24,8 @@ package org.jboss.as.weld.injection;
 
 import java.lang.reflect.AccessibleObject;
 import java.security.PrivilegedAction;
-import org.jboss.as.util.security.GetContextClassLoaderAction;
-import org.jboss.as.util.security.SetContextClassLoaderAction;
+import org.wildfly.security.manager.GetContextClassLoaderAction;
+import org.wildfly.security.manager.SetContextClassLoaderAction;
 
 import static java.lang.System.getSecurityManager;
 import static java.lang.Thread.currentThread;

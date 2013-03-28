@@ -22,7 +22,7 @@
 
 package org.jboss.as.jacorb;
 
-import org.jboss.as.util.security.WritePropertyAction;
+import org.wildfly.security.manager.WritePropertyAction;
 
 import static java.lang.System.getSecurityManager;
 import static java.lang.System.setProperty;

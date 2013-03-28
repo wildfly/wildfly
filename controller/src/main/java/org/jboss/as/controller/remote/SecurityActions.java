@@ -27,7 +27,7 @@ import java.security.PrivilegedAction;
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.security.SecurityContext;
-import org.jboss.as.util.security.ReadPropertyAction;
+import org.wildfly.security.manager.ReadPropertyAction;
 
 import static java.lang.System.getProperty;
 import static java.lang.System.getSecurityManager;

@@ -22,7 +22,7 @@
 
 package org.jboss.as.security.context;
 
-import org.jboss.as.util.security.GetClassLoaderAction;
+import org.wildfly.security.manager.GetClassLoaderAction;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoadException;
 

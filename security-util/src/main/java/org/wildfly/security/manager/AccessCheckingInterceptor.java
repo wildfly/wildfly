@@ -20,20 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.util.security;
+package org.wildfly.security.manager;
 
-import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
 
 /**
- * A security action to clear the current thread context class loader.
+ * An interceptor which enables access checking for the duration of the invocation.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ClearContextClassLoaderAction implements PrivilegedAction<ClassLoader> {
+public final class AccessCheckingInterceptor implements Interceptor {
+    private static final AccessCheckingInterceptor INSTANCE = new AccessCheckingInterceptor();
+    private static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(INSTANCE);
 
-    private static final ClearContextClassLoaderAction INSTANCE = new ClearContextClassLoaderAction();
-
-    private ClearContextClassLoaderAction() {
+    private AccessCheckingInterceptor() {
     }
 
     /**
@@ -41,16 +45,24 @@ public final class ClearContextClassLoaderAction implements PrivilegedAction<Cla
      *
      * @return the singleton instance
      */
-    public static ClearContextClassLoaderAction getInstance() {
+    public static AccessCheckingInterceptor getInstance() {
         return INSTANCE;
     }
 
-    public ClassLoader run() {
-        final Thread thread = Thread.currentThread();
+    /**
+     * Get the singleton factory instance.
+     *
+     * @return the singleton factory instance
+     */
+    public static InterceptorFactory getFactory() {
+        return FACTORY;
+    }
+
+    public Object processInvocation(final InterceptorContext context) throws Exception {
         try {
-            return thread.getContextClassLoader();
-        } finally {
-            thread.setContextClassLoader(null);
+            return WildFlySecurityManager.doChecked(context);
+        } catch (PrivilegedActionException e) {
+            throw e.getException();
         }
     }
 }

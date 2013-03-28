@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jboss.as.util.security.GetContextClassLoaderAction;
+import org.wildfly.security.manager.GetContextClassLoaderAction;
 import org.jboss.as.weld.WeldMessages;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.weld.bootstrap.api.Singleton;

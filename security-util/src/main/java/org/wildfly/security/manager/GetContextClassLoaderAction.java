@@ -20,29 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.util.security;
+package org.wildfly.security.manager;
 
 import java.security.PrivilegedAction;
 
 /**
- * A security action which clears a system property.
+ * An action which gets the current thread's context class loader.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ClearPropertyAction implements PrivilegedAction<String> {
+public final class GetContextClassLoaderAction implements PrivilegedAction<ClassLoader> {
+    private static final GetContextClassLoaderAction INSTANCE = new GetContextClassLoaderAction();
 
-    private final String propertyName;
-
-    /**
-     * Construct a new instance.
-     *
-     * @param propertyName the name of the property to clear
-     */
-    public ClearPropertyAction(final String propertyName) {
-        this.propertyName = propertyName;
+    private GetContextClassLoaderAction() {
     }
 
-    public String run() {
-        return System.clearProperty(propertyName);
+    /**
+     * Get the singleton instance.
+     *
+     * @return the singleton instance
+     */
+    public static GetContextClassLoaderAction getInstance() {
+        return INSTANCE;
+    }
+
+    public ClassLoader run() {
+        return Thread.currentThread().getContextClassLoader();
     }
 }

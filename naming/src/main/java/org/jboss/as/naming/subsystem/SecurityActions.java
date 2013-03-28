@@ -22,8 +22,8 @@
 
 package org.jboss.as.naming.subsystem;
 
-import org.jboss.as.util.security.GetContextClassLoaderAction;
-import org.jboss.as.util.security.SetContextClassLoaderAction;
+import org.wildfly.security.manager.GetContextClassLoaderAction;
+import org.wildfly.security.manager.SetContextClassLoaderAction;
 
 import static java.lang.System.getSecurityManager;
 import static java.lang.Thread.currentThread;

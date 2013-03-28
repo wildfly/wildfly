@@ -20,32 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.util.security;
+package org.wildfly.security.manager;
 
+import java.security.AccessControlContext;
+import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.Map;
 
 /**
- * A security action which retrieves the current environment variable map.
+ * A privileged action to get the current access control context.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class GetEnvironmentAction implements PrivilegedAction<Map<String, String>> {
-    private static final GetEnvironmentAction INSTANCE = new GetEnvironmentAction();
-
-    private GetEnvironmentAction() {
-    }
+public final class GetAccessControlContextAction implements PrivilegedAction<AccessControlContext> {
+    private static final GetAccessControlContextAction INSTANCE = new GetAccessControlContextAction();
 
     /**
      * Get the singleton instance.
      *
-     * @return the singleton instance
+     * @return the singleton instance of this action
      */
-    public static GetEnvironmentAction getInstance() {
+    public static GetAccessControlContextAction getInstance() {
         return INSTANCE;
     }
 
-    public Map<String, String> run() {
-        return System.getenv();
+    private GetAccessControlContextAction() {
+    }
+
+    public AccessControlContext run() {
+        return AccessController.getContext();
     }
 }

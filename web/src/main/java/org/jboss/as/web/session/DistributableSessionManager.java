@@ -63,7 +63,7 @@ import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.as.clustering.web.OutgoingAttributeGranularitySessionData;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.clustering.web.OutgoingSessionGranularitySessionData;
-import org.jboss.as.util.security.ReadPropertyAction;
+import org.wildfly.security.manager.ReadPropertyAction;
 import org.jboss.as.web.WebLogger;
 import org.jboss.as.web.session.notification.ClusteredSessionNotificationCapability;
 import org.jboss.as.web.session.notification.ClusteredSessionNotificationCause;

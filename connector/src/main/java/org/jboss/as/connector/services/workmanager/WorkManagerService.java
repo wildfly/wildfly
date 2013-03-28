@@ -30,7 +30,7 @@ import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 import java.util.concurrent.Executor;
 
 import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.util.security.ReadPropertyAction;
+import org.wildfly.security.manager.ReadPropertyAction;
 import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.jca.core.security.DefaultCallback;
 import org.jboss.jca.core.spi.security.Callback;

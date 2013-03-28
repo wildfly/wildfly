@@ -25,8 +25,8 @@ package org.jboss.as.ejb3.remote.protocol.versionone;
 import java.security.PrivilegedAction;
 
 import org.jboss.as.security.remoting.RemotingContext;
-import org.jboss.as.util.security.GetContextClassLoaderAction;
-import org.jboss.as.util.security.SetContextClassLoaderAction;
+import org.wildfly.security.manager.GetContextClassLoaderAction;
+import org.wildfly.security.manager.SetContextClassLoaderAction;
 import org.jboss.remoting3.Connection;
 
 import static java.lang.System.getSecurityManager;

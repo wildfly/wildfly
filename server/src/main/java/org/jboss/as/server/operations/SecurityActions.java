@@ -21,10 +21,10 @@
 */
 package org.jboss.as.server.operations;
 
-import org.jboss.as.util.security.ClearPropertyAction;
-import org.jboss.as.util.security.GetClassLoaderAction;
-import org.jboss.as.util.security.ReadPropertyAction;
-import org.jboss.as.util.security.WritePropertyAction;
+import org.wildfly.security.manager.ClearPropertyAction;
+import org.wildfly.security.manager.GetClassLoaderAction;
+import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.WritePropertyAction;
 
 import static java.lang.System.clearProperty;
 import static java.lang.System.getProperty;

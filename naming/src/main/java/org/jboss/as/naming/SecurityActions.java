@@ -22,10 +22,10 @@
 
 package org.jboss.as.naming;
 
-import org.jboss.as.util.security.GetContextClassLoaderAction;
-import org.jboss.as.util.security.ReadPropertyAction;
-import org.jboss.as.util.security.SetContextClassLoaderAction;
-import org.jboss.as.util.security.WritePropertyAction;
+import org.wildfly.security.manager.GetContextClassLoaderAction;
+import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.SetContextClassLoaderAction;
+import org.wildfly.security.manager.WritePropertyAction;
 
 import static java.lang.System.getProperty;
 import static java.lang.System.getSecurityManager;

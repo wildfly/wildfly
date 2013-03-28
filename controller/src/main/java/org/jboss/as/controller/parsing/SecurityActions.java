@@ -22,8 +22,8 @@
 
 package org.jboss.as.controller.parsing;
 
-import org.jboss.as.util.security.SetContextClassLoaderAction;
-import org.jboss.as.util.security.SetContextClassLoaderFromClassAction;
+import org.wildfly.security.manager.SetContextClassLoaderAction;
+import org.wildfly.security.manager.SetContextClassLoaderFromClassAction;
 
 import static java.lang.System.getSecurityManager;
 import static java.lang.Thread.currentThread;

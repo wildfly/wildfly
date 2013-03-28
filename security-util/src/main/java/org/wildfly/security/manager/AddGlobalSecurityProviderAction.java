@@ -20,28 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.util.security;
+package org.wildfly.security.manager;
 
 import java.security.PrivilegedAction;
+import java.security.Provider;
 import java.security.Security;
 
 /**
- * A security action which sets a security property.
+ * A security action to add a global security provider.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class WriteSecurityPropertyAction implements PrivilegedAction<Void> {
+public final class AddGlobalSecurityProviderAction implements PrivilegedAction<Void> {
 
-    private final String key;
-    private final String value;
+    private final Provider provider;
 
-    public WriteSecurityPropertyAction(final String key, final String value) {
-        this.key = key;
-        this.value = value;
+    /**
+     * Construct a new instance.
+     *
+     * @param provider the provider to add
+     */
+    public AddGlobalSecurityProviderAction(final Provider provider) {
+        this.provider = provider;
     }
 
     public Void run() {
-        Security.setProperty(key, value);
+        Security.addProvider(provider);
         return null;
     }
 }
