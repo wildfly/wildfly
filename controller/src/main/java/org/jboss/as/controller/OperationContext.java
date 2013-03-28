@@ -563,6 +563,7 @@ public interface OperationContext extends ExpressionResolver, NotificationSuppor
      */
     void report(MessageSeverity severity, String message);
 
+
     /**
      * Marks a resource to indicate that it's backing service(s) will be restarted.
      * This is to ensure that a restart only occurs once, even if there are multiple updates.
