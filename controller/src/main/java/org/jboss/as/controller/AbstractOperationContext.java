@@ -104,8 +104,8 @@ abstract class AbstractOperationContext implements OperationContext {
     }
 
     AbstractOperationContext(final ProcessType processType, final RunningMode runningMode,
-                             final ModelController.OperationTransactionControl transactionControl, final ControlledProcessState processState,
-                             final NotificationSupport notificationSupport, boolean booting) {
+            final ModelController.OperationTransactionControl transactionControl, final ControlledProcessState processState,
+            final NotificationSupport notificationSupport, boolean booting) {
         this.processType = processType;
         this.runningMode = runningMode;
         this.transactionControl = transactionControl;
@@ -243,7 +243,6 @@ abstract class AbstractOperationContext implements OperationContext {
             doCompleteStep();
             if (resultAction == ResultAction.KEEP) {
                 report(MessageSeverity.INFO, MESSAGES.operationSucceeded());
-
             } else {
                 report(MessageSeverity.INFO, MESSAGES.operationRollingBack());
             }
@@ -537,6 +536,7 @@ abstract class AbstractOperationContext implements OperationContext {
                 report(MessageSeverity.WARN, MESSAGES.stepHandlerFailed(step.handler));
             }
         } finally {
+
             finishStep(step);
         }
     }
