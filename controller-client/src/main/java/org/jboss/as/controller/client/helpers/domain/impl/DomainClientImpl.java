@@ -65,6 +65,13 @@ public class DomainClientImpl implements DomainClient {
         this.delegate = ModelControllerClient.Factory.create(address, port, handler);
     }
 
+    public DomainClientImpl(String protocol, InetAddress address, int port) {
+        this.delegate = ModelControllerClient.Factory.create(protocol, address, port);
+    }
+
+    public DomainClientImpl(String protocol, InetAddress address, int port, CallbackHandler handler) {
+        this.delegate = ModelControllerClient.Factory.create(protocol, address, port, handler);
+    }
     public DomainClientImpl(ModelControllerClient delegate) {
         this.delegate = delegate;
     }

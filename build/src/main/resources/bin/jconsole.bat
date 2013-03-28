@@ -66,7 +66,7 @@ set CLASSPATH=%JAVA_HOME%\lib\jconsole.jar
 set CLASSPATH=%CLASSPATH%;%JAVA_HOME%\lib\tools.jar
 
 call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\remoting-jmx\main"
-call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\remoting3\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\remoting\main"
 call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\logging\main"
 call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\xnio\main"
 call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\xnio\nio\main"

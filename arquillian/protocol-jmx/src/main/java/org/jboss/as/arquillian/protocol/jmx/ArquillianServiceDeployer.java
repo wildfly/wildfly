@@ -67,6 +67,7 @@ public class ArquillianServiceDeployer {
                 ObjectOutputStream out = new ObjectOutputStream(bytes);
                 out.writeObject(props.get("managementPort"));
                 out.writeObject(NetworkUtils.formatPossibleIpv6Address(props.get("managementAddress")));
+                out.writeObject(NetworkUtils.formatPossibleIpv6Address(props.get("managementProtocol")));
                 out.close();
                 serviceArchive.addAsManifestResource(new ByteArrayAsset(bytes.toByteArray()), "org.jboss.as.managementConnectionProps");
 

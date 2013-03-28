@@ -198,8 +198,8 @@
         <version.org.jboss.osgi.spi>4.0.0.CR2</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>2.0.0.Alpha3</version.org.jboss.osgi.vfs>
         <version.org.jboss.remote-naming>1.0.6.Final</version.org.jboss.remote-naming>
-        <version.org.jboss.remoting3>3.2.16.GA</version.org.jboss.remoting3>
-        <version.org.jboss.remotingjmx.remoting-jmx>1.1.0.Final</version.org.jboss.remotingjmx.remoting-jmx>
+        <version.org.jboss.remoting>4.0.0.Beta1</version.org.jboss.remoting>
+        <version.org.jboss.remotingjmx.remoting-jmx>2.0.0.Beta1</version.org.jboss.remotingjmx.remoting-jmx>
         <version.org.jboss.resteasy>3.0-beta-4</version.org.jboss.resteasy>
         <version.org.jboss.sasl>1.0.3.Final</version.org.jboss.sasl>
         <version.org.jboss.seam.int>6.0.0.GA</version.org.jboss.seam.int>
@@ -246,7 +246,7 @@
         <version.org.jboss.ws.cxf>4.2.0.Beta1</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.1.GA</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
         <version.org.jboss.xb>2.0.3.GA</version.org.jboss.xb>
-        <version.org.jboss.xnio>3.1.0.CR2</version.org.jboss.xnio>
+        <version.org.jboss.xnio>3.1.0.CR3</version.org.jboss.xnio>
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
         <version.org.jgroups>3.2.7.Final</version.org.jgroups>
@@ -464,6 +464,7 @@
                                             <exclude>org.jboss.logging:jboss-logging-tools</exclude>
                                             <!-- replaced by io.netty:netty -->
                                             <exclude>org.jboss.netty:netty</exclude>
+                                            <exclude>org.jboss.remoting3:jboss-remoting</exclude>
                                             <exclude>org.jboss.security:jbosssx</exclude>
                                             <exclude>org.jboss.slf4j:slf4j-jboss-logging</exclude>
                                             <exclude>org.jboss.spec.javax.resource:jboss-connector-api_1.5_spec</exclude>
@@ -3810,6 +3811,12 @@
                 <groupId>org.jboss</groupId>
                 <artifactId>jboss-remote-naming</artifactId>
                 <version>${version.org.jboss.remote-naming}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.remoting3</groupId>
+                        <artifactId>jboss-remoting</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -3998,6 +4005,12 @@
                 <groupId>org.jboss</groupId>
                 <artifactId>jboss-ejb-client</artifactId>
                 <version>${version.org.jboss.ejb-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.remoting3</groupId>
+                        <artifactId>jboss-remoting</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!-- TODO: this is not the final API -->
@@ -4657,9 +4670,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.remoting3</groupId>
+                <groupId>org.jboss.remoting</groupId>
                 <artifactId>jboss-remoting</artifactId>
-                <version>${version.org.jboss.remoting3}</version>
+                <version>${version.org.jboss.remoting}</version>
             </dependency>
 
             <dependency>

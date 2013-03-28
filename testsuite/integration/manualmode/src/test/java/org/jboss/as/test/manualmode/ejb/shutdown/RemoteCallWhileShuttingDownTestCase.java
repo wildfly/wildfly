@@ -117,7 +117,7 @@ public class RemoteCallWhileShuttingDownTestCase {
         // First start the server which has a remote-outbound-connection
         this.container.start(CONTAINER);
         final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
-        ManagementClient managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort());
+        ManagementClient managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
         try {
             this.deployer.deploy(DEP1);
 

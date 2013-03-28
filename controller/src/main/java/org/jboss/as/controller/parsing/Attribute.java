@@ -69,6 +69,7 @@ public enum Attribute {
     GROUP("group"),
     HOST("host"),
     HTTP("http"),
+    HTTP_UPGRADE_ENABLED("http-upgrade-enabled"),
     HTTPS("https"),
     IGNORE_UNUSED_CONFIG("ignore-unused-configuration"),
     INITIAL_CONTEXT_FACTORY("initial-context-factory"),

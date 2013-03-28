@@ -1431,7 +1431,7 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.remoting3</groupId>
+                    <groupId>org.jboss.remoting</groupId>
                     <artifactId>jboss-remoting</artifactId>
                 </dependency>
 
@@ -2074,7 +2074,7 @@
                                         <include>org.jboss.logmanager:log4j-jboss-logmanager</include>
                                         <include>org.jboss.marshalling:jboss-marshalling</include>
                                         <include>org.jboss.msc:jboss-msc</include>
-                                        <include>org.jboss.remoting3:jboss-remoting</include>
+                                        <include>org.jboss.remoting:jboss-remoting</include>
                                         <include>org.jboss.remotingjmx:remoting-jmx</include>
                                         <include>org.jboss.resteasy:async-http-servlet-3.0</include>
                                         <include>org.jboss.resteasy:jaxrs-api</include>
@@ -2481,7 +2481,7 @@
                                             <packages>org.jboss.logmanager:org.jboss.logmanager.config:org.jboss.logmanager.errormanager:org.jboss.logmanager.filters:org.jboss.logmanager.formatters:org.jboss.logmanager.handlers</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.remoting3</title>
+                                            <title>Module org.jboss.remoting</title>
                                             <packages>org.jboss.remoting3:org.jboss.remoting3.remote:org.jboss.remoting3.security:org.jboss.remoting3.spi</packages>
                                         </group>
                                         <group>

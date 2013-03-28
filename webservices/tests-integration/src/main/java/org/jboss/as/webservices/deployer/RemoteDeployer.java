@@ -94,9 +94,10 @@ import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 public final class RemoteDeployer implements Deployer {
 
     private static final Logger LOGGER = Logger.getLogger(RemoteDeployer.class);
-    private static final int DEFAULT_PORT = 9999;
+    private static final int DEFAULT_PORT = 9990;
     private static final String JBWS_DEPLOYER_HOST = "jbossws.deployer.host";
     private static final String JBWS_DEPLOYER_PORT = "jbossws.deployer.port";
+    private static final String JBWS_DEPLOYER_PROTOCOL = "jbossws.deployer.protocol";
     private static final String JBWS_DEPLOYER_AUTH_USER = "jbossws.deployer.authentication.username";
     private static final String JBWS_DEPLOYER_AUTH_PWD = "jbossws.deployer.authentication.password";
     private static final String JBWS_DEPLOYER_HTTPS_LISTENER_NAME = "jbws-test-https-listener";
@@ -105,6 +106,7 @@ public final class RemoteDeployer implements Deployer {
     private static final int TIMEOUT = 60000;
     private static InetAddress address;
     private static Integer port;
+    private static String protocol;
     private final Map<URL, String> url2Id = new HashMap<URL, String>();
     private final Map<String, Integer> securityDomainUsers = new HashMap<String, Integer>(1);
     private final Map<String, Integer> archiveCounters = new HashMap<String, Integer>();
@@ -118,6 +120,7 @@ public final class RemoteDeployer implements Deployer {
             final String host = System.getProperty(JBWS_DEPLOYER_HOST);
             address = host != null ? InetAddress.getByName(host) : InetAddress.getByName("localhost");
             port = Integer.getInteger(JBWS_DEPLOYER_PORT, DEFAULT_PORT);
+            protocol = System.getProperty(JBWS_DEPLOYER_PROTOCOL, "http-remoting");
         } catch (final IOException e) {
             LOGGER.fatal(e.getMessage(), e);
             System.exit(1);
@@ -428,7 +431,7 @@ public final class RemoteDeployer implements Deployer {
     }
 
     private static ModelControllerClient newModelControllerClient() throws Exception {
-        return ModelControllerClient.Factory.create(address.getHostAddress(), port, callbackHandler, null, TIMEOUT);
+        return ModelControllerClient.Factory.create(protocol, address.getHostAddress(), port, callbackHandler, null, TIMEOUT);
     }
 
     private static ServerDeploymentManager newDeploymentManager(ModelControllerClient client) throws Exception {

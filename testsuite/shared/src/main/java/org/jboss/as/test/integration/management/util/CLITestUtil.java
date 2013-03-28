@@ -47,7 +47,7 @@ public class CLITestUtil {
 
     public static CommandContext getCommandContext() throws CliInitializationException {
         setJBossCliConfig();
-        return CommandContextFactory.getInstance().newCommandContext(serverAddr, serverPort, null, null);
+        return CommandContextFactory.getInstance().newCommandContext("http-remoting", serverAddr, serverPort, null, null);
     }
 
     public static CommandContext getCommandContext(String address, int port, String user, char[] pwd, InputStream in, OutputStream out)

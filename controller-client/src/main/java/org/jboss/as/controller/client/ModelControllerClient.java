@@ -116,48 +116,101 @@ public interface ModelControllerClient extends Closeable {
          * Create a client instance for a remote address and port.
          *
          * @param address the address of the remote host
-         * @param port the port
+         * @param port    the port
          * @return A model controller client
          */
-        public static ModelControllerClient create(final InetAddress address, final int port){
+        public static ModelControllerClient create(final InetAddress address, final int port) {
             return create(ClientConfigurationImpl.create(address, port));
         }
 
         /**
          * Create a client instance for a remote address and port.
          *
-         * @param address the address of the remote host
-         * @param port the port
-         * @param handler  CallbackHandler to obtain authentication information for the call.
+         * @param protocol The prototcol to use. If this is http-remoting or https-remoting http upgrade will be used rather than the native remote protocol
+         * @param address  the address of the remote host
+         * @param port     the port
          * @return A model controller client
          */
-        public static ModelControllerClient create(final InetAddress address, final int port, final CallbackHandler handler){
-            return create(ClientConfigurationImpl.create(address, port, handler));
+        public static ModelControllerClient create(final String protocol, final InetAddress address, final int port) {
+            return create(ClientConfigurationImpl.create(protocol, address, port));
         }
 
         /**
          * Create a client instance for a remote address and port.
          *
          * @param address the address of the remote host
-         * @param port the port
+         * @param port    the port
+         * @param handler CallbackHandler to obtain authentication information for the call.
+         * @return A model controller client
+         */
+        public static ModelControllerClient create(final InetAddress address, final int port, final CallbackHandler handler) {
+            return create(ClientConfigurationImpl.create(address, port, handler));
+        }
+
+
+        /**
+         * Create a client instance for a remote address and port.
+         *
+         * @param protocol The prototcol to use. If this is http-remoting or https-remoting http upgrade will be used rather than the native remote protocol
+         * @param address  the address of the remote host
+         * @param port     the port
          * @param handler  CallbackHandler to obtain authentication information for the call.
+         * @return A model controller client
+         */
+        public static ModelControllerClient create(final String protocol, final InetAddress address, final int port, final CallbackHandler handler) {
+            return create(ClientConfigurationImpl.create(protocol, address, port, handler));
+        }
+
+        /**
+         * Create a client instance for a remote address and port.
+         *
+         * @param address     the address of the remote host
+         * @param port        the port
+         * @param handler     CallbackHandler to obtain authentication information for the call.
          * @param saslOptions Additional options to be passed to the SASL mechanism.
          * @return A model controller client
          */
-        public static ModelControllerClient create(final InetAddress address, final int port, final CallbackHandler handler, final Map<String, String> saslOptions){
+        public static ModelControllerClient create(final InetAddress address, final int port, final CallbackHandler handler, final Map<String, String> saslOptions) {
             return create(ClientConfigurationImpl.create(address, port, handler, saslOptions));
         }
 
         /**
          * Create a client instance for a remote address and port.
          *
+         * @param protocol    The prototcol to use. If this is http-remoting or https-remoting http upgrade will be used
+         * @param address     the address of the remote host
+         * @param port        the port
+         * @param handler     CallbackHandler to obtain authentication information for the call.
+         * @param saslOptions Additional options to be passed to the SASL mechanism.
+         * @return A model controller client
+         */
+        public static ModelControllerClient create(final String protocol, final InetAddress address, final int port, final CallbackHandler handler, final Map<String, String> saslOptions) {
+            return create(ClientConfigurationImpl.create(protocol, address, port, handler, saslOptions));
+        }
+
+        /**
+         * Create a client instance for a remote address and port.
+         *
          * @param hostName the remote host
-         * @param port the port
+         * @param port     the port
          * @return A model controller client
          * @throws UnknownHostException if the host cannot be found
          */
         public static ModelControllerClient create(final String hostName, final int port) throws UnknownHostException {
             return create(ClientConfigurationImpl.create(hostName, port));
+        }
+
+        /**
+         * Create a client instance for a remote address and port.
+         *
+         * @param protocol The prototcol to use. If this is http-remoting or https-remoting http upgrade will be used rather than the native remote protocol
+         * @param hostName the remote host
+         * @param port     the port
+         * @return A model controller client
+         * @throws UnknownHostException if the host cannot be found
+         */
+        public static ModelControllerClient create(final String protocol, final String hostName, final int port) throws UnknownHostException {
+            return create(ClientConfigurationImpl.create(protocol, hostName, port));
         }
 
         /**
@@ -170,7 +223,21 @@ public interface ModelControllerClient extends Closeable {
          * @throws UnknownHostException if the host cannot be found
          */
         public static ModelControllerClient create(final String hostName, final int port, final CallbackHandler handler) throws UnknownHostException {
-            return create(ClientConfigurationImpl.create(hostName,  port, handler));
+            return create(ClientConfigurationImpl.create(hostName, port, handler));
+        }
+
+        /**
+         * Create a client instance for a remote address and port and CallbackHandler.
+         *
+         * @param protocol The prototcol to use. If this is http-remoting or https-remoting http upgrade will be used rather than the native remote protocol
+         * @param hostName the remote host
+         * @param port     the port
+         * @param handler  CallbackHandler to obtain authentication information for the call.
+         * @return A model controller client
+         * @throws UnknownHostException if the host cannot be found
+         */
+        public static ModelControllerClient create(final String protocol, final String hostName, final int port, final CallbackHandler handler) throws UnknownHostException {
+            return create(ClientConfigurationImpl.create(protocol, hostName, port, handler));
         }
 
         /**
@@ -184,7 +251,22 @@ public interface ModelControllerClient extends Closeable {
          * @throws UnknownHostException if the host cannot be found
          */
         public static ModelControllerClient create(final String hostName, final int port, final CallbackHandler handler, final SSLContext sslContext) throws UnknownHostException {
-            return create(ClientConfigurationImpl.create(hostName,  port, handler, sslContext));
+            return create(ClientConfigurationImpl.create(hostName, port, handler, sslContext));
+        }
+
+        /**
+         * Create a client instance for a remote address and port and CallbackHandler.
+         *
+         * @param protocol    The prototcol to use. If this is http-remoting or https-remoting http upgrade will be used rather than the native remote protocol
+         * @param hostName   the remote host
+         * @param port       the port
+         * @param handler    CallbackHandler to obtain authentication information for the call.
+         * @param sslContext a pre-initialised SSLContext
+         * @return A model controller client
+         * @throws UnknownHostException if the host cannot be found
+         */
+        public static ModelControllerClient create(final String protocol, final String hostName, final int port, final CallbackHandler handler, final SSLContext sslContext) throws UnknownHostException {
+            return create(ClientConfigurationImpl.create(protocol, hostName, port, handler, sslContext));
         }
 
         /**
@@ -198,21 +280,51 @@ public interface ModelControllerClient extends Closeable {
          * @throws UnknownHostException if the host cannot be found
          */
         public static ModelControllerClient create(final String hostName, final int port, final CallbackHandler handler, final SSLContext sslContext, final int connectionTimeout) throws UnknownHostException {
-            return create(ClientConfigurationImpl.create(hostName,  port, handler, sslContext, connectionTimeout));
+            return create(ClientConfigurationImpl.create(hostName, port, handler, sslContext, connectionTimeout));
         }
 
         /**
          * Create a client instance for a remote address and port and CallbackHandler.
          *
-         * @param hostName the remote host
-         * @param port     the port
-         * @param handler  CallbackHandler to obtain authentication information for the call.
+         * @param protocol    The prototcol to use. If this is http-remoting or https-remoting http upgrade will be used rather than the native remote protocol
+         * @param hostName   the remote host
+         * @param port       the port
+         * @param handler    CallbackHandler to obtain authentication information for the call.
+         * @param sslContext a pre-initialised SSLContext
+         * @return A model controller client
+         * @throws UnknownHostException if the host cannot be found
+         */
+        public static ModelControllerClient create(final String protocol, final String hostName, final int port, final CallbackHandler handler, final SSLContext sslContext, final int connectionTimeout) throws UnknownHostException {
+            return create(ClientConfigurationImpl.create(protocol, hostName, port, handler, sslContext, connectionTimeout));
+        }
+
+        /**
+         * Create a client instance for a remote address and port and CallbackHandler.
+         *
+         * @param hostName    the remote host
+         * @param port        the port
+         * @param handler     CallbackHandler to obtain authentication information for the call.
          * @param saslOptions Additional options to be passed to the SASL mechanism.
          * @return A model controller client
          * @throws UnknownHostException if the host cannot be found
          */
         public static ModelControllerClient create(final String hostName, final int port, final CallbackHandler handler, final Map<String, String> saslOptions) throws UnknownHostException {
             return create(ClientConfigurationImpl.create(hostName, port, handler, saslOptions));
+        }
+
+        /**
+         * Create a client instance for a remote address and port and CallbackHandler.
+         *
+         * @param protocol    The prototcol to use. If this is http-remoting or https-remoting http upgrade will be used rather than the native remote protocol
+         * @param hostName    the remote host
+         * @param port        the port
+         * @param handler     CallbackHandler to obtain authentication information for the call.
+         * @param saslOptions Additional options to be passed to the SASL mechanism.
+         * @return A model controller client
+         * @throws UnknownHostException if the host cannot be found
+         */
+        public static ModelControllerClient create(final String protocol, final String hostName, final int port, final CallbackHandler handler, final Map<String, String> saslOptions) throws UnknownHostException {
+            return create(ClientConfigurationImpl.create(protocol, hostName, port, handler, saslOptions));
         }
 
         /**

@@ -31,6 +31,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.Remoting;
+import org.jboss.remoting3.remote.HttpUpgradeConnectionProviderFactory;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.xnio.OptionMap;
 
@@ -72,6 +73,8 @@ public final class EndpointService implements Service<Endpoint> {
             try {
                 // Reuse the options for the remote connection factory for now
                 endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), optionMap);
+                endpoint.addConnectionProvider("http-remoting", new HttpUpgradeConnectionProviderFactory(), optionMap);
+                endpoint.addConnectionProvider("https-remoting", new HttpUpgradeConnectionProviderFactory(), optionMap);
                 ok = true;
             } finally {
                 if (! ok) {

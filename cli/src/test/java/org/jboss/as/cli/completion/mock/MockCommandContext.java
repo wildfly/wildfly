@@ -187,7 +187,7 @@ public class MockCommandContext implements CommandContext {
     }
 
     @Override
-    public void connectController(String host, int port) {
+    public void connectController(String protocol, String host, int port) {
         throw new UnsupportedOperationException();
     }
 
@@ -329,7 +329,7 @@ public class MockCommandContext implements CommandContext {
 
     @Override
     public void connectController() {
-        connectController(null, -1);
+        connectController(null, null, -1);
     }
 
     @Override

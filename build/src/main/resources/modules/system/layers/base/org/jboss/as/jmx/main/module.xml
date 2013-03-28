@@ -39,11 +39,10 @@
         <module name="org.jboss.as.remoting" />
         <module name="org.wildfly.security.manager"/>
         <module name="org.jboss.as.server" />
-        <module name="org.jboss.remoting3" />
-        <module name="org.jboss.remoting3.remoting-jmx" />
+        <module name="org.jboss.remoting" />
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
-        <module name="org.jboss.remoting3.remoting-jmx" services="import" />
+        <module name="org.jboss.remoting-jmx" services="import" />
         <module name="org.jboss.as.naming"/>                
     </dependencies>
 </module>

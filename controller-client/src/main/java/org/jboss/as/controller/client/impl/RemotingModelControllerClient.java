@@ -40,8 +40,10 @@ import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.Remoting;
+import org.jboss.remoting3.remote.HttpUpgradeConnectionProviderFactory;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.xnio.OptionMap;
+import org.xnio.Options;
 
 /**
  * {@link ModelControllerClient} based on a Remoting {@link Endpoint}.
@@ -121,6 +123,8 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
                 // TODO move the endpoint creation somewhere else?
                 endpoint = Remoting.createEndpoint("management-client", OptionMap.EMPTY);
                 endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.EMPTY);
+                endpoint.addConnectionProvider("http-remoting", new HttpUpgradeConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
+                endpoint.addConnectionProvider("https-remoting", new HttpUpgradeConnectionProviderFactory(),  OptionMap.create(Options.SSL_ENABLED, Boolean.TRUE));
 
                 configuration.setEndpoint(endpoint);
 

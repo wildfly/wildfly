@@ -58,24 +58,30 @@ public class InContainerManagementClientProvider implements ResourceProvider {
             InputStream in = null;
             String managementPort;
             String address;
+            String protocol;
             try {
                 in = resourceUrl.openStream();
                 ObjectInputStream inputStream = new ObjectInputStream(in);
                 managementPort = (String) inputStream.readObject();
                 address = (String) inputStream.readObject();
+                protocol = (String) inputStream.readObject();
                 if (address == null) {
                     address = "localhost";
                 }
                 if (managementPort == null) {
-                    managementPort = "9999";
+                    managementPort = "9990";
+                }
+                if (protocol == null) {
+                    protocol = "http-remoting";
                 }
                 ModelControllerClient modelControllerClient = null;
                 final int port = Integer.parseInt(managementPort);
                 modelControllerClient = ModelControllerClient.Factory.create(
+                        protocol,
                         address,
                         port,
                         getCallbackHandler());
-                current = new ManagementClient(modelControllerClient, address, port);
+                current = new ManagementClient(modelControllerClient, address, port, protocol);
 
             } catch (IOException e) {
                 throw new RuntimeException(e);

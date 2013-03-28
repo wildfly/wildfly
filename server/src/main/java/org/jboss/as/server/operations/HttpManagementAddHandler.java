@@ -49,6 +49,9 @@ import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.network.SocketBindingManagerImpl;
+import org.jboss.as.remoting.RemotingHttpUpgradeService;
+import org.jboss.as.remoting.RemotingServices;
+import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.ServerLogger;
@@ -65,6 +68,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.JBossThreadFactory;
+import org.xnio.OptionMap;
 
 /**
  * A handler that activates the HTTP management API on a Server.
@@ -101,7 +105,9 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers)
             throws OperationFailedException {
-        installHttpManagementConnector(context, model, context.getServiceTarget(), verificationHandler, newControllers);
+
+        boolean httpUpgrade = HttpManagementResourceDefinition.HTTP_UPGRADE_ENABLED.resolveModelAttribute(context, model).asBoolean();
+        installHttpManagementConnector(context, model, context.getServiceTarget(), verificationHandler, newControllers, httpUpgrade);
     }
 
     // TODO move this kind of logic into AttributeDefinition itself
@@ -152,7 +158,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
 
     static void installHttpManagementConnector(final OperationContext context, final ModelNode model, final ServiceTarget serviceTarget,
                                                final ServiceVerificationHandler verificationHandler,
-                                               final List<ServiceController<?>> newControllers) throws OperationFailedException {
+                                               final List<ServiceController<?>> newControllers, final boolean httpUpgrade) throws OperationFailedException {
 
         ServiceName socketBindingServiceName = null;
         ServiceName secureSocketBindingServiceName = null;
@@ -222,7 +228,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
         }
 
         ServerEnvironment environment = (ServerEnvironment) context.getServiceRegistry(false).getRequiredService(ServerEnvironmentService.SERVICE_NAME).getValue();
-        final _UndertowHttpManagementService undertowService = new _UndertowHttpManagementService(consoleMode, environment.getProductConfig().getConsoleSlot());
+        final _UndertowHttpManagementService undertowService = new _UndertowHttpManagementService(consoleMode, environment.getProductConfig().getConsoleSlot(), httpUpgrade);
         ServiceBuilder<HttpManagement> undertowBuilder = serviceTarget.addService(_UndertowHttpManagementService.SERVICE_NAME, undertowService)
                 .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, undertowService.getModelControllerInjector())
                 .addDependency(SocketBindingManagerImpl.SOCKET_BINDING_MANAGER, SocketBindingManager.class, undertowService.getSocketBindingManagerInjector())
@@ -253,5 +259,17 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
         if (newControllers != null) {
             newControllers.add(controller);
         }
+
+
+        if(httpUpgrade) {
+            final String hostName = SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME);
+
+
+            ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.server.temp.dir");
+            RemotingServices.installSecurityServices(serviceTarget, ManagementRemotingServices.HTTP_CONNECTOR, realmSvcName, null, tmpDirPath, verificationHandler, newControllers);
+            NativeManagementServices.installRemotingServicesIfNotInstalled(serviceTarget, hostName, verificationHandler, null, context.getServiceRegistry(false));
+            RemotingHttpUpgradeService.installServices(serviceTarget, ManagementRemotingServices.HTTP_CONNECTOR,  ManagementRemotingServices.MANAGEMENT_ENDPOINT, OptionMap.EMPTY, verificationHandler);
+        }
+
     }
 }

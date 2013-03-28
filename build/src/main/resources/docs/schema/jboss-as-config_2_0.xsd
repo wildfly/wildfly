@@ -689,7 +689,7 @@
 
     <xs:complexType name="host-management-interfacesType">
         <xs:sequence>
-            <xs:element name="native-interface" type="host-native-management-interfaceType"/>
+            <xs:element name="native-interface" type="host-native-management-interfaceType" />
             <xs:element name="http-interface" type="host-http-management-interfaceType" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
@@ -769,6 +769,7 @@
                     <xs:element name="socket" type="http-management-socketType"/>
                 </xs:sequence>
                 <xs:attribute name="console-enabled" type="xs:boolean" use="optional" default="true"/>
+                <xs:attribute name="http-upgrade-enabled" type="xs:boolean" use="optional" default="true"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -880,6 +881,7 @@
                     <xs:element name="socket-binding" type="http-management-socket-binding-refType"/>
                 </xs:choice>
                 <xs:attribute name="console-enabled" type="xs:boolean" use="optional" default="true"/>
+                <xs:attribute name="http-upgrade-enabled" type="xs:boolean" use="optional" default="true"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

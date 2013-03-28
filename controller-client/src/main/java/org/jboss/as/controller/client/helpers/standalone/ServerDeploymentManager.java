@@ -62,6 +62,21 @@ public interface ServerDeploymentManager extends Closeable {
          * This creates a {@code ModelControllerClient} which has to be closed using the
          * {@link org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager#close()} method.
          *
+         * @param protocol The protocol to use
+         * @param address The remote address to connect to
+         * @param port The remote port
+         * @return A domain client
+         */
+        public static ServerDeploymentManager create(final String protocol, final InetAddress address, int port) {
+            return create(ModelControllerClient.Factory.create(protocol,  address, port), true);
+        }
+
+        /**
+         * Create an {@link ServerDeploymentManager} instance for a remote address and port.
+         *
+         * This creates a {@code ModelControllerClient} which has to be closed using the
+         * {@link org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager#close()} method.
+         *
          * @param address The remote address to connect to
          * @param port The remote port
          * @param handler The CallbackHandler for authentication
@@ -69,6 +84,21 @@ public interface ServerDeploymentManager extends Closeable {
          */
         public static ServerDeploymentManager create(final InetAddress address, int port, CallbackHandler handler) {
             return create(ModelControllerClient.Factory.create(address, port, handler), true);
+        }
+        /**
+         * Create an {@link ServerDeploymentManager} instance for a remote address and port.
+         *
+         * This creates a {@code ModelControllerClient} which has to be closed using the
+         * {@link org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager#close()} method.
+         *
+         * @param protocol The protocol to use
+         * @param address The remote address to connect to
+         * @param port The remote port
+         * @param handler The CallbackHandler for authentication
+         * @return A domain client
+         */
+        public static ServerDeploymentManager create(final String protocol, final InetAddress address, int port, CallbackHandler handler) {
+            return create(ModelControllerClient.Factory.create(protocol, address, port, handler), true);
         }
 
         /**

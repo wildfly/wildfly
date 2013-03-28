@@ -142,6 +142,32 @@ public interface DomainClient extends ModelControllerClient {
         }
 
         /**
+         * Create an {@link org.jboss.as.controller.client.helpers.domain.DomainClient} instance for a remote address and port.
+         *
+         * @param protocol The protocol to use
+         * @param address The remote address to connect to
+         * @param port    The remote port
+         * @return A domain client
+         */
+        public static DomainClient create(String protocol, final InetAddress address, int port) {
+            return new DomainClientImpl(protocol, address, port);
+        }
+
+
+        /**
+         * Create an {@link org.jboss.as.controller.client.helpers.domain.DomainClient} instance for a remote address and port.
+         *
+         * @param protocol The protocol to use
+         * @param address The remote address to connect to
+         * @param port    The remote port
+         * @param handler CallbackHandler to prompt for authentication requirements.
+         * @return A domain client
+         */
+        public static DomainClient create(String protocol, final InetAddress address, int port, CallbackHandler handler) {
+            return new DomainClientImpl(protocol, address, port, handler);
+        }
+
+        /**
          * Create an {@link org.jboss.as.controller.client.helpers.domain.DomainClient} instance based on an existing
          * {@link ModelControllerClient}.
          *

@@ -532,16 +532,6 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         Assert.assertNotNull("Reparsing failed:", newList);
 
-
-        try {
-            ModifiableXaDataSource jxaDS = lookup(getModelControllerClient(), xaDsJndi, ModifiableXaDataSource.class);
-
-            Assert.fail("found datasource after it was unbounded");
-        } catch (Exception e) {
-            // must be thrown NameNotFound exception - datasource is unbounded
-
-        }
-
         Assert.assertNotNull(findNodeWithProperty(newList, "jndi-name", xaDsJndi));
 
     }
@@ -770,15 +760,6 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         remove(address);
         remove(propAddress);
 
-    }
-
-    private static <T> T lookup(ModelControllerClient client, String name, Class<T> expected) throws Exception {
-        //TODO Don't do this FakeJndi stuff once we have remote JNDI working
-
-        MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remoting-jmx://127.0.0.1:9999")).getMBeanServerConnection();
-        ObjectName objectName = new ObjectName("jboss:name=test,type=fakejndi");
-        Object o = mbeanServer.invoke(objectName, "lookup", new Object[]{name}, new String[]{"java.lang.String"});
-        return expected.cast(o);
     }
 
 

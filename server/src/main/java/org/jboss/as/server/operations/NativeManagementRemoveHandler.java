@@ -53,15 +53,16 @@ public class NativeManagementRemoveHandler extends AbstractRemoveStepHandler {
         final ServiceName endpointName = ManagementRemotingServices.MANAGEMENT_ENDPOINT;
 
         // Remove management Channel
-        ManagementRemotingServices.removeManagementChannelServices(context, endpointName, ManagementRemotingServices.MANAGEMENT_CHANNEL);
+        // ManagementRemotingServices.removeManagementChannelServices(context, endpointName, ManagementRemotingServices.MANAGEMENT_CHANNEL);
 
         // Remove management Connector
         final ModelNode portNode = NativeManagementResourceDefinition.NATIVE_PORT.resolveModelAttribute(context, model);
         int port = portNode.isDefined() ? portNode.asInt() : 0;
         ManagementRemotingServices.removeConnectorServices(context, ManagementRemotingServices.MANAGEMENT_CONNECTOR);
 
-        // Remove endpoint
-        context.removeService(endpointName);
+        // We don't remove the endpoint or other remoting services, as it may still be in use by the HTTP upgrade handler.
+        // TODO: figure out some way of removing it if it is not in use
+        // context.removeService(endpointName);
 
     }
 

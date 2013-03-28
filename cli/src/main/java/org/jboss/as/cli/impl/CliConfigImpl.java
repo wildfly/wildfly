@@ -62,6 +62,7 @@ class CliConfigImpl implements CliConfig {
     private static final String HOST = "host";
     private static final String MAX_SIZE = "max-size";
     private static final String PORT = "port";
+    private static final String PROTOCOL = "protocol";
     private static final String CONNECTION_TIMEOUT = "connection-timeout";
     private static final String RESOLVE_PARAMETER_VALUES = "resolve-parameter-values";
     private static final String SILENT = "silent";
@@ -166,8 +167,9 @@ class CliConfigImpl implements CliConfig {
     }
 
     private CliConfigImpl() {
+        defaultControllerProtocol = "http-remoting";
         defaultControllerHost = "localhost";
-        defaultControllerPort = 9999;
+        defaultControllerPort = 9990;
 
         historyEnabled = true;
         historyFileName = ".jboss-cli-history";
@@ -177,6 +179,7 @@ class CliConfigImpl implements CliConfig {
         connectionTimeout = 5000;
     }
 
+    private String defaultControllerProtocol;
     private String defaultControllerHost;
     private int defaultControllerPort;
 
@@ -193,6 +196,11 @@ class CliConfigImpl implements CliConfig {
     private SSLConfig sslConfig;
 
     private boolean silent;
+
+    @Override
+    public String getDefaultControllerProtocol() {
+        return defaultControllerProtocol;
+    }
 
     @Override
     public String getDefaultControllerHost() {
@@ -329,6 +337,7 @@ class CliConfigImpl implements CliConfig {
                 case CLI_1_0:
                 case CLI_1_1:
                 case CLI_1_2:
+                case CLI_1_3:
                     readCLIElement_1_0(reader, readerNS, config);
                     break;
                 default:
@@ -389,6 +398,8 @@ class CliConfigImpl implements CliConfig {
                 final String resolved = resolveString(reader.getElementText());
                 if (HOST.equals(localName)) {
                     config.defaultControllerHost = resolved;
+                } else if (PROTOCOL.equals(localName)) {
+                    config.defaultControllerProtocol = resolved;
                 } else if (PORT.equals(localName)) {
                     try {
                         config.defaultControllerPort = Integer.parseInt(resolved);

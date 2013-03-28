@@ -33,7 +33,7 @@ public class TestSuiteEnvironment {
      * @return The server port for node0
      */
     public static int getServerPort() {
-        return Integer.getInteger("as.managementPort", 9999);
+        return Integer.getInteger("as.managementPort", 9990);
     }
 
     /**

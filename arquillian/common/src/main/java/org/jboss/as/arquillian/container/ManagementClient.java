@@ -91,6 +91,7 @@ public class ManagementClient implements AutoCloseable, Closeable {
 
     private final String mgmtAddress;
     private final int mgmtPort;
+    private final String mgmtProtocol;
     private final ModelControllerClient client;
 
     private URI webUri;
@@ -102,13 +103,14 @@ public class ManagementClient implements AutoCloseable, Closeable {
     private MBeanServerConnection connection;
     private JMXConnector connector;
 
-    public ManagementClient(ModelControllerClient client, final String mgmtAddress, final int managementPort) {
+    public ManagementClient(ModelControllerClient client, final String mgmtAddress, final int managementPort, final String protocol) {
         if (client == null) {
             throw new IllegalArgumentException("Client must be specified");
         }
         this.client = client;
         this.mgmtAddress = mgmtAddress;
         this.mgmtPort = managementPort;
+        this.mgmtProtocol = protocol;
     }
 
     //-------------------------------------------------------------------------------------||
@@ -347,7 +349,13 @@ public class ManagementClient implements AutoCloseable, Closeable {
 
     public JMXServiceURL getRemoteJMXURL() {
         try {
-            return new JMXServiceURL("service:jmx:remoting-jmx://" + NetworkUtils.formatPossibleIpv6Address(mgmtAddress) + ":" + mgmtPort);
+            if (mgmtProtocol.equals("http-remoting")) {
+                return new JMXServiceURL("service:jmx:http-remoting-jmx://" + NetworkUtils.formatPossibleIpv6Address(mgmtAddress) + ":" + mgmtPort);
+            } else if (mgmtProtocol.equals("https-remoting")) {
+                return new JMXServiceURL("service:jmx:https-remoting-jmx://" + NetworkUtils.formatPossibleIpv6Address(mgmtAddress) + ":" + mgmtPort);
+            } else {
+                return new JMXServiceURL("service:jmx:remoting-jmx://" + NetworkUtils.formatPossibleIpv6Address(mgmtAddress) + ":" + mgmtPort);
+            }
         } catch (Exception e) {
             throw new RuntimeException("Could not create JMXServiceURL:" + this, e);
         }

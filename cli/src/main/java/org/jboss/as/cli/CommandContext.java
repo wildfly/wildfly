@@ -124,11 +124,12 @@ public interface CommandContext {
      * If the port is less than zero, the default controller port will be used,
      * which is 9999.
      *
+     * @param protocol the protocol to connect with, either remote, http or https
      * @param host the host to connect with
      * @param port the port to connect on
      * @throws CommandLineException  in case the attempt to connect failed
      */
-    void connectController(String host, int port) throws CommandLineException;
+    void connectController(String protocol, String host, int port) throws CommandLineException;
 
     /**
      * Bind the controller to an existing, connected client.

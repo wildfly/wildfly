@@ -86,6 +86,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
         ModelControllerClient modelControllerClient = null;
         try {
             modelControllerClient = ModelControllerClient.Factory.create(
+                    containerConfig.getManagementProtocol(),
                     containerConfig.getManagementAddress(),
                     containerConfig.getManagementPort(),
                     getCallbackHandler());
@@ -93,7 +94,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
             throw new RuntimeException(e);
         }
 
-        ManagementClient client = new ManagementClient(modelControllerClient, containerConfig.getManagementAddress(), containerConfig.getManagementPort());
+        ManagementClient client = new ManagementClient(modelControllerClient, containerConfig.getManagementAddress(), containerConfig.getManagementPort(), containerConfig.getManagementProtocol());
         managementClient.set(client);
 
         ArchiveDeployer deployer = new ArchiveDeployer(modelControllerClient);

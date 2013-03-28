@@ -9,7 +9,7 @@
             <property name="serverConfig">${jboss.server.config.file.name:standalone-xts.xml}</property>
             <property name="allowConnectingToRunningServer">true</property>
             <property name="managementAddress">${node0:127.0.0.1}</property>
-            <property name="managementPort">${as.managementPort:9999}</property>
+            <property name="managementPort">${as.managementPort:9990}</property>
         </configuration>
     </container>
 

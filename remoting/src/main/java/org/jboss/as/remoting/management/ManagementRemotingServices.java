@@ -69,6 +69,7 @@ public final class ManagementRemotingServices extends RemotingServices {
     public static final String SERVER_CHANNEL = "server";
 
     public static final String MANAGEMENT_CONNECTOR = "management";
+    public static final String HTTP_CONNECTOR = "http-management";
 
     /**
      * Installs a remoting stream server for a domain instance

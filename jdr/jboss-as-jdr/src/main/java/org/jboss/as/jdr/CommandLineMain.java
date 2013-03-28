@@ -50,6 +50,7 @@ public class CommandLineMain {
         options.addOption("h", "help", false, MESSAGES.jdrHelpMessage());
         options.addOption("H", "host", true, MESSAGES.jdrHostnameMessage());
         options.addOption("p", "port", true, MESSAGES.jdrPortMessage());
+        options.addOption("s", "protocol", true, MESSAGES.jdrProtocolMessage());
     }
 
     /**
@@ -61,6 +62,7 @@ public class CommandLineMain {
     public static void main(String[] args) {
         String port = "9999";
         String host = "localhost";
+        String protocol = "http-remoting";
 
         try {
             CommandLine line = parser.parse(options, args, false);
@@ -76,6 +78,10 @@ public class CommandLineMain {
             if (line.hasOption("port")) {
                 port = line.getOptionValue("port");
             }
+
+            if (line.hasOption("protocol")) {
+                protocol = line.getOptionValue("protocol");
+            }
         } catch (ParseException e) {
             System.out.println(e.getMessage());
             formatter.printHelp(usage, options);
@@ -88,7 +94,7 @@ public class CommandLineMain {
 
         JdrReport response = null;
         try {
-            response = reportService.standaloneCollect(host, port);
+            response = reportService.standaloneCollect(protocol, host, port);
         } catch (OperationFailedException e) {
             System.out.println("Failed to complete the JDR report: " + e.getMessage());
         }
