@@ -22,16 +22,16 @@
 
 package org.jboss.as.protocol.mgmt;
 
+import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import org.jboss.remoting3.Channel;
 
 import java.io.DataInput;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface ManagementMessageHandler {
+public interface ManagementMessageHandler extends ManagementChannelInitialization.ManagementChannelShutdownHandle {
 
     /**
      * Handle a message on the channel.
@@ -42,25 +42,5 @@ public interface ManagementMessageHandler {
      * @throws IOException
      */
     void handleMessage(Channel channel, DataInput input, ManagementProtocolHeader header) throws IOException;
-
-    /**
-     * Don't allow new operations, but still allow requests for existing ones.
-     */
-    void shutdown();
-
-    /**
-     * This will attempt to cancel all active operations, without waiting for their completion.
-     */
-    void shutdownNow();
-
-    /**
-     * Await the completion of all currently active operations.
-     *
-     * @param timeout the timeout
-     * @param unit the time unit
-     * @return {@code } false if the timeout was reached and there were still active operations
-     * @throws InterruptedException
-     */
-    boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException;
 
 }
