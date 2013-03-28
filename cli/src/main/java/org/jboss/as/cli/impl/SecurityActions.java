@@ -21,11 +21,11 @@
  */
 package org.jboss.as.cli.impl;
 
-import org.jboss.as.util.security.AddShutdownHookAction;
-import org.jboss.as.util.security.GetClassLoaderAction;
-import org.jboss.as.util.security.ReadEnvironmentPropertyAction;
-import org.jboss.as.util.security.ReadPropertyAction;
-import org.jboss.as.util.security.WritePropertyAction;
+import org.wildfly.security.manager.AddShutdownHookAction;
+import org.wildfly.security.manager.GetClassLoaderAction;
+import org.wildfly.security.manager.ReadEnvironmentPropertyAction;
+import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.WritePropertyAction;
 
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;

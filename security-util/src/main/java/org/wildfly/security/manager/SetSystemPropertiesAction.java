@@ -20,42 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.util.security;
+package org.wildfly.security.manager;
 
 import java.security.PrivilegedAction;
+import java.util.Properties;
 
 /**
- * A security action which reads an environment property.
+ * A security action which replaces the system properties map.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ReadEnvironmentPropertyAction implements PrivilegedAction<String> {
+public final class SetSystemPropertiesAction implements PrivilegedAction<Void> {
 
-    private final String propertyName;
-    private final String defaultValue;
-
-    /**
-     * Construct a new instance.
-     *
-     * @param propertyName the environment property to read
-     */
-    public ReadEnvironmentPropertyAction(final String propertyName) {
-        this(propertyName, null);
-    }
+    private final Properties properties;
 
     /**
      * Construct a new instance.
      *
-     * @param propertyName the environment property to read
-     * @param defaultValue the value to return if the property is not present
+     * @param properties the new properties map
      */
-    public ReadEnvironmentPropertyAction(final String propertyName, final String defaultValue) {
-        this.propertyName = propertyName;
-        this.defaultValue = defaultValue;
+    public SetSystemPropertiesAction(final Properties properties) {
+        this.properties = properties;
     }
 
-    public String run() {
-        final String val = System.getenv(propertyName);
-        return val == null ? defaultValue : val;
+    public Void run() {
+        System.setProperties(properties);
+        return null;
     }
 }

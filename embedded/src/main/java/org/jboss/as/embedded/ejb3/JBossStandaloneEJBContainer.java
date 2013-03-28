@@ -41,7 +41,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import org.jboss.as.util.security.ReadPropertyAction;
+import org.wildfly.security.manager.ReadPropertyAction;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

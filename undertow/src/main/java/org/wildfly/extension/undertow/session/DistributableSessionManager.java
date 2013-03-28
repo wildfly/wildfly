@@ -66,7 +66,7 @@ import org.wildfly.extension.undertow.session.notification.ClusteredSessionNotif
 import org.wildfly.extension.undertow.session.notification.ClusteredSessionNotificationCause;
 import org.wildfly.extension.undertow.session.notification.ClusteredSessionNotificationPolicy;
 import org.wildfly.extension.undertow.session.notification.IgnoreUndeployLegacyClusteredSessionNotificationPolicy;
-import org.jboss.as.util.security.ReadPropertyAction;
+import org.wildfly.security.manager.ReadPropertyAction;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.ClassResolver;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;

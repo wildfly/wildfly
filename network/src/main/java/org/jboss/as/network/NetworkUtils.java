@@ -29,7 +29,7 @@ import java.net.InetSocketAddress;
 import java.security.AccessController;
 import java.util.Arrays;
 import java.util.Locale;
-import org.jboss.as.util.security.ReadPropertyAction;
+import org.wildfly.security.manager.ReadPropertyAction;
 
 /**
  * Utility methods related to networking.

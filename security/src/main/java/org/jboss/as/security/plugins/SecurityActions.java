@@ -25,8 +25,8 @@ package org.jboss.as.security.plugins;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 
-import org.jboss.as.util.security.GetContextClassLoaderAction;
-import org.jboss.as.util.security.GetModuleClassLoaderAction;
+import org.wildfly.security.manager.GetContextClassLoaderAction;
+import org.wildfly.security.manager.GetModuleClassLoaderAction;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;

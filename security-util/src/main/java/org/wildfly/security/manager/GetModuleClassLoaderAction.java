@@ -20,31 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.util.security;
+package org.wildfly.security.manager;
 
 import java.security.PrivilegedAction;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
 
 /**
- * A privileged action for setting a system property.
+ * A security action to get the class loader for a module.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class WritePropertyAction implements PrivilegedAction<String> {
-    private final String propertyName;
-    private final String value;
+public final class GetModuleClassLoaderAction implements PrivilegedAction<ModuleClassLoader> {
+    private final Module module;
 
     /**
      * Construct a new instance.
      *
-     * @param propertyName the property name to set
-     * @param value the value to use
+     * @param module the module to read
      */
-    public WritePropertyAction(final String propertyName, final String value) {
-        this.propertyName = propertyName;
-        this.value = value;
+    public GetModuleClassLoaderAction(final Module module) {
+        this.module = module;
     }
 
-    public String run() {
-        return System.setProperty(propertyName, value);
+    public ModuleClassLoader run() {
+        return module.getClassLoader();
     }
 }

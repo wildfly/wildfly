@@ -20,33 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.util.security;
+package org.wildfly.security.manager;
 
 import java.security.PrivilegedAction;
 
 /**
- * A security action to get and set the context class loader of the current thread.
+ * A security action to get the class loader of a class.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class SetContextClassLoaderFromClassAction implements PrivilegedAction<ClassLoader> {
+public final class GetClassLoaderAction implements PrivilegedAction<ClassLoader> {
     private final Class<?> clazz;
 
     /**
      * Construct a new instance.
      *
-     * @param clazz a class from the class loader to set
+     * @param clazz the class whose class loader is to be probed
      */
-    public SetContextClassLoaderFromClassAction(final Class<?> clazz) {
+    public GetClassLoaderAction(final Class<?> clazz) {
         this.clazz = clazz;
     }
 
     public ClassLoader run() {
-        final Thread thread = Thread.currentThread();
-        try {
-            return thread.getContextClassLoader();
-        } finally {
-            thread.setContextClassLoader(clazz.getClassLoader());
-        }
+        return clazz.getClassLoader();
     }
 }

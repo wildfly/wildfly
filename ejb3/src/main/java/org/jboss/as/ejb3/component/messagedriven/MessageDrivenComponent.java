@@ -42,7 +42,7 @@ import org.jboss.as.ejb3.inflow.MessageEndpointService;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.util.security.GetClassLoaderAction;
+import org.wildfly.security.manager.GetClassLoaderAction;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.jca.core.spi.rar.Endpoint;

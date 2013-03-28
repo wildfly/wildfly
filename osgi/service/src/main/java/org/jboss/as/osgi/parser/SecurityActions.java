@@ -22,9 +22,9 @@
 
 package org.jboss.as.osgi.parser;
 
-import org.jboss.as.util.security.GetClassLoaderAction;
-import org.jboss.as.util.security.ReadPropertyAction;
-import org.jboss.as.util.security.WritePropertyAction;
+import org.wildfly.security.manager.GetClassLoaderAction;
+import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.WritePropertyAction;
 
 import static java.lang.System.getProperty;
 import static java.lang.System.getSecurityManager;

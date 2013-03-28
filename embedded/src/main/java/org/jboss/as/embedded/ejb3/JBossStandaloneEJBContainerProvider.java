@@ -42,7 +42,7 @@ import javax.ejb.spi.EJBContainerProvider;
 
 import org.jboss.as.embedded.EmbeddedServerFactory;
 import org.jboss.as.embedded.StandaloneServer;
-import org.jboss.as.util.security.WritePropertyAction;
+import org.wildfly.security.manager.WritePropertyAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 

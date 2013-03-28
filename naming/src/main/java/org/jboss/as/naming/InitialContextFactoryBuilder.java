@@ -28,7 +28,7 @@ import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 import java.util.Hashtable;
-import org.jboss.as.util.security.GetContextClassLoaderAction;
+import org.wildfly.security.manager.GetContextClassLoaderAction;
 
 import javax.naming.Context;
 import javax.naming.NamingException;

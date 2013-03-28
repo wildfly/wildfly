@@ -25,7 +25,7 @@ package org.jboss.as.controller.interfaces;
 import static java.lang.System.getSecurityManager;
 import static java.security.AccessController.doPrivileged;
 
-import org.jboss.as.util.security.GetBooleanAction;
+import org.wildfly.security.manager.GetBooleanAction;
 
 /**
  * Security actions to perform possibly privileged operations.  No methods in

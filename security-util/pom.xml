@@ -32,7 +32,6 @@
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-security-util</artifactId>
 
     <name>WildFly: Shared Security Utilities</name>
@@ -70,6 +69,12 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.invocation</groupId>
+            <artifactId>jboss-invocation</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>

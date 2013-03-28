@@ -33,7 +33,7 @@ import java.rmi.UnexpectedException;
 import javax.rmi.PortableRemoteObject;
 
 import org.jboss.as.jacorb.JacORBMessages;
-import org.jboss.as.util.security.GetContextClassLoaderAction;
+import org.wildfly.security.manager.GetContextClassLoaderAction;
 import org.jboss.com.sun.corba.se.impl.javax.rmi.RemoteObjectSubstitutionManager;
 import org.omg.CORBA.UserException;
 import org.omg.CORBA.portable.IDLEntity;

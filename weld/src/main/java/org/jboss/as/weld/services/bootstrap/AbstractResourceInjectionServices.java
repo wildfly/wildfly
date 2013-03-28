@@ -28,7 +28,7 @@ import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.util.security.GetContextClassLoaderAction;
+import org.wildfly.security.manager.GetContextClassLoaderAction;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.weld.exceptions.DefinitionException;

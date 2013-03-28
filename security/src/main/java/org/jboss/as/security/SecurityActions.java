@@ -22,9 +22,9 @@ package org.jboss.as.security;
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-import org.jboss.as.util.security.GetContextClassLoaderAction;
-import org.jboss.as.util.security.SetContextClassLoaderAction;
-import org.jboss.as.util.security.WritePropertyAction;
+import org.wildfly.security.manager.GetContextClassLoaderAction;
+import org.wildfly.security.manager.SetContextClassLoaderAction;
+import org.wildfly.security.manager.WritePropertyAction;
 
 import static java.lang.System.getSecurityManager;
 import static java.lang.System.setProperty;

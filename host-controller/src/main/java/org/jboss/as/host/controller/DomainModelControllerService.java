@@ -118,7 +118,7 @@ import org.jboss.as.server.RuntimeExpressionResolver;
 import org.jboss.as.server.controller.resources.VersionModelInitializer;
 import org.jboss.as.server.mgmt._UndertowHttpManagementService;
 import org.jboss.as.server.services.security.AbstractVaultReader;
-import org.jboss.as.util.security.GetAccessControlContextAction;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;

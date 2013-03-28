@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.domain.management.util;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
-import org.jboss.as.util.security.GetAccessControlContextAction;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
@@ -34,7 +34,6 @@ import javax.security.auth.callback.CallbackHandler;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
-import java.security.AccessController;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;

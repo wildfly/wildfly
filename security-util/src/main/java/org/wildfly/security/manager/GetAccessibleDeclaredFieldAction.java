@@ -20,33 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.util.security;
+package org.wildfly.security.manager;
 
+import java.lang.reflect.Field;
 import java.security.PrivilegedAction;
-import java.util.Properties;
 
 /**
- * A security action to retrieve the system properties map.
+ * A privileged action which gets and returns a non-public field from a class.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class GetSystemPropertiesAction implements PrivilegedAction<Properties> {
-
-    private static final GetSystemPropertiesAction INSTANCE = new GetSystemPropertiesAction();
-
-    private GetSystemPropertiesAction() {
-    }
+// note: don't make this public.  people should generally use the reflection index for this kind of thing.
+final class GetAccessibleDeclaredFieldAction implements PrivilegedAction<Field> {
+    private final Class<?> clazz;
+    private final String fieldName;
 
     /**
-     * Get the singleton instance.
+     * Construct a new instance.
      *
-     * @return the singleton instance
+     * @param clazz the class to search
+     * @param fieldName the field name to search for
      */
-    public static GetSystemPropertiesAction getInstance() {
-        return INSTANCE;
+    public GetAccessibleDeclaredFieldAction(final Class<?> clazz, final String fieldName) {
+        this.clazz = clazz;
+        this.fieldName = fieldName;
     }
 
-    public Properties run() {
-        return System.getProperties();
+    public Field run() {
+        final Field field;
+        try {
+            field = clazz.getDeclaredField(fieldName);
+        } catch (NoSuchFieldException e) {
+            throw new NoSuchFieldError(e.getMessage());
+        }
+        field.setAccessible(true);
+        return field;
     }
 }

@@ -20,30 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.util.security;
+package org.wildfly.security.manager;
 
 import java.security.PrivilegedAction;
+import java.security.Security;
 
 /**
- * A security action which adds a shutdown hook.
+ * A security action which sets a security property.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class AddShutdownHookAction implements PrivilegedAction<Void> {
+public final class WriteSecurityPropertyAction implements PrivilegedAction<Void> {
 
-    private final Thread hook;
+    private final String key;
+    private final String value;
 
-    /**
-     * Construct a new instance.
-     *
-     * @param hook the shutdown hook to add
-     */
-    public AddShutdownHookAction(final Thread hook) {
-        this.hook = hook;
+    public WriteSecurityPropertyAction(final String key, final String value) {
+        this.key = key;
+        this.value = value;
     }
 
     public Void run() {
-        Runtime.getRuntime().addShutdownHook(hook);
+        Security.setProperty(key, value);
         return null;
     }
 }

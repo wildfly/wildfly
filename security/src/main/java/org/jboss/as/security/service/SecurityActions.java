@@ -29,10 +29,10 @@ import java.security.Security;
 
 import org.jboss.as.security.SecurityMessages;
 import org.jboss.as.security.remoting.RemotingContext;
-import org.jboss.as.util.security.GetContextClassLoaderAction;
-import org.jboss.as.util.security.GetModuleClassLoaderAction;
-import org.jboss.as.util.security.ReadPropertyAction;
-import org.jboss.as.util.security.WriteSecurityPropertyAction;
+import org.wildfly.security.manager.GetContextClassLoaderAction;
+import org.wildfly.security.manager.GetModuleClassLoaderAction;
+import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.WriteSecurityPropertyAction;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;

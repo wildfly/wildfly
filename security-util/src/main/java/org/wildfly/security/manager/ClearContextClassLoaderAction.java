@@ -20,39 +20,37 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.util.security;
+package org.wildfly.security.manager;
 
 import java.security.PrivilegedAction;
-import java.util.Properties;
 
 /**
- * A privileged action for setting a system property if it is absent.
+ * A security action to clear the current thread context class loader.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class WritePropertyIfAbsentAction implements PrivilegedAction<String> {
-    private final String propertyName;
-    private final String value;
+public final class ClearContextClassLoaderAction implements PrivilegedAction<ClassLoader> {
 
-    /**
-     * Construct a new instance.
-     *
-     * @param propertyName the property name to set
-     * @param value the value to use
-     */
-    public WritePropertyIfAbsentAction(final String propertyName, final String value) {
-        this.propertyName = propertyName;
-        this.value = value;
+    private static final ClearContextClassLoaderAction INSTANCE = new ClearContextClassLoaderAction();
+
+    private ClearContextClassLoaderAction() {
     }
 
-    public String run() {
-        final Properties properties = System.getProperties();
-        synchronized (properties) {
-            if (properties.containsKey(propertyName)) {
-                return properties.getProperty(propertyName);
-            } else {
-                return (String) properties.setProperty(propertyName, value);
-            }
+    /**
+     * Get the singleton instance.
+     *
+     * @return the singleton instance
+     */
+    public static ClearContextClassLoaderAction getInstance() {
+        return INSTANCE;
+    }
+
+    public ClassLoader run() {
+        final Thread thread = Thread.currentThread();
+        try {
+            return thread.getContextClassLoader();
+        } finally {
+            thread.setContextClassLoader(null);
         }
     }
 }

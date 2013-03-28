@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,30 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.handlers.module;
 
-import org.wildfly.security.manager.ReadEnvironmentPropertyAction;
-import org.wildfly.security.manager.ReadPropertyAction;
+package org.wildfly.security.manager;
 
-import static java.lang.System.getProperty;
-import static java.lang.System.getSecurityManager;
-import static java.lang.System.getenv;
-import static java.security.AccessController.doPrivileged;
+import java.security.PrivilegedAction;
+import java.util.Map;
 
 /**
- * Package privileged actions
+ * A security action which retrieves the current environment variable map.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
- * @author Scott.Stark@jboss.org
- * @author Alexey Loubyansky
  */
-class SecurityActions {
+public final class GetEnvironmentAction implements PrivilegedAction<Map<String, String>> {
+    private static final GetEnvironmentAction INSTANCE = new GetEnvironmentAction();
 
-    static String getSystemProperty(String name) {
-        return getSecurityManager() == null ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
+    private GetEnvironmentAction() {
     }
 
-    static String getEnvironmentVariable(String name) {
-        return getSecurityManager() == null ? getenv(name) : doPrivileged(new ReadEnvironmentPropertyAction(name));
+    /**
+     * Get the singleton instance.
+     *
+     * @return the singleton instance
+     */
+    public static GetEnvironmentAction getInstance() {
+        return INSTANCE;
+    }
+
+    public Map<String, String> run() {
+        return System.getenv();
     }
 }

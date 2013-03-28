@@ -20,25 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.util.security;
+package org.wildfly.security.manager;
 
 import java.security.PrivilegedAction;
+import java.util.Properties;
 
 /**
- * A security action which replaces the system properties map.
+ * A security action to retrieve the system properties map.
  *
- * @author Brian Stansberry (c) 2013 Red Hat Inc.
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class GetBooleanAction implements PrivilegedAction<Boolean> {
+public final class GetSystemPropertiesAction implements PrivilegedAction<Properties> {
 
-    private final String systemProperty;
+    private static final GetSystemPropertiesAction INSTANCE = new GetSystemPropertiesAction();
 
-    public GetBooleanAction(String systemProperty) {
-        this.systemProperty = systemProperty;
+    private GetSystemPropertiesAction() {
     }
 
-    @Override
-    public Boolean run() {
-        return Boolean.getBoolean(systemProperty);
+    /**
+     * Get the singleton instance.
+     *
+     * @return the singleton instance
+     */
+    public static GetSystemPropertiesAction getInstance() {
+        return INSTANCE;
+    }
+
+    public Properties run() {
+        return System.getProperties();
     }
 }

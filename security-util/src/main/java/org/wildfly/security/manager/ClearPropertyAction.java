@@ -20,47 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.util.security;
+package org.wildfly.security.manager;
 
-import java.io.File;
-import java.io.IOException;
-import java.security.PrivilegedExceptionAction;
+import java.security.PrivilegedAction;
 
 /**
- * A security action to create a temporary file.
+ * A security action which clears a system property.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class CreateTempFileAction implements PrivilegedExceptionAction<File> {
+public final class ClearPropertyAction implements PrivilegedAction<String> {
 
-    private final String prefix;
-    private final String suffix;
-    private final File directory;
+    private final String propertyName;
 
     /**
      * Construct a new instance.
      *
-     * @param prefix the prefix to set
-     * @param suffix the suffix to set
-     * @param directory the directory
+     * @param propertyName the name of the property to clear
      */
-    public CreateTempFileAction(final String prefix, final String suffix, final File directory) {
-        this.prefix = prefix;
-        this.suffix = suffix;
-        this.directory = directory;
+    public ClearPropertyAction(final String propertyName) {
+        this.propertyName = propertyName;
     }
 
-    /**
-     * Construct a new instance.
-     *
-     * @param prefix the prefix to set
-     * @param suffix the suffix to set
-     */
-    public CreateTempFileAction(final String suffix, final String prefix) {
-        this(prefix, suffix, null);
-    }
-
-    public File run() throws IOException {
-        return File.createTempFile(prefix, suffix, directory);
+    public String run() {
+        return System.clearProperty(propertyName);
     }
 }

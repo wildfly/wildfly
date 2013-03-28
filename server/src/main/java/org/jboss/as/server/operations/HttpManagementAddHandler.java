@@ -30,7 +30,6 @@ import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.SECURE_S
 import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.SECURITY_REALM;
 import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.SOCKET_BINDING;
 
-import java.security.AccessController;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -59,7 +58,7 @@ import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt._UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
-import org.jboss.as.util.security.GetAccessControlContextAction;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;

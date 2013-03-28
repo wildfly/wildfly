@@ -37,7 +37,7 @@ import javax.transaction.xa.XAResource;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.jboss.as.util.security.SetContextClassLoaderAction;
+import org.wildfly.security.manager.SetContextClassLoaderAction;
 
 import static java.lang.System.getSecurityManager;
 import static java.security.AccessController.doPrivileged;
