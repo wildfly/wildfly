@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutorService;
 import io.undertow.server.handlers.ChannelUpgradeHandler;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.http.server.ConsoleMode;
 import org.jboss.as.domain.http.server.ManagementHttpServer;
 import org.jboss.as.domain.management.security.SecurityRealmService;
@@ -156,6 +157,7 @@ public class _UndertowHttpManagementService implements Service<HttpManagement>{
         final ModelController modelController = modelControllerValue.getValue();
         final ControlledProcessStateService controlledProcessStateService = controlledProcessStateServiceValue.getValue();
         final ExecutorService executorService = executorServiceValue.getValue();
+        final ModelControllerClient modelControllerClient = modelController.createClient(executorService);
         socketBindingManager = injectedSocketBindingManager.getOptionalValue();
 
         final SecurityRealmService securityRealmService = securityRealmServiceValue.getOptionalValue();

@@ -30,7 +30,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
@@ -89,8 +88,6 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
             submodel.get(attributeName).set(newValue);
         }
 
-        final AtomicReference<ModelNode> newVal = new AtomicReference<>(newValue);
-
         finishModelStage(context, operation, attributeName, newValue, currentValue, resource);
 
         if (requiresRuntime(context)) {
@@ -100,10 +97,8 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final ModelNode resolvedValue = attributeDefinition != null ? attributeDefinition.resolveModelAttribute(context, submodel) : updatedValue.resolve();
                     validateResolvedValue(attributeName, updatedValue);
-                    newVal.set(resolvedValue);
                     final HandbackHolder<T> handback = new HandbackHolder<T>();
                     final boolean reloadRequired = applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handback);
-
                     if (reloadRequired) {
                         context.reloadRequired();
                     }

@@ -56,7 +56,6 @@ import io.undertow.server.handlers.cache.CacheHandler;
 import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.server.handlers.error.SimpleErrorPageHandler;
 import org.jboss.as.controller.ControlledProcessStateService;
-import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.http.server.security.AuthenticationMechanismWrapper;
 import org.jboss.as.domain.http.server.security.ConnectionAuthenticationCacheHandler;
@@ -184,7 +183,7 @@ public class ManagementHttpServer {
         return server;
     }
 
-    private static void setupOpenListener(HttpOpenListener listener, ModelController modelController, ExecutorService executorService, ConsoleMode consoleMode, String consoleSlot, ControlledProcessStateService controlledProcessStateService, int securePort, SecurityRealm securityRealm, final ChannelUpgradeHandler upgradeHandler) { {
+    private static void setupOpenListener(HttpOpenListener listener, ModelControllerClient modelControllerClient, ExecutorService executorService, ConsoleMode consoleMode, String consoleSlot, ControlledProcessStateService controlledProcessStateService, int securePort, SecurityRealm securityRealm, final ChannelUpgradeHandler upgradeHandler) { {
         CanonicalPathHandler canonicalPathHandler = new CanonicalPathHandler();
         listener.setRootHandler(canonicalPathHandler);
 
@@ -217,7 +216,6 @@ public class ManagementHttpServer {
         }
 
         ManagementRootConsoleRedirectHandler rootConsoleRedirectHandler = new ManagementRootConsoleRedirectHandler(consoleHandler);
-        ModelControllerClient modelControllerClient = modelController.createClient(executorService);
         DomainApiCheckHandler domainApiHandler = new DomainApiCheckHandler(modelControllerClient, controlledProcessStateService);
         pathHandler.addPath("/", rootConsoleRedirectHandler);
         if (consoleHandler != null) {
@@ -229,7 +227,7 @@ public class ManagementHttpServer {
         HttpHandler readinessHandler = new DmrFailureReadinessHandler(securityRealm, secureDomainAccess(domainApiHandler, securityRealm), ErrorContextHandler.ERROR_CONTEXT);
         pathHandler.addPath(DomainApiCheckHandler.PATH, readinessHandler);
 
-        HttpHandler notificationApiHandler = new BlockingHandler(new SubjectAssociationHandler(new NotificationApiHandler(modelController.getNotificationSupport())));
+        HttpHandler notificationApiHandler = new BlockingHandler(new SubjectAssociationHandler(new NotificationApiHandler(modelControllerClient)));
         HttpHandler readinessNotificationApiHandler = new DmrFailureReadinessHandler(securityRealm, secureDomainAccess(notificationApiHandler, securityRealm), ErrorContextHandler.ERROR_CONTEXT);
         pathHandler.addPath(NotificationApiHandler.PATH, readinessNotificationApiHandler);
 

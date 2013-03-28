@@ -219,7 +219,7 @@ public class ModelControllerClientTestCase {
             assertEquals(3, size.get());
             assertArrays(firstBytes, firstResult.get());
             assertArrays(secondBytes, secondResult.get());
-            assertArrays(new byte[]{1}, thirdResult.get());
+            assertArrays(new byte[] { 1 }, thirdResult.get());
         } finally {
             IoUtils.safeClose(client);
         }
@@ -270,7 +270,6 @@ public class ModelControllerClientTestCase {
         }
     }
 
-    @Ignore
     @Test
     public void testCancelAsynchronousOperation() throws Exception {
         final CountDownLatch executeLatch = new CountDownLatch(1);
@@ -393,6 +392,7 @@ public class ModelControllerClientTestCase {
 
     }
 
+    @Ignore
     @Test
     public void testUnregisterNotificationHandler() throws Exception {
         final AtomicBoolean gotNotification = new AtomicBoolean(false);

@@ -23,9 +23,6 @@
 package org.jboss.as.controller;
 
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import static org.jboss.as.controller.PathAddress.pathAddress;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,16 +57,15 @@ public abstract class AbstractRemoveStepHandler implements OperationStepHandler 
                             } catch (Exception e) {
                                 MGMT_OP_LOGGER.errorRevertingOperation(e, getClass().getSimpleName(),
                                     operation.require(ModelDescriptionConstants.OP).asString(),
-                                    pathAddress(operation.get(OP_ADDR)));
+                                    PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
                             }
                         }
                     });
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-
         context.stepCompleted();
-   }
+    }
 
     protected void performRemove(OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
@@ -77,7 +73,7 @@ public abstract class AbstractRemoveStepHandler implements OperationStepHandler 
             context.removeResource(PathAddress.EMPTY_ADDRESS);
         } else {
             List<PathElement> children = getChildren(resource);
-            throw MESSAGES.cannotRemoveResourceWithChildren(children);
+            throw ControllerMessages.MESSAGES.cannotRemoveResourceWithChildren(children);
         }
     }
 
