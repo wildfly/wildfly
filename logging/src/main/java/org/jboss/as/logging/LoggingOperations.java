@@ -35,7 +35,6 @@ import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.notification.NotificationUtil;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.as.server.ServerEnvironment;
@@ -203,7 +202,6 @@ final class LoggingOperations {
                     @Override
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                         performRuntime(context, operation, logContextConfiguration, name, model);
-                        NotificationUtil.emitResourceAdded(context, operation);
                         context.stepCompleted();
                     }
                 }, Stage.RUNTIME);
@@ -273,7 +271,6 @@ final class LoggingOperations {
                     @Override
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                         performRuntime(context, operation, logContextConfiguration, name, model);
-                        NotificationUtil.emitResourceRemoved(context, operation);
                         context.stepCompleted();
                     }
                 }, Stage.RUNTIME);

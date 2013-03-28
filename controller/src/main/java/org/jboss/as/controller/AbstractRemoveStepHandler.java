@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.notification.NotificationUtil;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
@@ -69,7 +68,6 @@ public abstract class AbstractRemoveStepHandler implements OperationStepHandler 
             }, OperationContext.Stage.RUNTIME);
         }
 
-        NotificationUtil.emitResourceRemoved(context, operation);
         context.stepCompleted();
    }
 

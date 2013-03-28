@@ -28,10 +28,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_ADDED_NOTIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -46,12 +47,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.client.Notification;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.client.Notification;
-import org.jboss.as.controller.client.NotificationFilter;
-import org.jboss.as.controller.client.NotificationHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.DelegatingImmutableManagementResourceRegistration;
@@ -120,15 +119,12 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     private final Integer operationId;
 
-    /** List of notifications that will be emitted at the end of the operation execution if it is successful */
-    private final List<Notification> notifications = new ArrayList<>();
-
     OperationContextImpl(final ModelControllerImpl modelController, final ProcessType processType,
                          final RunningMode runningMode, final EnumSet<ContextFlag> contextFlags,
                             final OperationMessageHandler messageHandler, final OperationAttachments attachments,
                             final Resource model, final ModelController.OperationTransactionControl transactionControl,
                             final ControlledProcessState processState, final boolean booting, final Integer operationId) {
-        super(processType, runningMode, transactionControl, processState, booting);
+        super(processType, runningMode, transactionControl, processState, modelController.getNotificationSupport(), booting);
         this.model = model;
         this.originalModel = model;
         this.modelController = modelController;
@@ -193,18 +189,6 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     public boolean isResourceServiceRestartAllowed() {
         return contextFlags.contains(ContextFlag.ALLOW_RESOURCE_SERVICE_RESTART);
-    }
-
-    @Override
-    ResultAction executeOperation() {
-        ResultAction resultAction = super.executeOperation();
-        if (resultAction == ResultAction.KEEP) {
-            for (Notification notification : notifications) {
-                modelController.getNotificationSupport().emit(notification);
-            }
-            notifications.clear();
-        }
-        return resultAction;
     }
 
     public ManagementResourceRegistration getResourceRegistrationForUpdate() {
@@ -558,6 +542,9 @@ final class OperationContextImpl extends AbstractOperationContext {
             }
             resource = requireChild(resource, element, address);
         }
+
+        // keep a copy of the resource's model to compare it after the execution and emit a attribute-value-written notification
+        activeStep.resourceForUpdate = resource.getModel().clone();
         return resource;
     }
 
@@ -625,6 +612,9 @@ final class OperationContextImpl extends AbstractOperationContext {
                 }
             }
         }
+
+        Notification notification = new Notification(RESOURCE_ADDED_NOTIFICATION, absoluteAddress.toModelNode(), MESSAGES.resourceWasAdded(absoluteAddress));
+        emit(notification);
     }
 
     public Resource removeResource(final PathAddress requestAddress) {
@@ -656,6 +646,9 @@ final class OperationContextImpl extends AbstractOperationContext {
                 model = requireChild(model, element, address);
             }
         }
+
+        Notification notification = new Notification(RESOURCE_REMOVED_NOTIFICATION, address.toModelNode(), MESSAGES.resourceWasRemoved(address));
+        emit(notification);
         return model;
     }
 
@@ -692,22 +685,6 @@ final class OperationContextImpl extends AbstractOperationContext {
         } catch (Throwable t) {
             // ignored
         }
-    }
-
-    @Override
-    public void registerNotificationHandler(PathAddress source, NotificationHandler handler, NotificationFilter filter) {
-        modelController.getNotificationSupport().registerNotificationHandler(source, handler, filter);
-    }
-
-    @Override
-    public void unregisterNotificationHandler(PathAddress source, NotificationHandler handler, NotificationFilter filter) {
-        modelController.getNotificationSupport().unregisterNotificationHandler(source, handler, filter);
-    }
-
-    @Override
-    public void emit(Notification notification) {
-        // buffer the notifications but emit them only if the operation execution is successful
-        notifications.add(notification);
     }
 
     @Override
