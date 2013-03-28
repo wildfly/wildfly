@@ -98,11 +98,13 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
 
         //add jboss-invocation classes needed by the proxies
         ModuleDependency invocation = new ModuleDependency(moduleLoader, JBOSS_INVOCATION_ID, false, false, false, false);
-        invocation.addImportFilter(PathFilters.is("org.jboss.invocation.proxy.classloading"), true);
+        invocation.addImportFilter(PathFilters.is("org/jboss/invocation/proxy/classloading"), true);
+        invocation.addImportFilter(PathFilters.acceptAll(), false);
         moduleSpecification.addSystemDependency(invocation);
 
         ModuleDependency ee = new ModuleDependency(moduleLoader, JBOSS_AS_EE, false, false, false, false);
-        ee.addImportFilter(PathFilters.is("org.jboss.as.ee.component.serialization"), true);
+        ee.addImportFilter(PathFilters.is("org/jboss/as/ee/component/serialization"), true);
+        ee.addImportFilter(PathFilters.acceptAll(), false);
         moduleSpecification.addSystemDependency(ee);
 
 
