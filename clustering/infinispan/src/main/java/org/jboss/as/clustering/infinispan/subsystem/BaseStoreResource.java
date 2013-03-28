@@ -100,6 +100,19 @@ public class BaseStoreResource extends SimpleResourceDefinition {
     static final AttributeDefinition[] COMMON_STORE_ATTRIBUTES = {SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON};
     static final AttributeDefinition[] COMMON_STORE_PARAMETERS = {SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON, PROPERTIES};
 
+    // metrics
+    static final SimpleAttributeDefinition CACHE_LOADER_LOADS =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.CACHE_LOADER_LOADS, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
+
+    static final SimpleAttributeDefinition CACHE_LOADER_MISSES =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.CACHE_LOADER_MISSES, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
+
+    static final AttributeDefinition[] COMMON_STORE_METRICS = {CACHE_LOADER_LOADS, CACHE_LOADER_MISSES};
+
     // operations
     private static final OperationDefinition CACHE_STORE_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE))
         .setParameters(COMMON_STORE_PARAMETERS)
@@ -117,6 +130,11 @@ public class BaseStoreResource extends SimpleResourceDefinition {
         final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(COMMON_STORE_ATTRIBUTES);
         for (AttributeDefinition attr : COMMON_STORE_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
+        }
+
+        // register any metrics
+        for (AttributeDefinition attr : COMMON_STORE_METRICS) {
+            resourceRegistration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
         }
     }
 
