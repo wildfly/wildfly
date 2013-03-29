@@ -1,5 +1,7 @@
 package org.jboss.as.undertow;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.xml.stream.XMLStreamException;
 
@@ -30,8 +32,8 @@ class LocationDefinition extends SimplePersistentResourceDefinition {
     }
 
     @Override
-    public AttributeDefinition[] getAttributes() {
-        return new AttributeDefinition[0];
+    public Collection<AttributeDefinition> getAttributes() {
+        return Collections.emptySet();
     }
 
     @Override

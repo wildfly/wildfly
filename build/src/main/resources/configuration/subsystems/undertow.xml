@@ -6,7 +6,7 @@
         <worker name="default" task-core-threads="12" io-threads="3"/>
         <buffer-pool name="default" buffer-size="2048" buffers-per-slice="512"/>
 
-        <server name="default-server" default-host="default-host" >
+        <server name="default-server" >
             <http-listener name="default" socket-binding="http"/>
             <?AJP?>
             <host name="default-host" alias="localhost">

@@ -1,12 +1,13 @@
 package org.jboss.as.undertow.handlers;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collection;
 
 import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.undertow.AbstractHandlerResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -17,11 +18,11 @@ import org.jboss.dmr.ModelType;
  */
 public class FileErrorPageHandler extends AbstractHandlerResourceDefinition {
 
-    private static SimpleAttributeDefinition CODE = new SimpleAttributeDefinitionBuilder("code", ModelType.INT)
+    private static final AttributeDefinition CODE = new SimpleAttributeDefinitionBuilder("code", ModelType.INT)
             .setAllowExpression(true)
             .setAllowNull(true)
             .build();
-    private static SimpleAttributeDefinition FILE = new SimpleAttributeDefinitionBuilder("file", ModelType.STRING)
+    private static final AttributeDefinition FILE = new SimpleAttributeDefinitionBuilder("file", ModelType.STRING)
             .setAllowExpression(true)
             .setAllowNull(true)
             .build();
@@ -32,8 +33,8 @@ public class FileErrorPageHandler extends AbstractHandlerResourceDefinition {
     }
 
     @Override
-    public AttributeDefinition[] getAttributes() {
-        return new AttributeDefinition[]{CODE, FILE};
+    public Collection<AttributeDefinition> getAttributes() {
+        return Arrays.asList(CODE, FILE);
     }
 
     @Override

@@ -36,9 +36,9 @@ public class ReplicationStatistics implements Serializable {
     private static final long serialVersionUID = 9153807780893455734L;
 
     /** A HashMap<String, TimeStatistic> of the method invocations */
-    private Map<String, TimeStatistic> ctxStats;
+    private final Map<String, TimeStatistic> ctxStats;
     /** Time of the last resetStats call */
-    public long lastResetTime = System.currentTimeMillis();
+    public volatile long lastResetTime = System.currentTimeMillis();
 
     public static class TimeStatistic {
         public long replicationCount;

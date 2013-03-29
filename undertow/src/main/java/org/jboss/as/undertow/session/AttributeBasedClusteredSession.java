@@ -48,9 +48,9 @@ class AttributeBasedClusteredSession extends ClusteredSession<OutgoingAttributeG
     protected static final String info = "AttributeBasedClusteredSession/1.0";
 
     // Transient map to store attr changes for replication.
-    private transient Map<String, Object> attrModifiedMap_ = new HashMap<String, Object>();
+    private final transient Map<String, Object> attrModifiedMap_ = new HashMap<String, Object>();
     // Transient set to store attr removals for replication
-    private transient Set<String> attrRemovedSet_ = new HashSet<String>();
+    private final transient Set<String> attrRemovedSet_ = new HashSet<String>();
 
     // ------------------------------------------------------------ Constructors
 
@@ -65,12 +65,14 @@ class AttributeBasedClusteredSession extends ClusteredSession<OutgoingAttributeG
         Map<String, Object> modAttrs = null;
         Set<String> removeAttrs = null;
         if (isSessionAttributeMapDirty()) {
-            if (attrModifiedMap_.size() > 0) {
-                modAttrs = new HashMap<String, Object>(attrModifiedMap_);
-            }
+            synchronized (this){
+                if (attrModifiedMap_.size() > 0) {
+                    modAttrs = new HashMap<>(attrModifiedMap_);
+                }
 
-            if (attrRemovedSet_.size() > 0) {
-                removeAttrs = new HashSet<String>(attrRemovedSet_);
+                if (attrRemovedSet_.size() > 0) {
+                    removeAttrs = new HashSet<>(attrRemovedSet_);
+                }
             }
 
             clearAttrChangedMaps();

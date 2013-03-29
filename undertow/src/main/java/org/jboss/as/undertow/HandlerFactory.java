@@ -25,8 +25,8 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 public class HandlerFactory {
-    private static Map<String, Handler> handlerMap = new HashMap<>();
-    private static List<Handler> handlers = new LinkedList<>();
+    private static final Map<String, Handler> handlerMap = new HashMap<>();
+    private static final List<Handler> handlers = new LinkedList<>();
 
     static {
         loadRegisteredHandlers();

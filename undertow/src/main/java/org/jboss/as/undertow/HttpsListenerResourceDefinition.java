@@ -21,6 +21,10 @@
  */
 package org.jboss.as.undertow;
 
+import java.util.Collection;
+import java.util.LinkedList;
+
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -42,16 +46,16 @@ public class HttpsListenerResourceDefinition extends AbstractListenerResourceDef
             .setValidator(new StringLengthValidator(1))
             .build();
 
-    protected static final SimpleAttributeDefinition[] ATTRIBUTES = concat(AbstractListenerResourceDefinition.ATTRIBUTES, new SimpleAttributeDefinition[]{SECURITY_REALM});
-
 
     private HttpsListenerResourceDefinition() {
         super(UndertowExtension.HTTPS_LISTENER_PATH);
     }
 
     @Override
-    public SimpleAttributeDefinition[] getAttributes() {
-        return ATTRIBUTES;
+    public Collection<AttributeDefinition> getAttributes() {
+        Collection<AttributeDefinition> res = new LinkedList<>(super.getAttributes());
+        res.add(SECURITY_REALM);
+        return res;
     }
 
     @Override

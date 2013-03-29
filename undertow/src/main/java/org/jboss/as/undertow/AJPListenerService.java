@@ -16,7 +16,7 @@ import org.xnio.channels.ConnectedStreamChannel;
  */
 public class AJPListenerService extends AbstractListenerService<AJPListenerService> {
 
-    private AcceptingChannel<? extends ConnectedStreamChannel> server;
+    private volatile AcceptingChannel<? extends ConnectedStreamChannel> server;
 
     public AJPListenerService(String name) {
         super(name);

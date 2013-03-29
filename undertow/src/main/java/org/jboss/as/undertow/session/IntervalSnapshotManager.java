@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.undertow.UndertowLogger;
-import org.jboss.logging.Logger;
 
 /**
  * A snapshot manager that collects all modified sessions over a given period of time and distributes them en bloc.
@@ -37,28 +36,27 @@ import org.jboss.logging.Logger;
  * @version $Revision: 89149 $
  */
 public class IntervalSnapshotManager extends SnapshotManager implements Runnable {
-    static Logger log = Logger.getLogger(IntervalSnapshotManager.class);
-
     // the interval in ms
-    private int interval = 1000;
+    private final int interval;
 
     // the modified sessions
-    private Set<ClusteredSession<? extends OutgoingDistributableSessionData>> sessions = new LinkedHashSet<ClusteredSession<? extends OutgoingDistributableSessionData>>();
+    private final Set<ClusteredSession<? extends OutgoingDistributableSessionData>> sessions = new LinkedHashSet<ClusteredSession<? extends OutgoingDistributableSessionData>>();
 
     // the distribute thread
-    private Thread thread = null;
+    private volatile Thread thread = null;
 
     // Is session processing allowed?
-    private boolean processingAllowed = false;
+    private volatile boolean processingAllowed = false;
 
     // has the thread finished?
-    private boolean threadDone = false;
+    private volatile boolean threadDone = false;
 
     private final ClassLoader classLoader;
 
     public IntervalSnapshotManager(SessionManager manager, final ClassLoader classLoader, String path) {
         super(manager,  path);
         this.classLoader = classLoader;
+        this.interval =  1000;
     }
 
     public IntervalSnapshotManager(SessionManager manager,final ClassLoader classLoader, String path, int interval) {

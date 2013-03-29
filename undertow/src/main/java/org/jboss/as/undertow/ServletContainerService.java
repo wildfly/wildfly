@@ -41,7 +41,7 @@ import org.jboss.msc.service.StopContext;
 public class ServletContainerService implements Service<ServletContainerService> {
     private volatile ServletContainer servletContainer;
     @Deprecated
-    private Map<String, Integer> secureListeners = new ConcurrentHashMap<>(1);
+    private final Map<String, Integer> secureListeners = new ConcurrentHashMap<>(1);
 
     static String getDeployedContextPath(DeploymentInfo deploymentInfo) {
         return "".equals(deploymentInfo.getContextPath()) ? "/" : deploymentInfo.getContextPath();

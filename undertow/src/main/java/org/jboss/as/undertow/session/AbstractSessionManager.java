@@ -37,7 +37,7 @@ import org.jboss.metadata.web.spec.SessionConfigMetaData;
  */
 public abstract class AbstractSessionManager implements SessionManager {
     /** Maximum of active sessions allowed. -1 is unlimited. */
-    protected int maxActiveAllowed = -1;
+    protected volatile int maxActiveAllowed = -1;
     /** Has this component been started yet? */
     protected volatile boolean started = false;
     /** Are we allowing backgroundProcess() to execute? We use an object so stop() can lock on it to wait for */

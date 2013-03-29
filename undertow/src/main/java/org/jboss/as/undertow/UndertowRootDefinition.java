@@ -1,5 +1,8 @@
 package org.jboss.as.undertow;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -41,7 +44,7 @@ public class UndertowRootDefinition extends SimplePersistentResourceDefinition {
                     .setAllowExpression(true)
                     .build();
 
-    protected static AttributeDefinition[] ATTRIBUTES = {DEFAULT_VIRTUAL_HOST, DEFAULT_SERVLET_CONTAINER, DEFAULT_SERVER, INSTANCE_ID};
+    static final AttributeDefinition[] ATTRIBUTES = {DEFAULT_VIRTUAL_HOST, DEFAULT_SERVLET_CONTAINER, DEFAULT_SERVER, INSTANCE_ID};
 
 
     private UndertowRootDefinition() {
@@ -52,8 +55,8 @@ public class UndertowRootDefinition extends SimplePersistentResourceDefinition {
     }
 
     @Override
-    public AttributeDefinition[] getAttributes() {
-        return ATTRIBUTES;
+    public Collection<AttributeDefinition> getAttributes() {
+        return Arrays.asList(ATTRIBUTES);
     }
 
     @Override

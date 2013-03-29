@@ -158,7 +158,7 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
         /*op.get("protocol").set("HTTP/1.1");
         op.get("scheme").set("https");*/
         /*op.get("secure").set(true);*/
-        op.get("security-realm").set("ssl-realm");
+        op.get("security-realm").set("ssl-cert-realm");
         steps.add(op);
 
         updates.add(composite);
@@ -218,7 +218,7 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
                 .keystorePath(truststoreResource.getPath())
                 .build();
         return new SecurityRealm[]{new SecurityRealm.Builder()
-                .name("ssl-realm")
+                .name("ssl-cert-realm")
                 .serverIdentity(
                         new ServerIdentity.Builder()
                                 .ssl(keystore)

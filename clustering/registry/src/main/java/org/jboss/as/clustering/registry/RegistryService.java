@@ -55,6 +55,8 @@ import org.jboss.msc.value.Value;
 public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<K, V> {
 
     private static final class LocalAddress implements Address, Serializable {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public int compareTo(Address address) {
             return this.equals(address) ? 0 : -1;

@@ -13,10 +13,10 @@ import org.xnio.Pool;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 public class BufferPoolService implements Service<Pool<ByteBuffer>> {
-    private Pool<ByteBuffer> bufferPool;
+    private volatile Pool<ByteBuffer> bufferPool;
     /*<buffer-pool name="default" buffer-size="2048" buffers-per-slice="512"/>*/
-    private int bufferSize;
-    private int buffersPerSlice;
+    private final int bufferSize;
+    private final int buffersPerSlice;
 
     public BufferPoolService(int bufferSize, int buffersPerSlice) {
         this.bufferSize = bufferSize;

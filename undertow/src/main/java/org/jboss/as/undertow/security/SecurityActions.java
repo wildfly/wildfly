@@ -22,6 +22,8 @@
 
 package org.jboss.as.undertow.security;
 
+import static org.jboss.as.undertow.UndertowMessages.MESSAGES;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
@@ -31,8 +33,6 @@ import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
 
-import static org.jboss.as.undertow.UndertowMessages.MESSAGES;
-
 /**
  * Privileged Actions
  *
@@ -41,6 +41,8 @@ import static org.jboss.as.undertow.UndertowMessages.MESSAGES;
  */
 class SecurityActions {
 
+    public static final String AUTH_EXCEPTION_KEY = "org.jboss.security.exception";
+
     /**
      * Create a JBoss Security Context with the given security domain name
      *
@@ -48,7 +50,7 @@ class SecurityActions {
      * @return an instanceof {@code SecurityContext}
      */
     static SecurityContext createSecurityContext(final String domain) {
-        return doPriviledged(new PrivilegedAction<SecurityContext>() {
+        return AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
 
             @Override
             public SecurityContext run() {
@@ -67,7 +69,8 @@ class SecurityActions {
      * @param sc the security context
      */
     static void setSecurityContextOnAssociation(final SecurityContext sc) {
-        doPriviledged(new PrivilegedAction<Void>() {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
             @Override
             public Void run() {
                 SecurityContextAssociation.setSecurityContext(sc);
@@ -76,14 +79,13 @@ class SecurityActions {
         });
     }
 
-
     /**
      * Get the current {@code SecurityContext}
      *
      * @return an instance of {@code SecurityContext}
      */
     static SecurityContext getSecurityContext() {
-        return doPriviledged(new PrivilegedAction<SecurityContext>() {
+        return AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
             public SecurityContext run() {
                 return SecurityContextAssociation.getSecurityContext();
             }
@@ -94,7 +96,7 @@ class SecurityActions {
      * Clears current {@code SecurityContext}
      */
     static void clearSecurityContext() {
-        doPriviledged(new PrivilegedAction<Void>() {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
             public Void run() {
                 SecurityContextAssociation.clearSecurityContext();
                 return null;
@@ -108,13 +110,12 @@ class SecurityActions {
      * @param principal the identity
      */
     static void pushRunAsIdentity(final RunAsIdentity principal) {
-        doPriviledged(new PrivilegedAction<Void>() {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
 
             @Override
             public Void run() {
                 SecurityContext sc = getSecurityContext();
-                if (sc == null)
-                    throw MESSAGES.noSecurityContext();
+                if (sc == null) { throw MESSAGES.noSecurityContext(); }
                 sc.setOutgoingRunAs(principal);
                 return null;
             }
@@ -127,13 +128,12 @@ class SecurityActions {
      * @return the identity removed
      */
     static RunAs popRunAsIdentity() {
-        return doPriviledged(new PrivilegedAction<RunAs>() {
+        return AccessController.doPrivileged(new PrivilegedAction<RunAs>() {
 
             @Override
             public RunAs run() {
                 SecurityContext sc = getSecurityContext();
-                if (sc == null)
-                    throw MESSAGES.noSecurityContext();
+                if (sc == null) { throw MESSAGES.noSecurityContext(); }
                 RunAs principal = sc.getOutgoingRunAs();
                 sc.setOutgoingRunAs(null);
                 return principal;
@@ -141,40 +141,41 @@ class SecurityActions {
         });
     }
 
-    public static final String AUTH_EXCEPTION_KEY = "org.jboss.security.exception";
-
     static void clearAuthException() {
-        doPriviledged(new PrivilegedAction<Void>() {
+        if (System.getSecurityManager() != null) {
+            AccessController.doPrivileged(new PrivilegedAction<Void>() {
 
-            @Override
-            public Void run() {
-                SecurityContext sc = getSecurityContext();
-                if (sc != null)
-                    sc.getData().put(AUTH_EXCEPTION_KEY, null);
-                return null;
-            }
-        });
+                @Override
+                public Void run() {
+                    SecurityContext sc = getSecurityContext();
+                    if (sc != null) { sc.getData().put(AUTH_EXCEPTION_KEY, null); }
+                    return null;
+                }
+            });
+        } else {
+            SecurityContext sc = getSecurityContext();
+            if (sc != null) { sc.getData().put(AUTH_EXCEPTION_KEY, null); }
+        }
     }
 
     static Throwable getAuthException() {
-        return doPriviledged(new PrivilegedAction<Throwable>() {
+        if (System.getSecurityManager() != null) {
+            return AccessController.doPrivileged(new PrivilegedAction<Throwable>() {
 
-            @Override
-            public Throwable run() {
-                SecurityContext sc = getSecurityContext();
-                Throwable exception = null;
-                if (sc != null)
-                    exception = (Throwable) sc.getData().get(AUTH_EXCEPTION_KEY);
-                return exception;
-            }
-        });
-    }
-
-    private static <T> T doPriviledged(final PrivilegedAction<T> privilegedAction) {
-        if (System.getSecurityManager() == null) {
-            return privilegedAction.run();
+                @Override
+                public Throwable run() {
+                    SecurityContext sc = getSecurityContext();
+                    Throwable exception = null;
+                    if (sc != null) { exception = (Throwable) sc.getData().get(AUTH_EXCEPTION_KEY); }
+                    return exception;
+                }
+            });
         } else {
-            return AccessController.doPrivileged(privilegedAction);
+            SecurityContext sc = getSecurityContext();
+            Throwable exception = null;
+            if (sc != null) { exception = (Throwable) sc.getData().get(AUTH_EXCEPTION_KEY); }
+            return exception;
         }
     }
+
 }

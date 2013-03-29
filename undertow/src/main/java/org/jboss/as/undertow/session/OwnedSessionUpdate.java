@@ -25,7 +25,7 @@ public class OwnedSessionUpdate {
     private final String owner;
     private final long updateTime;
     private final int maxInactive;
-    private boolean passivated;
+    private volatile boolean passivated;
 
     public OwnedSessionUpdate(String owner, long updateTime, int maxInactive, boolean passivated) {
         this.owner = owner;

@@ -33,7 +33,7 @@ public abstract class SnapshotManager {
     private final SessionManager manager;
 
     // The context-path
-    private String contextPath;
+    private final String contextPath;
 
     public SnapshotManager(SessionManager manager, String path) {
         this.manager = manager;

@@ -5,6 +5,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,8 +59,8 @@ public abstract class SimplePersistentResourceDefinition extends SimpleResourceD
     }
 
     @Override
-    public PersistentResourceDefinition[] getChildren() {
-        return new PersistentResourceDefinition[0];
+    public List<? extends PersistentResourceDefinition> getChildren() {
+        return Collections.emptyList();
     }
 
     @Override
@@ -126,7 +127,7 @@ public abstract class SimplePersistentResourceDefinition extends SimpleResourceD
     }
 
     public void parseChildren(final XMLExtendedStreamReader reader, PathAddress parentAddress, List<ModelNode> list) throws XMLStreamException {
-        if (getChildren().length == 0) {
+        if (getChildren().size() == 0) {
             ParseUtils.requireNoContent(reader);
         } else {
             Map<String, PersistentResourceDefinition> children = getChildrenMap();

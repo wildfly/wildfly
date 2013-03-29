@@ -14,8 +14,8 @@ import org.xnio.XnioWorker;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 public class WorkerService implements Service<XnioWorker> {
-    private XnioWorker worker;
-    private OptionMap options;
+    private volatile XnioWorker worker;
+    private final OptionMap options;
 
     protected WorkerService(OptionMap options) {
         this.options = options;

@@ -86,11 +86,11 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
     private final DistributedCacheManager<O> distributedCacheManager;
 
-    private SnapshotManager snapshotManager;
+    private volatile SnapshotManager snapshotManager;
 
     private final ReplicationConfig replicationConfig;
     private final ClassResolver resolver;
-    private ClusteredSessionNotificationPolicy notificationPolicy;
+    private final ClusteredSessionNotificationPolicy notificationPolicy;
     private final OutdatedSessionChecker outdatedSessionChecker = new AskSessionOutdatedSessionChecker();
     private final Semaphore semaphore = new Semaphore(TOTAL_PERMITS, true);
     private final Lock valveLock = new SemaphoreLock(this.semaphore);
@@ -127,7 +127,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     private volatile int maxUnreplicatedInterval;
 
 
-    protected int maxInactiveInterval = 30 * 60;
+    protected static final int maxInactiveInterval = 30 * 60;
 
     /**
      * Id/timestamp of sessions in distributed cache that we haven't loaded locally
@@ -188,8 +188,6 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         if (this.started) return;
 
         super.start();
-
-        this.notificationPolicy = this.createClusteredSessionNotificationPolicy();
 
         // Start the DistributedCacheManager
         // Will need to pass the classloader that is associated with this

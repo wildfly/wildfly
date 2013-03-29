@@ -30,7 +30,6 @@ public class HttpListenerAdd extends AbstractListenerAdd {
         addDefaultDependencies(serviceBuilder, service);
 
         configureAdditionalDependencies(context, serviceBuilder, model, service);
-        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
 
         final ServiceController<HttpListenerService> serviceController = serviceBuilder.install();
         if (newControllers != null) {

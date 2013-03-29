@@ -20,7 +20,7 @@ import org.xnio.Option;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 class OptionAttributeDefinition extends SimpleAttributeDefinition {
-    private Option option;
+    private final Option<?> option;
 
     private OptionAttributeDefinition(String name, String xmlName, ModelNode defaultValue, ModelType type, boolean allowNull, boolean allowExpression,
                                       MeasurementUnit measurementUnit, ParameterCorrector corrector, ParameterValidator validator, boolean validateNull,
@@ -30,14 +30,14 @@ class OptionAttributeDefinition extends SimpleAttributeDefinition {
         this.option = option;
     }
 
-    public Option getOption() {
+    public Option<?> getOption() {
         return option;
     }
 
     public static class Builder extends AbstractAttributeDefinitionBuilder<Builder, OptionAttributeDefinition> {
-        private Option option;
+        private Option<?> option;
 
-        public Builder(String attributeName, Option option) {
+        public Builder(String attributeName, Option<?> option) {
             super(attributeName, getType(option),true);
             this.option = option;
         }
@@ -49,7 +49,7 @@ class OptionAttributeDefinition extends SimpleAttributeDefinition {
                     corrector, validator, validateNull, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, option, flags);
         }
 
-        private static ModelType getType(Option option) {
+        private static ModelType getType(Option<?> option) {
 
             try {
                 Field typeField = option.getClass().getDeclaredField("type");

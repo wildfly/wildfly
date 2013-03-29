@@ -38,9 +38,9 @@ public class UndertowService implements Service<UndertowService> {
     private final String defaultContainer;
     private final String defaultServer;
     private final String defaultVirtualHost;
-    private String instanceId;
-    private Set<Server> registeredServers = new CopyOnWriteArraySet<>();
-    private List<UndertowEventListener> listeners = new CopyOnWriteArrayList<>();
+    private volatile String instanceId;//todo this should be final and no setter should be exposed, currently mod cluster "wants it", this needs to change
+    private final Set<Server> registeredServers = new CopyOnWriteArraySet<>();
+    private final List<UndertowEventListener> listeners = new CopyOnWriteArrayList<>();
 
     protected UndertowService(String defaultContainer, String defaultServer, String defaultVirtualHost, String instanceId) {
         this.defaultContainer = defaultContainer;
