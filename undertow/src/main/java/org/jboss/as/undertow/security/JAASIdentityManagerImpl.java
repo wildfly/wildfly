@@ -140,9 +140,7 @@ public class JAASIdentityManagerImpl implements IdentityManager {
                 for (Role role : roles.getRoles()) {
                     roleSet.add(role.getRoleName());
                 }
-                AccountImpl accountImpl = new AccountImpl(userPrincipal);
-                accountImpl.setRoles(roleSet);
-                return accountImpl;
+                return new AccountImpl(userPrincipal, roleSet);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

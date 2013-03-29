@@ -23,6 +23,7 @@ package org.jboss.as.undertow.session;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.undertow.server.HttpServerExchange;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
@@ -32,12 +33,12 @@ public final class SessionReplicationContext {
 
     private static final SessionReplicationContext EMPTY = new SessionReplicationContext();
 
-    private int webappCount;
+    private final AtomicInteger webappCount = new AtomicInteger(0);
     // private int activityCount;
-    private SnapshotManager soleManager;
-    private ClusteredSession<? extends OutgoingDistributableSessionData> soleSession;
-    private Map<ClusteredSession<? extends OutgoingDistributableSessionData>, SnapshotManager> crossCtxSessions;
-    private HttpServerExchange exchange;
+    private volatile SnapshotManager soleManager;
+    private volatile ClusteredSession<? extends OutgoingDistributableSessionData> soleSession;
+    private volatile Map<ClusteredSession<? extends OutgoingDistributableSessionData>, SnapshotManager> crossCtxSessions;
+    private volatile HttpServerExchange exchange;
 
     /**
      * Associate a SessionReplicationContext with the current thread, if there isn't one already. If there isn't one, associate
@@ -46,8 +47,6 @@ public final class SessionReplicationContext {
      * <strong>NOTE:</strong> Nested calls to this method and {@link #exitWebapp()} are supported; once a context is established
      * the number of calls to this method and <code>exitWebapp()</code> are tracked.
      *
-     * @param request
-     * @param response
      */
     public static void enterWebapp(HttpServerExchange exchange, boolean startCacheActivity) {
         SessionReplicationContext ctx = getCurrentContext();
@@ -56,7 +55,7 @@ public final class SessionReplicationContext {
             replicationContext.set(ctx);
         }
 
-        ctx.webappCount++;
+        ctx.webappCount.incrementAndGet();
     }
 
     /**
@@ -68,8 +67,8 @@ public final class SessionReplicationContext {
     public static SessionReplicationContext exitWebapp() {
         SessionReplicationContext ctx = getCurrentContext();
         if (ctx != null) {
-            ctx.webappCount--;
-            if (ctx.webappCount < 1) {
+            final int count = ctx.webappCount.decrementAndGet();
+            if (count < 1) {
                 // We've unwound any nested webapp calls, so we'll clean up and
                 // return the context to allow replication. If all cache activity
                 // is done as well, clear the ThreadLocal
@@ -89,7 +88,7 @@ public final class SessionReplicationContext {
 
     public static void bindSession(ClusteredSession<? extends OutgoingDistributableSessionData> session, SnapshotManager manager) {
         SessionReplicationContext ctx = getCurrentContext();
-        if (ctx != null && ctx.webappCount > 0) {
+        if (ctx != null && ctx.webappCount.get() > 0) {
             ctx.addReplicatableSession(session, manager);
         }
         /*
@@ -99,7 +98,7 @@ public final class SessionReplicationContext {
 
     public static void sessionExpired(ClusteredSession<? extends OutgoingDistributableSessionData> session, String realId, SnapshotManager manager) {
         SessionReplicationContext ctx = getCurrentContext();
-        if (ctx != null && ctx.webappCount > 0) {
+        if (ctx != null && ctx.webappCount.get() > 0) {
             ctx.sessionExpired(session, manager);
         }
     }
@@ -157,7 +156,7 @@ public final class SessionReplicationContext {
         return soleSession;
     }
 
-    private void addReplicatableSession(ClusteredSession<? extends OutgoingDistributableSessionData> session, SnapshotManager mgr) {
+    private synchronized void addReplicatableSession(ClusteredSession<? extends OutgoingDistributableSessionData> session, SnapshotManager mgr) {
         if (crossCtxSessions != null) {
             crossCtxSessions.put(session, mgr);
         } else if (soleManager == null) {
@@ -176,7 +175,7 @@ public final class SessionReplicationContext {
         }
     }
 
-    private void sessionExpired(ClusteredSession<? extends OutgoingDistributableSessionData> session, SnapshotManager manager) {
+    private synchronized void sessionExpired(ClusteredSession<? extends OutgoingDistributableSessionData> session, SnapshotManager manager) {
         if (manager.equals(soleManager)) {
             soleManager = null;
             soleSession = null;

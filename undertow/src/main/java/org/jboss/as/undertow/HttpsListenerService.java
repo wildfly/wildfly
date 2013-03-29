@@ -49,7 +49,7 @@ import org.xnio.ssl.XnioSsl;
 public class HttpsListenerService extends HttpListenerService {
 
     private final InjectedValue<SecurityRealm> securityRealm = new InjectedValue<SecurityRealm>();
-    private AcceptingChannel<ConnectedSslStreamChannel> sslServer;
+    private volatile AcceptingChannel<ConnectedSslStreamChannel> sslServer;
 
     HttpsListenerService(final String name) {
         super(name);

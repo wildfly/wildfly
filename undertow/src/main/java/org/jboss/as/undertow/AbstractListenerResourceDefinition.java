@@ -1,7 +1,9 @@
 package org.jboss.as.undertow;
 
 import java.util.Arrays;
+import java.util.Collection;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -42,7 +44,7 @@ abstract class AbstractListenerResourceDefinition extends SimplePersistentResour
             .setDefaultValue(new ModelNode(true))
             .setAllowExpression(true)
             .build();
-    protected static SimpleAttributeDefinition[] ATTRIBUTES = {SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED};
+    protected static AttributeDefinition[] ATTRIBUTES = {SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED};
 
 
     public AbstractListenerResourceDefinition(PathElement pathElement) {
@@ -59,8 +61,9 @@ abstract class AbstractListenerResourceDefinition extends SimplePersistentResour
         return result;
     }
 
-    public SimpleAttributeDefinition[] getAttributes() {
-        return ATTRIBUTES;
+    public Collection<AttributeDefinition> getAttributes() {
+        //noinspection unchecked
+        return Arrays.asList(ATTRIBUTES);
     }
 
     @Override
@@ -75,8 +78,8 @@ abstract class AbstractListenerResourceDefinition extends SimplePersistentResour
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
-        OperationStepHandler handler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (SimpleAttributeDefinition attr : getAttributes()) {
+        OperationStepHandler handler = new ReloadRequiredWriteAttributeHandler(getAttributes());
+        for (AttributeDefinition attr : getAttributes()) {
             resourceRegistration.registerReadWriteAttribute(attr, null, handler);
         }
     }

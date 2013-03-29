@@ -27,7 +27,7 @@ package org.jboss.as.undertow.session.notification;
  */
 public abstract class ClusteredSessionNotificationPolicyBase implements ClusteredSessionNotificationPolicy {
 
-    private ClusteredSessionNotificationCapability capability;
+    private volatile ClusteredSessionNotificationCapability capability;
 
     @Override
     public void setClusteredSessionNotificationCapability(ClusteredSessionNotificationCapability capability) {

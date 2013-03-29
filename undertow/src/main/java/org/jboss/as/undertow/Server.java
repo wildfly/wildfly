@@ -30,8 +30,8 @@ public class Server implements Service<Server> {
     private final InjectedValue<ServletContainerService> servletContainer = new InjectedValue<>();
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
     private volatile HttpHandler root;
-    private List<AbstractListenerService<?>> listeners = new LinkedList<>();
-    private Set<Host> hosts = new CopyOnWriteArraySet<>();
+    private final List<AbstractListenerService<?>> listeners = new LinkedList<>();
+    private final Set<Host> hosts = new CopyOnWriteArraySet<>();
 
     protected Server(String name, String defaultHost) {
         this.name = name;

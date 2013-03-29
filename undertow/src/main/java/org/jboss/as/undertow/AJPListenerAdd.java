@@ -28,8 +28,6 @@ class AJPListenerAdd extends AbstractListenerAdd {
         final ServiceBuilder<AJPListenerService> serviceBuilder = context.getServiceTarget().addService(constructServiceName(name), service);
         addDefaultDependencies(serviceBuilder, service);
 
-        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-
         final ServiceController<AJPListenerService> serviceController = serviceBuilder.install();
         if (newControllers != null) {
             newControllers.add(serviceController);

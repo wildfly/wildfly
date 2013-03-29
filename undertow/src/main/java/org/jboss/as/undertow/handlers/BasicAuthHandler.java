@@ -1,11 +1,13 @@
 package org.jboss.as.undertow.handlers;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import io.undertow.security.handlers.AuthenticationCallHandler;
 import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.undertow.AbstractHandlerResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -16,7 +18,7 @@ import org.jboss.dmr.ModelType;
  */
 public class BasicAuthHandler extends AbstractHandlerResourceDefinition {
 
-    private static SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder("security-domain", ModelType.STRING)
+    private static final AttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder("security-domain", ModelType.STRING)
             .setAllowNull(false)
             .build();
 
@@ -25,8 +27,8 @@ public class BasicAuthHandler extends AbstractHandlerResourceDefinition {
     }
 
     @Override
-    public AttributeDefinition[] getAttributes() {
-        return new AttributeDefinition[]{SECURITY_DOMAIN};
+    public Collection<AttributeDefinition> getAttributes() {
+        return Collections.singleton(SECURITY_DOMAIN);
     }
 
     @Override

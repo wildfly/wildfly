@@ -1,5 +1,7 @@
 package org.jboss.as.undertow;
 
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 import java.util.List;
@@ -32,6 +34,10 @@ public class UndertowSubsystemParser implements XMLStreamConstants, XMLElementRe
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
         ModelNode model = context.getModelNode();
+        UndertowRootDefinition.DEFAULT_SERVER.marshallAsAttribute(model, writer);
+        UndertowRootDefinition.DEFAULT_VIRTUAL_HOST.marshallAsAttribute(model, writer);
+        UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER.marshallAsAttribute(model, writer);
+        UndertowRootDefinition.INSTANCE_ID.marshallAsAttribute(model, writer);
         WorkerResourceDefinition.INSTANCE.persist(writer, model);
         BufferPoolResourceDefinition.INSTANCE.persist(writer, model);
         ServerDefinition.INSTANCE.persist(writer, model);
@@ -47,6 +53,27 @@ public class UndertowSubsystemParser implements XMLStreamConstants, XMLElementRe
         PathAddress address = PathAddress.pathAddress(UndertowExtension.SUBSYSTEM_PATH);
         final ModelNode subsystem = Util.createAddOperation(address);
         list.add(subsystem);
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            switch (reader.getAttributeLocalName(i)) {
+                case Constants.DEFAULT_SERVER:
+                    UndertowRootDefinition.DEFAULT_SERVER.parseAndSetParameter(value, subsystem, reader);
+                    break;
+                case Constants.DEFAULT_SERVLET_CONTAINER:
+                    UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER.parseAndSetParameter(value, subsystem, reader);
+                    break;
+                case Constants.DEFAULT_VIRTUAL_HOST:
+                    UndertowRootDefinition.DEFAULT_VIRTUAL_HOST.parseAndSetParameter(value, subsystem, reader);
+                    break;
+                case Constants.INSTANCE_ID:
+                    UndertowRootDefinition.INSTANCE_ID.parseAndSetParameter(value, subsystem, reader);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
         final Namespace namespace = Namespace.forUri(reader.getNamespaceURI());
         // elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {

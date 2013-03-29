@@ -1,5 +1,8 @@
 package org.jboss.as.undertow;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -55,55 +58,14 @@ public abstract class AbstractHandlerResourceDefinition extends SimplePersistent
     }
 
     @Override
-    public AttributeDefinition[] getAttributes() {
-        return new AttributeDefinition[0];
+    public Collection<AttributeDefinition> getAttributes() {
+        return Collections.emptyList();
     }
 
     @Override
     protected boolean useValueAsElementName() {
         return true;
     }
-    /*
-
-    protected Map<String, AttributeDefinition> getAttributeMap() {
-        Map<String, AttributeDefinition> res = new HashMap<>();
-        for (AttributeDefinition def : getAttributes()) {
-            res.put(def.getName(), def);
-        }
-        return res;
-    }
-
-    public void parse(final XMLExtendedStreamReader reader, PathAddress parentAddress, List<ModelNode> list) throws XMLStreamException {
-        PathAddress address = parentAddress.append(Constants.HANDLER, getName());
-        ModelNode op = Util.createAddOperation(address);
-        list.add(op);
-        Map<String, AttributeDefinition> attributes = getAttributeMap();
-        for (int i = 0; i < reader.getAttributeCount(); i++) {
-            String attributeName = reader.getAttributeLocalName(i);
-            if (attributes.containsKey(attributeName)) {
-                String value = reader.getAttributeValue(i);
-                AttributeDefinition def = attributes.get(attributeName);
-                if (def instanceof SimpleAttributeDefinition) {
-                    ((SimpleAttributeDefinition) def).parseAndSetParameter(value, op, reader);
-                } else {
-                    throw new IllegalArgumentException("we should know how to handle " + def);
-                }
-            } else {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            }
-
-        }
-        ParseUtils.requireNoContent(reader);
-    }
-
-    @Override
-    public void persist(XMLExtendedStreamWriter writer, Property handler) throws XMLStreamException {
-        writer.writeStartElement(getName());
-        for (AttributeDefinition def : getAttributes()) {
-            def.getAttributeMarshaller().marshallAsAttribute(def, handler.getValue(), false, writer);
-        }
-        writer.writeEndElement();
-    }*/
 
     protected class DefaultHandlerAdd extends AbstractAddStepHandler {
         @Override

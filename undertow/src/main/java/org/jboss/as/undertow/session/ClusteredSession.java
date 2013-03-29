@@ -23,7 +23,6 @@ package org.jboss.as.undertow.session;
 
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collections;
@@ -99,19 +98,12 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
      * The authentication type used to authenticate our cached Principal, if any. NOTE: This value is not included in the
      * serialized version of this object.
      */
-    private transient String authType = null;
-
-    /**
-     * The <code>java.lang.Method</code> for the <code>fireContainerEvent()</code> method of the
-     * <code>org.apache.catalina.core.StandardContext</code> method, if our Context implementation is of this class. This value
-     * is computed dynamically the first time it is needed, or after a session reload (since it is declared transient).
-     */
-    private transient Method containerEventMethod = null;
+    private transient volatile String authType = null;
 
     /**
      * The time this session was created, in milliseconds since midnight, January 1, 1970 GMT.
      */
-    private long creationTime = 0L;
+    private volatile long creationTime = 0L;
 
     /**
      * We are currently processing a session expiration, so bypass certain IllegalStateException tests. NOTE: This value is not
@@ -122,7 +114,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     /**
      * The session identifier of this Session.
      */
-    private String id = null;
+    private volatile String id = null;
 
     /**
      * The last accessed time for this Session.
@@ -132,23 +124,23 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     /**
      * The Manager with which this Session is associated.
      */
-    private transient DistributableSessionManager<O> manager = null;
+    private transient volatile DistributableSessionManager<O> manager = null;
 
     /**
      * Our proxy to the distributed cache.
      */
-    private transient DistributedCacheManager<O> distributedCacheManager;
+    private transient volatile DistributedCacheManager<O> distributedCacheManager;
 
     /**
      * The maximum time interval, in seconds, between client requests before the servlet container may invalidate this session.
      * A negative time indicates that the session should never time out.
      */
-    private int maxInactiveInterval = -1;
+    private volatile int maxInactiveInterval = -1;
 
     /**
      * Flag indicating whether this session is new or not.
      */
-    private boolean isNew = false;
+    private volatile boolean isNew = false;
 
     /**
      * Flag indicating whether this session is valid or not.
@@ -165,13 +157,13 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
      * The authenticated Principal associated with this session, if any. <b>IMPLEMENTATION NOTE:</b> This object is <i>not</i>
      * saved and restored across session serializations!
      */
-    private transient Principal principal = null;
+    private transient volatile Principal principal = null;
 
     /**
      * The property change support for this component. NOTE: This value is not included in the serialized version of this
      * object.
      */
-    private transient PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private final transient PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     /**
      * The current accessed time for this session.
@@ -186,19 +178,19 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     /**
      * Policy controlling whether reading/writing attributes requires replication.
      */
-    private ReplicationTrigger invalidationPolicy;
+    private volatile ReplicationTrigger invalidationPolicy;
 
     /**
      * If true, means the local in-memory session data contains metadata changes that have not been published to the distributed
      * cache.
      */
-    private transient boolean sessionMetadataDirty;
+    private transient volatile boolean sessionMetadataDirty;
 
     /**
      * If true, means the local in-memory session data contains attribute changes that have not been published to the
      * distributed cache.
      */
-    private transient boolean sessionAttributesDirty;
+    private transient volatile boolean sessionAttributesDirty;
 
     /**
      * Object wrapping thisAccessedTime. Create once and mutate so we can store it in JBoss Cache w/o concern that a transaction
@@ -227,7 +219,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     /**
      * The session's id with any jvmRoute removed.
      */
-    private transient String realId;
+    private transient volatile String realId;
 
     /**
      * Timestamp when we were last replicated.
@@ -238,50 +230,50 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
      * Maximum number of milliseconds this session should be allowed to go unreplicated if access to the session doesn't mark it
      * as dirty.
      */
-    private transient long maxUnreplicatedInterval;
+    private transient volatile long maxUnreplicatedInterval;
 
     /**
      * True if maxUnreplicatedInterval is 0 or less than maxInactiveInterval
      */
-    private transient boolean alwaysReplicateTimestamp = true;
+    private transient volatile boolean alwaysReplicateTimestamp = true;
 
     /**
      * Whether any of this session's attributes implement HttpSessionActivationListener.
      */
-    private transient Boolean hasActivationListener;
+    private transient volatile Boolean hasActivationListener;
 
     /**
      * Has this session only been accessed once?
      */
-    private transient boolean firstAccess;
+    private transient volatile boolean firstAccess;
 
     /**
      * Policy that drives whether we issue servlet spec notifications.
      */
-    private transient ClusteredSessionNotificationPolicy notificationPolicy;
+    private transient volatile ClusteredSessionNotificationPolicy notificationPolicy;
 
-    private transient ClusteredSessionManagementStatus clusterStatus;
+    private transient volatile ClusteredSessionManagementStatus clusterStatus;
 
     /**
      * True if a call to activate() is needed to offset a preceding passivate() call
      */
-    private transient boolean needsPostReplicateActivation;
+    private transient volatile boolean needsPostReplicateActivation;
 
     /**
      * True if a getOutgoingSessionData() should include metadata and all attributes no matter what. This is a workaround to
      * JBCACHE-1531. This flag ensures that at least one request gets full replication, whether or not in occurs before
      * this.fullReplicationWindow
      */
-    private transient boolean fullReplicationRequired = true;
+    private transient volatile boolean fullReplicationRequired = true;
     /**
      * End of period when we do full replication
      */
-    private transient long fullReplicationWindow = -1;
+    private transient volatile long fullReplicationWindow = -1;
 
     /**
      * Coordinate updates from the cluster
      */
-    private transient Lock ownershipLock = new ReentrantLock();
+    private final transient Lock ownershipLock = new ReentrantLock();
 
     // ------------------------------------------------------------ Constructors
 

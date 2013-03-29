@@ -15,7 +15,7 @@ public class LocationService implements Service<LocationService> {
 
     private final String locationPath;
     private final HttpHandler handlerChain;
-    private InjectedValue<Host> host = new InjectedValue<>();
+    private final InjectedValue<Host> host = new InjectedValue<>();
 
     public LocationService(String locationPath, HttpHandler handlerChain) {
         this.locationPath = locationPath;

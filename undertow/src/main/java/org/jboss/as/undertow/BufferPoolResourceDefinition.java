@@ -3,6 +3,8 @@ package org.jboss.as.undertow;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -28,20 +30,20 @@ import org.xnio.Pool;
  */
 public class BufferPoolResourceDefinition extends SimplePersistentResourceDefinition {
 
-    static final SimpleAttributeDefinition BUFFER_SIZE = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_SIZE, ModelType.LONG)
+    static final SimpleAttributeDefinition BUFFER_SIZE = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_SIZE, ModelType.INT)
             .setDefaultValue(new ModelNode(1024))
             .build();
-    static final SimpleAttributeDefinition BUFFER_PER_SLICE = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_PER_SLICE, ModelType.LONG)
+    static final SimpleAttributeDefinition BUFFER_PER_SLICE = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_PER_SLICE, ModelType.INT)
             .setDefaultValue(new ModelNode(1024))
             .build();
 
 
     /*<buffer-pool name="default" buffer-size="1024" buffers-per-slice="1024"/>*/
 
-    static SimpleAttributeDefinition[] ATTRIBUTES = new SimpleAttributeDefinition[]{
+    static List<SimpleAttributeDefinition> ATTRIBUTES = Arrays.asList(
             BUFFER_SIZE,
             BUFFER_PER_SLICE
-    };
+    );
 
 
     public static final BufferPoolResourceDefinition INSTANCE = new BufferPoolResourceDefinition();
@@ -56,8 +58,8 @@ public class BufferPoolResourceDefinition extends SimplePersistentResourceDefini
     }
 
     @Override
-    public AttributeDefinition[] getAttributes() {
-        return ATTRIBUTES;
+    public Collection<AttributeDefinition> getAttributes() {
+        return (Collection) ATTRIBUTES;
     }
 
     @Override

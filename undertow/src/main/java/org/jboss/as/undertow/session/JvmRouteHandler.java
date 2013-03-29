@@ -50,7 +50,7 @@ public class JvmRouteHandler implements HttpHandler {
     // The info string for this Valve
     private static final String info = "JvmRouteValve/1.0";
 
-    private static Logger log = Logger.getLogger(JvmRouteHandler.class);
+    private static final Logger log = Logger.getLogger(JvmRouteHandler.class);
 
     private final SessionManager manager;
 

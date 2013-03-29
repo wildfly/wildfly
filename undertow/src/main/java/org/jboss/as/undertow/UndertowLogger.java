@@ -39,14 +39,13 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 /**
- * This module is using message IDs in the range 17300 - 17699.
  * <p/>
  * This file is using the subset 17500-17699 for logger messages.
  * <p/>
  * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
  * list of currently reserved JBAS message id blocks.
  * <p/>
- * Date: 09.06.2011
+ * This logger also reuses some messages from WebLogger in range 18200-18300
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
@@ -57,44 +56,7 @@ public interface UndertowLogger extends BasicLogger {
      * A root logger with the category of the package name.
      */
     UndertowLogger ROOT_LOGGER = Logger.getMessageLogger(UndertowLogger.class, UndertowLogger.class.getPackage().getName());
-
     UndertowLogger WEB_SESSION_LOGGER = Logger.getMessageLogger(UndertowLogger.class, UndertowLogger.class.getPackage().getName() + ".sessions");
-
-    @LogMessage(level = Logger.Level.ERROR)
-    @Message(id = 17500, value = "Could not initialize JSP")
-    void couldNotInitJsp(@Cause ClassNotFoundException e);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 17501, value = "Failed to purge EL cache.")
-    void couldNotPurgeELCache(@Cause Exception exception);
-    // id = 11500, value = "%s caught exception attempting to revert operation %s at address %s" -- now unused
-
-    @LogMessage(level = INFO)
-    @Message(id = 17502, value = "Undertow %s starting")
-    void serverStarting(String version);
-
-    @LogMessage(level = INFO)
-    @Message(id = 17506, value = "Undertow %s stopping")
-    void serverStopping(String version);
-
-    /**
-     * Creates an exception indicating the class, represented by the {@code className} parameter, cannot be accessed.
-     *
-     * @param name    name of the listener
-     * @param address socket address
-     */
-    @LogMessage(level = INFO)
-    @Message(id = 17503, value = "Undertow %s listener %s listening on %s")
-    void listenerStarted(String type, String name, InetSocketAddress address);
-
-    @LogMessage(level = INFO)
-    @Message(id = 17504, value = "Undertow %s listener %s stopped, was bound to %s")
-    void listenerStopped(String type, String name, InetSocketAddress address);
-
-    @LogMessage(level = INFO)
-    @Message(id = 17505, value = "Undertow %s listener %s suspending")
-    void listenerSuspend(String type, String name);
-
 
     @LogMessage(level = ERROR)
     @Message(id = 18200, value = "Failed to start welcome context")
@@ -180,60 +142,99 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 18224, value = "Unregister web context: %s")
     void unregisterWebapp(String webappPath);
 
-
     @LogMessage(level = INFO)
     @Message(id = 18226, value = "Skipped SCI for jar: %s.")
     void skippedSCI(String jar, @Cause Exception e);
 
-    @LogMessage(level = INFO)
-    @Message(id = 18227, value = "Could not load class designated by HandlesTypes [%s].")
-    void cannotLoadDesignatedHandleTypes(ClassInfo classInfo, @Cause Exception e);
+    /*
+    UNDERTOW messages start
+     */
+
+    @LogMessage(level = Logger.Level.ERROR)
+    @Message(id = 17500, value = "Could not initialize JSP")
+    void couldNotInitJsp(@Cause ClassNotFoundException e);
 
     @LogMessage(level = ERROR)
-    @Message(id = 18228, value = "Failed to queue session replication for session %s")
+    @Message(id = 17501, value = "Failed to purge EL cache.")
+    void couldNotPurgeELCache(@Cause Exception exception);
+    // id = 11500, value = "%s caught exception attempting to revert operation %s at address %s" -- now unused
+
+    @LogMessage(level = INFO)
+    @Message(id = 17502, value = "Undertow %s starting")
+    void serverStarting(String version);
+
+    @LogMessage(level = INFO)
+    @Message(id = 17506, value = "Undertow %s stopping")
+    void serverStopping(String version);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 17507, value = "Failed to queue session replication for session %s")
     void failedQueueingSessionReplication(ClusteredSession<? extends OutgoingDistributableSessionData> session, @Cause Exception e);
 
     @LogMessage(level = ERROR)
-    @Message(id = 18229, value = "Exception processing sessions")
+    @Message(id = 17508, value = "Exception processing sessions")
     void exceptionProcessingSessions(@Cause Exception e);
 
     @LogMessage(level = ERROR)
-    @Message(id = 18230, value = "Failed to store session %s")
+    @Message(id = 17509, value = "Failed to store session %s")
     void failedToStoreSession(String realId, @Cause Exception e);
 
     @LogMessage(level = ERROR)
-    @Message(id = 18231, value = "Failed to replicate session %s")
+    @Message(id = 17510, value = "Failed to replicate session %s")
     void failedToReplicateSession(String idInternal, @Cause Exception e);
 
     @LogMessage(level = WARN)
-    @Message(id = 18232, value = "Failed to passivate session %s")
+    @Message(id = 17511, value = "Failed to passivate session %s")
     void errorPassivatingSession(String idInternal, @Cause Throwable t);
 
     @LogMessage(level = WARN)
-    @Message(id = 18233, value = "Received notification for inactive session %s")
+    @Message(id = 17512, value = "Received notification for inactive session %s")
     void notificationForInactiveSession(String realId);
 
     @LogMessage(level = ERROR)
-    @Message(id = 18234, value = "Failed to load passivated session %s")
+    @Message(id = 17513, value = "Failed to load passivated session %s")
     void failToPassivateLoad(String realId, @Cause Exception e);
 
     @LogMessage(level = ERROR)
-    @Message(id = 18235, value = "Brute force cleanup failed for session %s")
+    @Message(id = 17514, value = "Brute force cleanup failed for session %s")
     void failToBruteForceCleanup(String realId, @Cause Exception e);
 
     @LogMessage(level = ERROR)
-    @Message(id = 18236, value = "Problem running expiration passivation")
+    @Message(id = 17515, value = "Problem running expiration passivation")
     void processExpirationPassivationException(@Cause Exception ex);
 
     @LogMessage(level = ERROR)
-    @Message(id = 18237, value = "Failed to passivate %s %s")
+    @Message(id = 17516, value = "Failed to passivate %s %s")
     void failToPassivate(String s, String realId, @Cause Exception e);
 
     @LogMessage(level = ERROR)
-    @Message(id = 18238, value = "Failed to rollback transaction")
+    @Message(id = 17517, value = "Failed to rollback transaction")
     void exceptionRollingBackTransaction(@Cause RuntimeException exception);
 
     @LogMessage(level = WARN)
-    @Message(id = 18239, value = "Performing brute force cleanup on %s due to %s")
+    @Message(id = 17518, value = "Performing brute force cleanup on %s due to %s")
     void bruteForceCleanup(String realId, String localizedMessage);
+
+    /**
+     * Creates an exception indicating the class, represented by the {@code className} parameter, cannot be accessed.
+     *
+     * @param name    name of the listener
+     * @param address socket address
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 17519, value = "Undertow %s listener %s listening on %s")
+    void listenerStarted(String type, String name, InetSocketAddress address);
+
+    @LogMessage(level = INFO)
+    @Message(id = 17520, value = "Undertow %s listener %s stopped, was bound to %s")
+    void listenerStopped(String type, String name, InetSocketAddress address);
+
+    @LogMessage(level = INFO)
+    @Message(id = 17521, value = "Undertow %s listener %s suspending")
+    void listenerSuspend(String type, String name);
+
+    @LogMessage(level = INFO)
+    @Message(id = 17522, value = "Could not load class designated by HandlesTypes [%s].")
+    void cannotLoadDesignatedHandleTypes(ClassInfo classInfo, @Cause Exception e);
+
 }

@@ -1,5 +1,9 @@
 package org.jboss.as.undertow;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -19,12 +23,13 @@ public class ServletContainerDefinition extends SimplePersistentResourceDefiniti
     }
 
     @Override
-    public AttributeDefinition[] getAttributes() {
-        return new AttributeDefinition[0];
+    public Collection<AttributeDefinition> getAttributes() {
+        return Collections.emptySet();
     }
 
     @Override
-    public PersistentResourceDefinition[] getChildren() {
-        return new PersistentResourceDefinition[]{JSPDefinition.INSTANCE};
+    public List<? extends PersistentResourceDefinition> getChildren() {
+        return Collections.singletonList(JSPDefinition.INSTANCE);
+
     }
 }

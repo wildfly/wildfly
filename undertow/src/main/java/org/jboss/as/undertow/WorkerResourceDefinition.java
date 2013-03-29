@@ -1,5 +1,6 @@
 package org.jboss.as.undertow;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -96,7 +97,7 @@ public class WorkerResourceDefinition extends SimplePersistentResourceDefinition
     }
 
     @Override
-    public AttributeDefinition[] getAttributes() {
-        return ATTRIBUTES;
+    public Collection<AttributeDefinition> getAttributes() {
+        return (Collection) ATTRIBUTES_BY_XMLNAME.values();
     }
 }

@@ -22,20 +22,30 @@
             <xs:element name="server" type="serverType"/>
             <xs:element name="servlet-container" type="servletContainerType"/>
         </xs:choice>
+        <xs:attribute name="default-server" type="xs:string" default="default-server"/>
+        <xs:attribute name="default-virtual-host" type="xs:string" default="default-host"/>
+        <xs:attribute name="default-servlet-container" type="xs:string" default="default"/>
+        <xs:attribute name="instance-id" type="xs:string" use="optional"/>
     </xs:complexType>
     <xs:complexType name="workerType">
         <xs:attribute name="name" use="required" type="xs:string"/>
-        <xs:attribute name="task-core-threads" use="optional" type="xs:int"/>
-        <xs:attribute name="io-threads" use="optional" type="xs:int"/>
+        <xs:attribute name="task-core-threads" type="xs:int" default="4"/>
+        <xs:attribute name="io-threads" type="xs:int" default="1"/>
+        <xs:attribute name="task-keepalive" type="xs:int" default="60"/>
+        <xs:attribute name="task-limit" type="xs:int" default="16384"/>
+        <xs:attribute name="task-max-threads" type="xs:int" default="16"/>
+        <xs:attribute name="thread-daemon" type="xs:boolean" default="false"/>
+        <xs:attribute name="stack-size" type="xs:long" default="10"/>
     </xs:complexType>
     <xs:complexType name="bufferPoolType">
         <xs:attribute name="name" use="required" type="xs:string"/>
-        <xs:attribute name="buffer-size" use="optional" type="xs:int"/>
-        <xs:attribute name="buffers-per-slice" use="optional" type="xs:int"/>
+        <xs:attribute name="buffer-size" use="optional" type="xs:int" default="1024"/>
+        <xs:attribute name="buffers-per-slice" use="optional" type="xs:int" default="1024"/>
     </xs:complexType>
     <xs:complexType name="serverType">
         <xs:sequence>
             <xs:element name="http-listener" type="http-listener-type" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="https-listener" type="http-listener-type" minOccurs="0" maxOccurs="1"/>
             <xs:element name="ajp-listener" type="ajp-listener-type" minOccurs="0" maxOccurs="1"/>
             <xs:element name="host" type="hostType" minOccurs="1" maxOccurs="unbounded"/>
         </xs:sequence>
@@ -46,9 +56,23 @@
     <xs:complexType name="http-listener-type">
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="socket-binding" use="required" type="xs:string"/>
+        <xs:attribute name="worker" type="xs:string" default="default"/>
+        <xs:attribute name="buffer-pool" type="xs:string" default="default"/>
+        <xs:attribute name="enabled" type="xs:boolean" default="true"/>
+    </xs:complexType>
+    <xs:complexType name="https-listener-type">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="socket-binding" use="required" type="xs:string"/>
+        <xs:attribute name="worker" type="xs:string" default="default"/>
+        <xs:attribute name="buffer-pool" type="xs:string" default="default"/>
+        <xs:attribute name="enabled" type="xs:boolean" default="true"/>
+        <xs:attribute name="security-realm" use="required" type="xs:string"/>
     </xs:complexType>
     <xs:complexType name="ajp-listener-type">
         <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="worker" type="xs:string" default="default"/>
+        <xs:attribute name="buffer-pool" type="xs:string" default="default"/>
+        <xs:attribute name="enabled" type="xs:boolean" default="true"/>
         <xs:attribute name="socket-binding" use="required" type="xs:string"/>
     </xs:complexType>
     <xs:complexType name="servletContainerType">
@@ -73,23 +97,24 @@
         <xs:attribute name="trim-spaces" default="false" type="xs:boolean"/>
         <xs:attribute name="tag-pooling" default="true" type="xs:boolean"/>
         <xs:attribute name="mapped-file" default="true" type="xs:boolean"/>
-        <xs:attribute name="check-interval" default="0"/>
-        <xs:attribute name="modification-test-interval" default="4"/>
+        <xs:attribute name="check-interval" default="0" type="xs:int"/>
+        <xs:attribute name="modification-test-interval" default="4" type="xs:int"/>
         <xs:attribute name="recompile-on-fail" default="false" type="xs:boolean"/>
         <xs:attribute name="smap" default="true" type="xs:boolean"/>
         <xs:attribute name="dump-smap" default="false" type="xs:boolean"/>
         <xs:attribute name="generate-strings-as-char-arrays" default="false" type="xs:boolean"/>
         <xs:attribute name="error-on-use-bean-invalid-class-attribute" default="false" type="xs:boolean"/>
-        <xs:attribute name="scratch-dir"/>
-        <xs:attribute name="source-vm" default="1.5"/>
-        <xs:attribute name="target-vm" default="1.5"/>
-        <xs:attribute name="java-encoding" default="UTF8"/>
+        <xs:attribute name="scratch-dir" type="xs:string"/>
+        <xs:attribute name="source-vm" default="1.6" type="xs:string"/>
+        <xs:attribute name="target-vm" default="1.6" type="xs:string"/>
+        <xs:attribute name="java-encoding" default="UTF8" type="xs:string"/>
         <xs:attribute name="x-powered-by" default="true" type="xs:boolean"/>
         <xs:attribute name="display-source-fragment" default="true" type="xs:boolean"/>
     </xs:complexType>
     <xs:complexType name="handlerType">
         <xs:sequence>
             <xs:element name="file-error-page" type="file-error-page-type" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="file-handler" type="file-handlerType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 

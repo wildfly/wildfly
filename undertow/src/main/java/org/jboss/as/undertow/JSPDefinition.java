@@ -22,6 +22,7 @@
 
 package org.jboss.as.undertow;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -207,7 +208,7 @@ class JSPDefinition extends SimplePersistentResourceDefinition {
             X_POWERED_BY,
             DISPLAY_SOURCE_FRAGMENT
     };
-    static final Map<String, SimpleAttributeDefinition> ATTRIBUTES_MAP = new HashMap<>();
+    static final Map<String, AttributeDefinition> ATTRIBUTES_MAP = new HashMap<>();
 
     static {
         for (SimpleAttributeDefinition attr : ATTRIBUTES) {
@@ -223,8 +224,8 @@ class JSPDefinition extends SimplePersistentResourceDefinition {
     }
 
     @Override
-    public AttributeDefinition[] getAttributes() {
-        return ATTRIBUTES;
+    public Collection<AttributeDefinition> getAttributes() {
+        return ATTRIBUTES_MAP.values();
     }
 
     @Override

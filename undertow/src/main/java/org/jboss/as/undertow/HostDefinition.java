@@ -3,6 +3,8 @@ package org.jboss.as.undertow;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.xml.stream.XMLStreamException;
 
@@ -31,7 +33,7 @@ class HostDefinition extends SimplePersistentResourceDefinition {
             .setValidator(new StringLengthValidator(1))
             .build();
     static final HostDefinition INSTANCE = new HostDefinition();
-    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[]{ALIAS};
+    private static final Collection ATTRIBUTES = Collections.singleton(ALIAS);
 
 
     private HostDefinition() {
@@ -41,7 +43,8 @@ class HostDefinition extends SimplePersistentResourceDefinition {
     }
 
     @Override
-    public AttributeDefinition[] getAttributes() {
+    public Collection<AttributeDefinition> getAttributes() {
+        //noinspection unchecked
         return ATTRIBUTES;
     }
 

@@ -7,7 +7,7 @@ import org.jboss.msc.service.ServiceName;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class ListenerRemoveHandler extends ServiceRemoveStepHandler {
-    private AbstractListenerAdd listenerAddHandler;
+    private final AbstractListenerAdd listenerAddHandler;
 
     ListenerRemoveHandler(AbstractListenerAdd addOperation) {
         super(addOperation);

@@ -82,7 +82,7 @@ public class ManagementClient implements AutoCloseable, Closeable {
 
     private static final String SUBDEPLOYMENT = "subdeployment";
 
-    private static final String WEB = "undertow";
+    private static final String UNDERTOW = "undertow";
     private static final String NAME = "name";
     private static final String SERVLET = "servlet";
 
@@ -131,7 +131,7 @@ public class ManagementClient implements AutoCloseable, Closeable {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            List<Property> vhosts = rootNode.get("subsystem", WEB).get("server").asPropertyList();
+            List<Property> vhosts = rootNode.get("subsystem", UNDERTOW).get("server").asPropertyList();
             ModelNode socketBinding = new ModelNode();
             if (!vhosts.isEmpty()) {//if empty no virtual hosts defined
                 socketBinding = vhosts.get(0).getValue().get("http-listener", "default").get("socket-binding");
@@ -271,8 +271,8 @@ public class ManagementClient implements AutoCloseable, Closeable {
     private void extractWebArchiveContexts(HTTPContext context, String deploymentName, ModelNode deploymentNode) {
         if (deploymentNode.hasDefined(SUBSYSTEM)) {
             ModelNode subsystem = deploymentNode.get(SUBSYSTEM);
-            if (subsystem.hasDefined(WEB)) {
-                ModelNode webSubSystem = subsystem.get(WEB);//todo undertow!
+            if (subsystem.hasDefined(UNDERTOW)) {
+                ModelNode webSubSystem = subsystem.get(UNDERTOW);
                 if (webSubSystem.isDefined() && webSubSystem.hasDefined("context-root")) {
                     final String contextName = webSubSystem.get("context-root").asString();
                     if (webSubSystem.hasDefined(SERVLET)) {

@@ -88,26 +88,6 @@ public class ServerManager extends AbstractMgmtTestBase {
         return op;
     }
 
-    /*private ModelNode getAddConnectorOp(Listener conn, String keyStoreFile, String password) {
-        final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
-        final ModelNode steps = composite.get(STEPS);
-
-        ModelNode op = createOpNode("subsystem=undertow/server=default-server/listener=test-" + conn.getName() + "-connector", "add");
-        op.get("socket-binding").set("test-" + conn.getName());
-        op.get("scheme").set(conn.getScheme());
-        op.get("protocol").set(conn.getProtocol());
-        op.get("secure").set(conn.isSecure());
-        op.get("enabled").set(true);
-        steps.add(op);
-        if (conn.isSecure()) {
-            ModelNode ssl = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector/ssl=configuration", "add");
-            ssl.get("certificate-key-file").set(keyStoreFile);
-            ssl.get("password").set(password);
-            steps.add(ssl);
-        }
-        return composite;
-    }*/
-
     private ModelNode getAddListenerOp(Listener conn, String keyStoreFile, String password) {
         final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
         final ModelNode steps = composite.get(STEPS);
@@ -196,6 +176,4 @@ public class ServerManager extends AbstractMgmtTestBase {
         }
         return connNames;
     }
-
-
 }
