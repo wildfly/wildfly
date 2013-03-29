@@ -95,6 +95,7 @@ public final class RemoteDeployer implements Deployer {
     private static final String JBWS_DEPLOYER_AUTH_USER = "jbossws.deployer.authentication.username";
     private static final String JBWS_DEPLOYER_AUTH_PWD = "jbossws.deployer.authentication.password";
     private static final CallbackHandler callbackHandler = getCallbackHandler();
+    private static final int TIMEOUT = 60000;
     private static InetAddress address;
     private static Integer port;
     private final Map<URL, String> url2Id = new HashMap<URL, String>();
@@ -381,11 +382,11 @@ public final class RemoteDeployer implements Deployer {
         return AccessController.doPrivileged(action);
     }
 
-    private static ModelControllerClient newModelControllerClient() {
-        return ModelControllerClient.Factory.create(address, port, callbackHandler);
+    private static ModelControllerClient newModelControllerClient() throws Exception {
+        return ModelControllerClient.Factory.create(address.getHostAddress(), port, callbackHandler, null, TIMEOUT);
     }
 
-    private static ServerDeploymentManager newDeploymentManager() {
-        return ServerDeploymentManager.Factory.create(address, port, callbackHandler);
+    private static ServerDeploymentManager newDeploymentManager() throws Exception {
+        return ServerDeploymentManager.Factory.create(newModelControllerClient());
     }
 }
