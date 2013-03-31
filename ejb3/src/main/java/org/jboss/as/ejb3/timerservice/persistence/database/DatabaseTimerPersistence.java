@@ -76,6 +76,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<ModuleLoader>();
     private final String name;
     private final String database;
+    private final String partition;
     private volatile ManagedReference managedReference;
     private volatile DataSource dataSource;
     private volatile Properties sql;
@@ -89,9 +90,10 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     private static final String LOAD_TIMER = "load-timer";
     private static final String DELETE_TIMER = "delete-timer";
 
-    public DatabaseTimerPersistence(final String name, final String database) {
+    public DatabaseTimerPersistence(final String name, final String database, String partition) {
         this.name = name;
         this.database = database;
+        this.partition = partition;
     }
 
     @Override
@@ -134,6 +136,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             preparedStatement = connection.prepareStatement(loadTimer);
             preparedStatement.setString(1, "NON-EXISTENT");
             preparedStatement.setString(2, "NON-EXISTENT");
+            preparedStatement.setString(3, "NON-EXISTENT");
             resultSet = preparedStatement.executeQuery();
         } catch (SQLException e) {
             //the query failed, assume it is because the table does not exist
@@ -207,6 +210,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 statement = connection.prepareStatement(deleteTimer);
                 statement.setString(1, timerEntity.getTimedObjectId());
                 statement.setString(2, timerEntity.getId());
+                statement.setString(3, partition);
                 statement.execute();
             } else {
                 String updateTimer = sql(UPDATE_TIMER);
@@ -216,6 +220,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 statement.setString(3, timerEntity.getState().name());
                 statement.setString(4, timerEntity.getTimedObjectId());
                 statement.setString(5, timerEntity.getId());
+                statement.setString(6, partition);
                 statement.execute();
             }
         } catch (SQLException e) {
@@ -242,6 +247,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             connection = dataSource.getConnection();
             statement = connection.prepareStatement(loadTimer);
             statement.setString(1, timedObjectId);
+            statement.setString(2, partition);
             resultSet = statement.executeQuery();
             final List<TimerImpl> timers = new ArrayList<TimerImpl>();
             while (resultSet.next()) {
@@ -377,6 +383,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             statement.setString(23, null);
             statement.setBoolean(24, false);
         }
+        statement.setString(25, partition);
     }
 
     private String serialize(final Serializable serializable) {

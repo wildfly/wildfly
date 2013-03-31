@@ -583,6 +583,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             } else {
                 // cancel any scheduled Future for this timer
                 this.cancelTimeout(timer);
+                this.timers.remove(timer.getId());
             }
             // persist changes
             persistTimer(timer, false);

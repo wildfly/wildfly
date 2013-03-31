@@ -79,10 +79,12 @@ public class DatabaseDataStoreAdd extends AbstractAddStepHandler {
         } else {
             database = null;
         }
+        final String partition = DatabaseDataStoreResourceDefinition.PARTITION.resolveModelAttribute(context, model).asString();
+
 
         final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
 
-        final DatabaseTimerPersistence databaseTimerPersistence = new DatabaseTimerPersistence(name, database);
+        final DatabaseTimerPersistence databaseTimerPersistence = new DatabaseTimerPersistence(name, database, partition);
         final ServiceName serviceName = TimerPersistence.SERVICE_NAME.append(name);
         final ServiceBuilder<DatabaseTimerPersistence> builder = context.getServiceTarget().addService(serviceName, databaseTimerPersistence);
 

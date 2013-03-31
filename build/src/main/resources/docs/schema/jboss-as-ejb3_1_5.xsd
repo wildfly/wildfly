@@ -283,6 +283,7 @@
         <xs:attribute name="name" type="xs:token"/>
         <xs:attribute name="datasource-jndi-name" type="xs:token"/>
         <xs:attribute name="database" type="xs:token"/>
+        <xs:attribute name="partition" type="xs:token" use="optional"/>
     </xs:complexType>
 
     <xs:complexType name="iiopType">
