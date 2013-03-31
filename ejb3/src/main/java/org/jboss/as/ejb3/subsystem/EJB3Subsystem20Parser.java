@@ -40,14 +40,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DATABASE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DATABASE_DATA_STORE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DATASOURCE_JNDI_NAME;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.FILE_DATA_STORE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.*;
 
 
 /**
@@ -231,8 +224,8 @@ public class EJB3Subsystem20Parser extends EJB3Subsystem14Parser {
 
     private void parseDatabaseDataStore(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
         String name = null;
-        String datasourceJndiName = null;
-        String database = null;
+
+        final ModelNode databaseDataStore = new ModelNode();
         final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.NAME, EJB3SubsystemXMLAttribute.DATASOURCE_JNDI_NAME);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -248,16 +241,13 @@ public class EJB3Subsystem20Parser extends EJB3Subsystem14Parser {
                     name = reader.getAttributeValue(i);
                     break;
                 case DATASOURCE_JNDI_NAME:
-                    if (datasourceJndiName != null) {
-                        throw unexpectedAttribute(reader, i);
-                    }
-                    datasourceJndiName = DatabaseDataStoreResourceDefinition.DATASOURCE_JNDI_NAME.parse(value, reader).asString();
+                    DatabaseDataStoreResourceDefinition.DATASOURCE_JNDI_NAME.parseAndSetParameter(value, databaseDataStore, reader);
                     break;
                 case DATABASE:
-                    if (database != null) {
-                        throw unexpectedAttribute(reader, i);
-                    }
-                    database = DatabaseDataStoreResourceDefinition.DATABASE.parse(value, reader).asString();
+                    DatabaseDataStoreResourceDefinition.DATABASE.parseAndSetParameter(value, databaseDataStore, reader);
+                    break;
+                case PARTITION:
+                    DatabaseDataStoreResourceDefinition.PARTITION.parseAndSetParameter(value, databaseDataStore, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -270,13 +260,8 @@ public class EJB3Subsystem20Parser extends EJB3Subsystem14Parser {
         address.add(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
         address.add(SERVICE, TIMER_SERVICE);
         address.add(DATABASE_DATA_STORE, name);
-        final ModelNode databaseDataStore = new ModelNode();
         databaseDataStore.get(OP).set(ADD);
         databaseDataStore.get(ADDRESS).set(address);
-        databaseDataStore.get(DATASOURCE_JNDI_NAME).set(datasourceJndiName);
-        if(database != null) {
-            databaseDataStore.get(DATABASE).set(database);
-        }
         operations.add(databaseDataStore);
         requireNoContent(reader);
     }

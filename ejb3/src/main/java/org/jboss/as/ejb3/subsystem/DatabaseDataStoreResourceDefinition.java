@@ -33,9 +33,11 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -60,12 +62,21 @@ public class DatabaseDataStoreResourceDefinition extends SimpleResourceDefinitio
                     .build();
 
 
+    public static final SimpleAttributeDefinition PARTITION =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.PARTITION, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setDefaultValue(new ModelNode(""))
+                    .setValidator(new StringLengthValidator(0))
+                    .build();
+
     public static final Map<String, AttributeDefinition> ATTRIBUTES ;
 
     static {
         Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
         map.put(DATASOURCE_JNDI_NAME.getName(), DATASOURCE_JNDI_NAME);
         map.put(DATABASE.getName(), DATABASE);
+        map.put(PARTITION.getName(), PARTITION);
 
         ATTRIBUTES = Collections.unmodifiableMap(map);
     }
