@@ -31,7 +31,7 @@ if "%OS%" == "Windows_NT" (
 
 rem Read command-line args.
 :READ-ARGS
-if "%1" == "" ( 
+if "%1" == "" (
    goto MAIN
 ) else if "%1" == "--debug" (
    goto READ-DEBUG-PORT
@@ -96,9 +96,9 @@ rem Set debug settings if not already set
 if "%DEBUG_MODE%" == "true" (
    echo "%JAVA_OPTS%" | findstr /I "\-agentlib:jdwp" > nul
   if errorlevel == 1 (
-     echo Debug already enabled in JAVA_OPTS, ignoring --debug argument
-  ) else (
      set "JAVA_OPTS=%JAVA_OPTS% -agentlib:jdwp=transport=dt_socket,address=%DEBUG_PORT%,server=y,suspend=n"
+  ) else (
+     echo Debug already enabled in JAVA_OPTS, ignoring --debug argument
   )
 )
 
