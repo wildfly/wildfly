@@ -32,6 +32,13 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.filter.PathFilters;
+
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.ANNOTATIONS;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.META_INF;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.NAME;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.SERVICES;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.SLOT;
 
 /**
  * Dependency processor that adds modules defined in the global-modules section of
@@ -55,10 +62,25 @@ public class GlobalModuleDependencyProcessor implements DeploymentUnitProcessor 
 
         if (globalMods.isDefined()) {
             for (final ModelNode module : globalMods.asList()) {
-                final String name = module.get(GlobalModulesDefinition.NAME).asString();
-                String slot = module.hasDefined(GlobalModulesDefinition.SLOT) ? module.get(GlobalModulesDefinition.SLOT).asString() : GlobalModulesDefinition.DEFAULT_SLOT;
+                final String name = module.get(NAME).asString();
+                boolean annotations = module.get(ANNOTATIONS).isDefined() ? module.get(ANNOTATIONS).asBoolean() : false;
+                boolean services = module.get(SERVICES).isDefined() ? module.get(SERVICES).asBoolean() : true;
+                boolean metaInf = module.get(META_INF).isDefined() ? module.get(META_INF).asBoolean() : false;
+
+                String slot = module.hasDefined(SLOT) ? module.get(SLOT).asString() : GlobalModulesDefinition.DEFAULT_SLOT;
                 final ModuleIdentifier identifier = ModuleIdentifier.create(name, slot);
-                moduleSpecification.addSystemDependency(new ModuleDependency(Module.getBootModuleLoader(), identifier, false, false, true, false));
+                final ModuleDependency dependency = new ModuleDependency(Module.getBootModuleLoader(), identifier, false, false, services, false);
+
+                if (metaInf) {
+                    dependency.addImportFilter(PathFilters.getMetaInfSubdirectoriesFilter(), true);
+                    dependency.addImportFilter(PathFilters.getMetaInfFilter(), true);
+                }
+
+                if(annotations) {
+                    deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_ANNOTATION_INDEXES, identifier);
+                }
+
+                moduleSpecification.addSystemDependency(dependency);
             }
         }
     }
