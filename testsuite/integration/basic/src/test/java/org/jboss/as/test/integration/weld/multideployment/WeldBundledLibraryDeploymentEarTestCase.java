@@ -29,36 +29,63 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that CDI beans defined in a bundled library can be used in a deployment
+ * Tests that CDI beans defined in an installed library can be used in an .ear deployment.
+ *
+ * @see https://issues.jboss.org/browse/AS7-6821
  *
  * @author Jozef Hartinger
  *
  */
 @RunWith(Arquillian.class)
-public class WeldBundledLibraryDeploymentTestCase extends AbstractBundledLibraryDeploymentTestCase {
+@Ignore("AS7-6767")
+public class WeldBundledLibraryDeploymentEarTestCase extends AbstractBundledLibraryDeploymentTestCase {
 
     @Inject
     private SimpleBean bean;
+
+    @Inject
+    private InjectedBean injectedBean;
+
+    @Inject
+    private InjectedSessionBean injectedSessionBean;
 
     @Test
     public void testSimpleBeanInjected() {
         Assert.assertNotNull(bean);
         bean.ping();
+
+        Assert.assertNotNull(injectedBean);
+        Assert.assertNotNull(injectedBean.getBean());
+        injectedBean.getBean().ping();
+
+        Assert.assertNotNull(injectedSessionBean);
+        Assert.assertNotNull(injectedSessionBean.getBean());
+        injectedSessionBean.getBean().ping();
     }
 
     @Deployment
     public static Archive<?> getDeployment() throws Exception {
         doSetup();
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class);
-        jar.addClasses(WeldBundledLibraryDeploymentTestCase.class, AbstractBundledLibraryDeploymentTestCase.class);
-        jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
-        jar.setManifest(new StringAsset("Extension-List: weld1\nweld1-Extension-Name: " + EXTENSION_NAME + "\n"));
-        return jar;
+
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "test.war")
+                .addClasses(WeldBundledLibraryDeploymentEarTestCase.class, AbstractBundledLibraryDeploymentTestCase.class)
+                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        JavaArchive library = ShrinkWrap.create(JavaArchive.class, "library.jar").addClasses(InjectedBean.class).addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejb-archive.jar").addClasses(InjectedSessionBean.class).addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
+        ear.addAsModule(war);
+        ear.addAsModule(ejbJar);
+        ear.addAsLibrary(library);
+        ear.setManifest(new StringAsset("Extension-List: weld1\nweld1-Extension-Name: " + EXTENSION_NAME + "\n"));
+        return ear;
     }
 }
