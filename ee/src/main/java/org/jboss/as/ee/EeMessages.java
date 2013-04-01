@@ -32,6 +32,7 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.InjectionSource;
@@ -895,14 +896,14 @@ public interface EeMessages {
     @Message(id = 16706, value = "Global modules may not specify 'annotations', 'meta-inf' or 'services'.")
     String propertiesNotAllowedOnGlobalModules();
 
-    @Message(id = 16707, value = "No concurrent context currently set, unable to locate the context service to delegate.")
-    IllegalStateException noConcurrentContextCurrentlySet();
+    //@Message(id = 16707, value = "No concurrent context currently set, unable to locate the context service to delegate.")
+    //IllegalStateException noConcurrentContextCurrentlySet();
 
-    @Message(id = 16708, value = "EE Concurrent Service's value uninitialized.")
-    IllegalStateException concurrentServiceValueUninitialized();
+    //@Message(id = 16708, value = "EE Concurrent Service's value uninitialized.")
+    //IllegalStateException concurrentServiceValueUninitialized();
 
-    @Message(id = 16709, value = "EE Concurrent ContextHandle serialization must be handled by the factory.")
-    IOException serializationMustBeHandledByThefactory();
+    //@Message(id = 16709, value = "EE Concurrent ContextHandle serialization must be handled by the factory.")
+    //IOException serializationMustBeHandledByThefactory();
 
     //@Message(id = 16710, value = "The EE Concurrent Context %s already has a factory named %s")
     //IllegalArgumentException factoryAlreadyExists(ConcurrentContext concurrentContext, String factoryName);
@@ -913,8 +914,8 @@ public interface EeMessages {
     //@Message(id = 16712, value = "EE Concurrent Context %s service not installed.")
     //IOException concurrentContextServiceNotInstalled(ServiceName serviceName);
 
-    @Message(id = 16713, value = "EE Concurrent Transaction Setup Provider service not installed.")
-    IllegalStateException transactionSetupProviderServiceNotInstalled();
+    //@Message(id = 16713, value = "EE Concurrent Transaction Setup Provider service not installed.")
+    //IllegalStateException transactionSetupProviderServiceNotInstalled();
 
     @Message(id = 16714, value = "Instance data can only be set during construction")
     IllegalStateException instanceDataCanOnlyBeSetDuringConstruction();

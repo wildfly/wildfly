@@ -234,6 +234,7 @@ public enum Phase {
     public static final int STRUCTURE_EE_MODULE_INIT                    = 0x1B00;
     public static final int STRUCTURE_EE_RESOURCE_INJECTION_REGISTRY    = 0x1C00;
     public static final int STRUCTURE_DEPLOYMENT_DEPENDENCIES           = 0x1D00;
+    public static final int STRUCTURE_GLOBAL_MODULES                    = 0x1E00;
 
     // PARSE
     public static final int PARSE_EE_MODULE_NAME                        = 0x0100;
@@ -334,7 +335,6 @@ public enum Phase {
     public static final int DEPENDENCIES_SUB_DEPLOYMENTS                = 0x0E00;
     public static final int DEPENDENCIES_PERSISTENCE_ANNOTATION         = 0x0F00;
     public static final int DEPENDENCIES_JPA                            = 0x1000;
-    public static final int DEPENDENCIES_GLOBAL_MODULES                 = 0x1100;
     public static final int DEPENDENCIES_JDK                            = 0x1200;
     public static final int DEPENDENCIES_JACORB                         = 0x1300;
     public static final int DEPENDENCIES_CMP                            = 0x1500;

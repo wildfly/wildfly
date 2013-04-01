@@ -27,6 +27,7 @@ import java.util.Map;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -36,6 +37,9 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -45,6 +49,11 @@ import org.jboss.as.controller.transform.description.TransformationDescriptionBu
 import org.jboss.as.ee.EeMessages;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.ANNOTATIONS;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.GLOBAL_MODULES;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.META_INF;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.SERVICES;
 
 /**
  * JBossAS domain extension used to initialize the ee subsystem handlers and associated classes.
@@ -59,7 +68,7 @@ public class EeExtension implements Extension {
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 1;
 
     protected static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
 
@@ -81,7 +90,7 @@ public class EeExtension implements Extension {
         // Mandatory describe operation
         rootResource.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
-        subsystem.registerXMLElementWriter(EESubsystemParser11.INSTANCE);
+        subsystem.registerXMLElementWriter(EESubsystemXmlPersister.INSTANCE);
 
         if (context.isRegisterTransformers()) {
             registerTransformers(subsystem);
@@ -95,6 +104,7 @@ public class EeExtension implements Extension {
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_1_0.getUriString(), EESubsystemParser10.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_1_1.getUriString(), EESubsystemParser11.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_1_2.getUriString(), EESubsystemParser12.INSTANCE);
     }
 
     private void registerTransformers(SubsystemRegistration subsystem) {
@@ -133,6 +143,42 @@ public class EeExtension implements Extension {
         .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(false)), EeSubsystemRootResource.EJB_ANNOTATION_PROPERTY_REPLACEMENT)
         .addRejectCheck(RejectAttributeChecker.DEFINED, EeSubsystemRootResource.EJB_ANNOTATION_PROPERTY_REPLACEMENT);
 
+
+        builder.setCustomResourceTransformer(new ResourceTransformer() {
+            @Override
+            public void transformResource(final ResourceTransformationContext context, final PathAddress address, final Resource resource) throws OperationFailedException {
+                final ModelNode attributeValue = resource.getModel().get(GLOBAL_MODULES);
+                if (attributeValue.isDefined()) {
+                    for (ModelNode node : attributeValue.asList()) {
+                        if (node.hasDefined(ANNOTATIONS)) {
+                            if (node.get(ANNOTATIONS).asBoolean()) {
+                                throw new OperationFailedException(EeMessages.MESSAGES.propertiesNotAllowedOnGlobalModules());
+                            } else {
+                                node.remove(ANNOTATIONS);
+                            }
+                        }
+                        if (node.hasDefined(SERVICES)) {
+                            if (!node.get(SERVICES).asBoolean()) {
+                                throw new OperationFailedException(EeMessages.MESSAGES.propertiesNotAllowedOnGlobalModules());
+                            } else {
+                                node.remove(SERVICES);
+                            }
+                        }
+                        if (node.hasDefined(META_INF)) {
+                            if (node.get(META_INF).asBoolean()) {
+                                throw new OperationFailedException(EeMessages.MESSAGES.propertiesNotAllowedOnGlobalModules());
+                            } else {
+                                node.remove(META_INF);
+                            }
+                        }
+                    }
+                }
+                context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+            }
+        });
+
         TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
+
+
     }
 }

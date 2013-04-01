@@ -1,7 +1,7 @@
 <subsystem xmlns="urn:jboss:domain:ee:1.2" >
 	<global-modules>
 	  <module name="org.jboss.logging" slot="main"/>
-	  <module name="org.apache.log4j" annotations="true" meta-inf="true" services="false"/>
+	  <module name="org.apache.log4j" annotations="false" meta-inf="false" services="true"/>
 	</global-modules>
 	<ear-subdeployments-isolated>${test-exp:true}</ear-subdeployments-isolated>
 	<spec-descriptor-property-replacement>${test-exp1:false}</spec-descriptor-property-replacement>

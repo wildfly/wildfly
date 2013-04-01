@@ -22,15 +22,9 @@
 
 package org.jboss.as.ee.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.util.Locale;
 import java.util.ResourceBundle;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -45,6 +39,13 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 /**
  * {@link ListAttributeDefinition} implementation for the "global-modules" attribute.
  *
@@ -54,6 +55,9 @@ public class GlobalModulesDefinition extends ListAttributeDefinition {
 
     public static final String NAME = "name";
     public static final String SLOT = "slot";
+    public static final String ANNOTATIONS = "annotations";
+    public static final String META_INF = "meta-inf";
+    public static final String SERVICES = "services";
     public static final String GLOBAL_MODULES = "global-modules";
 
     private static final ParameterValidator moduleValidator;
@@ -100,6 +104,9 @@ public class GlobalModulesDefinition extends ListAttributeDefinition {
         final ModelNode valueType = getNoTextValueTypeDescription(node);
         valueType.get(NAME, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, NAME));
         valueType.get(SLOT, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, SLOT));
+        valueType.get(ANNOTATIONS, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, ANNOTATIONS));
+        valueType.get(SERVICES, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, SERVICES));
+        valueType.get(META_INF, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, META_INF));
     }
 
     @Override
@@ -107,6 +114,9 @@ public class GlobalModulesDefinition extends ListAttributeDefinition {
         final ModelNode valueType = getNoTextValueTypeDescription(node);
         valueType.get(NAME, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, NAME));
         valueType.get(SLOT, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, SLOT));
+        valueType.get(ANNOTATIONS, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, ANNOTATIONS));
+        valueType.get(SERVICES, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, SERVICES));
+        valueType.get(META_INF, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, META_INF));
     }
 
     @Override
@@ -120,6 +130,15 @@ public class GlobalModulesDefinition extends ListAttributeDefinition {
                 if (module.hasDefined(SLOT)) {
                     writer.writeAttribute(Attribute.SLOT.getLocalName(), module.get(SLOT).asString());
                 }
+                if (module.hasDefined(ANNOTATIONS)) {
+                    writer.writeAttribute(Attribute.ANNOTATIONS.getLocalName(), module.get(ANNOTATIONS).asString());
+                }
+                if (module.hasDefined(SERVICES)) {
+                    writer.writeAttribute(Attribute.SERVICES.getLocalName(), module.get(SERVICES).asString());
+                }
+                if (module.hasDefined(META_INF)) {
+                    writer.writeAttribute(Attribute.META_INF.getLocalName(), module.get(META_INF).asString());
+                }
             }
             writer.writeEndElement();
         }
@@ -131,11 +150,30 @@ public class GlobalModulesDefinition extends ListAttributeDefinition {
         name.get(DESCRIPTION); // placeholder
         name.get(TYPE).set(ModelType.STRING);
         name.get(NILLABLE).set(false);
+
         final ModelNode slot = valueType.get(SLOT);
         slot.get(DESCRIPTION);  // placeholder
         slot.get(TYPE).set(ModelType.STRING);
         slot.get(NILLABLE).set(true);
         slot.get(DEFAULT).set(DEFAULT_SLOT);
+
+        final ModelNode annotations = valueType.get(ANNOTATIONS);
+        annotations.get(DESCRIPTION);  // placeholder
+        annotations.get(TYPE).set(ModelType.STRING);
+        annotations.get(NILLABLE).set(true);
+        slot.get(DEFAULT).set(false);
+
+        final ModelNode services = valueType.get(SERVICES);
+        services.get(DESCRIPTION);  // placeholder
+        services.get(TYPE).set(ModelType.STRING);
+        services.get(NILLABLE).set(true);
+        slot.get(DEFAULT).set(true);
+
+        final ModelNode metaInf = valueType.get(META_INF);
+        metaInf.get(DESCRIPTION);  // placeholder
+        metaInf.get(TYPE).set(ModelType.STRING);
+        metaInf.get(NILLABLE).set(true);
+        slot.get(DEFAULT).set(false);
 
         return valueType;
     }
