@@ -27,6 +27,7 @@ import java.util.Random;
 import javax.ejb.EJBException;
 import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.NoSuchEJBException;
+import javax.ejb.NoSuchEntityException;
 import javax.ejb.TransactionAttributeType;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
@@ -131,7 +132,7 @@ public class CMTTxInterceptor implements Interceptor {
                 Throwable cause = t;
                 t = new EJBTransactionRolledbackException("Unexpected Error");
                 t.initCause(cause);
-            } else if (t instanceof NoSuchEJBException) {
+            } else if (t instanceof NoSuchEJBException || t instanceof NoSuchEntityException) {
                 // If this is an NoSuchEJBException, pass through to the caller
 
             } else if (t instanceof RuntimeException) {
