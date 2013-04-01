@@ -732,9 +732,13 @@ public class ComponentDescription implements ResourceInjectionTarget {
             }
 
             final List<InterceptorFactory> userPostConstruct = new ArrayList<InterceptorFactory>();
+            final List<InterceptorFactory> userComponentPostConstruct = new ArrayList<InterceptorFactory>();
             final List<InterceptorFactory> userPreDestroy = new ArrayList<InterceptorFactory>();
+            final List<InterceptorFactory> userComponentPreDestroy = new ArrayList<InterceptorFactory>();
             final List<InterceptorFactory> userPrePassivate = new ArrayList<InterceptorFactory>();
+            final List<InterceptorFactory> userComponentPrePassivate = new ArrayList<InterceptorFactory>();
             final List<InterceptorFactory> userPostActivate = new ArrayList<InterceptorFactory>();
+            final List<InterceptorFactory> userComponentPostActivate = new ArrayList<InterceptorFactory>();
 
             //now add the lifecycle interceptors in the correct order
             for (final InterceptorDescription interceptorClass : interceptorWithLifecycleCallbacks) {
@@ -761,8 +765,8 @@ public class ComponentDescription implements ResourceInjectionTarget {
 
                     final InterceptorClassDescription interceptorConfig = InterceptorClassDescription.merge(mergeInterceptorConfig(clazz, classDescription, description, metadataComplete), moduleDescription.getInterceptorClassOverride(clazz.getName()));
 
-                    handleClassMethod(clazz, interceptorConfig.getPostConstruct(), userPostConstruct, true, true);
-                    handleClassMethod(clazz, interceptorConfig.getPreDestroy(), userPreDestroy, true, true);
+                    handleClassMethod(clazz, interceptorConfig.getPostConstruct(), userComponentPostConstruct, true, true);
+                    handleClassMethod(clazz, interceptorConfig.getPreDestroy(), userComponentPreDestroy, true, true);
                     handleClassMethod(clazz, interceptorConfig.getAroundInvoke(), componentUserAroundInvoke, false, false);
 
                     if (description.isTimerServiceRequired()) {
@@ -770,8 +774,8 @@ public class ComponentDescription implements ResourceInjectionTarget {
                     }
 
                     if (description.isPassivationApplicable()) {
-                        handleClassMethod(clazz, interceptorConfig.getPrePassivate(), userPrePassivate, false, false);
-                        handleClassMethod(clazz, interceptorConfig.getPostActivate(), userPostActivate, false, false);
+                        handleClassMethod(clazz, interceptorConfig.getPrePassivate(), userComponentPrePassivate, false, false);
+                        handleClassMethod(clazz, interceptorConfig.getPostActivate(), userComponentPostActivate, false, false);
                     }
                 }
 
@@ -800,6 +804,9 @@ public class ComponentDescription implements ResourceInjectionTarget {
             if (!userPostConstruct.isEmpty()) {
                 configuration.addPostConstructInterceptor(weaved(userPostConstruct), InterceptorOrder.ComponentPostConstruct.USER_INTERCEPTORS);
             }
+            if (!userComponentPostConstruct.isEmpty()) {
+                configuration.addPostConstructInterceptor(weaved(userComponentPostConstruct), InterceptorOrder.ComponentPostConstruct.USER_COMPONENT_INTERCEPTORS);
+            }
             configuration.addPostConstructInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPostConstruct.TERMINAL_INTERCEPTOR);
             configuration.addPostConstructInterceptor(tcclInterceptor, InterceptorOrder.ComponentPostConstruct.TCCL_INTERCEPTOR);
             configuration.addPostConstructInterceptor(privilegedInterceptor, InterceptorOrder.ComponentPostConstruct.PRIVILEGED_INTERCEPTOR);
@@ -814,6 +821,9 @@ public class ComponentDescription implements ResourceInjectionTarget {
             if (!userPreDestroy.isEmpty()) {
                 configuration.addPreDestroyInterceptor(weaved(userPreDestroy), InterceptorOrder.ComponentPreDestroy.USER_INTERCEPTORS);
             }
+            if (!userComponentPreDestroy.isEmpty()) {
+                configuration.addPreDestroyInterceptor(weaved(userComponentPreDestroy), InterceptorOrder.ComponentPreDestroy.USER_COMPONENT_INTERCEPTORS);
+            }
             configuration.addPreDestroyInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPreDestroy.TERMINAL_INTERCEPTOR);
             configuration.addPreDestroyInterceptor(tcclInterceptor, InterceptorOrder.ComponentPreDestroy.TCCL_INTERCEPTOR);
             configuration.addPreDestroyInterceptor(privilegedInterceptor, InterceptorOrder.ComponentPreDestroy.PRIVILEGED_INTERCEPTOR);
@@ -822,12 +832,18 @@ public class ComponentDescription implements ResourceInjectionTarget {
                 if (!userPrePassivate.isEmpty()) {
                     configuration.addPrePassivateInterceptor(weaved(userPrePassivate), InterceptorOrder.ComponentPassivation.USER_INTERCEPTORS);
                 }
+                if (!userComponentPrePassivate.isEmpty()) {
+                    configuration.addPrePassivateInterceptor(weaved(userComponentPrePassivate), InterceptorOrder.ComponentPassivation.USER_COMPONENT_INTERCEPTORS);
+                }
                 configuration.addPrePassivateInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPassivation.TERMINAL_INTERCEPTOR);
                 configuration.addPrePassivateInterceptor(tcclInterceptor, InterceptorOrder.ComponentPassivation.TCCL_INTERCEPTOR);
                 configuration.addPrePassivateInterceptor(privilegedInterceptor, InterceptorOrder.ComponentPassivation.PRIVILEGED_INTERCEPTOR);
 
                 if (!userPostActivate.isEmpty()) {
                     configuration.addPostActivateInterceptor(weaved(userPostActivate), InterceptorOrder.ComponentPassivation.USER_INTERCEPTORS);
+                }
+                if (!userComponentPostActivate.isEmpty()) {
+                    configuration.addPostActivateInterceptor(weaved(userComponentPostActivate), InterceptorOrder.ComponentPassivation.USER_COMPONENT_INTERCEPTORS);
                 }
                 configuration.addPostActivateInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPassivation.TERMINAL_INTERCEPTOR);
                 configuration.addPostActivateInterceptor(tcclInterceptor, InterceptorOrder.ComponentPassivation.TCCL_INTERCEPTOR);

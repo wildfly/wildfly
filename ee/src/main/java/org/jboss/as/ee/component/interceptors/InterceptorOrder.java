@@ -83,6 +83,7 @@ public class InterceptorOrder {
         public static final int JPA_SFSB_CREATE = 0xA00;
         public static final int USER_INTERCEPTORS = 0xB00;
         public static final int CDI_INTERCEPTORS = 0xC00;
+        public static final int USER_COMPONENT_INTERCEPTORS = 0xC80; //interceptors defined on the component class, these have to run after CDI interceptors
         public static final int SFSB_INIT_METHOD = 0xD00;
         public static final int SETUP_CONTEXT = 0xE00;
         public static final int TERMINAL_INTERCEPTOR = 0xF00;
@@ -104,6 +105,7 @@ public class InterceptorOrder {
         public static final int DESTRUCTION_INTERCEPTORS = 0x700;
         public static final int USER_INTERCEPTORS = 0x800;
         public static final int CDI_INTERCEPTORS = 0x900;
+        public static final int USER_COMPONENT_INTERCEPTORS = 0x980; //interceptors defined on the component class, these have to run after CDI interceptors
         public static final int TERMINAL_INTERCEPTOR = 0xA00;
 
         private ComponentPreDestroy() {
@@ -120,6 +122,7 @@ public class InterceptorOrder {
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x400;
         public static final int USER_INTERCEPTORS = 0x800;
         public static final int CDI_INTERCEPTORS = 0x900;
+        public static final int USER_COMPONENT_INTERCEPTORS = 0x980; //interceptors defined on the component class, these have to run after CDI interceptors
         public static final int TERMINAL_INTERCEPTOR = 0xA00;
 
         private ComponentPassivation() {
