@@ -88,7 +88,7 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
             synchronized (pathEntries) {
                 pathEntry = pathEntries.get(relativeTo);
                 if (pathEntry == null) {
-                    throw MESSAGES.pathEntryNotFound(path);
+                    throw MESSAGES.pathEntryNotFound(relativeTo);
                 }
                 return RelativePathService.doResolve(pathEntry.resolvePath(), path);
             }
