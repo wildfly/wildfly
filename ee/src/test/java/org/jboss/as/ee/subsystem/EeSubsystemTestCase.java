@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -42,8 +41,10 @@ import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.ANNOTATIONS;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.GLOBAL_MODULES;
 import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.META_INF;
 import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.SERVICES;
 
@@ -96,7 +97,7 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
                     bootOps,
                     new FailedOperationTransformationConfig()
                             .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EeExtension.SUBSYSTEM_NAME)),
-                                    new Test712Config(EESubsystemModel.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT)));
+                                    new JBossDescriptorPropertyReplacementConfig()));
 
 
             checkSubsystemModelTransformation(mainServices, modelVersion, new ModelFixer() {
@@ -169,7 +170,9 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
 
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, new FailedOperationTransformationConfig());
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, new FailedOperationTransformationConfig()
+                .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EeExtension.SUBSYSTEM_NAME)),
+                                    new GlobalModulesConfig()));
 
     }
 
@@ -184,7 +187,29 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_3_FINAL, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-ee:7.1.3.Final");
+                .addMavenResourceURL("org.jboss.as:jboss-as-ee:7.1.3.Final")
+                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, new ModelFixer() {
+                    // The regular model will have the new attributes because they are in the xml,
+                    // but the reverse controller model will not because transformation strips them
+                    @Override
+                    public ModelNode fixModel(ModelNode modelNode) {
+                        for(ModelNode node : modelNode.get(GLOBAL_MODULES).asList()) {
+                            if ("org.apache.log4j".equals(node.get(NAME).asString())) {
+                                if (!node.has(ANNOTATIONS)) {
+                                    node.get(ANNOTATIONS).set(false);
+                                }
+                                if (!node.has(META_INF)) {
+                                    node.get(META_INF).set(false);
+                                }
+                                if (!node.has(SERVICES)) {
+                                    node.get(SERVICES).set(true);
+                                }
+                            }
+                        }
+
+                        return modelNode;
+                    }
+                });
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -196,15 +221,15 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
             if(node.hasDefined(ANNOTATIONS) ||
                     node.hasDefined(SERVICES) ||
                     node.hasDefined(META_INF)) {
-                throw new RuntimeException("attributes not discarded");
+                Assert.fail(node + " -- attributes not discarded");
             }
         }
     }
 
-    private static final class Test712Config extends AttributesPathAddressConfig<Test712Config> {
+    private static final class JBossDescriptorPropertyReplacementConfig extends AttributesPathAddressConfig<JBossDescriptorPropertyReplacementConfig> {
 
-        public Test712Config(String... attributes) {
-            super(attributes);
+        public JBossDescriptorPropertyReplacementConfig() {
+            super(EESubsystemModel.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT);
         }
 
         @Override
@@ -220,6 +245,38 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
         @Override
         protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
             return new ModelNode(true);
+        }
+    }
+
+    private static final class GlobalModulesConfig extends AttributesPathAddressConfig<GlobalModulesConfig> {
+
+        public GlobalModulesConfig() {
+            super(GlobalModulesDefinition.INSTANCE.getName());
+        }
+
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            return true;
+        }
+
+        @Override
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+            for (ModelNode module : attribute.asList()) {
+                if (module.has(ANNOTATIONS) || module.has(META_INF) || module.has(SERVICES)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+            for (ModelNode module : toResolve.asList()) {
+                module.remove(ANNOTATIONS);
+                module.remove(META_INF);
+                module.remove(SERVICES);
+            }
+            return toResolve;
         }
     }
 }

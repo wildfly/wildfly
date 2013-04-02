@@ -119,12 +119,13 @@ class EESubsystemParser12 implements XMLStreamConstants, XMLElementReader<List<M
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Element.forName(reader.getLocalName())) {
                 case MODULE: {
+                    final ModelNode module = new ModelNode();
                     final int count = reader.getAttributeCount();
                     String name = null;
                     String slot = null;
-                    Boolean annotations = null;
-                    Boolean metaInf = null;
-                    Boolean services = null;
+                    String annotations = null;
+                    String metaInf = null;
+                    String services = null;
                     for (int i = 0; i < count; i++) {
                         requireNoNamespaceAttribute(reader, i);
                         final String value = reader.getAttributeValue(i);
@@ -135,32 +136,37 @@ class EESubsystemParser12 implements XMLStreamConstants, XMLElementReader<List<M
                                     throw unexpectedAttribute(reader, i);
                                 }
                                 name = value;
+                                GlobalModulesDefinition.NAME_AD.parseAndSetParameter(name, module, reader);
                                 break;
                             case SLOT:
                                 if (slot != null) {
                                     throw unexpectedAttribute(reader, i);
                                 }
                                 slot = value;
+                                GlobalModulesDefinition.SLOT_AD.parseAndSetParameter(slot, module, reader);
                                 break;
                             case ANNOTATIONS:
                                 if (annotations != null) {
                                     throw unexpectedAttribute(reader, i);
                                 }
-                                annotations = Boolean.parseBoolean(value);
+                                annotations = value;
+                                GlobalModulesDefinition.ANNOTATIONS_AD.parseAndSetParameter(annotations, module, reader);
                                 break;
 
                             case SERVICES:
                                 if (services != null) {
                                     throw unexpectedAttribute(reader, i);
                                 }
-                                services = Boolean.parseBoolean(value);
+                                services = value;
+                                GlobalModulesDefinition.SERVICES_AD.parseAndSetParameter(services, module, reader);
                                 break;
 
                             case META_INF:
                                 if (metaInf != null) {
                                     throw unexpectedAttribute(reader, i);
                                 }
-                                metaInf = Boolean.parseBoolean(value);
+                                metaInf = value;
+                                GlobalModulesDefinition.META_INF_AD.parseAndSetParameter(metaInf, module, reader);
                                 break;
                             default:
                                 throw unexpectedAttribute(reader, i);
@@ -170,21 +176,8 @@ class EESubsystemParser12 implements XMLStreamConstants, XMLElementReader<List<M
                         throw missingRequired(reader, Collections.singleton(NAME));
                     }
 
-                    final ModelNode module = new ModelNode();
-                    module.get(GlobalModulesDefinition.NAME).set(name);
-                    if (slot != null) {
-                        module.get(GlobalModulesDefinition.SLOT).set(slot);
-                    }
-                    if (annotations != null) {
-                        module.get(GlobalModulesDefinition.ANNOTATIONS).set(annotations);
-                    }
-                    if (services != null) {
-                        module.get(GlobalModulesDefinition.SERVICES).set(services);
-                    }
-                    if (metaInf != null) {
-                        module.get(GlobalModulesDefinition.META_INF).set(metaInf);
-                    }
                     globalModules.add(module);
+
                     requireNoContent(reader);
                     break;
                 }

@@ -32,7 +32,6 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.InjectionSource;

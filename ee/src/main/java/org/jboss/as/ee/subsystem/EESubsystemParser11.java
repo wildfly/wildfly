@@ -124,6 +124,7 @@ class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<M
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Element.forName(reader.getLocalName())) {
                 case MODULE: {
+                    final ModelNode module = new ModelNode();
                     final int count = reader.getAttributeCount();
                     String name = null;
                     String slot = null;
@@ -137,12 +138,14 @@ class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<M
                                     throw unexpectedAttribute(reader, i);
                                 }
                                 name = value;
+                                GlobalModulesDefinition.NAME_AD.parseAndSetParameter(name, module, reader);
                                 break;
                             case SLOT:
                                 if (slot != null) {
                                     throw unexpectedAttribute(reader, i);
                                 }
                                 slot = value;
+                                GlobalModulesDefinition.SLOT_AD.parseAndSetParameter(slot, module, reader);
                                 break;
                             default:
                                 throw unexpectedAttribute(reader, i);
@@ -152,12 +155,9 @@ class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<M
                         throw missingRequired(reader, Collections.singleton(NAME));
                     }
 
-                    final ModelNode module = new ModelNode();
-                    module.get(GlobalModulesDefinition.NAME).set(name);
-                    if (slot != null) {
-                        module.get(GlobalModulesDefinition.SLOT).set(slot);
-                    }
+
                     globalModules.add(module);
+
                     requireNoContent(reader);
                     break;
                 }

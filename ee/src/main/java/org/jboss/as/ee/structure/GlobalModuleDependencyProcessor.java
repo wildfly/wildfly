@@ -21,7 +21,6 @@
  */
 package org.jboss.as.ee.structure;
 
-import org.jboss.as.ee.subsystem.GlobalModulesDefinition;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -63,11 +62,11 @@ public class GlobalModuleDependencyProcessor implements DeploymentUnitProcessor 
         if (globalMods.isDefined()) {
             for (final ModelNode module : globalMods.asList()) {
                 final String name = module.get(NAME).asString();
-                boolean annotations = module.get(ANNOTATIONS).isDefined() ? module.get(ANNOTATIONS).asBoolean() : false;
-                boolean services = module.get(SERVICES).isDefined() ? module.get(SERVICES).asBoolean() : true;
-                boolean metaInf = module.get(META_INF).isDefined() ? module.get(META_INF).asBoolean() : false;
+                boolean annotations = module.get(ANNOTATIONS).asBoolean();
+                boolean services = module.get(SERVICES).asBoolean();
+                boolean metaInf = module.get(META_INF).asBoolean();
 
-                String slot = module.hasDefined(SLOT) ? module.get(SLOT).asString() : GlobalModulesDefinition.DEFAULT_SLOT;
+                String slot = module.get(SLOT).asString();
                 final ModuleIdentifier identifier = ModuleIdentifier.create(name, slot);
                 final ModuleDependency dependency = new ModuleDependency(Module.getBootModuleLoader(), identifier, false, false, services, false);
 
@@ -90,6 +89,10 @@ public class GlobalModuleDependencyProcessor implements DeploymentUnitProcessor 
 
     }
 
+    /**
+     * Set the global modules configuration for the container.
+     * @param globalModules a fully resolved (i.e. with expressions resolved and default values set) global modules configuration
+     */
     public void setGlobalModules(final ModelNode globalModules) {
         this.globalModules = globalModules;
     }
