@@ -32,6 +32,7 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.InjectionSource;
@@ -892,4 +893,6 @@ public interface EeMessages {
     @Message(id = 16705, value = "Only 'true' is allowed for 'jboss-descriptor-property-replacement' due to AS7-4892")
     String onlyTrueAllowedForJBossDescriptorPropertyReplacement_AS7_4892();
 
+    @Message(id = 16706, value = "Global modules may not specify 'annotations', 'meta-inf' or 'services'.")
+    String propertiesNotAllowedOnGlobalModules();
 }

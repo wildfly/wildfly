@@ -34,6 +34,9 @@ enum Attribute {
     UNKNOWN(null),
     NAME(GlobalModulesDefinition.NAME),
     SLOT(GlobalModulesDefinition.SLOT),
+    ANNOTATIONS(GlobalModulesDefinition.ANNOTATIONS),
+    SERVICES(GlobalModulesDefinition.SERVICES),
+    META_INF(GlobalModulesDefinition.META_INF),
     ;
     private final String name;
 

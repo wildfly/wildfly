@@ -46,11 +46,11 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  */
-class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
+class EESubsystemParser20 implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
 
-    public static final EESubsystemParser11 INSTANCE = new EESubsystemParser11();
+    public static final EESubsystemParser20 INSTANCE = new EESubsystemParser20();
 
-    private EESubsystemParser11() {
+    private EESubsystemParser20() {
 
     }
 
@@ -70,7 +70,7 @@ class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<M
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case EE_1_1: {
+                case EE_2_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     if (!encountered.add(element)) {
                         throw unexpectedElement(reader);
@@ -122,6 +122,9 @@ class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<M
                     final int count = reader.getAttributeCount();
                     String name = null;
                     String slot = null;
+                    Boolean annotations = null;
+                    Boolean metaInf = null;
+                    Boolean services = null;
                     for (int i = 0; i < count; i++) {
                         requireNoNamespaceAttribute(reader, i);
                         final String value = reader.getAttributeValue(i);
@@ -139,6 +142,26 @@ class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<M
                                 }
                                 slot = value;
                                 break;
+                            case ANNOTATIONS:
+                                if (annotations != null) {
+                                    throw unexpectedAttribute(reader, i);
+                                }
+                                annotations = Boolean.parseBoolean(value);
+                                break;
+
+                            case SERVICES:
+                                if (services != null) {
+                                    throw unexpectedAttribute(reader, i);
+                                }
+                                services = Boolean.parseBoolean(value);
+                                break;
+
+                            case META_INF:
+                                if (metaInf != null) {
+                                    throw unexpectedAttribute(reader, i);
+                                }
+                                metaInf = Boolean.parseBoolean(value);
+                                break;
                             default:
                                 throw unexpectedAttribute(reader, i);
                         }
@@ -151,6 +174,15 @@ class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<M
                     module.get(GlobalModulesDefinition.NAME).set(name);
                     if (slot != null) {
                         module.get(GlobalModulesDefinition.SLOT).set(slot);
+                    }
+                    if (annotations != null) {
+                        module.get(GlobalModulesDefinition.ANNOTATIONS).set(annotations);
+                    }
+                    if (services != null) {
+                        module.get(GlobalModulesDefinition.SERVICES).set(services);
+                    }
+                    if (metaInf != null) {
+                        module.get(GlobalModulesDefinition.META_INF).set(metaInf);
                     }
                     globalModules.add(module);
                     requireNoContent(reader);
