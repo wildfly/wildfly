@@ -98,11 +98,11 @@ public class OldVersionCopier {
                 try {
                     expandAsInstance(file);
 
-                    if (file.getName().equals("jboss-as-7.1.2.Final.zip")) {
-                        patchBadRemoting("jboss-as-7.1.2.Final");
-                    } else if (file.getName().equals("jboss-as-7.1.3.Final.zip")) {
-                        patchBadRemoting("jboss-as-7.1.3.Final");
-                    }
+//                    if (file.getName().equals("jboss-as-7.1.2.Final.zip")) {
+//                        patchBadRemoting("jboss-as-7.1.2.Final");
+//                    } else if (file.getName().equals("jboss-as-7.1.3.Final.zip")) {
+//                        patchBadRemoting("jboss-as-7.1.3.Final");
+//                    }
                 } catch(Exception e) {
                     throw new RuntimeException(e);
                 }
