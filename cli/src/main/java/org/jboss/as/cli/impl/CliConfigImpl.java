@@ -328,6 +328,7 @@ class CliConfigImpl implements CliConfig {
             switch (readerNS) {
                 case CLI_1_0:
                 case CLI_1_1:
+                case CLI_1_2:
                     readCLIElement_1_0(reader, readerNS, config);
                     break;
                 default:
