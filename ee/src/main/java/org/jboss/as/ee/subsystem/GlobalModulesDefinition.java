@@ -22,36 +22,26 @@
 
 package org.jboss.as.ee.subsystem;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.jboss.as.controller.ListAttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.operations.validation.ParametersOfValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.ObjectListAttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 /**
- * {@link ListAttributeDefinition} implementation for the "global-modules" attribute.
+ * {@link AttributeDefinition} implementation for the "global-modules" attribute.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class GlobalModulesDefinition extends ListAttributeDefinition {
+public class GlobalModulesDefinition {
 
     public static final String NAME = "name";
     public static final String SLOT = "slot";
@@ -60,121 +50,52 @@ public class GlobalModulesDefinition extends ListAttributeDefinition {
     public static final String SERVICES = "services";
     public static final String GLOBAL_MODULES = "global-modules";
 
-    private static final ParameterValidator moduleValidator;
-
     public static final String DEFAULT_SLOT = "main";
 
-    static {
-        final ParametersValidator delegate = new ParametersValidator();
-        delegate.registerValidator(NAME, new StringLengthValidator(1));
-        delegate.registerValidator(SLOT, new StringLengthValidator(1, true));
+    static final SimpleAttributeDefinition NAME_AD = new SimpleAttributeDefinitionBuilder(NAME, ModelType.STRING).build();
 
-        moduleValidator = new ParametersOfValidator(delegate);
-    }
+    static final SimpleAttributeDefinition SLOT_AD = new SimpleAttributeDefinitionBuilder(SLOT, ModelType.STRING, true)
+            .setDefaultValue(new ModelNode(DEFAULT_SLOT))
+            .build();
 
-    public static final GlobalModulesDefinition INSTANCE = new GlobalModulesDefinition();
+    static final SimpleAttributeDefinition ANNOTATIONS_AD = new SimpleAttributeDefinitionBuilder(ANNOTATIONS, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
 
-    private GlobalModulesDefinition() {
-        super(GLOBAL_MODULES, true, moduleValidator);
-    }
+    static final SimpleAttributeDefinition SERVICES_AD = new SimpleAttributeDefinitionBuilder(SERVICES, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
 
-    @Override
-    public ModelNode resolveModelAttribute(OperationContext context, ModelNode operationObject) throws OperationFailedException {
-        final ModelNode result = super.validateOperation(operationObject);
+    static final SimpleAttributeDefinition META_INF_AD  = new SimpleAttributeDefinitionBuilder(META_INF, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(true))
+            .build();
 
-        if (result.isDefined()) {
-            for (ModelNode module : result.asList()) {
-                if (!module.hasDefined(SLOT)) {
-                    module.get(SLOT).set(DEFAULT_SLOT);
+    private static final SimpleAttributeDefinition[] VALUE_TYPE_FIELDS = { NAME_AD, SLOT_AD, ANNOTATIONS_AD, SERVICES_AD, META_INF_AD };
+
+    // TODO the default marshalling in ObjectListAttributeDefinition is not so great since it delegates each
+    // element to ObjectTypeAttributeDefinition, and OTAD assumes it's used for complex attributes bound in a
+    // ModelType.OBJECT node under key=OTAD.getName(). So provide a custom marshaller to OTAD. This could be made reusable.
+    private static final AttributeMarshaller VALUE_TYPE_MARSHALLER = new AttributeMarshaller() {
+        @Override
+        public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+            if (resourceModel.isDefined()) {
+                writer.writeEmptyElement(attribute.getXmlName());
+                for (SimpleAttributeDefinition valueType : VALUE_TYPE_FIELDS) {
+                    valueType.marshallAsAttribute(resourceModel, writer);
                 }
             }
         }
+    };
 
-        return result;
-    }
+    private static final ObjectTypeAttributeDefinition VALUE_TYPE_AD =
+            ObjectTypeAttributeDefinition.Builder.of(MODULE, VALUE_TYPE_FIELDS)
+                    .setAttributeMarshaller(VALUE_TYPE_MARSHALLER)
+                    .build();
 
-    @Override
-    protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
-        // This method being used indicates a misuse of this class
-        throw MESSAGES.resourceDescriptionResolverError();
-    }
-
-    @Override
-    protected void addAttributeValueTypeDescription(ModelNode node, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-        final ModelNode valueType = getNoTextValueTypeDescription(node);
-        valueType.get(NAME, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, NAME));
-        valueType.get(SLOT, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, SLOT));
-        valueType.get(ANNOTATIONS, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, ANNOTATIONS));
-        valueType.get(SERVICES, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, SERVICES));
-        valueType.get(META_INF, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, META_INF));
-    }
-
-    @Override
-    protected void addOperationParameterValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-        final ModelNode valueType = getNoTextValueTypeDescription(node);
-        valueType.get(NAME, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, NAME));
-        valueType.get(SLOT, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, SLOT));
-        valueType.get(ANNOTATIONS, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, ANNOTATIONS));
-        valueType.get(SERVICES, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, SERVICES));
-        valueType.get(META_INF, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, META_INF));
-    }
-
-    @Override
-    public void marshallAsElement(ModelNode eeSubSystem, boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
-        if (eeSubSystem.hasDefined(getName()) && eeSubSystem.asInt() > 0) {
-            writer.writeStartElement(Element.GLOBAL_MODULES.getLocalName());
-            final ModelNode globalModules = eeSubSystem.get(getName());
-            for (ModelNode module : globalModules.asList()) {
-                writer.writeEmptyElement(Element.MODULE.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), module.get(NAME).asString());
-                if (module.hasDefined(SLOT)) {
-                    writer.writeAttribute(Attribute.SLOT.getLocalName(), module.get(SLOT).asString());
-                }
-                if (module.hasDefined(ANNOTATIONS)) {
-                    writer.writeAttribute(Attribute.ANNOTATIONS.getLocalName(), module.get(ANNOTATIONS).asString());
-                }
-                if (module.hasDefined(SERVICES)) {
-                    writer.writeAttribute(Attribute.SERVICES.getLocalName(), module.get(SERVICES).asString());
-                }
-                if (module.hasDefined(META_INF)) {
-                    writer.writeAttribute(Attribute.META_INF.getLocalName(), module.get(META_INF).asString());
-                }
-            }
-            writer.writeEndElement();
-        }
-    }
-
-    private ModelNode getNoTextValueTypeDescription(final ModelNode parent) {
-        final ModelNode valueType = parent.get(VALUE_TYPE);
-        final ModelNode name = valueType.get(NAME);
-        name.get(DESCRIPTION); // placeholder
-        name.get(TYPE).set(ModelType.STRING);
-        name.get(NILLABLE).set(false);
-
-        final ModelNode slot = valueType.get(SLOT);
-        slot.get(DESCRIPTION);  // placeholder
-        slot.get(TYPE).set(ModelType.STRING);
-        slot.get(NILLABLE).set(true);
-        slot.get(DEFAULT).set(DEFAULT_SLOT);
-
-        final ModelNode annotations = valueType.get(ANNOTATIONS);
-        annotations.get(DESCRIPTION);  // placeholder
-        annotations.get(TYPE).set(ModelType.STRING);
-        annotations.get(NILLABLE).set(true);
-        slot.get(DEFAULT).set(false);
-
-        final ModelNode services = valueType.get(SERVICES);
-        services.get(DESCRIPTION);  // placeholder
-        services.get(TYPE).set(ModelType.STRING);
-        services.get(NILLABLE).set(true);
-        slot.get(DEFAULT).set(true);
-
-        final ModelNode metaInf = valueType.get(META_INF);
-        metaInf.get(DESCRIPTION);  // placeholder
-        metaInf.get(TYPE).set(ModelType.STRING);
-        metaInf.get(NILLABLE).set(true);
-        slot.get(DEFAULT).set(false);
-
-        return valueType;
-    }
+    public static final AttributeDefinition INSTANCE = ObjectListAttributeDefinition.Builder.of(GLOBAL_MODULES, VALUE_TYPE_AD)
+        .setAllowNull(true)
+        .build();
 }

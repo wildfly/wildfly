@@ -109,6 +109,7 @@ class EESubsystemParser10 implements XMLStreamConstants, XMLElementReader<List<M
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Element.forName(reader.getLocalName())) {
                 case MODULE: {
+                    final ModelNode module = new ModelNode();
                     final int count = reader.getAttributeCount();
                     String name = null;
                     String slot = null;
@@ -122,12 +123,14 @@ class EESubsystemParser10 implements XMLStreamConstants, XMLElementReader<List<M
                                     throw unexpectedAttribute(reader, i);
                                 }
                                 name = value;
+                                GlobalModulesDefinition.NAME_AD.parseAndSetParameter(name, module, reader);
                                 break;
                             case SLOT:
                                 if (slot != null) {
                                     throw unexpectedAttribute(reader, i);
                                 }
                                 slot = value;
+                                GlobalModulesDefinition.SLOT_AD.parseAndSetParameter(slot, module, reader);
                                 break;
                             default:
                                 throw unexpectedAttribute(reader, i);
@@ -136,13 +139,9 @@ class EESubsystemParser10 implements XMLStreamConstants, XMLElementReader<List<M
                     if (name == null) {
                         throw missingRequired(reader, Collections.singleton(NAME));
                     }
-                    if (slot == null) {
-                        slot = "main";
-                    }
-                    final ModelNode module = new ModelNode();
-                    module.get(GlobalModulesDefinition.NAME).set(name);
-                    module.get(GlobalModulesDefinition.SLOT).set(slot);
+
                     globalModules.add(module);
+
                     requireNoContent(reader);
                     break;
                 }
