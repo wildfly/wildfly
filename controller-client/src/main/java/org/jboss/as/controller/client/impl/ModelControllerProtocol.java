@@ -54,4 +54,7 @@ public interface ModelControllerProtocol {
     byte PARAM_OPERATION_COMPLETED = 0x4A;
     byte PARAM_OPERATION_PREPARED = 0x4B;
 
+    byte REGISTER_NOTIFICATION_HANDLER_REQUEST = 0x50;
+    byte HANDLE_NOTIFICATION_REQUEST = 0x51;
+
 }
