@@ -41,6 +41,8 @@ import java.io.IOException;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.NotificationFilter;
+import org.jboss.as.controller.client.NotificationHandler;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
@@ -90,6 +92,42 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                 return new ExecuteRequestHandler();
             case ModelControllerProtocol.CANCEL_ASYNC_REQUEST:
                 return new CancelAsyncRequestHandler();
+            case ModelControllerProtocol.REGISTER_NOTIFICATION_HANDLER_REQUEST:
+                handlers.registerActiveOperation(header.getBatchId(), null);
+                return new ManagementRequestHandler<Boolean, Void>() {
+                    @Override
+                    public void handleRequest(DataInput input, final ActiveOperation.ResultHandler<Boolean> resultHandler, ManagementRequestContext<Void> context) throws IOException {
+                        final ModelNode address = new ModelNode();
+                        address.readExternal(input);
+                        final int batchId = input.readInt();
+                        final boolean register = input.readBoolean();
+                        context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
+                            @Override
+                            public void execute(ManagementRequestContext<Void> context) throws Exception {
+                                final ManagementResponseHeader response = ManagementResponseHeader.create(context.getRequestHeader());
+                                final FlushableDataOutput output = context.writeMessage(response);
+                                PathAddress source = PathAddress.pathAddress(address);
+                                NotificationHandler notificationHandler = new NotificationHandlerProxy(channelAssociation, batchId);
+                                if (register) {
+                                    controller.getNotificationSupport().registerNotificationHandler(source,
+                                            notificationHandler,
+                                            NotificationFilter.ALL);
+                                } else {
+                                    controller.getNotificationSupport().unregisterNotificationHandler(source,
+                                            notificationHandler,
+                                            NotificationFilter.ALL);
+                                }
+                                output.writeBoolean(true);
+                                try {
+                                    output.writeByte(ManagementProtocol.RESPONSE_END);
+                                } finally {
+                                    StreamUtils.safeClose(output);
+                                }
+                                resultHandler.done(true);
+                            }
+                        });
+                    }
+                };
         }
         return handlers.resolveNext();
     }
