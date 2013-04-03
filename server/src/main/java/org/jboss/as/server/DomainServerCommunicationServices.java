@@ -76,7 +76,7 @@ public class DomainServerCommunicationServices  implements ServiceActivator, Ser
         this.managementSubsystemEndpoint = managementSubsystemEndpoint;
     }
 
-    public static void updateOperationID(final int operationID) {
+    static void updateOperationID(final int operationID) {
         initialOperationID = operationID;
     }
 
@@ -122,6 +122,17 @@ public class DomainServerCommunicationServices  implements ServiceActivator, Ser
                                           final byte[] authKey, final boolean managementSubsystemEndpoint) {
 
         return new DomainServerCommunicationServices(endpointConfig, managementSocket, serverName, serverProcessName, authKey, managementSubsystemEndpoint);
+    }
+
+    public interface OperationIDUpdater {
+
+        /**
+         * Update the operation ID when connecting to the HC.
+         *
+         * @param operationID the new operation ID
+         */
+        void updateOperationID(int operationID);
+
     }
 
 }
