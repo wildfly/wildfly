@@ -1,0 +1,29 @@
+# Roles used in referrals
+
+dn: ou=SharedRoles,dc=jboss,dc=com
+objectclass: top
+objectclass: organizationalUnit
+ou: SharedRoles
+
+dn: cn=User,ou=SharedRoles,dc=jboss,dc=com
+objectClass: top
+objectClass: groupOfNames
+cn: User
+member:
+
+# Map Admin role for Example1, Example3. The Example4 ignores referrals.
+dn: cn=Admin,ou=SharedRoles,dc=jboss,dc=com
+objectClass: top
+objectClass: groupOfNames
+cn: Admin
+member: uid=jduke,ou=People,dc=jboss,dc=org
+member: uid=jduke,ou=People,o=example3,dc=jboss,dc=org
+member: uid=jduke,ou=People,o=example4,dc=jboss,dc=org
+
+# If the Example2 has referral follow, then this would be used to map the User role for jduke
+dn: cn=jduke,ou=SharedRoles,dc=jboss,dc=com
+objectClass: top
+objectClass: groupOfNames
+cn: jduke
+description: cn=User,ou=SharedRoles,dc=jboss,dc=com
+member: 

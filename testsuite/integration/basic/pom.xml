@@ -256,7 +256,7 @@
                                     <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
                                     <excludes>
                                     	<!-- truststore setting used in LDAPs testing is affected by some other test -->
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*LoginModuleTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
                                         <!-- 2nd run tests are run in other execution. -->
                                         <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
                                         <!-- Tests which need FULL config. -->
@@ -316,7 +316,7 @@
                                 <goals><goal>test</goal></goals>
                                 <configuration>
                                     <includes>
-                                        <include>org/jboss/as/test/integration/security/loginmodules/Ldap*LoginModuleTestCase.java</include>                                        
+                                        <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>                                        
                                     </includes>
                                     
                                     <systemPropertyVariables>
@@ -376,7 +376,7 @@
                                     </includes>
                                     <excludes>
                                         <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*LoginModuleTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>
