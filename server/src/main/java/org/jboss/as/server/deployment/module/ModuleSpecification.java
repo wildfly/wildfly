@@ -21,8 +21,6 @@
  */
 package org.jboss.as.server.deployment.module;
 
-import java.security.Permission;
-import java.security.Permissions;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,6 +33,7 @@ import org.jboss.as.server.deployment.SimpleAttachable;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ResourceLoaderSpec;
+import org.jboss.modules.security.PermissionFactory;
 
 /**
  * Information used to build a module.
@@ -109,9 +108,9 @@ public class ModuleSpecification extends SimpleAttachable {
     private final List<DependencySpec> moduleSystemDependencies = new ArrayList<DependencySpec>();
 
     /**
-     * The minimum permission set for this module.
+     * The minimum permission set for this module, wrapped as {@code PermissionFactory} instances.
      */
-    private final Permissions permissions = new Permissions();
+    private final List<PermissionFactory> permissionFactories = new ArrayList<PermissionFactory>();
 
     public void addSystemDependency(final ModuleDependency dependency) {
         if (!exclusions.contains(dependency.getIdentifier()) && !systemDependenciesSet.contains(dependency.getIdentifier())) {
@@ -236,8 +235,8 @@ public class ModuleSpecification extends SimpleAttachable {
      * transitive (i.e. if any other module 'B' depends on the module 'A' represented by this {@link ModuleSpecification}, then
      * module 'B' will be added with all "local dependencies" that are applicable for module "A"). Else returns false.
      *
-     * @see {@link #localDependencies}
      * @return
+     * @see {@link #localDependencies}
      */
     public boolean isLocalDependenciesTransitive() {
         return localDependenciesTransitive;
@@ -251,16 +250,16 @@ public class ModuleSpecification extends SimpleAttachable {
      *                                    transitive (i.e. if any other module 'B' depends on the module 'A' represented by
      *                                    this {@link ModuleSpecification}, then module 'B' will be added with
      *                                    all "local dependencies" that are applicable for module "A"). False otherwise
-     * @see {@link #localDependencies}
      * @return
+     * @see {@link #localDependencies}
      */
     public void setLocalDependenciesTransitive(final boolean localDependenciesTransitive) {
         this.localDependenciesTransitive = localDependenciesTransitive;
     }
 
     /**
-     * @deprecated since AS 8.x. Use {@link #isLocalDependenciesTransitive()} instead
      * @return
+     * @deprecated since AS 8.x. Use {@link #isLocalDependenciesTransitive()} instead
      */
     @Deprecated
     public boolean isRequiresTransitiveDependencies() {
@@ -268,8 +267,8 @@ public class ModuleSpecification extends SimpleAttachable {
     }
 
     /**
-     * @deprecated since AS 8.x. Use {@link #setLocalDependenciesTransitive(boolean)} instead
      * @param requiresTransitiveDependencies
+     * @deprecated since AS 8.x. Use {@link #setLocalDependenciesTransitive(boolean)} instead
      */
     @Deprecated
     public void setRequiresTransitiveDependencies(final boolean requiresTransitiveDependencies) {
@@ -297,7 +296,7 @@ public class ModuleSpecification extends SimpleAttachable {
     }
 
     public List<ModuleDependency> getAllDependencies() {
-        if(allDependencies == null) {
+        if (allDependencies == null) {
             allDependencies = new ArrayList<ModuleDependency>();
             allDependencies.addAll(systemDependencies);
             allDependencies.addAll(userDependencies);
@@ -315,22 +314,22 @@ public class ModuleSpecification extends SimpleAttachable {
     }
 
     /**
-     * Add a permission to this deployment.  This may include permissions not explicitly specified
+     * Add a permission factory to this deployment.  This may include permissions not explicitly specified
      * in the domain configuration; such permissions must be validated before being added.
      *
-     * @param permission the permission to add
+     * @param permissionFactory the permission factory to add
      */
-    public void addPermission(final Permission permission) {
-        permissions.add(permission);
+    public void addPermissionFactory(final PermissionFactory permissionFactory) {
+        permissionFactories.add(permissionFactory);
     }
 
     /**
-     * Get the permission set for this deployment.  This may include permissions not explicitly specified
+     * Get the permission factory set for this deployment.  This may include permissions not explicitly specified
      * in the domain configuration; such permissions must be validated before being added.
      *
-     * @return the permission set for this deployment
+     * @return the permission factory set for this deployment
      */
-    public Permissions getPermissions() {
-        return permissions;
+    public List<PermissionFactory> getPermissionFactories() {
+        return permissionFactories;
     }
 }

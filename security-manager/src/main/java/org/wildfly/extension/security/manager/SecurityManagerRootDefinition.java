@@ -42,7 +42,7 @@ class SecurityManagerRootDefinition extends SimplePersistentResourceDefinition {
 
     static final SecurityManagerRootDefinition INSTANCE = new SecurityManagerRootDefinition();
 
-    private static List<? extends SimplePersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(
+    private static final List<? extends SimplePersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(
             Arrays.asList(DeploymentPermissionsResourceDefinition.INSTANCE));
 
     private SecurityManagerRootDefinition() {

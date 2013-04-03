@@ -42,12 +42,16 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.security.ImmediatePermissionFactory;
 import org.jboss.modules.security.LoadedPermissionFactory;
 import org.jboss.modules.security.PermissionFactory;
 import org.jboss.msc.service.ServiceController;
+import org.wildfly.extension.security.manager.deployment.PermissionsParseProcessor;
 import org.wildfly.extension.security.manager.service.SecurityManagerService;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -103,11 +107,11 @@ class SecurityManagerSubsystemAdd extends AbstractAddStepHandler {
             throws OperationFailedException {
 
         // get the minimum set of deployment permissions.
-        List<PermissionFactory> minimumSet = this.retrievePermissionSet(context,
+        final List<PermissionFactory> minimumSet = this.retrievePermissionSet(context,
                 this.peek(node, DEPLOYMENT_PERMISSIONS, DEFAULT_VALUE, MINIMUM_SET, DEFAULT_VALUE));
 
         // get the maximum set of deployment permissions.
-        List<PermissionFactory> maximumSet = this.retrievePermissionSet(context,
+        final List<PermissionFactory> maximumSet = this.retrievePermissionSet(context,
                 this.peek(node, DEPLOYMENT_PERMISSIONS, DEFAULT_VALUE, MAXIMUM_SET, DEFAULT_VALUE));
 
         if (maximumSet.isEmpty())
@@ -119,6 +123,14 @@ class SecurityManagerSubsystemAdd extends AbstractAddStepHandler {
         controlers.add(context.getServiceTarget().addService(SecurityManagerService.SERVICE_NAME, new SecurityManagerService())
                 .addListener(handler)
                 .setInitialMode(ServiceController.Mode.ACTIVE).install());
+
+        // install the DUP responsible for parsing security permissions found in META-INF/permissions.xml.
+        context.addStep(new AbstractDeploymentChainStep() {
+            protected void execute(DeploymentProcessorTarget processorTarget) {
+                 processorTarget.addDeploymentProcessor(Constants.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_PERMISSIONS,
+                        new PermissionsParseProcessor(minimumSet, maximumSet));
+            }
+        }, OperationContext.Stage.RUNTIME);
     }
 
     /**
@@ -129,9 +141,9 @@ class SecurityManagerSubsystemAdd extends AbstractAddStepHandler {
      * @return a {@link List} containing the retrieved permissions. They are wrapped as {@link PermissionFactory} instances.
      * @throws OperationFailedException if an error occurs while retrieving the security permissions.
      */
-    protected List<PermissionFactory> retrievePermissionSet(OperationContext context, ModelNode node) throws OperationFailedException {
+    protected List<PermissionFactory> retrievePermissionSet(final OperationContext context, final ModelNode node) throws OperationFailedException {
 
-        List<PermissionFactory> permissions = new ArrayList<PermissionFactory>();
+        final List<PermissionFactory> permissions = new ArrayList<PermissionFactory>();
 
         if (node != null && node.hasDefined(PERMISSION)) {
             for (Property property : node.get(PERMISSION).asPropertyList()) {

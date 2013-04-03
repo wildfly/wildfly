@@ -25,6 +25,8 @@ package org.jboss.as.ee.component.deployers;
 import java.security.Permission;
 import java.security.Permissions;
 import java.util.Enumeration;
+import java.util.List;
+
 import org.jboss.as.naming.JndiPermission;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -32,6 +34,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.modules.security.ImmediatePermissionFactory;
+import org.jboss.modules.security.PermissionFactory;
 
 import static org.jboss.as.naming.JndiPermission.Action.LIST;
 import static org.jboss.as.naming.JndiPermission.Action.LIST_BINDINGS;
@@ -61,10 +65,10 @@ public final class EEDefaultPermissionsProcessor implements DeploymentUnitProces
         if (attachment == null) {
             return;
         }
-        final Permissions permissions = attachment.getPermissions();
+        final List<PermissionFactory> permissions = attachment.getPermissionFactories();
         final Enumeration<Permission> e = DEFAULT_PERMISSIONS.elements();
         while (e.hasMoreElements()) {
-            permissions.add(e.nextElement());
+            permissions.add(new ImmediatePermissionFactory(e.nextElement()));
         }
     }
 

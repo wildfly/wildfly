@@ -46,7 +46,7 @@ class DeploymentPermissionsResourceDefinition extends SimplePersistentResourceDe
 
     static final DeploymentPermissionsResourceDefinition INSTANCE = new DeploymentPermissionsResourceDefinition();
 
-    private static List<? extends SimplePersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(
+    private static final List<? extends SimplePersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(
             Arrays.asList(new PermissionSetResourceDefinition(Constants.MINIMUM_SET),
                     new PermissionSetResourceDefinition(Constants.MAXIMUM_SET)));
 

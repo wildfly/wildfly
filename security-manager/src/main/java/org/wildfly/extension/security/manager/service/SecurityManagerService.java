@@ -42,7 +42,7 @@ public class SecurityManagerService implements Service<Void>  {
 
     @Override
     public void stop(final StopContext stopContext) {
-        // we should uninstall the WildFlySecurityManager.
+        // we should uninstall the WildFlySecurityManager and restore the previous context if any.
     }
 
     @Override

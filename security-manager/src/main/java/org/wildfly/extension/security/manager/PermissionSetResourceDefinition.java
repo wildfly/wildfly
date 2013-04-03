@@ -44,11 +44,11 @@ class PermissionSetResourceDefinition extends SimplePersistentResourceDefinition
 
     private String setName;
 
-    private static List<? extends SimplePersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(
+    private static final List<? extends SimplePersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(
             Arrays.asList(PermissionResourceDefinition.INSTANCE));
 
 
-    PermissionSetResourceDefinition(String setName) {
+    PermissionSetResourceDefinition(final String setName) {
         super(PathElement.pathElement(setName, Constants.DEFAULT_VALUE), SecurityManagerExtension.getResolver(setName),
                 new AbstractAddStepHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
         this.setName = setName;
