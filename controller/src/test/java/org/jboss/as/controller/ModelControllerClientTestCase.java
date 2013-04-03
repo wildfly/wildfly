@@ -499,6 +499,52 @@ public class ModelControllerClientTestCase {
         }
     }
 
+    @Test
+    public void testCloseClientWithRegisteredNotificationHandler() throws Exception {
+        final CountDownLatch notificationLatch = new CountDownLatch(1);
+
+        MockModelController controller = new MockModelController() {
+            @Override
+            public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
+                this.operation = operation;
+                ModelNode result = new ModelNode();
+                result.get("testing").set(operation.get("test"));
+                getNotificationSupport().emit(new Notification("foo", operation.get(OP_ADDR), "notification is emitted"));
+                return result;
+            }
+        };
+
+        // Set the handler
+        ModelControllerClient client = setupTestClient(controller);
+        try {
+            ModelNode operation = new ModelNode();
+            operation.get("test").set("123");
+            operation.get(OP_ADDR).add("host", "foo");
+
+            client.registerNotificationHandler(operation.get(OP_ADDR),
+                    new NotificationHandler() {
+                        @Override
+                        public void handleNotification(Notification notification) {
+                            notificationLatch.countDown();
+                        }
+                    },
+                    NotificationFilter.ALL);
+            // closing the client must discard the registered notification handler
+            client.close();
+            stop();
+
+            start();
+            client = setupTestClient(controller);
+            ModelNode result = client.execute(operation);
+            assertNotNull(result);
+            assertEquals("123", result.get("testing").asString());
+
+            assertFalse("receive unexpected notification", notificationLatch.await(500, MILLISECONDS));
+        } finally {
+            IoUtils.safeClose(client);
+        }
+    }
+
     private void assertArrays(byte[] expected, byte[] actual) {
         assertEquals(expected.length, actual.length);
         for (int i = 0 ; i < expected.length ; i++) {
