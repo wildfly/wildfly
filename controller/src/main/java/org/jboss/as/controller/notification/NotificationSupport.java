@@ -58,7 +58,7 @@ public interface NotificationSupport {
     /**
      * Unregister the given NotificationHandler to stop receiving notifications emitted by the resource at the given source address.
      *
-     * The source, handler and filter must match the values that were used during registrationered to be effectively unregistered.
+     * The source, handler and filter must match the values that were used during registration to be effectively unregistered.
      *
      * @param source the path address of the resource that emit notifications.
      * @param handler the notification handler
