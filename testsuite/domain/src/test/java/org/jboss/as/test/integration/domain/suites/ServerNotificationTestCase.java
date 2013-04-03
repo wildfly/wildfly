@@ -90,76 +90,56 @@ public class ServerNotificationTestCase {
 
     @Test
     public void testServerStartedNotification() throws Exception {
-        NotificationHandlerWithLatch handler = new NotificationHandlerWithLatch(1);
-
-        final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
-
-        client.registerNotificationHandler(serverConfigAddress,
-                handler,
-                new NotificationFilter() {
-                    @Override
-                    public boolean isNotificationEnabled(Notification notification) {
-                        return notification.getType().equals("server-started");
-                    }
-                });
-
-        // Start main-one
-        startServer(client, "master", "main-one");
-
-        assertTrue("did not receive server-started notification", handler.getLatch().await(1, SECONDS));
+        doReceiveNotificationOnOperation("start", "server-started", false);
     }
 
     @Test
     public void testServerStoppedNotification() throws Exception {
-        NotificationHandlerWithLatch handler = new NotificationHandlerWithLatch(1);
-
-        final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
-
-        // Start main-one
-        startServer(client, "master", "main-one");
-
-        client.registerNotificationHandler(serverConfigAddress,
-                handler,
-                new NotificationFilter() {
-                    @Override
-                    public boolean isNotificationEnabled(Notification notification) {
-                        return notification.getType().equals("server-stopped");
-                    }
-                });
-
-        final ModelNode stopServer = new ModelNode();
-        stopServer.get(OP).set("stop");
-        stopServer.get(OP_ADDR).set(serverConfigAddress);
-        executeForResult(stopServer, client);
-
-        assertTrue("did not receive server-stopped notification", handler.getLatch().await(1, SECONDS));
+        doReceiveNotificationOnOperation("stop", "server-stopped", true);
     }
 
     @Test
     public void testServerRestartedNotification() throws Exception {
+        doReceiveNotificationOnOperation("restart", "server-restarted", true);
+    }
+
+    @Test
+    public void testServerKilledNotification() throws Exception {
+        doReceiveNotificationOnOperation("kill", "server-killed", true);
+    }
+
+    @Test
+    public void testServerDestroyedNotification() throws Exception {
+        doReceiveNotificationOnOperation("destroy", "server-destroyed", true);
+    }
+
+    private void doReceiveNotificationOnOperation(String operationName, final String notificationType, boolean startServer) throws Exception {
         NotificationHandlerWithLatch handler = new NotificationHandlerWithLatch(1);
 
         final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
-
-        // Start main-one
-        String state = startServer(client, "master", "main-one");
-        assertEquals("STARTED", state);
 
         client.registerNotificationHandler(serverConfigAddress,
                 handler,
                 new NotificationFilter() {
                     @Override
                     public boolean isNotificationEnabled(Notification notification) {
-                        return notification.getType().equals("server-restarted");
+                        return notification.getType().equals(notificationType);
                     }
-                });
+                }
+        );
 
-        final ModelNode restartServer = new ModelNode();
-        restartServer.get(OP_ADDR).set(serverConfigAddress);
-        restartServer.get(OP).set("restart");
-        executeForResult(restartServer, client);
+        if (startServer) {
+        // Start main-one
+            String state = startServer(client, "master", "main-one");
+            assertEquals("STARTED", state);
+        }
 
-        assertTrue("did not receive server-restarted notification", handler.getLatch().await(1, SECONDS));
+        final ModelNode operation = new ModelNode();
+        operation.get(OP_ADDR).set(serverConfigAddress);
+        operation.get(OP).set(operationName);
+        executeForResult(operation, client);
+
+        assertTrue("did not receive notification " + notificationType, handler.getLatch().await(1, SECONDS));
     }
 
     private static class NotificationHandlerWithLatch implements NotificationHandler {
