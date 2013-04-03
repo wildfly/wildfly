@@ -1,33 +1,3 @@
-# Roles used in referrals
-
-dn: ou=SharedRoles,dc=jboss,dc=org
-objectclass: top
-objectclass: organizationalUnit
-ou: SharedRoles
-
-dn: cn=User,ou=SharedRoles,dc=jboss,dc=org
-objectClass: top
-objectClass: groupOfNames
-cn: User
-member:
-
-# Map Admin role for Example1, Example3. The Example4 ignores referrals.
-dn: cn=Admin,ou=SharedRoles,dc=jboss,dc=org
-objectClass: top
-objectClass: groupOfNames
-cn: Admin
-member: uid=jduke,ou=People,dc=jboss,dc=org
-member: uid=jduke,ou=People,o=example3,dc=jboss,dc=org
-member: uid=jduke,ou=People,o=example4,dc=jboss,dc=org
-
-# If the Example2 has referral follow, then this would be used to map the User role for jduke
-dn: cn=jduke,ou=SharedRoles,dc=jboss,dc=org
-objectClass: top
-objectClass: groupOfNames
-cn: jduke
-description: cn=User,ou=SharedRoles,dc=jboss,dc=org
-member: 
-
 # Example1: "jduke" - "TheDuke", "Echo", "Admin"
 #baseCtxDN= ou=People,dc=jboss,dc=org
 #baseFilter= (uid={0})
@@ -74,7 +44,7 @@ objectClass: extensibleObject
 objectClass: referral
 objectClass: top
 ou: RefRoles
-ref: ldap://${hostname}:${ldapPort}/ou=SharedRoles,dc=jboss,dc=org
+ref: ldap://${hostname}:${ldapPort2}/ou=SharedRoles,dc=jboss,dc=com
 
 # Example2: "jduke" - "TheDuke", "Echo", "jduke"
 #baseCtxDN= ou=People,o=example2,dc=jboss,dc=org"
@@ -180,7 +150,7 @@ objectClass: extensibleObject
 objectClass: referral
 objectClass: top
 ou: RefRoles
-ref: ldap://${hostname}:${ldapPort}/ou=SharedRoles,dc=jboss,dc=org
+ref: ldap://${hostname}:${ldapPort2}/ou=SharedRoles,dc=jboss,dc=com
 
 # Example3: "Java Duke" - "TheDuke", "Echo", "Admin"
 #baseCtxDN= ou=People,o=example3,dc=jboss,dc=org"
@@ -244,7 +214,7 @@ objectClass: extensibleObject
 objectClass: referral
 objectClass: top
 ou: RefRoles
-ref: ldaps://${hostname}:${ldapsPort}/ou=SharedRoles,dc=jboss,dc=org
+ref: ldap://${hostname}:${ldapPort2}/ou=SharedRoles,dc=jboss,dc=com
 
 # Example4: "Java Duke" - "RG2", "R1", "R2", "R3", "R5"
 #baseCtxDN= ou=People,o=example4,dc=jboss,dc=org"
@@ -339,7 +309,7 @@ objectClass: extensibleObject
 objectClass: referral
 objectClass: top
 ou: RefRoles
-ref: ldaps://${hostname}:${ldapsPort}/ou=SharedRoles,dc=jboss,dc=org
+ref: ldap://${hostname}:${ldapPort2}/ou=SharedRoles,dc=jboss,dc=com
 
 # Example5 - role name in user's attribute (employeeNumber)
 dn: o=example5,dc=jboss,dc=org
