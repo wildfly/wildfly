@@ -146,7 +146,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
                 }
             });
             notificationHandlers.put(entry, handleNotificationOperation.getOperationId());
-            AsyncFuture<Boolean> result = getChannelAssociation().executeRequest(new RegisterNotificationHandlerRequest(address, handleNotificationOperation.getOperationId(), true), null).getResult();
+            AsyncFuture<Void> result = getChannelAssociation().executeRequest(new RegisterNotificationHandlerRequest(address, handleNotificationOperation.getOperationId(), true), null).getResult();
             result.get();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -160,7 +160,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         if (notificationHandlers.containsKey(entry)) {
             int operationId = notificationHandlers.get(entry);
             try {
-                AsyncFuture<Boolean> result = getChannelAssociation().executeRequest(new RegisterNotificationHandlerRequest(address, operationId, false), null).getResult();
+                AsyncFuture<Void> result = getChannelAssociation().executeRequest(new RegisterNotificationHandlerRequest(address, operationId, false), null).getResult();
                 result.get();
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -434,7 +434,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         }
     }
 
-    private static class RegisterNotificationHandlerRequest implements ManagementRequest<Boolean, Void> {
+    private static class RegisterNotificationHandlerRequest implements ManagementRequest<Void, Void> {
 
         private final ModelNode address;
         private final int operationId;
@@ -452,7 +452,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         }
 
         @Override
-        public void sendRequest(ActiveOperation.ResultHandler<Boolean> resultHandler, ManagementRequestContext<Void> context) throws IOException {
+        public void sendRequest(ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> context) throws IOException {
             final FlushableDataOutput output = context.writeMessage(context.getRequestHeader());
             try {
                 address.writeExternal(output);
@@ -465,15 +465,13 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         }
 
         @Override
-        public void handleFailed(ManagementResponseHeader header, ActiveOperation.ResultHandler<Boolean> resultHandler) {
-            System.out.println("AbstractModelControllerClient.handleFailed");
-            resultHandler.failed(new Exception("whatever"));
+        public void handleFailed(ManagementResponseHeader header, ActiveOperation.ResultHandler<Void> resultHandler) {
+            resultHandler.failed(new IOException(header.getError()));
         }
 
         @Override
-        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Boolean> resultHandler, ManagementRequestContext<Void> context) throws IOException {
-            boolean success = input.readBoolean();
-            resultHandler.done(success);
+        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> context) throws IOException {
+            resultHandler.done(null);
         }
     }
 
