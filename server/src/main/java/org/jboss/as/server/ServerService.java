@@ -220,7 +220,13 @@ public final class ServerService extends AbstractControllerService {
                         extensibleConfigurationPersister, configuration.getServerEnvironment(), processState,
                         runningModeControl, vaultReader, configuration.getExtensionRegistry(),
                         getExecutorServiceInjector().getOptionalValue() != null,
-                        (PathManagerService)injectedPathManagerService.getValue()));
+                        (PathManagerService)injectedPathManagerService.getValue(),
+                        new DomainServerCommunicationServices.OperationIDUpdater() {
+                            @Override
+                            public void updateOperationID(final int operationID) {
+                                DomainServerCommunicationServices.updateOperationID(operationID);
+                            }
+                        }));
         super.start(context);
     }
 

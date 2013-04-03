@@ -714,7 +714,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelNode model = new ModelNode();
         final ModelController controller = createController(ProcessType.STANDALONE_SERVER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
-                ServerRootResourceDefinition def = new ServerRootResourceDefinition(new MockContentRepository(), persister, null, null, null, null, extensionRegistry, false, MOCK_PATH_MANAGER);
+                ServerRootResourceDefinition def = new ServerRootResourceDefinition(new MockContentRepository(), persister, null, null, null, null, extensionRegistry, false, MOCK_PATH_MANAGER, null);
                 def.registerAttributes(rootRegistration);
                 def.registerOperations(rootRegistration);
                 def.registerChildren(rootRegistration);

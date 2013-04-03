@@ -46,8 +46,11 @@ public class ServerDomainProcessReloadHandler extends ServerProcessReloadHandler
             .withFlags(OperationEntry.Flag.HOST_CONTROLLER_ONLY, OperationEntry.Flag.RUNTIME_ONLY)
             .build();
 
-    public ServerDomainProcessReloadHandler(ServiceName rootService, RunningModeControl runningModeControl, ControlledProcessState processState) {
+    private final DomainServerCommunicationServices.OperationIDUpdater operationIDUpdater;
+    public ServerDomainProcessReloadHandler(ServiceName rootService, RunningModeControl runningModeControl, ControlledProcessState processState,
+                                            final DomainServerCommunicationServices.OperationIDUpdater operationIDUpdater) {
         super(rootService, runningModeControl, processState);
+        this.operationIDUpdater = operationIDUpdater;
     }
 
     @Override
@@ -55,7 +58,7 @@ public class ServerDomainProcessReloadHandler extends ServerProcessReloadHandler
         context.acquireControllerLock();
         // Update the operation permit
         final int permit = operation.require("operation-id").asInt();
-        DomainServerCommunicationServices.updateOperationID(permit);
+        operationIDUpdater.updateOperationID(permit);
 
         super.execute(context, operation);
     }

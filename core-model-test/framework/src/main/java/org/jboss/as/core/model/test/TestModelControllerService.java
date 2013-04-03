@@ -387,7 +387,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     vaultReader,
                     extensionRegistry,
                     parallelBoot,
-                    pathManagerService));
+                    pathManagerService,
+                    null));
         }
 
         @Override

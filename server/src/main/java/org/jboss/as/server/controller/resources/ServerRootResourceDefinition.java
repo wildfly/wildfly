@@ -21,9 +21,8 @@
 */
 package org.jboss.as.server.controller.resources;
 
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NoopOperationStepHandler;
 import org.jboss.as.controller.OperationDefinition;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
@@ -84,6 +83,7 @@ import org.jboss.as.domain.management.security.WhoAmIOperation;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.DeployerChainAddHandler;
+import org.jboss.as.server.DomainServerCommunicationServices;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironment.LaunchType;
 import org.jboss.as.server.ServerEnvironmentResourceDescription;
@@ -119,7 +119,6 @@ import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceResolveHandler;
 import org.jboss.as.server.services.security.AbstractVaultReader;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 /**
  *
@@ -198,6 +197,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
     private final ExtensionRegistry extensionRegistry;
     private final boolean parallelBoot;
     private final PathManagerService pathManager;
+    private final DomainServerCommunicationServices.OperationIDUpdater operationIDUpdater;
 
     public ServerRootResourceDefinition(
             final ContentRepository contentRepository,
@@ -208,7 +208,8 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
             final AbstractVaultReader vaultReader,
             final ExtensionRegistry extensionRegistry,
             final boolean parallelBoot,
-            final PathManagerService pathManager) {
+            final PathManagerService pathManager,
+            final DomainServerCommunicationServices.OperationIDUpdater operationIDUpdater) {
         super(PathElement.pathElement("this-will-be-ignored-since-we-are-root"), ServerDescriptions.getResourceDescriptionResolver(SERVER, false));
         this.contentRepository = contentRepository;
         this.extensibleConfigurationPersister = extensibleConfigurationPersister;
@@ -219,6 +220,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         this.extensionRegistry = extensionRegistry;
         this.parallelBoot = parallelBoot;
         this.pathManager = pathManager;
+        this.operationIDUpdater = operationIDUpdater;
 
         isDomain = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN;
     }
@@ -272,7 +274,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         if (isDomain) {
 
             // TODO enable the descriptions so that they show up in the resource description
-            final ServerDomainProcessReloadHandler reloadHandler = new ServerDomainProcessReloadHandler(Services.JBOSS_AS, runningModeControl, processState);
+            final ServerDomainProcessReloadHandler reloadHandler = new ServerDomainProcessReloadHandler(Services.JBOSS_AS, runningModeControl, processState, operationIDUpdater);
             resourceRegistration.registerOperationHandler(ServerDomainProcessReloadHandler.DOMAIN_DEFINITION, reloadHandler, false);
 
 //            // Trick the resource-description for domain servers to be included in the server-resource
@@ -399,12 +401,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerOperationHandler(DeployerChainAddHandler.DEFINITION, DeployerChainAddHandler.INSTANCE, false);
     }
 
-    private static final OperationStepHandler NOOP = new OperationStepHandler() {
-        @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            context.stepCompleted();
-        }
-    };
+    private static final OperationStepHandler NOOP = NoopOperationStepHandler.WITH_RESULT;
 
     private static final AttributeDefinition BLOCKING = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.BLOCKING, ModelType.BOOLEAN, true)
         .build();
