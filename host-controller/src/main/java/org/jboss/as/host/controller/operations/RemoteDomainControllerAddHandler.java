@@ -26,6 +26,7 @@ import static org.jboss.dmr.ModelType.STRING;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -60,14 +61,20 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "write-remote-domain-controller";
 
-    public static final SimpleAttributeDefinition PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PORT, ModelType.INT, true)
-            .setAllowExpression(true).setValidator(new IntRangeValidator(1, 65535, false, true)).setFlags(AttributeAccess.Flag.RESTART_JVM).build();
+    public static final SimpleAttributeDefinition PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PORT, ModelType.INT)
+            .setAllowExpression(true)
+            .setValidator(new IntRangeValidator(1, 65535, false, true))
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .build();
 
-    public static final SimpleAttributeDefinition HOST = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HOST, ModelType.STRING, true)
-            .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true)).setFlags(AttributeAccess.Flag.RESTART_JVM).build();
+    public static final SimpleAttributeDefinition HOST = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HOST, ModelType.STRING)
+            .setAllowExpression(true)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .build();
 
-    public static final SimpleAttributeDefinition USERNAME = new SimpleAttributeDefinitionBuilder(
-            ModelDescriptionConstants.USERNAME, STRING, true).setAllowExpression(true)
+    public static final SimpleAttributeDefinition USERNAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.USERNAME, STRING, true)
+            .setAllowExpression(true)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
             .setFlags(AttributeAccess.Flag.RESTART_JVM).build();
 
@@ -78,6 +85,7 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler {
     public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostResolver.getResolver("host"))
             .setParameters(PORT, HOST, USERNAME, SECURITY_REALM)
             .build();
+
     private final ManagementResourceRegistration rootRegistration;
     private final DomainController domainController;
     private final HostControllerConfigurationPersister overallConfigPersister;
@@ -118,6 +126,7 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler {
         PORT.validateAndSet(operation, remoteDC);
         HOST.validateAndSet(operation, remoteDC);
         USERNAME.validateAndSet(operation, remoteDC);
+
         if (operation.has(SECURITY_REALM.getName())) {
             SECURITY_REALM.validateAndSet(operation, remoteDC);
             hostControllerInfo.setRemoteDomainControllerSecurityRealm(SECURITY_REALM.resolveModelAttribute(context, operation).asString());
@@ -147,8 +156,8 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler {
 
     protected void initializeDomain(OperationContext context, ModelNode remoteDC) throws OperationFailedException {
         hostControllerInfo.setMasterDomainController(false);
-        ModelNode hostNode = HOST.resolveModelAttribute(context, remoteDC);
-        ModelNode portNode = PORT.resolveModelAttribute(context, remoteDC);
+        ModelNode hostNode = RemoteDomainControllerAddHandler.HOST.resolveModelAttribute(context, remoteDC);
+        ModelNode portNode = RemoteDomainControllerAddHandler.PORT.resolveModelAttribute(context, remoteDC);
         if (hostNode.isDefined() && portNode.isDefined()) {
             // Create a StaticDiscovery option and add it to the host controller info
             Map<String, ModelNode> properties = new HashMap<String, ModelNode>();

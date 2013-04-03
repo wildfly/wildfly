@@ -55,7 +55,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATIC_DISCOVERY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.parsing.Namespace.DOMAIN_1_0;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
@@ -69,7 +68,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.host.controller.discovery.Constants.PROPERTY;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -93,6 +91,7 @@ import org.jboss.as.host.controller.discovery.StaticDiscoveryResourceDefinition;
 import org.jboss.as.host.controller.ignored.IgnoredDomainTypeResourceDefinition;
 import org.jboss.as.host.controller.model.host.HostResourceDefinition;
 import org.jboss.as.host.controller.operations.HostModelRegistrationHandler;
+import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
@@ -154,7 +153,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         writer.writeStartElement(Element.HOST.getLocalName());
 
         if (modelNode.hasDefined(NAME)) {
-            writeAttribute(writer, Attribute.NAME, modelNode.get(NAME).asString());
+            HostResourceDefinition.NAME.marshallAsAttribute(modelNode, writer);
         }
 
         writer.writeDefaultNamespace(Namespace.CURRENT.getUriString());
@@ -1673,18 +1672,10 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         } else if (modelNode.hasDefined(REMOTE)) {
             writer.writeStartElement(Element.REMOTE.getLocalName());
             final ModelNode remote = modelNode.get(REMOTE);
-            if (remote.hasDefined(HOST)) {
-                writeAttribute(writer, Attribute.HOST, remote.get(HOST).asString());
-            }
-            if (remote.hasDefined(PORT)) {
-                writeAttribute(writer, Attribute.PORT, remote.get(PORT).asString());
-            }
-            if (remote.hasDefined(SECURITY_REALM)) {
-                writeAttribute(writer, Attribute.SECURITY_REALM, remote.require(SECURITY_REALM).asString());
-            }
-            if (remote.hasDefined(USERNAME)) {
-                writeAttribute(writer,  Attribute.USERNAME, remote.require(USERNAME).asString());
-            }
+            RemoteDomainControllerAddHandler.HOST.marshallAsAttribute(remote, writer);
+            RemoteDomainControllerAddHandler.PORT.marshallAsAttribute(remote, writer);
+            RemoteDomainControllerAddHandler.SECURITY_REALM.marshallAsAttribute(remote, writer);
+            RemoteDomainControllerAddHandler.USERNAME.marshallAsAttribute(remote, writer);
             if (ignoredResources != null) {
                 writeIgnoredResources(writer, ignoredResources);
             }

@@ -76,6 +76,7 @@ import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceRemoveHandl
 import org.jboss.as.host.controller.operations.HostXmlMarshallingHandler;
 import org.jboss.as.host.controller.operations.IsMasterHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
+import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.ResolveExpressionOnHostHandler;
 import org.jboss.as.host.controller.operations.StartServersHandler;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
@@ -154,20 +155,15 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
             .setResourceOnly()
             .build();
 
-    public static final SimpleAttributeDefinition REMOTE_DC_HOST = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HOST, ModelType.STRING)
-            .setAllowNull(false)
-            .setAllowExpression(true)
-            .setMinSize(1)
-            .build();
-    public static final SimpleAttributeDefinition REMOTE_DC_PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PORT, ModelType.INT)
-            .setAllowNull(false)
-            .setAllowExpression(true)
-            .build();
-
     public static final ObjectTypeAttributeDefinition DC_LOCAL = new ObjectTypeAttributeDefinition.Builder(ModelDescriptionConstants.LOCAL)
             .build();
 
-    public static final ObjectTypeAttributeDefinition DC_REMOTE = new ObjectTypeAttributeDefinition.Builder(ModelDescriptionConstants.REMOTE, REMOTE_DC_HOST, REMOTE_DC_PORT)
+    public static final ObjectTypeAttributeDefinition DC_REMOTE = new ObjectTypeAttributeDefinition.Builder(
+                ModelDescriptionConstants.REMOTE,
+                RemoteDomainControllerAddHandler.HOST,
+                RemoteDomainControllerAddHandler.PORT,
+                RemoteDomainControllerAddHandler.USERNAME,
+                RemoteDomainControllerAddHandler.SECURITY_REALM)
             .build();
 
     public static final ObjectTypeAttributeDefinition DOMAIN_CONTROLLER = new ObjectTypeAttributeDefinition.Builder(ModelDescriptionConstants.DOMAIN_CONTROLLER, DC_LOCAL, DC_REMOTE)
@@ -344,6 +340,5 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
 
         //server configurations
         hostRegistration.registerSubModel(new ServerConfigResourceDefinition(serverInventory, pathManager));
-
     }
 }
