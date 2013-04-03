@@ -56,6 +56,8 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
 
 /**
  * Operation handlers for the remote implementation of {@link org.jboss.as.controller.client.ModelControllerClient}
@@ -90,44 +92,11 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                 // initialize the operation ctx before executing the request handler
                 handlers.registerActiveOperation(header.getBatchId(), null);
                 return new ExecuteRequestHandler();
-            case ModelControllerProtocol.CANCEL_ASYNC_REQUEST:
-                return new CancelAsyncRequestHandler();
             case ModelControllerProtocol.REGISTER_NOTIFICATION_HANDLER_REQUEST:
                 handlers.registerActiveOperation(header.getBatchId(), null);
-                return new ManagementRequestHandler<Boolean, Void>() {
-                    @Override
-                    public void handleRequest(DataInput input, final ActiveOperation.ResultHandler<Boolean> resultHandler, ManagementRequestContext<Void> context) throws IOException {
-                        final ModelNode address = new ModelNode();
-                        address.readExternal(input);
-                        final int batchId = input.readInt();
-                        final boolean register = input.readBoolean();
-                        context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
-                            @Override
-                            public void execute(ManagementRequestContext<Void> context) throws Exception {
-                                final ManagementResponseHeader response = ManagementResponseHeader.create(context.getRequestHeader());
-                                final FlushableDataOutput output = context.writeMessage(response);
-                                PathAddress source = PathAddress.pathAddress(address);
-                                NotificationHandler notificationHandler = new NotificationHandlerProxy(channelAssociation, batchId);
-                                if (register) {
-                                    controller.getNotificationSupport().registerNotificationHandler(source,
-                                            notificationHandler,
-                                            NotificationFilter.ALL);
-                                } else {
-                                    controller.getNotificationSupport().unregisterNotificationHandler(source,
-                                            notificationHandler,
-                                            NotificationFilter.ALL);
-                                }
-                                output.writeBoolean(true);
-                                try {
-                                    output.writeByte(ManagementProtocol.RESPONSE_END);
-                                } finally {
-                                    StreamUtils.safeClose(output);
-                                }
-                                resultHandler.done(true);
-                            }
-                        });
-                    }
-                };
+                return new RegisterNotificationRequestHandler();
+            case ModelControllerProtocol.CANCEL_ASYNC_REQUEST:
+                return new CancelAsyncRequestHandler();
         }
         return handlers.resolveNext();
     }
@@ -287,6 +256,56 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                 }
             });
             resultHandler.cancel();
+        }
+    }
+
+    private class RegisterNotificationRequestHandler implements ManagementRequestHandler<Void, Void> {
+
+        @Override
+        public void handleRequest(DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> context) throws IOException {
+            // the address of the resource emitting notifications
+            final ModelNode address = new ModelNode();
+            address.readExternal(input);
+            final PathAddress source = PathAddress.pathAddress(address);
+            // the batchId to identify the notifications handler on the client-side by < channelAssociation + batchId >
+            final int batchId = input.readInt();
+            // command is used for both registering and unregistering notification handler
+            final boolean register = input.readBoolean();
+
+            context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
+                @Override
+                public void execute(ManagementRequestContext<Void> context) throws Exception {
+                    final NotificationHandler notificationHandler = new NotificationHandlerProxy(channelAssociation, batchId);
+
+                    if (register) {
+                        controller.getNotificationSupport().registerNotificationHandler(source,
+                                notificationHandler,
+                                NotificationFilter.ALL);
+                        // unregister the handler if the channel is closed before it is properly unregistered
+                        channelAssociation.getChannel().addCloseHandler(new CloseHandler<Channel>() {
+                            @Override
+                            public void handleClose(Channel closed, IOException exception) {
+                                controller.getNotificationSupport().unregisterNotificationHandler(source,
+                                        notificationHandler,
+                                        NotificationFilter.ALL);
+                            }
+                        });
+                    } else {
+                        controller.getNotificationSupport().unregisterNotificationHandler(source,
+                                notificationHandler,
+                                NotificationFilter.ALL);
+                    }
+
+                    final ManagementResponseHeader response = ManagementResponseHeader.create(context.getRequestHeader());
+                    final FlushableDataOutput output = context.writeMessage(response);
+                    try {
+                        output.writeByte(ManagementProtocol.RESPONSE_END);
+                    } finally {
+                        StreamUtils.safeClose(output);
+                    }
+                    resultHandler.done(null);
+                }
+            });
         }
     }
 

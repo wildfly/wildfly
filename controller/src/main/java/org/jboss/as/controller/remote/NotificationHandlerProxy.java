@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.remote;
 
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+
 import org.jboss.as.controller.client.Notification;
 import org.jboss.as.controller.client.NotificationHandler;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
@@ -64,7 +66,7 @@ class NotificationHandlerProxy implements NotificationHandler {
                 StreamUtils.safeClose(os);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            ROOT_LOGGER.warnv(e, "Can not send notification to the client %d", batchId);
         }
     }
 
