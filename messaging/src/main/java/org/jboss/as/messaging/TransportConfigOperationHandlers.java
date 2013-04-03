@@ -164,9 +164,6 @@ class TransportConfigOperationHandlers {
                 connectors.put(connectorName, new TransportConfiguration(InVMConnectorFactory.class.getName(), parameters, connectorName));
             }
         }
-        if(connectors.size() == 0){
-            throw MESSAGES.noConnectors();
-        }
         configuration.setConnectorConfigurations(connectors);
     }
 
