@@ -54,6 +54,8 @@ public final class TxnServices {
 
     public static final ServiceName JBOSS_TXN_SYNCHRONIZATION_REGISTRY = JBOSS_TXN.append("TransactionSynchronizationRegistry");
 
+    public static final ServiceName JBOSS_TXN_JTA_ENVIRONMENT = JBOSS_TXN.append("JTAEnvironment");
+
     public static <T> T notNull(T value) {
         if (value == null) throw MESSAGES.serviceNotStarted();
         return value;
