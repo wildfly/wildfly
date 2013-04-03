@@ -77,6 +77,8 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
     public static final String SERVER_STARTED_NOTIFICATION = "server-started";
     public static final String SERVER_STOPPED_NOTIFICATION = "server-stopped";
     public static final String SERVER_RESTARTED_NOTIFICATION = "server-restarted";
+    public static final String SERVER_KILLED_NOTIFICATION = "server-killed";
+    public static final String SERVER_DESTROYED_NOTIFICATION = "server-destroyed";
 
     public static final AttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING).setResourceOnly().build();
 
@@ -180,6 +182,8 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
             resourceRegistration.registerNotification(NotificationDefinition.Builder.create(SERVER_STARTED_NOTIFICATION, resolver).build());
             resourceRegistration.registerNotification(NotificationDefinition.Builder.create(SERVER_STOPPED_NOTIFICATION, resolver).build());
             resourceRegistration.registerNotification(NotificationDefinition.Builder.create(SERVER_RESTARTED_NOTIFICATION, resolver).build());
+            resourceRegistration.registerNotification(NotificationDefinition.Builder.create(SERVER_KILLED_NOTIFICATION, resolver).build());
+            resourceRegistration.registerNotification(NotificationDefinition.Builder.create(SERVER_DESTROYED_NOTIFICATION, resolver).build());
         }
     }
 
