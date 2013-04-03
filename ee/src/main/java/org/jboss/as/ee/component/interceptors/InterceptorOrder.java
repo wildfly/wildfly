@@ -103,8 +103,8 @@ public class InterceptorOrder {
         public static final int COMPONENT_WELD_INJECTION = 0xD00;
         public static final int JPA_SFSB_CREATE = 0xE00;
         public static final int INTERCEPTOR_USER_INTERCEPTORS = 0xF00;
-        public static final int COMPONENT_USER_INTERCEPTORS = 0x1000;
-        public static final int CDI_INTERCEPTORS = 0x1100;
+        public static final int CDI_INTERCEPTORS = 0x1000;
+        public static final int COMPONENT_USER_INTERCEPTORS = 0x1100;
         public static final int SFSB_INIT_METHOD = 0x1200;
         public static final int SETUP_CONTEXT = 0x1300;
         public static final int TERMINAL_INTERCEPTOR = 0x1400;
@@ -127,8 +127,8 @@ public class InterceptorOrder {
         public static final int INTERCEPTOR_DESTRUCTION_INTERCEPTORS = 0x800;
         public static final int COMPONENT_DESTRUCTION_INTERCEPTORS = 0x900;
         public static final int INTERCEPTOR_USER_INTERCEPTORS = 0xA00;
-        public static final int COMPONENT_USER_INTERCEPTORS = 0xB00;
-        public static final int CDI_INTERCEPTORS = 0xC00;
+        public static final int CDI_INTERCEPTORS = 0xB00;
+        public static final int COMPONENT_USER_INTERCEPTORS = 0xC00;
         public static final int TERMINAL_INTERCEPTOR = 0xD00;
 
         private ComponentPreDestroy() {
