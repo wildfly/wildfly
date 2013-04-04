@@ -22,23 +22,6 @@
 
 package org.jboss.as.test.smoke.messaging.client.jms;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueReceiver;
-import javax.jms.QueueSender;
-import javax.jms.QueueSession;
-import javax.jms.TextMessage;
-import javax.naming.Context;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
@@ -46,9 +29,21 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.jms.*;
+import javax.naming.Context;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static javax.jms.Session.AUTO_ACKNOWLEDGE;
+import static org.junit.Assert.*;
 
 /**
  * Demo using the AS management API to create and destroy a JMS queue.
@@ -68,42 +63,62 @@ public class JmsClientTestCase {
     @ContainerResource
     private ManagementClient managementClient;
 
+    @Before
+
+    public void setUp() throws IOException {
+        // Create the destination using the management API
+        ModelNode op = new ModelNode();
+        op.get("operation").set("add");
+        op.get("address").add("subsystem", "messaging");
+        op.get("address").add("hornetq-server", "default");
+        op.get("address").add("jms-queue", QUEUE_NAME);
+        op.get("entries").add(EXPORTED_QUEUE_NAME);
+        applyUpdate(op, managementClient.getControllerClient());
+    }
+
+    @After
+    public void tearDown() throws IOException {
+        // Remove the queue using the management API
+        ModelNode op = new ModelNode();
+        op.get("operation").set("remove");
+        op.get("address").add("subsystem", "messaging");
+        op.get("address").add("hornetq-server", "default");
+        op.get("address").add("jms-queue", QUEUE_NAME);
+        applyUpdate(op, managementClient.getControllerClient());
+    }
+
     @Test
-    public void testMessagingClient() throws Exception {
-        QueueConnection conn = null;
-        QueueSession session = null;
-        ModelControllerClient client = managementClient.getControllerClient();
+    public void testJMSOverTCP() throws  Exception {
+        doSendAndReceive("jms/RemoteConnectionFactory");
+    }
 
-        boolean actionsApplied = false;
+    @Test
+    public void testJMSOverHTTPWithServlet() throws  Exception {
+        doSendAndReceive("jms/ServletConnectionFactory");
+    }
+
+    private void doSendAndReceive(final String connectionFactoryLookupName) throws Exception {
+        Connection conn = null;
         try {
+            ConnectionFactory cf = (ConnectionFactory) remoteContext.lookup(connectionFactoryLookupName);
+            assertNotNull(cf);
+            Destination destination = (Destination) remoteContext.lookup(QUEUE_NAME);
+            assertNotNull(destination);
 
-            // Create the queue using the management API
-            ModelNode op = new ModelNode();
-            op.get("operation").set("add");
-            op.get("address").add("subsystem", "messaging");
-            op.get("address").add("hornetq-server", "default");
-            op.get("address").add("jms-queue", QUEUE_NAME);
-            op.get("entries").add(EXPORTED_QUEUE_NAME);
-            applyUpdate(op, client);
-            actionsApplied = true;
-
-            QueueConnectionFactory qcf = (QueueConnectionFactory) remoteContext.lookup("jms/RemoteConnectionFactory");
-            Queue queue = (Queue) remoteContext.lookup(QUEUE_NAME);
-
-            conn = qcf.createQueueConnection("guest", "guest");
+            conn = cf.createConnection("guest", "guest");
             conn.start();
-            session = conn.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
+            Session session = conn.createSession(false, AUTO_ACKNOWLEDGE);
 
             final CountDownLatch latch = new CountDownLatch(10);
             final List<String> result = new ArrayList<String>();
 
             // Set the async listener
-            QueueReceiver recv = session.createReceiver(queue);
-            recv.setMessageListener(new MessageListener() {
+            MessageConsumer consumer = session.createConsumer(destination);
+            consumer.setMessageListener(new MessageListener() {
 
                 @Override
                 public void onMessage(Message message) {
-                    TextMessage msg = (TextMessage)message;
+                    TextMessage msg = (TextMessage) message;
                     try {
                         result.add(msg.getText());
                         latch.countDown();
@@ -113,41 +128,23 @@ public class JmsClientTestCase {
                 }
             });
 
-            QueueSender sender = session.createSender(queue);
+            MessageProducer producer = session.createProducer(destination);
             for (int i = 0 ; i < 10 ; i++) {
                 String s = "Test" + i;
                 TextMessage msg = session.createTextMessage(s);
-                sender.send(msg);
+                producer.send(msg);
             }
 
-            Assert.assertTrue(latch.await(3, TimeUnit.SECONDS));
-            Assert.assertEquals(10, result.size());
+            assertTrue(latch.await(3, SECONDS));
+            assertEquals(10, result.size());
             for (int i = 0 ; i < result.size() ; i++) {
-                Assert.assertEquals("Test" + i, result.get(i));
+                assertEquals("Test" + i, result.get(i));
             }
 
         } finally {
             try {
-                conn.stop();
-            } catch (Exception ignore) {
-            }
-            try {
-                session.close();
-            } catch (Exception ignore) {
-            }
-            try {
                 conn.close();
             } catch (Exception ignore) {
-            }
-
-            if(actionsApplied) {
-                // Remove the queue using the management API
-                ModelNode op = new ModelNode();
-                op.get("operation").set("remove");
-                op.get("address").add("subsystem", "messaging");
-                op.get("address").add("hornetq-server", "default");
-                op.get("address").add("jms-queue", QUEUE_NAME);
-                applyUpdate(op, client);
             }
         }
     }

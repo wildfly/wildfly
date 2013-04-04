@@ -93,9 +93,9 @@ import org.junit.Test;
 /**
  *  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat inc
  */
-public class MessagingSubsystemTestCase extends AbstractSubsystemBaseTest {
+public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
 
-    public MessagingSubsystemTestCase() {
+    public MessagingSubsystem13TestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
     }
 
@@ -105,6 +105,12 @@ public class MessagingSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("subsystem_incompatible_1_3.xml");
+    }
+
+    @Override
+    protected void compareXml(String configId, String original, String marshalled) throws Exception {
+        // XML from messaging 1.4 does not have the same output than 1.3
+        return;
     }
 
     @Test

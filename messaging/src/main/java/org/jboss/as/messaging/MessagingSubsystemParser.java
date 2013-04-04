@@ -129,6 +129,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             case MESSAGING_1_1:
             case MESSAGING_1_2:
             case MESSAGING_1_3:
+            case MESSAGING_1_4:
                 processHornetQServers(reader, address, list);
                 break;
             default:
@@ -833,7 +834,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
        }
     }
 
-    static void processAcceptors(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+   void processAcceptors(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             String name = null;
             String socketBinding = null;
@@ -1063,7 +1064,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         return reader.getListAttributeValue(index);
     }
 
-    static void processConnectors(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+     void processConnectors(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             String name = null;
             String socketBinding = null;
@@ -1186,7 +1187,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         return addressSettingsSpec;
     }
 
-    static void parseTransportConfiguration(final XMLExtendedStreamReader reader, final ModelNode operation, final boolean generic) throws XMLStreamException {
+   void parseTransportConfiguration(final XMLExtendedStreamReader reader, final ModelNode operation, final boolean generic) throws XMLStreamException {
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             Element element = Element.forName(reader.getLocalName());
             switch(element) {

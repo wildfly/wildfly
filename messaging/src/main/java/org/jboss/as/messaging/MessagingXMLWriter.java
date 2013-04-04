@@ -35,6 +35,7 @@ import static org.jboss.as.messaging.CommonAttributes.DIVERT;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.CommonAttributes.GROUPING_HANDLER;
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
+import static org.jboss.as.messaging.CommonAttributes.SERVLET_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.JMS_BRIDGE;
@@ -185,21 +186,38 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
             if(node.hasDefined(REMOTE_CONNECTOR)) {
                 for(final Property property : node.get(REMOTE_CONNECTOR).asPropertyList()) {
                     writer.writeStartElement(Element.NETTY_CONNECTOR.getLocalName());
-                    writeAcceptorAndConnectorContent(writer, property);
+                    writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+                    RemoteTransportDefinition.SOCKET_BINDING.marshallAsAttribute(property.getValue(), writer);
+                    writeTransportParam(writer, property.getValue().get(PARAM));
+                    writer.writeEndElement();
+                }
+            }
+            if(node.hasDefined(SERVLET_CONNECTOR)) {
+                for(final Property property : node.get(SERVLET_CONNECTOR).asPropertyList()) {
+                    writer.writeStartElement(Element.SERVLET_CONNECTOR.getLocalName());
+                    writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+                    ServletConnectorDefinition.HOST.marshallAsAttribute(property.getValue(), writer);
+                    ServletConnectorDefinition.SOCKET_BINDING.marshallAsAttribute(property.getValue(), writer);
+                    writeTransportParam(writer, property.getValue().get(PARAM));
                     writer.writeEndElement();
                 }
             }
             if(node.hasDefined(IN_VM_CONNECTOR)) {
                 for(final Property property : node.get(IN_VM_CONNECTOR).asPropertyList()) {
                     writer.writeStartElement(Element.IN_VM_CONNECTOR.getLocalName());
-                    writeAcceptorAndConnectorContent(writer, property);
+                    writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+                    InVMTransportDefinition.SERVER_ID.marshallAsAttribute(property.getValue(), writer);
+                    writeTransportParam(writer, property.getValue().get(PARAM));
                     writer.writeEndElement();
                 }
             }
             if(node.hasDefined(CONNECTOR)) {
                 for(final Property property : node.get(CONNECTOR).asPropertyList()) {
                     writer.writeStartElement(Element.CONNECTOR.getLocalName());
-                    writeAcceptorAndConnectorContent(writer, property);
+                    writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+                    GenericTransportDefinition.SOCKET_BINDING.marshallAsElement(property.getValue(), writer);
+                    CommonAttributes.FACTORY_CLASS.marshallAsElement(property.getValue(), writer);
+                    writeTransportParam(writer, property.getValue().get(PARAM));
                     writer.writeEndElement();
                 }
             }
@@ -214,21 +232,21 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
             if(node.hasDefined(REMOTE_ACCEPTOR)) {
                 for(final Property property : node.get(REMOTE_ACCEPTOR).asPropertyList()) {
                     writer.writeStartElement(Element.NETTY_ACCEPTOR.getLocalName());
-                    writeAcceptorAndConnectorContent(writer, property);
+                    writeAcceptorContent(writer, property);
                     writer.writeEndElement();
                 }
             }
             if(node.hasDefined(IN_VM_ACCEPTOR)) {
                 for(final Property property : node.get(IN_VM_ACCEPTOR).asPropertyList()) {
                     writer.writeStartElement(Element.IN_VM_ACCEPTOR.getLocalName());
-                    writeAcceptorAndConnectorContent(writer, property);
+                    writeAcceptorContent(writer, property);
                     writer.writeEndElement();
                 }
             }
             if(node.hasDefined(ACCEPTOR)) {
                 for(final Property property : node.get(ACCEPTOR).asPropertyList()) {
                     writer.writeStartElement(Element.ACCEPTOR.getLocalName());
-                    writeAcceptorAndConnectorContent(writer, property);
+                    writeAcceptorContent(writer, property);
                     writer.writeEndElement();
                 }
             }
@@ -237,7 +255,7 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
         }
     }
 
-    private static void writeAcceptorAndConnectorContent(final XMLExtendedStreamWriter writer, final Property property) throws XMLStreamException {
+    private static void writeAcceptorContent(final XMLExtendedStreamWriter writer, final Property property) throws XMLStreamException {
         writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
         final ModelNode value = property.getValue();
 
@@ -245,9 +263,12 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
         InVMTransportDefinition.SERVER_ID.marshallAsAttribute(value, writer);
         CommonAttributes.FACTORY_CLASS.marshallAsElement(value, writer);
 
-        // TODO use a custom attribute marshaller
-        if (value.hasDefined(PARAM)) {
-            for(final Property parameter : value.get(PARAM).asPropertyList()) {
+        writeTransportParam(writer, value.get(PARAM));
+    }
+
+    private static void writeTransportParam(final XMLExtendedStreamWriter writer, final ModelNode param) throws XMLStreamException {
+        if (param.isDefined()) {
+            for(final Property parameter : param.asPropertyList()) {
                 writer.writeStartElement(Element.PARAM.getLocalName());
                 writer.writeAttribute(Attribute.KEY.getLocalName(), parameter.getName());
                 writer.writeAttribute(Attribute.VALUE.getLocalName(), parameter.getValue().get(TransportParamDefinition.VALUE.getName()).asString());
