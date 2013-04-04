@@ -101,6 +101,8 @@ public class JGroupsExtension implements Extension {
         subsystem.registerOperationHandler(JGroupsSubsystemDescribe.DEFINITON,JGroupsSubsystemDescribe.INSTANCE);
 
         subsystem.registerSubModel(new StackResource(registerRuntimeOnly));
+        // new
+        subsystem.registerSubModel(new ChannelInstanceResource(registerRuntimeOnly));
         registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
 
         if (context.isRegisterTransformers()) {

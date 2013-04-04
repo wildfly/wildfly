@@ -31,9 +31,11 @@ import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -54,6 +56,20 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
         ModelNode operation = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
         populate(existing, operation);
         return operation;
+    }
+
+    /*
+     * Install a custom version of JGroupsSubsystemRootResource
+     */
+    @Override
+    protected Resource createResource(OperationContext context) {
+        // debugging
+        assert context.getServiceRegistry(false) != null ;
+        // create a custom resource
+        JGroupsSubsystemRootCustomResource resource = new JGroupsSubsystemRootCustomResource();
+        resource.setRegistry(context.getServiceRegistry(false));
+        context.addResource(PathAddress.EMPTY_ADDRESS, resource);
+        return resource ;
     }
 
     private static void populate(ModelNode source, ModelNode target) throws OperationFailedException {
