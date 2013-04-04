@@ -23,8 +23,8 @@ package org.jboss.as.undertow.session;
 
 import io.undertow.server.HttpServerExchange;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
@@ -166,7 +166,7 @@ public final class SessionReplicationContext {
             soleSession = session;
         } else if (!mgr.equals(soleManager)) {
             // We have a cross-context call; need a Map for the sessions
-            crossCtxSessions = new HashMap<ClusteredSession<? extends OutgoingDistributableSessionData>, SnapshotManager>();
+            crossCtxSessions = new ConcurrentHashMap<>();
             crossCtxSessions.put(soleSession, soleManager);
             crossCtxSessions.put(session, mgr);
             soleManager = null;
