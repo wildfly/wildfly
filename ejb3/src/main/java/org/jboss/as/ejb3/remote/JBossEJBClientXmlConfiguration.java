@@ -61,9 +61,9 @@ public class JBossEJBClientXmlConfiguration implements EJBClientConfiguration {
 
     @Override
     public CallbackHandler getCallbackHandler() {
-        // The appropriate callback handler will either be available on the remote-outbound-connection
-        // reference or in the cluster configuration of this client context
-        return null;
+        // The appropriate callback handler will be overridden on the remote-outbound-connection
+        // reference or in the cluster configuration of this client context. We just return the default callbackhandler here.
+        return new AnonymousCallbackHandler();
     }
 
     @Override
