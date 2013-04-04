@@ -34,7 +34,7 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class HttpsListenerAdd extends HttpListenerAdd {
+public class HttpsListenerAdd extends AbstractListenerAdd {
 
     HttpsListenerAdd(HttpsListenerResourceDefinition def) {
         super(def);
@@ -46,16 +46,14 @@ public class HttpsListenerAdd extends HttpListenerAdd {
     }
 
     @Override
-    protected HttpListenerService createService(final String name) {
+    AbstractListenerService<? extends AbstractListenerService> createService(String name, OperationContext context, ModelNode model) throws OperationFailedException {
         return new HttpsListenerService(name);
     }
 
     @Override
-    protected void configureAdditionalDependencies(OperationContext context, ServiceBuilder<HttpListenerService> serviceBuilder, ModelNode model, HttpListenerService service) throws OperationFailedException {
+    void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends AbstractListenerService> serviceBuilder, ModelNode model, AbstractListenerService service) throws OperationFailedException {
         final String securityRealm = HttpsListenerResourceDefinition.SECURITY_REALM.resolveModelAttribute(context, model).asString();
 
         serviceBuilder.addDependency(SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm), SecurityRealm.class, ((HttpsListenerService) service).getSecurityRealm());
     }
-
-
 }
