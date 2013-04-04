@@ -21,8 +21,8 @@
  */
 package org.jboss.as.undertow.session;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.as.clustering.web.DistributableSessionMetadata;
 import org.jboss.as.clustering.web.OutgoingSessionGranularitySessionData;
@@ -80,7 +80,7 @@ class SessionBasedClusteredSession extends ClusteredSession<OutgoingSessionGranu
     // ----------------------------------------------------------------- Private
 
     private Map<String, Object> getSessionAttributeMap() {
-        Map<String, Object> attrs = new HashMap<String, Object>(getAttributesInternal());
+        Map<String, Object> attrs = new ConcurrentHashMap<>(getAttributesInternal());
         removeExcludedAttributes(attrs);
         return attrs;
     }

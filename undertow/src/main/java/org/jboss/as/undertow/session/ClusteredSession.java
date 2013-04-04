@@ -26,7 +26,6 @@ import java.io.Serializable;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -1126,7 +1125,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
                     log.tracef("Excluding attribute %s from replication", excludedAttributes[i]);
                 }
                 if (excluded == null) {
-                    excluded = new HashMap<String, Object>();
+                    excluded = new ConcurrentHashMap<>();
                 }
                 excluded.put(excludedAttributes[i], attr);
             }
