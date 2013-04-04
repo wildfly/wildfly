@@ -1,12 +1,9 @@
 package org.jboss.as.undertow;
 
-import java.util.List;
-
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -23,14 +20,12 @@ class AJPListenerAdd extends AbstractListenerAdd {
     }
 
     @Override
-    void installService(OperationContext context, ModelNode operation, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        final AJPListenerService service = new AJPListenerService(name);
-        final ServiceBuilder<AJPListenerService> serviceBuilder = context.getServiceTarget().addService(constructServiceName(name), service);
-        addDefaultDependencies(serviceBuilder, service);
+    AbstractListenerService<? extends AbstractListenerService> createService(String name, OperationContext context, ModelNode model) throws OperationFailedException {
+        return new AJPListenerService(name);
+    }
 
-        final ServiceController<AJPListenerService> serviceController = serviceBuilder.install();
-        if (newControllers != null) {
-            newControllers.add(serviceController);
-        }
+    @Override
+    void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends AbstractListenerService> serviceBuilder, ModelNode model, AbstractListenerService service) throws OperationFailedException {
+
     }
 }

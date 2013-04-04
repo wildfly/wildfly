@@ -1,13 +1,9 @@
 package org.jboss.as.undertow;
 
-import java.util.List;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -24,23 +20,12 @@ public class HttpListenerAdd extends AbstractListenerAdd {
     }
 
     @Override
-    void installService(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final HttpListenerService service = createService(name);
-        final ServiceBuilder<HttpListenerService> serviceBuilder = context.getServiceTarget().addService(constructServiceName(name), service);
-        addDefaultDependencies(serviceBuilder, service);
-
-        configureAdditionalDependencies(context, serviceBuilder, model, service);
-
-        final ServiceController<HttpListenerService> serviceController = serviceBuilder.install();
-        if (newControllers != null) {
-            newControllers.add(serviceController);
-        }
-    }
-
-    protected HttpListenerService createService(final String name) {
+    AbstractListenerService<? extends AbstractListenerService> createService(String name, OperationContext context, ModelNode model) throws OperationFailedException {
         return new HttpListenerService(name);
     }
 
-    protected void configureAdditionalDependencies(OperationContext context, ServiceBuilder<HttpListenerService> serviceBuilder, ModelNode model, HttpListenerService service) throws OperationFailedException {
+    @Override
+    void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends AbstractListenerService> serviceBuilder, ModelNode model, AbstractListenerService service) throws OperationFailedException {
+
     }
 }

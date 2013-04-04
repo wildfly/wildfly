@@ -22,13 +22,7 @@ import org.xnio.XnioWorker;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 abstract class AbstractListenerAdd extends AbstractAddStepHandler {
-    protected String name;
-    protected String bindingRef;
-    protected String workerName;
-    protected String bufferPoolName;
-    protected String serverName;
     private final AbstractListenerResourceDefinition listenerDefinition;
-    protected boolean enabled;
 
 
     AbstractListenerAdd(AbstractListenerResourceDefinition definition) {
@@ -52,20 +46,28 @@ abstract class AbstractListenerAdd extends AbstractAddStepHandler {
         String bufferPoolName = AbstractListenerResourceDefinition.BUFFER_POOL.resolveModelAttribute(context, model).asString();
         boolean enabled = AbstractListenerResourceDefinition.ENABLED.resolveModelAttribute(context, model).asBoolean();
         String serverName = parent.getLastElement().getValue();
-        if (enabled){
-            installService(context, model, verificationHandler, newControllers);
-        }
-    }
+        if (enabled) {
+            final AbstractListenerService<? extends AbstractListenerService> service = createService(name, context, model);
+            final ServiceBuilder<? extends AbstractListenerService> serviceBuilder = context.getServiceTarget().addService(constructServiceName(name), service);
+            serviceBuilder.addDependency(UndertowService.WORKER.append(workerName), XnioWorker.class, service.getWorker())
+                    .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
+                    .addDependency(UndertowService.BUFFER_POOL.append(bufferPoolName), Pool.class, service.getBufferPool())
+                    .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerService());
 
-    protected void addDefaultDependencies(ServiceBuilder<? extends AbstractListenerService<?>> serviceBuilder, AbstractListenerService<?> service) {
-        serviceBuilder.addDependency(UndertowService.WORKER.append(workerName), XnioWorker.class, service.getWorker())
-                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
-                .addDependency(UndertowService.BUFFER_POOL.append(bufferPoolName), Pool.class, service.getBufferPool())
-                .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerService());
+            configureAdditionalDependencies(context, serviceBuilder, model, service);
+
+            final ServiceController<? extends AbstractListenerService> serviceController = serviceBuilder.install();
+            if (newControllers != null) {
+                newControllers.add(serviceController);
+            }
+        }
     }
 
     abstract ServiceName constructServiceName(final String name);
 
-    abstract void installService(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException;
+    abstract AbstractListenerService<? extends AbstractListenerService> createService(final String name, final OperationContext context, ModelNode model) throws OperationFailedException;
+
+    abstract void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends AbstractListenerService> serviceBuilder, ModelNode model, AbstractListenerService service) throws OperationFailedException;
+
 
 }
