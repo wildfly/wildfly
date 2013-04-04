@@ -760,6 +760,8 @@ public interface CommonAttributes {
     String ENTRY = "entry";
     String FILE_DEPLOYMENT_ENABLED = "file-deployment-enabled";
     String GROUPING_HANDLER = "grouping-handler";
+    String SERVLET_CONNECTOR = "servlet-connector";
+    String HOST = "host";
     String ID = "id";
     String IN_VM_ACCEPTOR = "in-vm-acceptor";
     String IN_VM_CONNECTOR = "in-vm-connector";
@@ -808,6 +810,7 @@ public interface CommonAttributes {
     String SECURITY_ROLE = "security-role";
     String SECURITY_SETTING = "security-setting";
     String SECURITY_SETTINGS = "security-settings";
+    String SERVLET_PATH = "servlet-path";
     String HORNETQ_SERVER = "hornetq-server";
     String STARTED = "started";
     String STATIC_CONNECTORS = "static-connectors";
@@ -816,6 +819,8 @@ public interface CommonAttributes {
     String SUBSYSTEM = "subsystem";
     String TOPIC_ADDRESS = "topic-address";
     String TYPE_ATTR_NAME = "type";
+    String USE_INVM = "use-invm";
+    String USE_SERVLET = "use-servlet";
     String VERSION = "version";
     String XA = "xa";
     String XA_TX = "XATransaction";

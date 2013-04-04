@@ -1,6 +1,6 @@
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:messaging="urn:jboss:domain:messaging:1.3">
+                xmlns:messaging="urn:jboss:domain:messaging:1.4">
 
 <xsl:output method="xml" indent="yes"/>
     <xsl:template match="//messaging:subsystem/messaging:hornetq-server">

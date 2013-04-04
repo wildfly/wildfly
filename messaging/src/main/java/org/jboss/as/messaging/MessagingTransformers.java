@@ -34,6 +34,7 @@ import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.RUNTIME_QUEUE;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_0;
+import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_1;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 
 import java.util.Set;
@@ -64,6 +65,7 @@ public class MessagingTransformers {
     static void registerTransformers(final SubsystemRegistration subsystem) {
         registerTransformers_1_1_0(subsystem);
         registerTransformers_1_2_0(subsystem);
+        registerTransformers_1_2_1(subsystem);
     }
 
     private static void registerTransformers_1_1_0(final SubsystemRegistration subsystem) {
@@ -117,6 +119,8 @@ public class MessagingTransformers {
                             .addRejectCheck(SIMPLE_EXPRESSIONS, TransportParamDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0)
                     .end();
         }
+
+        hornetqServer.rejectChildResource(ServletConnectorDefinition.PATH);
 
         hornetqServer.addChildResource(BroadcastGroupDefinition.PATH)
                 .getAttributeBuilder()
@@ -247,6 +251,20 @@ public class MessagingTransformers {
 
                 }, CommonAttributes.CLUSTERED)
                 .end();
+
+        hornetqServer.rejectChildResource(ServletConnectorDefinition.PATH);
+
         TransformationDescription.Tools.register(subsystemRoot.build(), subsystem, VERSION_1_2_0);
+    }
+
+    private static void registerTransformers_1_2_1(final SubsystemRegistration subsystem) {
+
+        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(PathElement.pathElement(HORNETQ_SERVER));
+
+        hornetqServer.rejectChildResource(ServletConnectorDefinition.PATH);
+
+        TransformationDescription.Tools.register(subsystemRoot.build(), subsystem, VERSION_1_2_1);
     }
 }
