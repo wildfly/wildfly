@@ -44,6 +44,7 @@
         <module name="com.sun.xml.bind" services="import"/>
         <module name="org.apache.neethi" />
         <module name="org.apache.ws.xmlschema" />
+        <module name="org.codehaus.woodstox" />
         <module name="org.springframework.spring" optional="true" />
     </dependencies>
 </module>
