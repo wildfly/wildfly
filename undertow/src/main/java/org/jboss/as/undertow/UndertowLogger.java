@@ -58,6 +58,9 @@ public interface UndertowLogger extends BasicLogger {
     UndertowLogger ROOT_LOGGER = Logger.getMessageLogger(UndertowLogger.class, UndertowLogger.class.getPackage().getName());
     UndertowLogger WEB_SESSION_LOGGER = Logger.getMessageLogger(UndertowLogger.class, UndertowLogger.class.getPackage().getName() + ".sessions");
 
+    ////////////////////////////////////////////////////////////
+    //18200-18226 are copied across from the old web subsystem
+
     @LogMessage(level = ERROR)
     @Message(id = 18200, value = "Failed to start welcome context")
     void stopWelcomeContextFailed(@Cause Throwable cause);

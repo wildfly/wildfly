@@ -45,13 +45,13 @@
     <xs:complexType name="serverType">
         <xs:sequence>
             <xs:element name="http-listener" type="http-listener-type" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="https-listener" type="http-listener-type" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="https-listener" type="https-listener-type" minOccurs="0" maxOccurs="1"/>
             <xs:element name="ajp-listener" type="ajp-listener-type" minOccurs="0" maxOccurs="1"/>
             <xs:element name="host" type="hostType" minOccurs="1" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
-        <xs:attribute name="default-host" use="optional" type="xs:string"/>
-        <xs:attribute name="servlet-container" use="optional" type="xs:string"/>
+        <xs:attribute name="default-host" use="optional" type="xs:string" default="default-host"/>
+        <xs:attribute name="servlet-container" use="optional" type="xs:string" default="default"/>
     </xs:complexType>
     <xs:complexType name="http-listener-type">
         <xs:attribute name="name" use="required" type="xs:string"/>
@@ -70,10 +70,10 @@
     </xs:complexType>
     <xs:complexType name="ajp-listener-type">
         <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="socket-binding" use="required" type="xs:string"/>
         <xs:attribute name="worker" type="xs:string" default="default"/>
         <xs:attribute name="buffer-pool" type="xs:string" default="default"/>
         <xs:attribute name="enabled" type="xs:boolean" default="true"/>
-        <xs:attribute name="socket-binding" use="required" type="xs:string"/>
     </xs:complexType>
     <xs:complexType name="servletContainerType">
         <xs:sequence>

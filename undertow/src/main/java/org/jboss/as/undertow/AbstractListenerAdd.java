@@ -46,12 +46,12 @@ abstract class AbstractListenerAdd extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final PathAddress parent = address.subAddress(0, address.size() - 1);
-        name = address.getLastElement().getValue();
-        bindingRef = AbstractListenerResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, model).asString();
-        workerName = AbstractListenerResourceDefinition.WORKER.resolveModelAttribute(context, model).asString();
-        bufferPoolName = AbstractListenerResourceDefinition.BUFFER_POOL.resolveModelAttribute(context, model).asString();
-        enabled = AbstractListenerResourceDefinition.ENABLED.resolveModelAttribute(context, model).asBoolean();
-        serverName = parent.getLastElement().getValue();
+        String name = address.getLastElement().getValue();
+        String bindingRef = AbstractListenerResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, model).asString();
+        String workerName = AbstractListenerResourceDefinition.WORKER.resolveModelAttribute(context, model).asString();
+        String bufferPoolName = AbstractListenerResourceDefinition.BUFFER_POOL.resolveModelAttribute(context, model).asString();
+        boolean enabled = AbstractListenerResourceDefinition.ENABLED.resolveModelAttribute(context, model).asBoolean();
+        String serverName = parent.getLastElement().getValue();
         if (enabled){
             installService(context, model, verificationHandler, newControllers);
         }
