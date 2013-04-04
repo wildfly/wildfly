@@ -21,11 +21,12 @@
  */
 package org.jboss.as.undertow.session;
 
+import io.undertow.server.HttpServerExchange;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.undertow.server.HttpServerExchange;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 
 public final class SessionReplicationContext {

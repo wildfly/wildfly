@@ -25,7 +25,7 @@ class OptionAttributeDefinition extends SimpleAttributeDefinition {
     private OptionAttributeDefinition(String name, String xmlName, ModelNode defaultValue, ModelType type, boolean allowNull, boolean allowExpression,
                                       MeasurementUnit measurementUnit, ParameterCorrector corrector, ParameterValidator validator, boolean validateNull,
                                       String[] alternatives, String[] requires, AttributeMarshaller attributeMarshaller, boolean resourceOnly,
-                                      DeprecationData deprecated, Option option, AttributeAccess.Flag... flags) {
+                                      DeprecationData deprecated, Option<?> option, AttributeAccess.Flag... flags) {
         super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, corrector, validator, validateNull, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
         this.option = option;
     }
@@ -54,7 +54,7 @@ class OptionAttributeDefinition extends SimpleAttributeDefinition {
             try {
                 Field typeField = option.getClass().getDeclaredField("type");
                 typeField.setAccessible(true);
-                Class type = (Class) typeField.get(option);
+                Class<?> type = (Class<?>) typeField.get(option);
 
 
                 if (type.isAssignableFrom(Integer.class)) {
