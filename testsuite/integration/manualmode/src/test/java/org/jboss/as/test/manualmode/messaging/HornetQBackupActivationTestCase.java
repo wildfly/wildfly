@@ -142,6 +142,45 @@ public class HornetQBackupActivationTestCase {
         checkConnectionFactory(backupClient, false);
     }
 
+    // https://issues.jboss.org/browse/AS7-6840
+    @Test
+    public void testBackupFailoverAfterFailback() throws Exception {
+        checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
+        checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
+
+        final String queueName = randomUUID().toString();
+        addQueue(backupClient, queueName);
+        final String jmsQueueName = randomUUID().toString();
+        addJMSQueue(backupClient, jmsQueueName);
+        final String jmsTopicName = randomUUID().toString();
+        addJMSTopic(backupClient, jmsTopicName);
+
+        checkQueue(backupClient, queueName, false);
+        checkJMSQueue(backupClient, jmsQueueName, false);
+        checkJMSTopic(backupClient, jmsTopicName, false);
+        checkConnectionFactory(backupClient, false);
+
+        // shutdown live server
+        container.stop(LIVE_SERVER);
+        // let some time for the backup to detect the failure
+        waitForHornetQServerActivation(backupClient, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+        checkHornetQServerStartedAndActiveAttributes(backupClient, true, true);
+
+        // restart the live server
+        container.start(LIVE_SERVER);
+        // let some time for the backup to detect the live node and failback
+        waitForHornetQServerActivation(liveClient, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+        checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
+        waitForHornetQServerActivation(backupClient, false, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+        checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
+
+        // shutdown live servera 2nd time
+        container.stop(LIVE_SERVER);
+        // let some time for the backup to detect the failure
+        waitForHornetQServerActivation(backupClient, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+        checkHornetQServerStartedAndActiveAttributes(backupClient, true, true);
+    }
+
     private static void waitForHornetQServerActivation(ModelControllerClient client, boolean expectedActive, int timeout) throws IOException {
         long start = System.currentTimeMillis();
         long now;
