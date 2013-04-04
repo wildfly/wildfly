@@ -26,15 +26,16 @@ import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import java.io.IOException;
 import java.net.URL;
 
+import org.jboss.as.ee.structure.JBossDescriptorPropertyReplacement;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.webservices.metadata.JBossWebservicesPropertyReplaceFactory;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.vfs.VirtualFile;
-import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesFactory;
 import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 
 /**
@@ -50,7 +51,9 @@ public final class JBossWebservicesDescriptorDeploymentProcessor implements Depl
         final URL jbossWebservicesDescriptorURL = getJBossWebServicesDescriptorURL(deploymentRoot);
 
         if (jbossWebservicesDescriptorURL != null) {
-            final JBossWebservicesMetaData jbossWebservicesMD = JBossWebservicesFactory.load(jbossWebservicesDescriptorURL);
+            final JBossWebservicesPropertyReplaceFactory webservicesFactory = new JBossWebservicesPropertyReplaceFactory(
+                    jbossWebservicesDescriptorURL, JBossDescriptorPropertyReplacement.propertyReplacer(unit));
+            final JBossWebservicesMetaData jbossWebservicesMD = webservicesFactory.load(jbossWebservicesDescriptorURL);
             unit.putAttachment(WSAttachmentKeys.JBOSS_WEBSERVICES_METADATA_KEY, jbossWebservicesMD);
         }
     }
