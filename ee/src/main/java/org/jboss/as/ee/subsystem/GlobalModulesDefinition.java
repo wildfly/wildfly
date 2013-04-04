@@ -22,6 +22,9 @@
 
 package org.jboss.as.ee.subsystem;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
 
 import javax.xml.stream.XMLStreamException;
@@ -31,10 +34,13 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.modules.ModuleIdentifier;
 
 /**
  * {@link AttributeDefinition} implementation for the "global-modules" attribute.
@@ -52,23 +58,23 @@ public class GlobalModulesDefinition {
 
     public static final String DEFAULT_SLOT = "main";
 
-    static final SimpleAttributeDefinition NAME_AD = new SimpleAttributeDefinitionBuilder(NAME, ModelType.STRING).build();
+    public static final SimpleAttributeDefinition NAME_AD = new SimpleAttributeDefinitionBuilder(NAME, ModelType.STRING).build();
 
-    static final SimpleAttributeDefinition SLOT_AD = new SimpleAttributeDefinitionBuilder(SLOT, ModelType.STRING, true)
+    public static final SimpleAttributeDefinition SLOT_AD = new SimpleAttributeDefinitionBuilder(SLOT, ModelType.STRING, true)
             .setDefaultValue(new ModelNode(DEFAULT_SLOT))
             .build();
 
-    static final SimpleAttributeDefinition ANNOTATIONS_AD = new SimpleAttributeDefinitionBuilder(ANNOTATIONS, ModelType.BOOLEAN, true)
+    public static final SimpleAttributeDefinition ANNOTATIONS_AD = new SimpleAttributeDefinitionBuilder(ANNOTATIONS, ModelType.BOOLEAN, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
             .build();
 
-    static final SimpleAttributeDefinition SERVICES_AD = new SimpleAttributeDefinitionBuilder(SERVICES, ModelType.BOOLEAN, true)
+    public static final SimpleAttributeDefinition SERVICES_AD = new SimpleAttributeDefinitionBuilder(SERVICES, ModelType.BOOLEAN, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
             .build();
 
-    static final SimpleAttributeDefinition META_INF_AD  = new SimpleAttributeDefinitionBuilder(META_INF, ModelType.BOOLEAN, true)
+    public static final SimpleAttributeDefinition META_INF_AD  = new SimpleAttributeDefinitionBuilder(META_INF, ModelType.BOOLEAN, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(true))
             .build();
@@ -98,4 +104,50 @@ public class GlobalModulesDefinition {
     public static final AttributeDefinition INSTANCE = ObjectListAttributeDefinition.Builder.of(GLOBAL_MODULES, VALUE_TYPE_AD)
         .setAllowNull(true)
         .build();
+
+    public static List<GlobalModule> createModuleList(final OperationContext context, final ModelNode globalMods) throws OperationFailedException {
+        final List<GlobalModule> ret = new ArrayList<GlobalModule>();
+        if (globalMods.isDefined()) {
+            for (final ModelNode module : globalMods.asList()) {
+                String name = NAME_AD.resolveModelAttribute(context, module).asString();
+                String slot = SLOT_AD.resolveModelAttribute(context, module).asString();
+                boolean annotations = ANNOTATIONS_AD.resolveModelAttribute(context, module).asBoolean();
+                boolean services = SERVICES_AD.resolveModelAttribute(context, module).asBoolean();
+                boolean metaInf = META_INF_AD.resolveModelAttribute(context, module).asBoolean();
+                ret.add(new GlobalModule(ModuleIdentifier.create(name, slot), annotations, services, metaInf));
+            }
+        }
+        return ret;
+    }
+
+    public static final class GlobalModule {
+        private final ModuleIdentifier moduleIdentifier;
+        private final boolean annotations;
+        private final boolean services;
+        private final boolean metaInf;
+
+
+        GlobalModule(final ModuleIdentifier moduleIdentifier, final boolean annotations, final boolean services, final boolean metaInf) {
+            this.moduleIdentifier = moduleIdentifier;
+            this.annotations = annotations;
+            this.services = services;
+            this.metaInf = metaInf;
+        }
+
+        public ModuleIdentifier getModuleIdentifier() {
+            return moduleIdentifier;
+        }
+
+        public boolean isAnnotations() {
+            return annotations;
+        }
+
+        public boolean isServices() {
+            return services;
+        }
+
+        public boolean isMetaInf() {
+            return metaInf;
+        }
+    }
 }

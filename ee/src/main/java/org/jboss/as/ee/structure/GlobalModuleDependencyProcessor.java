@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ee.structure;
 
+import java.util.List;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -28,16 +30,10 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.filter.PathFilters;
 
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.ANNOTATIONS;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.META_INF;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.NAME;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.SERVICES;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.SLOT;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.GlobalModule;
 
 /**
  * Dependency processor that adds modules defined in the global-modules section of
@@ -47,7 +43,7 @@ import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.SLOT;
  */
 public class GlobalModuleDependencyProcessor implements DeploymentUnitProcessor {
 
-    private volatile ModelNode globalModules = new ModelNode();
+    private volatile List<GlobalModule> globalModules;
 
     public GlobalModuleDependencyProcessor() {
     }
@@ -57,31 +53,22 @@ public class GlobalModuleDependencyProcessor implements DeploymentUnitProcessor 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
-        final ModelNode globalMods = this.globalModules;
+        final List<GlobalModule> globalMods = this.globalModules;
 
-        if (globalMods.isDefined()) {
-            for (final ModelNode module : globalMods.asList()) {
-                final String name = module.get(NAME).asString();
-                boolean annotations = module.get(ANNOTATIONS).asBoolean();
-                boolean services = module.get(SERVICES).asBoolean();
-                boolean metaInf = module.get(META_INF).asBoolean();
+            for (final GlobalModule module : globalMods) {
+                final ModuleDependency dependency = new ModuleDependency(Module.getBootModuleLoader(), module.getModuleIdentifier(), false, false, module.isServices(), false);
 
-                String slot = module.get(SLOT).asString();
-                final ModuleIdentifier identifier = ModuleIdentifier.create(name, slot);
-                final ModuleDependency dependency = new ModuleDependency(Module.getBootModuleLoader(), identifier, false, false, services, false);
-
-                if (metaInf) {
+                if (module.isMetaInf()) {
                     dependency.addImportFilter(PathFilters.getMetaInfSubdirectoriesFilter(), true);
                     dependency.addImportFilter(PathFilters.getMetaInfFilter(), true);
                 }
 
-                if(annotations) {
-                    deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_ANNOTATION_INDEXES, identifier);
+                if(module.isAnnotations()) {
+                    deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_ANNOTATION_INDEXES, module.getModuleIdentifier());
                 }
 
                 moduleSpecification.addSystemDependency(dependency);
             }
-        }
     }
 
     @Override
@@ -93,7 +80,7 @@ public class GlobalModuleDependencyProcessor implements DeploymentUnitProcessor 
      * Set the global modules configuration for the container.
      * @param globalModules a fully resolved (i.e. with expressions resolved and default values set) global modules configuration
      */
-    public void setGlobalModules(final ModelNode globalModules) {
+    public void setGlobalModules(final List<GlobalModule> globalModules) {
         this.globalModules = globalModules;
     }
 }

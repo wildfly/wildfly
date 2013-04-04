@@ -154,7 +154,7 @@ public class WeldModuleDeploymentTestCase {
             }
             modulePath = jbossHome + File.separatorChar + "modules";
         } else {
-            modulePath = modulePath.split(File.pathSeparator)[0];
+            modulePath = modulePath.split(File.pathSeparator)[1];
         }
         File moduleDir = new File(modulePath);
         if (!moduleDir.exists()) {

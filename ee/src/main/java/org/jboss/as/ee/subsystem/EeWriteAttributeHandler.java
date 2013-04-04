@@ -82,7 +82,7 @@ public class EeWriteAttributeHandler extends AbstractWriteAttributeHandler<Void>
 
     private void applyUpdateToDeploymentUnitProcessor(final OperationContext context, ModelNode newValue, String attributeName) throws OperationFailedException {
         if (GlobalModulesDefinition.INSTANCE.getName().equals(attributeName)) {
-            moduleDependencyProcessor.setGlobalModules(newValue);
+            moduleDependencyProcessor.setGlobalModules(GlobalModulesDefinition.createModuleList(context, newValue));
         } else if (EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.getName().equals(attributeName)) {
             boolean isolate = newValue.asBoolean();
             isolationProcessor.setEarSubDeploymentsIsolated(isolate);

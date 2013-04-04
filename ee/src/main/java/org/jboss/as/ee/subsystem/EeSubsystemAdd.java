@@ -132,15 +132,14 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final boolean jbossDescriptorPropertyReplacement = EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.resolveModelAttribute(context, model).asBoolean();
         final boolean ejbAnnotationPropertyReplacement = EeSubsystemRootResource.EJB_ANNOTATION_PROPERTY_REPLACEMENT.resolveModelAttribute(context, model).asBoolean();
 
+        moduleDependencyProcessor.setGlobalModules(GlobalModulesDefinition.createModuleList(context, globalModules));
+        isolationProcessor.setEarSubDeploymentsIsolated(earSubDeploymentsIsolated);
+        specDescriptorPropertyReplacementProcessor.setDescriptorPropertyReplacement(specDescriptorPropertyReplacement);
+        jbossDescriptorPropertyReplacementProcessor.setDescriptorPropertyReplacement(jbossDescriptorPropertyReplacement);
+        ejbAnnotationPropertyReplacementProcessor.setDescriptorPropertyReplacement(ejbAnnotationPropertyReplacement);
+
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-
-                moduleDependencyProcessor.setGlobalModules(globalModules);
-                isolationProcessor.setEarSubDeploymentsIsolated(earSubDeploymentsIsolated);
-                specDescriptorPropertyReplacementProcessor.setDescriptorPropertyReplacement(specDescriptorPropertyReplacement);
-                jbossDescriptorPropertyReplacementProcessor.setDescriptorPropertyReplacement(jbossDescriptorPropertyReplacement);
-                ejbAnnotationPropertyReplacementProcessor.setDescriptorPropertyReplacement(ejbAnnotationPropertyReplacement);
-
 
                 ROOT_LOGGER.debug("Activating EE subsystem");
 
