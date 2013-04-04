@@ -50,6 +50,7 @@ import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
+import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.jpa.interceptor.WebNonTxEmCloserAction;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderLoader;
 import org.jboss.as.jpa.service.JPAService;
@@ -104,7 +105,8 @@ import static org.jboss.as.server.Services.addServerExecutorDependency;
  */
 public class PersistenceUnitServiceHandler {
 
-    public static final String JNDI_PROPERTY = "jboss.entity.manager.factory.jndi.name";
+    private static final String ENTITYMANAGERFACTORY_JNDI_PROPERTY = "jboss.entity.manager.factory.jndi.name";
+    private static final String ENTITYMANAGER_JNDI_PROPERTY = "jboss.entity.manager.jndi.name";
 
     private static final AttachmentKey<Map<String,PersistenceProviderAdaptor>> providerAdaptorMapKey = AttachmentKey.create(Map.class);
     private static final String SCOPED_UNIT_NAME = "scoped-unit-name";
@@ -272,7 +274,7 @@ public class PersistenceUnitServiceHandler {
         }
     }
 
-    private static void deployPersistenceUnit(DeploymentPhaseContext phaseContext, DeploymentUnit deploymentUnit, EEModuleDescription eeModuleDescription, Collection<ComponentDescription> components, ServiceTarget serviceTarget, ModuleClassLoader classLoader, PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder, PersistenceUnitMetadata pu, boolean startEarly) throws DeploymentUnitProcessingException {
+    private static void deployPersistenceUnit(DeploymentPhaseContext phaseContext, DeploymentUnit deploymentUnit, EEModuleDescription eeModuleDescription, Collection<ComponentDescription> components, ServiceTarget serviceTarget, ModuleClassLoader classLoader, PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder, final PersistenceUnitMetadata pu, boolean startEarly) throws DeploymentUnitProcessingException {
         pu.setClassLoader(classLoader);
         try {
             SerializableValidatorFactory validatorFactory = null;
@@ -357,8 +359,46 @@ public class PersistenceUnitServiceHandler {
 
             adaptor.addProviderDependencies(phaseContext.getServiceRegistry(), serviceTarget, builder, pu);
 
-            if (pu.getProperties().containsKey(JNDI_PROPERTY)) {
-                String jndiName = pu.getProperties().get(JNDI_PROPERTY).toString();
+            /**
+             * handle extension that binds a transaction scoped entity manager to specified JNDI location
+             */
+            if (pu.getProperties().containsKey(ENTITYMANAGER_JNDI_PROPERTY)) {
+                String jndiName = pu.getProperties().get(ENTITYMANAGER_JNDI_PROPERTY).toString();
+                final ContextNames.BindInfo bindingInfo;
+                if (jndiName.startsWith("java:")) {
+                    bindingInfo =  ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jndiName);
+                }
+                else {
+                    bindingInfo = ContextNames.bindInfoFor(jndiName);
+                }
+                JPA_LOGGER.tracef("binding the transaction scoped entity manager to jndi name '%s'", bindingInfo.getAbsoluteJndiName());
+                final BinderService binderService = new BinderService(bindingInfo.getBindName());
+                serviceTarget.addService(bindingInfo.getBinderServiceName(), binderService)
+                    .addDependency(bindingInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
+                    .addDependency(puServiceName, PersistenceUnitServiceImpl.class, new Injector<PersistenceUnitServiceImpl>() {
+                        @Override
+                        public void inject(final PersistenceUnitServiceImpl value) throws
+                                InjectionException {
+                            binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(
+                                    new ImmediateValue<Object>(
+                                            new TransactionScopedEntityManager(
+                                                    pu.getScopedPersistenceUnitName(),
+                                                    new HashMap(),
+                                                    value.getEntityManagerFactory()))));
+                        }
+
+                        @Override
+                        public void uninject() {
+                            binderService.getNamingStoreInjector().uninject();
+                        }
+                    }).install();
+            }
+
+            /**
+             * handle extension that binds an entity manager factory to specified JNDI location
+             */
+            if (pu.getProperties().containsKey(ENTITYMANAGERFACTORY_JNDI_PROPERTY)) {
+                String jndiName = pu.getProperties().get(ENTITYMANAGERFACTORY_JNDI_PROPERTY).toString();
                 final ContextNames.BindInfo bindingInfo;
                 if (jndiName.startsWith("java:")) {
                     bindingInfo =  ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jndiName);
