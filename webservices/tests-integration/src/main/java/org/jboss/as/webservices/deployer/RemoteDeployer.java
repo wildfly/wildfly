@@ -49,6 +49,7 @@ import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
+import org.jboss.as.controller.client.helpers.standalone.impl.ModelControllerClientServerDeploymentManager;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.Constants;
 import org.jboss.dmr.ModelNode;
@@ -387,6 +388,6 @@ public final class RemoteDeployer implements Deployer {
     }
 
     private static ServerDeploymentManager newDeploymentManager() throws Exception {
-        return ServerDeploymentManager.Factory.create(newModelControllerClient());
+        return new ModelControllerClientServerDeploymentManager(newModelControllerClient(), true);
     }
 }
