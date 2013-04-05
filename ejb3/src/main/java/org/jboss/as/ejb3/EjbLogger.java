@@ -24,14 +24,6 @@
 
 package org.jboss.as.ejb3;
 
-import java.io.File;
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.sql.SQLException;
-import java.util.Date;
-
-import javax.ejb.Timer;
-
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
@@ -48,6 +40,13 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
+
+import javax.ejb.Timer;
+import java.io.File;
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.sql.SQLException;
+import java.util.Date;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
@@ -581,6 +580,11 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 14264, value = "Exception running timer task for timer %s on EJB %s")
     void exceptionRunningTimerTask(String timerId, String timedObjectId, @Cause  Exception e);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14265, value = "Error during transaction recovery")
+    void errorDuringTransactionRecovery(@Cause Throwable cause);
+
 
 
     // Don't add message ids greater that 14299!!! If you need more first check what EjbMessages is

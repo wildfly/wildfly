@@ -21,6 +21,19 @@
  */
 package org.jboss.as.ejb3.component;
 
+import java.beans.IntrospectionException;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.resource.ResourceException;
+import javax.resource.spi.ActivationSpec;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.UserTransaction;
+
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.ejb3.inflow.EndpointDeployer;
@@ -37,18 +50,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.util.propertyeditor.PropertyEditors;
-
-import javax.resource.ResourceException;
-import javax.resource.spi.ActivationSpec;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
-import java.beans.IntrospectionException;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
 import static org.jboss.as.ejb3.EjbLogger.EJB3_LOGGER;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
