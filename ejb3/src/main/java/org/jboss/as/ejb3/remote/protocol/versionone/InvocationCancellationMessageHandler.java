@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.remote.RemoteAsyncInvocationCancelStatusService;
+import org.jboss.as.ejb3.remote.protocol.AbstractMessageHandler;
 import org.jboss.logging.Logger;
 import org.jboss.remoting3.MessageInputStream;
 

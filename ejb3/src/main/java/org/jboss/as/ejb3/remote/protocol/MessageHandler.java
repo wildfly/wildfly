@@ -20,8 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.remote.protocol.versionone;
+package org.jboss.as.ejb3.remote.protocol;
 
+import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
 import org.jboss.remoting3.MessageInputStream;
 
 import java.io.IOException;
@@ -29,7 +30,7 @@ import java.io.IOException;
 /**
  * User: jpai
  */
-interface MessageHandler {
+public interface MessageHandler {
 
     void processMessage(final ChannelAssociation channelAssociation, final MessageInputStream messageInputStream) throws IOException;
 
