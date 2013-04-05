@@ -52,9 +52,14 @@ class XidTransactionRollbackTask extends XidTransactionManagementTask {
     protected void manageTransaction() throws Throwable {
         final Transaction transaction = this.transactionsRepository.getImportedTransaction(this.xidTransactionID);
         if(transaction == null) {
-            if(EjbLogger.EJB3_INVOCATION_LOGGER.isDebugEnabled()) {
-                //this happens if no ejb invocations where made within the TX
-                EjbLogger.EJB3_INVOCATION_LOGGER.debug("Not rolling back transaction " + this.xidTransactionID + " as is was not found on the server");
+            // check the recovery store - it's possible that the "rollback" is coming in as part of recovery operation and the subordinate
+            // tx may not yet be in memory, but might be in the recovery store
+            final Transaction recoveredTransaction = tryRecoveryForImportedTransaction();
+            // still not found, so just return
+            if (recoveredTransaction == null) {
+                if(EjbLogger.EJB3_INVOCATION_LOGGER.isDebugEnabled()) {
+                    EjbLogger.EJB3_INVOCATION_LOGGER.debug("Not rolling back " + this.xidTransactionID + " as is was not found on the server");
+                }
             }
             return;
         }
