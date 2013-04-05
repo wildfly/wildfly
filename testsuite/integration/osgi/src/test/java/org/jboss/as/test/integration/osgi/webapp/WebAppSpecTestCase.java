@@ -175,7 +175,9 @@ public class WebAppSpecTestCase {
         // WEB-INF, OSGI-INF, META-INF, OSGI-OPT
         deployer.deploy(BUNDLE_E_WAB);
         try {
-            String result = performCall("/bundleE/host-message.txt");
+            String result = performCall("/bundleE/allowed.txt");
+            Assert.assertEquals("Hello from Host", result);
+            result = performCall("/bundleE/GOOD-PATH/allowed.txt");
             Assert.assertEquals("Hello from Host", result);
             try {
                 performCall("/bundleE/WEB-INF/forbidden.txt");
@@ -315,7 +317,8 @@ public class WebAppSpecTestCase {
     public static Archive<?> getBundleE() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_E_WAB);
         archive.addClasses(SimpleAnnotatedServlet.class, Echo.class);
-        archive.addAsResource(HOST_ASSET, "host-message.txt");
+        archive.addAsResource(HOST_ASSET, "allowed.txt");
+        archive.addAsResource(HOST_ASSET, "GOOD-PATH/allowed.txt");
         archive.addAsResource(HOST_ASSET, "WEB-INF/forbidden.txt");
         archive.addAsResource(HOST_ASSET, "OSGI-INF/forbidden.txt");
         archive.addAsResource(HOST_ASSET, "META-INF/forbidden.txt");
