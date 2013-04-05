@@ -576,6 +576,10 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 14262, value = "A previous execution of timer [%s %s] is being retried, skipping this scheduled execution at: %s")
     void skipInvokeTimeoutDuringRetry(String timedObjectId, String timerId, Date scheduledTime);
 
+    @LogMessage(level = ERROR)
+    @Message(id = 14265, value = "Error during transaction recovery")
+    void errorDuringTransactionRecovery(@Cause Throwable cause);
+
 
     // Don't add message ids greater that 14299!!! If you need more first check what EjbMessages is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is

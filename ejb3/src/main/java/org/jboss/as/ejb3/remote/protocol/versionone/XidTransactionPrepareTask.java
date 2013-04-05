@@ -35,6 +35,7 @@ import javax.transaction.HeuristicCommitException;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
 import javax.transaction.SystemException;
+import javax.transaction.Transaction;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import java.io.IOException;
@@ -87,9 +88,14 @@ class XidTransactionPrepareTask extends XidTransactionManagementTask {
     private int prepareTransaction() throws Throwable {
         final SubordinateTransaction subordinateTransaction = this.transactionsRepository.getImportedTransaction(this.xidTransactionID);
         if (subordinateTransaction == null) {
-            if (EjbLogger.EJB3_INVOCATION_LOGGER.isDebugEnabled()) {
-                //this happens if no ejb invocations where made within the TX
-                EjbLogger.EJB3_INVOCATION_LOGGER.debug("Not preparing transaction " + this.xidTransactionID + " as is was not found on the server");
+            // check the recovery store - it's possible that the "prepare" is coming in as part of recovery operation and the subordinate
+            // tx may not yet be in memory, but might be in the recovery store
+            final Transaction recoveredTransaction = tryRecoveryForImportedTransaction();
+            // still not found, so just return
+            if (recoveredTransaction == null) {
+                if (EjbLogger.EJB3_INVOCATION_LOGGER.isDebugEnabled()) {
+                    EjbLogger.EJB3_INVOCATION_LOGGER.debug("Not preparing " + this.xidTransactionID + " as is was not found on the server");
+                }
             }
             return XAResource.XA_OK;
         }

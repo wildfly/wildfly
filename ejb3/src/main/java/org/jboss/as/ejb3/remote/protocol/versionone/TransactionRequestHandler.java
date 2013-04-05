@@ -25,10 +25,12 @@ package org.jboss.as.ejb3.remote.protocol.versionone;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
+import org.jboss.as.ejb3.remote.protocol.AbstractMessageHandler;
 import org.jboss.ejb.client.TransactionID;
 import org.jboss.ejb.client.UserTransactionID;
 import org.jboss.ejb.client.XidTransactionID;
@@ -180,4 +182,9 @@ class TransactionRequestHandler extends AbstractMessageHandler {
         }
     }
 
+    // overridden here to allow package protected access to XidTransactionManagementTask
+    @Override
+    protected void writeException(ChannelAssociation channelAssociation, MarshallerFactory marshallerFactory, short invocationId, Throwable t, Map<String, Object> attachments) throws IOException {
+        super.writeException(channelAssociation, marshallerFactory, invocationId, t, attachments);
+    }
 }

@@ -66,7 +66,7 @@
         <module name="org.jboss.threads"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.common-core"/>
-        <module name="org.jboss.ejb-client"/>
+        <module name="org.jboss.ejb-client" services="import"/>
         <module name="org.jboss.ejb3"/>
         <module name="org.jboss.iiop-client"/>
         <module name="org.jboss.invocation"/>
@@ -74,6 +74,8 @@
         <module name="org.jboss.jandex"/>
         <!-- For SubordinationManager for remote Xid Transaction propagation -->
         <module name="org.jboss.jts"/>
+        <!-- For recovery manager (com.arjuna.ats.jbossatx.jta.RecoveryManagerService) -->
+        <module name="org.jboss.jts.integration"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.marshalling.river" services="import"/>

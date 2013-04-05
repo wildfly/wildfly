@@ -22,13 +22,14 @@
 
 package org.jboss.as.txn.service;
 
-import static org.jboss.as.txn.TransactionMessages.MESSAGES;
-
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean;
+import com.arjuna.ats.arjuna.common.arjPropertyManager;
+import com.arjuna.ats.arjuna.tools.osb.mbean.ObjStoreBrowser;
+import com.arjuna.ats.jta.common.JTAEnvironmentBean;
+import com.arjuna.orbportability.internal.utils.PostInitLoader;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -37,19 +38,11 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.JBossXATerminator;
-import org.jboss.tm.LastResource;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.jboss.tm.usertx.client.ServerVMClientUserTransaction;
 import org.omg.CORBA.ORB;
 
-import com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean;
-import com.arjuna.ats.arjuna.common.arjPropertyManager;
-import com.arjuna.ats.arjuna.tools.osb.mbean.ObjStoreBrowser;
-import com.arjuna.ats.internal.jta.recovery.arjunacore.JTANodeNameXAResourceOrphanFilter;
-import com.arjuna.ats.internal.jta.recovery.arjunacore.JTATransactionLogXAResourceOrphanFilter;
-import com.arjuna.ats.jta.common.JTAEnvironmentBean;
-import com.arjuna.ats.jta.common.jtaPropertyManager;
-import com.arjuna.orbportability.internal.utils.PostInitLoader;
+import static org.jboss.as.txn.TransactionMessages.MESSAGES;
 
 /**
  * A service for the proprietary Arjuna {@link com.arjuna.ats.jbossatx.jta.TransactionManagerService}
@@ -65,6 +58,7 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
     private final InjectedValue<JBossXATerminator> xaTerminatorInjector = new InjectedValue<JBossXATerminator>();
     private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
     private final InjectedValue<UserTransactionRegistry> userTransactionRegistry = new InjectedValue<UserTransactionRegistry>();
+    private final InjectedValue<JTAEnvironmentBean> jtaEnvironmentBean = new InjectedValue<JTAEnvironmentBean>();
 
 
     private com.arjuna.ats.jbossatx.jta.TransactionManagerService value;
@@ -77,7 +71,7 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
     private final String nodeIdentifier;
 
     public ArjunaTransactionManagerService(final boolean coordinatorEnableStatistics, final int coordinatorDefaultTimeout,
-                                    final boolean transactionStatusManagerEnable, final boolean jts, final String nodeIdentifier) {
+                                           final boolean transactionStatusManagerEnable, final boolean jts, final String nodeIdentifier) {
         this.coordinatorEnableStatistics = coordinatorEnableStatistics;
         this.coordinatorDefaultTimeout = coordinatorDefaultTimeout;
         this.transactionStatusManagerEnable = transactionStatusManagerEnable;
@@ -87,12 +81,6 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
-
-        final JTAEnvironmentBean jtaEnvironmentBean = jtaPropertyManager.getJTAEnvironmentBean();
-        jtaEnvironmentBean.setLastResourceOptimisationInterfaceClassName(LastResource.class.getName());
-        jtaEnvironmentBean.setXaRecoveryNodes(Collections.singletonList(nodeIdentifier));
-        jtaEnvironmentBean.setXaResourceOrphanFilterClassNames(Arrays.asList(JTATransactionLogXAResourceOrphanFilter.class.getName(), JTANodeNameXAResourceOrphanFilter.class.getName()));
-        jtaEnvironmentBean.setXAResourceRecordWrappingPlugin(new com.arjuna.ats.internal.jbossatx.jta.XAResourceRecordWrappingPluginImpl());
 
         final CoordinatorEnvironmentBean coordinatorEnvironmentBean = arjPropertyManager.getCoordinatorEnvironmentBean();
         coordinatorEnvironmentBean.setEnableStatistics(coordinatorEnableStatistics);
@@ -108,13 +96,13 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
 
         if (!jts) {
             // No IIOP, stick with JTA mode.
-            jtaEnvironmentBean.setTransactionManagerClassName(com.arjuna.ats.jbossatx.jta.TransactionManagerDelegate.class.getName());
-            jtaEnvironmentBean.setTransactionSynchronizationRegistryClassName(com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple.class.getName());
+            jtaEnvironmentBean.getValue().setTransactionManagerClassName(com.arjuna.ats.jbossatx.jta.TransactionManagerDelegate.class.getName());
+            jtaEnvironmentBean.getValue().setTransactionSynchronizationRegistryClassName(com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple.class.getName());
 
             final com.arjuna.ats.jbossatx.jta.TransactionManagerService service = new com.arjuna.ats.jbossatx.jta.TransactionManagerService();
             final ServerVMClientUserTransaction userTransaction = new ServerVMClientUserTransaction(service.getTransactionManager());
             userTransactionRegistry.getValue().addProvider(userTransaction);
-            jtaEnvironmentBean.setUserTransaction(userTransaction);
+            jtaEnvironmentBean.getValue().setUserTransaction(userTransaction);
             service.setJbossXATerminator(xaTerminatorInjector.getValue());
             service.setTransactionSynchronizationRegistry(new com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple());
 
@@ -130,12 +118,12 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
             new PostInitLoader(PostInitLoader.generateORBPropertyName("com.arjuna.orbportability.orb"), orb);
 
             // IIOP is enabled, so fire up JTS mode.
-            jtaEnvironmentBean.setTransactionManagerClassName(com.arjuna.ats.jbossatx.jts.TransactionManagerDelegate.class.getName());
-            jtaEnvironmentBean.setTransactionSynchronizationRegistryClassName(com.arjuna.ats.internal.jta.transaction.jts.TransactionSynchronizationRegistryImple.class.getName());
+            jtaEnvironmentBean.getValue().setTransactionManagerClassName(com.arjuna.ats.jbossatx.jts.TransactionManagerDelegate.class.getName());
+            jtaEnvironmentBean.getValue().setTransactionSynchronizationRegistryClassName(com.arjuna.ats.internal.jta.transaction.jts.TransactionSynchronizationRegistryImple.class.getName());
 
             final com.arjuna.ats.jbossatx.jts.TransactionManagerService service = new com.arjuna.ats.jbossatx.jts.TransactionManagerService();
             final ServerVMClientUserTransaction userTransaction = new ServerVMClientUserTransaction(service.getTransactionManager());
-            jtaEnvironmentBean.setUserTransaction(userTransaction);
+            jtaEnvironmentBean.getValue().setUserTransaction(userTransaction);
             userTransactionRegistry.getValue().addProvider(userTransaction);
             service.setJbossXATerminator(xaTerminatorInjector.getValue());
             service.setTransactionSynchronizationRegistry(new com.arjuna.ats.internal.jta.transaction.jts.TransactionSynchronizationRegistryImple());
@@ -187,5 +175,9 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
 
     public InjectedValue<UserTransactionRegistry> getUserTransactionRegistry() {
         return userTransactionRegistry;
+    }
+
+    public Injector<JTAEnvironmentBean> getJTAEnvironmentBeanInjector() {
+        return this.jtaEnvironmentBean;
     }
 }

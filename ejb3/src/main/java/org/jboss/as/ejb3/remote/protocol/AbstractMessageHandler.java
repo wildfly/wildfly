@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.remote.protocol.versionone;
+package org.jboss.as.ejb3.remote.protocol;
 
 import java.io.DataInputStream;
 import java.io.DataOutput;
@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.ejb.client.remoting.ProtocolV1ClassTable;
 import org.jboss.ejb.client.remoting.ProtocolV1ObjectTable;
@@ -53,7 +54,7 @@ import org.jboss.remoting3.MessageOutputStream;
 /**
  * @author Jaikiran Pai
  */
-abstract class AbstractMessageHandler implements MessageHandler {
+public abstract class AbstractMessageHandler implements MessageHandler {
 
     protected static final byte HEADER_NO_SUCH_EJB_FAILURE = 0x0A;
     protected static final byte HEADER_NO_SUCH_EJB_METHOD_FAILURE = 0x0B;

@@ -27,8 +27,12 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionImple;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManager;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.TransactionImporter;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.TransactionImporterImple;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.XATerminatorImple;
+import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import org.jboss.ejb.client.UserTransactionID;
 import org.jboss.ejb.client.XidTransactionID;
+import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -37,6 +41,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import javax.resource.spi.XATerminator;
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
@@ -44,14 +49,19 @@ import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.Xid;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Jaikiran Pai
  */
 public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransactionsRepository> {
+
+    private static final Logger logger = Logger.getLogger(EJBRemoteTransactionsRepository.class);
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("remote-transactions-repository");
 
@@ -59,10 +69,14 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
 
     private final InjectedValue<UserTransaction> userTransactionInjectedValue = new InjectedValue<UserTransaction>();
 
+    private final InjectedValue<RecoveryManagerService> recoveryManagerService = new InjectedValue<RecoveryManagerService>();
+
     private final Map<UserTransactionID, Uid> userTransactions = Collections.synchronizedMap(new HashMap<UserTransactionID, Uid>());
 
     @Override
     public void start(StartContext context) throws StartException {
+        recoveryManagerService.getValue().addSerializableXAResourceDeserializer(EJBXAResourceDeserializer.INSTANCE);
+        logger.debug("Registered EJB XA resource deserializer " + EJBXAResourceDeserializer.INSTANCE);
     }
 
     @Override
@@ -150,6 +164,30 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
         return transactionImporter.importTransaction(xidTransactionID.getXid(), txTimeout);
     }
 
+    public Xid[] getXidsToRecoverForParentNode(final String parentNodeName, int recoveryFlags) throws XAException {
+        final Set<Xid> xidsToRecover = new HashSet<Xid>();
+        final TransactionImporter transactionImporter = SubordinationManager.getTransactionImporter();
+        if (transactionImporter instanceof TransactionImporterImple) {
+            final Set<Xid> inFlightXids = ((TransactionImporterImple) transactionImporter).getInflightXids(parentNodeName);
+            if (inFlightXids != null) {
+                xidsToRecover.addAll(inFlightXids);
+            }
+        }
+        final XATerminator xaTerminator = SubordinationManager.getXATerminator();
+        if (xaTerminator instanceof XATerminatorImple) {
+            final Xid[] inDoubtTransactions = ((XATerminatorImple) xaTerminator).doRecover(null, parentNodeName);
+            if (inDoubtTransactions != null) {
+                xidsToRecover.addAll(Arrays.asList(inDoubtTransactions));
+            }
+        } else {
+            final Xid[] inDoubtTransactions = xaTerminator.recover(recoveryFlags);
+            if (inDoubtTransactions != null) {
+                xidsToRecover.addAll(Arrays.asList(inDoubtTransactions));
+            }
+        }
+        return xidsToRecover.toArray(new Xid[0]);
+    }
+
     public UserTransaction getUserTransaction() {
         return this.userTransactionInjectedValue.getValue();
     }
@@ -160,6 +198,10 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
 
     public Injector<UserTransaction> getUserTransactionInjector() {
         return this.userTransactionInjectedValue;
+    }
+
+    public Injector<RecoveryManagerService> getRecoveryManagerInjector() {
+        return this.recoveryManagerService;
     }
 
 }
