@@ -338,6 +338,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         Settings.getInstance().setHistoryDisabled(!config.isHistoryEnabled());
         Settings.getInstance().setHistoryFile(new File(config.getHistoryFileDir(), config.getHistoryFileName()));
         Settings.getInstance().setHistorySize(config.getHistoryMaxSize());
+        Settings.getInstance().setEnablePipelineAndRedirectionParser(false);
     }
 
     private void initCommands() {
