@@ -24,9 +24,7 @@ package org.jboss.as.osgi.web;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -42,6 +40,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.FilterMappingMetaData;
+import org.jboss.metadata.web.spec.FilterMetaData;
+import org.jboss.metadata.web.spec.FiltersMetaData;
 import org.jboss.osgi.metadata.OSGiMetaData;
 
 /**
@@ -61,21 +61,30 @@ public class WebBundleContextProcessor implements DeploymentUnitProcessor {
         if (warMetaData == null || metadata == null)
             return;
 
-        // [TODO] [AS7-5200]
         // For confidentiality reasons, a Web Runtime must not return any static content for paths that start with
         // WEB-INF, OSGI-INF, META-INF, OSGI-OPT
-        FilterMappingMetaData filterMetaData = new FilterMappingMetaData();
-        filterMetaData.setFilterName(WebBundleContextFilter.class.getName());
-        filterMetaData.setServletNames(Collections.singletonList("io.undertow.DefaultServlet"));
-        filterMetaData.setUrlPatterns(Arrays.asList("/OSGI-INF/*", "/OSGI-OPT/*"));
+        FilterMetaData filterMetaData = new FilterMetaData();
+        filterMetaData.setFilterClass(WebBundleContextFilter.class.getName());
+        filterMetaData.setFilterName("Filter forbidden resources");
+
+        FilterMappingMetaData filterMappingMetaData = new FilterMappingMetaData();
+        filterMappingMetaData.setFilterName(filterMetaData.getName());
+        filterMappingMetaData.setUrlPatterns(Arrays.asList("/OSGI-INF/*", "/OSGI-OPT/*"));
 
         JBossWebMetaData jbossWebMetaData = warMetaData.getMergedJBossWebMetaData();
+        FiltersMetaData filters = jbossWebMetaData.getFilters();
+        if (filters == null) {
+            filters = new FiltersMetaData();
+            jbossWebMetaData.setFilters(filters);
+        }
+        filters.add(filterMetaData);
+
         List<FilterMappingMetaData> filterMappings = jbossWebMetaData.getFilterMappings();
         if (filterMappings == null) {
             filterMappings = new ArrayList<FilterMappingMetaData>();
             jbossWebMetaData.setFilterMappings(filterMappings);
         }
-        filterMappings.add(filterMetaData);
+        filterMappings.add(filterMappingMetaData);
     }
 
     @Override
@@ -85,7 +94,7 @@ public class WebBundleContextProcessor implements DeploymentUnitProcessor {
     public static class WebBundleContextFilter implements Filter {
 
         @Override
-        public void init(FilterConfig arg0) throws ServletException {
+        public void init(FilterConfig config) throws ServletException {
         }
 
         @Override
