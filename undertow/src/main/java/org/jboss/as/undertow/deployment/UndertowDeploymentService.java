@@ -33,6 +33,7 @@ import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.api.ConfidentialPortManager;
+import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
 import io.undertow.servlet.api.ThreadSetupAction;
@@ -264,7 +265,9 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
         @Override
         public ServletContext getServletContext() {
             //todo UndertowDeploymentService should be fully started before this method is called
-            return controller.getValue().deploymentManager.getDeployment().getServletContext();
+            UndertowDeploymentService deploymentService = controller.getValue();
+            Deployment deployment = deploymentService.deploymentManager.getDeployment();
+            return deployment != null ? deployment.getServletContext() : null;
         }
     }
 }

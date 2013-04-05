@@ -49,7 +49,7 @@ public final class WebBundleURIParser {
      * Parse a bundle location as a webbundle URI and generate a
      * Manifest from it
      *
-     * @param The bundle location
+     * @param location The bundle location
      * @return A valid OSGi Manifest or null
      */
     public static Manifest parse(String location) {

@@ -19,10 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.osgi.web;
-
-
 
 import java.util.jar.Manifest;
 
@@ -36,7 +33,7 @@ import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 
 /**
- * Provide OSGi meatadata for webbundle:// deployments
+ * Provide OSGi metadata for webbundle:// deployments
  *
  * @author Thomas.Diesler@jboss.com
  * @since 30-Nov-2012
@@ -46,16 +43,17 @@ public class WebBundleStructureProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
+        // Generate the OSGi metadata from a webbundle:// URI
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        if (depUnit.hasAttachment(OSGiConstants.OSGI_METADATA_KEY))
-            return;
-
-        String runtimeName = depUnit.getName();
-        Manifest manifest = WebBundleURIParser.parse(runtimeName);
-        if (manifest != null) {
-            OSGiMetaData metadata = OSGiMetaDataBuilder.load(manifest);
-            depUnit.putAttachment(OSGiConstants.OSGI_METADATA_KEY, metadata);
-            depUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
+        OSGiMetaData metadata = depUnit.getAttachment(OSGiConstants.OSGI_METADATA_KEY);
+        if (metadata == null) {
+            // [TODO] this should generate OSGiMetaData directly
+            Manifest manifest = WebBundleURIParser.parse(depUnit.getName());
+            if (manifest != null) {
+                metadata = OSGiMetaDataBuilder.load(manifest);
+                depUnit.putAttachment(OSGiConstants.OSGI_METADATA_KEY, metadata);
+                depUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
+            }
         }
     }
 
