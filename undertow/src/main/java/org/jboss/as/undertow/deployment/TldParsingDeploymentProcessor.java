@@ -113,10 +113,10 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
                         final TldMetaData value = parseTLD(child);
                         value.setUri(tld.getTaglibUri());
                         String key = "/" + pathNameRelativeToRoot;
-                        if(!tlds.containsKey(key)) {
+                        if (!tlds.containsKey(key)) {
                             tlds.put(key, value);
                         }
-                        if(value.getUri() != null && ! tlds.containsKey(value.getUri())) {
+                        if (value.getUri() != null && !tlds.containsKey(value.getUri())) {
                             tlds.put(value.getUri(), value);
                         }
                         found = true;
@@ -169,15 +169,19 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         JBossWebMetaData mergedMd = warMetaData.getMergedJBossWebMetaData();
-        if(mergedMd.getListeners() == null) {
+        if (mergedMd.getListeners() == null) {
             mergedMd.setListeners(new ArrayList<ListenerMetaData>());
         }
 
-        for(final TldMetaData tld : tlds.values()) {
-            if(tld.getListeners() != null) {
-            for(ListenerMetaData l : tld.getListeners()) {
-                mergedMd.getListeners().add(l);
-            }
+        final ArrayList<TldMetaData> allTlds = new ArrayList<>(tlds.values());
+        allTlds.addAll(tldsMetaData.getSharedTlds(deploymentUnit));
+
+
+        for (final TldMetaData tld : allTlds) {
+            if (tld.getListeners() != null) {
+                for (ListenerMetaData l : tld.getListeners()) {
+                    mergedMd.getListeners().add(l);
+                }
             }
         }
     }
