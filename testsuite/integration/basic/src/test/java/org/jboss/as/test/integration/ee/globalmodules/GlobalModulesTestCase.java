@@ -146,7 +146,7 @@ public class GlobalModulesTestCase {
             writer.write(index);
             jar.addAsManifestResource(new ByteArrayAsset(out.toByteArray()), "jandex.idx");
 
-            
+
             FileOutputStream jarFile = new FileOutputStream(new File(file, "globalTest.jar"));
             try {
                 jar.as(ZipExporter.class).exportTo(jarFile);
@@ -181,7 +181,7 @@ public class GlobalModulesTestCase {
             }
             modulePath = jbossHome + File.separatorChar + "modules";
         } else {
-            modulePath = modulePath.split(File.pathSeparator)[1];
+            modulePath = modulePath.split(File.pathSeparator)[0];
         }
         File moduleDir = new File(modulePath);
         if (!moduleDir.exists()) {
