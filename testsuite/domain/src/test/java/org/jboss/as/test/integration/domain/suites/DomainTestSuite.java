@@ -50,6 +50,7 @@ import org.junit.runners.Suite;
         ManagementReadsTestCase.class,
         ManagementVersionTestCase.class,
         ModelPersistenceTestCase.class,
+        ModuleLoadingManagementTestCase.class,
         OperationTransformationTestCase.class,
         ReadEnvironmentVariablesTestCase.class,
         ServerManagementTestCase.class,

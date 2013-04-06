@@ -81,6 +81,7 @@ import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
+import org.jboss.as.server.controller.resources.ModuleLoadingResourceDefinition;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.controller.resources.VaultResourceDefinition;
@@ -319,6 +320,7 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
 
         //host-environment
         hostRegistration.registerSubModel(HostEnvironmentResourceDefinition.of(environment));
+        hostRegistration.registerSubModel(new ModuleLoadingResourceDefinition());
 
 
         // Jvms

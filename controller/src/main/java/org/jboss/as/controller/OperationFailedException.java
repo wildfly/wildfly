@@ -82,6 +82,17 @@ public class OperationFailedException extends Exception implements OperationClie
     }
 
     /**
+     * Constructs a {@code OperationFailedException} with the specified cause.
+     * The {@link Throwable#getMessage() cause's message} is also used as the
+     * {@link #getFailureDescription() failure description}.
+     *
+     * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method). Cannot be {@code null}
+     */
+    public OperationFailedException(final Throwable cause) {
+        this(cause.getMessage(), cause);
+    }
+
+    /**
      * Constructs a {@code OperationFailedException} with the specified cause. The detail message is set to:
      * <pre>(cause == null ? null : cause.toString())</pre>
      * (which typically contains the class and detail message of {@code cause}).
