@@ -31,8 +31,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE_CONTAINER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
 
-import java.util.EnumSet;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControlledProcessState;
@@ -47,7 +45,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.descriptions.common.CoreManagementDefinition;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.ExtensionResourceDefinition;
@@ -72,7 +69,6 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
@@ -181,7 +177,6 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
             .setStorageRuntime()
             .build();
 
-    private static final EnumSet<Flag> runtimeOnlyFlag = EnumSet.of(Flag.RUNTIME_ONLY);
     public static final AttributeDefinition RUNNING_MODE = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.RUNNING_MODE, ModelType.STRING)
             .setValidator(new EnumValidator<RunningMode>(RunningMode.class, false, false))
             .setStorageRuntime()
@@ -354,8 +349,10 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
 
         // Other core services
         ManagementResourceRegistration serviceContainer = resourceRegistration.registerSubModel(
-                new SimpleResourceDefinition(PathElement.pathElement(CORE_SERVICE, SERVICE_CONTAINER), ControllerResolver.getResolver("core", SERVICE_CONTAINER)));
+                new SimpleResourceDefinition(PathElement.pathElement(CORE_SERVICE, SERVICE_CONTAINER), ServerDescriptions.getResourceDescriptionResolver("core", SERVICE_CONTAINER)));
         serviceContainer.registerOperationHandler(DumpServicesHandler.DEFINITION, DumpServicesHandler.INSTANCE);
+
+        resourceRegistration.registerSubModel(new ModuleLoadingResourceDefinition());
 
         // Platform MBeans
         PlatformMBeanResourceRegistrar.registerPlatformMBeanResources(resourceRegistration);
