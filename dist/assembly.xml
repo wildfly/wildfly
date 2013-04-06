@@ -19,7 +19,7 @@
             <excludes>
                 <exclude>**/*.sh</exclude>
                 <exclude>jboss-*/domain/tmp/auth</exclude>
-                <exclude>jboss-*/domain/tmp/auth</exclude>
+                <exclude>jboss-*/standalone/tmp/auth</exclude>
                 <exclude>**/*-users.properties</exclude>
             </excludes>
         </fileSet>
@@ -44,7 +44,7 @@
             <outputDirectory/>
             <includes>
                 <include>jboss-*/domain/tmp/auth</include>
-                <include>jboss-*/standalone//tmp/auth</include>
+                <include>jboss-*/standalone/tmp/auth</include>
             </includes>
             <directoryMode>0700</directoryMode>
         </fileSet>
