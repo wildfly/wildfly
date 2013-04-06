@@ -120,8 +120,10 @@ class WebContextLifecycleInterceptor extends AbstractLifecycleInterceptor implem
     }
 
     private void uninjectBundleContext(ServletContext webContext) {
-        OSGiLogger.LOGGER.debugf("Uninjecting bundle context from %s", webContext);
-        webContext.removeAttribute(WebExtension.OSGI_BUNDLECONTEXT);
+        if (webContext != null) {
+            OSGiLogger.LOGGER.debugf("Uninjecting bundle context from %s", webContext);
+            webContext.removeAttribute(WebExtension.OSGI_BUNDLECONTEXT);
+        }
     }
 
     private void registerServletContextService(ServletContext servletContext, BundleContext bundleContext) {
@@ -135,7 +137,7 @@ class WebContextLifecycleInterceptor extends AbstractLifecycleInterceptor implem
         if (version instanceof String)
             props.put("osgi.web.version", version);
 
-        Object contextPath = headers.get(WebExtension.WEB_CONTEXT_PATH);
+        Object contextPath = headers.get(WebExtension.WEB_CONTEXTPATH);
         if (contextPath instanceof String)
             props.put("osgi.web.contextpath", contextPath);
 

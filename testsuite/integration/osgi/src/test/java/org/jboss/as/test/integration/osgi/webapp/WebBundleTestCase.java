@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.osgi.webapp;
 
 import java.io.InputStream;
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -37,6 +38,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -56,6 +58,7 @@ import org.osgi.framework.BundleContext;
 public class WebBundleTestCase {
 
     static final String SIMPLE_WAR = "simple.war";
+    static final String WEBBUNDLE_CONTAINER = "webbundle-container.jar";
 
     static final Asset STRING_ASSET = new StringAsset("Hello from Resource");
 
@@ -102,16 +105,16 @@ public class WebBundleTestCase {
     @Test
     public void testWarDeploymentThroughBundleContext() throws Exception {
         InputStream input = deployer.getDeployment(SIMPLE_WAR);
-        Bundle bundle = context.installBundle("webbundle://simple?Bundle-SymbolicName=com.example", input);
+        Bundle webbundle = context.installBundle("webbundle://simple?Bundle-SymbolicName=com.example", input);
         try {
-            bundle.start();
+            webbundle.start();
             String result = performCall("/simple/servlet?input=Hello");
             Assert.assertEquals("Hello from com.example", result);
             // Test resource access
             result = performCall("/simple/message.txt");
             Assert.assertEquals("Hello from Resource", result);
         } finally {
-            bundle.uninstall();
+            webbundle.uninstall();
         }
     }
 
@@ -131,6 +134,29 @@ public class WebBundleTestCase {
         }
     }
 
+    @Test
+    public void testWarDeploymentFromNestedLocation() throws Exception {
+        InputStream input = deployer.getDeployment(WEBBUNDLE_CONTAINER);
+        Bundle container = context.installBundle(WEBBUNDLE_CONTAINER, input);
+        try {
+            URL entry = container.getEntry(SIMPLE_WAR);
+            Assert.assertNotNull("Entry not null", entry);
+            Bundle webbundle = context.installBundle("webbundle:" + entry + "?Bundle-SymbolicName=com.example&Web-ContextPath=simple");
+            try {
+                webbundle.start();
+                String result = performCall("/simple/servlet?input=Hello");
+                Assert.assertEquals("Hello from com.example", result);
+                // Test resource access
+                result = performCall("/simple/message.txt");
+                Assert.assertEquals("Hello from Resource", result);
+            } finally {
+                webbundle.uninstall();
+            }
+        } finally {
+            container.uninstall();
+        }
+    }
+
     private String performCall(String path) throws Exception {
         String urlspec = managementClient.getWebUri() + path;
         return HttpRequest.get(urlspec, 5, TimeUnit.SECONDS);
@@ -141,6 +167,24 @@ public class WebBundleTestCase {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, SIMPLE_WAR);
         archive.addClasses(WebBundleServlet.class);
         archive.addAsWebResource(STRING_ASSET, "message.txt");
+        return archive;
+    }
+
+
+    @Deployment(name = WEBBUNDLE_CONTAINER, managed = false, testable = false)
+    public static Archive<?> getWebBundleContainer() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, WEBBUNDLE_CONTAINER);
+        archive.add(getSimpleWar(), SIMPLE_WAR, ZipExporter.class);
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addBundleClasspath(SIMPLE_WAR);
+                return builder.openStream();
+            }
+        });
         return archive;
     }
 }
