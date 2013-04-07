@@ -386,17 +386,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 jspServlet.addMapping(mapping);
             }
 
-            //TODO: do this properly
-            d.setClassIntrospecter(new ClassIntrospecter() {
-                @Override
-                public <T> InstanceFactory<T> createInstanceFactory(final Class<T> clazz) {
-                    try {
-                        return new ConstructorInstanceFactory<>(clazz.getDeclaredConstructor());
-                    } catch (NoSuchMethodException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
+            d.setClassIntrospecter(new ComponentClassIntrospector(componentRegistry));
 
             final Map<String, List<ServletMappingMetaData>> servletMappings = new HashMap<>();
 
@@ -943,5 +933,52 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             }
         }
         return securityDomain;
+    }
+
+
+    private static class ComponentClassIntrospector implements ClassIntrospecter {
+        private final ComponentRegistry componentRegistry;
+
+        public ComponentClassIntrospector(final ComponentRegistry componentRegistry) {
+            this.componentRegistry = componentRegistry;
+        }
+
+        @Override
+        public <T> InstanceFactory<T> createInstanceFactory(final Class<T> clazz) {
+            try {
+                final ComponentRegistry.ComponentManagedReferenceFactory component = componentRegistry.getComponentsByClass().get(clazz);
+                if(component == null) {
+                    return new ConstructorInstanceFactory<>(clazz.getDeclaredConstructor());
+                } else {
+                    return new ManagedReferenceInstanceFactory<>(component);
+                }
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private static class ManagedReferenceInstanceFactory<T> implements InstanceFactory<T> {
+        private final ComponentRegistry.ComponentManagedReferenceFactory component;
+
+        public ManagedReferenceInstanceFactory(final ComponentRegistry.ComponentManagedReferenceFactory component) {
+            this.component = component;
+        }
+
+        @Override
+        public InstanceHandle<T> createInstance() throws InstantiationException {
+            final ManagedReference reference =  component.getReference();
+            return new InstanceHandle<T>() {
+                @Override
+                public T getInstance() {
+                    return (T) reference.getInstance();
+                }
+
+                @Override
+                public void release() {
+                    reference.release();
+                }
+            };
+        }
     }
 }
