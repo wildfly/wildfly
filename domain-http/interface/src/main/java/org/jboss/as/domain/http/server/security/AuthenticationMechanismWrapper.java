@@ -14,23 +14,9 @@ public class AuthenticationMechanismWrapper implements AuthenticationMechanism {
     private final AuthenticationMechanism wrapped;
     private final org.jboss.as.domain.management.AuthMechanism mechanism;
 
-    public AuthenticationMechanismWrapper(final AuthenticationMechanism wrapped) {
+    public AuthenticationMechanismWrapper(final AuthenticationMechanism wrapped, org.jboss.as.domain.management.AuthMechanism mechanism) {
         this.wrapped = wrapped;
-        String mechanismName = wrapped.getName();
-        if ("BASIC".equals(mechanismName)) {
-            mechanism = org.jboss.as.domain.management.AuthMechanism.PLAIN;
-        } else if ("DIGEST".equals(mechanismName)) {
-            mechanism = org.jboss.as.domain.management.AuthMechanism.DIGEST;
-        } else if ("CLIENT-CERT".equals(mechanismName)) {
-            mechanism = org.jboss.as.domain.management.AuthMechanism.CLIENT_CERT;
-        } else {
-            mechanism = null;
-        }
-    }
-
-    @Override
-    public String getName() {
-        return wrapped.getName();
+        this.mechanism = mechanism;
     }
 
     @Override

@@ -229,11 +229,11 @@ public class ManagementHttpServer {
         if (securityRealm != null) {
             Set<AuthMechanism> mechanisms = securityRealm.getSupportedAuthenticationMechanisms();
             List<AuthenticationMechanism> undertowMechanisms = new ArrayList<AuthenticationMechanism>(mechanisms.size());
-            undertowMechanisms.add(wrap(new CachedAuthenticatedSessionMechanism()));
+            undertowMechanisms.add(wrap(new CachedAuthenticatedSessionMechanism(), null));
             for (AuthMechanism current : mechanisms) {
                 switch (current) {
                     case CLIENT_CERT:
-                        undertowMechanisms.add(wrap(new ClientCertAuthenticationMechanism()));
+                        undertowMechanisms.add(wrap(new ClientCertAuthenticationMechanism(), current));
                         break;
                     case DIGEST:
                         Map<String, String> mechConfig = securityRealm.getMechanismConfig(AuthMechanism.DIGEST);
@@ -244,10 +244,10 @@ public class ManagementHttpServer {
                         List<DigestAlgorithm> digestAlgorithms = Collections.singletonList(DigestAlgorithm.MD5);
                         List<DigestQop> digestQops = Collections.emptyList();
                         undertowMechanisms.add(wrap(new DigestAuthenticationMechanism(digestAlgorithms, digestQops,
-                                securityRealm.getName(), "/management", new SimpleNonceManager(), plainTextDigest)));
+                                securityRealm.getName(), "/management", new SimpleNonceManager(), plainTextDigest), current));
                         break;
                     case PLAIN:
-                        undertowMechanisms.add(wrap(new BasicAuthenticationMechanism(securityRealm.getName())));
+                        undertowMechanisms.add(wrap(new BasicAuthenticationMechanism(securityRealm.getName()), current));
                         break;
                 }
             }
@@ -272,8 +272,8 @@ public class ManagementHttpServer {
         return domainHandler;
     }
 
-    private static AuthenticationMechanism wrap(final AuthenticationMechanism toWrap) {
-        return new AuthenticationMechanismWrapper(toWrap);
+    private static AuthenticationMechanism wrap(final AuthenticationMechanism toWrap, final AuthMechanism mechanism) {
+        return new AuthenticationMechanismWrapper(toWrap, mechanism);
     }
 
 }

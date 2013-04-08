@@ -240,4 +240,11 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 17522, value = "Could not load class designated by HandlesTypes [%s].")
     void cannotLoadDesignatedHandleTypes(ClassInfo classInfo, @Cause Exception e);
 
+    @LogMessage(level = WARN)
+    @Message(id = 17523, value = "Could not load web socket endpoint %s.")
+    void couldNotLoadWebSocketEndpoint(String s, @Cause Exception e);
+
+    @LogMessage(level = WARN)
+    @Message(id = 17524, value = "Could not load web socket application config %s.")
+    void couldNotLoadWebSocketConfig(String s, @Cause Exception e);
 }
