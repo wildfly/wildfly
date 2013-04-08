@@ -73,7 +73,7 @@ public interface LegacyKernelServicesInitializer {
 
         static {
             if (VERSION.contains("${")) {
-                VERSION = "8.0.0.Alpha1-SNAPSHOT"; //to make it work from IDE
+                VERSION = "7.2.0.Final"; //to make it work from IDE
             }
         }
 
