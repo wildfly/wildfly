@@ -22,13 +22,15 @@
 
 package org.jboss.as.test.integration.weld.multideployment;
 
+import java.io.Serializable;
+
 import javax.inject.Named;
 
 /**
  * @author Stuart Douglas
  */
 @Named
-public class SimpleBean {
+public class SimpleBean implements Serializable{
 
     public void ping() {
     }
