@@ -7,16 +7,16 @@ import io.undertow.ajp.AjpOpenListener;
 import io.undertow.server.OpenListener;
 import org.xnio.ChannelListener;
 import org.xnio.IoUtils;
+import org.xnio.StreamConnection;
 import org.xnio.XnioWorker;
 import org.xnio.channels.AcceptingChannel;
-import org.xnio.channels.ConnectedStreamChannel;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 public class AJPListenerService extends AbstractListenerService<AJPListenerService> {
 
-    private volatile AcceptingChannel<? extends ConnectedStreamChannel> server;
+    private volatile AcceptingChannel<StreamConnection> server;
 
     public AJPListenerService(String name) {
         super(name);
@@ -28,8 +28,8 @@ public class AJPListenerService extends AbstractListenerService<AJPListenerServi
     }
 
     @Override
-    void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<? super AcceptingChannel<ConnectedStreamChannel>> acceptListener) throws IOException {
-        server = worker.createStreamServer(binding.getValue().getSocketAddress(), acceptListener, SERVER_OPTIONS);
+    void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener) throws IOException {
+        server = worker.createStreamConnectionServer(socketAddress, acceptListener, SERVER_OPTIONS);
         server.resumeAccepts();
         UndertowLogger.ROOT_LOGGER.listenerStarted("AJP", getName(), binding.getValue().getSocketAddress());
     }

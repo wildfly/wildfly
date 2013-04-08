@@ -29,15 +29,16 @@ import io.undertow.server.HttpOpenListener;
 import io.undertow.server.OpenListener;
 import org.xnio.ChannelListener;
 import org.xnio.IoUtils;
+import org.xnio.StreamConnection;
 import org.xnio.XnioWorker;
 import org.xnio.channels.AcceptingChannel;
-import org.xnio.channels.ConnectedStreamChannel;
 
 /**
  * @author Stuart Douglas
+ * @author Tomaz Cerar
  */
 public class HttpListenerService extends AbstractListenerService<HttpListenerService> {
-    private volatile AcceptingChannel<? extends ConnectedStreamChannel> server;
+    private volatile AcceptingChannel<StreamConnection> server;
 
     public HttpListenerService(String name) {
         super(name);
@@ -53,9 +54,9 @@ public class HttpListenerService extends AbstractListenerService<HttpListenerSer
         return false;
     }
 
-    protected void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<? super AcceptingChannel<ConnectedStreamChannel>> acceptListener)
+    protected void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener)
             throws IOException {
-        server = worker.createStreamServer(socketAddress, acceptListener, SERVER_OPTIONS);
+        server = worker.createStreamConnectionServer(socketAddress, acceptListener, SERVER_OPTIONS);
         server.resumeAccepts();
         UndertowLogger.ROOT_LOGGER.listenerStarted("HTTP", getName(), socketAddress);
     }
