@@ -21,6 +21,12 @@
  */
 package org.jboss.as.jsf.deployment;
 
+import com.sun.faces.flow.FlowCDIExtension;
+import com.sun.faces.flow.FlowDiscoveryCDIExtension;
+import com.sun.faces.application.view.ViewScopeExtension;
+
+import javax.enterprise.inject.spi.Extension;
+
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.jsf.JSFLogger;
@@ -32,10 +38,12 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
+import org.jboss.weld.bootstrap.spi.Metadata;
 
 /**
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
@@ -56,7 +64,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             return;
         }
-        if(JsfVersionMarker.getVersion(deploymentUnit).equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) {
+        if (JsfVersionMarker.getVersion(deploymentUnit).equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) {
             //if JSF is provided by the application we leave it alone
             return;
         }
@@ -79,7 +87,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         }
 
         addJSFAPI(jsfVersion, moduleSpecification, moduleLoader);
-        addJSFImpl(jsfVersion, moduleSpecification, moduleLoader);
+        addJSFImpl(jsfVersion, moduleSpecification, moduleLoader, deploymentUnit);
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSTL, false, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, BEAN_VALIDATION, false, false, true, false));
@@ -94,22 +102,79 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
 
     private void addJSFAPI(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
+
         ModuleIdentifier jsfModule = moduleIdFactory.getApiModId(jsfVersion);
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, jsfModule, false, false, false, false));
     }
 
-    private void addJSFImpl(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
+    private void addJSFImpl(String jsfVersion,
+                            ModuleSpecification moduleSpecification,
+                            ModuleLoader moduleLoader,
+                            DeploymentUnit deploymentUnit) {
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
+
         ModuleIdentifier jsfModule = moduleIdFactory.getImplModId(jsfVersion);
-        ModuleDependency jsf = new ModuleDependency(moduleLoader, jsfModule, false, false, false, false);
-        jsf.addImportFilter(PathFilters.getMetaInfFilter(), true);
-        moduleSpecification.addSystemDependency(jsf);
+        ModuleDependency jsfImpl = new ModuleDependency(moduleLoader, jsfModule, false, false, false, false);
+        jsfImpl.addImportFilter(PathFilters.getMetaInfFilter(), true);
+        moduleSpecification.addSystemDependency(jsfImpl);
+
+        // HACK!! Determine if we are using Mojarra 2.2 or greater
+        try {
+            jsfImpl.getModuleLoader().loadModule(jsfModule).getClassLoader().loadClass("com.sun.faces.flow.FlowCDIExtension");
+        } catch (Exception e) {
+            // If we can't load FlowCDIExtension then we must be using MyFaces or a pre-2.2 Mojarra impl.
+            return;
+        }
+
+        // If using Mojarra 2.2 or greater, enable CDI Extensions
+        addCDIExtensions(deploymentUnit);
     }
 
     private void addJSFInjection(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
+
         ModuleIdentifier jsfInjectionModule = moduleIdFactory.getInjectionModId(jsfVersion);
         ModuleDependency jsfInjectionDependency = new ModuleDependency(moduleLoader, jsfInjectionModule, false, true, true, false);
         moduleSpecification.addSystemDependency(jsfInjectionDependency);
+    }
+
+    // HACK!!! CDI Extensions should be automatically loaded from the Weld subsystem.  For now, CDI Extensions are only
+    // recognized if the jar containing the service resides in the deployment.  Since Weld subsystem doesn't handle this yet,
+    // we do it here.
+    private void addCDIExtensions(DeploymentUnit deploymentUnit) {
+        final ClassLoader classLoader = SecurityActions.getContextClassLoader();
+        try {
+            SecurityActions.setContextClassLoader(FlowCDIExtension.class.getClassLoader());
+
+            Metadata<Extension> metadata = new CDIExtensionMetadataImpl(new FlowCDIExtension());
+            deploymentUnit.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
+
+            metadata = new CDIExtensionMetadataImpl(new ViewScopeExtension());
+            deploymentUnit.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
+
+            metadata = new CDIExtensionMetadataImpl(new FlowDiscoveryCDIExtension());
+            deploymentUnit.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
+        } finally {
+            SecurityActions.setContextClassLoader(classLoader);
+        }
+    }
+
+    private static class CDIExtensionMetadataImpl implements Metadata<Extension> {
+
+        private final Extension ext;
+
+        public CDIExtensionMetadataImpl(Extension ext) {
+            this.ext = ext;
+        }
+
+        @Override
+        public Extension getValue() {
+            return ext;
+        }
+
+        @Override
+        public String getLocation() {
+            return ext.getClass().getName();
+        }
     }
 }
