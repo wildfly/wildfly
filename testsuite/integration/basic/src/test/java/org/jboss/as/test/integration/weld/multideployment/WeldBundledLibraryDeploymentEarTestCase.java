@@ -46,7 +46,6 @@ import org.junit.runner.RunWith;
  *
  */
 @RunWith(Arquillian.class)
-@Ignore("AS7-6767")
 public class WeldBundledLibraryDeploymentEarTestCase extends AbstractBundledLibraryDeploymentTestCase {
 
     @Inject
