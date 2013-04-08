@@ -98,7 +98,7 @@
         <version.dom4j>1.6.1</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.io.netty>3.6.2.Final</version.io.netty>
-        <version.io.undertow>1.0.0.Alpha6</version.io.undertow>
+        <version.io.undertow>1.0.0.Alpha7</version.io.undertow>
         <version.io.undertow.jastow>1.0.0.Alpha1</version.io.undertow.jastow>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.0-SP4</version.javax.enterprise>
@@ -245,7 +245,7 @@
         <version.org.jboss.ws.jbossws-native>4.1.1.Final</version.org.jboss.ws.jbossws-native>
         <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.1.GA</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
         <version.org.jboss.xb>2.0.3.GA</version.org.jboss.xb>
-        <version.org.jboss.xnio>3.1.0.Beta9</version.org.jboss.xnio>
+        <version.org.jboss.xnio>3.1.0.CR1</version.org.jboss.xnio>
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
         <version.org.jgroups>3.2.7.Final</version.org.jgroups>
