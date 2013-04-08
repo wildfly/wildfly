@@ -23,6 +23,7 @@
 package org.jboss.as.server.deployment.module;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -39,6 +40,7 @@ import org.jboss.as.server.moduleservice.ExtensionIndex;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.filter.PathFilters;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
@@ -52,7 +54,9 @@ public final class ModuleExtensionListProcessor implements DeploymentUnitProcess
     public ModuleExtensionListProcessor() {
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
@@ -61,24 +65,49 @@ public final class ModuleExtensionListProcessor implements DeploymentUnitProcess
         final ExtensionIndex index = (ExtensionIndex) controller.getValue();
         final List<ResourceRoot> allResourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
         final Set<ServiceName> nextPhaseDeps = new HashSet<ServiceName>();
+
+        final Set<ModuleIdentifier> allExtensionListEntries = new LinkedHashSet<ModuleIdentifier>();
+
         for (ResourceRoot resourceRoot : allResourceRoots) {
             final AttachmentList<ExtensionListEntry> entries = resourceRoot.getAttachment(Attachments.EXTENSION_LIST_ENTRIES);
             if (entries != null) {
-
                 for (ExtensionListEntry entry : entries) {
                     final ModuleIdentifier extension = index.findExtension(entry.getName(), entry.getSpecificationVersion(),
                             entry.getImplementationVersion(), entry.getImplementationVendorId());
-
                     if (extension != null) {
-                        moduleSpecification.addLocalDependency(new ModuleDependency(moduleLoader, extension, false, false, true, false));
-                        nextPhaseDeps.add(ServiceModuleLoader.moduleSpecServiceName(extension));
-                        nextPhaseDeps.add(ServiceModuleLoader.moduleSpecServiceName(extension));
+                        allExtensionListEntries.add(extension);
                     } else {
                         ServerLogger.DEPLOYMENT_LOGGER.cannotFindExtensionListEntry(entry, resourceRoot);
                     }
                 }
             }
         }
+
+        if (deploymentUnit.getParent() != null) {
+            //we also need to get all our parents extension list entries
+            for (ResourceRoot resourceRoot : DeploymentUtils.allResourceRoots(deploymentUnit.getParent())) {
+                final AttachmentList<ExtensionListEntry> entries = resourceRoot.getAttachment(Attachments.EXTENSION_LIST_ENTRIES);
+                if (entries != null) {
+                    for (ExtensionListEntry entry : entries) {
+                        final ModuleIdentifier extension = index.findExtension(entry.getName(), entry.getSpecificationVersion(),
+                                entry.getImplementationVersion(), entry.getImplementationVendorId());
+                        if (extension != null) {
+                            allExtensionListEntries.add(extension);
+                        }
+                        //we don't log not found to prevent multiple messages
+                    }
+                }
+            }
+        }
+
+        for (ModuleIdentifier extension : allExtensionListEntries) {
+            ModuleDependency dependency = new ModuleDependency(moduleLoader, extension, false, false, true, true);
+            dependency.addImportFilter(PathFilters.getMetaInfSubdirectoriesFilter(), true);
+            dependency.addImportFilter(PathFilters.getMetaInfFilter(), true);
+            moduleSpecification.addLocalDependency(dependency);
+            nextPhaseDeps.add(ServiceModuleLoader.moduleSpecServiceName(extension));
+        }
+
 
         final List<AdditionalModuleSpecification> additionalModules = deploymentUnit.getAttachment(Attachments.ADDITIONAL_MODULES);
         if (additionalModules != null) {
@@ -110,7 +139,9 @@ public final class ModuleExtensionListProcessor implements DeploymentUnitProcess
 
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void undeploy(final DeploymentUnit context) {
     }
 }
