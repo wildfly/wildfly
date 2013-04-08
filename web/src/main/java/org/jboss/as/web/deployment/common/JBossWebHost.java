@@ -52,7 +52,7 @@ public class JBossWebHost implements WebHost, Service<WebHost> {
         final Loader loader = new WebCtxLoader(webDeploymentBuilder.getClassLoader());
         loader.setContainer(host);
         context.setLoader(loader);
-        context.setInstanceManager(new LocalInstanceManager());
+        context.setInstanceManager(new LocalInstanceManager(webDeploymentBuilder.getClassLoader()));
 
 
         for (ServletBuilder servlet : webDeploymentBuilder.getServlets()) {
@@ -102,12 +102,19 @@ public class JBossWebHost implements WebHost, Service<WebHost> {
     }
 
     private static class LocalInstanceManager implements InstanceManager {
-        LocalInstanceManager() {
+        private final ClassLoader classloader;
+
+        LocalInstanceManager(ClassLoader classloader) {
+            this.classloader = classloader;
         }
 
         @Override
         public Object newInstance(String className) throws IllegalAccessException, InvocationTargetException, NamingException, InstantiationException, ClassNotFoundException {
-            return Class.forName(className).newInstance();
+            if (classloader == null) {
+                return Class.forName(className).newInstance();
+            } else {
+                return classloader.loadClass(className).newInstance();
+            }
         }
 
         @Override
