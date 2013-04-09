@@ -112,7 +112,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
                             ModuleLoader moduleLoader,
                             DeploymentUnit topLevelDeployment) {
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
-        
+
         ModuleIdentifier jsfModule = moduleIdFactory.getImplModId(jsfVersion);
         ModuleDependency jsfImpl = new ModuleDependency(moduleLoader, jsfModule, false, false, false, false);
         jsfImpl.addImportFilter(PathFilters.getMetaInfFilter(), true);
