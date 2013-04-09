@@ -80,7 +80,7 @@ public abstract class AbstractListenerService<T> implements Service<T> {
     }
 
     protected int getBufferSize() {
-        return 1024;
+        return 8192;
     }
 
     public String getName() {

@@ -25,10 +25,12 @@ package org.jboss.as.undertow;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
+import io.undertow.UndertowOptions;
 import io.undertow.server.HttpOpenListener;
 import io.undertow.server.OpenListener;
 import org.xnio.ChannelListener;
 import org.xnio.IoUtils;
+import org.xnio.OptionMap;
 import org.xnio.StreamConnection;
 import org.xnio.XnioWorker;
 import org.xnio.channels.AcceptingChannel;
@@ -46,7 +48,7 @@ public class HttpListenerService extends AbstractListenerService<HttpListenerSer
 
     @Override
     protected OpenListener createOpenListener() {
-        return new HttpOpenListener(getBufferPool().getValue(), getBufferSize());
+        return new HttpOpenListener(getBufferPool().getValue(), OptionMap.create(UndertowOptions.BUFFER_PIPELINED_DATA, true), getBufferSize());
     }
 
     @Override

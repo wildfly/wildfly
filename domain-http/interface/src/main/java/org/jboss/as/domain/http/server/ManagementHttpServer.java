@@ -123,8 +123,7 @@ public class ManagementHttpServer {
         try {
             //TODO make this configurable
             worker = xnio.createWorker(OptionMap.builder()
-                    .set(Options.WORKER_WRITE_THREADS, 4)
-                    .set(Options.WORKER_READ_THREADS, 4)
+                    .set(Options.WORKER_IO_THREADS, 4)
                     .set(Options.CONNECTION_HIGH_WATER, 1000000)
                     .set(Options.CONNECTION_LOW_WATER, 1000000)
                     .set(Options.WORKER_TASK_CORE_THREADS, 10)
@@ -134,7 +133,6 @@ public class ManagementHttpServer {
                     .getMap());
 
             Builder serverOptionsBuilder = OptionMap.builder()
-                    .set(Options.WORKER_ACCEPT_THREADS, 4)
                     .set(Options.TCP_NODELAY, true)
                     .set(Options.REUSE_ADDRESSES, true);
             ChannelListener acceptListener = ChannelListeners.openListenerAdapter(openListener);
