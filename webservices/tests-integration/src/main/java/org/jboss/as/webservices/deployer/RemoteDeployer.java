@@ -265,24 +265,16 @@ public final class RemoteDeployer implements Deployer {
     }
 
     public void addHttpsConnector(Map<String, String> sslOptions) throws Exception {
+        final String realmName = "jbws-test-https-realm";
         httpsConnSemaphore.acquire();
         try {
+            addSecurityRealm(realmName, sslOptions);
             final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
             final ModelNode steps = composite.get(STEPS);
-            ModelNode op = createOpNode("subsystem=web/connector=jbws-test-https-connector", ADD);
+            ModelNode op = createOpNode("subsystem=undertow/server=default-server/https-listener=jbws-test-https-listener", "add");
             op.get("socket-binding").set("https");
-            op.get("scheme").set("https");
-            op.get("protocol").set("HTTP/1.1");
-            op.get("secure").set(true);
-            op.get("enabled").set(true);
+            op.get("security-realm").set(realmName);
             steps.add(op);
-            ModelNode ssl = createOpNode("subsystem=web/connector=jbws-test-https-connector/ssl=configuration", ADD);
-            if (sslOptions != null) {
-                for (final String k : sslOptions.keySet()) {
-                    ssl.get(k).set(sslOptions.get(k));
-                }
-            }
-            steps.add(ssl);
             applyUpdate(composite);
         } catch (Exception e) {
             httpsConnSemaphore.release();
@@ -290,9 +282,28 @@ public final class RemoteDeployer implements Deployer {
         }
     }
 
+    private static void addSecurityRealm(String realm, Map<String, String> sslOptions) throws Exception {
+        final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
+        final ModelNode steps = composite.get(STEPS);
+
+        ModelNode op = createOpNode("core-service=management/security-realm=" + realm, ADD);
+        steps.add(op);
+        ModelNode ssl = createOpNode("core-service=management/security-realm=" + realm + "/server-identity=ssl", ADD);
+        if (sslOptions != null) {
+            for (final String k : sslOptions.keySet()) {
+                ssl.get(k).set(sslOptions.get(k));
+            }
+        }
+        steps.add(ssl);
+        applyUpdate(composite);
+    }
+
     public void removeHttpsConnector() throws Exception {
         try {
-            ModelNode op = createOpNode("subsystem=web/connector=jbws-test-https-connector", REMOVE);
+            ModelNode op = createOpNode("subsystem=undertow/server=default-server/https-listener=jbws-test-https-listener", REMOVE);
+            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            applyUpdate(op);
+            op = createOpNode("core-service=management/security-realm=jbws-test-https-realm", REMOVE);
             op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             applyUpdate(op);
         } finally {
