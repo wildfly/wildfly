@@ -35,6 +35,9 @@ import org.jboss.as.test.integration.osgi.deployment.suba.ResourceRevisionAccess
 import org.jboss.as.test.osgi.FrameworkUtils;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
+import org.jboss.osgi.resolver.XBundleRevision;
+import org.jboss.osgi.resolver.XEnvironment;
+import org.jboss.osgi.resolver.XResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -46,6 +49,7 @@ import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleReference;
+import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.framework.wiring.FrameworkWiring;
 
 /**
@@ -58,9 +62,7 @@ import org.osgi.framework.wiring.FrameworkWiring;
 public class BundleUninstallTestCase {
 
     static final String BUNDLE_V200_WAB = "bundle-v200.wab";
-    static final String BUNDLE_V201_WAB = "bundle-v201.wab";
     static final String V200_JAR = "v200.jar";
-    static final String V201_JAR = "v201.jar";
 
     @ArquillianResource
     Deployer deployer;
@@ -82,7 +84,7 @@ public class BundleUninstallTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(ClientConstants.class, ModelControllerClient.class, ManagementClient.class, DeploymentPlanBuilder.class);
-                builder.addImportPackages(FrameworkWiring.class);
+                builder.addImportPackages(FrameworkWiring.class, XResource.class);
                 return builder.openStream();
             }
         });
@@ -91,8 +93,12 @@ public class BundleUninstallTestCase {
 
     @Test
     public void testDependentJarUninstall() throws Exception {
-        Bundle bundle = context.installBundle(V200_JAR, deployer.getDeployment(V200_JAR));
+        Bundle jar = context.installBundle(V200_JAR, deployer.getDeployment(V200_JAR));
         Bundle webapp = context.installBundle(BUNDLE_V200_WAB, deployer.getDeployment(BUNDLE_V200_WAB));
+
+        XEnvironment env = context.getBundle().adapt(XEnvironment.class);
+        XBundleRevision brev = (XBundleRevision) jar.adapt(BundleRevision.class);
+        Long resid = brev.getAttachment(XResource.RESOURCE_IDENTIFIER_KEY);
         try {
             webapp.start();
 
@@ -101,7 +107,12 @@ public class BundleUninstallTestCase {
             result = performCall("bundle-v200", "message.txt", null);
             Assert.assertEquals("Resource V2.0.0", result);
 
-            bundle.uninstall();
+            jar.uninstall();
+
+            Assert.assertNull("BundleRevision is null", jar.adapt(BundleRevision.class));
+            Assert.assertTrue("BundleWiring in use", brev.getWiring().isInUse());
+            Assert.assertFalse("BundleWiring not current", brev.getWiring().isCurrent());
+            Assert.assertSame(brev, env.getResourceById(resid));
 
             // The wiring should not be effected
             result = performCall("bundle-v200", "simple", null);
@@ -111,31 +122,49 @@ public class BundleUninstallTestCase {
         } finally {
             webapp.uninstall();
         }
+
+        // Assert that the jar revision was removed from the environment
+        Assert.assertNull("BundleRevision removed", env.getResourceById(resid));
+        Assert.assertNull("BundleWiring null", brev.getWiring());
     }
 
     @Test
     public void testDependentJarUndeploy() throws Exception {
         ServerDeploymentHelper server = new ServerDeploymentHelper(managementClient.getControllerClient());
-        String jarName = server.deploy(V201_JAR, deployer.getDeployment(V201_JAR));
-        Bundle webapp = context.installBundle(BUNDLE_V201_WAB, deployer.getDeployment(BUNDLE_V201_WAB));
+        String jarName = server.deploy(V200_JAR, deployer.getDeployment(V200_JAR));
+        Bundle webapp = context.installBundle(BUNDLE_V200_WAB, deployer.getDeployment(BUNDLE_V200_WAB));
+
+        XEnvironment env = context.getBundle().adapt(XEnvironment.class);
+        Bundle jar = FrameworkUtils.getBundles(context, V200_JAR, null)[0];
+        XBundleRevision brev = (XBundleRevision) jar.adapt(BundleRevision.class);
+        Long resid = brev.getAttachment(XResource.RESOURCE_IDENTIFIER_KEY);
         try {
             webapp.start();
 
-            String result = performCall("bundle-v201", "simple", null);
-            Assert.assertEquals("Revision deployment.v201.jar:main", result);
-            result = performCall("bundle-v201", "message.txt", null);
-            Assert.assertEquals("Resource V2.0.1", result);
+            String result = performCall("bundle-v200", "simple", null);
+            Assert.assertEquals("Revision deployment.v200.jar:main", result);
+            result = performCall("bundle-v200", "message.txt", null);
+            Assert.assertEquals("Resource V2.0.0", result);
 
             server.undeploy(jarName);
 
+            Assert.assertNull("BundleRevision is null", jar.adapt(BundleRevision.class));
+            Assert.assertTrue("BundleWiring in use", brev.getWiring().isInUse());
+            Assert.assertFalse("BundleWiring not current", brev.getWiring().isCurrent());
+            Assert.assertSame(brev, env.getResourceById(resid));
+
             // The wiring should not be effected
-            result = performCall("bundle-v201", "simple", null);
-            Assert.assertEquals("Revision deployment.v201.jar:main", result);
-            result = performCall("bundle-v201", "message.txt", null);
-            Assert.assertEquals("Resource V2.0.1", result);
+            result = performCall("bundle-v200", "simple", null);
+            Assert.assertEquals("Revision deployment.v200.jar:main", result);
+            result = performCall("bundle-v200", "message.txt", null);
+            Assert.assertEquals("Resource V2.0.0", result);
         } finally {
             webapp.uninstall();
         }
+
+        // Assert that the jar revision was removed from the environment
+        Assert.assertNull("BundleRevision removed", env.getResourceById(resid));
+        Assert.assertNull("BundleWiring null", brev.getWiring());
     }
 
     private String performCall(String context, String pattern, String param) throws Exception {
@@ -164,26 +193,6 @@ public class BundleUninstallTestCase {
         return archive;
     }
 
-    @Deployment(name = BUNDLE_V201_WAB, managed = false, testable = false)
-    public static Archive<?> getWebV201Wab() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_V201_WAB);
-        archive.addClasses(ServletV200.class);
-        archive.addAsResource(new StringAsset("Resource V2.0.1"), "message.txt");
-        archive.setManifest(new Asset() {
-            @Override
-            public InputStream openStream() {
-                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                builder.addBundleSymbolicName(BUNDLE_V201_WAB);
-                builder.addBundleVersion("2.0.1");
-                builder.addBundleManifestVersion(2);
-                builder.addImportPackages(BundleReference.class);
-                builder.addImportPackages(ResourceRevisionAccess.class);
-                return builder.openStream();
-            }
-        });
-        return archive;
-    }
-
     @Deployment(name = V200_JAR, managed = false, testable = false)
     public static JavaArchive getV200Jar() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, V200_JAR);
@@ -194,26 +203,6 @@ public class BundleUninstallTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(V200_JAR);
                 builder.addBundleVersion("2.0.0");
-                builder.addBundleManifestVersion(2);
-                builder.addImportPackages(ModuleClassLoader.class);
-                builder.addExportPackages(ResourceRevisionAccess.class);
-                return builder.openStream();
-            }
-        });
-        return archive;
-    }
-
-
-    @Deployment(name = V201_JAR, managed = false, testable = false)
-    public static JavaArchive getV201Jar() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, V201_JAR);
-        archive.addClasses(ResourceRevisionAccess.class);
-        archive.setManifest(new Asset() {
-            @Override
-            public InputStream openStream() {
-                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                builder.addBundleSymbolicName(V201_JAR);
-                builder.addBundleVersion("2.0.1");
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(ModuleClassLoader.class);
                 builder.addExportPackages(ResourceRevisionAccess.class);

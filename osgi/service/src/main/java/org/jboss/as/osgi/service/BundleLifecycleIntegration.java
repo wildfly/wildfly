@@ -79,6 +79,7 @@ import org.jboss.osgi.resolver.XBundleRevision;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResolveContext;
 import org.jboss.osgi.resolver.XResolver;
+import org.jboss.osgi.resolver.XResource;
 import org.jboss.vfs.VFSUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -283,6 +284,11 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                 server.undeploy(getRuntimeName(dep));
             } catch (Exception ex) {
                 LOGGER.warnCannotUndeployBundleRevision(ex, brev);
+            }
+            // [AS7-6855] Bundle revision not removed when not in use any more
+            if (brev.getState() != XResource.State.UNINSTALLED) {
+                BundleManager bundleManager = injectedBundleManager.getValue();
+                bundleManager.removeBundleRevision(brev);
             }
         }
 
