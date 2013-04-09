@@ -23,18 +23,24 @@ package org.jboss.as.controller.remote;
 
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 
+import javax.security.auth.Subject;
 import java.io.DataInput;
 import java.io.IOException;
 
-import javax.security.auth.Subject;
-
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
@@ -63,12 +69,12 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
     private final Subject subject;
 
     public ModelControllerClientOperationHandler(final ModelController controller,
-            final ManagementChannelAssociation channelAssociation) {
+                                                 final ManagementChannelAssociation channelAssociation) {
         this(controller, channelAssociation, null);
     }
 
     public ModelControllerClientOperationHandler(final ModelController controller,
-            final ManagementChannelAssociation channelAssociation, final Subject subject) {
+                                                 final ManagementChannelAssociation channelAssociation, final Subject subject) {
         this.controller = controller;
         this.channelAssociation = channelAssociation;
         this.subject = subject;
@@ -102,29 +108,18 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                 @Override
                 public void execute(final ManagementRequestContext<Void> context) throws Exception {
                     final ManagementResponseHeader response = ManagementResponseHeader.create(context.getRequestHeader());
-                    final ModelNode result;
                     SecurityActions.setSecurityContextSubject(subject);
                     try {
-                        result = doExecute(operation, attachmentsLength, context);
+                        final CompletedCallback callback = new CompletedCallback(response, context, resultHandler);
+                        doExecute(operation, attachmentsLength, context, callback);
                     } finally {
                         SecurityActions.clearSubjectSecurityContext();
                     }
-
-                    final FlushableDataOutput output = context.writeMessage(response);
-                    try {
-                        output.write(ModelControllerProtocol.PARAM_RESPONSE);
-                        result.writeExternal(output);
-                        output.writeByte(ManagementProtocol.RESPONSE_END);
-                        output.close();
-                    } finally {
-                        StreamUtils.safeClose(output);
-                    }
-                    resultHandler.done(result);
                 }
             });
         }
 
-        protected ModelNode doExecute(final ModelNode operation, final int attachmentsLength, final ManagementRequestContext<Void> context) {
+        private void doExecute(final ModelNode operation, final int attachmentsLength, final ManagementRequestContext<Void> context, final CompletedCallback callback) {
             //Add a header to show that this operation comes from a user. If this is a host controller and the operation needs propagating to the
             //servers it will be removed by the domain ops responsible for propagation to the servers.
             operation.get(OPERATION_HEADERS, CALLER_TYPE).set(USER);
@@ -132,6 +127,20 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
             final ManagementRequestHeader header = ManagementRequestHeader.class.cast(context.getRequestHeader());
             final int batchId = header.getBatchId();
             final ModelNode result = new ModelNode();
+
+            // Send the prepared response for :reload operations
+            final boolean sendPreparedOperation = sendPreparedResponse(operation);
+            final ModelController.OperationTransactionControl transactionControl = sendPreparedOperation ? new ModelController.OperationTransactionControl() {
+                @Override
+                public void operationPrepared(ModelController.OperationTransaction transaction, ModelNode result) {
+                    transaction.commit();
+                    // Fix prepared result
+                    result.get(OUTCOME).set(SUCCESS);
+                    result.get(RESULT);
+                    callback.sendResponse(result);
+                }
+            } : ModelController.OperationTransactionControl.COMMIT;
+
             final OperationMessageHandlerProxy messageHandlerProxy = new OperationMessageHandlerProxy(channelAssociation, batchId);
             final OperationAttachmentsProxy attachmentsProxy = OperationAttachmentsProxy.create(channelAssociation, batchId, attachmentsLength);
             try {
@@ -139,7 +148,7 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                 result.set(controller.execute(
                         operation,
                         messageHandlerProxy,
-                        ModelController.OperationTransactionControl.COMMIT,
+                        transactionControl,
                         attachmentsProxy));
             } catch (Exception e) {
                 final ModelNode failure = new ModelNode();
@@ -150,7 +159,74 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
             } finally {
                 ROOT_LOGGER.tracef("Executed client request %d", batchId);
             }
-            return result;
+            // Send the result
+            callback.sendResponse(result);
+        }
+
+    }
+
+    /**
+     * Determine whether the prepared response should be sent, before the operation completed. This is needed in order
+     * that operations like :reload() can be executed without causing communication failures.
+     *
+     * @param operation the operation to be executed
+     * @return {@code true} if the prepared result should be sent, {@code false} otherwise
+     */
+    private boolean sendPreparedResponse(final ModelNode operation) {
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final String op = operation.get(OP).asString();
+        final int size = address.size();
+        if (size == 0) {
+            if (op.equals("reload")) {
+                return true;
+            } else if (op.equals(COMPOSITE)) {
+                // TODO
+                return false;
+            } else {
+                return false;
+            }
+        } else if (size == 1) {
+            if (address.getLastElement().getKey().equals(HOST)) {
+                return op.equals("reload");
+            }
+        }
+        return false;
+    }
+
+    private static class CompletedCallback {
+
+        private volatile boolean completed;
+        private final ManagementResponseHeader response;
+        private final ManagementRequestContext<Void> responseContext;
+        private final ActiveOperation.ResultHandler<ModelNode> resultHandler;
+
+        private CompletedCallback(final ManagementResponseHeader response, final ManagementRequestContext<Void> responseContext,
+                                  final ActiveOperation.ResultHandler<ModelNode> resultHandler) {
+            this.response = response;
+            this.responseContext = responseContext;
+            this.resultHandler = resultHandler;
+        }
+
+        synchronized void sendResponse(final ModelNode result) {
+            // only send a single response
+            if (completed) {
+                return;
+            }
+            completed = true;
+            try {
+                final FlushableDataOutput output = responseContext.writeMessage(response);
+                try {
+                    output.write(ModelControllerProtocol.PARAM_RESPONSE);
+                    result.writeExternal(output);
+                    output.writeByte(ManagementProtocol.RESPONSE_END);
+                    output.close();
+                } finally {
+                    StreamUtils.safeClose(output);
+                }
+                resultHandler.done(result);
+            } catch (IOException e) {
+                resultHandler.failed(e);
+            }
         }
 
     }
