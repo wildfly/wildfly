@@ -66,13 +66,30 @@ class HostDefinition extends SimplePersistentResourceDefinition {
     }
 
     public void parse(XMLExtendedStreamReader reader, PathAddress parentAddress, List<ModelNode> list) throws XMLStreamException {
-        String[] attrs = ParseUtils.requireAttributes(reader, Constants.NAME, Constants.ALIAS);
-        String name = attrs[0];
-        String aliases = attrs[1];
+        String name = null;
+        String aliases = null;
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            switch (reader.getAttributeLocalName(i)) {
+                case Constants.NAME:
+                    name = reader.getAttributeValue(i);
+                    break;
+                case Constants.ALIAS:
+                    aliases = reader.getAttributeValue(i);
+                    break;
+                default:
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+            }
+        }
+        if (name == null) {
+            throw ParseUtils.missingRequired(reader, Constants.NAME);
+        }
+
         PathAddress address = parentAddress.append(Constants.HOST, name);
         ModelNode op = Util.createAddOperation(address);
-        for (String alias : aliases.split(",")) {
+        if (aliases != null) {
+            for (String alias : aliases.split(",")) {
             ALIAS.parseAndAddParameterElement(alias, op, reader);
+        }
         }
         list.add(op);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -109,7 +126,9 @@ class HostDefinition extends SimplePersistentResourceDefinition {
             if (aliases.length() > 3) {
                 aliases.setLength(aliases.length() - 2);
             }
-            writer.writeAttribute(Constants.ALIAS, aliases.toString());
+            if (aliases.length()>0){
+                writer.writeAttribute(Constants.ALIAS, aliases.toString());
+            }
             HandlerFactory.persistHandlers(writer, host, true);
             LocationDefinition.INSTANCE.persist(writer, host);
             writer.writeEndElement();
