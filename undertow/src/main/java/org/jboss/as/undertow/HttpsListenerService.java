@@ -35,6 +35,7 @@ import org.xnio.ChannelListener;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 import org.xnio.OptionMap.Builder;
+import org.xnio.Options;
 import org.xnio.StreamConnection;
 import org.xnio.XnioWorker;
 import org.xnio.channels.AcceptingChannel;
@@ -65,6 +66,7 @@ public class HttpsListenerService extends HttpListenerService {
         if (securityRealm.getValue().getSupportedAuthenticationMechanisms().contains(AuthMechanism.CLIENT_CERT)) {
             builder.set(SSL_CLIENT_AUTH_MODE, REQUESTED);
         }
+        builder.set(Options.USE_DIRECT_BUFFERS,true);
         OptionMap combined = builder.getMap();
 
         XnioSsl xnioSsl = new JsseXnioSsl(worker.getXnio(), combined, sslContext);
