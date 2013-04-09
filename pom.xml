@@ -1404,7 +1404,7 @@
                 <groupId>com.sun</groupId>
                 <artifactId>tools</artifactId>
                 <scope>system</scope>
-                <version>1.6</version>
+                <version>${maven.compiler.source}</version>
                 <systemPath>${com.sun.tools.path}</systemPath>
             </dependency>
 
