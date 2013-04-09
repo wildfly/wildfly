@@ -87,7 +87,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         }
 
         addJSFAPI(jsfVersion, moduleSpecification, moduleLoader);
-        addJSFImpl(jsfVersion, moduleSpecification, moduleLoader, deploymentUnit);
+        addJSFImpl(jsfVersion, moduleSpecification, moduleLoader, topLevelDeployment);
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSTL, false, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, BEAN_VALIDATION, false, false, true, false));
@@ -110,9 +110,9 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
     private void addJSFImpl(String jsfVersion,
                             ModuleSpecification moduleSpecification,
                             ModuleLoader moduleLoader,
-                            DeploymentUnit deploymentUnit) {
+                            DeploymentUnit topLevelDeployment) {
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
-
+        
         ModuleIdentifier jsfModule = moduleIdFactory.getImplModId(jsfVersion);
         ModuleDependency jsfImpl = new ModuleDependency(moduleLoader, jsfModule, false, false, false, false);
         jsfImpl.addImportFilter(PathFilters.getMetaInfFilter(), true);
@@ -127,7 +127,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         }
 
         // If using Mojarra 2.2 or greater, enable CDI Extensions
-        addCDIExtensions(deploymentUnit);
+        addCDIExtensions(topLevelDeployment);
     }
 
     private void addJSFInjection(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
@@ -141,19 +141,19 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
     // HACK!!! CDI Extensions should be automatically loaded from the Weld subsystem.  For now, CDI Extensions are only
     // recognized if the jar containing the service resides in the deployment.  Since Weld subsystem doesn't handle this yet,
     // we do it here.
-    private void addCDIExtensions(DeploymentUnit deploymentUnit) {
+    private void addCDIExtensions(DeploymentUnit topLevelDeployment) {
         final ClassLoader classLoader = SecurityActions.getContextClassLoader();
         try {
             SecurityActions.setContextClassLoader(FlowCDIExtension.class.getClassLoader());
 
             Metadata<Extension> metadata = new CDIExtensionMetadataImpl(new FlowCDIExtension());
-            deploymentUnit.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
+            topLevelDeployment.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
 
             metadata = new CDIExtensionMetadataImpl(new ViewScopeExtension());
-            deploymentUnit.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
+            topLevelDeployment.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
 
             metadata = new CDIExtensionMetadataImpl(new FlowDiscoveryCDIExtension());
-            deploymentUnit.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
+            topLevelDeployment.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
         } finally {
             SecurityActions.setContextClassLoader(classLoader);
         }
