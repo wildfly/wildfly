@@ -64,6 +64,7 @@ import org.jboss.osgi.framework.spi.BootstrapBundlesInstall;
 import org.jboss.osgi.framework.spi.BootstrapBundlesResolve;
 import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.framework.spi.BundleStorage;
+import org.jboss.osgi.framework.spi.IntegrationConstants;
 import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.jboss.osgi.framework.spi.StorageState;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
@@ -191,23 +192,22 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
                         return new AbstractBundleRevisionAdaptor(syscontext, module);
                     }
                 };
-                XResource resource;
-                XResourceBuilder builder = XBundleRevisionBuilderFactory.create(factory);
+                XBundleRevision brev;
+                XResourceBuilder<XBundleRevision> builder = XBundleRevisionBuilderFactory.create(factory);
                 if (metadata != null) {
                     builder.loadFrom(metadata);
-                    resource = builder.getResource();
-                    resource.addAttachment(OSGiMetaData.class, metadata);
+                    brev = builder.getResource();
+                    brev.addAttachment(IntegrationConstants.OSGI_METADATA_KEY, metadata);
                 } else {
                     builder.loadFrom(module);
-                    resource = builder.getResource();
+                    brev = builder.getResource();
                 }
-                injectedEnvironment.getValue().installResources(resource);
+                injectedEnvironment.getValue().installResources(brev);
 
                 // Set the start level of the adapted bundle
                 Integer startlevel = configcap.getStartLevel();
                 if (startlevel != null && startlevel > 0) {
-                    Long bundleId = resource.getAttachment(Long.class);
-                    XBundle bundle = getBundleManager().getBundleById(bundleId);
+                    XBundle bundle = brev.getBundle();
                     BundleStartLevel bundleStartLevel = bundle.adapt(BundleStartLevel.class);
                     bundleStartLevel.setStartLevel(startlevel);
                 }

@@ -27,7 +27,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.metadata.OSGiMetaData;
-import org.jboss.osgi.resolver.XBundle;
+import org.jboss.osgi.resolver.XBundleRevision;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResolver;
 import org.jboss.osgi.spi.BundleInfo;
@@ -46,8 +46,8 @@ public interface OSGiConstants {
     /** Attachment key for the {@link BundleInfo} when an OSGi bundle deployment is detected. */
     AttachmentKey<BundleInfo> BUNDLE_INFO_KEY = AttachmentKey.create(BundleInfo.class);
 
-    /** Attachment key for the installed {@link XBundle}. */
-    AttachmentKey<XBundle> BUNDLE_KEY = AttachmentKey.create(XBundle.class);
+    /** Attachment key for the installed {@link XBundleRevision}. */
+    AttachmentKey<XBundleRevision> BUNDLE_REVISION_KEY = AttachmentKey.create(XBundleRevision.class);
 
     /** Attachment key for the {@link BundleManager}. */
     AttachmentKey<BundleManager> BUNDLE_MANAGER_KEY = AttachmentKey.create(BundleManager.class);

@@ -46,6 +46,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.resolver.XBundle;
+import org.jboss.osgi.resolver.XBundleRevision;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -104,13 +105,14 @@ class ArquillianConfig implements Service<ArquillianConfig> {
         if (testClasses.contains(className) == false)
             throw new ClassNotFoundException("Class '" + className + "' not found in: " + testClasses);
 
-        XBundle bundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
+        XBundleRevision brev = depUnit.getAttachment(OSGiConstants.BUNDLE_REVISION_KEY);
         Module module = depUnit.getAttachment(Attachments.MODULE);
-        if (bundle == null && module == null)
+        if (brev == null && module == null)
             throw new IllegalStateException("Cannot determine deployment type: " + depUnit);
 
         Class<?> testClass;
-        if (bundle != null) {
+        if (brev != null) {
+            XBundle bundle = brev.getBundle();
             testClass = bundle.loadClass(className);
             BundleAssociation.setBundle(bundle);
         } else {

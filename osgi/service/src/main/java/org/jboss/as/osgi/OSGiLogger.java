@@ -38,6 +38,7 @@ import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.resource.Requirement;
 
 /**
@@ -74,8 +75,8 @@ public interface OSGiLogger extends BasicLogger {
     void warnCannotFindAnnotationIndex(DeploymentUnit deploymentUnit);
 
     @LogMessage(level = WARN)
-    @Message(id = 11905, value = "Cannot undeploy bundle: %s")
-    void warnCannotUndeployBundle(@Cause Throwable cause, Bundle bundle);
+    @Message(id = 11905, value = "Cannot undeploy bundle revision: %s")
+    void warnCannotUndeployBundleRevision(@Cause Throwable cause, BundleRevision brev);
 
     @LogMessage(level = INFO)
     @Message(id = 11906, value = "Activating OSGi Subsystem")

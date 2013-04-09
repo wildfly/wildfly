@@ -42,6 +42,7 @@ import org.jboss.metadata.parser.util.MetaDataElementParser;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.osgi.resolver.XBundle;
+import org.jboss.osgi.resolver.XBundleRevision;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.wiring.BundleWire;
 import org.osgi.framework.wiring.BundleWiring;
@@ -57,15 +58,15 @@ public class WabFragmentProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        XBundle hostBundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
+        XBundleRevision hostRev = depUnit.getAttachment(OSGiConstants.BUNDLE_REVISION_KEY);
         WarMetaData warMetaData = depUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
-        if (warMetaData == null || hostBundle == null)
+        if (warMetaData == null || hostRev == null)
             return;
 
         XBundle fragment = null;
 
         // Get attached fragments
-        BundleWiring wiring = hostBundle.getBundleRevision().getWiring();
+        BundleWiring wiring = hostRev.getWiring();
         for (BundleWire wire : wiring.getProvidedWires(HostNamespace.HOST_NAMESPACE)) {
             fragment = (XBundle) wire.getRequirer().getBundle();
             break;

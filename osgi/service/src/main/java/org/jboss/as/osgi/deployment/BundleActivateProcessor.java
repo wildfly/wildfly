@@ -53,6 +53,7 @@ import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.resolver.XBundle;
+import org.jboss.osgi.resolver.XBundleRevision;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleException;
@@ -68,11 +69,11 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        XBundle bundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
-        if (bundle == null || bundle.isFragment())
+        XBundleRevision brev = depUnit.getAttachment(OSGiConstants.BUNDLE_REVISION_KEY);
+        if (brev == null || brev.isFragment())
             return;
 
-        ServiceController<XBundle> controller = BundleActivateService.addService(phaseContext.getServiceTarget(), depUnit, bundle);
+        ServiceController<XBundle> controller = BundleActivateService.addService(phaseContext.getServiceTarget(), depUnit, brev.getBundle());
         phaseContext.addDependency(controller.getName(), AttachmentKey.create(XBundle.class));
     }
 

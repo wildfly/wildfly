@@ -63,14 +63,14 @@ public class ServerDeploymentTestCase {
     static final String ACTIVATE_LAZILY = "activate-lazily";
 
     @ArquillianResource
-    public Deployer deployer;
+    Deployer deployer;
 
     @ArquillianResource
     BundleContext context;
 
     @Deployment
     public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-bundle");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "deployment-tests");
         archive.addClasses(ServerDeploymentHelper.class, FrameworkUtils.class);
         archive.setManifest(new Asset() {
             @Override
