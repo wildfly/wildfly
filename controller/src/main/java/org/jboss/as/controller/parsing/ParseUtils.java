@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
 import javax.xml.XMLConstants;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
@@ -129,6 +128,25 @@ public final class ParseUtils {
             final Object o = iterator.next();
             b.append(o.toString());
             if (iterator.hasNext()) {
+                b.append(", ");
+            }
+        }
+        return MESSAGES.missingRequiredAttributes(b, reader.getLocation());
+    }
+
+    /**
+     * Get an exception reporting a missing, required XML attribute.
+     * @param reader the stream reader
+     * @param required a set of enums whose toString method returns the
+     *        attribute name
+     * @return the exception
+     */
+    public static XMLStreamException missingRequired(final XMLExtendedStreamReader reader, final String... required) {
+        final StringBuilder b = new StringBuilder();
+        for (int i = 0; i < required.length; i++) {
+            final String o = required[i];
+            b.append(o);
+            if (required.length > i + 1) {
                 b.append(", ");
             }
         }
@@ -327,7 +345,6 @@ public final class ParseUtils {
         return new Property(name, new ModelNode().set(value == null ? new ModelNode() : value));
     }
 
-
     /**
      * Read an element which contains only a single list attribute of a given
      * type, returning it as an array.
@@ -423,8 +440,6 @@ public final class ParseUtils {
             throw MESSAGES.invalidAttributeValueInt(nfe, stringValue, reader.getAttributeName(index), reader.getLocation());
         }
     }
-
-
 
     public static ModelNode parsePossibleExpression(String value) {
         ModelNode result = new ModelNode();

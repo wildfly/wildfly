@@ -75,10 +75,11 @@ import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 import org.xnio.OptionMap.Builder;
 import org.xnio.Options;
+import org.xnio.StreamConnection;
 import org.xnio.Xnio;
 import org.xnio.XnioWorker;
 import org.xnio.channels.AcceptingChannel;
-import org.xnio.channels.ConnectedStreamChannel;
+import org.xnio.channels.SslConnection;
 import org.xnio.ssl.JsseXnioSsl;
 import org.xnio.ssl.XnioSsl;
 
@@ -99,8 +100,8 @@ public class ManagementHttpServer {
     private final InetSocketAddress httpAddress;
     private final InetSocketAddress secureAddress;
     private volatile XnioWorker worker;
-    private volatile AcceptingChannel<? extends ConnectedStreamChannel> normalServer;
-    private volatile AcceptingChannel<? extends ConnectedStreamChannel> secureServer;
+    private volatile AcceptingChannel<StreamConnection> normalServer;
+    private volatile AcceptingChannel<SslConnection> secureServer;
     private final SecurityRealm securityRealm;
 
     private ManagementHttpServer(HttpOpenListener openListener, InetSocketAddress httpAddress, InetSocketAddress secureAddress, SecurityRealm securityRealm) {
@@ -122,8 +123,7 @@ public class ManagementHttpServer {
         try {
             //TODO make this configurable
             worker = xnio.createWorker(OptionMap.builder()
-                    .set(Options.WORKER_WRITE_THREADS, 4)
-                    .set(Options.WORKER_READ_THREADS, 4)
+                    .set(Options.WORKER_IO_THREADS, 4)
                     .set(Options.CONNECTION_HIGH_WATER, 1000000)
                     .set(Options.CONNECTION_LOW_WATER, 1000000)
                     .set(Options.WORKER_TASK_CORE_THREADS, 10)
@@ -133,12 +133,11 @@ public class ManagementHttpServer {
                     .getMap());
 
             Builder serverOptionsBuilder = OptionMap.builder()
-                    .set(Options.WORKER_ACCEPT_THREADS, 4)
                     .set(Options.TCP_NODELAY, true)
                     .set(Options.REUSE_ADDRESSES, true);
             ChannelListener acceptListener = ChannelListeners.openListenerAdapter(openListener);
             if (httpAddress != null) {
-                normalServer = worker.createStreamServer(httpAddress, acceptListener, serverOptionsBuilder.getMap());
+                normalServer = worker.createStreamConnectionServer(httpAddress, acceptListener, serverOptionsBuilder.getMap());
                 normalServer.resumeAccepts();
             }
             if (secureAddress != null) {
@@ -155,7 +154,7 @@ public class ManagementHttpServer {
                 }
                 OptionMap secureOptions = serverOptionsBuilder.getMap();
                 XnioSsl xnioSsl = new JsseXnioSsl(worker.getXnio(), secureOptions, sslContext);
-                secureServer = xnioSsl.createSslTcpServer(worker, secureAddress, acceptListener, secureOptions);
+                secureServer = xnioSsl.createSslConnectionServer(worker, secureAddress, acceptListener, secureOptions);
                 secureServer.resumeAccepts();
             }
         } catch (IOException e) {

@@ -21,9 +21,7 @@
         </host>
 
     </server>
-    <server name="test" default-host="test-context" servlet-container="blah">
-        <host name="default-host"/>
-    </server>
+    <server name="test" default-host="test-context" servlet-container="blah" />
 
     <servlet-container name="default">
         <jsp-config development="${prop.development:true}"

@@ -30,7 +30,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,7 +38,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -50,7 +48,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.as.test.integration.common.HttpRequest;
@@ -59,6 +56,7 @@ import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBa
 import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
 import org.jboss.as.test.integration.management.util.WebUtil;
 import org.jboss.as.test.integration.security.common.AbstractSecurityRealmsServerSetupTask;
+import org.jboss.as.test.integration.security.common.config.realm.Authentication;
 import org.jboss.as.test.integration.security.common.config.realm.RealmKeystore;
 import org.jboss.as.test.integration.security.common.config.realm.SecurityRealm;
 import org.jboss.as.test.integration.security.common.config.realm.ServerIdentity;
@@ -77,7 +75,6 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class ListenerTestCase extends ContainerResourceMgmtTestBase {
 
-    private static final File keyStoreFile = new File(System.getProperty("java.io.tmpdir"), "test.keystore");
     /**
      * We use a different socket binding name for each test, as if the socket is still up the service
      * will not be removed. Rather than adding a sleep we use this approach
@@ -100,7 +97,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
 
         Map<String, Set<String>> listeners = getListenerList();
         Set<String> listenerNames = listeners.get("http");
-        assertEquals(1,listenerNames.size());
+        assertEquals(1, listenerNames.size());
         assertTrue("HTTP connector missing.", listenerNames.contains("default"));
     }
 
@@ -122,15 +119,19 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
         addListener(Listener.HTTPS);
 
         // check that the connector is live
-        String cURL = "https://" + url.getHost() + ":8181";
-        HttpClient httpClient = HttpClientUtils.wrapHttpsClient(new DefaultHttpClient());
-        HttpGet get = new HttpGet(cURL);
+        try {
+            String cURL = "https://" + url.getHost() + ":8181";
+            HttpClient httpClient = HttpClientUtils.wrapHttpsClient(new DefaultHttpClient());
+            HttpGet get = new HttpGet(cURL);
 
-        HttpResponse hr = httpClient.execute(get);
-        String response = EntityUtils.toString(hr.getEntity());
-        assertTrue("Invalid response: " + response, response.indexOf("JBoss") >= 0);
+            HttpResponse hr = httpClient.execute(get);
+            String response = EntityUtils.toString(hr.getEntity());
+            assertTrue("Invalid response: " + response, response.indexOf("JBoss") >= 0);
+        } finally {
+            removeListener(Listener.HTTPS);
+        }
 
-        removeListener(Listener.HTTPS);
+
     }
 
     @Test
@@ -164,7 +165,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
         // execute and rollback remove connector
         ModelNode removeConnOp = getRemoveConnectorOp(Listener.HTTPJIO);
         ret = executeAndRollbackOperation(removeConnOp);
-        assertEquals("failed",ret.get("outcome").asString());
+        assertEquals("failed", ret.get("outcome").asString());
 
         // execute remove connector again
         executeOperation(removeConnOp);
@@ -178,7 +179,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
         // execute and rollback remove socket binding
         ModelNode removeSocketOp = getRemoveSocketBindingOp(Listener.HTTPJIO);
         ret = executeAndRollbackOperation(removeSocketOp);
-        assertEquals("failed",ret.get("outcome").asString());
+        assertEquals("failed", ret.get("outcome").asString());
 
         // execute remove socket again
         executeOperation(removeSocketOp);
@@ -273,25 +274,30 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
     static class SecurityRealmsSetup extends AbstractSecurityRealmsServerSetupTask {
         @Override
         protected SecurityRealm[] getSecurityRealms() throws Exception {
-            FileUtils.copyURLToFile(ListenerTestCase.class.getResource("test.keystore"), keyStoreFile);
+            URL keystoreResource = Thread.currentThread().getContextClassLoader().getResource("security/server.keystore");
+            URL truststoreResource = Thread.currentThread().getContextClassLoader().getResource("security/jsse.keystore");
 
-            RealmKeystore ssl = new RealmKeystore.Builder()
-                    .keystorePassword("test123")
-                    .keystorePath(keyStoreFile.getAbsolutePath())
+            RealmKeystore keystore = new RealmKeystore.Builder()
+                    .keystorePassword("changeit")
+                    .keystorePath(keystoreResource.getPath())
+                    .build();
+
+            RealmKeystore truststore = new RealmKeystore.Builder()
+                    .keystorePassword("changeit")
+                    .keystorePath(truststoreResource.getPath())
                     .build();
             return new SecurityRealm[]{new SecurityRealm.Builder()
                     .name("ssl-realm")
                     .serverIdentity(
                             new ServerIdentity.Builder()
-                                    .ssl(ssl)
+                                    .ssl(keystore)
                                     .build())
+                    .authentication(
+                            new Authentication.Builder()
+                                    .truststore(truststore)
+                                    .build()
+                    )
                     .build()};
-        }
-
-        @Override
-        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            super.tearDown(managementClient, containerId);
-            if (keyStoreFile.exists()) { keyStoreFile.delete(); }
         }
     }
 }

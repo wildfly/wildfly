@@ -35,9 +35,11 @@ import org.xnio.ChannelListener;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 import org.xnio.OptionMap.Builder;
+import org.xnio.Options;
+import org.xnio.StreamConnection;
 import org.xnio.XnioWorker;
 import org.xnio.channels.AcceptingChannel;
-import org.xnio.channels.ConnectedSslStreamChannel;
+import org.xnio.channels.SslConnection;
 import org.xnio.ssl.JsseXnioSsl;
 import org.xnio.ssl.XnioSsl;
 
@@ -45,28 +47,30 @@ import org.xnio.ssl.XnioSsl;
  * An extension of {@see HttpListenerService} to add SSL.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author Tomaz Cerar
  */
 public class HttpsListenerService extends HttpListenerService {
 
-    private final InjectedValue<SecurityRealm> securityRealm = new InjectedValue<SecurityRealm>();
-    private volatile AcceptingChannel<ConnectedSslStreamChannel> sslServer;
+    private final InjectedValue<SecurityRealm> securityRealm = new InjectedValue<>();
+    private volatile AcceptingChannel<SslConnection> sslServer;
 
     HttpsListenerService(final String name) {
         super(name);
     }
 
     @Override
-    protected void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener acceptListener) throws IOException {
+    protected void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener) throws IOException {
 
         SSLContext sslContext = securityRealm.getValue().getSSLContext();
         Builder builder = OptionMap.builder().addAll(SERVER_OPTIONS);
         if (securityRealm.getValue().getSupportedAuthenticationMechanisms().contains(AuthMechanism.CLIENT_CERT)) {
             builder.set(SSL_CLIENT_AUTH_MODE, REQUESTED);
         }
+        builder.set(Options.USE_DIRECT_BUFFERS,true);
         OptionMap combined = builder.getMap();
 
         XnioSsl xnioSsl = new JsseXnioSsl(worker.getXnio(), combined, sslContext);
-        sslServer = xnioSsl.createSslTcpServer(worker, socketAddress, acceptListener, combined);
+        sslServer = xnioSsl.createSslConnectionServer(worker, socketAddress, (ChannelListener) acceptListener, combined);
         sslServer.resumeAccepts();
 
         UndertowLogger.ROOT_LOGGER.listenerStarted("HTTPS", getName(), socketAddress);

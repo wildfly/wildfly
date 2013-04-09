@@ -38,9 +38,9 @@ import org.xnio.ChannelListeners;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Pool;
+import org.xnio.StreamConnection;
 import org.xnio.XnioWorker;
 import org.xnio.channels.AcceptingChannel;
-import org.xnio.channels.ConnectedStreamChannel;
 
 /**
  * @author Tomaz Cerar
@@ -80,7 +80,7 @@ public abstract class AbstractListenerService<T> implements Service<T> {
     }
 
     protected int getBufferSize() {
-        return 1024;
+        return 8192;
     }
 
     public String getName() {
@@ -104,7 +104,7 @@ public abstract class AbstractListenerService<T> implements Service<T> {
         try {
             final InetSocketAddress socketAddress = binding.getValue().getSocketAddress();
             openListener = createOpenListener();
-            final ChannelListener<? super AcceptingChannel<ConnectedStreamChannel>> acceptListener = ChannelListeners.openListenerAdapter(openListener);
+            final ChannelListener<AcceptingChannel<StreamConnection>> acceptListener = ChannelListeners.openListenerAdapter(openListener);
             openListener.setRootHandler(serverService.getValue().getRoot());
             startListening(worker.getValue(), socketAddress, acceptListener);
             registerBinding();
@@ -122,7 +122,7 @@ public abstract class AbstractListenerService<T> implements Service<T> {
 
     protected abstract OpenListener createOpenListener();
 
-    abstract void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<? super AcceptingChannel<ConnectedStreamChannel>> acceptListener) throws IOException;
+    abstract void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener) throws IOException;
 
     abstract void stopListening();
 
