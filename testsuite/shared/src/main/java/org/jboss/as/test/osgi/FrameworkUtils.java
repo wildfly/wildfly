@@ -47,7 +47,7 @@ import org.osgi.util.tracker.ServiceTracker;
  * @author thomas.diesler@jboss.com
  * @since 24-May-2011
  */
-public class FrameworkUtils {
+public final class FrameworkUtils {
 
     // Hide ctor
     private FrameworkUtils() {

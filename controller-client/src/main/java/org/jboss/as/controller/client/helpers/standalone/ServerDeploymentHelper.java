@@ -82,7 +82,7 @@ public class ServerDeploymentHelper {
         ServerDeploymentActionResult actionResult;
         try {
             DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-            builder = builder.undeploy(runtimeName).remove(runtimeName);
+            builder = builder.undeploy(runtimeName).andRemoveUndeployed();
             DeploymentPlan plan = builder.build();
             DeploymentAction action = builder.getLastAction();
             Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
