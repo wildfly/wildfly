@@ -350,13 +350,9 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         context.addStep(applyMissingResourcesOp, applyMissingDomainModelResourcesHandler, OperationContext.Stage.MODEL, true);
     }
 
-    public void registerNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter) {
-        masterProxy.registerNotificationHandler(address, handler, filter);
-    }
-
     @Override
-    public void unregisterNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter) {
-        masterProxy.unregisterNotificationHandler(address, handler, filter);
+    public NotificationRegistration registerNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter) {
+        return masterProxy.registerNotificationHandler(address, handler, filter);
     }
 
     @Override

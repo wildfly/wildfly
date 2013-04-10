@@ -460,13 +460,15 @@ class ModelControllerImpl implements ModelController {
             }
 
             @Override
-            public void registerNotificationHandler(final ModelNode address, final NotificationHandler handler,final NotificationFilter filter) {
-                ModelControllerImpl.this.getNotificationSupport().registerNotificationHandler(pathAddress(address), handler, filter);
-            }
-
-            @Override
-            public void unregisterNotificationHandler(final ModelNode address, final NotificationHandler handler, final NotificationFilter filter) {
-                ModelControllerImpl.this.getNotificationSupport().unregisterNotificationHandler(pathAddress(address), handler, filter);
+            public NotificationRegistration registerNotificationHandler(final ModelNode address, final NotificationHandler handler,final NotificationFilter filter) {
+                final PathAddress resourceAddress = pathAddress(address);
+                ModelControllerImpl.this.getNotificationSupport().registerNotificationHandler(resourceAddress, handler, filter);
+                return new NotificationRegistration() {
+                    @Override
+                    public void unregister() {
+                        ModelControllerImpl.this.getNotificationSupport().unregisterNotificationHandler(resourceAddress, handler, filter);
+                    }
+                };
             }
 
             private AsyncFuture<ModelNode> executeAsync(final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {

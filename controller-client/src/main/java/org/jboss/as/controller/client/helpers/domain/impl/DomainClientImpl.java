@@ -109,13 +109,8 @@ public class DomainClientImpl implements DomainClient {
     }
 
     @Override
-    public void registerNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter) {
-        delegate.registerNotificationHandler(address, handler, filter);
-    }
-
-    @Override
-    public void unregisterNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter) {
-        delegate.unregisterNotificationHandler(address, handler, filter);
+    public NotificationRegistration registerNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter) {
+        return delegate.registerNotificationHandler(address, handler, filter);
     }
 
     @Override

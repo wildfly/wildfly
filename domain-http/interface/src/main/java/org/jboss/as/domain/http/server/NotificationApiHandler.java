@@ -35,6 +35,7 @@ import static io.undertow.util.StatusCodes.NOT_FOUND;
 import static io.undertow.util.StatusCodes.NO_CONTENT;
 import static io.undertow.util.StatusCodes.OK;
 import static java.lang.String.format;
+import static org.jboss.as.controller.client.ModelControllerClient.NotificationRegistration;
 import static org.jboss.as.controller.client.NotificationFilter.ALL;
 import static org.jboss.as.domain.http.server.Common.APPLICATION_JSON;
 import static org.jboss.as.domain.http.server.Common.LINK;
@@ -87,6 +88,7 @@ public class NotificationApiHandler implements HttpHandler {
      * Map of HttpNotificationHandler holding the notifications for a given handlerID
      */
     private final Map<String, HttpNotificationHandler> handlers = new HashMap<>();
+
     /**
      * counter to generate unique ID for the registered handlers
      */
@@ -228,7 +230,8 @@ public class NotificationApiHandler implements HttpHandler {
         }
         final HttpNotificationHandler handler = new HttpNotificationHandler(handlerID, addresses);
         for (ModelNode address : addresses) {
-            modelControllerClient.registerNotificationHandler(address, handler, ALL);
+            NotificationRegistration registration = modelControllerClient.registerNotificationHandler(address, handler, ALL);
+            handler.addRegistration(registration);
         }
         handlers.put(handlerID, handler);
     }
@@ -236,9 +239,7 @@ public class NotificationApiHandler implements HttpHandler {
     private boolean unregisterNotificationHandler(final String handlerID) {
         HttpNotificationHandler handler = handlers.remove(handlerID);
         if (handler != null) {
-            for (ModelNode address : handler.getListeningAddresses()) {
-                modelControllerClient.unregisterNotificationHandler(address, handler, ALL);
-            }
+            handler.unregister();
         }
         return handler != null;
     }
@@ -280,22 +281,34 @@ public class NotificationApiHandler implements HttpHandler {
 
         private final String handlerID;
         private final Set<ModelNode> addresses;
+        private final List<NotificationRegistration> registrations = new ArrayList<>();
+
         private final Queue<ModelNode> notifications = new ArrayBlockingQueue<>(MAX_NOTIFICATIONS);
 
-        public HttpNotificationHandler(final String handlerID, final Set<ModelNode> addresses) {
+        HttpNotificationHandler(final String handlerID, final Set<ModelNode> addresses) {
             this.handlerID = handlerID;
             this.addresses = addresses;
         }
 
-        public Set<ModelNode> getListeningAddresses() {
+        Set<ModelNode> getListeningAddresses() {
             return addresses;
         }
 
-        public List<ModelNode> getNotifications() {
+        void addRegistration(NotificationRegistration registration) {
+            registrations.add(registration);
+        }
+
+        void unregister() {
+            for (NotificationRegistration registration : registrations) {
+                registration.unregister();
+            }
+        }
+
+        List<ModelNode> getNotifications() {
             return new ArrayList<>(notifications);
         }
 
-        public void clear() {
+        void clear() {
             notifications.clear();
         }
 

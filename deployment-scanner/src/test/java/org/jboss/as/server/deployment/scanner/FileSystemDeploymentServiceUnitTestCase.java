@@ -1622,12 +1622,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         }
 
         @Override
-        public void registerNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void unregisterNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter) {
+        public NotificationRegistration registerNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter) {
             throw new UnsupportedOperationException();
         }
 
