@@ -38,7 +38,6 @@ import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
-import org.jboss.wsf.spi.serviceref.ServiceRefType;
 import org.jboss.wsf.spi.serviceref.ServiceRefFactory;
 import org.jboss.wsf.spi.serviceref.ServiceRefFactoryFactory;
 
@@ -64,21 +63,12 @@ final class WSRefValueSource extends InjectionSource implements Value<Object> {
     public Object getValue() {
         final ClassLoader oldCL = getContextClassLoader();
         try {
-            final ClassLoader integrationCL = new DelegateClassLoader(getClassLoader(), classLoader);
+            final ClassLoader integrationCL = new DelegateClassLoader(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader(), classLoader);
             setContextClassLoader(integrationCL);
             final ServiceRefFactory serviceRefFactory = getServiceRefFactory();
             return serviceRefFactory.newServiceRef(serviceRef);
         } finally {
             setContextClassLoader(oldCL);
-        }
-    }
-
-    private ClassLoader getClassLoader() {
-        ClassLoaderProvider provider = ClassLoaderProvider.getDefaultProvider();
-        if (!ServiceRefType.JAXRPC.equals(serviceRef.getType())) {
-            return provider.getServerIntegrationClassLoader();
-        } else {
-            return provider.getServerJAXRPCIntegrationClassLoader();
         }
     }
 

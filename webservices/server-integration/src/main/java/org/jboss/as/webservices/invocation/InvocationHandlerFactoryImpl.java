@@ -21,7 +21,6 @@
  */
 package org.jboss.as.webservices.invocation;
 
-import org.jboss.ws.common.invocation.InvocationHandlerJAXRPC;
 import org.jboss.wsf.spi.invocation.InvocationHandler;
 import org.jboss.wsf.spi.invocation.InvocationHandlerFactory;
 import org.jboss.wsf.spi.invocation.InvocationType;
@@ -42,12 +41,6 @@ public final class InvocationHandlerFactoryImpl extends InvocationHandlerFactory
                 break;
             case JAXWS_EJB3:
                 handler = new InvocationHandlerJAXWS();
-                break;
-            case JAXRPC_JSE:
-                handler = new InvocationHandlerJAXRPC();
-                break;
-            case JAXRPC_EJB21:
-                handler = new InvocationHandlerEJB21();
                 break;
             default:
                 throw new IllegalArgumentException();

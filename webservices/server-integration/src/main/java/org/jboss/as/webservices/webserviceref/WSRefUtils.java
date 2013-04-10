@@ -112,8 +112,7 @@ final class WSRefUtils {
            processUnifiedJBossServiceRefMetaData(serviceRefUMDM, serviceRefMD);
         }
 
-        // detect JAXWS or JAXRPC type
-        processType(serviceRefUMDM);
+        serviceRefUMDM.setType(ServiceRefType.JAXWS);
 
         return serviceRefUMDM;
     }
@@ -237,11 +236,6 @@ final class WSRefUtils {
         }
 
         return handlerChainsUMDM;
-    }
-
-    static void processType(final UnifiedServiceRefMetaData serviceRefUMDM) {
-        final boolean isJAXRPC = serviceRefUMDM.getMappingFile() != null || "javax.xml.rpc.Service".equals(serviceRefUMDM.getServiceInterface());
-        serviceRefUMDM.setType(isJAXRPC ? ServiceRefType.JAXRPC : ServiceRefType.JAXWS);
     }
 
     static void processAnnotatedElement(final AnnotatedElement anElement, final UnifiedServiceRefMetaData serviceRefUMDM) {

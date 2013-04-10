@@ -41,10 +41,6 @@ public final class ContainerMetaDataDeploymentAspect extends AbstractDeploymentA
 
     private final MetaDataBuilderJAXWS_EJB jaxwsEjbMDBuilder = new MetaDataBuilderJAXWS_EJB();
 
-    private final MetaDataBuilderJAXRPC_POJO jaxrpcPojoMDBuilder = new MetaDataBuilderJAXRPC_POJO();
-
-    private final MetaDataBuilderJAXRPC_EJB jaxrpcEjbMDBuilder = new MetaDataBuilderJAXRPC_EJB();
-
     @Override
     public void start(final Deployment dep) {
         if (WSHelper.isJaxwsJseDeployment(dep)) {
@@ -57,16 +53,6 @@ public final class ContainerMetaDataDeploymentAspect extends AbstractDeploymentA
         if (WSHelper.isJaxwsEjbDeployment(dep)) {
             ROOT_LOGGER.creatingDeployment("JAXWS", "EJB", dep.getSimpleName());
             final EJBArchiveMetaData ejbMetaData = jaxwsEjbMDBuilder.create(dep);
-            dep.addAttachment(EJBArchiveMetaData.class, ejbMetaData);
-        }
-        else if (WSHelper.isJaxrpcJseDeployment(dep)) {
-            ROOT_LOGGER.creatingDeployment("JAXRPC", "POJO", dep.getSimpleName());
-            final JSEArchiveMetaData jseMetaData = jaxrpcPojoMDBuilder.create(dep);
-            dep.addAttachment(JSEArchiveMetaData.class, jseMetaData);
-        }
-        else if (WSHelper.isJaxrpcEjbDeployment(dep)) {
-            ROOT_LOGGER.creatingDeployment("JAXRPC", "EJB", dep.getSimpleName());
-            final EJBArchiveMetaData ejbMetaData = jaxrpcEjbMDBuilder.create(dep);
             dep.addAttachment(EJBArchiveMetaData.class, ejbMetaData);
         }
     }

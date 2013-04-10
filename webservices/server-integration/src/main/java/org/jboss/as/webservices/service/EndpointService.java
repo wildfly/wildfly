@@ -184,9 +184,9 @@ public final class EndpointService implements Service<Endpoint> {
         builder.addDependency(DependencyType.REQUIRED, WSServices.REGISTRY_SERVICE,
                 EndpointRegistry.class,
                 service.getEndpointRegistryInjector());
-        builder.addDependency(DependencyType.REQUIRED,
-                WSServices.PORT_COMPONENT_LINK_SERVICE,
-                WebAppController.class, service.getPclWebAppControllerInjector());
+//        builder.addDependency(DependencyType.REQUIRED,
+//                WSServices.PORT_COMPONENT_LINK_SERVICE,
+//                WebAppController.class, service.getPclWebAppControllerInjector());
         builder.addDependency(DependencyType.OPTIONAL, MBEAN_SERVER_NAME,
                 MBeanServer.class,
                 service.getMBeanServerInjector());

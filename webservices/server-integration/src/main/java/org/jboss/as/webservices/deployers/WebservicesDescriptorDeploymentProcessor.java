@@ -36,6 +36,7 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.webservices.metadata.WebservicesPropertyReplaceFactory;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.vfs.VirtualFile;
+import org.jboss.wsf.spi.metadata.webservices.WebserviceDescriptionMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 
 /**
@@ -56,6 +57,9 @@ public final class WebservicesDescriptorDeploymentProcessor implements Deploymen
                     webservicesDescriptorURL, JBossDescriptorPropertyReplacement.propertyReplacer(unit));
             final WebservicesMetaData webservicesMD = webservicesFactory.load(webservicesDescriptorURL);
             unit.putAttachment(WSAttachmentKeys.WEBSERVICES_METADATA_KEY, webservicesMD);
+            if (hasJaxRpcMapping(webservicesMD)) {
+                throw new DeploymentUnitProcessingException("JAXRPC not supported"); //TODO!!
+            }
         }
     }
 
@@ -75,6 +79,15 @@ public final class WebservicesDescriptorDeploymentProcessor implements Deploymen
         } catch (IOException e) {
             throw MESSAGES.cannotGetURLForDescriptor(e, wsdd.getPathName());
         }
+    }
+
+    private boolean hasJaxRpcMapping(WebservicesMetaData webservicesMD) {
+        for (WebserviceDescriptionMetaData wsdmd : webservicesMD.getWebserviceDescriptions()) {
+            if (wsdmd.getJaxrpcMappingFile() != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

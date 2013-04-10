@@ -81,6 +81,10 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
     }
 
     private static UnifiedServiceRefMetaData getServiceRef(final DeploymentUnit unit, final ComponentDescription componentDescription, final ServiceReferenceMetaData serviceRefMD) throws DeploymentUnitProcessingException {
+        //check jaxrpc service refs
+        if (serviceRefMD.getJaxrpcMappingFile() != null || "javax.xml.rpc.Service".equals(serviceRefMD.getServiceInterface())) {
+            throw new DeploymentUnitProcessingException("JAXRPC not supported"); //TODO!!
+        }
         // construct service ref
         final UnifiedServiceRefMetaData serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(unit));
         translate(serviceRefMD, serviceRefUMDM);

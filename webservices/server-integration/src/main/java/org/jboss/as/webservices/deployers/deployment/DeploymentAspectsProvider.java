@@ -53,8 +53,6 @@ public class DeploymentAspectsProvider {
             final ClassLoader cl = provider.getServerIntegrationClassLoader();
             deploymentAspects.addAll(getDeploymentAspects(cl, "/META-INF/stack-agnostic-deployment-aspects.xml"));
             deploymentAspects.addAll(getDeploymentAspects(cl, "/META-INF/stack-specific-deployment-aspects.xml"));
-            final ClassLoader jaxrpcCl = provider.getServerJAXRPCIntegrationClassLoader();
-            deploymentAspects.addAll(getDeploymentAspects(jaxrpcCl, "/META-INF/jaxrpc-deployment-aspects.xml"));
             aspects = DeploymentAspectSorter.getInstance().sort(deploymentAspects);
         }
         return aspects;
