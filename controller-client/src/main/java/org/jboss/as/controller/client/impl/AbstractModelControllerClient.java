@@ -23,9 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -59,11 +57,11 @@ import org.jboss.threads.AsyncFuture;
 public abstract class AbstractModelControllerClient implements ModelControllerClient, ManagementRequestHandlerFactory {
 
     private static ManagementRequestHandler<ModelNode, OperationExecutionContext> MESSAGE_HANDLER = new HandleReportRequestHandler();
+
     private static ManagementRequestHandler<ModelNode, OperationExecutionContext> GET_INPUT_STREAM = new ReadAttachmentInputStreamRequestHandler();
     private static ManagementRequestHandler<ModelNode, NotificationExecutionContext> NOTIFICATION_HANDLER = new HandleNotificationRequestHandler();
 
     private static final OperationMessageHandler NO_OP_HANDLER = OperationMessageHandler.DISCARD;
-    private Map<NotificationExecutionContext, Integer> notificationHandlers = new HashMap<NotificationExecutionContext, Integer>();
 
     /**
      * Get the mgmt channel association.
@@ -125,47 +123,27 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
     }
 
     @Override
-    public void registerNotificationHandler(final ModelNode address, final NotificationHandler handler, final NotificationFilter filter) {
+    public NotificationRegistration registerNotificationHandler(final ModelNode address, final NotificationHandler handler, final NotificationFilter filter) {
         try {
-            NotificationExecutionContext entry = new NotificationExecutionContext(handler, filter);
-            ActiveOperation<Void, NotificationExecutionContext> handleNotificationOperation = getChannelAssociation().initializeOperation(entry, new ActiveOperation.CompletedCallback<Void>() {
-                @Override
-                public void completed(Void result) {
-                    notificationHandlers.remove(handler);
-                }
-
-                @Override
-                public void failed(Exception e) {
-                    notificationHandlers.remove(handler);
-
-                }
-
-                @Override
-                public void cancelled() {
-                    notificationHandlers.remove(handler);
-                }
-            });
-            notificationHandlers.put(entry, handleNotificationOperation.getOperationId());
-            AsyncFuture<Void> result = getChannelAssociation().executeRequest(new RegisterNotificationHandlerRequest(address, handleNotificationOperation.getOperationId(), true), null).getResult();
+            NotificationExecutionContext context = new NotificationExecutionContext(handler, filter);
+            final ActiveOperation<Void, NotificationExecutionContext> handleNotificationOperation = getChannelAssociation().initializeOperation(context, HandleNotificationRequestHandler.NO_OP_CALLBACK);
+            AsyncFuture<Void> result = getChannelAssociation().executeRequest(new RegisterNotificationHandlerRequest(address, handleNotificationOperation, true), null).getResult();
             result.get();
+            return new NotificationRegistration() {
+                @Override
+                public void unregister() {
+                    try {
+                        AsyncFuture<Void> result = getChannelAssociation().executeRequest(new RegisterNotificationHandlerRequest(address, handleNotificationOperation, false), null).getResult();
+                        result.get();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            };
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-    }
-
-    @Override
-    public void unregisterNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter) {
-        NotificationExecutionContext entry = new NotificationExecutionContext(handler, filter);
-        if (notificationHandlers.containsKey(entry)) {
-            int operationId = notificationHandlers.get(entry);
-            try {
-                AsyncFuture<Void> result = getChannelAssociation().executeRequest(new RegisterNotificationHandlerRequest(address, operationId, false), null).getResult();
-                result.get();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
     }
 
     /**
@@ -432,17 +410,31 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
                 notificationHandler.handleNotification(notification);
             }
         }
+
+        static final ActiveOperation.CompletedCallback<Void> NO_OP_CALLBACK = new ActiveOperation.CompletedCallback<Void>() {
+            @Override
+            public void completed(Void result) {
+            }
+
+            @Override
+            public void failed(Exception e) {
+            }
+
+            @Override
+            public void cancelled() {
+            }
+        };
     }
 
     private static class RegisterNotificationHandlerRequest implements ManagementRequest<Void, Void> {
 
         private final ModelNode address;
-        private final int operationId;
+        private final ActiveOperation<Void, NotificationExecutionContext> handleNotificationOperation;
         private final boolean register;
 
-        private RegisterNotificationHandlerRequest(ModelNode address, int operationId, boolean register) {
+        private RegisterNotificationHandlerRequest(ModelNode address, ActiveOperation<Void, NotificationExecutionContext> handleNotificationOperation, boolean register) {
             this.address = address;
-            this.operationId = operationId;
+            this.handleNotificationOperation = handleNotificationOperation;
             this.register = register;
         }
 
@@ -456,7 +448,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             final FlushableDataOutput output = context.writeMessage(context.getRequestHeader());
             try {
                 address.writeExternal(output);
-                output.writeInt(operationId);
+                output.writeInt(handleNotificationOperation.getOperationId());
                 output.writeBoolean(register);
                 output.close();
             } finally {
@@ -472,6 +464,10 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         @Override
         public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> context) throws IOException {
             resultHandler.done(null);
+            // in case of unregistration, the operation handling the notification is done too.
+            if (!register) {
+                handleNotificationOperation.getResultHandler().done(null);
+            }
         }
     }
 

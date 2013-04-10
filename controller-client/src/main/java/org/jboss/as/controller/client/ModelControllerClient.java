@@ -121,18 +121,14 @@ public interface ModelControllerClient extends Closeable {
      * @param handler the notification handler
      * @param filter the notification filter. Use {@link NotificationFilter#ALL} to let the handler always handle notifications
      */
-     void registerNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter);
+     NotificationRegistration registerNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter);
 
     /**
-     * Unregister the given NotificationHandler to stop receiving notifications emitted by the resource at the given source address.
-     *
-     * The source, handler and filter must match the values that were used during registration to be effectively unregistered.
-     *
-     * @param address the address of the resource that emit notifications.
-     * @param handler the notification handler
-     * @param filter the notification filter
+     * Unregister a previously registered NotificationHandler.
      */
-    void unregisterNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter);
+    interface NotificationRegistration {
+        void unregister();
+    }
 
     class Factory {
 
