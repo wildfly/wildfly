@@ -34,7 +34,7 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
  */
 public final class WSReferences {
 
-    private final Map<String, UnifiedServiceRefMetaData> references = new HashMap<String, UnifiedServiceRefMetaData>();
+    private final Map<String, UnifiedServiceRefMetaData> references = new HashMap<String, UnifiedServiceRefMetaData>(8);
 
     private WSReferences() {
         // forbidden inheritance

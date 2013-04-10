@@ -28,7 +28,6 @@ import static org.jboss.as.webservices.util.ASHelper.getWSRefRegistry;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_REFS_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_REF_ANNOTATION;
 import static org.jboss.as.webservices.webserviceref.WSRefUtils.processAnnotatedElement;
-import static org.jboss.as.webservices.webserviceref.WSRefUtils.processType;
 
 import java.lang.reflect.AccessibleObject;
 import java.util.List;
@@ -63,6 +62,7 @@ import org.jboss.jandex.MethodInfo;
 import org.jboss.modules.Module;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
+import org.jboss.wsf.spi.serviceref.ServiceRefType;
 
 /**
  * @WebServiceRef annotation processor.
@@ -253,7 +253,7 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
             serviceRefUMDM.setServiceInterface(Service.class.getName());
         }
         // ref type
-        processType(serviceRefUMDM);
+        serviceRefUMDM.setType(ServiceRefType.JAXWS);
 
         return serviceRefUMDM;
     }

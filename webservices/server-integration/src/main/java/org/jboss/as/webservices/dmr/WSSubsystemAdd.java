@@ -33,16 +33,12 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.webservices.config.ServerConfigImpl;
 import org.jboss.as.webservices.service.EndpointRegistryService;
-import org.jboss.as.webservices.service.PortComponentLinkService;
 import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
 import org.jboss.dmr.ModelNode;
@@ -87,15 +83,15 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
             newControllers.add(EndpointRegistryService.install(serviceTarget, verificationHandler));
 
-            String defaultHost = "localhost";
-            try {
-                final Resource webSubsystem = context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement("subsystem", "web")));
-                defaultHost = webSubsystem.getModel().get("default-virtual-server").asString();
-            } catch (Exception e) {
-                //TODO this code needs to be update to undertow
-                ROOT_LOGGER.info("Could not get default virtual host: "+e.getMessage());
-            }
-            newControllers.add(PortComponentLinkService.install(serviceTarget, defaultHost, verificationHandler));
+//            String defaultHost = "localhost";
+//            try {
+//                final Resource webSubsystem = context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement("subsystem", "web")));
+//                defaultHost = webSubsystem.getModel().get("default-virtual-server").asString();
+//            } catch (Exception e) {
+//                //TODO this code needs to be update to undertow
+//                ROOT_LOGGER.info("Could not get default virtual host: "+e.getMessage());
+//            }
+//            newControllers.add(PortComponentLinkService.install(serviceTarget, defaultHost, verificationHandler));
         }
     }
 

@@ -27,7 +27,6 @@ import static org.jboss.as.webservices.util.ASHelper.getJBossWebMetaData;
 import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.CLASSLOADER_KEY;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.DEPLOYMENT_KEY;
-import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXRPC_ENDPOINTS_KEY;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JBOSS_WEBSERVICES_METADATA_KEY;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICES_METADATA_KEY;
@@ -36,7 +35,6 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.webservices.metadata.model.JAXRPCDeployment;
 import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
@@ -115,9 +113,6 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
 
         final JAXWSDeployment jaxwsDeployment = getOptionalAttachment(unit, JAXWS_ENDPOINTS_KEY);
         dep.addAttachment(JAXWSDeployment.class, jaxwsDeployment);
-
-        final JAXRPCDeployment jaxrpcDeployment = getOptionalAttachment(unit, JAXRPC_ENDPOINTS_KEY);
-        dep.addAttachment(JAXRPCDeployment.class, jaxrpcDeployment);
 
         final EjbJarMetaData ejbJarMD = getOptionalAttachment(unit, EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         dep.addAttachment(EjbJarMetaData.class, ejbJarMD);
