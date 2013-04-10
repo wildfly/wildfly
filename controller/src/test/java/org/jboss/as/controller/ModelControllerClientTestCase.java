@@ -28,6 +28,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataOutput;
@@ -351,9 +352,40 @@ public class ModelControllerClientTestCase {
 
     @Ignore
     @Test
-    public void testRegisterNotificationHandler() throws Exception {
-        final CountDownLatch notificationLatch = new CountDownLatch(2);
+    public void testRegisterNotificationHandlerWithServerError() throws Exception {
+        MockModelController controller = new MockModelController() {
+            @Override
+            public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
+                return new ModelNode();
+            }
+        };
 
+        // Set the handler
+        final ModelControllerClient client = setupTestClient(controller);
+        try {
+            ModelNode operation = new ModelNode();
+            operation.get("test").set("123");
+            operation.get(OP_ADDR).add("not a valid address", 1);
+
+            try {
+                client.registerNotificationHandler(operation.get(OP_ADDR), new NotificationHandler() {
+                    @Override
+                    public void handleNotification(Notification notification) {
+                        // no-op
+                    }
+                }, ALL);
+                fail("should throw an exception if the registration of the notification handler does not occur on the server side");
+            } catch (Exception e) {
+
+            }
+        } finally {
+            IoUtils.safeClose(client);
+        }
+
+    }
+
+    @Test
+    public void testRegisterNotificationHandler() throws Exception {
         MockModelController controller = new MockModelController() {
             @Override
             public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
@@ -373,6 +405,7 @@ public class ModelControllerClientTestCase {
             operation.get("test").set("123");
             operation.get(OP_ADDR).add("host", "foo");
 
+            final CountDownLatch notificationLatch = new CountDownLatch(2); // 2 notifications are emitted by 1 operation execution
             client.registerNotificationHandler(operation.get(OP_ADDR), new NotificationHandler() {
                 @Override
                 public void handleNotification(Notification notification) {
@@ -394,15 +427,6 @@ public class ModelControllerClientTestCase {
 
     @Test
     public void testUnregisterNotificationHandler() throws Exception {
-        final AtomicBoolean gotNotification = new AtomicBoolean(false);
-
-        NotificationHandler handler = new NotificationHandler() {
-            @Override
-            public void handleNotification(Notification notification) {
-                gotNotification.set(true);
-            }
-        };
-
         MockModelController controller = new MockModelController() {
             @Override
             public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
@@ -421,7 +445,13 @@ public class ModelControllerClientTestCase {
             operation.get("test").set("123");
             operation.get(OP_ADDR).add("host", "foo");
 
-            ModelControllerClient.NotificationRegistration registration = client.registerNotificationHandler(operation.get(OP_ADDR), handler, ALL);
+            final AtomicBoolean gotNotification = new AtomicBoolean(false);
+            ModelControllerClient.NotificationRegistration registration = client.registerNotificationHandler(operation.get(OP_ADDR), new NotificationHandler() {
+                @Override
+                public void handleNotification(Notification notification) {
+                    gotNotification.set(true);
+                }
+            }, ALL);
             registration.unregister();
 
             ModelNode result = client.execute(operation);
@@ -437,9 +467,6 @@ public class ModelControllerClientTestCase {
 
     @Test
     public void testNotificationFilter() throws Exception {
-        final CountDownLatch notificationLatch = new CountDownLatch(1);
-        final AtomicBoolean gotBarNotification = new AtomicBoolean(false);
-
         MockModelController controller = new MockModelController() {
             @Override
             public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
@@ -458,6 +485,8 @@ public class ModelControllerClientTestCase {
             operation.get("test").set("123");
             operation.get(OP_ADDR).add("host", "foo");
 
+            final CountDownLatch notificationLatch = new CountDownLatch(1);
+            final AtomicBoolean gotBarNotification = new AtomicBoolean(false);
             client.registerNotificationHandler(operation.get(OP_ADDR),
                     new NotificationHandler() {
                         @Override
@@ -501,8 +530,6 @@ public class ModelControllerClientTestCase {
 
     @Test
     public void testCloseClientWithRegisteredNotificationHandler() throws Exception {
-        final CountDownLatch notificationLatch = new CountDownLatch(1);
-
         MockModelController controller = new MockModelController() {
             @Override
             public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
@@ -521,6 +548,7 @@ public class ModelControllerClientTestCase {
             operation.get("test").set("123");
             operation.get(OP_ADDR).add("host", "foo");
 
+            final CountDownLatch notificationLatch = new CountDownLatch(1);
             client.registerNotificationHandler(operation.get(OP_ADDR),
                     new NotificationHandler() {
                         @Override
