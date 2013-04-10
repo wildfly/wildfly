@@ -152,11 +152,12 @@ public final class RemoteDeployer implements Deployer {
                 LOGGER.warn("Trying to undeploy archive " + archiveURL + " which is not currently deployed!");
                 return;
             }
-            final ModelControllerClient client = newModelControllerClient();
-            final ServerDeploymentManager deploymentManager = newDeploymentManager(client);
-            final DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
+
             final String uniqueName = url2Id.get(archiveURL);
             if (uniqueName != null) {
+                final ModelControllerClient client = newModelControllerClient();
+                final ServerDeploymentManager deploymentManager = newDeploymentManager(client);
+                final DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
                 final DeploymentPlan plan = builder.undeploy(uniqueName).remove(uniqueName).build();
                 final DeploymentAction deployAction = builder.getLastAction();
                 try {
