@@ -33,7 +33,6 @@ import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.security.SecurityDomainContextAdaptor;
 import org.jboss.as.webservices.util.WSServices;
-import org.jboss.as.webservices.util.WebAppController;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -52,10 +51,8 @@ import org.jboss.security.SecurityUtil;
 import org.jboss.ws.api.monitoring.RecordProcessor;
 import org.jboss.ws.common.ObjectNameFactory;
 import org.jboss.ws.common.monitoring.ManagedRecordProcessor;
-import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.management.EndpointRegistry;
-import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 
 /**
  * WS endpoint service; this is meant for setting the lazy deployment time info into the Endpoint (stuff coming from
@@ -70,7 +67,6 @@ public final class EndpointService implements Service<Endpoint> {
     private final Endpoint endpoint;
     private final ServiceName name;
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
-    private final InjectedValue<WebAppController> pclWebAppControllerValue = new InjectedValue<WebAppController>();
     private final InjectedValue<EndpointRegistry> endpointRegistryValue = new InjectedValue<EndpointRegistry>();
     private final InjectedValue<MBeanServer> mBeanServerValue = new InjectedValue<MBeanServer>();
 
@@ -96,9 +92,6 @@ public final class EndpointService implements Service<Endpoint> {
     public void start(final StartContext context) throws StartException {
         ROOT_LOGGER.starting(name);
         endpoint.setSecurityDomainContext(new SecurityDomainContextAdaptor(securityDomainContextValue.getValue()));
-        if (hasWebservicesMD(endpoint)) { //basically JAX-RPC deployments require the PortComponentLinkServlet to be available
-            pclWebAppControllerValue.getValue().incrementUsers();
-        }
         final List<RecordProcessor> processors = endpoint.getRecordProcessors();
         for (final RecordProcessor processor : processors) {
            registerRecordProcessor(processor, endpoint);
@@ -110,9 +103,6 @@ public final class EndpointService implements Service<Endpoint> {
     public void stop(final StopContext context) {
         ROOT_LOGGER.stopping(name);
         endpoint.setSecurityDomainContext(null);
-        if (hasWebservicesMD(endpoint)) {
-            pclWebAppControllerValue.getValue().decrementUsers();
-        }
         endpointRegistryValue.getValue().unregister(endpoint);
         final List<RecordProcessor> processors = endpoint.getRecordProcessors();
         for (final RecordProcessor processor : processors) {
@@ -153,17 +143,8 @@ public final class EndpointService implements Service<Endpoint> {
         }
     }
 
-    private boolean hasWebservicesMD(final Endpoint endpoint) {
-        final Deployment dep = endpoint.getService().getDeployment();
-        return dep.getAttachment(WebservicesMetaData.class) != null;
-    }
-
     public Injector<SecurityDomainContext> getSecurityDomainContextInjector() {
         return securityDomainContextValue;
-    }
-
-    public Injector<WebAppController> getPclWebAppControllerInjector() {
-        return pclWebAppControllerValue;
     }
 
     public Injector<EndpointRegistry> getEndpointRegistryInjector() {
@@ -184,9 +165,6 @@ public final class EndpointService implements Service<Endpoint> {
         builder.addDependency(DependencyType.REQUIRED, WSServices.REGISTRY_SERVICE,
                 EndpointRegistry.class,
                 service.getEndpointRegistryInjector());
-//        builder.addDependency(DependencyType.REQUIRED,
-//                WSServices.PORT_COMPONENT_LINK_SERVICE,
-//                WebAppController.class, service.getPclWebAppControllerInjector());
         builder.addDependency(DependencyType.OPTIONAL, MBEAN_SERVER_NAME,
                 MBeanServer.class,
                 service.getMBeanServerInjector());
