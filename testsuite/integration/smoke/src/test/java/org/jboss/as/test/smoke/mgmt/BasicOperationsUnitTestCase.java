@@ -114,10 +114,8 @@ public class BasicOperationsUnitTestCase {
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         Assert.assertTrue(result.hasDefined(RESULT));
 
-        final ModelNode web = result.get(RESULT, SUBSYSTEM, "undertow");
+        final ModelNode web = result.get(RESULT, SUBSYSTEM, "io");
         Assert.assertTrue(web.hasDefined("worker"));
-        /*Assert.assertTrue(web.get("connector").has("http"));
-        Assert.assertFalse(web.get("connector").hasDefined("http"));*/
     }
 
     @Test

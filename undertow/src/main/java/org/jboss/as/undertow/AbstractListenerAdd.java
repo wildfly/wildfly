@@ -10,6 +10,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.io.IOServices;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -49,9 +50,9 @@ abstract class AbstractListenerAdd extends AbstractAddStepHandler {
         if (enabled) {
             final AbstractListenerService<? extends AbstractListenerService> service = createService(name, context, model);
             final ServiceBuilder<? extends AbstractListenerService> serviceBuilder = context.getServiceTarget().addService(constructServiceName(name), service);
-            serviceBuilder.addDependency(UndertowService.WORKER.append(workerName), XnioWorker.class, service.getWorker())
+            serviceBuilder.addDependency(IOServices.WORKER.append(workerName), XnioWorker.class, service.getWorker())
                     .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
-                    .addDependency(UndertowService.BUFFER_POOL.append(bufferPoolName), Pool.class, service.getBufferPool())
+                    .addDependency(IOServices.BUFFER_POOL.append(bufferPoolName), Pool.class, service.getBufferPool())
                     .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerService());
 
             configureAdditionalDependencies(context, serviceBuilder, model, service);

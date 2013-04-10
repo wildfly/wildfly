@@ -21,7 +21,6 @@ import org.jboss.msc.service.StopContext;
 public class UndertowService implements Service<UndertowService> {
 
     public static final ServiceName UNDERTOW = ServiceName.JBOSS.append("undertow");
-    public static final ServiceName WORKER = UNDERTOW.append("worker");
     public static final ServiceName SERVLET_CONTAINER = UNDERTOW.append(Constants.SERVLET_CONTAINER);
     public static final ServiceName SERVER = UNDERTOW.append(Constants.SERVER);
     /**
@@ -30,7 +29,6 @@ public class UndertowService implements Service<UndertowService> {
     public static final ServiceName AJP_LISTENER = UNDERTOW.append("ajp-listener");
     public static final ServiceName HTTP_LISTENER = UNDERTOW.append("http-listener");
     public static final ServiceName HTTPS_LISTENER = UNDERTOW.append("https-listener");
-    public static final ServiceName BUFFER_POOL = UNDERTOW.append("buffer-pool");
     /**
      * The base name for jboss.web deployments.
      */

@@ -25,14 +25,11 @@ package org.jboss.as.undertow;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
+
 public interface Constants {
     String AJP_LISTENER = "ajp-listener";
     String BUFFER_POOL = "buffer-pool";
-    String BUFFER_SIZE = "buffer-size";
-    String BUFFER_PER_SLICE = "buffers-per-slice";
     String SETTING = "setting";
-    String HANDLER_FACTORY = "handler-factory";
-    String HANDLER_CHAIN = "handler-chain";
     String SECURITY_REALM = "security-realm";
     String SOCKET_BINDING = "socket-binding";
     String PATH = "path";
@@ -41,13 +38,6 @@ public interface Constants {
     String INSTANCE_ID = "instance-id";
     String NAME = "name";
     String WORKER = "worker";
-    String WORKER_IO_THREADS = "io-threads";
-    String WORKER_TASK_CORE_THREADS = "task-core-threads";
-    String WORKER_TASK_KEEPALIVE = "task-keepalive";
-    String WORKER_TASK_LIMIT = "task-limit";
-    String WORKER_TASK_MAX_THREADS = "task-max-threads";
-    String THREAD_DAEMON = "thread-daemon";
-    String STACK_SIZE = "stack-size";
     String SERVLET_CONTAINER = "servlet-container";
     String LOCATION = "location";
     String JSP = "jsp";
