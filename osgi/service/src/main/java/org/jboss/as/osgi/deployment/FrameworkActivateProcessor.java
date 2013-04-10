@@ -81,8 +81,8 @@ public class FrameworkActivateProcessor implements DeploymentUnitProcessor {
         // Make these services available for a bundle deployment only
         phaseContext.addDeploymentDependency(Services.FRAMEWORK_CREATE, OSGiConstants.SYSTEM_CONTEXT_KEY);
         phaseContext.addDeploymentDependency(Services.BUNDLE_MANAGER, OSGiConstants.BUNDLE_MANAGER_KEY);
-        phaseContext.addDeploymentDependency(Services.RESOLVER, OSGiConstants.RESOLVER_KEY);
         phaseContext.addDeploymentDependency(Services.ENVIRONMENT, OSGiConstants.ENVIRONMENT_KEY);
+        phaseContext.addDeploymentDependency(Services.RESOLVER, OSGiConstants.RESOLVER_KEY);
     }
 
     @Override

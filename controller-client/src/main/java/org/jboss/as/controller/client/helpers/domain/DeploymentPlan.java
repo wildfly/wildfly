@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.jboss.as.controller.client.DeploymentMetadata;
+
 /**
  * Encapsulates an overall set of actions a {@link DomainDeploymentManager} should
  * take to update the set of deployment content available for deployment in the
@@ -92,6 +94,13 @@ public interface DeploymentPlan {
      *         would return <code>false</code>
      */
     long getGracefulShutdownTimeout();
+
+    /**
+     * Get the metadata associated with this deployment plan.
+     *
+     * @return The meta data.
+     */
+    DeploymentMetadata getMetadata();
 
     /**
      * Gets the configuration of how the {@link #getDeploymentActions() deployment
