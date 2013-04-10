@@ -109,7 +109,7 @@ class DomainApiHandler implements HttpHandler {
             dmr = get ? convertGetRequest(exchange) : convertPostRequest(exchange, encode);
         } catch (Exception e) {
             ROOT_LOGGER.debugf("Unable to construct ModelNode '%s'", e.getMessage());
-            Common.sendError(exchange, get, e.getLocalizedMessage());
+            Common.sendError(exchange, get, false, e.getLocalizedMessage());
             return;
         }
 
@@ -117,12 +117,12 @@ class DomainApiHandler implements HttpHandler {
             response = modelController.execute(new OperationBuilder(dmr).build());
         } catch (Throwable t) {
             ROOT_LOGGER.modelRequestError(t);
-            Common.sendError(exchange, get, t.getLocalizedMessage());
+            Common.sendError(exchange, get, encode, t.getLocalizedMessage());
             return;
         }
 
         if (response.hasDefined(OUTCOME) && FAILED.equals(response.get(OUTCOME).asString())) {
-            Common.sendError(exchange, get, response.get(FAILURE_DESCRIPTION).asString());
+            Common.sendError(exchange, get, encode, response.get(FAILURE_DESCRIPTION).asString());
             return;
         }
 

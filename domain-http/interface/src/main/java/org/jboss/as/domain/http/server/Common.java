@@ -25,6 +25,10 @@ import io.undertow.io.IoCallback;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.util.Headers;
+import org.jboss.dmr.ModelNode;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import static io.undertow.server.handlers.ResponseCodeHandler.HANDLE_404;
 
@@ -51,12 +55,39 @@ public class Common {
     static String UTF_8 = "utf-8";
     static final String GMT = "GMT";
 
-    static void sendError(HttpServerExchange exchange, boolean isGet, String msg) {
-        byte[] bytes = msg.getBytes();
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, TEXT_PLAIN + ";" + UTF_8);
-        exchange.getResponseHeaders().put(Headers.CONTENT_LENGTH, String.valueOf(bytes.length));
-        exchange.setResponseCode(500);
+    static void sendError(HttpServerExchange exchange, boolean isGet, boolean encode, String msg) {
 
-        exchange.getResponseSender().send(msg, IoCallback.END_EXCHANGE);
+
+        if(encode) {
+
+            try {
+                ModelNode response = new ModelNode();
+                response.set(msg);
+
+                ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                response.writeBase64(bout);
+                byte[] bytes = bout.toByteArray();
+
+                exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, APPLICATION_DMR_ENCODED+ ";" + UTF_8);
+                exchange.getResponseHeaders().put(Headers.CONTENT_LENGTH, String.valueOf(bytes));
+                exchange.setResponseCode(500);
+
+                exchange.getResponseSender().send(new String(bytes), IoCallback.END_EXCHANGE);
+
+            } catch (IOException e) {
+                // fallback, should not happen
+                sendError(exchange, isGet, false, msg);
+            }
+
+        }
+        else {
+            byte[] bytes = msg.getBytes();
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, TEXT_PLAIN + ";" + UTF_8);
+            exchange.getResponseHeaders().put(Headers.CONTENT_LENGTH, String.valueOf(bytes.length));
+            exchange.setResponseCode(500);
+
+            exchange.getResponseSender().send(msg, IoCallback.END_EXCHANGE);
+        }
     }
+
 }
