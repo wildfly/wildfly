@@ -1773,16 +1773,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.ws.native</groupId>
-                    <artifactId>jbossws-native-core</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.ws.native</groupId>
-                    <artifactId>jbossws-native-services</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.jboss.xnio</groupId>
                     <artifactId>xnio-api</artifactId>
                 </dependency>
@@ -2093,7 +2083,6 @@
                                         <include>org.jboss.spec.javax.xml.ws:jboss-jaxws-api_2.2_spec</include>
                                         <include>org.jboss.weld:weld-api</include>
                                         <include>org.jboss.ws:jbossws-api</include>
-                                        <include>org.jboss.ws.native:jbossws-native-core</include>
                                         <include>org.jboss.xnio:xnio-api</include>
                                         <include>org.jdom:jdom</include>
                                         <include>org.jgroups:jgroups</include>
@@ -2331,7 +2320,6 @@
                                         <exclude>org.jboss.ws:jbossws-common</exclude>
                                         <exclude>org.jboss.ws:jbossws-common-tools</exclude>
                                         <exclude>org.jboss.ws:jbossws-spi</exclude>
-                                        <exclude>org.jboss.ws.native:jbossws-native-services</exclude>
                                         <exclude>org.jboss.ws.projects:jaxws-jboss-httpserver-httpspi</exclude>
                                         <exclude>org.jboss.xnio:xnio-nio</exclude>
                                         <exclude>org.jsoup:jsoup</exclude>
@@ -3227,10 +3215,6 @@
                                         <group>
                                             <title>Module org.jboss.ws.jaxws-jboss-httpserver-httpspi</title>
                                             <packages>org.jboss.ws.httpserver_httpspi</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.ws.native.jbossws-native-core</title>
-                                            <packages>org.jboss.ws:org.jboss.ws.core:org.jboss.ws.core.binding:org.jboss.ws.core.client:org.jboss.ws.core.client.ssl:org.jboss.ws.core.client.transport:org.jboss.ws.core.jaxrpc:org.jboss.ws.core.jaxrpc.binding:org.jboss.ws.core.jaxrpc.binding.jbossxb:org.jboss.ws.core.jaxrpc.client:org.jboss.ws.core.jaxrpc.client.serviceref:org.jboss.ws.core.jaxrpc.handler:org.jboss.ws.core.server:org.jboss.ws.core.soap:org.jboss.ws.core.soap.attachment:org.jboss.ws.core.soap.utils:org.jboss.ws.core.utils:org.jboss.wsf.stack.jbws:org.jboss.ws.jaxrpc:org.jboss.ws.metadata.accessor:org.jboss.ws.metadata.builder:org.jboss.ws.metadata.builder.jaxrpc:org.jboss.ws.metadata.jaxrpcmapping:org.jboss.ws.metadata.umdm:org.jboss.ws.metadata.wsdl:org.jboss.ws.metadata.wsdl.xmlschema:org.jboss.ws.metadata.wsdl.xsd:org.jboss.ws.tools:org.jboss.ws.tools.helpers:org.jboss.ws.tools.interfaces:org.jboss.ws.tools.schema:org.jboss.ws.tools.wsdl:org.jboss.ws.util.xml</packages>
                                         </group>
                                         <group>
                                             <title>Module org.jboss.ws.api</title>
