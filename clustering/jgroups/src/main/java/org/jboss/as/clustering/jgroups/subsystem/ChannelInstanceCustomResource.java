@@ -18,27 +18,36 @@ import org.jgroups.Channel;
 import org.jgroups.stack.Protocol;
 
 /**
+ * Custom resource to allow dynamic detection, registration and return of protocol resources.
+ *
+ * This custom resource needs to do the following:
+ * - obtain a reference to the channel to obtain the (static) list of protocols in the channel's stack
+ * - register the protocols as runtime-only resources
+ * - return the correct set of protocol child resources when children are interrogated
+ *
  * @author Richard Achmatowicz (c) 2012 Red Hat Inc.
  */
 public class ChannelInstanceCustomResource implements Resource {
 
     public static final ServiceName CHANNEL_PARENT = ServiceName.of("jboss", "jgroups", "channel");
     public static final int CHANNEL_PREFIX_LENGTH = CHANNEL_PARENT.toString().length();
+    public static final String JGROUPS_PROTOCOL_PKG = "org.jgroups.protocols";
+    public static final String JGROUPS_PROTOCOL_PACKAGE = "package org.jgroups.protocols";
+    // disregard this Protocol which is used in a shared transport configuration
+    private static final String SHARED_TRANSPORT_PROTOCOL = "TP.ProtocolAdapter";
 
-    private final ServiceName serviceName;
-    private final ServiceController serviceController ;
+    private final ServiceController controller;
 
-    public ChannelInstanceCustomResource(ServiceName name, ServiceController controller) {
-        this.serviceName = name;
-        this.serviceController = controller;
+    public ChannelInstanceCustomResource(ServiceController controller) {
+        this.controller = controller;
     }
 
-    public ServiceName getServiceName() {
-        return serviceName;
+    public ServiceController getController() {
+        return controller;
     }
 
-    public ServiceController getServiceController() {
-        return serviceController;
+    public Channel getChannel() {
+        return (Channel) controller.getValue();
     }
 
     // this resource holds no persistent state, so "turn off" the model
@@ -69,7 +78,12 @@ public class ChannelInstanceCustomResource implements Resource {
 
     @Override
     public Resource requireChild(PathElement element) {
-        return null;
+        if (ModelKeys.PROTOCOL.equals(element.getKey())) {
+            if (hasProtocol(element)) {
+                return PlaceholderResource.INSTANCE;
+            }
+        }
+        throw new NoSuchResourceException(element);
     }
 
     @Override
@@ -133,7 +147,7 @@ public class ChannelInstanceCustomResource implements Resource {
     @Override
     public Resource clone() {
         // don't clone the pointer to the unique controller for this service
-        ChannelInstanceCustomResource clone = new ChannelInstanceCustomResource(getServiceName(), getServiceController());
+        ChannelInstanceCustomResource clone = new ChannelInstanceCustomResource(getController());
         return clone;
     }
 
@@ -153,19 +167,21 @@ public class ChannelInstanceCustomResource implements Resource {
     }
 
     private Set<String> getProtocolNames() {
-        Channel channel ;
-        if (serviceController == null || ((channel = (Channel) serviceController.getValue()) == null)) {
-            return Collections.emptySet();
-        }
+        assert getChannel() != null;
 
         Set<String> names = new HashSet<String>();
-        List<Protocol> protocols = channel.getProtocolStack().getProtocols();
+        List<Protocol> protocols = getChannel().getProtocolStack().getProtocols();
         for (Protocol protocol : protocols) {
-            String name = protocol.getName();
-            names.add(name);
+            String fullyQualifiedProtocolName = protocol.getClass().getPackage() + "." + protocol.getName();
+            String protocolName = fullyQualifiedProtocolName.substring(JGROUPS_PROTOCOL_PACKAGE.length()+1);
+            // disregard the shared transport protocol adapter
+            if (!protocolName.equals(SHARED_TRANSPORT_PROTOCOL)) {
+                names.add(protocolName);
+            }
         }
         return names ;
     }
+
 
     /*
      * ResourceEntry extends the resource and additionally provides information on its path
@@ -174,13 +190,13 @@ public class ChannelInstanceCustomResource implements Resource {
 
         final PathElement path;
 
-        public ChannelInstanceCustomResourceEntry(final ServiceName serviceName, final ServiceController controller, final PathElement path) {
-            super(serviceName, controller);
+        public ChannelInstanceCustomResourceEntry(final ServiceController controller, final PathElement path) {
+            super(controller);
             this.path = path;
         }
 
-        public ChannelInstanceCustomResourceEntry(final ServiceName serviceName, final ServiceController controller, final String type, final String name) {
-            super(serviceName, controller);
+        public ChannelInstanceCustomResourceEntry(final ServiceController controller, final String type, final String name) {
+            super(controller);
             this.path = PathElement.pathElement(type, name);
         }
 
@@ -196,7 +212,7 @@ public class ChannelInstanceCustomResource implements Resource {
 
         @Override
         public ChannelInstanceCustomResourceEntry clone() {
-            return new ChannelInstanceCustomResourceEntry(getServiceName(), getServiceController(), getPathElement());
+            return new ChannelInstanceCustomResourceEntry(getController(), getPathElement());
         }
     }
 
