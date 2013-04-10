@@ -18,6 +18,8 @@
  */
 package org.jboss.as.controller.client.impl;
 
+import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
+
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,7 +47,6 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
-import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFuture;
 
@@ -127,14 +128,14 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         try {
             NotificationExecutionContext context = new NotificationExecutionContext(handler, filter);
             final ActiveOperation<Void, NotificationExecutionContext> handleNotificationOperation = getChannelAssociation().initializeOperation(context, HandleNotificationRequestHandler.NO_OP_CALLBACK);
-            AsyncFuture<Void> result = getChannelAssociation().executeRequest(new RegisterNotificationHandlerRequest(address, handleNotificationOperation, true), null).getResult();
+
+            AsyncFuture<Void> result = getChannelAssociation().executeRequest(new RegisterNotificationHandlerRequest(address, handleNotificationOperation.getOperationId()), null).getResult();
             result.get();
             return new NotificationRegistration() {
                 @Override
                 public void unregister() {
                     try {
-                        AsyncFuture<Void> result = getChannelAssociation().executeRequest(new RegisterNotificationHandlerRequest(address, handleNotificationOperation, false), null).getResult();
-                        result.get();
+                        getChannelAssociation().executeRequest(new UnregisterNotificationHandlerRequest(address, handleNotificationOperation), null).getResult().get();
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -429,13 +430,11 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
     private static class RegisterNotificationHandlerRequest implements ManagementRequest<Void, Void> {
 
         private final ModelNode address;
-        private final ActiveOperation<Void, NotificationExecutionContext> handleNotificationOperation;
-        private final boolean register;
+        private final int operationId;
 
-        private RegisterNotificationHandlerRequest(ModelNode address, ActiveOperation<Void, NotificationExecutionContext> handleNotificationOperation, boolean register) {
+        private RegisterNotificationHandlerRequest(ModelNode address, int operationId) {
             this.address = address;
-            this.handleNotificationOperation = handleNotificationOperation;
-            this.register = register;
+            this.operationId = operationId;
         }
 
         @Override
@@ -448,8 +447,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             final FlushableDataOutput output = context.writeMessage(context.getRequestHeader());
             try {
                 address.writeExternal(output);
-                output.writeInt(handleNotificationOperation.getOperationId());
-                output.writeBoolean(register);
+                output.writeInt(operationId);
                 output.close();
             } finally {
                 StreamUtils.safeClose(output);
@@ -464,10 +462,44 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         @Override
         public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> context) throws IOException {
             resultHandler.done(null);
-            // in case of unregistration, the operation handling the notification is done too.
-            if (!register) {
-                handleNotificationOperation.getResultHandler().done(null);
+        }
+    }
+
+    private static class UnregisterNotificationHandlerRequest implements ManagementRequest<Void, Void> {
+
+        private final ModelNode address;
+        private final ActiveOperation<Void, NotificationExecutionContext> handleNotificationOperation;
+
+        private UnregisterNotificationHandlerRequest(ModelNode address, ActiveOperation<Void, NotificationExecutionContext> handleNotificationOperation) {
+            this.address = address;
+            this.handleNotificationOperation = handleNotificationOperation;
+        }
+
+        @Override
+        public byte getOperationType() {
+            return ModelControllerProtocol.UNREGISTER_NOTIFICATION_HANDLER_REQUEST;
+        }
+
+        @Override
+        public void sendRequest(ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> context) throws IOException {
+            final FlushableDataOutput output = context.writeMessage(context.getRequestHeader());
+            try {
+                address.writeExternal(output);
+                output.writeInt(handleNotificationOperation.getOperationId());
+                output.close();
+            } finally {
+                StreamUtils.safeClose(output);
             }
+        }
+
+        @Override
+        public void handleFailed(ManagementResponseHeader header, ActiveOperation.ResultHandler<Void> resultHandler) {
+            resultHandler.failed(new IOException(header.getError()));
+        }
+
+        @Override
+        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> context) throws IOException {
+            resultHandler.done(null);
         }
     }
 
