@@ -421,8 +421,8 @@ public class ModelControllerClientTestCase {
             operation.get("test").set("123");
             operation.get(OP_ADDR).add("host", "foo");
 
-            client.registerNotificationHandler(operation.get(OP_ADDR), handler, ALL);
-            client.unregisterNotificationHandler(operation.get(OP_ADDR), handler, ALL);
+            ModelControllerClient.NotificationRegistration registration = client.registerNotificationHandler(operation.get(OP_ADDR), handler, ALL);
+            registration.unregister();
 
             ModelNode result = client.execute(operation);
             assertNotNull(result);
