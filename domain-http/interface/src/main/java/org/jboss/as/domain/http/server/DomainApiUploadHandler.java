@@ -75,13 +75,13 @@ class DomainApiUploadHandler implements HttpHandler {
                     operation.addInputStream(in);
                     response = modelController.execute(operation.build());
                     if (!response.get(OUTCOME).asString().equals(SUCCESS)){
-                        Common.sendError(exchange, false, response.get(FAILURE_DESCRIPTION).asString());
+                        Common.sendError(exchange, false, false, response.get(FAILURE_DESCRIPTION).asString());
                         return;
                     }
                 } catch (Throwable t) {
                     // TODO Consider draining input stream
                     ROOT_LOGGER.uploadError(t);
-                    Common.sendError(exchange, false, t.getLocalizedMessage());
+                    Common.sendError(exchange, false, false, t.getLocalizedMessage());
                     return;
                 } finally {
                     IoUtils.safeClose(in);
@@ -92,7 +92,7 @@ class DomainApiUploadHandler implements HttpHandler {
                 return; //Ignore later files
             }
         }
-        Common.sendError(exchange, false, "No file found"); //TODO i18n
+        Common.sendError(exchange, false, false, "No file found"); //TODO i18n
     }
 
     static void writeResponse(HttpServerExchange exchange, ModelNode response, String contentType) {
