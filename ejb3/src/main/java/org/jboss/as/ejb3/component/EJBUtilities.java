@@ -21,7 +21,6 @@
  */
 package org.jboss.as.ejb3.component;
 
-import java.beans.IntrospectionException;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +32,7 @@ import javax.resource.spi.ActivationSpec;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
+import java.beans.IntrospectionException;
 
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.security.ServerSecurityManager;
@@ -59,7 +59,9 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @author Jaikiran Pai
+ * @deprecated Deprecated post 7.2.x version. Services/Components which depended on this service for getting access to various other services are expected to directly depend on the relevant services themselves.
  */
+@Deprecated
 public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
 
 

@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.component;
 
 
+import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.Component;
@@ -63,10 +64,12 @@ import org.jboss.as.ejb3.security.SecurityContextInterceptorFactory;
 import org.jboss.as.ejb3.timerservice.AutoTimer;
 import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
 import org.jboss.as.security.service.SecurityDomainService;
+import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.SetupAction;
+import org.jboss.as.txn.service.TxnServices;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -81,6 +84,9 @@ import javax.ejb.EJBLocalObject;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.UserTransaction;
 import java.lang.reflect.Method;
 import java.rmi.Remote;
 import java.util.ArrayList;
@@ -324,6 +330,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 configuration.addComponentInterceptor(ExecutionTimeInterceptor.FACTORY, InterceptorOrder.Component.EJB_EXECUTION_TIME_INTERCEPTOR, true);
             }
         });
+
+        // setup dependencies on the transaction manager services
+        addTransactionManagerDependencies();
+
+        // setup dependency on ServerSecurityManager
+        addServerSecurityManagerDependency();
     }
 
 
@@ -496,6 +508,46 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         });
     }
 
+    /**
+     * Sets up a {@link ComponentConfigurator} which then sets up the relevant dependencies on the transaction manager services for the {@link EJBComponentCreateService}
+     */
+    protected void addTransactionManagerDependencies() {
+        this.getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException {
+                componentConfiguration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
+                    @Override
+                    public void configureDependency(final ServiceBuilder<?> serviceBuilder, final EJBComponentCreateService ejbComponentCreateService) throws DeploymentUnitProcessingException {
+                        // add dependency on transaction manager
+                        serviceBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, ejbComponentCreateService.getTransactionManagerInjector());
+                        // add dependency on UserTransaction
+                        serviceBuilder.addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION, UserTransaction.class, ejbComponentCreateService.getUserTransactionInjector());
+                        // add dependency on TransactionSynchronizationRegistry
+                        serviceBuilder.addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, ejbComponentCreateService.getTransactionSynchronizationRegistryInjector());
+                    }
+                });
+
+            }
+        });
+    }
+
+    /**
+     * Sets up a {@link ComponentConfigurator} which then sets up the dependency on the ServerSecurityManager service for the {@link EJBComponentCreateService}
+     */
+    protected void addServerSecurityManagerDependency() {
+        getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException {
+                componentConfiguration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
+                    @Override
+                    public void configureDependency(final ServiceBuilder<?> serviceBuilder, final EJBComponentCreateService ejbComponentCreateService) throws DeploymentUnitProcessingException {
+                        serviceBuilder.addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, ejbComponentCreateService.getServerSecurityManagerInjector());
+                    }
+                });
+            }
+        });
+    }
+
     protected void setupSecurityInterceptors(final ViewDescription view) {
         // setup security interceptor for the component
         view.getConfigurators().add(new EJBSecurityViewConfigurator());
@@ -590,6 +642,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * Returns the security domain that is applicable for this bean. In the absence of any explicit
      * configuration of a security domain for this bean, this method returns the default security domain
      * (if any) that's configured for all beans in the EJB3 subsystem
+     *
      * @return
      */
     public String getSecurityDomain() {
@@ -603,6 +656,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * Returns true if this bean has been explicitly configured with a security domain via the
      * {@link org.jboss.ejb3.annotation.SecurityDomain} annotation or via the jboss-ejb3.xml deployment descriptor.
      * Else returns false.
+     *
      * @return
      */
     public boolean isExplicitSecurityDomainConfigured() {
@@ -904,10 +958,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         this.methodLevelContainerInterceptors.put(methodIdentifier, containerInterceptors);
     }
 
-
     /**
      * Returns a combined map of class and method level container interceptors
-     *
      */
     public Set<InterceptorDescription> getAllContainerInterceptors() {
         if (this.allContainerInterceptors == null) {

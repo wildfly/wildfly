@@ -33,7 +33,11 @@ import java.util.Map;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.UserTransaction;
 
+import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
@@ -88,6 +92,11 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final ShutDownInterceptorFactory shutDownInterceptorFactory;
 
     private final InjectedValue<EJBRemoteTransactionsRepository> ejbRemoteTransactionsRepository = new InjectedValue<EJBRemoteTransactionsRepository>();
+    private final InjectedValue<TransactionManager> transactionManagerInjectedValue = new InjectedValue<TransactionManager>();
+    private final InjectedValue<UserTransaction> userTransactionInjectedValue = new InjectedValue<UserTransaction>();
+    private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryValue = new InjectedValue<TransactionSynchronizationRegistry>();
+    private final InjectedValue<ServerSecurityManager> serverSecurityManagerInjectedValue = new InjectedValue<ServerSecurityManager>();
+
 
     /**
      * Construct a new instance.
@@ -119,8 +128,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
             for (Method method : componentConfiguration.getDefinedComponentMethods()) {
                 if ((ejbComponentDescription.getTimeoutMethod() != null && ejbComponentDescription.getTimeoutMethod().equals(method)) ||
                         ejbComponentDescription.getScheduleMethods().containsKey(method)) {
-                        final InterceptorFactory interceptorFactory = Interceptors.getChainedInterceptorFactory(componentConfiguration.getAroundTimeoutInterceptors(method));
-                        timeoutInterceptors.put(method, interceptorFactory);
+                    final InterceptorFactory interceptorFactory = Interceptors.getChainedInterceptorFactory(componentConfiguration.getAroundTimeoutInterceptors(method));
+                    timeoutInterceptors.put(method, interceptorFactory);
                 }
             }
             this.timeoutInterceptors = timeoutInterceptors;
@@ -180,10 +189,10 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     @Override
     protected boolean requiresInterceptors(final Method method, final ComponentConfiguration componentConfiguration) {
-        if(super.requiresInterceptors(method, componentConfiguration)) {
+        if (super.requiresInterceptors(method, componentConfiguration)) {
             return true;
         }
-        final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription)componentConfiguration.getComponentDescription();
+        final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
         if ((ejbComponentDescription.getTimeoutMethod() != null && ejbComponentDescription.getTimeoutMethod().equals(method)) ||
                 ejbComponentDescription.getScheduleMethods().containsKey(method)) {
             return true;
@@ -199,6 +208,11 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         }
     }
 
+    /**
+     * @return
+     * @deprecated {@link EJBUtilities} is deprecated post 7.2.0.Final version.
+     */
+    @Deprecated
     protected EJBUtilities getEJBUtilities() {
         // constructs
         final DeploymentUnit deploymentUnit = getDeploymentUnitInjector().getValue();
@@ -312,4 +326,37 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         // remote tx repo is applicable only for remote views, hence the optionalValue
         return this.ejbRemoteTransactionsRepository.getOptionalValue();
     }
+
+    Injector<TransactionManager> getTransactionManagerInjector() {
+        return this.transactionManagerInjectedValue;
+    }
+
+    TransactionManager getTransactionManager() {
+        return this.transactionManagerInjectedValue.getValue();
+    }
+
+    Injector<UserTransaction> getUserTransactionInjector() {
+        return this.userTransactionInjectedValue;
+    }
+
+    UserTransaction getUserTransaction() {
+        return this.userTransactionInjectedValue.getValue();
+    }
+
+    Injector<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistryInjector() {
+        return transactionSynchronizationRegistryValue;
+    }
+
+    TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
+        return transactionSynchronizationRegistryValue.getOptionalValue();
+    }
+
+    ServerSecurityManager getServerSecurityManager() {
+        return this.serverSecurityManagerInjectedValue.getValue();
+    }
+
+    Injector<ServerSecurityManager> getServerSecurityManagerInjector() {
+        return this.serverSecurityManagerInjectedValue;
+    }
+
 }
