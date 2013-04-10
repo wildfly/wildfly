@@ -39,6 +39,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
+import org.jboss.as.clustering.jgroups.subsystem.ChannelInstanceResource;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -162,6 +163,9 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
             controllers.add(this.installChannelService(target, name, cluster, stack, verificationHandler));
 
+            // register the protocol metrics by adding a step
+            ChannelInstanceResource.addChannelProtocolMetricsRegistrationStep(context, cluster, stack);
+
             for (ChannelDependentServiceProvider provider: ServiceLoader.load(ChannelDependentServiceProvider.class, ChannelDependentServiceProvider.class.getClassLoader())) {
                 controllers.add(provider.install(target, name));
             }
@@ -208,6 +212,9 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             for (ChannelDependentServiceProvider provider: ServiceLoader.load(ChannelDependentServiceProvider.class, ChannelDependentServiceProvider.class.getClassLoader())) {
                 context.removeService(provider.getServiceName(containerName));
             }
+            // unregister the protocol metrics by adding a step
+            ChannelInstanceResource.addChannelProtocolMetricsDeregistrationStep(context, containerName);
+
             context.removeService(channelServiceName);
         }
     }
