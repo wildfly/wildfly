@@ -24,7 +24,7 @@ package org.jboss.as.osgi.service;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
-
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -67,19 +67,19 @@ import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.framework.spi.BundleLifecycle;
 import org.jboss.osgi.framework.spi.BundleLifecyclePlugin;
 import org.jboss.osgi.framework.spi.BundleManager;
+import org.jboss.osgi.framework.spi.DeploymentProvider;
 import org.jboss.osgi.framework.spi.FutureServiceValue;
 import org.jboss.osgi.framework.spi.IntegrationConstants;
 import org.jboss.osgi.framework.spi.IntegrationServices;
-import org.jboss.osgi.framework.spi.LockManager;
-import org.jboss.osgi.framework.spi.LockManager.LockContext;
-import org.jboss.osgi.framework.spi.LockManager.LockableItem;
-import org.jboss.osgi.framework.spi.LockManager.Method;
+import org.jboss.osgi.framework.spi.StorageManager;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResolveContext;
 import org.jboss.osgi.resolver.XResolver;
 import org.jboss.osgi.resolver.XResource;
+import org.jboss.osgi.vfs.AbstractVFS;
+import org.jboss.osgi.vfs.VirtualFile;
 import org.jboss.vfs.VFSUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -106,14 +106,16 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
     private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
     private final InjectedValue<XResolver> injectedResolver = new InjectedValue<XResolver>();
-    private final InjectedValue<LockManager> injectedLockManager = new InjectedValue<LockManager>();
-    private ServerDeploymentManager deploymentManager;
+    private final InjectedValue<StorageManager> injectedStorageManager = new InjectedValue<StorageManager>();
+    private final InjectedValue<DeploymentProvider> injectedDeploymentManager = new InjectedValue<DeploymentProvider>();
+    private ServerDeploymentManager serverDeploymentManager;
 
     @Override
     protected void addServiceDependencies(ServiceBuilder<BundleLifecycle> builder) {
         super.addServiceDependencies(builder);
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, injectedController);
-        builder.addDependency(IntegrationServices.LOCK_MANAGER_PLUGIN, LockManager.class, injectedLockManager);
+        builder.addDependency(IntegrationServices.STORAGE_MANAGER_PLUGIN, StorageManager.class, injectedStorageManager);
+        builder.addDependency(IntegrationServices.DEPLOYMENT_PROVIDER_PLUGIN, DeploymentProvider.class, injectedDeploymentManager);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
         builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, injectedEnvironment);
         builder.addDependency(Services.RESOLVER, XResolver.class, injectedResolver);
@@ -124,14 +126,12 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
     @Override
     public void start(StartContext startContext) throws StartException {
         super.start(startContext);
-        deploymentManager = new ModelControllerServerDeploymentManager(injectedController.getValue());
+        serverDeploymentManager = new ModelControllerServerDeploymentManager(injectedController.getValue());
     }
 
     @Override
     protected BundleLifecycle createServiceValue(StartContext startContext) throws StartException {
-        BundleLifecycle defaultService = super.createServiceValue(startContext);
-        LockManager lockManager = injectedLockManager.getValue();
-        return new BundleLifecycleImpl(defaultService, lockManager);
+        return new BundleLifecycleImpl();
     }
 
     public static Deployment getDeployment(String runtimeName) {
@@ -154,12 +154,14 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
 
     class BundleLifecycleImpl implements BundleLifecycle {
 
-        private final BundleLifecycle defaultService;
-        private final LockManager lockManager;
+        private final BundleManager bundleManager;
+        private final XEnvironment environment;
+        private final XResolver resolver;
 
-        public BundleLifecycleImpl(BundleLifecycle defaultService, LockManager lockManager) {
-            this.defaultService = defaultService;
-            this.lockManager = lockManager;
+        BundleLifecycleImpl() {
+            this.bundleManager = injectedBundleManager.getValue();
+            this.environment = injectedEnvironment.getValue();
+            this.resolver = injectedResolver.getValue();
         }
 
         @Override
@@ -167,7 +169,6 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
         public ServiceController<? extends XBundleRevision> createBundleRevision(BundleContext context, Deployment dep) throws BundleException {
             // Do the install directly if we have a running management op
             // https://issues.jboss.org/browse/AS7-5642
-            BundleManager bundleManager = injectedBundleManager.getValue();
             if (OperationAssociation.INSTANCE.getAssociation() != null) {
                 LOGGER.warnCannotDeployBundleFromManagementOperation(dep);
                 return bundleManager.createBundleRevision(context, dep, null, null);
@@ -178,7 +179,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                 try {
                     InputStream input = dep.getRoot().openStream();
                     try {
-                        ServerDeploymentHelper server = new ServerDeploymentHelper(deploymentManager);
+                        ServerDeploymentHelper server = new ServerDeploymentHelper(serverDeploymentManager);
                         server.deploy(runtimeName, input);
                     } finally {
                         VFSUtils.safeClose(input);
@@ -186,7 +187,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                 } catch (RuntimeException rte) {
                     throw rte;
                 } catch (Exception ex) {
-                    throw MESSAGES.cannotDeployBundle(ex, dep);
+                    throw MESSAGES.cannotDeployBundleRevision(ex, dep);
                 }
                 ServiceName serviceName = bundleManager.getServiceName(dep);
                 ServiceController<?> controller = bundleManager.getServiceContainer().getService(serviceName);
@@ -199,7 +200,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
         public void resolve(XBundle bundle) throws ResolutionException {
 
             // Resolve the bundle
-            defaultService.resolve(bundle);
+            bundleManager.resolveBundle(bundle);
 
             // In case there is no DeploymentUnit there is a possiblity
             // of a race between the first class load and the availability of the Module
@@ -210,7 +211,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
             if (depUnit == null) {
                 ModuleIdentifier identifier = bundle.getBundleRevision().getModuleIdentifier();
                 ServiceName moduleServiceName = ServiceModuleLoader.moduleServiceName(identifier);
-                ServiceRegistry serviceRegistry = injectedBundleManager.getValue().getServiceContainer();
+                ServiceRegistry serviceRegistry = bundleManager.getServiceContainer();
                 ServiceController<?> controller = serviceRegistry.getRequiredService(moduleServiceName);
                 FutureServiceValue<?> future = new FutureServiceValue(controller);
                 try {
@@ -231,21 +232,21 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
             // or for bundles that have been installed in nested mgmnt ops
             // https://issues.jboss.org/browse/AS7-5642
             if (depUnit == null) {
-                defaultService.start(bundle, options);
+                bundleManager.startBundle(bundle, options);
                 return;
             }
 
             // There is no deferred phase, activate using the default
             List<String> deferredModules = DeploymentUtils.getDeferredModules(depUnit);
             if (!deferredModules.contains(depUnit.getName())) {
-                defaultService.start(bundle, options);
+                bundleManager.startBundle(bundle, options);
                 return;
             }
 
             // Get the INSTALL phase service and check whether we need to activate it
             ServiceController<Phase> phaseService = getDeferredPhaseService(depUnit);
             if (phaseService.getMode() != Mode.NEVER) {
-                defaultService.start(bundle, options);
+                bundleManager.startBundle(bundle, options);
                 return;
             }
 
@@ -256,74 +257,56 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                 deploymentServiceName = depUnit.getParent().getServiceName();
             }
 
-            ServiceContainer serviceContainer = injectedBundleManager.getValue().getServiceContainer();
+            ServiceContainer serviceContainer = bundleManager.getServiceContainer();
             ServiceController<DeploymentUnit> deploymentService = (ServiceController<DeploymentUnit>) serviceContainer.getRequiredService(deploymentServiceName);
             activateDeferredPhase(bundle, options, depUnit, phaseService, deploymentService);
         }
 
         @Override
         public void stop(XBundle bundle, int options) throws BundleException {
-            defaultService.stop(bundle, options);
+            bundleManager.stopBundle(bundle, options);
         }
 
         @Override
         public void update(XBundle bundle, InputStream input) throws BundleException {
-            defaultService.update(bundle, input);
+            bundleManager.updateBundle(bundle, input);
         }
 
         @Override
         public void uninstall(XBundle bundle, int options) throws BundleException {
-            defaultService.uninstall(bundle, options);
+            bundleManager.uninstallBundle(bundle, options);
         }
 
         @Override
-        public void removeBundleRevision(XBundleRevision brev) {
-            ServerDeploymentHelper server = new ServerDeploymentHelper(deploymentManager);
+        public void removeRevision(XBundleRevision brev, int options) {
+
+            undeployRevision(brev);
+
+            // [AS7-6855] Bundle revision not removed when not in use any more
+            if (brev.getState() != XResource.State.UNINSTALLED) {
+                bundleManager.removeRevision(brev, options);
+            }
+        }
+
+        private void undeployRevision(XBundleRevision brev) {
+            ServerDeploymentHelper server = new ServerDeploymentHelper(serverDeploymentManager);
             try {
                 Deployment dep = brev.getAttachment(IntegrationConstants.DEPLOYMENT_KEY);
                 server.undeploy(getRuntimeName(dep));
             } catch (Exception ex) {
                 LOGGER.warnCannotUndeployBundleRevision(ex, brev);
             }
-            // [AS7-6855] Bundle revision not removed when not in use any more
-            if (brev.getState() != XResource.State.UNINSTALLED) {
-                BundleManager bundleManager = injectedBundleManager.getValue();
-                bundleManager.removeBundleRevision(brev);
-            }
         }
 
         @Override
-        public LockContext lockBundle(Method method, XBundle bundle, LockableItem[] items) {
-            if (method == Method.START || method == Method.STOP) {
-                LockContext context = bundle.getAttachment(IntegrationConstants.LOCK_CONTEXT_KEY);
-                Method cachedMethod = context != null ? context.getMethod() : null;
-                if (cachedMethod == Method.UPDATE || cachedMethod == Method.UNINSTALL) {
-                    return null;
-                }
-            }
-            LockContext context = lockManager.lockItems(method, items);
-            if (method == Method.UPDATE || method == Method.UNINSTALL) {
-                bundle.addAttachment(IntegrationConstants.LOCK_CONTEXT_KEY, context);
-            }
-            return context;
-        }
-
-        @Override
-        public void unlockBundle(XBundle bundle, LockContext context) {
-            if (context != null) {
-                lockManager.unlockItems(context);
-                Method method = context.getMethod();
-                if (method == Method.UPDATE || method == Method.UNINSTALL) {
-                    bundle.removeAttachment(IntegrationConstants.LOCK_CONTEXT_KEY);
-                }
-            }
+        public BundleRefreshPolicy getBundleRefreshPolicy() {
+            return new RecreateCurrentRevisionPolicy();
         }
 
         private void activateDeferredPhase(XBundle bundle, int options, DeploymentUnit depUnit, ServiceController<Phase> phaseService,
                 ServiceController<DeploymentUnit> parentDeploymentService) throws BundleException {
 
             // If the Framework's current start level is less than this bundle's start level
-            BundleManager bundleManager = injectedBundleManager.getValue();
             FrameworkStartLevel frameworkStartLevel = bundleManager.getSystemBundle().adapt(FrameworkStartLevel.class);
             BundleStartLevel bundleStartLevel = bundle.adapt(BundleStartLevel.class);
             int startlevel = bundleStartLevel.getStartLevel();
@@ -335,9 +318,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
             LOGGER.infoActivateDeferredModulePhase(bundle);
 
             if (!bundle.isResolved()) {
-                XEnvironment env = injectedEnvironment.getValue();
-                XResolver resolver = injectedResolver.getValue();
-                XResolveContext context = resolver.createResolveContext(env, Collections.singleton(bundle.getBundleRevision()), null);
+                XResolveContext context = resolver.createResolveContext(environment, Collections.singleton(bundle.getBundleRevision()), null);
                 try {
                     resolver.resolveAndApply(context);
                 } catch (ResolutionException ex) {
@@ -406,9 +387,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
             }
         }
 
-        /*
-         * Maps the bundle.location to a deployment runtime name
-         */
+        // Maps the bundle.location to a deployment runtime name
         private String getRuntimeName(Deployment dep) {
             String runtimeName = dep.getAttachment(RUNTIME_NAME_KEY, String.class);
             if (runtimeName == null) {
@@ -443,9 +422,56 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
         @SuppressWarnings("unchecked")
         private ServiceController<Phase> getDeferredPhaseService(DeploymentUnit depUnit) {
             ServiceName serviceName = DeploymentUtils.getDeploymentUnitPhaseServiceName(depUnit, Phase.FIRST_MODULE_USE);
-            BundleManager bundleManager = injectedBundleManager.getValue();
             ServiceContainer serviceContainer = bundleManager.getServiceContainer();
             return (ServiceController<Phase>) serviceContainer.getRequiredService(serviceName);
+        }
+
+        private final class RecreateCurrentRevisionPolicy implements BundleRefreshPolicy {
+            private XBundle bundle;
+            private VirtualFile rootFile;
+
+            @Override
+            public void initBundleRefresh(XBundle bundle) throws BundleException {
+                this.bundle = bundle;
+
+                XBundleRevision brev = bundle.getBundleRevision();
+                Deployment dep = brev.getAttachment(IntegrationConstants.DEPLOYMENT_KEY);
+
+                try {
+                    InputStream inputStream = dep.getRoot().getStreamURL().openStream();
+                    rootFile = AbstractVFS.toVirtualFile(inputStream);
+                } catch (IOException ex) {
+                    throw FrameworkMessages.MESSAGES.cannotObtainVirtualFile(ex);
+                }
+
+                undeployRevision(brev);
+            }
+
+            @Override
+            public void refreshCurrentRevision() throws BundleException {
+
+                // Create the revision {@link Deployment}
+                DeploymentProvider deploymentManager = injectedDeploymentManager.getValue();
+                Deployment dep = deploymentManager.createDeployment(bundle.getLocation(), rootFile);
+                dep.addAttachment(Bundle.class, bundle);
+                dep.setAutoStart(false);
+
+                String runtimeName = getRuntimeName(dep);
+                putDeployment(runtimeName, dep);
+                try {
+                    InputStream input = dep.getRoot().openStream();
+                    try {
+                        ServerDeploymentHelper server = new ServerDeploymentHelper(serverDeploymentManager);
+                        server.deploy(runtimeName, input);
+                    } finally {
+                        VFSUtils.safeClose(input);
+                    }
+                } catch (RuntimeException rte) {
+                    throw rte;
+                } catch (Exception ex) {
+                    throw MESSAGES.cannotDeployBundleRevision(ex, dep);
+                }
+            }
         }
     }
 }
