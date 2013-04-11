@@ -62,6 +62,11 @@ class AddressControlHandler extends AbstractRuntimeOnlyHandler {
     }
 
     @Override
+    protected boolean resourceMustExist(OperationContext context, ModelNode operation) {
+        return false;
+    }
+
+    @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         if (rollbackOperationIfServerNotActive(context, operation)) {

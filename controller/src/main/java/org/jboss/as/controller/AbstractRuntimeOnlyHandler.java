@@ -77,11 +77,31 @@ public abstract class AbstractRuntimeOnlyHandler implements OperationStepHandler
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                // make sure the resource exists before executing a runtime operation.
+                // if that's not the case, the operation will report an error with a comprehensive failure
+                // description instead of a subsequent exception (such as a NPE).
+                if (resourceMustExist(context, operation)) {
+                    context.readResource(PathAddress.EMPTY_ADDRESS, false);
+                }
                 executeRuntimeStep(context, operation);
             }
         }, OperationContext.Stage.RUNTIME);
 
         context.stepCompleted();
+    }
+
+    /**
+     * By default the handler will check whether the resource exist before calling @{link #executeRuntimeStep(OperationContext, ModelNode)}.
+     *
+     * This method can be overridden in the special case where a runtime operation must be executed without a corresponding resource.
+     *
+     * @return true if the resource must exist for this runtime handler to be executed.
+     *
+     * @param context the operation context
+     * @param operation the operation being executed
+     */
+    protected boolean resourceMustExist(OperationContext context, ModelNode operation) {
+        return true;
     }
 
     /**

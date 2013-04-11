@@ -79,6 +79,11 @@ public class QueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
     }
 
     @Override
+    protected boolean resourceMustExist(OperationContext context, ModelNode operation) {
+        return false;
+    }
+
+    @Override
     public void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
         if(ignoreOperationIfServerNotActive(context, operation)) {
             return;
