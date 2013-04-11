@@ -41,6 +41,7 @@ MAX_FD="maximum"
 cygwin=false;
 darwin=false;
 linux=false;
+solaris=false;
 case "`uname`" in
     CYGWIN*)
         cygwin=true
@@ -52,6 +53,9 @@ case "`uname`" in
 
     Linux)
         linux=true
+        ;;
+    SunOS*)
+        solaris=true
         ;;
 esac
 
@@ -155,7 +159,7 @@ if [ "x$JBOSS_MODULEPATH" = "x" ]; then
     JBOSS_MODULEPATH="$JBOSS_HOME/modules"
 fi
 
-if $linux; then
+if $linux || $solaris; then
     # consolidate the server and command line opts
     CONSOLIDATED_OPTS="$JAVA_OPTS $SERVER_OPTS"
     # process the standalone options
