@@ -48,6 +48,11 @@ public class SecurityRoleReadAttributeHandler extends AbstractRuntimeOnlyHandler
     }
 
     @Override
+    protected boolean resourceMustExist(OperationContext context, ModelNode operation) {
+        return false;
+    }
+
+    @Override
     public void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
         final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
 
