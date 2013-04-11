@@ -59,7 +59,7 @@ public class ModuleClassLoaderProvider extends ClassLoaderProvider {
 
     @Override
     public ClassLoader getServerJAXRPCIntegrationClassLoader() {
-        throw new UnsupportedOperationException("JAXRPC not supported"); //TODO!!
+        throw new UnsupportedOperationException();
     }
 
     public static void register() {
