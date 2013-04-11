@@ -43,10 +43,13 @@ import org.jboss.msc.value.InjectedValue;
 
 import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.server.Services.addServerExecutorDependency;
 import static org.jboss.msc.service.ServiceController.Mode.ACTIVE;
 import static org.jboss.msc.service.ServiceController.Mode.PASSIVE;
 import static org.jboss.msc.service.ServiceController.State.REMOVED;
 import static org.jboss.msc.service.ServiceController.State.STOPPING;
+
+import java.util.concurrent.ExecutorService;
 
 /**
  * The {@code JMSServerManager} service.
@@ -55,23 +58,61 @@ import static org.jboss.msc.service.ServiceController.State.STOPPING;
  */
 public class JMSService implements Service<JMSServerManager> {
     private final InjectedValue<HornetQServer> hornetQServer = new InjectedValue<HornetQServer>();
+    private final InjectedValue<ExecutorService> serverExecutor = new InjectedValue<ExecutorService>();
     private final ServiceName hqServiceName;
     private JMSServerManager jmsServer;
 
     public static ServiceController<JMSServerManager> addService(final ServiceTarget target, ServiceName hqServiceName, final ServiceListener<Object>... listeners) {
         final JMSService service = new JMSService(hqServiceName);
-        return target.addService(JMSServices.getJmsManagerBaseServiceName(hqServiceName), service)
-                .addDependency(hqServiceName, HornetQServer.class, service.getHornetQServer())
+        ServiceBuilder<JMSServerManager> builder = target.addService(JMSServices.getJmsManagerBaseServiceName(hqServiceName), service)
+                .addDependency(hqServiceName, HornetQServer.class, service.hornetQServer)
                 .addListener(listeners)
-                .setInitialMode(Mode.ACTIVE)
-                .install();
+                .setInitialMode(Mode.ACTIVE);
+        addServerExecutorDependency(builder, service.serverExecutor, false);
+        return builder.install();
     }
 
     protected JMSService(ServiceName hqServiceName) {
         this.hqServiceName = hqServiceName;
     }
 
-    public synchronized void start(final StartContext context) throws StartException {
+    public synchronized JMSServerManager getValue() throws IllegalStateException {
+        if (jmsServer == null) {
+            throw new IllegalStateException();
+        }
+        return jmsServer;
+    }
+
+    @Override
+    public void start(final StartContext context) throws StartException {
+        context.asynchronous();
+        serverExecutor.getValue().submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    doStart(context);
+                    context.complete();
+                } catch (StartException e) {
+                    context.failed(e);
+                }
+            }
+        });
+    }
+
+
+    @Override
+    public void stop(final StopContext context) {
+        context.asynchronous();
+        serverExecutor.getValue().submit(new Runnable() {
+            @Override
+            public void run() {
+                doStop(context);
+                context.complete();
+            }
+        });
+    }
+
+    private synchronized void doStart(final StartContext context) throws StartException {
         ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(getClass());
         try {
             jmsServer = new JMSServerManagerImpl(hornetQServer.getValue(), new AS7BindingRegistry(context.getController().getServiceContainer()));
@@ -117,23 +158,12 @@ public class JMSService implements Service<JMSServerManager> {
         }
     }
 
-    public synchronized void stop(StopContext context) {
+    private synchronized void doStop(StopContext context) {
         try {
             jmsServer.stop();
             jmsServer = null;
         } catch (Exception e) {
             MESSAGING_LOGGER.errorStoppingJmsServer(e);
         }
-    }
-
-    public synchronized JMSServerManager getValue() throws IllegalStateException {
-        if (jmsServer == null) {
-            throw new IllegalStateException();
-        }
-        return jmsServer;
-    }
-
-    InjectedValue<HornetQServer> getHornetQServer() {
-        return hornetQServer;
     }
 }
