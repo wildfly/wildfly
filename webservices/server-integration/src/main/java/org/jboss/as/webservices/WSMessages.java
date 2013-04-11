@@ -23,7 +23,6 @@
 package org.jboss.as.webservices;
 
 import java.io.IOException;
-import java.net.URL;
 
 import javax.xml.ws.WebServiceException;
 
@@ -94,26 +93,8 @@ public interface WSMessages {
     @Message(id = 15518, value = "No metrics available")
     String noMetricsAvailable();
 
-    @Message(id = 15519, value = "Component view name cannot be null")
-    IllegalStateException missingComponentViewName();
-
     @Message(id = 15520, value = "Cannot find component view: %s")
     IllegalStateException cannotFindComponentView(ServiceName viewName);
-
-    @Message(id = 15521, value = "Null root url")
-    IllegalArgumentException nullRootUrl();
-
-    @Message(id = 15522, value = "Null path")
-    IllegalArgumentException nullPath();
-
-    @Message(id = 15523, value = "Unable to get VirtualFile from URL: %s")
-    IOException cannotGetVirtualFile(@Cause Throwable cause, URL url);
-
-    @Message(id = 15524, value = "VirtualFile %s does not exist")
-    IOException missingVirtualFile(VirtualFile file);
-
-    @Message(id = 15525, value = "VirtualFile %s is not mounted")
-    IOException unmountedVirtualFile(VirtualFile file);
 
     @Message(id = 15526, value = "Child '%s' not found for VirtualFile: %s")
     IOException missingChild(String child, VirtualFile file);
@@ -154,9 +135,6 @@ public interface WSMessages {
     @Message(id = 15585, value = "Config %s doesn't exist")
     OperationFailedException missingConfig(String configName);
 
-    @Message(id = 15586, value = "Attributes %s, %s and %s are mutually exclusive")
-    OperationFailedException mutuallyExclusiveHandlerChainAttributes(String attr1, String attr2, String attr3);
-
     @Message(id = 15587, value = "Unsupported handler chain type: %s. Supported types are either %s or %s")
     OperationFailedException wrongHandlerChainType(String unknownChainType, String knownChainType1, String knownChainType2);
 
@@ -174,5 +152,8 @@ public interface WSMessages {
 
     @Message(id = 15595, value = "Unable to get URL for: %s")
     DeploymentUnitProcessingException cannotGetURLForDescriptor(@Cause Throwable cause, String resourcePath);
+
+    @Message(id = 15598, value = "JAX-RPC not supported")
+    DeploymentUnitProcessingException jaxRpcNotSupported();
 
 }

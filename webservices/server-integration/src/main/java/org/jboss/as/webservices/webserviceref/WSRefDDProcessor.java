@@ -23,6 +23,7 @@
 package org.jboss.as.webservices.webserviceref;
 
 import static org.jboss.as.ee.utils.InjectionUtils.getInjectionTarget;
+import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import static org.jboss.as.webservices.util.ASHelper.getWSRefRegistry;
 import static org.jboss.as.webservices.webserviceref.WSRefUtils.processAnnotatedElement;
 import static org.jboss.as.webservices.webserviceref.WSRefUtils.translate;
@@ -83,7 +84,7 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
     private static UnifiedServiceRefMetaData getServiceRef(final DeploymentUnit unit, final ComponentDescription componentDescription, final ServiceReferenceMetaData serviceRefMD) throws DeploymentUnitProcessingException {
         //check jaxrpc service refs
         if (serviceRefMD.getJaxrpcMappingFile() != null || "javax.xml.rpc.Service".equals(serviceRefMD.getServiceInterface())) {
-            throw new DeploymentUnitProcessingException("JAXRPC not supported"); //TODO!!
+            throw MESSAGES.jaxRpcNotSupported();
         }
         // construct service ref
         final UnifiedServiceRefMetaData serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(unit));

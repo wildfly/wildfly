@@ -58,7 +58,7 @@ public final class WebservicesDescriptorDeploymentProcessor implements Deploymen
             final WebservicesMetaData webservicesMD = webservicesFactory.load(webservicesDescriptorURL);
             unit.putAttachment(WSAttachmentKeys.WEBSERVICES_METADATA_KEY, webservicesMD);
             if (hasJaxRpcMapping(webservicesMD)) {
-                throw new DeploymentUnitProcessingException("JAXRPC not supported"); //TODO!!
+                throw MESSAGES.jaxRpcNotSupported();
             }
         }
     }
