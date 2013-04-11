@@ -41,31 +41,30 @@ import org.xnio.Options;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 class WorkerResourceDefinition extends SimplePersistentResourceDefinition {
-
-
     //The defaults for these come from XnioWorker
 
-    static final OptionAttributeDefinition THREAD_DAEMON = new OptionAttributeDefinition.Builder(Constants.THREAD_DAEMON, Options.THREAD_DAEMON)
+    /*static final OptionAttributeDefinition THREAD_DAEMON = new OptionAttributeDefinition.Builder(Constants.THREAD_DAEMON, Options.THREAD_DAEMON)
             .setDefaultValue(new ModelNode(false))
+            .build();*/
+    /*static final OptionAttributeDefinition WORKER_TASK_CORE_THREADS = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_CORE_THREADS, Options.WORKER_TASK_CORE_THREADS)
+            .setDefaultValue(new ModelNode(60))
             .build();
-    static final OptionAttributeDefinition WORKER_TASK_CORE_THREADS = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_CORE_THREADS, Options.WORKER_TASK_CORE_THREADS)
-            .setDefaultValue(new ModelNode(4))
-            .build();
+    */
     static final OptionAttributeDefinition WORKER_TASK_MAX_THREADS = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_MAX_THREADS, Options.WORKER_TASK_MAX_THREADS)
-            .setDefaultValue(new ModelNode(16))
+            .setDefaultValue(new ModelNode(60))
             .build();
     static final OptionAttributeDefinition WORKER_TASK_KEEPALIVE = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_KEEPALIVE, Options.WORKER_TASK_KEEPALIVE)
             .setDefaultValue(new ModelNode(60))
             .build();
     static final OptionAttributeDefinition STACK_SIZE = new OptionAttributeDefinition.Builder(Constants.STACK_SIZE, Options.STACK_SIZE)
-            .setDefaultValue(new ModelNode(10L))
+            .setDefaultValue(new ModelNode(0L))
             .build();
     static final OptionAttributeDefinition WORKER_IO_THREADS = new OptionAttributeDefinition.Builder(Constants.WORKER_IO_THREADS, Options.WORKER_IO_THREADS)
-            .setDefaultValue(new ModelNode(1))
+            .setDefaultValue(new ModelNode(4))
             .build();
-    static final OptionAttributeDefinition WORKER_TASK_LIMIT = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_LIMIT, Options.WORKER_TASK_LIMIT)
+    /*static final OptionAttributeDefinition WORKER_TASK_LIMIT = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_LIMIT, Options.WORKER_TASK_LIMIT)
             .setDefaultValue(new ModelNode(0x4000))
-            .build();
+            .build();*/
 
     /*
     workers support...
@@ -82,11 +81,9 @@ class WorkerResourceDefinition extends SimplePersistentResourceDefinition {
 
     static OptionAttributeDefinition[] ATTRIBUTES = new OptionAttributeDefinition[]{
             WORKER_IO_THREADS,
-            WORKER_TASK_CORE_THREADS,
+            //WORKER_TASK_CORE_THREADS,
             WORKER_TASK_KEEPALIVE,
-            WORKER_TASK_LIMIT,
             WORKER_TASK_MAX_THREADS,
-            THREAD_DAEMON,
             STACK_SIZE
     };
 

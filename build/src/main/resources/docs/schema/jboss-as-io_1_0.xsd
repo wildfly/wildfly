@@ -47,13 +47,10 @@
     </xs:complexType>
     <xs:complexType name="workerType">
         <xs:attribute name="name" use="required" type="xs:string"/>
-        <xs:attribute name="task-core-threads" type="xs:int" default="4"/>
-        <xs:attribute name="io-threads" type="xs:int" default="1"/>
+        <xs:attribute name="io-threads" type="xs:int" default="4"/>
         <xs:attribute name="task-keepalive" type="xs:int" default="60"/>
-        <xs:attribute name="task-limit" type="xs:int" default="16384"/>
-        <xs:attribute name="task-max-threads" type="xs:int" default="16"/>
-        <xs:attribute name="thread-daemon" type="xs:boolean" default="false"/>
-        <xs:attribute name="stack-size" type="xs:long" default="10"/>
+        <xs:attribute name="task-max-threads" type="xs:int" default="60"/>
+        <xs:attribute name="stack-size" type="xs:long" default="0"/>
     </xs:complexType>
     <xs:complexType name="bufferPoolType">
         <xs:attribute name="name" use="required" type="xs:string"/>

@@ -1,8 +1,3 @@
-<subsystem xmlns="urn:jboss:domain:io:1.0">
-    <worker name="default" task-core-threads="12" io-threads="3"/>
-    <buffer-pool name="default" buffer-size="1024" buffers-per-slice="1024"/>
-</subsystem>
-
 <subsystem xmlns="urn:jboss:domain:undertow:1.0">
 <server name="default-server" default-host="localhost" servlet-container="blah">
     <http-listener name="default" socket-binding="http" worker="default" buffer-pool="default"/>
