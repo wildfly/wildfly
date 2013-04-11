@@ -16,10 +16,15 @@
  */
 package org.jboss.as.test.integration.osgi.deployment;
 
-import static org.osgi.framework.Constants.ACTIVATION_LAZY;
+import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_METADATA_BUNDLE_STARTLEVEL;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import static org.osgi.framework.Constants.BUNDLE_VERSION;
 
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -30,21 +35,31 @@ import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
 import org.jboss.as.test.integration.osgi.deployment.bundle.AttachedType;
+import org.jboss.as.test.integration.osgi.simple.bundleA.DeployInStartActivator;
+import org.jboss.as.test.integration.osgi.simple.bundleA.FailInStartActivator;
+import org.jboss.as.test.integration.osgi.simple.bundleA.FailInStopActivator;
 import org.jboss.as.test.osgi.FrameworkUtils;
 import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
+import org.jboss.osgi.resolver.MavenCoordinates;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleReference;
 import org.osgi.framework.Constants;
+import org.osgi.framework.ServiceReference;
+import org.osgi.framework.startlevel.BundleStartLevel;
+import org.osgi.resource.Resource;
+import org.osgi.service.repository.Repository;
 import org.osgi.util.tracker.ServiceTracker;
 
 /**
@@ -60,6 +75,9 @@ public class ServerDeploymentTestCase {
     static final String GOOD_FRAGMENT = "good-fragment.jar";
     static final String GOOD_FRAGMENT_EAR = "good-fragment.ear";
     static final String BAD_BUNDLE_VERSION = "bad-bundle-version";
+    static final String FAIL_IN_START = "fail-in-start";
+    static final String FAIL_IN_STOP = "fail-in-stop";
+    static final String DEPLOY_IN_START = "deploy-in-start";
     static final String ACTIVATE_LAZILY = "activate-lazily";
 
     @ArquillianResource
@@ -70,7 +88,7 @@ public class ServerDeploymentTestCase {
 
     @Deployment
     public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "deployment-tests");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "server-deployment-tests");
         archive.addClasses(ServerDeploymentHelper.class, FrameworkUtils.class);
         archive.setManifest(new Asset() {
             @Override
@@ -79,7 +97,7 @@ public class ServerDeploymentTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(ClientConstants.class, ModelControllerClient.class, DeploymentPlanBuilder.class);
-                builder.addImportPackages(ServiceTracker.class);
+                builder.addImportPackages(BundleStartLevel.class, ServiceTracker.class);
                 return builder.openStream();
             }
         });
@@ -101,6 +119,49 @@ public class ServerDeploymentTestCase {
 
         server.undeploy(runtimeName);
         Assert.assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+    }
+
+    @Test
+    public void testDeferredStart() throws Exception {
+
+        // Deploy the bundle
+        InputStream input = deployer.getDeployment(GOOD_BUNDLE);
+        ServerDeploymentHelper server = new ServerDeploymentHelper(getModelControllerClient());
+        String runtimeName = server.deploy("deferred-start", input, false);
+
+        // Find the deployed bundle
+        Bundle bundle = context.getBundle("deferred-start");
+        assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
+
+        server.undeploy(runtimeName);
+        assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+    }
+
+    @Test
+    public void testBundleStartLevel() throws Exception {
+
+        ModelControllerClient client = getModelControllerClient();
+        assertNotNull("ModelControllerClient available", client);
+
+        // Setup the deployment metadata
+        Map<String, Object> userdata = new HashMap<String, Object>();
+        userdata.put(DEPLOYMENT_METADATA_BUNDLE_STARTLEVEL, Integer.valueOf(20));
+
+        // Deploy the bundle
+        InputStream input = deployer.getDeployment(GOOD_BUNDLE);
+        ServerDeploymentHelper server = new ServerDeploymentHelper(client);
+        String runtimeName = server.deploy(GOOD_BUNDLE, input, userdata);
+        try {
+            // Find the deployed bundle
+            Bundle bundle = context.getBundle(GOOD_BUNDLE);
+            assertNotNull("Bundle installed", bundle);
+
+            // Verify that the bundle got installed in @ the specified start level
+            int bundleStartLevel = bundle.adapt(BundleStartLevel.class).getStartLevel();
+            assertEquals("Bundle @ given level", 20, bundleStartLevel);
+        } finally {
+            server.undeploy(runtimeName);
+        }
     }
 
     @Test
@@ -238,6 +299,73 @@ public class ServerDeploymentTestCase {
         Assert.assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, host.getState());
     }
 
+    @Test
+    public void testFailInStart() throws Exception {
+        InputStream input = deployer.getDeployment(FAIL_IN_START);
+        ServerDeploymentHelper server = new ServerDeploymentHelper(getModelControllerClient());
+        try {
+            server.deploy(FAIL_IN_START, input);
+            fail("Deployment exception expected");
+        } catch (Exception ex) {
+            // expected
+        }
+    }
+
+    @Test
+    public void testFailInStop() throws Exception {
+        InputStream input = deployer.getDeployment(FAIL_IN_STOP);
+        ServerDeploymentHelper server = new ServerDeploymentHelper(getModelControllerClient());
+        String runtimeName = server.deploy(FAIL_IN_STOP, input);
+
+        Bundle bundle = context.getBundle(FAIL_IN_STOP);
+        assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
+
+        server.undeploy(runtimeName);
+        assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+    }
+
+    @Ignore("[AS7-2777] Deadlock on management op from within activate service")
+    public void testDeployInStart() throws Exception {
+
+        // Deploy the bundle
+        InputStream input = deployer.getDeployment(DEPLOY_IN_START);
+        ServerDeploymentHelper server = new ServerDeploymentHelper(getModelControllerClient());
+        String runtimeName = server.deploy(DEPLOY_IN_START, input);
+
+        // Find the deployed bundle
+        Bundle bundle = context.getBundle(DEPLOY_IN_START);
+        assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
+
+        server.undeploy(runtimeName);
+        assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+    }
+
+    @Test
+    public void testAutoStartWithLazyActivation() throws Exception {
+
+        // Deploy the bundle
+        InputStream input = deployer.getDeployment(ACTIVATE_LAZILY);
+        ServerDeploymentHelper server = new ServerDeploymentHelper(getModelControllerClient());
+        String runtimeName = server.deploy(ACTIVATE_LAZILY, input);
+
+        // Find the deployed bundle
+        Bundle bundle = context.getBundle(ACTIVATE_LAZILY);
+        assertEquals("Bundle STARTING", Bundle.STARTING, bundle.getState());
+
+        // [TODO] A lazily started bundle cannot be started explicitly through the management interface
+        // because the ACTIVATE phase has already been executed. As a workaround stop/start should work
+        // server.start(runtimeName);
+        // assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
+
+        server.undeploy(runtimeName);
+        assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+    }
+
+    private ModelControllerClient getModelControllerClient() {
+        ServiceReference<ModelControllerClient> sref = context.getServiceReference(ModelControllerClient.class);
+        return context.getService(sref);
+    }
+
     @Deployment(name = GOOD_BUNDLE, managed = false, testable = false)
     public static JavaArchive getGoodBundleArchive() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, GOOD_BUNDLE);
@@ -294,6 +422,61 @@ public class ServerDeploymentTestCase {
         return archive;
     }
 
+    @Deployment(name = FAIL_IN_START, managed = false, testable = false)
+    public static JavaArchive getFailInStartArchive() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, FAIL_IN_START);
+        archive.addClasses(FailInStartActivator.class);
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleManifestVersion(2);
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleActivator(FailInStartActivator.class);
+                builder.addImportPackages(BundleActivator.class);
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Deployment(name = FAIL_IN_STOP, managed = false, testable = false)
+    public static JavaArchive getFailInStopArchive() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, FAIL_IN_STOP);
+        archive.addClasses(FailInStopActivator.class);
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleManifestVersion(2);
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleActivator(FailInStopActivator.class);
+                builder.addImportPackages(BundleActivator.class);
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Deployment(name = DEPLOY_IN_START, managed = false, testable = false)
+    public static JavaArchive getDeployInStartArchive() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, DEPLOY_IN_START);
+        archive.addClasses(DeployInStartActivator.class);
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleManifestVersion(2);
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleActivator(DeployInStartActivator.class);
+                builder.addImportPackages(BundleActivator.class, Resource.class, Repository.class);
+                builder.addImportPackages(MavenCoordinates.class);
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
     @Deployment(name = ACTIVATE_LAZILY, managed = false, testable = false)
     public static JavaArchive getLazyActivationArchive() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, ACTIVATE_LAZILY);
@@ -303,7 +486,7 @@ public class ServerDeploymentTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleManifestVersion(2);
                 builder.addBundleSymbolicName(archive.getName());
-                builder.addBundleActivationPolicy(ACTIVATION_LAZY);
+                builder.addBundleActivationPolicy(Constants.ACTIVATION_LAZY);
                 return builder.openStream();
             }
         });

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,37 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.test.integration.domain.osgi.bundle;
 
-package org.jboss.as.arquillian.api;
+import java.io.BufferedReader;
+import java.io.StringReader;
 
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
 
 /**
- * OSGi deployment properties marker.
- *
- * [TODO] Remove this when we have
- * https://issues.jboss.org/browse/AS7-3694
+ * A simple BundleActivator.
  *
  * @author thomas.diesler@jboss.com
- * @since 21-Jun-2012
  */
-@Documented
-@Retention(RUNTIME)
-@Target(ElementType.TYPE)
-public @interface DeploymentMarker {
+public class FeedbackActivator implements BundleActivator {
 
-    /**
-     * Defines the auto start behaviour for this bundle deployment.
-     */
-    boolean autoStart() default true;
+    @Override
+    public void start(final BundleContext context) throws Exception {
+        StringReader sr = new StringReader(context.getBundle().toString());
+        context.registerService(BufferedReader.class.getName(), new BufferedReader(sr), null);
+    }
 
-    /**
-     * Defines the start level for this bundle deployment.
-     */
-    int startLevel() default 1;
+    @Override
+    public void stop(BundleContext context) throws Exception {
+        // do nothing
+    }
 }

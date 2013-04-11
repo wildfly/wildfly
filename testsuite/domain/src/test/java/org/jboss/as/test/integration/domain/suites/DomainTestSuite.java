@@ -49,6 +49,8 @@ import org.junit.runners.Suite;
         ManagementVersionTestCase.class,
         ModelPersistenceTestCase.class,
         OperationTransformationTestCase.class,
+        OSGiBundleLifecyleTestCase.class,
+        OSGiBundleStartLevelTestCase.class,
         ReadEnvironmentVariablesTestCase.class,
         ServerManagementTestCase.class,
         ServerRestartRequiredTestCase.class,
