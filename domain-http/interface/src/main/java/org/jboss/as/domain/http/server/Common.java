@@ -69,7 +69,7 @@ public class Common {
                 byte[] bytes = bout.toByteArray();
 
                 exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, APPLICATION_DMR_ENCODED+ ";" + UTF_8);
-                exchange.getResponseHeaders().put(Headers.CONTENT_LENGTH, String.valueOf(bytes));
+                exchange.getResponseHeaders().put(Headers.CONTENT_LENGTH, String.valueOf(bytes.length));
                 exchange.setResponseCode(500);
 
                 exchange.getResponseSender().send(new String(bytes), IoCallback.END_EXCHANGE);
