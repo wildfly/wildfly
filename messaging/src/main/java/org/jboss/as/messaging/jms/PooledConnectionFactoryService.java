@@ -390,7 +390,11 @@ public class PooledConnectionFactoryService implements Service<Void> {
             pool = new CommonPoolImpl(minSize, maxSize, prefill, useStrictMin, flushStrategy);
         }
         CommonTimeOutImpl timeOut = new CommonTimeOutImpl(null, null, null, null, null);
-        CommonSecurityImpl security = null;
+        // <security>
+        //   <application />
+        // </security>
+        // => PoolStrategy.POOL_BY_CRI
+        CommonSecurityImpl security = new CommonSecurityImpl(null, null, true);
         // register the XA Connection *without* recovery. HornetQ already takes care of the registration with the correct credentials
         // when its ResourceAdapter is started
         Recovery recovery = new Recovery(new CredentialImpl(null, null, null), null, Boolean.TRUE);
