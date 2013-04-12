@@ -46,6 +46,12 @@
                     <artifactId>byteman-submit</artifactId>
                     <scope>test</scope>
                 </dependency>
+                <dependency>
+                    <groupId>org.jboss.jbossts.xts</groupId>
+                    <artifactId>byteman_support</artifactId>
+                    <version>${version.org.jboss.jbossts}</version>
+                    <scope>test</scope>
+                </dependency>
             </dependencies>
 
             <build>
