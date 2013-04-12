@@ -26,9 +26,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
@@ -39,6 +41,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -51,6 +54,7 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -64,6 +68,8 @@ public class HornetQBackupActivationTestCase {
 
     // maximum time for HornetQ activation to detect node failover/failback
     private static int ACTIVATION_TIMEOUT = 10000;
+    // maximum time to reload a server
+    private static int RELOAD_TIMEOUT = 10000;
 
     public static final String LIVE_SERVER = "jbossas-messaging-live";
     public static final String BACKUP_SERVER = "jbossas-messaging-backup";
@@ -79,10 +85,8 @@ public class HornetQBackupActivationTestCase {
     public void initServer() throws Exception {
         container.start(LIVE_SERVER);
         container.start(BACKUP_SERVER);
-        liveClient = TestSuiteEnvironment.getModelControllerClient();
-        backupClient = ModelControllerClient.Factory.create(InetAddress.getByName(TestSuiteEnvironment.getServerAddress()),
-                TestSuiteEnvironment.getServerPort() + 100,
-                Authentication.getCallbackHandler());
+        liveClient = createLiveClient();
+        backupClient = createBackupClient();
     }
 
     @After
@@ -95,6 +99,16 @@ public class HornetQBackupActivationTestCase {
         }
         liveClient = null;
         backupClient = null;
+    }
+
+    private static ModelControllerClient createLiveClient() {
+        return TestSuiteEnvironment.getModelControllerClient();
+    }
+
+    private static ModelControllerClient createBackupClient() throws UnknownHostException {
+        return ModelControllerClient.Factory.create(InetAddress.getByName(TestSuiteEnvironment.getServerAddress()),
+                TestSuiteEnvironment.getServerPort() + 100,
+                Authentication.getCallbackHandler());
     }
 
     @Test
@@ -181,6 +195,66 @@ public class HornetQBackupActivationTestCase {
         checkHornetQServerStartedAndActiveAttributes(backupClient, true, true);
     }
 
+    // https://issues.jboss.org/browse/AS7-6881
+    @Test
+    public void testPassiveBackupReload() throws Exception {
+        checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
+        checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
+
+        reload(backupClient);
+        // let some time for the server to reload
+        waitForBackupServerToReload(TimeoutUtil.adjust(RELOAD_TIMEOUT));
+        waitForHornetQServerActivation(backupClient, false, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+
+        checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
+        checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
+    }
+
+    @Test
+    public void testActiveBackupReload() throws Exception {
+        checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
+        checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
+
+        // shutdown live server
+        container.stop(LIVE_SERVER);
+        // let some time for the backup to detect the failure
+        waitForHornetQServerActivation(backupClient, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+        checkHornetQServerStartedAndActiveAttributes(backupClient, true, true);
+
+        reload(backupClient);
+        // let some time for the server to reload
+        waitForBackupServerToReload(TimeoutUtil.adjust(RELOAD_TIMEOUT));
+        waitForHornetQServerActivation(backupClient, false, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+
+        // !! reloading an active backup server will make it passive again !!
+        checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
+    }
+
+    // https://issues.jboss.org/browse/AS7-6881
+    @Test
+    public void testLiveReload() throws Exception {
+        checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
+        checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
+
+        reload(liveClient);
+        // let some time for the server to reload
+        waitForLiveServerToReload(TimeoutUtil.adjust(RELOAD_TIMEOUT));
+        waitForHornetQServerActivation(liveClient, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+        // let some time for the backup server to failback
+        waitForHornetQServerActivation(backupClient, false, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+
+        checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
+        checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
+    }
+
+    private void reload(ModelControllerClient client) throws IOException {
+        ModelNode operation = new ModelNode();
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get(OP).set("reload");
+        operation.get("blocking").set(true);
+        execute(client, operation);
+    }
+
     private static void waitForHornetQServerActivation(ModelControllerClient client, boolean expectedActive, int timeout) throws IOException {
         long start = System.currentTimeMillis();
         long now;
@@ -190,11 +264,14 @@ public class HornetQBackupActivationTestCase {
             operation.get(OP_ADDR).add("hornetq-server", "default");
             operation.get(OP).set(READ_RESOURCE_OPERATION);
             operation.get(INCLUDE_RUNTIME).set(true);
-            ModelNode result = execute(client, operation);
-            boolean started = result.get(RESULT, "started").asBoolean();
-            boolean active = result.get(RESULT, "active").asBoolean();
-            if (started && expectedActive == active) {
-                return;
+            try {
+                ModelNode result = execute(client, operation);
+                boolean started = result.get(RESULT, "started").asBoolean();
+                boolean active = result.get(RESULT, "active").asBoolean();
+                if (started && expectedActive == active) {
+                    return;
+                }
+            } catch (Exception e) {
             }
             try {
                 Thread.sleep(100);
@@ -204,7 +281,62 @@ public class HornetQBackupActivationTestCase {
         } while (now - start < timeout);
 
         fail("Server did not become active in the imparted time.");
+    }
 
+    private void waitForBackupServerToReload(int timeout) throws Exception {
+        long start = System.currentTimeMillis();
+        long now;
+        do {
+            backupClient.close();
+            backupClient = createBackupClient();
+            ModelNode operation = new ModelNode();
+            operation.get(OP_ADDR).setEmptyList();
+            operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
+            operation.get(NAME).set("running-mode");
+            try {
+                ModelNode result = execute(backupClient, operation);
+                boolean normal = "NORMAL".equals(result.get(RESULT).asString());
+                if (normal) {
+                    return;
+                }
+            } catch (Exception e) {
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+            }
+            now = System.currentTimeMillis();
+        } while (now - start < timeout);
+
+        fail("Backup Server did not reload in the imparted time.");
+    }
+
+    private void waitForLiveServerToReload(int timeout) throws Exception {
+        long start = System.currentTimeMillis();
+        long now;
+        do {
+            liveClient.close();
+            liveClient = createLiveClient();
+            ModelNode operation = new ModelNode();
+            operation.get(OP_ADDR).setEmptyList();
+            operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
+            operation.get(NAME).set("running-mode");
+            try {
+                ModelNode result = execute(liveClient, operation);
+                boolean normal = "NORMAL".equals(result.get(RESULT).asString());
+                if (normal) {
+                    return;
+                }
+            } catch (Exception e) {
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+            }
+            now = System.currentTimeMillis();
+        } while (now - start < timeout);
+
+        fail("Live Server did not reload in the imparted time.");
     }
 
     private static void addQueue(ModelControllerClient client, String queueName) throws IOException {
@@ -326,7 +458,6 @@ public class HornetQBackupActivationTestCase {
     private static ModelNode execute(ModelControllerClient client, ModelNode operation) throws IOException {
         ModelNode result = client.execute(operation);
         System.out.println(operation.toJSONString(false) + "\n=>\n" + result.toJSONString(false));
-        assertEquals(result.toJSONString(true), SUCCESS, result.get(OUTCOME).asString());
         return result;
     }
 
