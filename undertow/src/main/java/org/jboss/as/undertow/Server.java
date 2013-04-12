@@ -59,7 +59,7 @@ public class Server implements Service<Server> {
         listeners.add(listener);
         if (listener.isSecure()) {
             SocketBinding binding = (SocketBinding) listener.getBinding().getValue();
-            servletContainer.getValue().registerSecurePort(listener.getName(), binding.getPort());
+            servletContainer.getValue().registerSecurePort(listener.getName(), binding.getSocketAddress().getPort());
         }
     }
 
