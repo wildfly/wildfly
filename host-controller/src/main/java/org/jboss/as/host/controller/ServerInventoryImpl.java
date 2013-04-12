@@ -38,6 +38,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -317,6 +318,7 @@ public class ServerInventoryImpl implements ServerInventory {
         stopServers(gracefulTimeout, false);
     }
 
+    @Override
     public void stopServers(final int gracefulTimeout, final boolean blockUntilStopped) {
         for(final ManagedServer server : servers.values()) {
             server.stop();
@@ -350,6 +352,18 @@ public class ServerInventoryImpl implements ServerInventory {
                     }
                 }
             }
+        }
+    }
+
+    @Override
+    // Hmm, maybe have startServer return some sort of Future, so the caller can decide to wait
+    public void awaitServersState(final Collection<String> serverNames, final boolean started) {
+        for (final String serverName : serverNames) {
+            final ManagedServer server = servers.get(serverName);
+            if(server == null) {
+                continue;
+            }
+            server.awaitState(started ? ManagedServer.InternalState.SERVER_STARTED : ManagedServer.InternalState.STOPPED);
         }
     }
 

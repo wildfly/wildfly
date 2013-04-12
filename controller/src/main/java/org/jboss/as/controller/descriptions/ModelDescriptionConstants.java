@@ -265,6 +265,7 @@ public class ModelDescriptionConstants {
     public static final String SINCE = "since";
     public static final String OPERATION_REQUIRES_RELOAD = "operation-requires-reload";
     public static final String OPERATION_REQUIRES_RESTART = "operation-requires-restart";
+    public static final String RELOAD_SERVERS = "reload-servers";
     public static final String RESTART_SERVERS = "restart-servers";
     public static final String SHUTDOWN = "shutdown";
     public static final String SOCKET_BINDING = "socket-binding";
