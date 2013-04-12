@@ -131,6 +131,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             builder.registerIntegrationService(FrameworkPhase.CREATE, new BundleLifecycleIntegration());
             builder.registerIntegrationService(FrameworkPhase.CREATE, new FrameworkModuleIntegration(props));
             builder.registerIntegrationService(FrameworkPhase.CREATE, new ModuleLoaderIntegration());
+            builder.registerIntegrationService(FrameworkPhase.CREATE, new LockManagerIntegration());
             builder.registerIntegrationService(FrameworkPhase.CREATE, new SystemServicesIntegration(resource, extensions));
             builder.registerIntegrationService(FrameworkPhase.INIT, new BootstrapBundlesIntegration());
             builder.registerIntegrationService(FrameworkPhase.INIT, new PersistentBundlesIntegration(deploymentTracker));
@@ -170,7 +171,7 @@ public class FrameworkBootstrapService implements Service<Void> {
     private void setupIntegrationProperties(StartContext context, Map<String, String> props) {
 
         // Setup the Framework's storage area.
-        String storage = (String) props.get(Constants.FRAMEWORK_STORAGE);
+        String storage = props.get(Constants.FRAMEWORK_STORAGE);
         if (storage == null) {
             ServerEnvironment environment = injectedServerEnvironment.getValue();
             File dataDir = environment.getServerDataDir();
@@ -184,7 +185,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             props.put(ModuleLogger.class.getName(), moduleLogger.getClass().getName());
 
         // Setup default system modules
-        String sysmodules = (String) props.get(PROP_JBOSS_OSGI_SYSTEM_MODULES);
+        String sysmodules = props.get(PROP_JBOSS_OSGI_SYSTEM_MODULES);
         if (sysmodules == null) {
             Set<String> sysModules = new LinkedHashSet<String>();
             sysModules.addAll(Arrays.asList(SystemPackagesIntegration.DEFAULT_SYSTEM_MODULES));

@@ -56,8 +56,8 @@ public interface OSGiMessages {
     @Message(id = 11951, value = "Cannot create bundle deployment from: %s")
     DeploymentUnitProcessingException cannotCreateBundleDeployment(@Cause Throwable th, DeploymentUnit deploymentUnit);
 
-    @Message(id = 11952, value = "Cannot deploy bundle: %s")
-    BundleException cannotDeployBundle(@Cause Throwable th, Deployment deployment);
+    @Message(id = 11952, value = "Cannot deploy bundle revision: %s")
+    BundleException cannotDeployBundleRevision(@Cause Throwable th, Deployment deployment);
 
     @Message(id = 11953, value = "Cannot find bundles directory: %s")
     IllegalStateException illegalStateCannotFindBundleDir(File dir);

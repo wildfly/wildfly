@@ -94,6 +94,10 @@ public final class FrameworkUtils {
         }
     }
 
+    public static void refreshBundles(BundleContext context, Collection<Bundle> bundles) throws InterruptedException, TimeoutException {
+        refreshBundles(context, bundles, 10, TimeUnit.SECONDS);
+    }
+
     public static void refreshBundles(BundleContext context, Collection<Bundle> bundles, long timeout, TimeUnit units) throws InterruptedException, TimeoutException {
         final CountDownLatch latch = new CountDownLatch(1);
         FrameworkListener listener = new FrameworkListener() {
