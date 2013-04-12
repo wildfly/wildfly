@@ -293,6 +293,25 @@ public class ServerRestartRequiredTestCase {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("restart-servers");
         operation.get(OP_ADDR).add(SERVER_GROUP, "reload-test-group");
+        operation.get("blocking").set(true);
+
+        executeOperation(operation, client);
+
+        // Check the states
+        waitUntilState(client, reloadOneAddress, "STARTED");
+        waitUntilState(client, reloadTwoAddress, "STARTED");
+
+    }
+
+    @Test
+    public void testReloadGroup() throws Exception {
+
+        final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("reload-servers");
+        operation.get(OP_ADDR).add(SERVER_GROUP, "reload-test-group");
+        operation.get("blocking").set(true);
 
         executeOperation(operation, client);
 

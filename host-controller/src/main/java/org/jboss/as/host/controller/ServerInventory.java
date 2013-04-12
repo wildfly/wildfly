@@ -22,6 +22,7 @@
 
 package org.jboss.as.host.controller;
 
+import java.util.Collection;
 import java.util.Map;
 
 import javax.security.auth.callback.CallbackHandler;
@@ -154,6 +155,15 @@ public interface ServerInventory {
     void stopServers(int gracefulTimeout);
 
     /**
+     * Stop all servers. Note that unless {@code blockUntilStopped} is set to {@code true} returning from this method
+     * does not mean the servers are completely stopped;
+     *
+     * @param gracefulTimeout time in ms a server should allow for graceful shutdown (if supported) before terminating all services
+     * @param blockUntilStopped wait until all servers are stopped
+     */
+    void stopServers(int gracefulTimeout, boolean blockUntilStopped);
+
+    /**
      * Re-establishes management communications with a server following a restart of the Host Controller process.
      *
      * @param serverName the name of the server
@@ -279,5 +289,14 @@ public interface ServerInventory {
      * @param processInfos map of process name to information about the process
      */
     void processInventory(Map<String, ProcessInfo> processInfos);
+
+    /**
+     * Await for a group of servers to be either started or stopped.
+     *
+     * @param serverNames the server names in the group
+     * @param started whether to wait for the started, or the stopped notification
+     * @throws InterruptedException
+     */
+    void awaitServersState(Collection<String> serverNames, boolean started);
 
 }

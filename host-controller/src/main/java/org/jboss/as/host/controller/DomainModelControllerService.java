@@ -40,6 +40,7 @@ import javax.security.auth.callback.CallbackHandler;
 import java.io.File;
 import java.io.IOException;
 import java.security.AccessController;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -765,6 +766,11 @@ public class DomainModelControllerService extends AbstractControllerService impl
         }
 
         @Override
+        public void stopServers(int gracefulTimeout, boolean blockUntilStopped) {
+            serverInventory.stopServers(gracefulTimeout, blockUntilStopped);
+        }
+
+        @Override
         public void connectionFinished() {
             serverInventory.connectionFinished();
         }
@@ -792,6 +798,11 @@ public class DomainModelControllerService extends AbstractControllerService impl
         @Override
         public void killServer(String serverName) {
             serverInventory.killServer(serverName);
+        }
+
+        @Override
+        public void awaitServersState(Collection<String> serverNames, boolean started) {
+            serverInventory.awaitServersState(serverNames, started);
         }
     }
 
