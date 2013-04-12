@@ -319,6 +319,22 @@ public class ManagementReadsTestCase {
     }
 
     @Test
+    public void testRunningServerReadResourceDescription() throws IOException {
+
+        DomainClient domainClient = domainMasterLifecycleUtil.getDomainClient();
+        ModelNode request = new ModelNode();
+        request.get(OP).set("read-resource-description");
+        ModelNode address = request.get(OP_ADDR);
+        address.add(HOST, "master");
+        address.add(RUNNING_SERVER, "reload-one");
+
+        // Check the stopped server has a resource description too
+        ModelNode response = domainClient.execute(request);
+        validateResponse(response);
+
+    }
+
+    @Test
     public void testDomainReadConfigAsXml() throws IOException {
 
         DomainClient domainClient = domainMasterLifecycleUtil.getDomainClient();
