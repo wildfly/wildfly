@@ -45,6 +45,9 @@ import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 import static org.jboss.msc.service.ServiceController.Mode.ACTIVE;
 import static org.jboss.msc.service.ServiceController.Mode.PASSIVE;
+import static org.jboss.msc.service.ServiceController.Mode.REMOVE;
+import static org.jboss.msc.service.ServiceController.State.REMOVED;
+import static org.jboss.msc.service.ServiceController.State.STOPPING;
 
 /**
  * The {@code JMSServerManager} service.
@@ -97,10 +100,12 @@ public class JMSService implements Service<JMSServerManager> {
 
                 public void deActivate() {
                     // passivate the activation service only if the HornetQ server is deactivated when it fails back
-                    // and *not* during AS7 service container shutdown (AS7-6840)
-                    if (hornetqActivationController != null &&
-                            hornetqActivationController.getState() != ServiceController.State.STOPPING) {
-                        hornetqActivationController.setMode(PASSIVE);
+                    // and *not* during AS7 service container shutdown or reload (AS7-6840 / AS7-6881)
+                    if (hornetqActivationController != null) {
+                        if (hornetqActivationController.getState() != STOPPING &&
+                                hornetqActivationController.getState() != REMOVED) {
+                            hornetqActivationController.compareAndSetMode(ACTIVE, PASSIVE);
+                        }
                     }
                 }
             });
