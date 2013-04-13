@@ -18,8 +18,6 @@
  */
 package org.jboss.as.test.integration.domain.management.util;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -72,6 +70,8 @@ import org.xnio.IoUtils;
  */
 public class DomainLifecycleUtil {
 
+    public static final String SLAVE_HOST_PASSWORD = "slave_us3r_password";
+
     private static final ThreadFactory threadFactory = new AsyncThreadFactory();
 
     private final Logger log = Logger.getLogger(DomainLifecycleUtil.class.getName());
@@ -118,7 +118,7 @@ public class DomainLifecycleUtil {
             final int port = configuration.getHostControllerManagementPort();
             final URI connectionURI = new URI("remote://" + address + ":" + port);
             // Create the connection - this will try to connect on the first request
-            connection = clientConfiguration.createConnection(connectionURI, getCallbackHandler());
+            connection = clientConfiguration.createConnection(connectionURI, configuration.getCallbackHandler());
 
             String jbossHomeDir = configuration.getJbossHome();
 
@@ -155,20 +155,22 @@ public class DomainLifecycleUtil {
             // No point backing up the file in a test scenario, just write what we need.
             File usersFile = new File(domainPath + "/configuration/mgmt-users.properties");
             FileOutputStream fos = new FileOutputStream(usersFile);
-            PrintWriter pw = new PrintWriter(fos);
-            pw.println("slave=" + new UsernamePasswordHashUtil().generateHashedHexURP("slave", "ManagementRealm", "slave_user_password".toCharArray()));
+            PrintWriter pw = new PrintWriter(fos, true);
+            pw.println("slave=" + new UsernamePasswordHashUtil().generateHashedHexURP("slave", "ManagementRealm", SLAVE_HOST_PASSWORD.toCharArray()));
             pw.close();
             fos.close();
 
             // Put out empty application realm properties files so servers don't complain
-            File appUsersProps = new File(domainPath + "/configuration/application-users.properties");fos = new FileOutputStream(usersFile);
-            pw = new PrintWriter(appUsersProps);
+            File appUsersProps = new File(domainPath + "/configuration/application-users.properties");
+            fos = new FileOutputStream(appUsersProps);
+            pw = new PrintWriter(fos, true);
             pw.println("# Application users");
             pw.close();
             fos.close();
-            File appRolesProps = new File(domainPath + "/configuration/application-roles.properties");fos = new FileOutputStream(usersFile);
-            pw = new PrintWriter(appRolesProps);
-            pw.println("# Application users");
+            File appRolesProps = new File(domainPath + "/configuration/application-roles.properties");
+            fos = new FileOutputStream(appRolesProps);
+            pw = new PrintWriter(fos, true);
+            pw.println("# Application roles");
             pw.close();
             fos.close();
 
@@ -240,18 +242,18 @@ public class DomainLifecycleUtil {
             process = wrapper;
 
             long start = System.currentTimeMillis();
-            if (configuration.isAdminOnly()) {
-                // Wait for the HC to be started
-                awaitHostController(start);
-                log.info("HostController started in " + (System.currentTimeMillis() - start) + " ms");
-
-            } else {
+            if (!configuration.isAdminOnly()) {
                 // Wait a bit to let HC get going
                 TimeUnit.SECONDS.sleep(2);
                 // Wait for the servers to be started
                 awaitServers(start);
                 log.info("All servers started in " + (System.currentTimeMillis() - start) + " ms");
             }
+            // Wait for the HC to be in running state. Normally if all servers are started, this is redundant
+            // but there may not be any servers or we may be in --admin-only mode
+            awaitHostController(start);
+            log.info("HostController started in " + (System.currentTimeMillis() - start) + " ms");
+
         } catch (Exception e) {
             throw new RuntimeException("Could not start container", e);
         }
@@ -507,8 +509,8 @@ public class DomainLifecycleUtil {
         if (connection != null) {
             try {
                 connection.close();
-            } catch (IOException e) {
-                log.log(Level.SEVERE, "Caught exception closing DomainClient", e);
+            } catch (Exception e) {
+                log.log(Level.SEVERE, "Caught exception closing DomainTestConnection", e);
             }
         }
     }

@@ -53,7 +53,7 @@ public class HostControllerBootstrap {
     public void bootstrap() throws Exception {
 
         final HostRunningModeControl runningModeControl = environment.getRunningModeControl();
-        final ControlledProcessState processState = new ControlledProcessState(false);
+        final ControlledProcessState processState = new ControlledProcessState(true);
         ServiceTarget target = serviceContainer.subTarget();
         ControlledProcessStateService.addService(target, processState);
         final HostControllerService hcs = new HostControllerService(environment, runningModeControl, authCode, processState);

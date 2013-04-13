@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -103,10 +103,8 @@ public class DomainTestSupport {
         URL url = tccl.getResource(domainConfigPath);
         assert url != null : "cannot find domainConfigPath";
         masterConfig.setDomainConfigFile(new File(url.toURI()).getAbsolutePath());
-        System.out.println(masterConfig.getDomainConfigFile());
         url = tccl.getResource(hostConfigPath);
         assert url != null : "cannot find hostConfigPath";
-        System.out.println(masterConfig.getHostConfigFile());
         masterConfig.setHostConfigFile(new File(url.toURI()).getAbsolutePath());
         File masterDir = new File(domains, hostName);
         // TODO this should not be necessary
@@ -133,12 +131,10 @@ public class DomainTestSupport {
         slaveConfig.setReadOnlyHost(readOnlyHost);
         URL url = tccl.getResource(hostConfigPath);
         slaveConfig.setHostConfigFile(new File(url.toURI()).getAbsolutePath());
-        System.out.println(slaveConfig.getHostConfigFile());
         File slaveDir = new File(domains, hostName);
         // TODO this should not be necessary
         new File(slaveDir, "configuration").mkdirs();
         slaveConfig.setDomainDirectory(slaveDir.getAbsolutePath());
-        System.out.println(slaveConfig.getDomainDirectory());
         if (slaveJvmHome != null) slaveConfig.setJavaHome(slaveJvmHome);
         if (slaveControllerJvmHome != null) slaveConfig.setControllerJavaHome(slaveControllerJvmHome);
         return slaveConfig;
@@ -421,7 +417,7 @@ public class DomainTestSupport {
         }
 
         public JBossAsManagedConfigurationParameters getMasterConfigurationParameters() {
-            return slaveParams;
+            return masterParams;
         }
 
         public JBossAsManagedConfigurationParameters getSlaveConfigurationParameters() {
@@ -438,6 +434,11 @@ public class DomainTestSupport {
 
         public boolean isReadOnlySlaveHost() {
             return readOnlySlaveHost;
+        }
+
+        public static Configuration create(final String domainConfig, final String masterConfig, final String slaveConfig) {
+            return new Configuration(domainConfig, masterConfig, slaveConfig,
+                    JBossAsManagedConfigurationParameters.STANDARD, JBossAsManagedConfigurationParameters.STANDARD);
         }
 
         public static Configuration create(final String domainConfig, final String masterConfig, final String slaveConfig, JBossAsManagedConfigurationParameters masterParams, JBossAsManagedConfigurationParameters slaveParams) {
