@@ -25,6 +25,7 @@ package org.jboss.as.osgi.deployment;
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+import static org.jboss.osgi.framework.spi.IntegrationConstants.BUNDLE_ACTIVATOR_KEY;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -116,10 +117,10 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
             Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
             BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
             Component activatorComponent = injectedComponent.getOptionalValue();
-            if (activatorComponent != null && deployment.getAttachment(BundleActivator.class) == null) {
+            if (activatorComponent != null && deployment.getAttachment(BUNDLE_ACTIVATOR_KEY) == null) {
                 ComponentInstance componentInstance = activatorComponent.createInstance();
                 BundleActivator instance = (BundleActivator) componentInstance.getInstance();
-                deployment.addAttachment(BundleActivator.class, instance);
+                deployment.putAttachment(BUNDLE_ACTIVATOR_KEY, instance);
             }
             OperationAssociation.INSTANCE.setAssociation(new ModelNode("deploy"));
             try {

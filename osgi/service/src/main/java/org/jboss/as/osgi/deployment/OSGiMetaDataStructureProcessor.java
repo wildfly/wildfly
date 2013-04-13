@@ -32,6 +32,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.framework.spi.IntegrationConstants;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 
@@ -55,7 +56,7 @@ public class OSGiMetaDataStructureProcessor implements DeploymentUnitProcessor {
         // Check if we already have a bundle {@link Deployment}
         Deployment dep = BundleLifecycleIntegration.getDeployment(depUnit.getName());
         if (dep != null) {
-            OSGiMetaData metadata = dep.getAttachment(OSGiMetaData.class);
+            OSGiMetaData metadata = dep.getAttachment(IntegrationConstants.OSGI_METADATA_KEY);
             if (metadata != null) {
                 depUnit.putAttachment(OSGiConstants.OSGI_METADATA_KEY, metadata);
                 return;

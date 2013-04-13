@@ -21,6 +21,8 @@
  */
 package org.jboss.as.osgi.service;
 
+import static org.jboss.osgi.framework.spi.IntegrationConstants.SERVICE_NAME_KEY;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -64,7 +66,7 @@ class PersistentBundlesIntegration extends BootstrapBundlesInstall<Void> {
         // Collect the Bundle.INSTALLED services
         Set<ServiceName> installedServices = new HashSet<ServiceName>();
         for (Deployment dep : deployments) {
-            ServiceName serviceName = dep.getAttachment(ServiceName.class);
+            ServiceName serviceName = dep.getAttachment(SERVICE_NAME_KEY);
             installedServices.add(serviceName);
         }
 

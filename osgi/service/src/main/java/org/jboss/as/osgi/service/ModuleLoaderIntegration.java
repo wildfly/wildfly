@@ -21,9 +21,12 @@
  */
 package org.jboss.as.osgi.service;
 
+import static org.jboss.as.osgi.OSGiConstants.DEPLOYMENT_UNIT_KEY;
+import static org.jboss.as.osgi.OSGiConstants.MODULE_SPECIFICATION_KEY;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.server.Services.JBOSS_SERVICE_MODULE_LOADER;
 import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_PREFIX;
+import static org.jboss.osgi.framework.spi.IntegrationConstants.MODULE_IDENTIFIER_KEY;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -141,7 +144,7 @@ final class ModuleLoaderIntegration extends FrameworkModuleLoaderPlugin {
         public ModuleIdentifier getModuleIdentifier(XBundleRevision brev) {
             XBundle bundle = brev.getBundle();
             Deployment deployment = bundle.adapt(Deployment.class);
-            ModuleIdentifier identifier = deployment.getAttachment(ModuleIdentifier.class);
+            ModuleIdentifier identifier = deployment.getAttachment(MODULE_IDENTIFIER_KEY);
             if (identifier == null) {
                 XIdentityCapability icap = brev.getIdentityCapability();
                 BundleRevisions brevs = bundle.adapt(BundleRevisions.class);
@@ -161,7 +164,7 @@ final class ModuleLoaderIntegration extends FrameworkModuleLoaderPlugin {
             XBundleRevision brev = context.getBundleRevision();
             Map<ModuleIdentifier, DependencySpec> moduleDependencies = context.getModuleDependencies();
             Deployment deployment = brev.getBundle().adapt(Deployment.class);
-            ModuleSpecification moduleSpecification = deployment.getAttachment(ModuleSpecification.class);
+            ModuleSpecification moduleSpecification = deployment.getAttachment(MODULE_SPECIFICATION_KEY);
             if (moduleSpecification != null) {
                 List<ModuleDependency> dependencies = moduleSpecification.getAllDependencies();
                 LOGGER.debugf("Adding integration dependencies: %d", dependencies.size());
@@ -225,7 +228,7 @@ final class ModuleLoaderIntegration extends FrameworkModuleLoaderPlugin {
         @Override
         public ServiceName createModuleService(XBundleRevision brev, List<BundleWire> wires) {
             Deployment deployment = brev.getBundle().adapt(Deployment.class);
-            DeploymentUnit depUnit = deployment.getAttachment(DeploymentUnit.class);
+            DeploymentUnit depUnit = deployment.getAttachment(DEPLOYMENT_UNIT_KEY);
 
             // Add a dependency on the parent module if we have one
             List<ModuleDependency> dependencies = new ArrayList<ModuleDependency>();

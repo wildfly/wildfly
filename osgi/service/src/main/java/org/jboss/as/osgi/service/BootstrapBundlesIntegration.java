@@ -24,6 +24,7 @@ package org.jboss.as.osgi.service;
 
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+import static org.jboss.osgi.framework.spi.IntegrationConstants.STORAGE_STATE_KEY;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -197,7 +198,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
                 if (metadata != null) {
                     builder.loadFrom(metadata);
                     brev = builder.getResource();
-                    brev.addAttachment(IntegrationConstants.OSGI_METADATA_KEY, metadata);
+                    brev.putAttachment(IntegrationConstants.OSGI_METADATA_KEY, metadata);
                 } else {
                     builder.loadFrom(module);
                     brev = builder.getResource();
@@ -286,7 +287,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
         StorageManager storageManager = injectedStorageManager.getValue();
         Long bundleId = injectedEnvironment.getValue().nextResourceIdentifier(null, dep.getSymbolicName());
         StorageState storageState = storageManager.createStorageState(bundleId, location, startlevel, null);
-        dep.addAttachment(StorageState.class, storageState);
+        dep.putAttachment(STORAGE_STATE_KEY, storageState);
         return dep;
     }
 

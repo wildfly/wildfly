@@ -156,7 +156,7 @@
         <version.org.jdom>1.1.2</version.org.jdom>
         <version.org.jboss.aesh>0.33.3</version.org.jboss.aesh>
         <version.org.jboss.arquillian.core>1.0.3.Final</version.org.jboss.arquillian.core>
-        <version.org.jboss.arquillian.osgi>2.0.0.CR1</version.org.jboss.arquillian.osgi>
+        <version.org.jboss.arquillian.osgi>2.0.0.CR2</version.org.jboss.arquillian.osgi>
         <version.org.jboss.as.console>1.5.2.Final</version.org.jboss.as.console>
         <version.org.jboss.as.jbossweb-native>2.0.10.Final</version.org.jboss.as.jbossweb-native>
         <version.org.jboss.byteman>2.0.1</version.org.jboss.byteman>
@@ -187,13 +187,13 @@
         <version.org.jboss.mod_cluster>1.2.3.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.modules.jboss-modules>1.2.0.Final</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.1.2.Final</version.org.jboss.msc.jboss-msc>
-        <version.org.jboss.osgi.deployment>2.0.0.CR2</version.org.jboss.osgi.deployment>
-        <version.org.jboss.osgi.framework>3.0.0.CR13</version.org.jboss.osgi.framework>
+        <version.org.jboss.osgi.deployment>2.0.0.CR4</version.org.jboss.osgi.deployment>
+        <version.org.jboss.osgi.framework>3.0.0.CR15</version.org.jboss.osgi.framework>
         <version.org.jboss.osgi.logging>1.0.0.Final</version.org.jboss.osgi.logging>
         <version.org.jboss.osgi.metadata>3.0.0.Alpha5</version.org.jboss.osgi.metadata>
-        <version.org.jboss.osgi.resolver>4.0.0.CR8</version.org.jboss.osgi.resolver>
-        <version.org.jboss.osgi.repository>3.0.0.CR1</version.org.jboss.osgi.repository>
-        <version.org.jboss.osgi.spi>4.0.0.Alpha2</version.org.jboss.osgi.spi>
+        <version.org.jboss.osgi.resolver>4.0.0.CR10</version.org.jboss.osgi.resolver>
+        <version.org.jboss.osgi.repository>3.0.0.CR2</version.org.jboss.osgi.repository>
+        <version.org.jboss.osgi.spi>4.0.0.CR2</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>2.0.0.Alpha3</version.org.jboss.osgi.vfs>
         <version.org.jboss.remote-naming>1.0.6.Final</version.org.jboss.remote-naming>
         <version.org.jboss.remoting3>3.2.16.GA</version.org.jboss.remoting3>

@@ -23,6 +23,8 @@
 package org.jboss.as.osgi.deployment;
 
 import static org.jboss.as.server.deployment.Attachments.BUNDLE_STATE_KEY;
+import static org.jboss.osgi.framework.spi.IntegrationConstants.STORAGE_STATE_KEY;
+
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.InitialDeploymentTracker;
 import org.jboss.as.server.deployment.Attachments.BundleState;
@@ -91,7 +93,7 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
         StorageState storageState = storageProvider.getStorageState(deployment.getLocation());
         if (storageState != null) {
             deployment.setAutoStart(storageState.isPersistentlyStarted());
-            deployment.addAttachment(StorageState.class, storageState);
+            deployment.putAttachment(STORAGE_STATE_KEY, storageState);
         }
     }
 }
