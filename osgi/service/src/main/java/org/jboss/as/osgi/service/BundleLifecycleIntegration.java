@@ -21,9 +21,11 @@
  */
 package org.jboss.as.osgi.service;
 
+import static org.jboss.as.osgi.OSGiConstants.DEPLOYMENT_UNIT_KEY;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -78,6 +80,7 @@ import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResolveContext;
 import org.jboss.osgi.resolver.XResolver;
 import org.jboss.osgi.resolver.XResource;
+import org.jboss.osgi.spi.AttachmentKey;
 import org.jboss.osgi.vfs.AbstractVFS;
 import org.jboss.osgi.vfs.VirtualFile;
 import org.jboss.vfs.VFSUtils;
@@ -98,7 +101,7 @@ import org.osgi.service.resolver.ResolutionException;
  */
 public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
 
-    private static final String RUNTIME_NAME_KEY = "runtimeName";
+    private static final AttachmentKey<String> RUNTIME_NAME_KEY = AttachmentKey.create(String.class);
 
     private static final Map<String, Deployment> deploymentMap = new HashMap<String, Deployment>();
 
@@ -207,7 +210,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
             // Here we wait for the ModuleSpec service to come up before we are done resolving
             // https://issues.jboss.org/browse/AS7-6016
             Deployment deployment = bundle.adapt(Deployment.class);
-            DeploymentUnit depUnit = deployment.getAttachment(DeploymentUnit.class);
+            DeploymentUnit depUnit = deployment.getAttachment(DEPLOYMENT_UNIT_KEY);
             if (depUnit == null) {
                 ModuleIdentifier identifier = bundle.getBundleRevision().getModuleIdentifier();
                 ServiceName moduleServiceName = ServiceModuleLoader.moduleServiceName(identifier);
@@ -226,7 +229,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
         @SuppressWarnings("unchecked")
         public void start(XBundle bundle, int options) throws BundleException {
             Deployment deployment = bundle.adapt(Deployment.class);
-            DeploymentUnit depUnit = deployment.getAttachment(DeploymentUnit.class);
+            DeploymentUnit depUnit = deployment.getAttachment(DEPLOYMENT_UNIT_KEY);
 
             // The DeploymentUnit would be null for initial capabilities
             // or for bundles that have been installed in nested mgmnt ops
@@ -389,7 +392,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
 
         // Maps the bundle.location to a deployment runtime name
         private String getRuntimeName(Deployment dep) {
-            String runtimeName = dep.getAttachment(RUNTIME_NAME_KEY, String.class);
+            String runtimeName = dep.getAttachment(RUNTIME_NAME_KEY);
             if (runtimeName == null) {
                 runtimeName = dep.getLocation();
                 try {
@@ -404,7 +407,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                 }
                 if (dep.isBundleUpdate()) {
                     String suffix = "";
-                    Bundle bundle = dep.getAttachment(Bundle.class);
+                    Bundle bundle = dep.getAttachment(IntegrationConstants.BUNDLE_KEY);
                     BundleRevisions brevs = bundle.adapt(BundleRevisions.class);
                     int revid = brevs.getRevisions().size();
                     int dotindex = runtimeName.length() - 4;
@@ -414,7 +417,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                     }
                     runtimeName += "-rev" + revid + suffix;
                 }
-                dep.addAttachment(RUNTIME_NAME_KEY, runtimeName, String.class);
+                dep.putAttachment(RUNTIME_NAME_KEY, runtimeName);
             }
             return runtimeName;
         }
@@ -453,7 +456,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                 // Create the revision {@link Deployment}
                 DeploymentProvider deploymentManager = injectedDeploymentManager.getValue();
                 Deployment dep = deploymentManager.createDeployment(bundle.getLocation(), rootFile);
-                dep.addAttachment(Bundle.class, bundle);
+                dep.putAttachment(IntegrationConstants.BUNDLE_KEY, bundle);
                 dep.setAutoStart(false);
 
                 String runtimeName = getRuntimeName(dep);

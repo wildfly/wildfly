@@ -22,6 +22,8 @@
 
 package org.jboss.as.osgi.deployment;
 
+import static org.jboss.osgi.framework.spi.IntegrationConstants.BUNDLE_INFO_KEY;
+
 import java.util.List;
 
 import javax.annotation.ManagedBean;
@@ -46,6 +48,7 @@ import org.jboss.jandex.MethodInfo;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
+import org.jboss.osgi.framework.spi.IntegrationConstants;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.spi.BundleInfo;
 
@@ -75,7 +78,7 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
         BundleInfo info = depUnit.getAttachment(OSGiConstants.BUNDLE_INFO_KEY);
         if (deployment == null && info != null) {
             deployment = DeploymentFactory.createDeployment(info);
-            deployment.addAttachment(BundleInfo.class, info);
+            deployment.putAttachment(BUNDLE_INFO_KEY, info);
             OSGiMetaData metadata = info.getOSGiMetadata();
             deployment.setAutoStart(!metadata.isFragment());
 
@@ -113,12 +116,12 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
 
             // Make sure the framework uses the same module id as the server
             ModuleIdentifier identifier = depUnit.getAttachment(Attachments.MODULE_IDENTIFIER);
-            deployment.addAttachment(ModuleIdentifier.class, identifier);
+            deployment.putAttachment(IntegrationConstants.MODULE_IDENTIFIER_KEY, identifier);
 
             // Allow additional dependencies for the set of supported deployemnt types
             if (allowAdditionalModuleDependencies(depUnit)) {
                 ModuleSpecification moduleSpec = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-                deployment.addAttachment(ModuleSpecification.class, moduleSpec);
+                deployment.putAttachment(OSGiConstants.MODULE_SPECIFICATION_KEY, moduleSpec);
             } else {
                 // Make this module private so that other modules in the deployment don't create a direct dependency
                 ModuleSpecification moduleSpec = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
@@ -127,7 +130,7 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
 
             // Attach the bundle deployment
             depUnit.putAttachment(OSGiConstants.DEPLOYMENT_KEY, deployment);
-            deployment.addAttachment(DeploymentUnit.class, depUnit);
+            deployment.putAttachment(OSGiConstants.DEPLOYMENT_UNIT_KEY, depUnit);
             final DeploymentUnit parent;
             if(depUnit.getParent() == null) {
                 parent = depUnit;

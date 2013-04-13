@@ -49,7 +49,7 @@ public class WebContextActivationProcessor implements DeploymentUnitProcessor {
         XBundleRevision brev = depUnit.getAttachment(OSGiConstants.BUNDLE_REVISION_KEY);
         if (activator != null && brev != null) {
             // Add the {@link ContextActivator} to the {@link XBundleRevision}
-            brev.addAttachment(WebExtension.CONTEXT_ACTIVATOR_KEY, activator);
+            brev.putAttachment(WebExtension.CONTEXT_ACTIVATOR_KEY, activator);
 
             // Start the context when the bundle will get started automatically
             Deployment deployment = brev.getBundle().adapt(Deployment.class);
@@ -64,8 +64,7 @@ public class WebContextActivationProcessor implements DeploymentUnitProcessor {
         ContextActivator activator = depUnit.getAttachment(ContextActivator.ATTACHMENT_KEY);
         XBundleRevision brev = depUnit.getAttachment(OSGiConstants.BUNDLE_REVISION_KEY);
         if (activator != null && brev != null) {
-            Deployment dep = brev.getBundle().adapt(Deployment.class);
-            dep.removeAttachment(ContextActivator.class);
+            brev.removeAttachment(WebExtension.CONTEXT_ACTIVATOR_KEY);
         }
     }
 }

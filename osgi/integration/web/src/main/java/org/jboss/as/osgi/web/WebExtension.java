@@ -45,7 +45,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.osgi.framework.spi.FrameworkBuilder;
 import org.jboss.osgi.framework.spi.FrameworkBuilder.FrameworkPhase;
 import org.jboss.osgi.framework.spi.IntegrationServices;
-import org.jboss.osgi.resolver.XAttachmentKey;
+import org.jboss.osgi.spi.AttachmentKey;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.url.URLStreamHandlerService;
@@ -59,7 +59,7 @@ import org.osgi.service.url.URLStreamHandlerService;
  */
 public class WebExtension extends AbstractSubsystemExtension {
 
-    static final XAttachmentKey<ContextActivator> CONTEXT_ACTIVATOR_KEY = XAttachmentKey.create(ContextActivator.class);
+    static final AttachmentKey<ContextActivator> CONTEXT_ACTIVATOR_KEY = AttachmentKey.create(ContextActivator.class);
 
     public static final String OSGI_BUNDLECONTEXT = "osgi-bundlecontext";
     public static final String WEB_CONTEXTPATH = "Web-ContextPath";

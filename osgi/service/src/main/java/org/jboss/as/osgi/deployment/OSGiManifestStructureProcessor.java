@@ -32,6 +32,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.framework.spi.IntegrationConstants;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 
 /**
@@ -54,7 +55,7 @@ public class OSGiManifestStructureProcessor implements DeploymentUnitProcessor {
         // Check if we already have a bundle {@link Deployment}
         Deployment dep = BundleLifecycleIntegration.getDeployment(depUnit.getName());
         if (dep != null) {
-            Manifest manifest = dep.getAttachment(Manifest.class);
+            Manifest manifest = dep.getAttachment(IntegrationConstants.MANIFEST_KEY);
             if (manifest != null) {
                 depUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
                 return;
