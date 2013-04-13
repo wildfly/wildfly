@@ -101,8 +101,7 @@ public class PersistenceUnitProcessor implements DeploymentUnitProcessor {
         private ServiceRegistration<EntityManagerFactory> registration;
 
         static void addService(ServiceTarget serviceTarget, BundleManager bundleManager, ServiceName puServiceName, XBundleRevision brev) {
-            ServiceName revisionName = bundleManager.getServiceName(brev);
-            ServiceName serviceName = revisionName.append(EntityManagerFactory.class.getSimpleName());
+            ServiceName serviceName = puServiceName.append(EntityManagerFactory.class.getSimpleName());
             EntityManagerFactoryRegistration service = new EntityManagerFactoryRegistration(brev.getBundle());
             ServiceBuilder<ServiceRegistration<EntityManagerFactory>> builder = serviceTarget.addService(serviceName, service);
             builder.addDependency(puServiceName, PersistenceUnitService.class, service.injectedPersistenceUnitService);

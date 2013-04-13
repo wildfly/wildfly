@@ -32,7 +32,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.spi.BundleManager;
@@ -42,6 +41,7 @@ import org.jboss.osgi.framework.spi.StorageState;
 import org.jboss.osgi.resolver.XBundleRevision;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.wiring.BundleWiring;
 
 /**
  * Processes deployments that have OSGi metadata attached.
@@ -64,27 +64,31 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
         if (deployment == null)
             return;
 
-        ServiceController<? extends XBundleRevision> controller;
         try {
             BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
             BundleContext syscontext = depUnit.getAttachment(OSGiConstants.SYSTEM_CONTEXT_KEY);
             if (deploymentTracker.hasDeploymentName(depUnit.getName())) {
                 restoreStorageState(phaseContext, deployment);
             }
-            controller = bundleManager.createBundleRevision(syscontext, deployment, phaseContext.getServiceTarget(), null);
+            XBundleRevision brev = bundleManager.createBundleRevision(syscontext, deployment, phaseContext.getServiceTarget());
+            depUnit.putAttachment(OSGiConstants.BUNDLE_REVISION_KEY, brev);
+            depUnit.putAttachment(BUNDLE_STATE_KEY, BundleState.INSTALLED);
         } catch (BundleException ex) {
             throw new DeploymentUnitProcessingException(ex);
         }
-
-        // Add a dependency on the next phase for this bundle to be installed
-        phaseContext.addDeploymentDependency(controller.getName(), OSGiConstants.BUNDLE_REVISION_KEY);
-        depUnit.putAttachment(BUNDLE_STATE_KEY, BundleState.INSTALLED);
     }
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        // When we get here, the {@link BundleRevision} service has already gone down
-        // cleaning up all revision state. Uninstall is therfore done in the {@link BundleRevision} service
+        XBundleRevision brev = depUnit.getAttachment(OSGiConstants.BUNDLE_REVISION_KEY);
+        if (brev == null)
+            return;
+
+        BundleWiring wiring = brev.getWiringSupport().getWiring(false);
+        if (wiring == null || !wiring.isInUse()) {
+            BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
+            bundleManager.removeRevision(brev, 0);
+        }
     }
 
     private void restoreStorageState(final DeploymentPhaseContext phaseContext, final Deployment deployment) {

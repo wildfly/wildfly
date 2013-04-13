@@ -161,8 +161,8 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
     }
 
     @Override
-    protected ServiceController<Void> installResolveService(ServiceTarget serviceTarget, Set<ServiceName> installedServices) {
-        return new BootstrapResolveIntegration(getServiceName().getParent(), installedServices).install(serviceTarget, getServiceListener());
+    protected ServiceController<Void> installResolveService(ServiceTarget serviceTarget, Set<XBundleRevision> installedRevisions) {
+        return new BootstrapResolveIntegration(getServiceName().getParent(), installedRevisions).install(serviceTarget, getServiceListener());
     }
 
     private boolean installInitialModuleCapability(OSGiCapability configcap) throws Exception {
@@ -332,8 +332,8 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
 
     class BootstrapResolveIntegration extends BootstrapBundlesResolve<Void> {
 
-        BootstrapResolveIntegration(ServiceName baseName, Set<ServiceName> installedServices) {
-            super(baseName, installedServices);
+        BootstrapResolveIntegration(ServiceName baseName, Set<XBundleRevision> installedRevisions) {
+            super(baseName, installedRevisions);
         }
 
         @Override

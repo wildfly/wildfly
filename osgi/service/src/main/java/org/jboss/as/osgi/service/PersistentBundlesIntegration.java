@@ -21,18 +21,17 @@
  */
 package org.jboss.as.osgi.service;
 
-import static org.jboss.osgi.framework.spi.IntegrationConstants.SERVICE_NAME_KEY;
-
 import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.spi.BootstrapBundlesInstall;
+import org.jboss.osgi.framework.spi.IntegrationConstants;
 import org.jboss.osgi.framework.spi.IntegrationServices;
+import org.jboss.osgi.resolver.XBundleRevision;
 
 /**
  * An {@link org.jboss.osgi.framework.spi.IntegrationService} that installs persistent bundles on framework startup.
@@ -63,14 +62,14 @@ class PersistentBundlesIntegration extends BootstrapBundlesInstall<Void> {
         // Get the set of persistent bundle deployments from {@link InitialDeploymentTracker}
         Set<Deployment> deployments = deploymentTracker.getDeployments();
 
-        // Collect the Bundle.INSTALLED services
-        Set<ServiceName> installedServices = new HashSet<ServiceName>();
+        // Collect the installed bundle revisions
+        Set<XBundleRevision> installedRevisions = new HashSet<XBundleRevision>();
         for (Deployment dep : deployments) {
-            ServiceName serviceName = dep.getAttachment(SERVICE_NAME_KEY);
-            installedServices.add(serviceName);
+            XBundleRevision brev = dep.getAttachment(IntegrationConstants.BUNDLE_REVISION_KEY);
+            installedRevisions.add(brev);
         }
 
         // Install the persistent bundle resolve service
-        installResolveService(context.getChildTarget(), installedServices);
+        installResolveService(context.getChildTarget(), installedRevisions);
     }
 }

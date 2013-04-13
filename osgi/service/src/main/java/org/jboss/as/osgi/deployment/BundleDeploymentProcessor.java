@@ -50,6 +50,7 @@ import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
 import org.jboss.osgi.framework.spi.IntegrationConstants;
 import org.jboss.osgi.metadata.OSGiMetaData;
+import org.jboss.osgi.spi.AttachmentKey;
 import org.jboss.osgi.spi.BundleInfo;
 
 /**
@@ -61,6 +62,9 @@ import org.jboss.osgi.spi.BundleInfo;
  * @since 20-Sep-2010
  */
 public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
+
+    public static final AttachmentKey<DeploymentUnit> DEPLOYMENT_UNIT_KEY = AttachmentKey.create(DeploymentUnit.class);
+    public static final AttachmentKey<ModuleSpecification> MODULE_SPECIFICATION_KEY = AttachmentKey.create(ModuleSpecification.class);
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -121,7 +125,7 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
             // Allow additional dependencies for the set of supported deployemnt types
             if (allowAdditionalModuleDependencies(depUnit)) {
                 ModuleSpecification moduleSpec = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-                deployment.putAttachment(OSGiConstants.MODULE_SPECIFICATION_KEY, moduleSpec);
+                deployment.putAttachment(BundleDeploymentProcessor.MODULE_SPECIFICATION_KEY, moduleSpec);
             } else {
                 // Make this module private so that other modules in the deployment don't create a direct dependency
                 ModuleSpecification moduleSpec = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
@@ -130,7 +134,7 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
 
             // Attach the bundle deployment
             depUnit.putAttachment(OSGiConstants.DEPLOYMENT_KEY, deployment);
-            deployment.putAttachment(OSGiConstants.DEPLOYMENT_UNIT_KEY, depUnit);
+            deployment.putAttachment(BundleDeploymentProcessor.DEPLOYMENT_UNIT_KEY, depUnit);
             final DeploymentUnit parent;
             if(depUnit.getParent() == null) {
                 parent = depUnit;
