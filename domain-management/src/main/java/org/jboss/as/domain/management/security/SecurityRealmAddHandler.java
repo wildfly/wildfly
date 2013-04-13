@@ -59,6 +59,7 @@ import org.jboss.as.domain.management.SSLIdentity;
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionManagerService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -461,10 +462,10 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
     private ServiceName addSecretService(OperationContext context, ModelNode secret, ServiceName realmServiceName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ServiceName secretServiceName = realmServiceName.append(SecretIdentityService.SERVICE_SUFFIX);
 
-        ModelNode secretValueNode = SecretServerIdentityResourceDefinition.VALUE.resolveModelAttribute(context, secret);
-        String resolvedValue = context.resolveExpressions(secretValueNode).asString();
+        ModelNode resolvedValueNode = SecretServerIdentityResourceDefinition.VALUE.resolveModelAttribute(context, secret);
+        boolean base64 = secret.get(SecretServerIdentityResourceDefinition.VALUE.getName()).getType() != ModelType.EXPRESSION;
 
-        SecretIdentityService sis = new SecretIdentityService(resolvedValue, secretValueNode.asString().equals(resolvedValue));
+        SecretIdentityService sis = new SecretIdentityService(resolvedValueNode.asString(), base64);
         final ServiceController<CallbackHandlerFactory> serviceController = serviceTarget.addService(secretServiceName, sis)
                 .setInitialMode(ON_DEMAND)
                 .install();
@@ -491,6 +492,8 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
 
         return usersServiceName;
     }
+
+
 
     private static ServiceName pathName(String relativeTo) {
         return ServiceName.JBOSS.append("server", "path", relativeTo);
