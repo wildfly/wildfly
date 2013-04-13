@@ -216,7 +216,7 @@ public final class Attachments {
     public static final AttachmentKey<ModuleIdentifier> MODULE_IDENTIFIER = AttachmentKey.create(ModuleIdentifier.class);
 
     /**
-     * The flag that indicates that the respective phase should be deferred.
+     * Flags for deferred module phase handling.
      */
     public static final AttachmentKey<AttachmentList<String>> DEFERRED_MODULES = AttachmentKey.createList(String.class);
     public static final AttachmentKey<AtomicInteger> DEFERRED_ACTIVATION_COUNT = AttachmentKey.create(AtomicInteger.class);

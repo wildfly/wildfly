@@ -43,6 +43,7 @@ import org.jboss.as.osgi.deployment.BundleDeploymentProcessor;
 import org.jboss.as.osgi.deployment.BundleInstallProcessor;
 import org.jboss.as.osgi.deployment.BundleResolveProcessor;
 import org.jboss.as.osgi.deployment.BundleSubDeploymentMarkingProcessor;
+import org.jboss.as.osgi.deployment.BundleUninstallProcessor;
 import org.jboss.as.osgi.deployment.DeferredPhaseProcessor;
 import org.jboss.as.osgi.deployment.FrameworkActivateProcessor;
 import org.jboss.as.osgi.deployment.ModuleRegisterProcessor;
@@ -136,6 +137,7 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.CONFIGURE_MODULE, Phase.CONFIGURE_DEFERRED_PHASE, new DeferredPhaseProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_RESOLVER_MODULE, new ModuleRegisterProcessor(registrationTracker));
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_BUNDLE_ACTIVATE, new BundleActivateProcessor());
+                processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_BUNDLE_UNINSTALL, new BundleUninstallProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
 

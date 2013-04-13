@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -92,6 +93,64 @@ public class BundleUninstallTestCase {
     }
 
     @Test
+    @InSequence(1)
+    public void testSimpleJarUninstall() throws Exception {
+        Bundle jar = context.installBundle(V200_JAR, deployer.getDeployment(V200_JAR));
+        Assert.assertEquals(Bundle.INSTALLED, jar.getState());
+
+        XEnvironment env = context.getBundle().adapt(XEnvironment.class);
+        XBundleRevision brev = (XBundleRevision) jar.adapt(BundleRevision.class);
+        Long resid = brev.getAttachment(XResource.RESOURCE_IDENTIFIER_KEY);
+
+        jar.uninstall();
+        Assert.assertEquals(Bundle.UNINSTALLED, jar.getState());
+
+        Assert.assertNull("BundleRevision is null", jar.adapt(BundleRevision.class));
+        Assert.assertNull("BundleWiring is null", brev.getWiring());
+        Assert.assertNull("BundleRevision removed from environment", env.getResourceById(resid));
+    }
+
+    @Test
+    @InSequence(20)
+    public void testActiveJarUninstall() throws Exception {
+        Bundle jar = context.installBundle(V200_JAR, deployer.getDeployment(V200_JAR));
+        jar.start();
+        Assert.assertEquals(Bundle.ACTIVE, jar.getState());
+
+        XEnvironment env = context.getBundle().adapt(XEnvironment.class);
+        XBundleRevision brev = (XBundleRevision) jar.adapt(BundleRevision.class);
+        Long resid = brev.getAttachment(XResource.RESOURCE_IDENTIFIER_KEY);
+
+        jar.uninstall();
+        Assert.assertEquals(Bundle.UNINSTALLED, jar.getState());
+
+        Assert.assertNull("BundleRevision is null", jar.adapt(BundleRevision.class));
+        Assert.assertNull("BundleWiring is null", brev.getWiring());
+        Assert.assertNull("BundleRevision removed from environment", env.getResourceById(resid));
+    }
+
+    @Test
+    @InSequence(30)
+    public void testSimpleJarUndeploy() throws Exception {
+        ServerDeploymentHelper server = new ServerDeploymentHelper(managementClient.getControllerClient());
+        String jarName = server.deploy(V200_JAR, deployer.getDeployment(V200_JAR));
+        Bundle jar = FrameworkUtils.getBundles(context, V200_JAR, null)[0];
+        Assert.assertEquals(Bundle.ACTIVE, jar.getState());
+
+        XEnvironment env = context.getBundle().adapt(XEnvironment.class);
+        XBundleRevision brev = (XBundleRevision) jar.adapt(BundleRevision.class);
+        Long resid = brev.getAttachment(XResource.RESOURCE_IDENTIFIER_KEY);
+
+        server.undeploy(jarName);
+        Assert.assertEquals(Bundle.UNINSTALLED, jar.getState());
+
+        Assert.assertNull("BundleRevision is null", jar.adapt(BundleRevision.class));
+        Assert.assertNull("BundleWiring is null", brev.getWiring());
+        Assert.assertNull("BundleRevision removed from environment", env.getResourceById(resid));
+    }
+
+    @Test
+    @InSequence(40)
     public void testDependentJarUninstall() throws Exception {
         Bundle jar = context.installBundle(V200_JAR, deployer.getDeployment(V200_JAR));
         Bundle webapp = context.installBundle(BUNDLE_V200_WAB, deployer.getDeployment(BUNDLE_V200_WAB));
@@ -108,6 +167,7 @@ public class BundleUninstallTestCase {
             Assert.assertEquals("Resource V2.0.0", result);
 
             jar.uninstall();
+            Assert.assertEquals(Bundle.UNINSTALLED, jar.getState());
 
             Assert.assertNull("BundleRevision is null", jar.adapt(BundleRevision.class));
             Assert.assertTrue("BundleWiring in use", brev.getWiring().isInUse());
@@ -129,24 +189,24 @@ public class BundleUninstallTestCase {
     }
 
     @Test
+    @InSequence(50)
     public void testDependentJarUndeploy() throws Exception {
         ServerDeploymentHelper server = new ServerDeploymentHelper(managementClient.getControllerClient());
         String jarName = server.deploy(V200_JAR, deployer.getDeployment(V200_JAR));
-        Bundle webapp = context.installBundle(BUNDLE_V200_WAB, deployer.getDeployment(BUNDLE_V200_WAB));
+        String webappName = server.deploy(BUNDLE_V200_WAB, deployer.getDeployment(BUNDLE_V200_WAB));
 
         XEnvironment env = context.getBundle().adapt(XEnvironment.class);
         Bundle jar = FrameworkUtils.getBundles(context, V200_JAR, null)[0];
         XBundleRevision brev = (XBundleRevision) jar.adapt(BundleRevision.class);
         Long resid = brev.getAttachment(XResource.RESOURCE_IDENTIFIER_KEY);
         try {
-            webapp.start();
-
             String result = performCall("bundle-v200", "simple", null);
             Assert.assertEquals("Revision deployment.v200.jar:main", result);
             result = performCall("bundle-v200", "message.txt", null);
             Assert.assertEquals("Resource V2.0.0", result);
 
             server.undeploy(jarName);
+            Assert.assertEquals(Bundle.UNINSTALLED, jar.getState());
 
             Assert.assertNull("BundleRevision is null", jar.adapt(BundleRevision.class));
             Assert.assertTrue("BundleWiring in use", brev.getWiring().isInUse());
@@ -159,7 +219,7 @@ public class BundleUninstallTestCase {
             result = performCall("bundle-v200", "message.txt", null);
             Assert.assertEquals("Resource V2.0.0", result);
         } finally {
-            webapp.uninstall();
+            server.undeploy(webappName);
         }
 
         // Assert that the jar revision was removed from the environment

@@ -21,7 +21,6 @@
  */
 package org.jboss.as.osgi.service;
 
-import static org.jboss.as.osgi.OSGiConstants.DEPLOYMENT_UNIT_KEY;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
@@ -44,6 +43,8 @@ import java.util.concurrent.TimeoutException;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
+import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.osgi.deployment.BundleDeploymentProcessor;
 import org.jboss.as.osgi.management.OperationAssociation;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -73,6 +74,7 @@ import org.jboss.osgi.framework.spi.DeploymentProvider;
 import org.jboss.osgi.framework.spi.FutureServiceValue;
 import org.jboss.osgi.framework.spi.IntegrationConstants;
 import org.jboss.osgi.framework.spi.IntegrationServices;
+import org.jboss.osgi.framework.spi.LockManager;
 import org.jboss.osgi.framework.spi.StorageManager;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
@@ -84,7 +86,6 @@ import org.jboss.osgi.spi.AttachmentKey;
 import org.jboss.osgi.vfs.AbstractVFS;
 import org.jboss.osgi.vfs.VirtualFile;
 import org.jboss.vfs.VFSUtils;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.startlevel.BundleStartLevel;
@@ -111,6 +112,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
     private final InjectedValue<XResolver> injectedResolver = new InjectedValue<XResolver>();
     private final InjectedValue<StorageManager> injectedStorageManager = new InjectedValue<StorageManager>();
     private final InjectedValue<DeploymentProvider> injectedDeploymentManager = new InjectedValue<DeploymentProvider>();
+    private final InjectedValue<LockManager> injectedLockManager = new InjectedValue<LockManager>();
     private ServerDeploymentManager serverDeploymentManager;
 
     @Override
@@ -119,6 +121,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, injectedController);
         builder.addDependency(IntegrationServices.STORAGE_MANAGER_PLUGIN, StorageManager.class, injectedStorageManager);
         builder.addDependency(IntegrationServices.DEPLOYMENT_PROVIDER_PLUGIN, DeploymentProvider.class, injectedDeploymentManager);
+        builder.addDependency(IntegrationServices.LOCK_MANAGER_PLUGIN, LockManager.class, injectedLockManager);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
         builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, injectedEnvironment);
         builder.addDependency(Services.RESOLVER, XResolver.class, injectedResolver);
@@ -168,13 +171,12 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
         }
 
         @Override
-        @SuppressWarnings("unchecked")
-        public ServiceController<? extends XBundleRevision> createBundleRevision(BundleContext context, Deployment dep) throws BundleException {
+        public XBundleRevision createBundleRevision(BundleContext context, Deployment dep) throws BundleException {
             // Do the install directly if we have a running management op
             // https://issues.jboss.org/browse/AS7-5642
             if (OperationAssociation.INSTANCE.getAssociation() != null) {
                 LOGGER.warnCannotDeployBundleFromManagementOperation(dep);
-                return bundleManager.createBundleRevision(context, dep, null, null);
+                return bundleManager.createBundleRevision(context, dep, null);
             } else {
                 LOGGER.debugf("Install deployment: %s", dep);
                 String runtimeName = getRuntimeName(dep);
@@ -192,9 +194,11 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                 } catch (Exception ex) {
                     throw MESSAGES.cannotDeployBundleRevision(ex, dep);
                 }
-                ServiceName serviceName = bundleManager.getServiceName(dep);
-                ServiceController<?> controller = bundleManager.getServiceContainer().getService(serviceName);
-                return (ServiceController<? extends XBundleRevision>) controller;
+                // For an already existing bundle (i.e. same location) the
+                // deployment may not have the bundle revision attached
+                DeploymentUnit depUnit = dep.getAttachment(BundleDeploymentProcessor.DEPLOYMENT_UNIT_KEY);
+                XBundleRevision brev = depUnit.getAttachment(OSGiConstants.BUNDLE_REVISION_KEY);
+                return brev;
             }
         }
 
@@ -210,7 +214,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
             // Here we wait for the ModuleSpec service to come up before we are done resolving
             // https://issues.jboss.org/browse/AS7-6016
             Deployment deployment = bundle.adapt(Deployment.class);
-            DeploymentUnit depUnit = deployment.getAttachment(DEPLOYMENT_UNIT_KEY);
+            DeploymentUnit depUnit = deployment.getAttachment(BundleDeploymentProcessor.DEPLOYMENT_UNIT_KEY);
             if (depUnit == null) {
                 ModuleIdentifier identifier = bundle.getBundleRevision().getModuleIdentifier();
                 ServiceName moduleServiceName = ServiceModuleLoader.moduleServiceName(identifier);
@@ -229,7 +233,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
         @SuppressWarnings("unchecked")
         public void start(XBundle bundle, int options) throws BundleException {
             Deployment deployment = bundle.adapt(Deployment.class);
-            DeploymentUnit depUnit = deployment.getAttachment(DEPLOYMENT_UNIT_KEY);
+            DeploymentUnit depUnit = deployment.getAttachment(BundleDeploymentProcessor.DEPLOYMENT_UNIT_KEY);
 
             // The DeploymentUnit would be null for initial capabilities
             // or for bundles that have been installed in nested mgmnt ops
@@ -268,16 +272,6 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
         @Override
         public void stop(XBundle bundle, int options) throws BundleException {
             bundleManager.stopBundle(bundle, options);
-        }
-
-        @Override
-        public void update(XBundle bundle, InputStream input) throws BundleException {
-            bundleManager.updateBundle(bundle, input);
-        }
-
-        @Override
-        public void uninstall(XBundle bundle, int options) throws BundleException {
-            bundleManager.uninstallBundle(bundle, options);
         }
 
         @Override
@@ -370,6 +364,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                 }
 
                 // Deactivate the deferred phase
+                depUnit.putAttachment(OSGiConstants.DEFERRED_ACTIVATION_FAILED, Boolean.TRUE);
                 LOGGER.warnDeactivateDeferredModulePhase(bundle);
                 phaseService.setMode(Mode.NEVER);
 
@@ -407,7 +402,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                 }
                 if (dep.isBundleUpdate()) {
                     String suffix = "";
-                    Bundle bundle = dep.getAttachment(IntegrationConstants.BUNDLE_KEY);
+                    XBundle bundle = dep.getAttachment(IntegrationConstants.BUNDLE_KEY);
                     BundleRevisions brevs = bundle.adapt(BundleRevisions.class);
                     int revid = brevs.getRevisions().size();
                     int dotindex = runtimeName.length() - 4;
@@ -461,6 +456,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
 
                 String runtimeName = getRuntimeName(dep);
                 putDeployment(runtimeName, dep);
+
                 try {
                     InputStream input = dep.getRoot().openStream();
                     try {

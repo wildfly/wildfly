@@ -188,10 +188,10 @@
         <version.org.jboss.modules.jboss-modules>1.2.0.Final</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.1.2.Final</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.osgi.deployment>2.0.0.CR4</version.org.jboss.osgi.deployment>
-        <version.org.jboss.osgi.framework>3.0.0.CR15</version.org.jboss.osgi.framework>
+        <version.org.jboss.osgi.framework>3.0.0.CR16</version.org.jboss.osgi.framework>
         <version.org.jboss.osgi.logging>1.0.0.Final</version.org.jboss.osgi.logging>
         <version.org.jboss.osgi.metadata>3.0.0.Alpha5</version.org.jboss.osgi.metadata>
-        <version.org.jboss.osgi.resolver>4.0.0.CR10</version.org.jboss.osgi.resolver>
+        <version.org.jboss.osgi.resolver>4.0.0.CR11</version.org.jboss.osgi.resolver>
         <version.org.jboss.osgi.repository>3.0.0.CR2</version.org.jboss.osgi.repository>
         <version.org.jboss.osgi.spi>4.0.0.CR2</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>2.0.0.Alpha3</version.org.jboss.osgi.vfs>

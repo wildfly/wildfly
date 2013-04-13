@@ -84,6 +84,23 @@ public class EnterpriseArchiveTestCase {
         return jar;
     }
 
+    @Test
+    public void testSimpleEar() throws Exception {
+        String result = performCall("/simple/servlet?input=Hello");
+        Assert.assertEquals("Simple Servlet called with input=Hello", result);
+    }
+
+    @Test
+    public void testWarStructureEar() throws Exception {
+        String result = performCall("/war-structure-bundle/servlet?input=Hello");
+        Assert.assertEquals("Simple Servlet called with input=Hello", result);
+    }
+
+    private String performCall(String path) throws Exception {
+        String urlspec = managementClient.getWebUri() + path;
+        return HttpRequest.get(urlspec, 10, TimeUnit.SECONDS);
+    }
+
     @Deployment(name = SIMPLE_EAR, testable = false)
     public static Archive<?> getSimpleEar() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, SIMPLE_WAR);
@@ -128,22 +145,5 @@ public class EnterpriseArchiveTestCase {
         ear.add(jar, "/", ZipExporter.class);
         ear.addAsModule(war);
         return ear;
-    }
-
-    @Test
-    public void testSimpleEar() throws Exception {
-        String result = performCall("/simple/servlet?input=Hello");
-        Assert.assertEquals("Simple Servlet called with input=Hello", result);
-    }
-
-    @Test
-    public void testWarStructureEar() throws Exception {
-        String result = performCall("/war-structure-bundle/servlet?input=Hello");
-        Assert.assertEquals("Simple Servlet called with input=Hello", result);
-    }
-
-    private String performCall(String path) throws Exception {
-        String urlspec = managementClient.getWebUri() + path;
-        return HttpRequest.get(urlspec, 10, TimeUnit.SECONDS);
     }
 }

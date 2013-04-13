@@ -23,8 +23,6 @@
 package org.jboss.as.osgi;
 
 import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.spi.BundleManager;
@@ -54,6 +52,9 @@ public interface OSGiConstants {
     /** Attachment key for the {@link BundleManager}. */
     AttachmentKey<BundleManager> BUNDLE_MANAGER_KEY = AttachmentKey.create(BundleManager.class);
 
+    /** Attachment key set when deferred activation failed */
+    AttachmentKey<Boolean> DEFERRED_ACTIVATION_FAILED = AttachmentKey.create(Boolean.class);
+
     /** Attachment key for a bundle deployment. */
     AttachmentKey<Deployment> DEPLOYMENT_KEY = AttachmentKey.create(Deployment.class);
 
@@ -74,9 +75,4 @@ public interface OSGiConstants {
 
     /** The {@link org.jboss.as.osgi.parser.SubsystemState} service */
     ServiceName SUBSYSTEM_STATE_SERVICE_NAME = SERVICE_BASE_NAME.append("subsystemstate");
-
-    /** The deployment unit attachment key */
-    org.jboss.osgi.spi.AttachmentKey<DeploymentUnit> DEPLOYMENT_UNIT_KEY = org.jboss.osgi.spi.AttachmentKey.create(DeploymentUnit.class);
-    /** The module specification attachment key */
-    org.jboss.osgi.spi.AttachmentKey<ModuleSpecification> MODULE_SPECIFICATION_KEY = org.jboss.osgi.spi.AttachmentKey.create(ModuleSpecification.class);
 }
