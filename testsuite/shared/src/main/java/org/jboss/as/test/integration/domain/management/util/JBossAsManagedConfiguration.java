@@ -17,6 +17,8 @@
  */
 package org.jboss.as.test.integration.domain.management.util;
 
+import javax.security.auth.callback.CallbackHandler;
+
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.arquillian.container.spi.client.deployment.Validate;
 import org.jboss.as.arquillian.container.CommonContainerConfiguration;
@@ -56,6 +58,8 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
     private String hostCommandLineProperties;
 
     private boolean adminOnly;
+
+    private CallbackHandler callbackHandler = Authentication.getCallbackHandler();
 
     public JBossAsManagedConfiguration(JBossAsManagedConfigurationParameters params) {
         this.jbossHome = params.getJBossHome();
@@ -115,7 +119,7 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
     }
 
     /**
-     * @param javaHome the javaHome to set
+     * @param controllerJavaHome the javaHome to set
      */
     public void setControllerJavaHome(String controllerJavaHome) {
         this.controllerJavaHome = controllerJavaHome;
@@ -233,4 +237,13 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
     public void setAdminOnly(boolean adminOnly) {
         this.adminOnly = adminOnly;
     }
+
+    public CallbackHandler getCallbackHandler() {
+        return callbackHandler;
+    }
+
+    public void setCallbackHandler(CallbackHandler callbackHandler) {
+        this.callbackHandler = callbackHandler;
+    }
+
 }

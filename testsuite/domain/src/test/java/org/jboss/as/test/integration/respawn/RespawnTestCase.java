@@ -58,7 +58,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xnio.IoUtils;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import static org.jboss.as.test.integration.domain.management.util.Authentication.getCallbackHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
