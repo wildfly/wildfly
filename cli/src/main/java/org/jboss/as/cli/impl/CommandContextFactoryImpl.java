@@ -27,6 +27,8 @@ import java.io.OutputStream;
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
+import com.sun.tools.jconsole.JConsoleContext;
+import sun.tools.jconsole.ProxyClient;
 
 /**
  *
@@ -40,6 +42,19 @@ public class CommandContextFactoryImpl extends CommandContextFactory {
     @Override
     public CommandContext newCommandContext() throws CliInitializationException {
         final CommandContextImpl cmdCtx = new CommandContextImpl();
+        addShutdownHook(cmdCtx);
+        return cmdCtx;
+    }
+
+    public CommandContext newCommandContext(JConsoleContext jconsoleContext) throws CliInitializationException {
+        final CommandContextImpl cmdCtx = new CommandContextImpl();
+        ProxyClient proxyClient = (ProxyClient) jconsoleContext;
+        if (cmdCtx.getDefaultControllerPort() != proxyClient.getPort()) {
+            cmdCtx.setControllerPort(proxyClient.getPort());
+        }
+        if (!cmdCtx.getDefaultControllerHost().equalsIgnoreCase(proxyClient.getHostName())) {
+            cmdCtx.setControllerHost(proxyClient.getHostName());
+        }
         addShutdownHook(cmdCtx);
         return cmdCtx;
     }
