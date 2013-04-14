@@ -151,7 +151,7 @@ import org.jboss.sasl.util.HexConverter;
  *
  * @author Alexey Loubyansky
  */
-class CommandContextImpl implements CommandContext, ModelControllerClientFactory.ConnectionCloseHandler {
+public class CommandContextImpl implements CommandContext, ModelControllerClientFactory.ConnectionCloseHandler {
 
     private static final Logger log = Logger.getLogger(CommandContext.class);
 
@@ -1050,6 +1050,14 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     @Override
     public int getDefaultControllerPort() {
         return defaultControllerPort;
+    }
+
+    public void setControllerHost(String controllerHost) {
+        this.controllerHost = controllerHost;
+    }
+
+    public void setControllerPort(int controllerPort) {
+        this.controllerPort = controllerPort;
     }
 
     private void resetArgs(String cmdLine) throws CommandFormatException {

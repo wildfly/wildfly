@@ -73,7 +73,7 @@ public class JConsoleCLIPlugin extends JConsolePlugin {
 
         final CommandContext cmdCtx;
         try {
-            cmdCtx = CommandContextFactory.getInstance().newCommandContext();
+            cmdCtx = CommandContextFactory.getInstance().newCommandContext(super.getContext());
             isConnected = connectCommandContext(cmdCtx);
             if (!isConnected) return panelMap;
         } catch (Exception e) {
