@@ -21,9 +21,13 @@
  */
 package org.jboss.system;
 
+import java.util.concurrent.atomic.AtomicLong;
+
+import javax.management.AttributeChangeNotification;
 import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
+import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
 
 import org.jboss.logging.Logger;
@@ -41,7 +45,7 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  * @author Eduardo Martins (AS7)
  */
-public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
+public class ServiceMBeanSupport extends NotificationBroadcasterSupport implements ServiceMBean, MBeanRegistration {
 
     protected Logger log;
 
@@ -53,6 +57,9 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
 
     /** The current state this service is in. */
     private int state = UNREGISTERED;
+
+    /** Sequence number for jmx notifications we send out */
+    private final AtomicLong sequenceNumber = new AtomicLong(0);
 
     // on AS7 MBean lifecycle is CREATED -> STARTED -> REGISTERED -> UNREGISTERED -> STOP -> DESTROY,
     // on previous AS versions is REGISTERED -> CREATED -> STARTED -> STOP -> DESTROYED -> UNREGISTERED
@@ -242,6 +249,7 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
         startIgnored = false;
 
         state = STARTING;
+        sendStateChangeNotification(STOPPED, STARTING, getName() + " starting", null);
         if (log.isDebugEnabled()) {
             log.debug("Starting " + jbossInternalDescription());
         }
@@ -251,10 +259,12 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
         } catch (Exception e) {
             state = FAILED;
             log.warn(ServiceMBeanMessages.MESSAGES.startingFailed(e, jbossInternalDescription()));
+            sendStateChangeNotification(STARTING, FAILED, getName() + " failed", e);
             throw e;
         }
 
         state = STARTED;
+        sendStateChangeNotification(STARTING, STARTED, getName() + " started", null);
         if (log.isDebugEnabled()) {
             log.debug("Started " + jbossInternalDescription());
         }
@@ -275,6 +285,7 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
 
         stopIgnored = false;
         state = STOPPING;
+        sendStateChangeNotification(STARTED, STOPPING, getName() + " stopping", null);
         if (log.isDebugEnabled()) {
             log.debug("Stopping " + jbossInternalDescription());
         }
@@ -284,10 +295,12 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
         } catch (Throwable e) {
             state = FAILED;
             log.warn(ServiceMBeanMessages.MESSAGES.stoppingFailed(e, jbossInternalDescription()));
+            sendStateChangeNotification(STOPPING, FAILED, getName() + " failed", e);
             return;
         }
 
         state = STOPPED;
+        sendStateChangeNotification(STOPPING, STOPPED, getName() + " stopped", null);
         if (log.isDebugEnabled()) {
             log.debug("Stopped " + jbossInternalDescription());
         }
@@ -369,8 +382,7 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
         }
     }
 
-    public void preDeregister() throws Exception {
-    }
+    public void preDeregister() throws Exception {}
 
     public void postDeregister() {
         if (state != DESTROYED) {
@@ -411,8 +423,7 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
      *
      * @throws Exception for any error
      */
-    protected void createService() throws Exception {
-    }
+    protected void createService() throws Exception {}
 
     /**
      * Sub-classes should override this method to provide custum 'start' logic.
@@ -423,8 +434,7 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
      *
      * @throws Exception for any error
      */
-    protected void startService() throws Exception {
-    }
+    protected void startService() throws Exception {}
 
     /**
      * Sub-classes should override this method to provide custum 'stop' logic.
@@ -435,8 +445,7 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
      *
      * @throws Exception for any error
      */
-    protected void stopService() throws Exception {
-    }
+    protected void stopService() throws Exception {}
 
     /**
      * Sub-classes should override this method to provide custum 'destroy' logic.
@@ -447,7 +456,35 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
      *
      * @throws Exception for any error
      */
-    protected void destroyService() throws Exception {
+    protected void destroyService() throws Exception {}
+
+    /**
+     * The <code>nextNotificationSequenceNumber</code> method returns the next sequence number for use in notifications.
+     *
+     * @return a <code>long</code> value
+     */
+    public long nextNotificationSequenceNumber() {
+        return sequenceNumber.incrementAndGet();
     }
 
+    /**
+     * The <code>getNextNotificationSequenceNumber</code> method returns the next sequence number for use in notifications.
+     *
+     * @return a <code>long</code> value
+     */
+    protected long getNextNotificationSequenceNumber() {
+        return nextNotificationSequenceNumber();
+    }
+
+    /**
+     * Helper for sending out state change notifications
+     */
+    private void sendStateChangeNotification(int oldState, int newState, String msg, Throwable t) {
+        long now = System.currentTimeMillis();
+        AttributeChangeNotification stateChangeNotification = new AttributeChangeNotification(this,
+                getNextNotificationSequenceNumber(), now, msg, "State", "java.lang.Integer", new Integer(oldState),
+                new Integer(newState));
+        stateChangeNotification.setUserData(t);
+        sendNotification(stateChangeNotification);
+    }
 }
