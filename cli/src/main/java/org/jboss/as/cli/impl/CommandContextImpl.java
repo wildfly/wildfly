@@ -1052,6 +1052,14 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         return defaultControllerPort;
     }
 
+    public void setControllerHost(String controllerHost) {
+        this.controllerHost = controllerHost;
+    }
+
+    public void setControllerPort(int controllerPort) {
+        this.controllerPort = controllerPort;
+    }
+
     private void resetArgs(String cmdLine) throws CommandFormatException {
         if (cmdLine != null) {
             parsedCmd.parse(prefix, cmdLine);
