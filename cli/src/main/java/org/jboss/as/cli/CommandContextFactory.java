@@ -23,6 +23,7 @@ package org.jboss.as.cli;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import com.sun.tools.jconsole.JConsoleContext;
 
 /**
  *
@@ -50,6 +51,8 @@ public abstract class CommandContextFactory {
     protected CommandContextFactory() {}
 
     public abstract CommandContext newCommandContext() throws CliInitializationException;
+
+    public abstract CommandContext newCommandContext(JConsoleContext jconsoleContext) throws CliInitializationException;
 
     public abstract CommandContext newCommandContext(String username, char[] password) throws CliInitializationException;
 
