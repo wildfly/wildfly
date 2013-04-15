@@ -42,7 +42,7 @@ public class JSFModuleIdFactoryTestCase {
      @Test
      public void noModulePathTest() {
      JSFModuleIdFactory factory = JSFModuleIdFactory.getInstance();
-     Assert.assertEquals(2, factory.getActiveJSFVersions().size());
+     Assert.assertEquals(1, factory.getActiveJSFVersions().size());
 
      Assert.assertEquals(API_MODULE, factory.getApiModId("main").getName());
      Assert.assertEquals("main", factory.getApiModId("main").getSlot());
@@ -50,21 +50,14 @@ public class JSFModuleIdFactoryTestCase {
      Assert.assertEquals("main", factory.getImplModId("main").getSlot());
      Assert.assertEquals(INJECTION_MODULE, factory.getInjectionModId("main").getName());
      Assert.assertEquals("main", factory.getInjectionModId("main").getSlot());
-
-     Assert.assertEquals(API_MODULE, factory.getApiModId("1.2").getName());
-     Assert.assertEquals("1.2", factory.getApiModId("1.2").getSlot());
-     Assert.assertEquals(IMPL_MODULE, factory.getImplModId("1.2").getName());
-     Assert.assertEquals("1.2", factory.getImplModId("1.2").getSlot());
-     Assert.assertEquals(INJECTION_MODULE, factory.getInjectionModId("1.2").getName());
-     Assert.assertEquals("1.2", factory.getInjectionModId("1.2").getSlot());
      } */
 
     @Test
     public void getActiveJSFVersionsTest() {
         List<String> versions = factory.getActiveJSFVersions();
-        Assert.assertEquals(4, versions.size());
+        Assert.assertEquals(3, versions.size());
         Assert.assertTrue(versions.contains("main"));
-        Assert.assertTrue(versions.contains("1.2"));
+        Assert.assertFalse(versions.contains("1.2"));
         Assert.assertTrue(versions.contains("myfaces"));
         Assert.assertTrue(versions.contains("myfaces2"));
     }
@@ -73,7 +66,6 @@ public class JSFModuleIdFactoryTestCase {
     public void computeSlotTest() {
         Assert.assertEquals("main", factory.computeSlot("main"));
         Assert.assertEquals("main", factory.computeSlot(null));
-        Assert.assertEquals("1.2", factory.computeSlot(JsfVersionMarker.JSF_1_2));
         Assert.assertEquals("main", factory.computeSlot(JsfVersionMarker.JSF_2_0));
         Assert.assertEquals("myfaces2", factory.computeSlot("myfaces2"));
     }
@@ -81,10 +73,9 @@ public class JSFModuleIdFactoryTestCase {
     @Test
     public void validSlotTest() {
         Assert.assertTrue(factory.isValidJSFSlot("main"));
-        Assert.assertTrue(factory.isValidJSFSlot("1.2"));
+        Assert.assertFalse(factory.isValidJSFSlot("1.2"));
         Assert.assertTrue(factory.isValidJSFSlot("myfaces"));
         Assert.assertTrue(factory.isValidJSFSlot("myfaces2"));
-        Assert.assertTrue(factory.isValidJSFSlot(JsfVersionMarker.JSF_1_2));
         Assert.assertTrue(factory.isValidJSFSlot(JsfVersionMarker.JSF_2_0));
         Assert.assertFalse(factory.isValidJSFSlot(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL));
         Assert.assertFalse(factory.isValidJSFSlot("bogus"));
@@ -99,13 +90,6 @@ public class JSFModuleIdFactoryTestCase {
         Assert.assertEquals("main", factory.getImplModId("main").getSlot());
         Assert.assertEquals(INJECTION_MODULE, factory.getInjectionModId("main").getName());
         Assert.assertEquals("main", factory.getInjectionModId("main").getSlot());
-
-        Assert.assertEquals(API_MODULE, factory.getApiModId("1.2").getName());
-        Assert.assertEquals("1.2", factory.getApiModId("1.2").getSlot());
-        Assert.assertEquals(IMPL_MODULE, factory.getImplModId("1.2").getName());
-        Assert.assertEquals("1.2", factory.getImplModId("1.2").getSlot());
-        Assert.assertEquals(INJECTION_MODULE, factory.getInjectionModId("1.2").getName());
-        Assert.assertEquals("1.2", factory.getInjectionModId("1.2").getSlot());
 
         Assert.assertEquals(API_MODULE, factory.getApiModId("myfaces").getName());
         Assert.assertEquals("myfaces", factory.getApiModId("myfaces").getSlot());

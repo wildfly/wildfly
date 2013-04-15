@@ -101,8 +101,7 @@
         <version.io.undertow>1.0.0.Alpha9</version.io.undertow>
         <version.io.undertow.jastow>1.0.0.Alpha1</version.io.undertow.jastow>
         <version.javax.activation>1.1.1</version.javax.activation>
-        <version.javax.enterprise>1.0-SP4</version.javax.enterprise>
-        <version.javax.faces>1.2_15-jbossorg-2</version.javax.faces>
+        <version.javax.enterprise>1.0-SP4</version.javax.enterprise>        
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
         <version.javax.json-api>1.0-b04</version.javax.json-api>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
@@ -1653,19 +1652,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
-            <dependency>
-                <groupId>javax.faces</groupId>
-                <artifactId>jsf-api</artifactId>
-                <version>${version.javax.faces}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.faces</groupId>
-                <artifactId>jsf-impl</artifactId>
-                <version>${version.javax.faces}</version>
-            </dependency>
-
+            
             <dependency>
                 <groupId>javax.inject</groupId>
                 <artifactId>javax.inject</artifactId>
