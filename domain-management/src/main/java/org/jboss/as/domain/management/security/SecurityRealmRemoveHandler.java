@@ -80,6 +80,7 @@ public class SecurityRealmRemoveHandler implements OperationStepHandler {
         ServiceName realmServiceName = SecurityRealmService.BASE_SERVICE_NAME.append(realmName);
         context.removeService(realmServiceName);
         context.removeService(realmServiceName.append(SecretIdentityService.SERVICE_SUFFIX));
+        context.removeService(realmServiceName.append(ClientCertCallbackHandler.SERVICE_SUFFIX));
         context.removeService(realmServiceName.append(SSLIdentityService.SERVICE_SUFFIX));
         context.removeService(realmServiceName.append(FileKeystoreService.KEYSTORE_SUFFIX));
         context.removeService(realmServiceName.append(FileKeystoreService.TRUSTSTORE_SUFFIX));
