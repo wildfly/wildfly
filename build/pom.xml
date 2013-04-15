@@ -1602,11 +1602,6 @@
 
                 <dependency>
                     <groupId>org.jboss.spec.javax.servlet</groupId>
-                    <artifactId>jboss-servlet-api_2.5_spec</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.spec.javax.servlet</groupId>
                     <artifactId>jboss-servlet-api_3.1_spec</artifactId>
                 </dependency>
 
