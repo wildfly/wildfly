@@ -30,7 +30,7 @@
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="1.0">
-    <!-- The mail subsystem root element -->
+    <!-- The undertow subsystem root element -->
     <xs:element name="subsystem" type="undertow-subsystemType"/>
     <xs:complexType name="undertow-subsystemType">
         <xs:annotation>
@@ -41,8 +41,6 @@
             </xs:documentation>
         </xs:annotation>
         <xs:choice minOccurs="1" maxOccurs="unbounded">
-            <xs:element name="worker" type="workerType"/>
-            <xs:element name="buffer-pool" type="bufferPoolType"/>
             <xs:element name="server" type="serverType"/>
             <xs:element name="servlet-container" type="servletContainerType"/>
         </xs:choice>
@@ -50,21 +48,6 @@
         <xs:attribute name="default-virtual-host" type="xs:string" default="default-host"/>
         <xs:attribute name="default-servlet-container" type="xs:string" default="default"/>
         <xs:attribute name="instance-id" type="xs:string" use="optional"/>
-    </xs:complexType>
-    <xs:complexType name="workerType">
-        <xs:attribute name="name" use="required" type="xs:string"/>
-        <xs:attribute name="task-core-threads" type="xs:int" default="4"/>
-        <xs:attribute name="io-threads" type="xs:int" default="1"/>
-        <xs:attribute name="task-keepalive" type="xs:int" default="60"/>
-        <xs:attribute name="task-limit" type="xs:int" default="16384"/>
-        <xs:attribute name="task-max-threads" type="xs:int" default="16"/>
-        <xs:attribute name="thread-daemon" type="xs:boolean" default="false"/>
-        <xs:attribute name="stack-size" type="xs:long" default="10"/>
-    </xs:complexType>
-    <xs:complexType name="bufferPoolType">
-        <xs:attribute name="name" use="required" type="xs:string"/>
-        <xs:attribute name="buffer-size" use="optional" type="xs:int" default="1024"/>
-        <xs:attribute name="buffers-per-slice" use="optional" type="xs:int" default="1024"/>
     </xs:complexType>
     <xs:complexType name="serverType">
         <xs:sequence>

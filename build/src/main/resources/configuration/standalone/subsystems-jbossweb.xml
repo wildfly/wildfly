@@ -31,6 +31,7 @@
       <subsystem>configuration/subsystems/deployment-scanner.xml</subsystem>
       <subsystem>configuration/subsystems/ee.xml</subsystem>
       <subsystem>configuration/subsystems/ejb3.xml</subsystem>
+      <subsystem>configuration/subsystems/io.xml</subsystem>
       <subsystem>configuration/subsystems/infinispan.xml</subsystem>
       <subsystem>configuration/subsystems/jaxrs.xml</subsystem>
       <subsystem>configuration/subsystems/jca.xml</subsystem>

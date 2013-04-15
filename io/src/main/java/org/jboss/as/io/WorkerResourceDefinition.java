@@ -1,4 +1,28 @@
-package org.jboss.as.undertow;
+/*
+ *
+ *  JBoss, Home of Professional Open Source.
+ *  Copyright 2013, Red Hat, Inc., and individual contributors
+ *  as indicated by the @author tags. See the copyright.txt file in the
+ *  distribution for a full listing of individual contributors.
+ *
+ *  This is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU Lesser General Public License as
+ *  published by the Free Software Foundation; either version 2.1 of
+ *  the License, or (at your option) any later version.
+ *
+ *  This software is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this software; if not, write to the Free
+ *  Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ *  02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * /
+ */
+
+package org.jboss.as.io;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -16,32 +40,31 @@ import org.xnio.Options;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-public class WorkerResourceDefinition extends SimplePersistentResourceDefinition {
-
-
+class WorkerResourceDefinition extends SimplePersistentResourceDefinition {
     //The defaults for these come from XnioWorker
 
-    static final OptionAttributeDefinition THREAD_DAEMON = new OptionAttributeDefinition.Builder(Constants.THREAD_DAEMON, Options.THREAD_DAEMON)
+    /*static final OptionAttributeDefinition THREAD_DAEMON = new OptionAttributeDefinition.Builder(Constants.THREAD_DAEMON, Options.THREAD_DAEMON)
             .setDefaultValue(new ModelNode(false))
+            .build();*/
+    /*static final OptionAttributeDefinition WORKER_TASK_CORE_THREADS = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_CORE_THREADS, Options.WORKER_TASK_CORE_THREADS)
+            .setDefaultValue(new ModelNode(60))
             .build();
-    static final OptionAttributeDefinition WORKER_TASK_CORE_THREADS = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_CORE_THREADS, Options.WORKER_TASK_CORE_THREADS)
-            .setDefaultValue(new ModelNode(4))
-            .build();
+    */
     static final OptionAttributeDefinition WORKER_TASK_MAX_THREADS = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_MAX_THREADS, Options.WORKER_TASK_MAX_THREADS)
-            .setDefaultValue(new ModelNode(16))
+            .setDefaultValue(new ModelNode(60))
             .build();
     static final OptionAttributeDefinition WORKER_TASK_KEEPALIVE = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_KEEPALIVE, Options.WORKER_TASK_KEEPALIVE)
             .setDefaultValue(new ModelNode(60))
             .build();
     static final OptionAttributeDefinition STACK_SIZE = new OptionAttributeDefinition.Builder(Constants.STACK_SIZE, Options.STACK_SIZE)
-            .setDefaultValue(new ModelNode(10L))
+            .setDefaultValue(new ModelNode(0L))
             .build();
     static final OptionAttributeDefinition WORKER_IO_THREADS = new OptionAttributeDefinition.Builder(Constants.WORKER_IO_THREADS, Options.WORKER_IO_THREADS)
-            .setDefaultValue(new ModelNode(1))
+            .setDefaultValue(new ModelNode(4))
             .build();
-    static final OptionAttributeDefinition WORKER_TASK_LIMIT = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_LIMIT, Options.WORKER_TASK_LIMIT)
+    /*static final OptionAttributeDefinition WORKER_TASK_LIMIT = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_LIMIT, Options.WORKER_TASK_LIMIT)
             .setDefaultValue(new ModelNode(0x4000))
-            .build();
+            .build();*/
 
     /*
     workers support...
@@ -58,11 +81,9 @@ public class WorkerResourceDefinition extends SimplePersistentResourceDefinition
 
     static OptionAttributeDefinition[] ATTRIBUTES = new OptionAttributeDefinition[]{
             WORKER_IO_THREADS,
-            WORKER_TASK_CORE_THREADS,
+            //WORKER_TASK_CORE_THREADS,
             WORKER_TASK_KEEPALIVE,
-            WORKER_TASK_LIMIT,
             WORKER_TASK_MAX_THREADS,
-            THREAD_DAEMON,
             STACK_SIZE
     };
 
@@ -77,12 +98,12 @@ public class WorkerResourceDefinition extends SimplePersistentResourceDefinition
     }
 
 
-    public static final WorkerResourceDefinition INSTANCE = new WorkerResourceDefinition();
+    static final WorkerResourceDefinition INSTANCE = new WorkerResourceDefinition();
 
 
     private WorkerResourceDefinition() {
-        super(UndertowExtension.WORKER_PATH,
-                UndertowExtension.getResolver(Constants.WORKER),
+        super(IOExtension.WORKER_PATH,
+                IOExtension.getResolver(Constants.WORKER),
                 WorkerAdd.INSTANCE,
                 ReloadRequiredRemoveStepHandler.INSTANCE
         );

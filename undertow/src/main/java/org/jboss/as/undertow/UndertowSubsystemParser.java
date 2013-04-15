@@ -38,8 +38,6 @@ public class UndertowSubsystemParser implements XMLStreamConstants, XMLElementRe
         UndertowRootDefinition.DEFAULT_VIRTUAL_HOST.marshallAsAttribute(model, writer);
         UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER.marshallAsAttribute(model, writer);
         UndertowRootDefinition.INSTANCE_ID.marshallAsAttribute(model, writer);
-        WorkerResourceDefinition.INSTANCE.persist(writer, model);
-        BufferPoolResourceDefinition.INSTANCE.persist(writer, model);
         ServerDefinition.INSTANCE.persist(writer, model);
         ServletContainerDefinition.INSTANCE.persist(writer, model);
         writer.writeEndElement();
@@ -80,14 +78,6 @@ public class UndertowSubsystemParser implements XMLStreamConstants, XMLElementRe
             switch (namespace) {
                 case UNDERTOW_1_0: {
                     switch (reader.getLocalName()) {
-                        case Constants.WORKER: {
-                            WorkerResourceDefinition.INSTANCE.parse(reader, address, list);
-                            break;
-                        }
-                        case Constants.BUFFER_POOL: {
-                            BufferPoolResourceDefinition.INSTANCE.parse(reader, address, list);
-                            break;
-                        }
                         case Constants.SERVER: {
                             ServerDefinition.INSTANCE.parse(reader, address, list);
                             break;

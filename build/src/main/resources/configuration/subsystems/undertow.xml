@@ -27,8 +27,6 @@
 <config>
     <extension-module>org.jboss.as.undertow</extension-module>
     <subsystem xmlns="urn:jboss:domain:undertow:1.0">
-        <worker name="default" task-core-threads="12" io-threads="3"/>
-        <buffer-pool name="default" buffer-size="2048" buffers-per-slice="512"/>
 
         <server name="default-server" >
             <http-listener name="default" socket-binding="http"/>

@@ -354,7 +354,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 d.setMinorVersion(Integer.parseInt(servletVersion.charAt(2) + ""));
             } else {
                 d.setMajorVersion(3);
-                d.setMajorVersion(1);
+                d.setMinorVersion(1);
             }
 
             //for 2.2 apps we do not require a leading / in path mappings

@@ -311,6 +311,7 @@
         <module>domain-management</module>
         <module>embedded</module>
         <module>management-client-content</module>
+        <module>io</module>
         <module>jmx</module>
         <module>network</module>
         <module>platform-mbean</module>
@@ -1048,6 +1049,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-jacorb</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-io</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
