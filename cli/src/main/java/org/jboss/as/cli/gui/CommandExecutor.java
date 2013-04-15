@@ -66,6 +66,9 @@ public class CommandExecutor {
             if (command.startsWith("deploy")) {
                 cliGuiCtx.getMainWindow().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             }
+            if(client == null) {
+                return new ModelNode();
+            }
             return client.execute(request);
         } finally {
             if (command.startsWith("deploy")) {

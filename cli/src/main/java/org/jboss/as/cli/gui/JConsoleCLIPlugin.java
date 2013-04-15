@@ -74,13 +74,13 @@ public class JConsoleCLIPlugin extends JConsolePlugin {
         final CommandContext cmdCtx;
         try {
             cmdCtx = CommandContextFactory.getInstance().newCommandContext();
+            cliGuiCtx = GuiMain.startEmbedded(cmdCtx);
             isConnected = connectCommandContext(cmdCtx);
             if (!isConnected) return panelMap;
         } catch (Exception e) {
             throw new RuntimeException("Error connecting to JBoss AS.", e);
         }
 
-        cliGuiCtx = GuiMain.startEmbedded(cmdCtx);
         JPanel cliGuiPanel = cliGuiCtx.getMainPanel();
 
         jconsolePanel = new JPanel(new BorderLayout());
