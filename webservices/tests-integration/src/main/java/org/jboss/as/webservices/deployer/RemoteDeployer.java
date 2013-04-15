@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Semaphore;
 
 import javax.security.auth.callback.Callback;
@@ -57,6 +58,7 @@ import org.jboss.wsf.spi.deployer.Deployer;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -70,9 +72,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
 import static org.jboss.as.security.Constants.CLASSIC;
 import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
@@ -94,6 +99,8 @@ public final class RemoteDeployer implements Deployer {
     private static final String JBWS_DEPLOYER_PORT = "jbossws.deployer.port";
     private static final String JBWS_DEPLOYER_AUTH_USER = "jbossws.deployer.authentication.username";
     private static final String JBWS_DEPLOYER_AUTH_PWD = "jbossws.deployer.authentication.password";
+    private static final String JBWS_DEPLOYER_HTTPS_LISTENER_NAME = "jbws-test-https-listener";
+    private static final String JBWS_DEPLOYER_HTTPS_LISTENER_REALM_NAME = "jbws-test-https-realm";
     private static final CallbackHandler callbackHandler = getCallbackHandler();
     private static final int TIMEOUT = 60000;
     private static InetAddress address;
@@ -102,6 +109,9 @@ public final class RemoteDeployer implements Deployer {
     private final Map<String, Integer> securityDomainUsers = new HashMap<String, Integer>(1);
     private final Map<String, Integer> archiveCounters = new HashMap<String, Integer>();
     private final Semaphore httpsConnSemaphore = new Semaphore(1);
+
+    private static final String SERVER_IDENTITY_SSL = SERVER_IDENTITY + "." + SSL + ".";
+    private static final String AUTHENTICATION_TRUSTORE = AUTHENTICATION + "." + TRUSTSTORE + ".";
 
     static {
         try {
@@ -265,16 +275,29 @@ public final class RemoteDeployer implements Deployer {
         }
     }
 
-    public void addHttpsConnector(Map<String, String> sslOptions) throws Exception {
-        final String realmName = "jbws-test-https-realm";
+    public void addHttpsConnector(Map<String, String> options) throws Exception {
+        final Map<String, String> sslOptionsMap = new HashMap<String, String>();
+        final Map<String, String> truststoreOptionsMap = new HashMap<String, String>();
+        if (options != null) {
+            for (final Entry<String, String> entry : options.entrySet()) {
+                final String k = entry.getKey();
+                if (k.startsWith(SERVER_IDENTITY_SSL)) {
+                    final String key = k.substring(SERVER_IDENTITY_SSL.length());
+                    sslOptionsMap.put(key, entry.getValue());
+                } else if (k.startsWith(AUTHENTICATION_TRUSTORE)) {
+                    final String key = k.substring(AUTHENTICATION_TRUSTORE.length());
+                    truststoreOptionsMap.put(key, entry.getValue());
+                }
+            }
+        }
         httpsConnSemaphore.acquire();
         try {
-            addSecurityRealm(realmName, sslOptions);
+            addSecurityRealm(JBWS_DEPLOYER_HTTPS_LISTENER_REALM_NAME, sslOptionsMap, truststoreOptionsMap);
             final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
             final ModelNode steps = composite.get(STEPS);
-            ModelNode op = createOpNode("subsystem=undertow/server=default-server/https-listener=jbws-test-https-listener", "add");
+            ModelNode op = createOpNode("subsystem=undertow/server=default-server/https-listener=" + JBWS_DEPLOYER_HTTPS_LISTENER_NAME, "add");
             op.get("socket-binding").set("https");
-            op.get("security-realm").set(realmName);
+            op.get("security-realm").set(JBWS_DEPLOYER_HTTPS_LISTENER_REALM_NAME);
             steps.add(op);
             applyUpdate(composite);
         } catch (Exception e) {
@@ -283,28 +306,35 @@ public final class RemoteDeployer implements Deployer {
         }
     }
 
-    private static void addSecurityRealm(String realm, Map<String, String> sslOptions) throws Exception {
+    private static void addSecurityRealm(String realm, Map<String, String> sslOptions, Map<String, String> truststoreOptions) throws Exception {
         final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
         final ModelNode steps = composite.get(STEPS);
-
         ModelNode op = createOpNode("core-service=management/security-realm=" + realm, ADD);
         steps.add(op);
-        ModelNode ssl = createOpNode("core-service=management/security-realm=" + realm + "/server-identity=ssl", ADD);
-        if (sslOptions != null) {
-            for (final String k : sslOptions.keySet()) {
-                ssl.get(k).set(sslOptions.get(k));
+        if (!sslOptions.isEmpty()) {
+            ModelNode ssl = createOpNode("core-service=management/security-realm=" + realm + "/server-identity=ssl", ADD);
+            for (final Entry<String, String> entry : sslOptions.entrySet()) {
+                ssl.get(entry.getKey()).set(entry.getValue());
             }
+            steps.add(ssl);
         }
-        steps.add(ssl);
+
+        if (!truststoreOptions.isEmpty()) {
+            ModelNode truststore = createOpNode("core-service=management/security-realm=" + realm + "/authentication=truststore", ADD);
+            for (final Entry<String, String> entry : truststoreOptions.entrySet()) {
+                truststore.get(entry.getKey()).set(entry.getValue());
+            }
+            steps.add(truststore);
+        }
         applyUpdate(composite);
     }
 
     public void removeHttpsConnector() throws Exception {
         try {
-            ModelNode op = createOpNode("subsystem=undertow/server=default-server/https-listener=jbws-test-https-listener", REMOVE);
+            ModelNode op = createOpNode("subsystem=undertow/server=default-server/https-listener=" + JBWS_DEPLOYER_HTTPS_LISTENER_NAME, REMOVE);
             op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             applyUpdate(op);
-            op = createOpNode("core-service=management/security-realm=jbws-test-https-realm", REMOVE);
+            op = createOpNode("core-service=management/security-realm=" + JBWS_DEPLOYER_HTTPS_LISTENER_REALM_NAME, REMOVE);
             op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             applyUpdate(op);
         } finally {
