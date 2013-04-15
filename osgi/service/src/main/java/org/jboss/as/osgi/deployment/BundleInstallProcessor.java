@@ -23,6 +23,7 @@
 package org.jboss.as.osgi.deployment;
 
 import static org.jboss.as.server.deployment.Attachments.BUNDLE_STATE_KEY;
+import static org.jboss.osgi.framework.spi.IntegrationConstants.STORAGE_STATE_KEY;
 
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.InitialDeploymentTracker;
@@ -35,8 +36,8 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.spi.BundleManager;
-import org.jboss.osgi.framework.spi.BundleStorage;
 import org.jboss.osgi.framework.spi.IntegrationServices;
+import org.jboss.osgi.framework.spi.StorageManager;
 import org.jboss.osgi.framework.spi.StorageState;
 import org.jboss.osgi.resolver.XBundleRevision;
 import org.osgi.framework.BundleContext;
@@ -82,16 +83,17 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        // uninstall is done in the bundle's install service
+        // When we get here, the {@link BundleRevision} service has already gone down
+        // cleaning up all revision state. Uninstall is therfore done in the {@link BundleRevision} service
     }
 
     private void restoreStorageState(final DeploymentPhaseContext phaseContext, final Deployment deployment) {
         ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
-        BundleStorage storageProvider = (BundleStorage) serviceRegistry.getRequiredService(IntegrationServices.BUNDLE_STORAGE_PLUGIN).getValue();
+        StorageManager storageProvider = (StorageManager) serviceRegistry.getRequiredService(IntegrationServices.STORAGE_MANAGER_PLUGIN).getValue();
         StorageState storageState = storageProvider.getStorageState(deployment.getLocation());
         if (storageState != null) {
             deployment.setAutoStart(storageState.isPersistentlyStarted());
-            deployment.addAttachment(StorageState.class, storageState);
+            deployment.putAttachment(STORAGE_STATE_KEY, storageState);
         }
     }
 }
