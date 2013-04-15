@@ -95,15 +95,9 @@ public class JSFModuleIdFactory {
         apiIds.put("main", ModuleIdentifier.create(API_MODULE));
         injectionIds.put("main", ModuleIdentifier.create(INJECTION_MODULE));
 
-        implIds.put("1.2", ModuleIdentifier.create(IMPL_MODULE, "1.2"));
-        apiIds.put("1.2", ModuleIdentifier.create(API_MODULE, "1.2"));
-        injectionIds.put("1.2", ModuleIdentifier.create(INJECTION_MODULE, "1.2"));
-
         allVersions.add("main");
-        allVersions.add("1.2");
 
         activeVersions.add("main");
-        activeVersions.add("1.2");
     }
 
     private void loadIdsFromModulePath(String modulePath) {
@@ -168,7 +162,6 @@ public class JSFModuleIdFactory {
     String computeSlot(String jsfVersion) {
         if (jsfVersion == null) return defaultSlot;
         if (JsfVersionMarker.JSF_2_0.equals(jsfVersion)) return defaultSlot;
-        if (JsfVersionMarker.JSF_1_2.equals(jsfVersion)) return "1.2";
         return jsfVersion;
     }
 
