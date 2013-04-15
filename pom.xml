@@ -219,7 +219,6 @@
         <version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>1.0.4.Final</version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>
         <version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>1.0.1.Final</version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>
         <version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>1.0.2.Final</version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>
-        <version.org.jboss.spec.javax.servlet.jboss-servlet-api_2.5_spec>1.0.1.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_2.5_spec>
         <!-- needs to be removed when we swithc to undetow fully -->
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>1.0.2.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.0.Alpha1</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
@@ -4971,12 +4970,6 @@
                         <artifactId>jboss-servlet-api_3.0_spec</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.servlet</groupId>
-                <artifactId>jboss-servlet-api_2.5_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.servlet.jboss-servlet-api_2.5_spec}</version>
             </dependency>
 
             <!-- TODO This is workaround until all deps are in sync with 3.1 -->
