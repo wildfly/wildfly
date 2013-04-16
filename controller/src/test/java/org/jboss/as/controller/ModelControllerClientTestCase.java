@@ -24,6 +24,8 @@ package org.jboss.as.controller;
 import static junit.framework.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
+import java.io.DataOutput;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -36,10 +38,12 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.impl.ExistingChannelModelControllerClient;
+import org.jboss.as.controller.client.impl.InputStreamEntry;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
@@ -50,6 +54,7 @@ import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.HandleableCloseable;
 import org.jboss.threads.AsyncFuture;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -304,6 +309,34 @@ public class ModelControllerClientTestCase {
 
     }
 
+    @Test
+    public void testCloseInputStreamEntry() throws Exception {
+        final MockModelController controller = new MockModelController() {
+            @Override
+            public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
+                ModelNode result = new ModelNode();
+                result.get("testing").set(operation.get("test"));
+                return result;
+            }
+        };
+        final ModelControllerClient client = setupTestClient(controller);
+        try {
+            final ModelNode op = new ModelNode();
+            final TestEntry entry = new TestEntry();
+            final Operation operation = OperationBuilder.create(op)
+                    .addInputStream(entry)
+                    .build();
+
+            // Execute the operation
+            client.execute(operation);
+            // Check closed
+            entry.latch.await();
+            Assert.assertTrue(entry.closed);
+        } finally {
+            IoUtils.safeClose(client);
+        }
+    }
+
     private void assertArrays(byte[] expected, byte[] actual) {
         assertEquals(expected.length, actual.length);
         for (int i = 0 ; i < expected.length ; i++) {
@@ -323,6 +356,33 @@ public class ModelControllerClientTestCase {
             return null;
         }
 
+    }
+
+    static class TestEntry extends FilterInputStream implements InputStreamEntry {
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        boolean closed = false;
+
+        TestEntry() {
+            super(new ByteArrayInputStream(new byte[0]));
+        }
+
+        @Override
+        public void copyStream(DataOutput output) throws IOException {
+            return;
+        }
+
+        @Override
+        public int initialize() throws IOException {
+            return 0;
+        }
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            closed = true;
+            latch.countDown();
+        }
     }
 
 }

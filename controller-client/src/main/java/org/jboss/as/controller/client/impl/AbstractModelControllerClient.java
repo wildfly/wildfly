@@ -233,7 +233,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
     }
 
     protected AsyncFuture<ModelNode> executeRequest(final ManagementRequest<ModelNode, OperationExecutionContext> request, final OperationExecutionContext attachment) throws IOException {
-        final ActiveOperation<ModelNode, OperationExecutionContext> support = getChannelAssociation().executeRequest(request, attachment);
+        final ActiveOperation<ModelNode, OperationExecutionContext> support = getChannelAssociation().executeRequest(request, attachment, attachment);
         return new DelegatingCancellableAsyncFuture(support.getResult(), support.getOperationId());
     }
 
