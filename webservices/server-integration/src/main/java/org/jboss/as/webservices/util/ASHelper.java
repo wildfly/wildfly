@@ -25,6 +25,8 @@ import static org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT;
 import static org.jboss.as.server.deployment.Attachments.RESOURCE_ROOTS;
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 import static org.jboss.as.webservices.util.DotNames.JAXWS_SERVICE_CLASS;
+import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
+import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXRPC_ENDPOINTS_KEY;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JBOSS_WEBSERVICES_METADATA_KEY;
@@ -220,6 +222,29 @@ public final class ASHelper {
         return false;
     }
 
+    public static boolean isJaxwsEndpoint(final ClassInfo clazz, final CompositeIndex index) {
+        // assert JAXWS endpoint class flags
+        final short flags = clazz.flags();
+        if (Modifier.isInterface(flags)) return false;
+        if (Modifier.isAbstract(flags)) return false;
+        if (!Modifier.isPublic(flags)) return false;
+        if (isJaxwsService(clazz, index)) return false;
+        final boolean hasWebServiceAnnotation = clazz.annotations().containsKey(WEB_SERVICE_ANNOTATION);
+        final boolean hasWebServiceProviderAnnotation = clazz.annotations().containsKey(WEB_SERVICE_PROVIDER_ANNOTATION);
+        if (!hasWebServiceAnnotation && !hasWebServiceProviderAnnotation) {
+            return false;
+        }
+        if (hasWebServiceAnnotation && hasWebServiceProviderAnnotation) {
+            ROOT_LOGGER.mutuallyExclusiveAnnotations(clazz.name().toString());
+            return false;
+        }
+        if (Modifier.isFinal(flags)) {
+            ROOT_LOGGER.finalEndpointClassDetected(clazz.name().toString());
+            return false;
+        }
+        return true;
+    }
+
     public static boolean isJaxwsEndpoint(final EEModuleClassDescription classDescription, final CompositeIndex index) {
         ClassInfo classInfo = null;
         WebServiceAnnotationInfo webserviceAnnoationInfo = null;
@@ -253,6 +278,15 @@ public final class ASHelper {
             return false;
         }
         return true;
+    }
+
+    public static boolean hasClassesFromPackage(final Index index, final String pck) {
+        for (ClassInfo ci : index.getKnownClasses()) {
+            if (ci.name().toString().startsWith(pck)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

@@ -262,6 +262,12 @@ public interface WSLogger extends BasicLogger {
     @Message(id = 15597, value = "Child '%s' not found for VirtualFile: %s")
     void missingChild(String child, VirtualFile file);
 
+    @LogMessage(level = WARN)
+    @Message(id = 15599, value = "%s library(ies) (%s) detected in ws endpoint deployment; either provide a proper deployment replacing embedded libraries with container module "
+            + "dependencies or disable the webservices subsystem for the current deployment adding a proper jboss-deployment-structure.xml descriptor to it. "
+            + "The former approach is recommended, as the latter approach causes most of the webservices Java EE and any JBossWS specific functionality to be disabled.")
+    void invalidLibraryInDeployment(String libraryName, String jar);
+
     @LogMessage(level = ERROR)
     @Message(id = 15600, value = "Cannot register endpoint: %s in JMX server")
     void cannotRegisterEndpoint(Object endpoint);

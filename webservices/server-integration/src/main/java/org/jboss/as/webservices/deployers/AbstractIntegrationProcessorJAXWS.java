@@ -25,13 +25,9 @@ package org.jboss.as.webservices.deployers;
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 import static org.jboss.as.webservices.util.ASHelper.getRequiredAttachment;
-import static org.jboss.as.webservices.util.ASHelper.isJaxwsService;
+import static org.jboss.as.webservices.util.ASHelper.isJaxwsEndpoint;
 import static org.jboss.as.webservices.util.DotNames.SINGLETON_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.STATELESS_ANNOTATION;
-import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
-import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
-
-import java.lang.reflect.Modifier;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -84,29 +80,6 @@ public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUni
     }
 
     protected abstract void processAnnotation(final DeploymentUnit unit, final EEModuleDescription eeModuleDescription) throws DeploymentUnitProcessingException;
-
-    private static boolean isJaxwsEndpoint(final ClassInfo clazz, final CompositeIndex index) {
-        // assert JAXWS endpoint class flags
-        final short flags = clazz.flags();
-        if (Modifier.isInterface(flags)) return false;
-        if (Modifier.isAbstract(flags)) return false;
-        if (!Modifier.isPublic(flags)) return false;
-        if (isJaxwsService(clazz, index)) return false;
-        final boolean hasWebServiceAnnotation = clazz.annotations().containsKey(WEB_SERVICE_ANNOTATION);
-        final boolean hasWebServiceProviderAnnotation = clazz.annotations().containsKey(WEB_SERVICE_PROVIDER_ANNOTATION);
-        if (!hasWebServiceAnnotation && !hasWebServiceProviderAnnotation) {
-            return false;
-        }
-        if (hasWebServiceAnnotation && hasWebServiceProviderAnnotation) {
-            ROOT_LOGGER.mutuallyExclusiveAnnotations(clazz.name().toString());
-            return false;
-        }
-        if (Modifier.isFinal(flags)) {
-            ROOT_LOGGER.finalEndpointClassDetected(clazz.name().toString());
-            return false;
-        }
-        return true;
-    }
 
     static ComponentDescription createComponentDescription(final DeploymentUnit unit, final String componentName, final String componentClassName, final String dependsOnEndpointClassName) {
         final EEModuleDescription moduleDescription = getRequiredAttachment(unit, EE_MODULE_DESCRIPTION);
