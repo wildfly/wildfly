@@ -25,6 +25,7 @@
             <xs:element name="smtp-server" type="server-type" maxOccurs="1" minOccurs="0"/>
             <xs:element name="pop3-server" type="server-type" maxOccurs="1" minOccurs="0"/>
             <xs:element name="imap-server" type="server-type" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="custom-server" type="custom-server-type" maxOccurs="unbounded" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="jndi-name" use="required" type="xs:string" />
         <xs:attribute name="debug" use="optional" type="xs:boolean">
@@ -55,6 +56,48 @@
     <xs:complexType name="server-type" mixed="true">
         <xs:sequence>
             <xs:element name="login" type="login-type" maxOccurs="1" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="outbound-socket-binding-ref" use="required" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    Reference to the outbound-socket-binding element in the socket-binding-group that should
+                    be used for configuring the client socket used to communicate with the mail server.
+                ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="ssl" use="optional" type="xs:boolean">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    enables use of ssl for this server configuration
+                ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="tls" use="optional" type="xs:boolean">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    enables use of tls for this server configuration
+                ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+
+    </xs:complexType>
+
+    <xs:complexType name="property-type" >
+            <xs:attribute name="name" type="xs:string"/>
+            <xs:attribute name="value" type="xs:string"/>
+        </xs:complexType>
+
+
+    <xs:complexType name="custom-server-type" mixed="true">
+        <xs:sequence>
+            <xs:element name="login" type="login-type" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="property" type="property-type" maxOccurs="unbounded" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="outbound-socket-binding-ref" use="required" type="xs:string">
             <xs:annotation>

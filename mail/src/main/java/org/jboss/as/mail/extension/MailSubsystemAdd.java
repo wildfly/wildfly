@@ -22,16 +22,24 @@
 
 package org.jboss.as.mail.extension;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
+import java.util.List;
+
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * Handler responsible for adding the mail subsystem resource to the model
  *
  * @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
  */
-class MailSubsystemAdd extends AbstractAddStepHandler {
+class MailSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final MailSubsystemAdd INSTANCE = new MailSubsystemAdd();
 
@@ -44,6 +52,15 @@ class MailSubsystemAdd extends AbstractAddStepHandler {
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         model.setEmptyObject();
-        model.get(MailSubsystemModel.MAIL_SESSION);
+    }
+
+    @Override
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        context.addStep(new AbstractDeploymentChainStep() {
+            protected void execute(DeploymentProcessorTarget processorTarget) {
+                processorTarget.addDeploymentProcessor(MailExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_DATA_SOURCE_DEFINITION_ANNOTATION, new MailSessionDefinitionAnnotationParser());
+                processorTarget.addDeploymentProcessor(MailExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_DATASOURCE_REF, new MailSessionDeploymentDescriptorParser());
+            }
+        }, OperationContext.Stage.RUNTIME);
     }
 }

@@ -33,6 +33,7 @@ enum Element {
     UNKNOWN(null),
 
     LOGIN(MailSubsystemModel.LOGIN),
+    PROPERTY(MailSubsystemModel.PROPERTY),
     MAIL_SESSION(MailSubsystemModel.MAIL_SESSION),
     SMTP_SERVER(MailSubsystemModel.SMTP_SERVER),
     POP3_SERVER(MailSubsystemModel.POP3_SERVER),

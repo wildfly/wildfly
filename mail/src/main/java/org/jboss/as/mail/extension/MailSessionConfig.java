@@ -28,7 +28,7 @@ import java.util.Arrays;
  * @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
  * @created 25.7.11 15:48
  */
-class MailSessionConfig {
+public class MailSessionConfig {
     private String jndiName;
     private boolean debug = false;
     private String from = null;
@@ -39,7 +39,11 @@ class MailSessionConfig {
     private CustomServerConfig[] customServers = new CustomServerConfig[0];
 
 
-    protected MailSessionConfig() {
+    MailSessionConfig() {
+    }
+
+    MailSessionConfig(String jndiName) {
+        this.jndiName = jndiName;
     }
 
     public String getFrom() {

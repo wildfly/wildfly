@@ -39,12 +39,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
-import org.jboss.as.naming.ContextListManagedReferenceFactory;
-import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
-import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.network.OutboundSocketBinding;
@@ -55,7 +51,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.ImmediateValue;
 
 /**
  * @author Tomaz Cerar
@@ -64,7 +59,7 @@ import org.jboss.msc.value.ImmediateValue;
 class MailSessionAdd extends AbstractAddStepHandler {
 
     static final MailSessionAdd INSTANCE = new MailSessionAdd();
-    public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("mail-session");
+    public static final ServiceName MAIL_SESSION_SERVICE_NAME = ServiceName.JBOSS.append("mail-session");
 
     protected MailSessionAdd() {
     }
@@ -108,7 +103,7 @@ class MailSessionAdd extends AbstractAddStepHandler {
         ModelNode fullTree = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         final MailSessionConfig config = from(context, fullTree);
         final MailSessionService service = new MailSessionService(config);
-        final ServiceName serviceName = SERVICE_NAME_BASE.append(jndiName);
+        final ServiceName serviceName = MAIL_SESSION_SERVICE_NAME.append(jndiName);
         final ServiceBuilder<?> mailSessionBuilder = serviceTarget.addService(serviceName, service);
         addOutboundSocketDependency(service, mailSessionBuilder, config.getImapServer());
         addOutboundSocketDependency(service, mailSessionBuilder, config.getPop3Server());
@@ -119,24 +114,7 @@ class MailSessionAdd extends AbstractAddStepHandler {
             }
         }
 
-        final ManagedReferenceFactory valueManagedReferenceFactory = new ContextListAndJndiViewManagedReferenceFactory() {
-
-            @Override
-            public String getJndiViewInstanceValue() {
-                return String.valueOf(getReference().getInstance());
-            }
-
-            @Override
-            public String getInstanceClassName() {
-                final Object value = getReference().getInstance();
-                return value != null ? value.getClass().getName() : ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
-            }
-
-            @Override
-            public ManagedReference getReference() {
-                return new ValueManagedReference(new ImmediateValue<Object>(service.getValue()));
-            }
-        };
+        final ManagedReferenceFactory valueManagedReferenceFactory = new MailSessionManagedReferenceFactory(service);
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
         final BinderService binderService = new BinderService(bindInfo.getBindName());
         final ServiceBuilder<?> binderBuilder = serviceTarget
@@ -176,8 +154,12 @@ class MailSessionAdd extends AbstractAddStepHandler {
      * @param modelNode the model node; either an operation or the model behind a mail session resource
      * @return the compliant jndi name
      */
-    public static String getJndiName(final ModelNode modelNode) {
+    private static String getJndiName(final ModelNode modelNode) {
         final String rawJndiName = modelNode.require(JNDI_NAME).asString();
+        return getJndiName(rawJndiName);
+    }
+
+    public static String getJndiName(final String rawJndiName) {
         final String jndiName;
         if (!rawJndiName.startsWith("java:")) {
             jndiName = "java:jboss/mail/" + rawJndiName;
@@ -250,4 +232,5 @@ class MailSessionAdd extends AbstractAddStepHandler {
         }
         return null;
     }
+
 }
