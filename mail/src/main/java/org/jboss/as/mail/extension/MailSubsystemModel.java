@@ -51,6 +51,7 @@ interface MailSubsystemModel {
     String IMAP = "imap";
     String NAME = "name";
     String CUSTOM = "custom";
+    String PROPERTY = "property";
 
 
     PathElement POP3_SERVER_PATH = PathElement.pathElement(SERVER_TYPE, POP3);

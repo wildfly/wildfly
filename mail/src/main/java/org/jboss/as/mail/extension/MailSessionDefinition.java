@@ -90,7 +90,7 @@ class MailSessionDefinition extends SimpleResourceDefinition {
         @Override
         protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder handbackHolder) throws OperationFailedException {
             String jndiName = JNDI_NAME.resolveModelAttribute(context, context.readResource(PathAddress.EMPTY_ADDRESS).getModel()).asString();
-            final ServiceName serviceName = MailSessionAdd.SERVICE_NAME_BASE.append(jndiName);
+            final ServiceName serviceName = MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append(jndiName);
             AttributeDefinition def = getAttributeDefinition(attributeName);
             ServiceController svcCtrl = context.getServiceRegistry(false).getService(serviceName);
             context.removeService(svcCtrl);
