@@ -21,9 +21,13 @@
  */
 package org.jboss.as.webservices.util;
 
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 import static org.jboss.as.webservices.util.DotNames.JAXWS_SERVICE_CLASS;
+import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
+import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
 
+import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.List;
 
@@ -175,6 +179,38 @@ public final class ASHelper {
             tmp = index.getClassByName(superName);
         }
         return false;
+    }
+
+    public static boolean hasClassesFromPackage(final Index index, final String pck) {
+        for (ClassInfo ci : index.getKnownClasses()) {
+            if (ci.name().toString().startsWith(pck)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isJaxwsEndpoint(final ClassInfo clazz, final CompositeIndex index) {
+        // assert JAXWS endpoint class flags
+        final short flags = clazz.flags();
+        if (Modifier.isInterface(flags)) return false;
+        if (Modifier.isAbstract(flags)) return false;
+        if (!Modifier.isPublic(flags)) return false;
+        if (isJaxwsService(clazz, index)) return false;
+        final boolean hasWebServiceAnnotation = clazz.annotations().containsKey(WEB_SERVICE_ANNOTATION);
+        final boolean hasWebServiceProviderAnnotation = clazz.annotations().containsKey(WEB_SERVICE_PROVIDER_ANNOTATION);
+        if (!hasWebServiceAnnotation && !hasWebServiceProviderAnnotation) {
+            return false;
+        }
+        if (hasWebServiceAnnotation && hasWebServiceProviderAnnotation) {
+            ROOT_LOGGER.mutuallyExclusiveAnnotations(clazz.name().toString());
+            return false;
+        }
+        if (Modifier.isFinal(flags)) {
+            ROOT_LOGGER.finalEndpointClassDetected(clazz.name().toString());
+            return false;
+        }
+        return true;
     }
 
     /**
