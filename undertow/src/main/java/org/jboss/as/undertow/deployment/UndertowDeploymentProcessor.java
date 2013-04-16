@@ -137,8 +137,8 @@ import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
 
-import static javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic.DENY;
-import static javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic.PERMIT;
+import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.DENY;
+import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.PERMIT;
 import static org.jboss.as.undertow.UndertowMessages.MESSAGES;
 
 public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
