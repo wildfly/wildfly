@@ -1327,6 +1327,10 @@
 
     <target name="bundles">
 
+        <bundle-def name="org.apache.camel">
+            <maven-bundle group="org.apache.camel" artifact="camel-core"/>
+        </bundle-def>
+
         <bundle-def name="org.apache.felix.configadmin">
             <maven-bundle group="org.apache.felix" artifact="org.apache.felix.configadmin"/>
         </bundle-def>
