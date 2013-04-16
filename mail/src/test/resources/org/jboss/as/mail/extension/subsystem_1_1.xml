@@ -13,8 +13,14 @@
     </mail-session>
     <mail-session debug="true" jndi-name="java:jboss/mail/Custom">
         <custom-server name="smtp">
+            <login name="username" password="password"/>
             <property name="host" value="mail.example.com"/>
         </custom-server>
+        <custom-server name="pop3" outbound-socket-binding-ref="mail-pop3">
+            <property name="custom_prop" value="some-custom-prop-value"/>
+        </custom-server>
+    </mail-session>
+    <mail-session debug="true" jndi-name="java:jboss/mail/Custom2">
         <custom-server name="pop3" outbound-socket-binding-ref="mail-pop3">
             <property name="custom_prop" value="some-custom-prop-value"/>
         </custom-server>

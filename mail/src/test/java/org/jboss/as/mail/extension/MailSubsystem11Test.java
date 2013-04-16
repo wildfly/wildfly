@@ -29,7 +29,6 @@ import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
 
 import java.io.IOException;
 import java.util.Properties;
-
 import javax.mail.Session;
 
 import org.jboss.as.controller.ModelVersion;
@@ -82,7 +81,7 @@ public class MailSubsystem11Test extends AbstractSubsystemBaseTest {
     private void testTransformers110(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
-          //      .setSubsystemXml(getSubsystemXml());
+        //      .setSubsystemXml(getSubsystemXml());
 
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
@@ -96,7 +95,7 @@ public class MailSubsystem11Test extends AbstractSubsystemBaseTest {
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(getSubsystemXml("subsystem_1_1_expressions.xml")),
                 new FailedOperationTransformationConfig()
                         .addFailedAttribute(SUBSYSTEM_PATH.append(MailExtension.MAIL_SESSION_PATH).append(PathElement.pathElement(SERVER_TYPE)),
-                                                        new FailedOperationTransformationConfig.NewAttributesConfig(MailServerDefinition.TLS))
+                                new FailedOperationTransformationConfig.NewAttributesConfig(MailServerDefinition.TLS))
         );
     }
 
@@ -108,7 +107,7 @@ public class MailSubsystem11Test extends AbstractSubsystemBaseTest {
         if (!mainServices.isSuccessfulBoot()) {
             Assert.fail(mainServices.getBootError().toString());
         }
-        ServiceController javaMailService = mainServices.getContainer().getService(MailSessionAdd.SERVICE_NAME_BASE.append("java:/Mail"));
+        ServiceController javaMailService = mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("java:/Mail"));
         javaMailService.setMode(ServiceController.Mode.ACTIVE);
         Session session = (Session) javaMailService.getValue();
         Assert.assertNotNull("session should not be null", session);
@@ -117,13 +116,13 @@ public class MailSubsystem11Test extends AbstractSubsystemBaseTest {
         Assert.assertNotNull("pop3 host should be set", properties.getProperty("mail.pop3.host"));
         Assert.assertNotNull("imap host should be set", properties.getProperty("mail.imap.host"));
 
-        ServiceController defaultMailService = mainServices.getContainer().getService(MailSessionAdd.SERVICE_NAME_BASE.append("java:jboss/mail/Default"));
+        ServiceController defaultMailService = mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("java:jboss/mail/Default"));
         session = (Session) defaultMailService.getValue();
         Assert.assertEquals("Debug should be true", true, session.getDebug());
 
 
-        ServiceController customMailService = mainServices.getContainer().getService(MailSessionAdd.SERVICE_NAME_BASE.append("java:jboss/mail/Custom"));
-        session = (Session) customMailService.getValue();
+        ServiceController<Session> customMailService = (ServiceController<Session>) mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("java:jboss/mail/Custom"));
+        session = customMailService.getValue();
         properties = session.getProperties();
         String host = properties.getProperty("mail.smtp.host");
         Assert.assertNotNull("smtp host should be set", host);
@@ -131,6 +130,12 @@ public class MailSubsystem11Test extends AbstractSubsystemBaseTest {
 
         Assert.assertEquals("localhost", properties.get("mail.pop3.host")); //this one should be read out of socket binding
         Assert.assertEquals("some-custom-prop-value", properties.get("mail.pop3.custom_prop")); //this one should be extra property
+
+        MailSessionService service = (MailSessionService) customMailService.getService();
+        Credentials credentials = service.getConfig().getCustomServers()[0].getCredentials();
+        Assert.assertEquals(credentials.getUsername(),"username");
+        Assert.assertEquals(credentials.getPassword(),"password");
+
 
     }
 
