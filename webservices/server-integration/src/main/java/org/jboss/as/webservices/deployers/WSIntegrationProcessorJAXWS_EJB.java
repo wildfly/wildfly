@@ -78,27 +78,29 @@ public final class WSIntegrationProcessorJAXWS_EJB implements DeploymentUnitProc
 
     private static void processAnnotation(final DeploymentUnit unit, final DotName annotation) {
         final List<AnnotationInstance> webServiceAnnotations = getAnnotations(unit, annotation);
-        final EEModuleDescription moduleDescription = getRequiredAttachment(unit, EE_MODULE_DESCRIPTION);
-        final JAXWSDeployment jaxwsDeployment = getJaxwsDeployment(unit);
+        if (!webServiceAnnotations.isEmpty()) {
+            final EEModuleDescription moduleDescription = getRequiredAttachment(unit, EE_MODULE_DESCRIPTION);
+            final JAXWSDeployment jaxwsDeployment = getJaxwsDeployment(unit);
 
-        for (final AnnotationInstance webServiceAnnotation : webServiceAnnotations) {
-            final AnnotationTarget target = webServiceAnnotation.target();
-            final ClassInfo webServiceClassInfo = (ClassInfo) target;
-            final String webServiceClassName = webServiceClassInfo.name().toString();
-            final List<ComponentDescription> componentDescriptions = moduleDescription.getComponentsByClassName(webServiceClassName);
-            final List<SessionBeanComponentDescription> sessionBeans = getSessionBeans(componentDescriptions);
-            final Set<String> securityRoles = getDeclaredSecurityRoles(unit, webServiceClassInfo); // TODO: assembly processed for each endpoint!
-            final WebContextAnnotationWrapper webCtx = getWebContextWrapper(webServiceClassInfo);
-            final String authMethod = webCtx.getAuthMethod();
-            final boolean isSecureWsdlAccess = webCtx.isSecureWsdlAccess();
-            final String transportGuarantee = webCtx.getTransportGuarantee();
+            for (final AnnotationInstance webServiceAnnotation : webServiceAnnotations) {
+                final AnnotationTarget target = webServiceAnnotation.target();
+                final ClassInfo webServiceClassInfo = (ClassInfo) target;
+                final String webServiceClassName = webServiceClassInfo.name().toString();
+                final List<ComponentDescription> componentDescriptions = moduleDescription.getComponentsByClassName(webServiceClassName);
+                final List<SessionBeanComponentDescription> sessionBeans = getSessionBeans(componentDescriptions);
+                final Set<String> securityRoles = getDeclaredSecurityRoles(unit, webServiceClassInfo); // TODO: assembly processed for each endpoint!
+                final WebContextAnnotationWrapper webCtx = getWebContextWrapper(webServiceClassInfo);
+                final String authMethod = webCtx.getAuthMethod();
+                final boolean isSecureWsdlAccess = webCtx.isSecureWsdlAccess();
+                final String transportGuarantee = webCtx.getTransportGuarantee();
 
 
-            for (final SessionBeanComponentDescription sessionBean : sessionBeans) {
-                if (sessionBean.isStateless() || sessionBean.isSingleton()) {
-                    final EJBViewDescription ejbViewDescription = sessionBean.addWebserviceEndpointView();
-                    final ServiceName ejbViewName = ejbViewDescription.getServiceName();
-                    jaxwsDeployment.addEndpoint(new EJBEndpoint(sessionBean, ejbViewName, securityRoles, authMethod, isSecureWsdlAccess, transportGuarantee));
+                for (final SessionBeanComponentDescription sessionBean : sessionBeans) {
+                    if (sessionBean.isStateless() || sessionBean.isSingleton()) {
+                        final EJBViewDescription ejbViewDescription = sessionBean.addWebserviceEndpointView();
+                        final ServiceName ejbViewName = ejbViewDescription.getServiceName();
+                        jaxwsDeployment.addEndpoint(new EJBEndpoint(sessionBean, ejbViewName, securityRoles, authMethod, isSecureWsdlAccess, transportGuarantee));
+                    }
                 }
             }
         }

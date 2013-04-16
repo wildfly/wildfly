@@ -156,4 +156,9 @@ public interface WSMessages {
     @Message(id = 15598, value = "JAX-RPC not supported")
     DeploymentUnitProcessingException jaxRpcNotSupported();
 
+    @Message(id = 15599, value = "%s library (%s) detected in ws endpoint deployment; either provide a proper deployment replacing embedded libraries with container module "
+            + "dependencies or disable the webservices subsystem for the current deployment adding a proper jboss-deployment-structure.xml descriptor to it. "
+            + "The former approach is recommended, as the latter approach causes most of the webservices Java EE and any JBossWS specific functionality to be disabled.")
+    DeploymentUnitProcessingException invalidLibraryInDeployment(String libraryName, String jar);
+
 }
