@@ -68,7 +68,7 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
             String addressPath = addressPath();
             ModelNode resourceDesc = executor.doCommand(addressPath + ":read-resource-description");
             resourceDesc = resourceDesc.get("result");
-            if((resourceDesc.asString()).equals("UNDEFINED")) {
+            if(!resourceDesc.isDefined()) {
                 return;
             }
             ModelNode response = executor.doCommand(addressPath + ":read-resource(include-runtime=true,include-defaults=true)");
