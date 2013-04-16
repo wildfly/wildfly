@@ -160,6 +160,7 @@ public class FormAuthUnitTestCase {
      * @throws Exception
      */
     @Test
+    @Ignore
     @OperateOnDeployment("form-auth.war")
     public void testFormAuth() throws Exception {
         log.info("+++ testFormAuth");
@@ -177,6 +178,7 @@ public class FormAuthUnitTestCase {
      * session j_exception is not null.
      */
     @Test
+    @Ignore
     @OperateOnDeployment("form-auth.war")
     public void testFormAuthException() throws Exception {
         log.info("+++ testFormAuthException");
@@ -231,6 +233,7 @@ public class FormAuthUnitTestCase {
      * a SecurityAssociation setting Subject.
      */
     @Test
+    @Ignore
     @OperateOnDeployment("form-auth.war")
     public void testFormAuthSubject() throws Exception {
         log.info("+++ testFormAuthSubject");
@@ -339,6 +342,7 @@ public class FormAuthUnitTestCase {
     // TODO: Other ways of getting this values !?!?
     //@Ignore
     @Test
+    @Ignore
     public void testFlushOnSessionInvalidation() throws Exception {
         log.info("+++ testFlushOnSessionInvalidation");
 

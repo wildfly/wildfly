@@ -48,7 +48,6 @@ public class UndertowDependencyProcessor implements DeploymentUnitProcessor {
 
     private static final ModuleIdentifier UNDERTOW_CORE = ModuleIdentifier.create("io.undertow.core");
     private static final ModuleIdentifier UNDERTOW_SERVLET = ModuleIdentifier.create("io.undertow.servlet");
-    //TODO this should probably be added only if websockets are there
     private static final ModuleIdentifier UNDERTOW_WEBSOCKET = ModuleIdentifier.create("io.undertow.websocket");
 
     static {
