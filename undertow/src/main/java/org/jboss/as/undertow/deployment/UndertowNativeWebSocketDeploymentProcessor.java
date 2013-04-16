@@ -24,7 +24,7 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
  *
  * @author Stuart Douglas
  */
-public class UndertowWebSocketDeploymentProcessor implements DeploymentUnitProcessor {
+public class UndertowNativeWebSocketDeploymentProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();

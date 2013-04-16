@@ -209,7 +209,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         final List<ServiceName> components = deploymentUnit.getAttachmentList(WebComponentDescription.WEB_COMPONENTS);
         final Set<ServiceName> failed = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.FAILED_COMPONENTS);
         for (final ServiceName component : components) {
-            boolean skip = false;
             if (!failed.contains(component)) {
                 dependentComponents.add(component);
             }
@@ -248,7 +247,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                     .addDependency(UndertowService.SERVLET_CONTAINER.append(defaultContainer), ServletContainerService.class, service.getContainer())
                     .addDependency(hostServiceName, Host.class, service.getHost())
                     .addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class, service.getSecurityDomainContextValue())
-                    .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowService());
+                    .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowService())
+                    .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES));
 
             deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, deploymentServiceName);
 
