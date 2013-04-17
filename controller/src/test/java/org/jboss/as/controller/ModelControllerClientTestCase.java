@@ -349,6 +349,7 @@ public class ModelControllerClientTestCase {
         } finally {
             IoUtils.safeClose(client);
         }
+    }
 
     @Ignore
     @Test
