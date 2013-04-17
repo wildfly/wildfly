@@ -19,52 +19,61 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.osgi.jaxp;
+package org.jboss.as.test.integration.osgi.xml;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
 import java.net.URL;
 
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.osgi.FrameworkUtils;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.xml.sax.InputSource;
+import org.osgi.util.tracker.ServiceTracker;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
- * Test XPathFactory.newInstance.
+ * A test that uses a DOM parser to read an XML document.
  *
  * @author thomas.diesler@jboss.com
- * @since 01-Feb-2012
+ * @since 21-Jul-2009
  */
 @RunWith(Arquillian.class)
-public class XPathFactoryTestCase {
+public class DocumentBuilderTestCase {
 
     @ArquillianResource
     BundleContext context;
+
     @ArquillianResource
     Bundle bundle;
 
     @Deployment
     public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "xpath-test.jar");
-        archive.addAsResource(XPathFactoryTestCase.class.getPackage(), "simple.xml", "simple.xml");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "dom-parser.jar");
+        archive.addClasses(FrameworkUtils.class);
+        archive.addAsResource(DocumentBuilderTestCase.class.getPackage(), "simple.xml", "simple.xml");
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(XPathFactory.class, InputSource.class);
+                builder.addImportPackages(DocumentBuilder.class, Document.class);
+                builder.addImportPackages(ServiceTracker.class);
                 return builder.openStream();
             }
         });
@@ -72,13 +81,31 @@ public class XPathFactoryTestCase {
     }
 
     @Test
-    public void testXPathFactory() throws Exception {
-        XPathFactory factory = XPathFactory.newInstance();
-        Assert.assertNotNull("XPathFactory not null", factory);
-        XPath xpath = factory.newXPath();
-        URL resurl = getClass().getClassLoader().getResource("simple.xml");
-        InputSource inputSource = new InputSource(resurl.openStream());
-        String content = xpath.evaluate("/root/child", inputSource);
-        Assert.assertEquals("content", content);
+    public void testDocumentBuilderFactoryAPI() throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        parse(factory);
+    }
+
+    @Test
+    public void testDocumentBuilderFactoryService() throws Exception {
+        DocumentBuilderFactory factory = FrameworkUtils.waitForService(context, DocumentBuilderFactory.class);
+        parse(factory);
+    }
+
+    private void parse(DocumentBuilderFactory factory) throws Exception {
+        factory.setNamespaceAware(true);
+        factory.setValidating(false);
+
+        DocumentBuilder domBuilder = factory.newDocumentBuilder();
+        URL resURL = bundle.getResource("simple.xml");
+        Document dom = domBuilder.parse(resURL.openStream());
+        assertNotNull("Document not null", dom);
+
+        Element root = dom.getDocumentElement();
+        assertEquals("root", root.getLocalName());
+
+        Node child = root.getFirstChild();
+        assertEquals("child", child.getLocalName());
+        assertEquals("content", child.getTextContent());
     }
 }
