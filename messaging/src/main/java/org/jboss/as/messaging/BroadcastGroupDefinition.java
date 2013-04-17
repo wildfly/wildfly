@@ -34,22 +34,31 @@ import static org.jboss.as.messaging.CommonAttributes.JGROUPS_STACK;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_BIND_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_BIND_PORT;
 import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
 
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -124,5 +133,28 @@ public class BroadcastGroupDefinition extends SimpleResourceDefinition {
             registry.registerOperationHandler(op, BroadcastGroupControlHandler.INSTANCE);
         }
         super.registerOperations(registry);
+    }
+
+    static void validateConnectors(OperationContext context, ModelNode operation, ModelNode connectorRefs) throws OperationFailedException {
+        final Set<String> availableConnectors =  getAvailableConnectors(context,operation);
+        final List<ModelNode> operationAddress = operation.get(ModelDescriptionConstants.ADDRESS).asList();
+        final String broadCastGroup = operationAddress.get(operationAddress.size()-1).get(CommonAttributes.BROADCAST_GROUP).asString();
+        for(ModelNode connectorRef:connectorRefs.asList()){
+            final String connectorName = connectorRef.asString();
+            if(!availableConnectors.contains(connectorName)){
+                throw MESSAGES.wrongConnectorRefInBroadCastGroup(broadCastGroup,connectorName,availableConnectors);
+            }
+        }
+    }
+
+    private static Set<String> getAvailableConnectors(final OperationContext context,final ModelNode operation) throws OperationFailedException{
+        PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+        PathAddress hornetqServer = MessagingServices.getHornetQServerPathAddress(address);
+        Resource hornetQServerResource = context.readResourceFromRoot(hornetqServer);
+        Set<String> availableConnectors = new HashSet<String>();
+        availableConnectors.addAll(hornetQServerResource.getChildrenNames(CommonAttributes.IN_VM_CONNECTOR));
+        availableConnectors.addAll(hornetQServerResource.getChildrenNames(CommonAttributes.REMOTE_CONNECTOR));
+        availableConnectors.addAll(hornetQServerResource.getChildrenNames(CommonAttributes.CONNECTOR));
+        return availableConnectors;
     }
 }
