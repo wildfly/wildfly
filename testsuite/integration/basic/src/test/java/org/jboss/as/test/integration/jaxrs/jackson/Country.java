@@ -61,7 +61,7 @@ public class Country implements Serializable {
         this.id = id;
     }
 
-    @XmlElement(name = "Name", required = true)
+    @XmlElement(name = "name", required = true)
     @JsonProperty
     public String getName() {
         return name;
@@ -74,7 +74,7 @@ public class Country implements Serializable {
     public void setTemperature(final String temperature) {
         this.temperature = temperature;
     }
-    @XmlElement(name = "Temperature", required = true)
+    @XmlElement(name = "temperature", required = true)
     @JsonProperty
     public String getTemperature() {
         return temperature;
