@@ -35,12 +35,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 
-import javax.security.auth.Subject;
 import java.io.DataInput;
 import java.io.IOException;
 
+import javax.security.auth.Subject;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.NotificationFilter;
 import org.jboss.as.controller.client.NotificationHandler;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
@@ -56,8 +58,6 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.CloseHandler;
 
 /**
  * Operation handlers for the remote implementation of {@link org.jboss.as.controller.client.ModelControllerClient}
@@ -93,11 +93,11 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                 handlers.registerActiveOperation(header.getBatchId(), null);
                 return new ExecuteRequestHandler();
             case ModelControllerProtocol.REGISTER_NOTIFICATION_HANDLER_REQUEST:
-                handlers.registerActiveOperation(header.getBatchId(), null);
-                return new RegisterNotificationRequestHandler();
+                final RegisterNotificationRequestHandler callbackHandler = new RegisterNotificationRequestHandler();
+                handlers.registerActiveOperation(header.getBatchId(), null, callbackHandler);
+                return callbackHandler;
             case ModelControllerProtocol.UNREGISTER_NOTIFICATION_HANDLER_REQUEST:
-                handlers.registerActiveOperation(header.getBatchId(), null);
-                return new UnregisterNotificationRequestHandler();
+                return UnregisterNotificationRequestHandler.INSTANCE;
             case ModelControllerProtocol.CANCEL_ASYNC_REQUEST:
                 return new CancelAsyncRequestHandler();
         }
@@ -262,7 +262,30 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
         }
     }
 
-    private class RegisterNotificationRequestHandler implements ManagementRequestHandler<Void, Void> {
+    private class RegisterNotificationRequestHandler implements ManagementRequestHandler<Void, Void>, ActiveOperation.CompletedCallback<Void> {
+
+        private volatile ModelControllerClient.NotificationRegistration registration;
+
+        @Override
+        public void completed(Void result) {
+            unregister();
+        }
+
+        @Override
+        public void failed(Exception e) {
+            unregister();
+        }
+
+        @Override
+        public void cancelled() {
+            unregister();
+        }
+
+        private void unregister() {
+            if (registration != null) {
+                registration.unregister();
+            }
+        }
 
         @Override
         public void handleRequest(DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> context) throws IOException {
@@ -271,25 +294,27 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
             address.readExternal(input);
             final PathAddress source = PathAddress.pathAddress(address);
             // the batchId to identify the notifications handler on the client-side by < channelAssociation + batchId >
-            final int batchId = input.readInt();
+            final int batchId = context.getOperationId();
 
             context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
                 @Override
                 public void execute(ManagementRequestContext<Void> context) throws Exception {
                     final NotificationHandler notificationHandler = new NotificationHandlerProxy(channelAssociation, batchId);
 
+                    // register
                     controller.getNotificationSupport().registerNotificationHandler(source,
                             notificationHandler,
                             NotificationFilter.ALL);
-                    // unregister the handler if the channel is closed before it is properly unregistered
-                    channelAssociation.getChannel().addCloseHandler(new CloseHandler<Channel>() {
+
+                    // unregistration or closing the channel will trigger the operation to complete and call this callback
+                    registration = new ModelControllerClient.NotificationRegistration() {
                         @Override
-                        public void handleClose(Channel closed, IOException exception) {
+                        public void unregister() {
                             controller.getNotificationSupport().unregisterNotificationHandler(source,
                                     notificationHandler,
                                     NotificationFilter.ALL);
                         }
-                    });
+                    };
 
                     final ManagementResponseHeader response = ManagementResponseHeader.create(context.getRequestHeader());
                     final FlushableDataOutput output = context.writeMessage(response);
@@ -298,32 +323,20 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                     } finally {
                         StreamUtils.safeClose(output);
                     }
-                    resultHandler.done(null);
                 }
             });
         }
     }
 
-    private class UnregisterNotificationRequestHandler implements ManagementRequestHandler<Void, Void> {
+    private static class UnregisterNotificationRequestHandler implements ManagementRequestHandler<Void, Void> {
+
+        static final UnregisterNotificationRequestHandler INSTANCE = new UnregisterNotificationRequestHandler();
 
         @Override
         public void handleRequest(DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> context) throws IOException {
-            // the address of the resource emitting notifications
-            final ModelNode address = new ModelNode();
-            address.readExternal(input);
-            final PathAddress source = PathAddress.pathAddress(address);
-            // the batchId to identify the notifications handler on the client-side by < channelAssociation + batchId >
-            final int batchId = input.readInt();
-
             context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
                 @Override
                 public void execute(ManagementRequestContext<Void> context) throws Exception {
-                    final NotificationHandler notificationHandler = new NotificationHandlerProxy(channelAssociation, batchId);
-
-                    controller.getNotificationSupport().unregisterNotificationHandler(source,
-                            notificationHandler,
-                            NotificationFilter.ALL);
-
                     final ManagementResponseHeader response = ManagementResponseHeader.create(context.getRequestHeader());
                     final FlushableDataOutput output = context.writeMessage(response);
                     try {
@@ -331,6 +344,7 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                     } finally {
                         StreamUtils.safeClose(output);
                     }
+                    // Just trigger the completion of the operation to call the unregister callback
                     resultHandler.done(null);
                 }
             });
