@@ -137,6 +137,7 @@ import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
 
+import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.AUTHENTICATE;
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.DENY;
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.PERMIT;
 import static org.jboss.as.undertow.UndertowMessages.MESSAGES;
@@ -572,15 +573,23 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 }
             }
 
+            Set<String> securityRoleNames = mergedMetaData.getSecurityRoleNames();
             if (mergedMetaData.getSecurityConstraints() != null) {
                 for (SecurityConstraintMetaData constraint : mergedMetaData.getSecurityConstraints()) {
                     SecurityConstraint securityConstraint = new SecurityConstraint()
-                            .setTransportGuaranteeType(transportGuaranteeType(constraint.getTransportGuarantee()))
-                            .addRolesAllowed(constraint.getRoleNames());
+                            .setTransportGuaranteeType(transportGuaranteeType(constraint.getTransportGuarantee()));
 
+                    List<String> roleNames = constraint.getRoleNames();
                     if (constraint.getAuthConstraint() == null) {
-                        //no auth constraint means we permit the empty roles
+                        // no auth constraint means we permit the empty roles
                         securityConstraint.setEmptyRoleSemantic(PERMIT);
+                    } else if (roleNames.size() == 1 && roleNames.contains("*") && securityRoleNames.contains("*")) {
+                        // AS7-6932 - Trying to do a * to * mapping which JBossWeb passed through, for Undertow enable
+                        // authentication only mode.
+                        // TODO - AS7-6933 - Revisit workaround added to allow switching between JBoss Web and Undertow.
+                        securityConstraint.setEmptyRoleSemantic(AUTHENTICATE);
+                    } else {
+                        securityConstraint.addRolesAllowed(roleNames);
                     }
 
                     if (constraint.getResourceCollections() != null) {
