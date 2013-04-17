@@ -19,16 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.osgi.jaxp;
+package org.jboss.as.test.integration.osgi.xml;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.InputStream;
 import java.net.URL;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -43,36 +41,34 @@ import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * A test that uses a DOM parser to read an XML document.
+ * A test that uses a SAX parser to read an XML document.
  *
  * @author thomas.diesler@jboss.com
  * @since 21-Jul-2009
  */
 @RunWith(Arquillian.class)
-public class DocumentBuilderTestCase {
+public class SAXParserTestCase {
 
     @ArquillianResource
     BundleContext context;
-
     @ArquillianResource
     Bundle bundle;
 
     @Deployment
     public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "dom-parser.jar");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "sax-parser.jar");
         archive.addClasses(FrameworkUtils.class);
-        archive.addAsResource(DocumentBuilderTestCase.class.getPackage(), "simple.xml", "simple.xml");
+        archive.addAsResource(SAXParserTestCase.class.getPackage(), "simple.xml", "simple.xml");
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(DocumentBuilder.class, Document.class);
+                builder.addImportPackages(SAXParser.class, SAXException.class, DefaultHandler.class);
                 builder.addImportPackages(ServiceTracker.class);
                 return builder.openStream();
             }
@@ -81,31 +77,39 @@ public class DocumentBuilderTestCase {
     }
 
     @Test
-    public void testDocumentBuilderFactoryAPI() throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    public void testSAXParserFactoryAPI() throws Exception {
+        SAXParserFactory factory = SAXParserFactory.newInstance();
         parse(factory);
     }
 
     @Test
-    public void testDocumentBuilderFactoryService() throws Exception {
-        DocumentBuilderFactory factory = FrameworkUtils.waitForService(context, DocumentBuilderFactory.class);
+    public void testSAXParserFactoryService() throws Exception {
+        SAXParserFactory factory = FrameworkUtils.waitForService(context, SAXParserFactory.class);
         parse(factory);
     }
 
-    private void parse(DocumentBuilderFactory factory) throws Exception {
+    private void parse(SAXParserFactory factory) throws Exception {
         factory.setNamespaceAware(true);
         factory.setValidating(false);
 
-        DocumentBuilder domBuilder = factory.newDocumentBuilder();
+        SAXParser saxParser = factory.newSAXParser();
         URL resURL = bundle.getResource("simple.xml");
-        Document dom = domBuilder.parse(resURL.openStream());
-        assertNotNull("Document not null", dom);
 
-        Element root = dom.getDocumentElement();
-        assertEquals("root", root.getLocalName());
+        SAXHandler saxHandler = new SAXHandler();
+        saxParser.parse(resURL.openStream(), saxHandler);
+        assertEquals("content", saxHandler.getContent());
+    }
 
-        Node child = root.getFirstChild();
-        assertEquals("child", child.getLocalName());
-        assertEquals("content", child.getTextContent());
+    static class SAXHandler extends DefaultHandler {
+        private String content;
+
+        @Override
+        public void characters(char[] ch, int start, int length) throws SAXException {
+            content = new String(ch, start, length);
+        }
+
+        public String getContent() {
+            return content;
+        }
     }
 }
