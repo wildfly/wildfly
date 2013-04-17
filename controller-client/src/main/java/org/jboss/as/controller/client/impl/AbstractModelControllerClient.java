@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -126,16 +127,25 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
     @Override
     public NotificationRegistration registerNotificationHandler(final ModelNode address, final NotificationHandler handler, final NotificationFilter filter) {
         try {
-            NotificationExecutionContext context = new NotificationExecutionContext(handler, filter);
-            final ActiveOperation<Void, NotificationExecutionContext> handleNotificationOperation = getChannelAssociation().initializeOperation(context, HandleNotificationRequestHandler.NO_OP_CALLBACK);
-
-            AsyncFuture<Void> result = getChannelAssociation().executeRequest(new RegisterNotificationHandlerRequest(address, handleNotificationOperation.getOperationId()), null).getResult();
-            result.get();
+            // Send the registration request
+            final CountDownLatch latch = new CountDownLatch(1);
+            final NotificationExecutionContext context = new NotificationExecutionContext(handler, filter);
+            final ActiveOperation<Void, NotificationExecutionContext> conversation = getChannelAssociation().executeRequest(new RegisterNotificationHandlerRequest(address, latch), context);
+            final int operationID = conversation.getOperationId();
+            latch.await();
+            // Check for failures
+            if (conversation.getResult().isDone()) {
+                // In case the operation is done already, it means it failed or got cancelled
+                conversation.getResult().get();
+            }
             return new NotificationRegistration() {
                 @Override
                 public void unregister() {
                     try {
-                        getChannelAssociation().executeRequest(new UnregisterNotificationHandlerRequest(address, handleNotificationOperation), null).getResult().get();
+                        // Reuse the operation-id for unregistration
+                        getChannelAssociation().executeRequest(operationID, UnregisterNotificationHandlerRequest.INSTANCE);
+                        // Use the active operation to wait until the handler is unregistered
+                        conversation.getResult().await();
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -412,29 +422,30 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             }
         }
 
-        static final ActiveOperation.CompletedCallback<Void> NO_OP_CALLBACK = new ActiveOperation.CompletedCallback<Void>() {
-            @Override
-            public void completed(Void result) {
-            }
-
-            @Override
-            public void failed(Exception e) {
-            }
-
-            @Override
-            public void cancelled() {
-            }
-        };
     }
 
-    private static class RegisterNotificationHandlerRequest implements ManagementRequest<Void, Void> {
+    private static class RegisterNotificationHandlerRequest implements ManagementRequest<Void, NotificationExecutionContext>, ActiveOperation.CompletedCallback<Void> {
 
         private final ModelNode address;
-        private final int operationId;
-
-        private RegisterNotificationHandlerRequest(ModelNode address, int operationId) {
+        private final CountDownLatch latch;
+        private RegisterNotificationHandlerRequest(final ModelNode address, final CountDownLatch latch) {
             this.address = address;
-            this.operationId = operationId;
+            this.latch = latch;
+        }
+
+        @Override
+        public void completed(Void result) {
+            latch.countDown();
+        }
+
+        @Override
+        public void failed(Exception e) {
+            latch.countDown();
+        }
+
+        @Override
+        public void cancelled() {
+            latch.countDown();
         }
 
         @Override
@@ -443,11 +454,10 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         }
 
         @Override
-        public void sendRequest(ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> context) throws IOException {
+        public void sendRequest(ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<NotificationExecutionContext> context) throws IOException {
             final FlushableDataOutput output = context.writeMessage(context.getRequestHeader());
             try {
                 address.writeExternal(output);
-                output.writeInt(operationId);
                 output.close();
             } finally {
                 StreamUtils.safeClose(output);
@@ -460,20 +470,15 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         }
 
         @Override
-        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> context) throws IOException {
-            resultHandler.done(null);
+        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<NotificationExecutionContext> context) throws IOException {
+            // don't end the conversation and keep the operation-id locked
+            latch.countDown();
         }
     }
 
-    private static class UnregisterNotificationHandlerRequest implements ManagementRequest<Void, Void> {
+    private static class UnregisterNotificationHandlerRequest implements ManagementRequest<Void, NotificationExecutionContext> {
 
-        private final ModelNode address;
-        private final ActiveOperation<Void, NotificationExecutionContext> handleNotificationOperation;
-
-        private UnregisterNotificationHandlerRequest(ModelNode address, ActiveOperation<Void, NotificationExecutionContext> handleNotificationOperation) {
-            this.address = address;
-            this.handleNotificationOperation = handleNotificationOperation;
-        }
+        private static final UnregisterNotificationHandlerRequest INSTANCE = new UnregisterNotificationHandlerRequest();
 
         @Override
         public byte getOperationType() {
@@ -481,11 +486,10 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         }
 
         @Override
-        public void sendRequest(ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> context) throws IOException {
+        public void sendRequest(ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<NotificationExecutionContext> context) throws IOException {
             final FlushableDataOutput output = context.writeMessage(context.getRequestHeader());
             try {
-                address.writeExternal(output);
-                output.writeInt(handleNotificationOperation.getOperationId());
+                // The remote side only needs the operation-id to unregister
                 output.close();
             } finally {
                 StreamUtils.safeClose(output);
@@ -498,8 +502,8 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         }
 
         @Override
-        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> context) throws IOException {
-            resultHandler.done(null);
+        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<NotificationExecutionContext> context) throws IOException {
+            resultHandler.done(null); // end the conversation
         }
     }
 
