@@ -24,6 +24,8 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+import static org.jboss.as.messaging.BroadcastGroupDefinition.CONNECTOR_REFS;
+import static org.jboss.as.messaging.BroadcastGroupDefinition.validateConnectors;
 import static org.jboss.as.messaging.CommonAttributes.JGROUPS_STACK;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
@@ -46,6 +48,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.interfaces.InetAddressUtil;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
@@ -72,8 +75,19 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
     }
 
     @Override
+    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        super.populateModel(context, operation, resource);
+
+        ModelNode connectorRefs = resource.getModel().get(CONNECTOR_REFS.getName());
+        if (connectorRefs.isDefined()) {
+            validateConnectors(context, operation, connectorRefs);
+        }
+    }
+
+    @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         model.setEmptyObject();
+
         VALIDATOR.validateAndSet(operation, model);
     }
 
