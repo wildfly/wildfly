@@ -100,7 +100,7 @@ public class TemplateParser extends NodeParser {
         Map<String, String> data = parseProcessingInstructionData(reader.getPIData());
         if (pi.equals(TemplateParser.EXTENSIONS_PI)) {
             if (!data.isEmpty()) {
-                throw new IllegalStateException("<?" + TemplateParser.SUBSYSTEMS_PI + "?> should not take any data");
+                throw new IllegalStateException("<?" + TemplateParser.EXTENSIONS_PI + "?> should not take any data");
             }
             if (extensionPlaceholder != null) {
                 throw new IllegalStateException("Can only have one occurance of <?" + TemplateParser.EXTENSIONS_PI + "?>");
