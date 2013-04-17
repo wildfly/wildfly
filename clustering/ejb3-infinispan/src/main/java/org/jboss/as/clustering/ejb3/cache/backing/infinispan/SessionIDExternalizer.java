@@ -44,7 +44,6 @@ public class SessionIDExternalizer extends AbstractSimpleExternalizer<SessionID>
         super(SessionID.class);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Set<Class<? extends SessionID>> getTypeClasses() {
         return new HashSet<Class<? extends SessionID>>(Arrays.asList(BasicSessionID.class, UnknownSessionID.class));

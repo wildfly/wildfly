@@ -21,7 +21,7 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-
+<!-- Dummy module for backwards compatibility -->
 <module xmlns="urn:jboss:module:1.1" name="org.jboss.as.clustering.web.infinispan">
     <properties>
         <property name="jboss.api" value="private"/>
@@ -32,20 +32,8 @@
     </resources>
 
     <dependencies>
-        <module name="org.jboss.as.clustering.api"/>
-        <module name="org.jboss.as.clustering.common"/>
-        <module name="org.jboss.as.clustering.jgroups"/>
-        <module name="org.jboss.as.clustering.impl"/>
-        <module name="org.jboss.as.clustering.infinispan"/>
-        <module name="org.jboss.as.clustering.registry"/>
-        <module name="org.jboss.as.clustering.web.spi"/>
-        <module name="javax.api"/>
-        <module name="javax.transaction.api"/>
         <module name="org.infinispan"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.jboss.marshalling"/>
-        <module name="org.jboss.metadata"/>
-        <module name="org.jboss.msc"/>
-        <module name="org.jgroups"/>
+        <module name="org.jboss.as.clustering.infinispan"/>
+        <module name="org.wildfly.clustering.web.infinispan" services="import" export="true"/>
     </dependencies>
 </module>

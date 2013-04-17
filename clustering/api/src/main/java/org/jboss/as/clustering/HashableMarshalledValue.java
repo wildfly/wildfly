@@ -41,7 +41,7 @@ public class HashableMarshalledValue<T> extends SimpleMarshalledValue<T> {
      * @param context
      * @throws IOException
      */
-    public HashableMarshalledValue(T object, MarshallingContext context) throws IOException {
+    public HashableMarshalledValue(T object, MarshallingContext context) {
         super(object, context);
         this.hashCode = (object != null ) ? object.hashCode() : 0;
     }

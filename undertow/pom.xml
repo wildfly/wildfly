@@ -44,11 +44,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-registry</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-web-spi</artifactId>
+            <artifactId>wildfly-clustering-web-undertow</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>

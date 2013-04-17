@@ -22,6 +22,12 @@
 
 package org.wildfly.extension.undertow.security;
 
+import io.undertow.server.HandlerWrapper;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.servlet.handlers.ServletChain;
+import io.undertow.servlet.handlers.ServletRequestContext;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
@@ -29,11 +35,6 @@ import java.util.Set;
 
 import javax.security.jacc.PolicyContext;
 
-import io.undertow.server.HandlerWrapper;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.servlet.handlers.ServletChain;
-import io.undertow.servlet.handlers.ServletRequestContext;
 import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
 import org.wildfly.extension.undertow.UndertowLogger;
 import org.jboss.security.RunAsIdentity;

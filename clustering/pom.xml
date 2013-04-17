@@ -35,9 +35,10 @@
     <artifactId>wildfly-clustering</artifactId>
     <packaging>pom</packaging>
 
-    <name>WildFly: Clustering Subsystem</name>
+    <name>WildFly: Clustering Subsystems</name>
 
     <modules>
+        <module>annotations</module>
         <module>api</module>
         <module>common</module>
         <module>impl</module>
@@ -46,9 +47,8 @@
         <module>registry</module>
         <module>service</module>
         <module>singleton</module>
-        <module>web-spi</module>
-        <module>web-infinispan</module>
         <module>ejb3-infinispan</module>
+        <module>web</module>
     </modules>
 
     <dependencies>

@@ -32,8 +32,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
-
 public class ReplicationWebFailoverTestCase extends ClusteredWebFailoverAbstractCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)

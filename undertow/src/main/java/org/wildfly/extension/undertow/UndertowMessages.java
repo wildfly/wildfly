@@ -23,7 +23,6 @@
 package org.wildfly.extension.undertow;
 
 import java.util.concurrent.TimeoutException;
-import javax.servlet.ServletException;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
@@ -155,39 +154,6 @@ public interface UndertowMessages {
 
     @Message(id = 17333, value = "Null parameter %s")
     IllegalArgumentException nullParamter(String id);
-
-    @Message(id = 17334, value = "Failed to start batch transaction")
-    ServletException failToStartBatchTransaction(@Cause Exception e);
-
-    @Message(id = 17335, value = "Session is expired")
-    IllegalStateException expiredSession();
-
-    @Message(id = 17336, value = "Failed to aquire ownership of %s")
-    IllegalStateException failAcquiringOwnership(String realId, @Cause TimeoutException te);
-
-    @Message(id = 17337, value = "Invalid snapshot mode")
-    IllegalArgumentException invalidSnapshotMode();
-
-    @Message(id = 17338, value = "Invalid session %s")
-    IllegalStateException invalidSession(String name);
-
-    @Message(id = 17339, value = "Failed to replicate attribute %s of type %s")
-    IllegalArgumentException failToReplicateAttribute(String name, String canonicalName);
-
-    @Message(id = 17340, value = "Interrupted acquiring ownership of %s")
-    RuntimeException interruptedAcquiringOwnership(String realId, @Cause InterruptedException e);
-
-    @Message(id = 17341, value = "Failed to start session manager")
-    RuntimeException failToStartManager(@Cause Exception e);
-
-    @Message(id = 17342, value = "Failed to create session notification policy %s of class %s")
-    RuntimeException failToCreateSessionNotificationPolicy(String name, String policyClass, @Cause Exception e);
-
-    @Message(id = 17343, value = "To many active sessions, max allowed is %s")
-    RuntimeException tooManyActiveSessions(int maxActiveAllowed);
-
-    @Message(id = 17344, value = "Failed session replication")
-    RuntimeException failedSessionReplication(@Cause Exception e);
 
     @Message(id = 17345, value = "Timeout context service activation: %s")
     TimeoutException timeoutContextActivation(ServiceName service);

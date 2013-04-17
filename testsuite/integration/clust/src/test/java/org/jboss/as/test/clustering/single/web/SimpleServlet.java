@@ -45,9 +45,9 @@ public class SimpleServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession(true);
-        Custom custom = (Custom) session.getAttribute("test");
+        Mutable custom = (Mutable) session.getAttribute("test");
         if (custom == null) {
-            custom = new Custom(1);
+            custom = new Mutable(1);
             session.setAttribute("test", custom);
         } else {
             custom.increment();
@@ -67,12 +67,12 @@ public class SimpleServlet extends HttpServlet {
         resp.getWriter().write("Success");
     }
 
-    public static class Custom implements Serializable {
+    public static class Mutable implements Serializable {
         private static final long serialVersionUID = -5129400250276547619L;
         private transient boolean serialized = false;
         private int value;
 
-        public Custom(int value) {
+        public Mutable(int value) {
             this.value = value;
         }
 
@@ -82,6 +82,11 @@ public class SimpleServlet extends HttpServlet {
 
         public void increment() {
             this.value += 1;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(this.value);
         }
 
         public boolean wasSerialized() {

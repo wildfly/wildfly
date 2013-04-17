@@ -150,10 +150,6 @@ public interface WebLogger extends BasicLogger {
     @Message(id = 18222, value = "Error forwarding to error page: %s")
     void errorForwardingToErrorPage(String encoding);
 
-    @LogMessage(level = WARN)
-    @Message(id = 18223, value = "Snapshot mode set to 'interval' but snapshotInterval is < 1 or was not specified, using 'instant'")
-    void invalidSnapshotInterval();
-
     @LogMessage(level = INFO)
     @Message(id = 18224, value = "Unregister web context: %s")
     void unregisterWebapp(String webappPath);
