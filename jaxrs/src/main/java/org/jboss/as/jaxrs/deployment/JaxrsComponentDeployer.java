@@ -81,7 +81,7 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
             if (!GetRestful.isRootResource(componentClass)) continue;
 
             if (component instanceof SessionBeanComponentDescription) {
-                Class[] jaxrsType = GetRestful.getSubResourceClass(componentClass);
+                Class[] jaxrsType = GetRestful.getSubResourceClasses(componentClass);
                 final String jndiName;
                 if (component.getViews().size() == 1) {
                     //only 1 view, just use the simple JNDI name
