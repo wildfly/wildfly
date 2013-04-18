@@ -492,8 +492,10 @@
             <activation><property><name>allTests</name></property></activation>
             <modules>
                 <module>integration</module>
+                <!-- 
                 <module>compat</module>
                 <module>domain</module>
+                -->
             </modules>
         </profile>
         
@@ -501,7 +503,7 @@
             <id>mixed-domain.module.profile</id>
             <activation><property><name>jboss.test.mixed.domain.dir</name></property></activation>
             <modules>
-                <module>mixed-domain</module>
+                <!-- module>mixed-domain</module -->
             </modules>
         </profile>
 

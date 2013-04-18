@@ -179,7 +179,7 @@ main() {
     #  Default goal if none specified.
     if [ -z "$MVN_GOAL" ]; then MVN_GOAL="install"; fi
 
-    MVN_GOAL="$MVN_GOAL $TESTS"
+    MVN_GOAL="$MVN_GOAL -Dts.noSmoke"
 
     #  Export some stuff for maven.
     export MVN MAVEN_HOME MVN_OPTS MVN_GOAL
