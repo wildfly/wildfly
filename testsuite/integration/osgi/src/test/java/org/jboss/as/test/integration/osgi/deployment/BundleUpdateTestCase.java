@@ -168,7 +168,7 @@ public class BundleUpdateTestCase {
     }
 
     @Test
-    @Ignore
+    @Ignore("[AS7-6944] Cannot update OSGi WebApp")
     public void testWebAppBundleUpdate() throws Exception {
         Bundle bundleA = context.installBundle(BUNDLE_V100_WAB, deployer.getDeployment(BUNDLE_V100_WAB));
         try {

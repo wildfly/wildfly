@@ -42,7 +42,6 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -57,7 +56,6 @@ import org.osgi.framework.wiring.FrameworkWiring;
  * @since 10-Apr-2013
  */
 @RunWith(Arquillian.class)
-@Ignore("Ignore because of undeploy issues")
 public class BundleRefreshTestCase {
 
     static final String BUNDLE_V200_WAB = "bundle-v200.wab";

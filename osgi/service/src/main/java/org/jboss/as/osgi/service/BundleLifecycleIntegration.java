@@ -105,6 +105,7 @@ import org.osgi.service.resolver.ResolutionException;
 public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
 
     private static final AttachmentKey<String> RUNTIME_NAME_KEY = AttachmentKey.create(String.class);
+    private static final AttachmentKey<Boolean> BUNDLE_REFRESHING_KEY = AttachmentKey.create(Boolean.class);
 
     private static final Map<String, Deployment> deploymentMap = new HashMap<String, Deployment>();
 
@@ -161,16 +162,20 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
         }
     }
 
+    public static Deployment removeDeployment(String runtimeName) {
+        synchronized (deploymentMap) {
+            return deploymentMap.remove(runtimeName);
+        }
+    }
+
     private void putDeployment(String runtimeName, final Deployment dep) {
         synchronized (deploymentMap) {
             deploymentMap.put(runtimeName, dep);
         }
     }
 
-    public static Deployment removeDeployment(String runtimeName) {
-        synchronized (deploymentMap) {
-            return deploymentMap.remove(runtimeName);
-        }
+    public static boolean isBundleRefreshing(XBundle bundle) {
+        return Boolean.TRUE.equals(bundle.getAttachment(BUNDLE_REFRESHING_KEY));
     }
 
     class BundleLifecycleImpl implements BundleLifecycle {
@@ -451,7 +456,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
             private VirtualFile rootFile;
 
             @Override
-            public void initBundleRefresh(XBundle bundle) throws BundleException {
+            public void startBundleRefresh(XBundle bundle) throws BundleException {
                 this.bundle = bundle;
 
                 XBundleRevision brev = bundle.getBundleRevision();
@@ -464,11 +469,12 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                     throw FrameworkMessages.MESSAGES.cannotObtainVirtualFile(ex);
                 }
 
+                bundle.putAttachment(BUNDLE_REFRESHING_KEY, Boolean.TRUE);
                 undeployRevision(brev);
             }
 
             @Override
-            public void refreshCurrentRevision() throws BundleException {
+            public void refreshCurrentRevision(XBundleRevision brev) throws BundleException {
 
                 // Create the revision {@link Deployment}
                 DeploymentProvider deploymentManager = injectedDeploymentManager.getValue();
@@ -492,6 +498,11 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                 } catch (Exception ex) {
                     throw MESSAGES.cannotDeployBundleRevision(ex, dep);
                 }
+            }
+
+            @Override
+            public void endBundleRefresh(XBundle bundle) {
+                bundle.removeAttachment(BUNDLE_REFRESHING_KEY);
             }
         }
     }

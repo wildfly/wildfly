@@ -96,8 +96,8 @@ public final class LockManagerIntegration extends LockManagerPlugin {
                 // #2 All items must have have same context attached
                 for (LockableItem item : items) {
                     if (item instanceof Attachable) {
-                        Attachable Attachable = (Attachable) item;
-                        Stack<LockContext> stack = Attachable.getAttachment(LOCK_CONTEXT_KEY);
+                        Attachable attachableItem = (Attachable) item;
+                        Stack<LockContext> stack = attachableItem.getAttachment(LOCK_CONTEXT_KEY);
                         LockContext aux = stack != null && !stack.isEmpty() ? stack.peek() : null;
                         if (context == null && aux != null) {
                             context = aux;
@@ -140,11 +140,11 @@ public final class LockManagerIntegration extends LockManagerPlugin {
             private synchronized void pushAttachedLockContext(LockContext context, LockableItem... items) {
                 for (LockableItem item : items) {
                     if (item instanceof Attachable) {
-                        Attachable attach = (Attachable) item;
-                        Stack<LockContext> stack = attach.getAttachment(LOCK_CONTEXT_KEY);
+                        Attachable attachableItem = (Attachable) item;
+                        Stack<LockContext> stack = attachableItem.getAttachment(LOCK_CONTEXT_KEY);
                         if (stack == null) {
                             stack = new Stack<LockContext>();
-                            attach.putAttachment(LOCK_CONTEXT_KEY, stack);
+                            attachableItem.putAttachment(LOCK_CONTEXT_KEY, stack);
                         }
                         stack.push(context);
                     }
@@ -155,10 +155,10 @@ public final class LockManagerIntegration extends LockManagerPlugin {
                 if (context != null) {
                     for (LockableItem item : context.getItems()) {
                         if (item instanceof Attachable) {
-                            Attachable attach = (Attachable) item;
-                            Stack<?> stack = attach.getAttachment(LOCK_CONTEXT_KEY);
+                            Attachable attachableItem = (Attachable) item;
+                            Stack<?> stack = attachableItem.getAttachment(LOCK_CONTEXT_KEY);
                             if (stack.size() == 1) {
-                                attach.removeAttachment(LOCK_CONTEXT_KEY);
+                                attachableItem.removeAttachment(LOCK_CONTEXT_KEY);
                             } else {
                                 stack.pop();
                             }
