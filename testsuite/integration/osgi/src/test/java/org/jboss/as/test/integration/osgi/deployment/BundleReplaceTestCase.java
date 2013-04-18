@@ -48,10 +48,12 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 import org.osgi.framework.wiring.FrameworkWiring;
 
 /**
@@ -99,7 +101,6 @@ public class BundleReplaceTestCase {
 
     @Test
     public void testRepeatedDeploy() throws Exception {
-
         ServerDeploymentHelper server = new ServerDeploymentHelper(managementClient.getControllerClient());
         String runtimeName = server.deploy(V100_JAR, deployer.getDeployment(V100_JAR));
         try {
@@ -124,6 +125,23 @@ public class BundleReplaceTestCase {
             Assert.assertSame(bundleA, bundleB);
         } finally {
             bundleA.uninstall();
+        }
+    }
+
+    @Test
+    @Ignore("[AS7-6938] Add and deploy does not fail if runtimeName already exists")
+    public void testInstallRuntimeNameExists() throws Exception {
+        ServerDeploymentHelper server = new ServerDeploymentHelper(managementClient.getControllerClient());
+        String runtimeName = server.deploy(V200_JAR, deployer.getDeployment(V200_JAR));
+        try {
+            try {
+                context.installBundle(V200_JAR, deployer.getDeployment(V100_JAR));
+                Assert.fail("BundleException expected");
+            } catch (BundleException ex) {
+                // expected
+            }
+        } finally {
+            server.undeploy(runtimeName);
         }
     }
 
