@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.domain.management.util;
 
+import java.io.IOException;
+
 import org.jboss.as.controller.client.impl.AbstractModelControllerClient;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
@@ -45,6 +47,6 @@ abstract class DomainTestClient extends AbstractModelControllerClient {
      *
      * @return the channel
      */
-    abstract Channel getChannel();
+    abstract Channel getChannel() throws IOException;
 
 }

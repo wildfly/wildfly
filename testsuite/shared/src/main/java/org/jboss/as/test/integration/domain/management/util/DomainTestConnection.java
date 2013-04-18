@@ -92,8 +92,8 @@ class DomainTestConnection implements Closeable {
             }
 
             @Override
-            Channel getChannel() {
-                return strategy.channel;
+            Channel getChannel() throws IOException {
+                return strategy.getChannel();
             }
 
             @Override
