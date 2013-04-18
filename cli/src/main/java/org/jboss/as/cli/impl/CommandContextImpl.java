@@ -1227,12 +1227,28 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
     @Override
     public int getTerminalWidth() {
-        return console == null ? -1 : console.getTerminalWidth();
+        if(console == null) {
+            try {
+                this.initBasicConsole(null, null);
+            } catch (CliInitializationException e) {
+                this.error("Failed to initialize the console: " + e.getLocalizedMessage());
+                return 80;
+            }
+        }
+        return console.getTerminalWidth();
     }
 
     @Override
     public int getTerminalHeight() {
-        return console == null ? -1 : console.getTerminalHeight();
+        if(console == null) {
+            try {
+                this.initBasicConsole(null, null);
+            } catch (CliInitializationException e) {
+                this.error("Failed to initialize the console: " + e.getLocalizedMessage());
+                return 24;
+            }
+        }
+        return console.getTerminalHeight();
     }
 
     private class AuthenticationCallbackHandler implements CallbackHandler {
