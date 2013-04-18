@@ -48,9 +48,12 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 import org.osgi.framework.wiring.FrameworkWiring;
 
 /**
@@ -65,6 +68,7 @@ public class BundleReplaceTestCase {
     static final String BUNDLE_V100_WAB = "webapp-v100.wab";
     static final String BUNDLE_V101_WAB = "webapp-v101.wab";
     static final String WEBAPP_V200_WAR = "webapp-v200.war";
+    static final String V100_JAR = "v100.jar";
     static final String V200_JAR = "v200.jar";
     static final String V201_JAR = "v201.jar";
 
@@ -93,6 +97,52 @@ public class BundleReplaceTestCase {
             }
         });
         return archive;
+    }
+
+    @Test
+    public void testRepeatedDeploy() throws Exception {
+        ServerDeploymentHelper server = new ServerDeploymentHelper(managementClient.getControllerClient());
+        String runtimeName = server.deploy(V100_JAR, deployer.getDeployment(V100_JAR));
+        try {
+            Bundle bundleA = FrameworkUtils.getBundles(context, V100_JAR, null)[0];
+            Assert.assertEquals(V100_JAR, bundleA.getSymbolicName());
+
+            runtimeName = server.deploy(V100_JAR, deployer.getDeployment(V100_JAR));
+            Bundle bundleB = FrameworkUtils.getBundles(context, V100_JAR, null)[0];
+            Assert.assertSame(bundleA, bundleB);
+        } finally {
+            server.undeploy(runtimeName);
+        }
+    }
+
+    @Test
+    public void testRepeatedInstall() throws Exception {
+        Bundle bundleA = context.installBundle(V100_JAR, deployer.getDeployment(V100_JAR));
+        try {
+            Assert.assertEquals(V100_JAR, bundleA.getSymbolicName());
+
+            Bundle bundleB = context.installBundle(V100_JAR, deployer.getDeployment(V100_JAR));
+            Assert.assertSame(bundleA, bundleB);
+        } finally {
+            bundleA.uninstall();
+        }
+    }
+
+    @Test
+    @Ignore("[AS7-6938] Add and deploy does not fail if runtimeName already exists")
+    public void testInstallRuntimeNameExists() throws Exception {
+        ServerDeploymentHelper server = new ServerDeploymentHelper(managementClient.getControllerClient());
+        String runtimeName = server.deploy(V200_JAR, deployer.getDeployment(V200_JAR));
+        try {
+            try {
+                context.installBundle(V200_JAR, deployer.getDeployment(V100_JAR));
+                Assert.fail("BundleException expected");
+            } catch (BundleException ex) {
+                // expected
+            }
+        } finally {
+            server.undeploy(runtimeName);
+        }
     }
 
     @Test
@@ -197,6 +247,22 @@ public class BundleReplaceTestCase {
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
                 builder.addManifestHeader("Dependencies", "deployment.v200.jar");
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Deployment(name = V100_JAR, managed = false, testable = false)
+    public static JavaArchive getV100Jar() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, V100_JAR);
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(V100_JAR);
+                builder.addBundleVersion("1.0.0");
+                builder.addBundleManifestVersion(2);
                 return builder.openStream();
             }
         });

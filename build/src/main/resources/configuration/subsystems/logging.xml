@@ -19,7 +19,7 @@
        </periodic-rotating-file-handler>
        <?LOGGERS?>
        <root-logger>
-           <level name="INFO"/>
+           <level name="DEBUG"/>
            <handlers>
                <handler name="CONSOLE"/>
                <handler name="FILE"/>
@@ -27,7 +27,7 @@
        </root-logger>
    </subsystem>
    <supplement name="default">
-      <replacement placeholder="@@append@@" attributeValue="true"/>
+      <replacement placeholder="@@append@@" attributeValue="false"/>
       <replacement placeholder="LOGGERS">
 	      <logger category="com.arjuna">
 	          <level name="WARN"/>
