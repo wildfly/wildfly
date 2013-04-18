@@ -14,7 +14,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jgroups.Channel;
+import org.jgroups.JChannel;
 
 /**
  * Handler for reading run-time only attributes from an underlying channel service.
@@ -26,7 +26,18 @@ public class ChannelMetricsHandler extends AbstractRuntimeOnlyHandler {
     public static final ChannelMetricsHandler INSTANCE = new ChannelMetricsHandler();
 
     public enum ChannelMetrics {
+        ADDRESS(ChannelInstanceResource.ADDRESS),
+        ADDRESS_AS_UUID(ChannelInstanceResource.ADDRESS_AS_UUID),
+        DISCARD_OWN_MESSAGES(ChannelInstanceResource.DISCARD_OWN_MESSAGES),
+        NUM_TASKS_IN_TIMER(ChannelInstanceResource.NUM_TASKS_IN_TIMER),
+        NUM_TIMER_THREADS(ChannelInstanceResource.NUM_TIMER_THREADS),
+        RECEIVED_BYTES(ChannelInstanceResource.RECEIVED_BYTES),
+        RECEIVED_MESSAGES(ChannelInstanceResource.RECEIVED_MESSAGES),
+        SENT_BYTES(ChannelInstanceResource.SENT_BYTES),
+        SENT_MESSAGES(ChannelInstanceResource.SENT_MESSAGES),
         STATE(ChannelInstanceResource.STATE),
+        STATS_ENABLED(ChannelInstanceResource.STATS_ENABLED),
+        VERSION(ChannelInstanceResource.VERSION),
         VIEW(ChannelInstanceResource.VIEW);
 
         private static final Map<String, ChannelMetrics> MAP = new HashMap<String, ChannelMetrics>();
@@ -62,8 +73,6 @@ public class ChannelMetricsHandler extends AbstractRuntimeOnlyHandler {
         String attrName = operation.require(NAME).asString();
         ChannelMetrics metric = ChannelMetrics.getStat(attrName);
 
-        System.out.println("retrieving metric for attribute: " + attrName);
-
         // lookup the channel
         ServiceName channelServiceName = ChannelInstanceCustomResource.CHANNEL_PARENT.append(channelName);
         ServiceController<?> controller = context.getServiceRegistry(false).getService(channelServiceName);
@@ -77,13 +86,46 @@ public class ChannelMetricsHandler extends AbstractRuntimeOnlyHandler {
         } else if (!started) {
             // when the cache service is not available, return a null result
         } else {
-            Channel channel = (Channel) controller.getValue();
+            JChannel channel = (JChannel) controller.getValue();
             switch (metric) {
-                case VIEW:
-                    result.set(channel.getView().toString());
+                case ADDRESS:
+                    result.set(channel.getAddressAsString());
+                    break;
+                case ADDRESS_AS_UUID:
+                    result.set(channel.getAddressAsUUID());
+                    break;
+                case DISCARD_OWN_MESSAGES:
+                    result.set(channel.getDiscardOwnMessages());
+                    break;
+                case NUM_TASKS_IN_TIMER:
+                    result.set(channel.getNumberOfTasksInTimer());
+                    break;
+                case NUM_TIMER_THREADS:
+                    result.set(channel.getTimerThreads());
+                    break;
+                case RECEIVED_BYTES:
+                    result.set(channel.getReceivedBytes());
+                    break;
+                case RECEIVED_MESSAGES:
+                    result.set(channel.getReceivedMessages());
+                    break;
+                case SENT_BYTES:
+                    result.set(channel.getSentBytes());
+                    break;
+                case SENT_MESSAGES:
+                    result.set(channel.getSentMessages());
                     break;
                 case STATE:
-                    // result.set(channel.getState());
+                    result.set(channel.getState());
+                    break;
+                case STATS_ENABLED:
+                    result.set(channel.statsEnabled());
+                    break;
+                case VERSION:
+                    result.set(channel.getVersion());
+                    break;
+                case VIEW:
+                    result.set(channel.getViewAsString());
                     break;
             }
             context.getResult().set(result);
