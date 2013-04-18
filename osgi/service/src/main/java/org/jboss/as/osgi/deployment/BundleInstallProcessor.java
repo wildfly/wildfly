@@ -27,6 +27,7 @@ import static org.jboss.as.server.deployment.Attachments.BUNDLE_STATE_KEY;
 import static org.jboss.osgi.framework.spi.IntegrationConstants.STORAGE_STATE_KEY;
 
 import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.osgi.service.BundleLifecycleIntegration;
 import org.jboss.as.osgi.service.InitialDeploymentTracker;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments.BundleState;
@@ -136,10 +137,9 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
         if (bundle.getBundleRevision() != brev)
             return false;
 
-        // No uninstall if the revision service goes down because of a bundle refresh
-        //Method method = bundle.getAttachment(InternalConstants.LOCK_METHOD_KEY);
-        //if (method == Method.REFRESH)
-        //    return false;
+        // No uninstall if the bundle is refreshing
+        if (BundleLifecycleIntegration.isBundleRefreshing(bundle))
+            return false;
 
         return true;
     }
