@@ -72,7 +72,7 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         final String runtimeName = depUnit.getName();
 
-        // Check if {@link BundleInstallIntegration} provided the {@link Deployment}
+        // Check if {@link BundleLifecycleIntegration} provided the {@link Deployment}
         Deployment deployment = BundleLifecycleIntegration.removeDeployment(runtimeName);
         if (deployment != null) {
             deployment.setAutoStart(false);
