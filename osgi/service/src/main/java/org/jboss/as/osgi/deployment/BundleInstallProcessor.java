@@ -22,23 +22,31 @@
 
 package org.jboss.as.osgi.deployment;
 
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.server.deployment.Attachments.BUNDLE_STATE_KEY;
 import static org.jboss.osgi.framework.spi.IntegrationConstants.STORAGE_STATE_KEY;
 
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.InitialDeploymentTracker;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments.BundleState;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceController.Substate;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.jboss.osgi.framework.spi.StorageManager;
 import org.jboss.osgi.framework.spi.StorageState;
+import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
+import org.jboss.osgi.resolver.XResource.State;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.wiring.BundleWiring;
@@ -84,10 +92,21 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
         if (brev == null)
             return;
 
-        BundleWiring wiring = brev.getWiringSupport().getWiring(false);
-        if (wiring == null || !wiring.isInUse()) {
-            BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
-            bundleManager.removeRevision(brev, 0);
+        XBundle bundle = brev.getBundle();
+        BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
+        if (uninstallRequired(depUnit, brev)) {
+            try {
+                int options = getUninstallOptions(bundleManager);
+                bundleManager.uninstallBundle(bundle, options);
+            } catch (BundleException ex) {
+                Deployment dep = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
+                LOGGER.errorFailedToUninstallDeployment(ex, dep);
+            }
+        } else {
+            BundleWiring wiring = brev.getWiringSupport().getWiring(false);
+            if (wiring == null || !wiring.isInUse()) {
+                bundleManager.removeRevision(brev, 0);
+            }
         }
     }
 
@@ -99,5 +118,36 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
             deployment.setAutoStart(storageState.isPersistentlyStarted());
             deployment.putAttachment(STORAGE_STATE_KEY, storageState);
         }
+    }
+
+    private boolean uninstallRequired(DeploymentUnit depUnit, XBundleRevision brev) {
+
+        // No uninstall when activation failed
+        Boolean startFailed = depUnit.removeAttachment(OSGiConstants.DEFERRED_ACTIVATION_FAILED);
+        if (Boolean.TRUE.equals(startFailed))
+            return false;
+
+        // No uninstall if the bundle is already uninstalled
+        XBundle bundle = brev.getBundle();
+        if (bundle.getState() == Bundle.UNINSTALLED || brev.getState() == State.UNINSTALLED)
+            return false;
+
+        // No uninstall if this is not the current revision
+        if (bundle.getBundleRevision() != brev)
+            return false;
+
+        // No uninstall if the revision service goes down because of a bundle refresh
+        //Method method = bundle.getAttachment(InternalConstants.LOCK_METHOD_KEY);
+        //if (method == Method.REFRESH)
+        //    return false;
+
+        return true;
+    }
+
+    private int getUninstallOptions(BundleManager bundleManager) {
+        ServiceContainer serviceContainer = bundleManager.getServiceContainer();
+        ServiceController<?> controller = serviceContainer.getRequiredService(Services.JBOSS_SERVER_CONTROLLER);
+        boolean stopRequested = controller.getSubstate() == Substate.STOP_REQUESTED;
+        return stopRequested ? Bundle.STOP_TRANSIENT : 0;
     }
 }

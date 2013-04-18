@@ -151,6 +151,25 @@ public class BundleUninstallTestCase {
 
     @Test
     @InSequence(40)
+    public void testSimpleJarRedeploy() throws Exception {
+        ServerDeploymentHelper server = new ServerDeploymentHelper(managementClient.getControllerClient());
+        String jarName = server.deploy(V200_JAR, deployer.getDeployment(V200_JAR));
+        Bundle jarA = FrameworkUtils.getBundles(context, V200_JAR, null)[0];
+        Assert.assertEquals(Bundle.ACTIVE, jarA.getState());
+
+        server.undeploy(jarName);
+        Assert.assertEquals(Bundle.UNINSTALLED, jarA.getState());
+
+        jarName = server.deploy(V200_JAR, deployer.getDeployment(V200_JAR));
+        Bundle jarB = FrameworkUtils.getBundles(context, V200_JAR, null)[0];
+        Assert.assertEquals(Bundle.ACTIVE, jarB.getState());
+
+        server.undeploy(jarName);
+        Assert.assertEquals(Bundle.UNINSTALLED, jarB.getState());
+    }
+
+    @Test
+    @InSequence(50)
     public void testDependentJarUninstall() throws Exception {
         Bundle jar = context.installBundle(V200_JAR, deployer.getDeployment(V200_JAR));
         Bundle webapp = context.installBundle(BUNDLE_V200_WAB, deployer.getDeployment(BUNDLE_V200_WAB));
@@ -189,7 +208,7 @@ public class BundleUninstallTestCase {
     }
 
     @Test
-    @InSequence(50)
+    @InSequence(60)
     public void testDependentJarUndeploy() throws Exception {
         ServerDeploymentHelper server = new ServerDeploymentHelper(managementClient.getControllerClient());
         String jarName = server.deploy(V200_JAR, deployer.getDeployment(V200_JAR));
