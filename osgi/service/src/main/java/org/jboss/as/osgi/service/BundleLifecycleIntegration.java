@@ -37,10 +37,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.osgi.OSGiConstants;
@@ -50,7 +52,6 @@ import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
@@ -63,6 +64,7 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.FrameworkMessages;
@@ -114,6 +116,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
     private final InjectedValue<DeploymentProvider> injectedDeploymentManager = new InjectedValue<DeploymentProvider>();
     private final InjectedValue<LockManager> injectedLockManager = new InjectedValue<LockManager>();
     private ServerDeploymentManager serverDeploymentManager;
+    private ModelControllerClient modelControllerClient;
 
     @Override
     protected void addServiceDependencies(ServiceBuilder<BundleLifecycle> builder) {
@@ -132,7 +135,19 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
     @Override
     public void start(StartContext startContext) throws StartException {
         super.start(startContext);
-        serverDeploymentManager = new ModelControllerServerDeploymentManager(injectedController.getValue());
+        ModelController modelController = injectedController.getValue();
+        modelControllerClient = modelController.createClient(Executors.newCachedThreadPool());
+        serverDeploymentManager =  ServerDeploymentManager.Factory.create(modelControllerClient);
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        try {
+            modelControllerClient.close();
+        } catch (IOException ex) {
+            // ignore
+        }
+        super.stop(context);
     }
 
     @Override
@@ -172,34 +187,41 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
 
         @Override
         public XBundleRevision createBundleRevision(BundleContext context, Deployment dep) throws BundleException {
+
             // Do the install directly if we have a running management op
             // https://issues.jboss.org/browse/AS7-5642
             if (OperationAssociation.INSTANCE.getAssociation() != null) {
                 LOGGER.warnCannotDeployBundleFromManagementOperation(dep);
                 return bundleManager.createBundleRevision(context, dep, null);
-            } else {
-                LOGGER.debugf("Install deployment: %s", dep);
-                String runtimeName = getRuntimeName(dep);
-                putDeployment(runtimeName, dep);
-                try {
-                    InputStream input = dep.getRoot().openStream();
-                    try {
-                        ServerDeploymentHelper server = new ServerDeploymentHelper(serverDeploymentManager);
-                        server.deploy(runtimeName, input);
-                    } finally {
-                        VFSUtils.safeClose(input);
-                    }
-                } catch (RuntimeException rte) {
-                    throw rte;
-                } catch (Exception ex) {
-                    throw MESSAGES.cannotDeployBundleRevision(ex, dep);
-                }
-                // For an already existing bundle (i.e. same location) the
-                // deployment may not have the bundle revision attached
-                DeploymentUnit depUnit = dep.getAttachment(BundleDeploymentProcessor.DEPLOYMENT_UNIT_KEY);
-                XBundleRevision brev = depUnit.getAttachment(OSGiConstants.BUNDLE_REVISION_KEY);
-                return brev;
             }
+
+            // Check if a bundle with that location already exists
+            if (!dep.isBundleUpdate() && bundleManager.getBundleByLocation(dep.getLocation()) != null) {
+                return bundleManager.createBundleRevision(context, dep, null);
+            }
+
+            LOGGER.debugf("Install deployment: %s", dep);
+            String runtimeName = getRuntimeName(dep);
+            putDeployment(runtimeName, dep);
+            try {
+                InputStream input = dep.getRoot().openStream();
+                try {
+                    ServerDeploymentHelper server = new ServerDeploymentHelper(serverDeploymentManager);
+                    server.deploy(runtimeName, input);
+                } finally {
+                    VFSUtils.safeClose(input);
+                }
+            } catch (RuntimeException rte) {
+                throw rte;
+            } catch (Exception ex) {
+                throw MESSAGES.cannotDeployBundleRevision(ex, dep);
+            }
+
+            // For an already existing bundle (i.e. same location) the
+            // {@link Deployment} may not have the bundle revision attached
+            DeploymentUnit depUnit = dep.getAttachment(BundleDeploymentProcessor.DEPLOYMENT_UNIT_KEY);
+            XBundleRevision brev = depUnit.getAttachment(OSGiConstants.BUNDLE_REVISION_KEY);
+            return brev;
         }
 
         @Override
