@@ -147,6 +147,7 @@ public class Util {
     public static final String UNDEFINE_ATTRIBUTE = "undefine-attribute";
     public static final String UNDEPLOY = "undeploy";
     public static final String UPLOAD_DEPLOYMENT_STREAM = "upload-deployment-stream";
+    public static final String URL = "url";
     public static final String VALID = "valid";
     public static final String VALIDATE_ADDRESS = "validate-address";
     public static final String VALUE = "value";

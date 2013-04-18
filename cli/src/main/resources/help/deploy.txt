@@ -1,8 +1,9 @@
 SYNOPSIS
 
-    deploy (file_path [--script=script_name] [--name=deployment_name]
-                      [--runtime-name=deployment_runtime_name]
-                      [--force | --disabled] [--unmanaged])
+    deploy ((file_path | --url=deployment_url)
+               [--script=script_name] [--name=deployment_name]
+               [--runtime-name=deployment_runtime_name]
+               [--force | --disabled] [--unmanaged])
            | --name=deployment_name
            [--server-groups=group_name (,group_name)* | --all-server-groups]
            [--headers={operation_header (;operation_header)*}]
@@ -15,8 +16,20 @@ DESCRIPTION
 
 ARGUMENTS
 
- file_path         - the path to the application to deploy. Required in case the
-                     deployment doesn't exist in the repository.
+ file_path         - filesystem path to the application to deploy.
+                     If the deployment has to be added or replaced in the
+                     repository, either the file_path or the --url argument
+                     is required.
+                     The path can be either absolute or relative to the current
+                     directory.
+
+ --url             - URL at which the deployment content is available for
+                     upload to the deployment content repository. Note that the
+                     URL must be accessible from the target of the operation
+                     (i.e. the Domain Controller or standalone server).
+                     If the deployment has to be added or replaced in the
+                     repository, either the file_path or the --url argument
+                     is required.
                      The path can be either absolute or relative to the current
                      directory.
 
