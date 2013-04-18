@@ -5,7 +5,13 @@ import static org.jboss.as.clustering.jgroups.subsystem.ChannelInstanceCustomRes
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -18,7 +24,7 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -36,10 +42,9 @@ import org.jgroups.stack.Protocol;
  * - requires a backing custom resource ChannelInstanceCustomResource to define the children
  * - need a read-only handler to allow read access to attributes, which are obtained by the handler
  * from the underlying services as and when required; they are never made persistent
- * - no write handler required
- * -
+ * - creates attribute definitions and description resolver dynamically
  *
- * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ * @author Richard Achmatowicz (c) 2012 Red Hat Inc.
  */
 public class ChannelInstanceResource extends SimpleResourceDefinition {
 
@@ -48,8 +53,52 @@ public class ChannelInstanceResource extends SimpleResourceDefinition {
     private final boolean runtimeRegistration;
 
     // metrics
+    static final SimpleAttributeDefinition ADDRESS =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.ADDRESS, ModelType.STRING, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition ADDRESS_AS_UUID =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.ADDRESS_AS_UUID, ModelType.STRING, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition DISCARD_OWN_MESSAGES =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.DISCARD_OWN_MESSAGES, ModelType.BOOLEAN, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition NUM_TASKS_IN_TIMER =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.NUM_TASKS_IN_TIMER, ModelType.INT, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition NUM_TIMER_THREADS =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.NUM_TIMER_THREADS, ModelType.INT, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition RECEIVED_BYTES =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.RECEIVED_BYTES, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition RECEIVED_MESSAGES =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.RECEIVED_MESSAGES, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition SENT_BYTES =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.SENT_BYTES, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition SENT_MESSAGES =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.SENT_MESSAGES, ModelType.LONG, true)
+                    .setStorageRuntime()
+                    .build();
     static final SimpleAttributeDefinition STATE =
             new SimpleAttributeDefinitionBuilder(MetricKeys.STATE, ModelType.STRING, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition STATS_ENABLED =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.STATS_ENABLED, ModelType.BOOLEAN, true)
+                    .setStorageRuntime()
+                    .build();
+    static final SimpleAttributeDefinition VERSION =
+            new SimpleAttributeDefinitionBuilder(MetricKeys.VERSION, ModelType.STRING, true)
                     .setStorageRuntime()
                     .build();
     static final SimpleAttributeDefinition VIEW =
@@ -57,7 +106,8 @@ public class ChannelInstanceResource extends SimpleResourceDefinition {
                     .setStorageRuntime()
                     .build();
 
-    static final AttributeDefinition[] CHANNEL_METRICS = {STATE, VIEW};
+    static final AttributeDefinition[] CHANNEL_METRICS = {ADDRESS, ADDRESS_AS_UUID, DISCARD_OWN_MESSAGES, NUM_TASKS_IN_TIMER,
+            NUM_TIMER_THREADS, RECEIVED_BYTES, RECEIVED_MESSAGES, SENT_BYTES, SENT_MESSAGES, STATE, STATS_ENABLED, VERSION, VIEW};
 
     public ChannelInstanceResource(String channelName, boolean runtimeRegistration) {
 
@@ -180,6 +230,7 @@ public class ChannelInstanceResource extends SimpleResourceDefinition {
     private static ResourceDefinition getProtocolMetricResourceDefinition(OperationContext context, String channelName, String protocolName) throws OperationFailedException {
 
         String className = JGROUPS_PROTOCOL_PKG + "." + protocolName;
+
         // load the protocol class and get the attributes
         Class<? extends Protocol> protocolClass = null;
         try {
@@ -192,13 +243,17 @@ public class ChannelInstanceResource extends SimpleResourceDefinition {
         Field[] fields = getProtocolFields(protocolClass);
 
         List<AttributeDefinition> attributes = new ArrayList<AttributeDefinition>();
+        Map<String, String> attributeDescriptionMap = new HashMap<String,String>();
+        // add the description of the resource
+        attributeDescriptionMap.put(protocolName, "The " + protocolName + " protocol");
+
         for (Field field : fields) {
             boolean equivalentTypeAvailable = isEquivalentModelTypeAvailable(field.getType());
 
             // add any managed attributes
             ManagedAttribute managed = field.getAnnotation(ManagedAttribute.class);
             if (managed != null && equivalentTypeAvailable) {
-                addAttributeDefinition(attributes, field.getName(), getEquivalentModelType(field.getType()), managed.description());
+                addAttributeDefinition(attributes, attributeDescriptionMap, protocolName, field.getName(), getEquivalentModelType(field.getType()), managed.description());
             }
 
             // add any properties
@@ -206,29 +261,40 @@ public class ChannelInstanceResource extends SimpleResourceDefinition {
             if (property != null) {
                 if (equivalentTypeAvailable) {
                     // add an attribute definition using an equivalent ModelType
-                    addAttributeDefinition(attributes, field.getName(), getEquivalentModelType(field.getType()), property.description());
+                    addAttributeDefinition(attributes, attributeDescriptionMap, protocolName, field.getName(), getEquivalentModelType(field.getType()), property.description());
                 } else {
                     // add an attribute definition using a String type
-                    addAttributeDefinition(attributes, field.getName(), ModelType.STRING, property.description());
+                    addAttributeDefinition(attributes, attributeDescriptionMap, protocolName, field.getName(), ModelType.STRING, property.description());
                 }
             }
         }
 
-        // create the resource
-        ResourceBuilder protocolBuilder = ResourceBuilder.Factory.create(PathElement.pathElement(ModelKeys.PROTOCOL, protocolName), new NonResolvingResourceDescriptionResolver());
+        // create the resource using a custom ResourceDescriptionResolver
+        // NOTE: do we need to be careful about creating the ResourceBundle vs supplying it?
+        ResourceBuilder protocolBuilder = ResourceBuilder.Factory.create(PathElement.pathElement(ModelKeys.PROTOCOL, protocolName),
+                new StandardResourceDescriptionResolver(protocolName, "org.jboss.as.clustering.jgroups.subsystem.ChannelInstanceResource$ProtocolResources", ChannelInstanceResource.class.getClassLoader()));
+
         // register the resource's attributes
         for (AttributeDefinition def : attributes) {
             protocolBuilder.addMetric(def, new ProtocolMetricsHandler(protocolName));
         }
+
+        // add the attribute descriptions to the map
+        ProtocolResources.addProtocolMapEntries(attributeDescriptionMap);
+
         // return the resource
         return protocolBuilder.build();
     }
 
-    private static void addAttributeDefinition(List<AttributeDefinition> attributes, String name, ModelType type, String description) {
+    private static void addAttributeDefinition(List<AttributeDefinition> attributes, Map<String, String> map, String protocolName, String name, ModelType type, String description) {
 
+        // create and add attribute
         SimpleAttributeDefinitionBuilder builder = new SimpleAttributeDefinitionBuilder(name, type, true);
         builder.setStorageRuntime();
         attributes.add(builder.build());
+
+        // add description to map
+        map.put(protocolName+"."+name, description);
     }
 
     public static boolean isEquivalentModelTypeAvailable(Class<?> type) {
@@ -274,7 +340,6 @@ public class ChannelInstanceResource extends SimpleResourceDefinition {
         }
     }
 
-
     private static Field[] getProtocolFields(Class clazz) {
         List<Field> fields = new ArrayList<Field>();
         fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
@@ -283,5 +348,38 @@ public class ChannelInstanceResource extends SimpleResourceDefinition {
             fields.addAll(Arrays.asList(getProtocolFields(clazz.getSuperclass())));
         }
         return fields.toArray(new Field[]{});
+    }
+
+    /*
+     * A ResourceBundle which holds all protocol attribute descriptions, prefixed by
+     * the protocol name itself:
+     *
+     * MPING.name=...
+     * MPING.timeout=...
+     * ...
+     * PING.name=...
+     * ...
+     * This allows us to create a ResourceBundle dynamically, based on attribute descriptions
+     * obtained from the protocol @Property and @ManagedAttribute annotations.
+     */
+    public static class ProtocolResources extends ResourceBundle {
+
+       private static Map<String,String> resources = new HashMap<String,String>() ;
+
+       public static void addProtocolMapEntries(Map<String,String> map) {
+           resources.putAll(map);
+       }
+
+       public Object handleGetObject(String key) {
+           return resources.get(key);
+       }
+
+       public Enumeration<String> getKeys() {
+           return Collections.enumeration(keySet());
+       }
+
+       protected Set<String> handleKeySet() {
+           return resources.keySet();
+       }
     }
 }
