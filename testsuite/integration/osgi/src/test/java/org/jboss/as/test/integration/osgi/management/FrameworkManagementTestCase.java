@@ -64,32 +64,6 @@ public class FrameworkManagementTestCase {
     @ContainerResource
     ManagementClient managementClient;
 
-    @Deployment(name = "test-bundle", managed = false, testable = false)
-    public static JavaArchive createTestBundle() {
-        return createTestBundle("test-bundle", "999");
-    }
-
-    @Deployment(name = "test-bundle2", managed = false, testable = false)
-    public static JavaArchive createTestBundle2() {
-        return createTestBundle("test-bundle2", "1.2.3.something");
-    }
-
-    @Deployment(name = "test-fragment", managed = false, testable = false)
-    public static JavaArchive createTestFragment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test-fragment");
-        archive.setManifest(new Asset() {
-            @Override
-            public InputStream openStream() {
-                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                builder.addBundleSymbolicName(archive.getName());
-                builder.addFragmentHost("test-bundle");
-                builder.addBundleManifestVersion(2);
-                return builder.openStream();
-            }
-        });
-        return archive;
-    }
-
     @Test
     public void testActivationMode() throws Exception {
         boolean initialActivationState = isFrameworkActive();
@@ -222,6 +196,32 @@ public class FrameworkManagementTestCase {
         } finally {
             FrameworkManagement.setFrameworkStartLevel(getControllerClient(), initial);
         }
+    }
+
+    @Deployment(name = "test-bundle", managed = false, testable = false)
+    public static JavaArchive createTestBundle() {
+        return createTestBundle("test-bundle", "999");
+    }
+
+    @Deployment(name = "test-bundle2", managed = false, testable = false)
+    public static JavaArchive createTestBundle2() {
+        return createTestBundle("test-bundle2", "1.2.3.something");
+    }
+
+    @Deployment(name = "test-fragment", managed = false, testable = false)
+    public static JavaArchive createTestFragment() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test-fragment");
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addFragmentHost("test-bundle");
+                builder.addBundleManifestVersion(2);
+                return builder.openStream();
+            }
+        });
+        return archive;
     }
 
     private static JavaArchive createTestBundle(final String bsn, final String version) {
