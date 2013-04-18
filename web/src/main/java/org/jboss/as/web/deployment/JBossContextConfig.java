@@ -126,6 +126,7 @@ public class JBossContextConfig extends ContextConfig {
     private Set<String> overlays = new HashSet<String>();
     private final InjectedValue<DistributedCacheManagerFactory> factory = new InjectedValue<DistributedCacheManagerFactory>();
     private Map<String, AuthenticatorValve> authenValves = null;
+    private boolean DELETE_WORK_DIR_ONCONTEXTDESTROY = Boolean.valueOf(System.getProperty("org.jboss.as.web.deployment.DELETE_WORK_DIR_ONCONTEXTDESTROY", "false")).booleanValue();
     /**
      * <p>
      * Creates a new instance of {@code JBossContextConfig}.
@@ -575,6 +576,9 @@ public class JBossContextConfig extends ContextConfig {
 
     @Override
     protected void destroy() {
+        if (DELETE_WORK_DIR_ONCONTEXTDESTROY) {
+           super.destroy();
+        }
     }
 
     /**
