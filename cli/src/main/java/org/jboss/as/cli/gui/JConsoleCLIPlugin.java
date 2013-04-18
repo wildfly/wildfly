@@ -99,14 +99,14 @@ public class JConsoleCLIPlugin extends JConsolePlugin {
             return connectUsingRemoting(cmdCtx, (RemotingMBeanServerConnection)mbeanServerConn);
         } else {
             try {
-                connectUsingDefaults(cmdCtx);
+                cmdCtx.connectController("localhost", 9999);
             } catch (Exception e) {
-                String message = "Unable to connect to JBoss AS. \n";
+                String message = "CLI GUI unable to connect to JBoss AS with localhost:9999 \n";
                 message += "Go to Connection -> New Connection and enter a Remote Process \n";
                 message += "of the form service:jmx:remoting-jmx://{host_name}:{port}  where \n";
                 message += "{host_name} and {port} are the address of the native management \n";
                 message += "interface of the AS7 installation being monitored.";
-                JOptionPane.showMessageDialog(cliGuiCtx.getMainWindow(), message);
+                JOptionPane.showMessageDialog(null, message);
                 return false;
             }
         }
@@ -136,10 +136,6 @@ public class JConsoleCLIPlugin extends JConsolePlugin {
         final ThreadGroup group = new ThreadGroup("management-client-thread");
         final ThreadFactory threadFactory = new JBossThreadFactory(group, Boolean.FALSE, null, "%G " + executorCount.incrementAndGet() + "-%t", null, null, AccessController.getContext());
         return new ThreadPoolExecutor(2, DEFAULT_MAX_THREADS, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), threadFactory);
-    }
-
-    private void connectUsingDefaults(CommandContext cmdCtx) throws Exception {
-        cmdCtx.connectController("localhost", 9999);
     }
 
     @Override
