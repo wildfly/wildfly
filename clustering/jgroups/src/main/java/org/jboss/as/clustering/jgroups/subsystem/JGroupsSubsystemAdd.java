@@ -59,14 +59,14 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
     }
 
     /*
-     * Install a custom version of JGroupsSubsystemRootResource
+     * Install a custom version of JGroupsSubsystemRootResourceDefinition
      */
     @Override
     protected Resource createResource(OperationContext context) {
         // debugging
         assert context.getServiceRegistry(false) != null ;
         // create a custom resource
-        JGroupsSubsystemRootCustomResource resource = new JGroupsSubsystemRootCustomResource();
+        JGroupsSubsystemRootResource resource = new JGroupsSubsystemRootResource();
         resource.setRegistry(context.getServiceRegistry(false));
         context.addResource(PathAddress.EMPTY_ADDRESS, resource);
         return resource ;
@@ -74,7 +74,7 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
 
     private static void populate(ModelNode source, ModelNode target) throws OperationFailedException {
 
-        JGroupsSubsystemRootResource.DEFAULT_STACK.validateAndSet(source, target);
+        JGroupsSubsystemRootResourceDefinition.DEFAULT_STACK.validateAndSet(source, target);
         target.get(ModelKeys.STACK).setEmptyObject();
     }
 
@@ -98,7 +98,7 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
             newControllers.add(pdsController);
         }
 
-        final String stack = JGroupsSubsystemRootResource.DEFAULT_STACK.resolveModelAttribute(context, model).asString() ;
+        final String stack = JGroupsSubsystemRootResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, model).asString() ;
 
         // install the default channel factory service
         ServiceController<ChannelFactory> dcfsController = installDefaultChannelFactoryService(target, stack, verificationHandler);

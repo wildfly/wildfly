@@ -50,7 +50,7 @@ public class ProtocolLayerRemove implements OperationStepHandler {
         final ModelNode subModel = resource.getModel();
 
          // validate the protocol type to be added
-        ModelNode type = ProtocolResource.TYPE.validateOperation(operation);
+        ModelNode type = ProtocolResourceDefinition.TYPE.validateOperation(operation);
         PathElement protocolRelativePath = PathElement.pathElement(ModelKeys.PROTOCOL, type.asString());
 
         // if child resource already exists, throw OFE

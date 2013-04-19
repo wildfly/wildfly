@@ -34,10 +34,10 @@ public class SubsystemWriteAttributeHandler extends ReloadRequiredWriteAttribute
     public static final SubsystemWriteAttributeHandler INSTANCE = new SubsystemWriteAttributeHandler();
 
     private SubsystemWriteAttributeHandler() {
-        super(JGroupsSubsystemRootResource.DEFAULT_STACK);
+        super(JGroupsSubsystemRootResourceDefinition.DEFAULT_STACK);
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
-        registry.registerReadWriteAttribute(JGroupsSubsystemRootResource.DEFAULT_STACK, null, this);
+        registry.registerReadWriteAttribute(JGroupsSubsystemRootResourceDefinition.DEFAULT_STACK, null, this);
     }
 }

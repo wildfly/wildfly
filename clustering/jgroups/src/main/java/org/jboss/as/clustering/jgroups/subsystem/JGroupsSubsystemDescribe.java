@@ -77,14 +77,14 @@ public class JGroupsSubsystemDescribe implements OperationStepHandler {
                     ModelNode transportAddress = stackAddress.clone();
                     transportAddress.add(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
                     // no optional transport:add parameters will be present, so use attributes list
-                    result.add(createOperation(transportAddress, transport,TransportResource.TRANSPORT_ATTRIBUTES));
+                    result.add(createOperation(transportAddress, transport, TransportResourceDefinition.TRANSPORT_ATTRIBUTES));
                     addProtocolPropertyCommands(transport, transportAddress, result);
                 }
                 // protocol=*
                 if (stack.getValue().get(ModelKeys.PROTOCOL).isDefined()) {
                     for (Property protocol : ProtocolStackAdd.getOrderedProtocolPropertyList(stack.getValue())) {
                         // no optional transport:add parameters will be present, so use attributes list
-                        result.add(createProtocolOperation(ProtocolResource.PROTOCOL_ATTRIBUTES, stackAddress,
+                        result.add(createProtocolOperation(ProtocolResourceDefinition.PROTOCOL_ATTRIBUTES, stackAddress,
                                 protocol.getValue()));
                         ModelNode protocolAddress = stackAddress.clone();
                         protocolAddress.add(ModelKeys.PROTOCOL, protocol.getName());
@@ -102,7 +102,7 @@ public class JGroupsSubsystemDescribe implements OperationStepHandler {
         if (protocol.hasDefined(ModelKeys.PROPERTY)) {
             for (Property property : protocol.get(ModelKeys.PROPERTY).asPropertyList()) {
                 ModelNode propertyAddress = address.clone().add(ModelKeys.PROPERTY, property.getName());
-                result.add(createOperation(propertyAddress, property.getValue(),PropertyResource.VALUE));
+                result.add(createOperation(propertyAddress, property.getValue(), PropertyResourceDefinition.VALUE));
             }
         }
     }

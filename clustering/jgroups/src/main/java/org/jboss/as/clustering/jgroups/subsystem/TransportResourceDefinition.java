@@ -46,7 +46,7 @@ import org.jboss.dmr.ModelType;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 
-public class TransportResource extends SimpleResourceDefinition {
+public class TransportResourceDefinition extends SimpleResourceDefinition {
 
     static final PathElement TRANSPORT_PATH = PathElement.pathElement(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
 
@@ -160,10 +160,10 @@ public class TransportResource extends SimpleResourceDefinition {
 
     static final OperationStepHandler TRANSPORT_ADD = new TransportLayerAdd(TRANSPORT_PARAMETERS);
     static final OperationStepHandler TRANSPORT_REMOVE = new TransportLayerRemove();
-    static final TransportResource INSTANCE = new TransportResource();
+    static final TransportResourceDefinition INSTANCE = new TransportResourceDefinition();
 
     // registration
-    TransportResource() {
+    TransportResourceDefinition() {
         super(TRANSPORT_PATH,
                 JGroupsExtension.getResourceDescriptionResolver(ModelKeys.TRANSPORT),
                 null,  //we register it manualy in #  registerOperations
@@ -189,6 +189,6 @@ public class TransportResource extends SimpleResourceDefinition {
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
-        resourceRegistration.registerSubModel(PropertyResource.INSTANCE);
+        resourceRegistration.registerSubModel(PropertyResourceDefinition.INSTANCE);
     }
 }

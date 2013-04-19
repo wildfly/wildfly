@@ -80,4 +80,10 @@ public interface JGroupsMessages {
 
     @Message(id = 10277, value = "Property %s for protocol with relative path %s is not defined.")
     OperationFailedException propertyNotDefined(String propertyName, String protocolRelativePath);
+
+    @Message(id = 10278, value = "Unknown metric %s")
+    String unknownMetric(String metricName);
+
+    @Message(id = 10279, value = "Unable to load protocol class %s")
+    OperationFailedException unableToLoadProtocolClass(String protocolName);
 }
