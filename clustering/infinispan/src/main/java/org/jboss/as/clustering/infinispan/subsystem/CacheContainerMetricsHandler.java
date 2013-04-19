@@ -5,6 +5,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -72,7 +73,7 @@ public class CacheContainerMetricsHandler extends AbstractRuntimeOnlyHandler {
         ModelNode result = new ModelNode();
 
         if (metric == null) {
-            context.getFailureDescription().set(String.format("Unknown metric %s", attrName));
+            context.getFailureDescription().set(InfinispanMessages.MESSAGES.unknownMetric(attrName));
         } else if (!started) {
             // when the cache manager service is not available, return a null result
         } else {
