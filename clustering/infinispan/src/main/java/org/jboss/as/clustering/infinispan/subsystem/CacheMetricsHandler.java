@@ -36,6 +36,7 @@ import org.infinispan.interceptors.TxInterceptor;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.remoting.rpc.RpcManagerImpl;
 import org.infinispan.util.concurrent.locks.LockManagerImpl;
+import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -137,7 +138,7 @@ public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
         ModelNode result = new ModelNode();
 
         if (metric == null) {
-            context.getFailureDescription().set(String.format("Unknown metric %s", attrName));
+            context.getFailureDescription().set(InfinispanMessages.MESSAGES.unknownMetric(attrName));
         } else if (!started) {
             // when the cache service is not available, return a null result
         } else {
