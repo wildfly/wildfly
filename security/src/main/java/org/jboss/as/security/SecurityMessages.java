@@ -38,7 +38,6 @@ import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Param;
 import org.jboss.modules.ModuleLoadException;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
 /**
