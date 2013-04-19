@@ -33,7 +33,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -54,7 +53,6 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -269,6 +267,9 @@ public class HornetQBackupActivationTestCase {
                 boolean started = result.get(RESULT, "started").asBoolean();
                 boolean active = result.get(RESULT, "active").asBoolean();
                 if (started && expectedActive == active) {
+                    // leave some time to the hornetq children resources to be installed after the server is activated
+                    Thread.sleep(TimeoutUtil.adjust(500));
+
                     return;
                 }
             } catch (Exception e) {
@@ -284,6 +285,11 @@ public class HornetQBackupActivationTestCase {
     }
 
     private void waitForBackupServerToReload(int timeout) throws Exception {
+        // FIXME use the CLI high-level reload operation that blocks instead of
+        // fiddling with timeouts...
+        // leave some time to have the server starts its reload process and change
+        // its server-starte from running.
+        Thread.sleep(TimeoutUtil.adjust(500));
         long start = System.currentTimeMillis();
         long now;
         do {
@@ -292,10 +298,10 @@ public class HornetQBackupActivationTestCase {
             ModelNode operation = new ModelNode();
             operation.get(OP_ADDR).setEmptyList();
             operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
-            operation.get(NAME).set("running-mode");
+            operation.get(NAME).set("server-state");
             try {
                 ModelNode result = execute(backupClient, operation);
-                boolean normal = "NORMAL".equals(result.get(RESULT).asString());
+                boolean normal = "running".equals(result.get(RESULT).asString());
                 if (normal) {
                     return;
                 }
@@ -312,6 +318,11 @@ public class HornetQBackupActivationTestCase {
     }
 
     private void waitForLiveServerToReload(int timeout) throws Exception {
+        // FIXME use the CLI high-level reload operation that blocks instead of
+        // fiddling with timeouts...
+        // leave some time to have the server starts its reload process and change
+        // its server-starte from running.
+        Thread.sleep(TimeoutUtil.adjust(500));
         long start = System.currentTimeMillis();
         long now;
         do {
@@ -320,10 +331,10 @@ public class HornetQBackupActivationTestCase {
             ModelNode operation = new ModelNode();
             operation.get(OP_ADDR).setEmptyList();
             operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
-            operation.get(NAME).set("running-mode");
+            operation.get(NAME).set("server-state");
             try {
                 ModelNode result = execute(liveClient, operation);
-                boolean normal = "NORMAL".equals(result.get(RESULT).asString());
+                boolean normal = "running".equals(result.get(RESULT).asString());
                 if (normal) {
                     return;
                 }
