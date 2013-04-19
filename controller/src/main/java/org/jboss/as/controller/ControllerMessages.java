@@ -2641,4 +2641,7 @@ public interface ControllerMessages {
 
     @Message(id = 13450, value = "We are trying to read data from the master host controller, which is currently busy executing another set of operations. This is a temporary situation, please retry")
     String cannotGetControllerLock();
+
+    @Message(id = 13451, value = "Cannot configure an interface to use 'any-ipv6-address' when system property java.net.preferIPv4Stack is true")
+    String invalidAnyIPv6();
 }
