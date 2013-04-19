@@ -39,7 +39,7 @@ import org.jboss.dmr.ModelType;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 
-public class StackResource extends SimpleResourceDefinition {
+public class StackResourceDefinition extends SimpleResourceDefinition {
 
     static final PathElement STACK_PATH = PathElement.pathElement(ModelKeys.STACK);
     static final OperationStepHandler EXPORT_NATIVE_CONFIGURATION_HANDLER = new ExportNativeConfiguration();
@@ -53,8 +53,8 @@ public class StackResource extends SimpleResourceDefinition {
     // attributes
     // operations
     private static final OperationDefinition PROTOCOL_STACK_ADD = new SimpleOperationDefinitionBuilder(ADD, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.STACK))
-          .addParameter(TransportResource.TRANSPORT)
-          .addParameter(ProtocolResource.PROTOCOLS)
+          .addParameter(TransportResourceDefinition.TRANSPORT)
+          .addParameter(ProtocolResourceDefinition.PROTOCOLS)
           .setAttributeResolver(JGroupsExtension.getResourceDescriptionResolver("stack.add"))
           .build();
 
@@ -63,7 +63,7 @@ public class StackResource extends SimpleResourceDefinition {
             .build();
 
     // registration
-    public StackResource(boolean runtimeRegistration) {
+    public StackResourceDefinition(boolean runtimeRegistration) {
         super(STACK_PATH,
                 JGroupsExtension.getResourceDescriptionResolver(ModelKeys.STACK),
                 // register below with custom signature
@@ -78,11 +78,11 @@ public class StackResource extends SimpleResourceDefinition {
         // override to set up TRANSPORT and PROTOCOLS parameters
         resourceRegistration.registerOperationHandler(PROTOCOL_STACK_ADD, ProtocolStackAdd.INSTANCE);
         // register protocol add and remove
-        resourceRegistration.registerOperationHandler(ProtocolResource.PROTOCOL_ADD, ProtocolResource.PROTOCOL_ADD_HANDLER);
-        resourceRegistration.registerOperationHandler(ProtocolResource.PROTOCOL_REMOVE, ProtocolResource.PROTOCOL_REMOVE_HANDLER);
+        resourceRegistration.registerOperationHandler(ProtocolResourceDefinition.PROTOCOL_ADD, ProtocolResourceDefinition.PROTOCOL_ADD_HANDLER);
+        resourceRegistration.registerOperationHandler(ProtocolResourceDefinition.PROTOCOL_REMOVE, ProtocolResourceDefinition.PROTOCOL_REMOVE_HANDLER);
         // register export-native-configuration
         if (runtimeRegistration) {
-            resourceRegistration.registerOperationHandler(StackResource.EXPORT_NATIVE_CONFIGURATION, StackResource.EXPORT_NATIVE_CONFIGURATION_HANDLER);
+            resourceRegistration.registerOperationHandler(StackResourceDefinition.EXPORT_NATIVE_CONFIGURATION, StackResourceDefinition.EXPORT_NATIVE_CONFIGURATION_HANDLER);
         }
     }
 
@@ -96,7 +96,7 @@ public class StackResource extends SimpleResourceDefinition {
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
         // child resources
-        resourceRegistration.registerSubModel(TransportResource.INSTANCE);
-        resourceRegistration.registerSubModel(ProtocolResource.INSTANCE);
+        resourceRegistration.registerSubModel(TransportResourceDefinition.INSTANCE);
+        resourceRegistration.registerSubModel(ProtocolResourceDefinition.INSTANCE);
     }
 }

@@ -44,10 +44,10 @@ import org.jboss.dmr.ModelType;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 
-public class ProtocolResource extends SimpleResourceDefinition {
+public class ProtocolResourceDefinition extends SimpleResourceDefinition {
 
     static final PathElement PROTOCOL_PATH = PathElement.pathElement(ModelKeys.PROTOCOL);
-    static final ProtocolResource INSTANCE = new ProtocolResource();
+    static final ProtocolResourceDefinition INSTANCE = new ProtocolResourceDefinition();
 
     // attributes
     static SimpleAttributeDefinition TYPE =
@@ -97,7 +97,7 @@ public class ProtocolResource extends SimpleResourceDefinition {
     static final OperationStepHandler PROTOCOL_REMOVE_HANDLER = new ProtocolLayerRemove();
 
     // registration
-    private ProtocolResource() {
+    private ProtocolResourceDefinition() {
         super(PROTOCOL_PATH, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.PROTOCOL));
     }
 
@@ -113,6 +113,6 @@ public class ProtocolResource extends SimpleResourceDefinition {
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
-        resourceRegistration.registerSubModel(PropertyResource.INSTANCE);
+        resourceRegistration.registerSubModel(PropertyResourceDefinition.INSTANCE);
     }
 }

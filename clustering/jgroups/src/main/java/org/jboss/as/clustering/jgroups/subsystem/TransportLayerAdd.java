@@ -70,7 +70,7 @@ public class TransportLayerAdd implements OperationStepHandler {
                     throw JGroupsMessages.MESSAGES.propertyNotDefined(property.getName(), transportRelativePath.toString());
                 }
                 // set the value of the property
-                PropertyResource.VALUE.validateAndSet(value, param.getModel());
+                PropertyResourceDefinition.VALUE.validateAndSet(value, param.getModel());
             }
         }
         // This needs a reload

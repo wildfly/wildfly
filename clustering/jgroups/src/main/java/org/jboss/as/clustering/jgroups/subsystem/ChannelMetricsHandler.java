@@ -6,6 +6,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.clustering.jgroups.JGroupsMessages;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -26,19 +27,19 @@ public class ChannelMetricsHandler extends AbstractRuntimeOnlyHandler {
     public static final ChannelMetricsHandler INSTANCE = new ChannelMetricsHandler();
 
     public enum ChannelMetrics {
-        ADDRESS(ChannelInstanceResource.ADDRESS),
-        ADDRESS_AS_UUID(ChannelInstanceResource.ADDRESS_AS_UUID),
-        DISCARD_OWN_MESSAGES(ChannelInstanceResource.DISCARD_OWN_MESSAGES),
-        NUM_TASKS_IN_TIMER(ChannelInstanceResource.NUM_TASKS_IN_TIMER),
-        NUM_TIMER_THREADS(ChannelInstanceResource.NUM_TIMER_THREADS),
-        RECEIVED_BYTES(ChannelInstanceResource.RECEIVED_BYTES),
-        RECEIVED_MESSAGES(ChannelInstanceResource.RECEIVED_MESSAGES),
-        SENT_BYTES(ChannelInstanceResource.SENT_BYTES),
-        SENT_MESSAGES(ChannelInstanceResource.SENT_MESSAGES),
-        STATE(ChannelInstanceResource.STATE),
-        STATS_ENABLED(ChannelInstanceResource.STATS_ENABLED),
-        VERSION(ChannelInstanceResource.VERSION),
-        VIEW(ChannelInstanceResource.VIEW);
+        ADDRESS(ChannelInstanceResourceDefinition.ADDRESS),
+        ADDRESS_AS_UUID(ChannelInstanceResourceDefinition.ADDRESS_AS_UUID),
+        DISCARD_OWN_MESSAGES(ChannelInstanceResourceDefinition.DISCARD_OWN_MESSAGES),
+        NUM_TASKS_IN_TIMER(ChannelInstanceResourceDefinition.NUM_TASKS_IN_TIMER),
+        NUM_TIMER_THREADS(ChannelInstanceResourceDefinition.NUM_TIMER_THREADS),
+        RECEIVED_BYTES(ChannelInstanceResourceDefinition.RECEIVED_BYTES),
+        RECEIVED_MESSAGES(ChannelInstanceResourceDefinition.RECEIVED_MESSAGES),
+        SENT_BYTES(ChannelInstanceResourceDefinition.SENT_BYTES),
+        SENT_MESSAGES(ChannelInstanceResourceDefinition.SENT_MESSAGES),
+        STATE(ChannelInstanceResourceDefinition.STATE),
+        STATS_ENABLED(ChannelInstanceResourceDefinition.STATS_ENABLED),
+        VERSION(ChannelInstanceResourceDefinition.VERSION),
+        VIEW(ChannelInstanceResourceDefinition.VIEW);
 
         private static final Map<String, ChannelMetrics> MAP = new HashMap<String, ChannelMetrics>();
 
@@ -74,7 +75,7 @@ public class ChannelMetricsHandler extends AbstractRuntimeOnlyHandler {
         ChannelMetrics metric = ChannelMetrics.getStat(attrName);
 
         // lookup the channel
-        ServiceName channelServiceName = ChannelInstanceCustomResource.CHANNEL_PARENT.append(channelName);
+        ServiceName channelServiceName = ChannelInstanceResource.CHANNEL_PARENT.append(channelName);
         ServiceController<?> controller = context.getServiceRegistry(false).getService(channelServiceName);
 
         // check that the service has been installed and started
@@ -82,7 +83,7 @@ public class ChannelMetricsHandler extends AbstractRuntimeOnlyHandler {
         ModelNode result = new ModelNode();
 
         if (metric == null) {
-            context.getFailureDescription().set(String.format("Unknown metric %s", attrName));
+            context.getFailureDescription().set(JGroupsMessages.MESSAGES.unknownMetric(attrName));
         } else if (!started) {
             // when the cache service is not available, return a null result
         } else {

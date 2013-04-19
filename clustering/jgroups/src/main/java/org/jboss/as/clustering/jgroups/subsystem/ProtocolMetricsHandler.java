@@ -1,6 +1,6 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.clustering.jgroups.subsystem.ChannelInstanceCustomResource.JGROUPS_PROTOCOL_PKG;
+import static org.jboss.as.clustering.jgroups.subsystem.ChannelInstanceResource.JGROUPS_PROTOCOL_PKG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -91,7 +91,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
         String attrName = operation.require(NAME).asString();
 
         // lookup the channel
-        ServiceName channelServiceName = ChannelInstanceCustomResource.CHANNEL_PARENT.append(channelName);
+        ServiceName channelServiceName = ChannelInstanceResource.CHANNEL_PARENT.append(channelName);
         ServiceController<?> controller = context.getServiceRegistry(false).getService(channelServiceName);
 
         // check that the service has been installed and started
@@ -137,7 +137,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
 
                 // get the type of the attribute and call the appropriate set method
                 FieldTypes type = null;
-                if (ChannelInstanceResource.isEquivalentModelTypeAvailable(field.getType())) {
+                if (ChannelInstanceResourceDefinition.isEquivalentModelTypeAvailable(field.getType())) {
                     type = FieldTypes.getStat(field.getType().toString());
                 } else {
                     type = FieldTypes.NON_PRIMITIVE;

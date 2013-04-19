@@ -113,7 +113,7 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
             targetLocation="AT ENTRY",
             binding="context:OperationContext = $1; operation:ModelNode = $2; model:ModelNode = $3",
             condition="operation.hasDefined(\"name\") AND operation.hasDefined(\"value\")",
-            action="traceln(\"resolved value = \" + org.jboss.as.clustering.jgroups.subsystem.PropertyResource.VALUE.resolveModelAttribute(context,model))")
+            action="traceln(\"resolved value = \" + org.jboss.as.clustering.jgroups.subsystem.PropertyResourceDefinition.VALUE.resolveModelAttribute(context,model))")
     public void testProtocolStackPropertyResolve() throws Exception {
 
         // Parse and install the XML into the controller
