@@ -127,8 +127,8 @@ class ServerDeploymentPlanResultFuture implements Future<ServerDeploymentPlanRes
 
     private ServerDeploymentActionResult getActionResult(UUID actionId, ModelNode actionResultNode) {
         ServerDeploymentActionResult actionResult = null;
-        String outcome = actionResultNode.get("outcome").asString();
-        if ("cancelled".equals(outcome)) {
+        String outcome = actionResultNode.hasDefined("outcome") ? actionResultNode.get("outcome").asString() : null;
+        if (outcome == null || "cancelled".equals(outcome)) {
             actionResult = new SimpleServerDeploymentActionResult(actionId, Result.NOT_EXECUTED);
         } else if ("failed".equals(outcome)) {
             Exception e = actionResultNode.hasDefined("failure-description") ? new Exception(actionResultNode.get("failure-description").toString()) : null;
