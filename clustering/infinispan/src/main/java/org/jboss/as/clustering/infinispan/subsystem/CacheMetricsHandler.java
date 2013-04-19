@@ -59,42 +59,42 @@ public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
     public static final CacheMetricsHandler INSTANCE = new CacheMetricsHandler();
 
     public enum CacheMetrics {
-        CACHE_STATUS(CacheResource.CACHE_STATUS),
+        CACHE_STATUS(CacheResourceDefinition.CACHE_STATUS),
         // LockManager
         NUMBER_OF_LOCKS_AVAILABLE(LockingResource.NUMBER_OF_LOCKS_AVAILABLE),
         NUMBER_OF_LOCKS_HELD(LockingResource.NUMBER_OF_LOCKS_HELD),
         CONCURRENCY_LEVEL(LockingResource.CURRENT_CONCURRENCY_LEVEL),
         // CacheMgmtInterceptor
-        AVERAGE_READ_TIME(CacheResource.AVERAGE_READ_TIME),
-        AVERAGE_WRITE_TIME(CacheResource.AVERAGE_WRITE_TIME),
-        ELAPSED_TIME(CacheResource.ELAPSED_TIME),
-        EVICTIONS(EvictionResource.EVICTIONS),
-        HIT_RATIO(CacheResource.HIT_RATIO),
-        HITS(CacheResource.HITS),
-        MISSES(CacheResource.MISSES),
-        NUMBER_OF_ENTRIES(CacheResource.NUMBER_OF_ENTRIES),
-        READ_WRITE_RATIO(CacheResource.READ_WRITE_RATIO),
-        REMOVE_HITS(CacheResource.REMOVE_HITS),
-        REMOVE_MISSES(CacheResource.REMOVE_MISSES),
-        STORES(CacheResource.STORES),
-        TIME_SINCE_RESET(CacheResource.TIME_SINCE_RESET),
+        AVERAGE_READ_TIME(CacheResourceDefinition.AVERAGE_READ_TIME),
+        AVERAGE_WRITE_TIME(CacheResourceDefinition.AVERAGE_WRITE_TIME),
+        ELAPSED_TIME(CacheResourceDefinition.ELAPSED_TIME),
+        EVICTIONS(EvictionResourceDefinition.EVICTIONS),
+        HIT_RATIO(CacheResourceDefinition.HIT_RATIO),
+        HITS(CacheResourceDefinition.HITS),
+        MISSES(CacheResourceDefinition.MISSES),
+        NUMBER_OF_ENTRIES(CacheResourceDefinition.NUMBER_OF_ENTRIES),
+        READ_WRITE_RATIO(CacheResourceDefinition.READ_WRITE_RATIO),
+        REMOVE_HITS(CacheResourceDefinition.REMOVE_HITS),
+        REMOVE_MISSES(CacheResourceDefinition.REMOVE_MISSES),
+        STORES(CacheResourceDefinition.STORES),
+        TIME_SINCE_RESET(CacheResourceDefinition.TIME_SINCE_RESET),
         // RpcManager
-        AVERAGE_REPLICATION_TIME(ClusteredCacheResource.AVERAGE_REPLICATION_TIME),
-        REPLICATION_COUNT(ClusteredCacheResource.REPLICATION_COUNT),
-        REPLICATION_FAILURES(ClusteredCacheResource.REPLICATION_FAILURES),
-        SUCCESS_RATIO(ClusteredCacheResource.SUCCESS_RATIO),
+        AVERAGE_REPLICATION_TIME(ClusteredCacheResourceDefinition.AVERAGE_REPLICATION_TIME),
+        REPLICATION_COUNT(ClusteredCacheResourceDefinition.REPLICATION_COUNT),
+        REPLICATION_FAILURES(ClusteredCacheResourceDefinition.REPLICATION_FAILURES),
+        SUCCESS_RATIO(ClusteredCacheResourceDefinition.SUCCESS_RATIO),
         // TxInterceptor
-        COMMITS(TransactionResource.COMMITS),
-        PREPARES(TransactionResource.PREPARES),
-        ROLLBACKS(TransactionResource.ROLLBACKS),
+        COMMITS(TransactionResourceDefinition.COMMITS),
+        PREPARES(TransactionResourceDefinition.PREPARES),
+        ROLLBACKS(TransactionResourceDefinition.ROLLBACKS),
         // InvalidationInterceptor
-        INVALIDATIONS(CacheResource.INVALIDATIONS),
+        INVALIDATIONS(CacheResourceDefinition.INVALIDATIONS),
         // PassivationInterceptor
-        PASSIVATIONS(CacheResource.PASSIVATIONS),
+        PASSIVATIONS(CacheResourceDefinition.PASSIVATIONS),
         // ActivationInterceptor
-        ACTIVATIONS(CacheResource.ACTIVATIONS),
-        CACHE_LOADER_LOADS(BaseStoreResource.CACHE_LOADER_LOADS),
-        CACHE_LOADER_MISSES(BaseStoreResource.CACHE_LOADER_MISSES);
+        ACTIVATIONS(CacheResourceDefinition.ACTIVATIONS),
+        CACHE_LOADER_LOADS(BaseStoreResourceDefinition.CACHE_LOADER_LOADS),
+        CACHE_LOADER_MISSES(BaseStoreResourceDefinition.CACHE_LOADER_MISSES);
 
         private static final Map<String, CacheMetrics> MAP = new HashMap<String, CacheMetrics>();
 

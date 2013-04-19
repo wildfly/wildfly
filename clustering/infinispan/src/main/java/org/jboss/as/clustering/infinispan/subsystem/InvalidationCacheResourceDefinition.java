@@ -26,20 +26,20 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/replicated-cache=*
+ * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/invalidation-cache=*
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class ReplicatedCacheResource extends SharedCacheResource {
+public class InvalidationCacheResourceDefinition extends ClusteredCacheResourceDefinition {
 
-    public static final PathElement REPLICATED_CACHE_PATH = PathElement.pathElement(ModelKeys.REPLICATED_CACHE);
+    public static final PathElement INVALIDATION_CACHE_PATH = PathElement.pathElement(ModelKeys.INVALIDATION_CACHE);
 
     // attributes
 
-    public ReplicatedCacheResource(final ResolvePathHandler resolvePathHandler) {
-        super(REPLICATED_CACHE_PATH,
-                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REPLICATED_CACHE),
-                ReplicatedCacheAdd.INSTANCE,
+    public InvalidationCacheResourceDefinition(final ResolvePathHandler resolvePathHandler) {
+        super(INVALIDATION_CACHE_PATH,
+                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.INVALIDATION_CACHE),
+                InvalidationCacheAdd.INSTANCE,
                 CacheRemove.INSTANCE, resolvePathHandler);
     }
 }

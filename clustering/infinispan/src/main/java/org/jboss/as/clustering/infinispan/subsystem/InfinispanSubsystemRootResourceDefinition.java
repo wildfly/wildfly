@@ -36,10 +36,10 @@ import org.jboss.as.controller.services.path.ResolvePathHandler;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class InfinispanSubsystemRootResource extends SimpleResourceDefinition {
+public class InfinispanSubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
     private final ResolvePathHandler resolvePathHandler;
-    public InfinispanSubsystemRootResource(final ResolvePathHandler resolvePathHandler) {
+    public InfinispanSubsystemRootResourceDefinition(final ResolvePathHandler resolvePathHandler) {
         super(PathElement.pathElement(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME),
                 InfinispanExtension.getResourceDescriptionResolver(),
                 InfinispanSubsystemAdd.INSTANCE,
@@ -61,7 +61,7 @@ public class InfinispanSubsystemRootResource extends SimpleResourceDefinition {
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(new CacheContainerResource(resolvePathHandler));
+        resourceRegistration.registerSubModel(new CacheContainerResourceDefinition(resolvePathHandler));
     }
 
 

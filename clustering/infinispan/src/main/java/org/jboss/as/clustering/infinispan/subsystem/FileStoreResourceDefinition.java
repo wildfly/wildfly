@@ -46,7 +46,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class FileStoreResource extends BaseStoreResource {
+public class FileStoreResourceDefinition extends BaseStoreResourceDefinition {
 
     public static final PathElement FILE_STORE_PATH = PathElement.pathElement(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
 
@@ -78,7 +78,7 @@ public class FileStoreResource extends BaseStoreResource {
 
     private final ResolvePathHandler resolvePathHandler;
 
-    public FileStoreResource(final ResolvePathHandler resolvePathHandler) {
+    public FileStoreResourceDefinition(final ResolvePathHandler resolvePathHandler) {
         super(FILE_STORE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE),
                 CacheConfigOperationHandlers.FILE_STORE_ADD,

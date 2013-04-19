@@ -48,7 +48,7 @@ import org.jboss.dmr.Property;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class CacheResource extends SimpleResourceDefinition {
+public class CacheResourceDefinition extends SimpleResourceDefinition {
 
     // attributes
     static final SimpleAttributeDefinition BATCHING =
@@ -194,7 +194,7 @@ public class CacheResource extends SimpleResourceDefinition {
 
 
     private final ResolvePathHandler resolvePathHandler;
-    public CacheResource(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler) {
+    public CacheResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler) {
         super(pathElement, descriptionResolver, addHandler, removeHandler);
         this.resolvePathHandler = resolvePathHandler;
     }
@@ -225,14 +225,14 @@ public class CacheResource extends SimpleResourceDefinition {
         super.registerChildren(resourceRegistration);
 
         resourceRegistration.registerSubModel(new LockingResource());
-        resourceRegistration.registerSubModel(new TransactionResource());
-        resourceRegistration.registerSubModel(new EvictionResource());
-        resourceRegistration.registerSubModel(new ExpirationResource());
-        resourceRegistration.registerSubModel(new StoreResource());
-        resourceRegistration.registerSubModel(new FileStoreResource(resolvePathHandler));
-        resourceRegistration.registerSubModel(new StringKeyedJDBCStoreResource());
-        resourceRegistration.registerSubModel(new BinaryKeyedJDBCStoreResource());
-        resourceRegistration.registerSubModel(new MixedKeyedJDBCStoreResource());
-        resourceRegistration.registerSubModel(new RemoteStoreResource());
+        resourceRegistration.registerSubModel(new TransactionResourceDefinition());
+        resourceRegistration.registerSubModel(new EvictionResourceDefinition());
+        resourceRegistration.registerSubModel(new ExpirationResourceDefinition());
+        resourceRegistration.registerSubModel(new StoreResourceDefinition());
+        resourceRegistration.registerSubModel(new FileStoreResourceDefinition(resolvePathHandler));
+        resourceRegistration.registerSubModel(new StringKeyedJDBCStoreResourceDefinition());
+        resourceRegistration.registerSubModel(new BinaryKeyedJDBCStoreResourceDefinition());
+        resourceRegistration.registerSubModel(new MixedKeyedJDBCStoreResourceDefinition());
+        resourceRegistration.registerSubModel(new RemoteStoreResourceDefinition());
     }
 }

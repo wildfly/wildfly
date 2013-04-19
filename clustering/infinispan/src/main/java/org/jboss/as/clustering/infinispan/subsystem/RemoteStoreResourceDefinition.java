@@ -47,7 +47,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class RemoteStoreResource extends BaseStoreResource {
+public class RemoteStoreResourceDefinition extends BaseStoreResourceDefinition {
 
     public static final PathElement REMOTE_STORE_PATH = PathElement.pathElement(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
 
@@ -98,7 +98,7 @@ public class RemoteStoreResource extends BaseStoreResource {
         .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_STORE))
         .build();
 
-    public RemoteStoreResource() {
+    public RemoteStoreResourceDefinition() {
         super(REMOTE_STORE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_STORE),
                 CacheConfigOperationHandlers.REMOTE_STORE_ADD,

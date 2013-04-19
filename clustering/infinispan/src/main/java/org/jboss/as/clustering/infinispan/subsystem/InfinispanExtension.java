@@ -71,14 +71,14 @@ public class InfinispanExtension implements Extension {
         final ResolvePathHandler resolvePathHandler;
         if (context.getProcessType().isServer()) {
             resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
-                    .setPathAttribute(FileStoreResource.PATH)
-                    .setRelativeToAttribute(FileStoreResource.RELATIVE_TO)
+                    .setPathAttribute(FileStoreResourceDefinition.PATH)
+                    .setRelativeToAttribute(FileStoreResourceDefinition.RELATIVE_TO)
                     .build();
         } else {
             resolvePathHandler = null;
         }
 
-        subsystem.registerSubsystemModel(new InfinispanSubsystemRootResource(resolvePathHandler));
+        subsystem.registerSubsystemModel(new InfinispanSubsystemRootResourceDefinition(resolvePathHandler));
         subsystem.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
         if (context.isRegisterTransformers()) {
             // TODO move transformation out of this utility class and into the ResourceDefinition impls

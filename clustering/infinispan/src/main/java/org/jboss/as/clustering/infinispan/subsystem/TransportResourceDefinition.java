@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
@@ -31,53 +30,59 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.operations.validation.EnumValidator;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/cache=Y/eviction=EVICTION
+ * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/transport=TRANSPORT
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class EvictionResource extends SimpleResourceDefinition {
+public class TransportResourceDefinition extends SimpleResourceDefinition {
 
-    public static final PathElement EVICTION_PATH = PathElement.pathElement(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
+    public static final PathElement TRANSPORT_PATH = PathElement.pathElement(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
 
     // attributes
-    static final SimpleAttributeDefinition EVICTION_STRATEGY =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.STRATEGY, ModelType.STRING, true)
-                    .setXmlName(Attribute.STRATEGY.getLocalName())
+    static final SimpleAttributeDefinition CLUSTER =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.CLUSTER, ModelType.STRING, true)
+                    .setXmlName(Attribute.CLUSTER.getLocalName())
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new EnumValidator<EvictionStrategy>(EvictionStrategy.class, true, false))
-                    .setDefaultValue(new ModelNode().set(EvictionStrategy.NONE.name()))
                     .build();
 
-    static final SimpleAttributeDefinition MAX_ENTRIES =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.MAX_ENTRIES, ModelType.INT, true)
-                    .setXmlName(Attribute.MAX_ENTRIES.getLocalName())
+    static final SimpleAttributeDefinition EXECUTOR =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.EXECUTOR, ModelType.STRING, true)
+                    .setXmlName(Attribute.EXECUTOR.getLocalName())
+                    .setAllowExpression(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .build();
+
+    static final SimpleAttributeDefinition LOCK_TIMEOUT =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.LOCK_TIMEOUT, ModelType.LONG, true)
+                    .setXmlName(Attribute.LOCK_TIMEOUT.getLocalName())
+                    .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(-1))
+                    .setDefaultValue(new ModelNode().set(240000))
                     .build();
 
-    static final AttributeDefinition[] EVICTION_ATTRIBUTES = {EVICTION_STRATEGY, MAX_ENTRIES};
-
-    // metrics
-    static final SimpleAttributeDefinition EVICTIONS =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.EVICTIONS, ModelType.LONG, true)
-                    .setStorageRuntime()
+    // if stack is null, use default stack
+    static final SimpleAttributeDefinition STACK =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.STACK, ModelType.STRING, true)
+                    .setXmlName(Attribute.STACK.getLocalName())
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
-    static final AttributeDefinition[] EVICTION_METRICS = {EVICTIONS};
+    static final AttributeDefinition[] TRANSPORT_ATTRIBUTES = {STACK, CLUSTER, EXECUTOR, LOCK_TIMEOUT};
 
-    public EvictionResource() {
-        super(EVICTION_PATH,
-                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.EVICTION),
-                CacheConfigOperationHandlers.EVICTION_ADD,
+    public TransportResourceDefinition() {
+        super(TRANSPORT_PATH,
+                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.TRANSPORT),
+                CacheConfigOperationHandlers.TRANSPORT_ADD,
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
@@ -86,18 +91,9 @@ public class EvictionResource extends SimpleResourceDefinition {
         super.registerAttributes(resourceRegistration);
 
         // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(EVICTION_ATTRIBUTES);
-        for (AttributeDefinition attr : EVICTION_ATTRIBUTES) {
+        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(TRANSPORT_ATTRIBUTES);
+        for (AttributeDefinition attr : TRANSPORT_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
-        // register any metrics
-        for (AttributeDefinition attr : EVICTION_METRICS) {
-            resourceRegistration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
-        }
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
     }
 }
