@@ -167,10 +167,8 @@ public class MailSessionService implements Service<Session> {
 
 
     public Session getValue() throws IllegalStateException, IllegalArgumentException {
-        final Session session = Session.getInstance(props, new PasswordAuthentication());
-        return session;
+        return Session.getInstance(props, new PasswordAuthentication());
     }
-
 
     private static String getHostKey(final String protocol) {
         return new StringBuilder("mail.").append(protocol).append(".host").toString();
@@ -184,25 +182,6 @@ public class MailSessionService implements Service<Session> {
         return new StringBuilder("mail.").append(protocol).append(".").append(name).toString();
     }
 
-    /*
-     * for testing purposes only!
-     * @param session
-     */
-    /*private static void sendMail(Session session) {
-        Message msg = new MimeMessage(session);
-        try {
-            InternetAddress addressFrom = new InternetAddress("tomaz@cerar.net");
-            msg.setFrom(addressFrom);
-            msg.setRecipients(Message.RecipientType.TO, new Address[]{new InternetAddress("tomaz.cerar@gmail.com")});
-            msg.setSubject("Test Jboss AS7 mail subsystem");
-            msg.setContent("Testing mail subsystem, loerm ipsum", "text/plain");
-            Transport.send(msg);
-        } catch (Exception e) {
-            // Needs i18n if using
-            log.error("could not send mail", e);
-        }
-    }*/
-
     /**
      * @author Tomaz Cerar
      * @created 5.12.11 16:22
@@ -212,12 +191,20 @@ public class MailSessionService implements Service<Session> {
         protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
             String protocol = getRequestingProtocol();
             Credentials c = null;
-            if (MailSubsystemModel.SMTP.equals(protocol)) {
+            if (MailSubsystemModel.SMTP.equals(protocol)&&config.getSmtpServer()!=null) {
                 c = config.getSmtpServer().getCredentials();
-            } else if (MailSubsystemModel.POP3.equals(protocol)) {
+            } else if (MailSubsystemModel.POP3.equals(protocol)&&config.getPop3Server()!=null) {
                 c = config.getPop3Server().getCredentials();
-            } else if (MailSubsystemModel.IMAP.equals(protocol)) {
+            } else if (MailSubsystemModel.IMAP.equals(protocol)&&config.getImapServer()!=null) {
                 c = config.getImapServer().getCredentials();
+            }
+            if (c == null) {
+                for (CustomServerConfig ssc : config.getCustomServers()) {
+                    if (ssc.getProtocol().equals(protocol)) {
+                        c = ssc.getCredentials();
+                        break;
+                    }
+                }
             }
 
             if (c != null) {

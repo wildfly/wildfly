@@ -288,12 +288,31 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
                 throw ParseUtils.unexpectedAttribute(reader, i);
             }
         }
-        while (reader.nextTag() != END_ELEMENT) {
-            if ("property".equals(reader.getLocalName())) {
-                final String[] array = requireAttributes(reader, org.jboss.as.controller.parsing.Attribute.NAME.getLocalName(), org.jboss.as.controller.parsing.Attribute.VALUE.getLocalName());
-                MailServerDefinition.PROPERTIES.parseAndAddParameterElement(array[0], array[1], operation, reader);
-            } else {
-                throw ParseUtils.unexpectedElement(reader);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case LOGIN: {
+                    for (int i = 0; i < reader.getAttributeCount(); i++) {
+                        String att = reader.getAttributeLocalName(i);
+                        String value = reader.getAttributeValue(i);
+                        if (att.equals(Attribute.USERNAME.getLocalName())) {
+                            MailServerDefinition.USERNAME.parseAndSetParameter(value, operation, reader);
+                        } else if (att.equals(Attribute.PASSWORD.getLocalName())) {
+                            PASSWORD.parseAndSetParameter(value, operation, reader);
+                        }
+                    }
+                    ParseUtils.requireNoContent(reader);
+                    break;
+                }
+                case PROPERTY: {
+                    final String[] array = requireAttributes(reader, org.jboss.as.controller.parsing.Attribute.NAME.getLocalName(), org.jboss.as.controller.parsing.Attribute.VALUE.getLocalName());
+                    MailServerDefinition.PROPERTIES.parseAndAddParameterElement(array[0], array[1], operation, reader);
+                    ParseUtils.requireNoContent(reader);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
             }
         }
         if (name == null) {
@@ -301,7 +320,6 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         }
         PathAddress address = parent.append(MailSubsystemModel.CUSTOM, name);
         operation.get(OP_ADDR).set(address.toModelNode());
-        parseLogin(reader, operation);
     }
 
     private void parseLogin(XMLExtendedStreamReader reader, ModelNode operation) throws XMLStreamException {

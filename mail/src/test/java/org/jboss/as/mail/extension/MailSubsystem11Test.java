@@ -32,7 +32,7 @@ import java.util.Properties;
 
 import javax.mail.Session;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -124,8 +124,8 @@ public class MailSubsystem11Test extends AbstractSubsystemBaseTest {
         Assert.assertEquals("Debug should be true", true, session.getDebug());
 
 
-        ServiceController customMailService = mainServices.getContainer().getService(MailSessionAdd.SERVICE_NAME_BASE.append("java:jboss/mail/Custom"));
-        session = (Session) customMailService.getValue();
+        ServiceController<Session> customMailService = (ServiceController<Session>) mainServices.getContainer().getService(MailSessionAdd.SERVICE_NAME_BASE.append("java:jboss/mail/Custom"));
+        session = customMailService.getValue();
         properties = session.getProperties();
         String host = properties.getProperty("mail.smtp.host");
         Assert.assertNotNull("smtp host should be set", host);
@@ -133,6 +133,11 @@ public class MailSubsystem11Test extends AbstractSubsystemBaseTest {
 
         Assert.assertEquals("localhost", properties.get("mail.pop3.host")); //this one should be read out of socket binding
         Assert.assertEquals("some-custom-prop-value", properties.get("mail.pop3.custom_prop")); //this one should be extra property
+
+        MailSessionService service = (MailSessionService) customMailService.getService();
+        Credentials credentials = service.getConfig().getCustomServers()[0].getCredentials();
+        Assert.assertEquals(credentials.getUsername(), "username");
+        Assert.assertEquals(credentials.getPassword(), "password");
 
     }
 
