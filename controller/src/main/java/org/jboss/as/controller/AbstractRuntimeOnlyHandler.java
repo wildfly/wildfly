@@ -46,7 +46,10 @@ public abstract class AbstractRuntimeOnlyHandler implements OperationStepHandler
      *
      * @param controller the service to wait for
      * @throws OperationFailedException if the service is not available, or the thread was interrupted.
+     *
+     * @deprecated this method is unrelated to this class and will be removed in the next major release
      */
+    @Deprecated
     public void waitFor(final ServiceController<?> controller) throws OperationFailedException {
         if (controller.getState() == ServiceController.State.UP) return;
 
