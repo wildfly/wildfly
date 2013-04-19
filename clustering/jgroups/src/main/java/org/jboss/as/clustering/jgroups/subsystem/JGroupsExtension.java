@@ -97,10 +97,10 @@ public class JGroupsExtension implements Extension {
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
 
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
-        final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new JGroupsSubsystemRootResource());
+        final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new JGroupsSubsystemRootResourceDefinition());
         subsystem.registerOperationHandler(JGroupsSubsystemDescribe.DEFINITON,JGroupsSubsystemDescribe.INSTANCE);
 
-        subsystem.registerSubModel(new StackResource(registerRuntimeOnly));
+        subsystem.registerSubModel(new StackResourceDefinition(registerRuntimeOnly));
         registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
 
         if (context.isRegisterTransformers()) {
@@ -138,24 +138,24 @@ public class JGroupsExtension implements Extension {
         //   transport=TRANSPORT:add(...,properties=<list of properties>)
 
         final ModelVersion version110 = ModelVersion.create(1, 1, 0);
-        final RejectExpressionValuesTransformer TRANSFORMER = new RejectExpressionValuesTransformer(PropertyResource.VALUE,
-                TransportResource.PROPERTIES, ProtocolResource.PROPERTIES, TransportResource.SHARED);
+        final RejectExpressionValuesTransformer TRANSFORMER = new RejectExpressionValuesTransformer(PropertyResourceDefinition.VALUE,
+                TransportResourceDefinition.PROPERTIES, ProtocolResourceDefinition.PROPERTIES, TransportResourceDefinition.SHARED);
 
         final TransformersSubRegistration registration = subsystem.registerModelTransformers(version110, ResourceTransformer.DEFAULT);
-        final TransformersSubRegistration stack = registration.registerSubResource(StackResource.STACK_PATH);
+        final TransformersSubRegistration stack = registration.registerSubResource(StackResourceDefinition.STACK_PATH);
 
         // reject expressions for transport properties, for the add and write-attribute op
-        final TransformersSubRegistration transport = stack.registerSubResource(TransportResource.TRANSPORT_PATH, (ResourceTransformer)TRANSFORMER) ;
+        final TransformersSubRegistration transport = stack.registerSubResource(TransportResourceDefinition.TRANSPORT_PATH, (ResourceTransformer)TRANSFORMER) ;
         transport.registerOperationTransformer(ADD, TRANSFORMER);
         transport.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, TRANSFORMER.getWriteAttributeTransformer());
-        final TransformersSubRegistration transport_property = transport.registerSubResource(PropertyResource.PROPERTY_PATH) ;
+        final TransformersSubRegistration transport_property = transport.registerSubResource(PropertyResourceDefinition.PROPERTY_PATH) ;
         transport_property.registerOperationTransformer(ADD, TRANSFORMER);
         transport_property.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, TRANSFORMER.getWriteAttributeTransformer());
 
         // reject expressions for transport properties, for the add and write-attribute op
-        final TransformersSubRegistration protocol = stack.registerSubResource(ProtocolResource.PROTOCOL_PATH, (ResourceTransformer)TRANSFORMER) ;
+        final TransformersSubRegistration protocol = stack.registerSubResource(ProtocolResourceDefinition.PROTOCOL_PATH, (ResourceTransformer)TRANSFORMER) ;
         protocol.registerOperationTransformer(ADD, TRANSFORMER);
-        final TransformersSubRegistration protocol_property = protocol.registerSubResource(PropertyResource.PROPERTY_PATH) ;
+        final TransformersSubRegistration protocol_property = protocol.registerSubResource(PropertyResourceDefinition.PROPERTY_PATH) ;
         protocol_property.registerOperationTransformer(ADD, TRANSFORMER);
         protocol_property.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, TRANSFORMER.getWriteAttributeTransformer());
 
