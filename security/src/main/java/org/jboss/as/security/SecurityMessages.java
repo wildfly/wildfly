@@ -38,6 +38,7 @@ import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Param;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
 /**
@@ -294,5 +295,11 @@ public interface SecurityMessages {
      */
     @Message(id= 13329, value = "No UserPrincipalFound constructing RemotingConnectionPrincipal.")
     IllegalStateException noUserPrincipalFound();
+
+    @Message(id = 13330, value = "Interrupted waiting for security domain '%s'")
+    OperationFailedException interruptedWaitingForSecurityDomain(String securityDomainName);
+
+    @Message(id = 13331, value = "Required security domain is not available '%s'")
+    OperationFailedException requiredSecurityDomainServiceNotAvailable(String securityDomainName);
 
 }
