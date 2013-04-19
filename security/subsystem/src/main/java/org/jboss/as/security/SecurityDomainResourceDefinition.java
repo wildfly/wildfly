@@ -50,8 +50,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.security.CacheableManager;
 import org.jboss.security.SimplePrincipal;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * @author Jason T. Greene
@@ -126,7 +129,8 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
 
             ServiceController<SecurityDomainContext> controller = getSecurityDomainService(context, securityDomain);
             if (controller != null) {
-                waitFor(controller);
+                // FIXME this is nasty.
+                waitForService(controller);
                 SecurityDomainContext sdc = controller.getValue();
                 @SuppressWarnings("unchecked")
                 CacheableManager<?, Principal> manager = (CacheableManager<?, Principal>) sdc
@@ -165,7 +169,8 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
 
             ServiceController<SecurityDomainContext> controller = getSecurityDomainService(context, securityDomain);
             if (controller != null) {
-                waitFor(controller);
+                // FIXME this is nasty.
+                waitForService(controller);
                 SecurityDomainContext sdc = controller.getValue();
                 @SuppressWarnings("unchecked")
                 CacheableManager<?, Principal> manager = (CacheableManager<?, Principal>) sdc.getAuthenticationManager();
@@ -178,6 +183,34 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
             }
             // Can't rollback
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        }
+    }
+
+    /**
+     * Wait for the required service to start up and fail otherwise. This method is necessary when a runtime operation
+     * uses a service that might have been created within a composite operation.
+     *
+     * This method will wait at most 100 millis.
+     *
+     * @param controller the service to wait for
+     * @throws OperationFailedException if the service is not available, or the thread was interrupted.
+     */
+    private static void waitForService(final ServiceController<?> controller) throws OperationFailedException {
+        if (controller.getState() == ServiceController.State.UP) return;
+
+        final StabilityMonitor monitor = new StabilityMonitor();
+        monitor.addController(controller);
+        try {
+            monitor.awaitStability(100, MILLISECONDS);
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw SecurityMessages.MESSAGES.interruptedWaitingForSecurityDomain(controller.getName().getSimpleName());
+        } finally {
+            monitor.removeController(controller);
+        }
+
+        if (controller.getState() != ServiceController.State.UP) {
+            throw SecurityMessages.MESSAGES.requiredSecurityDomainServiceNotAvailable(controller.getName().getSimpleName());
         }
     }
 
