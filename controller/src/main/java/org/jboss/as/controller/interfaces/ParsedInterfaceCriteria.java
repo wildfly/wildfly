@@ -127,7 +127,12 @@ public final class ParsedInterfaceCriteria {
         } else if(subModel.hasDefined(ANY_IPV4_ADDRESS) && subModel.get(ANY_IPV4_ADDRESS).asBoolean(false)) {
             parsed = ParsedInterfaceCriteria.V4;
         } else if(subModel.hasDefined(ANY_IPV6_ADDRESS) && subModel.get(ANY_IPV6_ADDRESS).asBoolean(false)) {
-            parsed = ParsedInterfaceCriteria.V6;
+            // AS7-5360 Reject this setting if java.net.preferIPv4Stack=true
+            if (SecurityActions.getBoolean("java.net.preferIPv4Stack")) {
+                parsed = new ParsedInterfaceCriteria(MESSAGES.invalidAnyIPv6());
+            } else {
+                parsed = ParsedInterfaceCriteria.V6;
+            }
         } else {
             try {
                 final List<Property> nodes = subModel.asPropertyList();
