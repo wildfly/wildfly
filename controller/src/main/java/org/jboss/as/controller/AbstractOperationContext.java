@@ -437,6 +437,11 @@ abstract class AbstractOperationContext implements OperationContext {
                 ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(step.handler.getClass());
                 try {
                     step.handler.execute(this, step.operation);
+                    // AS7-6046
+                    if (isBooting() && step.response.hasDefined(FAILURE_DESCRIPTION)) {
+                        MGMT_OP_LOGGER.operationFailed(step.operation.get(OP), step.operation.get(OP_ADDR),
+                                step.response.get(FAILURE_DESCRIPTION));
+                    }
                 } finally {
                     SecurityActions.setThreadContextClassLoader(oldTccl);
                 }
