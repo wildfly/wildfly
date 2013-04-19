@@ -70,6 +70,8 @@ import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameter
  */
 public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
 
+    private static final DotName DECORATOR = DotName.createSimple("javax.decorator.Decorator");
+
     public static final DotName APPLICATION = DotName.createSimple(Application.class.getName());
 
     @Override
@@ -228,6 +230,11 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                     JAXRS_LOGGER.classOrMethodAnnotationNotFound("@Path", e.target());
                     continue;
                 }
+                if(info.annotations().containsKey(DECORATOR)) {
+                    //we do not add decorators as resources
+                    //we can't pick up on programatically added decorators, but that is such an edge case it should not really matter
+                    continue;
+                }
                 if (!Modifier.isInterface(info.flags())) {
                     resteasyDeploymentData.getScannedResourceClasses().add(info.name().toString());
                 } else {
@@ -239,6 +246,12 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
             for (AnnotationInstance e : providers) {
                 if (e.target() instanceof ClassInfo) {
                     ClassInfo info = (ClassInfo) e.target();
+
+                    if(info.annotations().containsKey(DECORATOR)) {
+                        //we do not add decorators as providers
+                        //we can't pick up on programatically added decorators, but that is such an edge case it should not really matter
+                        continue;
+                    }
                     if (!Modifier.isInterface(info.flags())) {
                         resteasyDeploymentData.getScannedProviderClasses().add(info.name().toString());
                     }
@@ -252,6 +265,12 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
         for (final ClassInfo iface : pathInterfaces) {
             final Set<ClassInfo> implementors = index.getAllKnownImplementors(iface.name());
             for (final ClassInfo implementor : implementors) {
+
+                if(implementor.annotations().containsKey(DECORATOR)) {
+                    //we do not add decorators as resources
+                    //we can't pick up on programatically added decorators, but that is such an edge case it should not really matter
+                    continue;
+                }
                 resteasyDeploymentData.getScannedResourceClasses().add(implementor.name().toString());
             }
         }
