@@ -35,9 +35,9 @@ import org.jboss.as.controller.services.path.ResolvePathHandler;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class SharedCacheResource extends ClusteredCacheResource {
+public class SharedCacheResourceDefinition extends ClusteredCacheResourceDefinition {
 
-    public SharedCacheResource(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler) {
+    public SharedCacheResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler) {
         super(pathElement, descriptionResolver, addHandler, removeHandler, resolvePathHandler);
     }
 
@@ -56,6 +56,6 @@ public class SharedCacheResource extends ClusteredCacheResource {
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
 
-        resourceRegistration.registerSubModel(new StateTransferResource());
+        resourceRegistration.registerSubModel(new StateTransferResourceDefinition());
     }
 }

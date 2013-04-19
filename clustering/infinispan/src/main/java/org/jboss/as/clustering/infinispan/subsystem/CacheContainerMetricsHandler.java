@@ -21,11 +21,11 @@ public class CacheContainerMetricsHandler extends AbstractRuntimeOnlyHandler {
     public static final CacheContainerMetricsHandler INSTANCE = new CacheContainerMetricsHandler();
 
     public enum CacheManagerMetrics {
-        CACHE_MANAGER_STATUS(CacheContainerResource.CACHE_MANAGER_STATUS),
-        CLUSTER_NAME(CacheContainerResource.CLUSTER_NAME),
-        IS_COORDINATOR(CacheContainerResource.IS_COORDINATOR),
-        COORDINATOR_ADDRESS(CacheContainerResource.COORDINATOR_ADDRESS),
-        LOCAL_ADDRESS(CacheContainerResource.LOCAL_ADDRESS);
+        CACHE_MANAGER_STATUS(CacheContainerResourceDefinition.CACHE_MANAGER_STATUS),
+        CLUSTER_NAME(CacheContainerResourceDefinition.CLUSTER_NAME),
+        IS_COORDINATOR(CacheContainerResourceDefinition.IS_COORDINATOR),
+        COORDINATOR_ADDRESS(CacheContainerResourceDefinition.COORDINATOR_ADDRESS),
+        LOCAL_ADDRESS(CacheContainerResourceDefinition.LOCAL_ADDRESS);
 
         private static final Map<String, CacheManagerMetrics> MAP = new HashMap<String, CacheManagerMetrics>();
 
