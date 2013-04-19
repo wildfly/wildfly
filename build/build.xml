@@ -365,6 +365,10 @@
             <maven-resource group="ch.qos.cal10n" artifact="cal10n-api"/>
         </module-def>
 
+        <module-def name="com.fasterxml.classmate">
+            <maven-resource group="com.fasterxml" artifact="classmate" />
+        </module-def>
+
         <module-def name="com.github.relaxng">
             <maven-resource group="com.github.relaxng" artifact="relaxngDatatype" />
         </module-def>
@@ -698,6 +702,8 @@
         </module-def>
         <module-def name="org.hibernate.validator">
             <maven-resource group="org.hibernate" artifact="hibernate-validator"/>
+            <maven-resource group="javax.el" artifact="javax.el-api"/>
+            <maven-resource group="org.glassfish.web" artifact="javax.el"/>
         </module-def>
 
         <module-def name="org.hornetq">
