@@ -23,9 +23,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import org.infinispan.Cache;
+import org.infinispan.eviction.ActivationManager;
 import org.infinispan.interceptors.ActivationInterceptor;
 import org.infinispan.interceptors.CacheMgmtInterceptor;
 import org.infinispan.interceptors.InvalidationInterceptor;
@@ -39,6 +41,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -118,9 +121,13 @@ public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
 
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
+        // we have to be careful here, as we use the same handler for varying operation paths
+        // /subsystem=infinispan/cache-container=*/local-cache=*
+        // /subsystem=infinispan/cache-container=*/local-cache=*/file-store=FILE_STORE
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String cacheContainerName = address.getElement(address.size() - 2).getValue();
-        final String cacheName = address.getLastElement().getValue();
+        int containerIndex = getCacheContainerIndex(address);
+        final String cacheContainerName = address.getElement(containerIndex).getValue();
+        final String cacheName = address.getElement(containerIndex + 1).getValue();
         final String attrName = operation.require(ModelDescriptionConstants.NAME).asString();
         CacheMetrics metric = CacheMetrics.getStat(attrName);
         final ServiceController<?> controller = context.getServiceRegistry(false).getService(CacheService.getServiceName(cacheContainerName, cacheName));
@@ -256,14 +263,16 @@ public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
                     result.set(interceptor != null ? interceptor.getPassivations() : "");
                     break;
                 }
-                /*
                 case ACTIVATIONS: {
+                    ActivationManager manager = cache.getAdvancedCache().getComponentRegistry().getComponent(ActivationManager.class);
+                    result.set(manager != null ? manager.getActivationCount() : 0);
+                    /*
                     ActivationInterceptor interceptor = getFirstInterceptorWhichExtends(cache.getAdvancedCache()
                             .getInterceptorChain(), ActivationInterceptor.class);
                     result.set(interceptor != null ? interceptor.getActivations() : "");
+                    */
                     break;
                 }
-                */
                 case CACHE_LOADER_LOADS: {
                     ActivationInterceptor interceptor = getFirstInterceptorWhichExtends(cache.getAdvancedCache()
                             .getInterceptorChain(), ActivationInterceptor.class);
@@ -280,6 +289,21 @@ public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
             context.getResult().set(result);
         }
         context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
+    }
+
+    /*
+     * Return the index of the PathElement corresponding to cache-container
+     */
+    private int getCacheContainerIndex(PathAddress address) {
+        int index = 0;
+        for (ListIterator<PathElement> it = address.iterator(); it.hasNext(); ) {
+            PathElement element = it.next();
+            if (element.getKey().equals(ModelKeys.CACHE_CONTAINER)) {
+               return index ;
+            }
+            index++ ;
+        }
+        return -1 ;
     }
 
     private static <T extends CommandInterceptor> T getFirstInterceptorWhichExtends(List<CommandInterceptor> interceptors,
