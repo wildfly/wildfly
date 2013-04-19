@@ -41,7 +41,7 @@ import org.jboss.as.controller.registry.OperationEntry;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class StringKeyedJDBCStoreResource extends BaseJDBCStoreResource {
+public class StringKeyedJDBCStoreResourceDefinition extends BaseJDBCStoreResourceDefinition {
 
     public static final PathElement STRING_KEYED_JDBC_STORE_PATH = PathElement.pathElement(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
 
@@ -57,7 +57,7 @@ public class StringKeyedJDBCStoreResource extends BaseJDBCStoreResource {
         .build();
 
 
-    public StringKeyedJDBCStoreResource() {
+    public StringKeyedJDBCStoreResourceDefinition() {
         super(STRING_KEYED_JDBC_STORE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STRING_KEYED_JDBC_STORE),
                 CacheConfigOperationHandlers.STRING_KEYED_JDBC_STORE_ADD,

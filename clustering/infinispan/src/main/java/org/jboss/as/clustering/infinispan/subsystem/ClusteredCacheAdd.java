@@ -46,11 +46,11 @@ public abstract class ClusteredCacheAdd extends CacheAdd {
     void populate(ModelNode fromModel, ModelNode toModel) throws OperationFailedException {
         super.populate(fromModel, toModel);
 
-        ClusteredCacheResource.MODE.validateAndSet(fromModel, toModel);
-        ClusteredCacheResource.ASYNC_MARSHALLING.validateAndSet(fromModel, toModel);
-        ClusteredCacheResource.QUEUE_SIZE.validateAndSet(fromModel, toModel);
-        ClusteredCacheResource.QUEUE_FLUSH_INTERVAL.validateAndSet(fromModel, toModel);
-        ClusteredCacheResource.REMOTE_TIMEOUT.validateAndSet(fromModel, toModel);
+        ClusteredCacheResourceDefinition.MODE.validateAndSet(fromModel, toModel);
+        ClusteredCacheResourceDefinition.ASYNC_MARSHALLING.validateAndSet(fromModel, toModel);
+        ClusteredCacheResourceDefinition.QUEUE_SIZE.validateAndSet(fromModel, toModel);
+        ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL.validateAndSet(fromModel, toModel);
+        ClusteredCacheResourceDefinition.REMOTE_TIMEOUT.validateAndSet(fromModel, toModel);
     }
 
     /**
@@ -70,12 +70,12 @@ public abstract class ClusteredCacheAdd extends CacheAdd {
         super.processModelNode(context, containerName, cache, builder, dependencies);
 
         // required attribute MODE (ASYNC/SYNC)
-        final Mode mode = Mode.valueOf(ClusteredCacheResource.MODE.resolveModelAttribute(context, cache).asString()) ;
+        final Mode mode = Mode.valueOf(ClusteredCacheResourceDefinition.MODE.resolveModelAttribute(context, cache).asString()) ;
 
-        final long remoteTimeout = ClusteredCacheResource.REMOTE_TIMEOUT.resolveModelAttribute(context, cache).asLong();
-        final int queueSize = ClusteredCacheResource.QUEUE_SIZE.resolveModelAttribute(context, cache).asInt();
-        final long queueFlushInterval = ClusteredCacheResource.QUEUE_FLUSH_INTERVAL.resolveModelAttribute(context, cache).asLong();
-        final boolean asyncMarshalling = ClusteredCacheResource.ASYNC_MARSHALLING.resolveModelAttribute(context, cache).asBoolean();
+        final long remoteTimeout = ClusteredCacheResourceDefinition.REMOTE_TIMEOUT.resolveModelAttribute(context, cache).asLong();
+        final int queueSize = ClusteredCacheResourceDefinition.QUEUE_SIZE.resolveModelAttribute(context, cache).asInt();
+        final long queueFlushInterval = ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL.resolveModelAttribute(context, cache).asLong();
+        final boolean asyncMarshalling = ClusteredCacheResourceDefinition.ASYNC_MARSHALLING.resolveModelAttribute(context, cache).asBoolean();
 
         // adjust the cache mode used based on the value of clustered attribute MODE
         CacheMode cacheMode = mode.apply(this.mode);

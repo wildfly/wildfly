@@ -42,7 +42,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class CacheContainerResource extends SimpleResourceDefinition {
+public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
 
     public static final PathElement CONTAINER_PATH = PathElement.pathElement(ModelKeys.CACHE_CONTAINER);
 
@@ -159,7 +159,7 @@ public class CacheContainerResource extends SimpleResourceDefinition {
     static final AttributeDefinition[] CACHE_CONTAINER_METRICS = {CACHE_MANAGER_STATUS, CLUSTER_NAME, COORDINATOR_ADDRESS, IS_COORDINATOR, LOCAL_ADDRESS};
 
     private final ResolvePathHandler resolvePathHandler;
-    public CacheContainerResource(final ResolvePathHandler resolvePathHandler) {
+    public CacheContainerResourceDefinition(final ResolvePathHandler resolvePathHandler) {
         super(CONTAINER_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.CACHE_CONTAINER),
                 CacheContainerAdd.INSTANCE,
@@ -186,8 +186,8 @@ public class CacheContainerResource extends SimpleResourceDefinition {
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
         // register add-alias and remove-alias
-        resourceRegistration.registerOperationHandler(CacheContainerResource.ALIAS_ADD, AddAliasCommand.INSTANCE);
-        resourceRegistration.registerOperationHandler(CacheContainerResource.ALIAS_REMOVE, RemoveAliasCommand.INSTANCE);
+        resourceRegistration.registerOperationHandler(CacheContainerResourceDefinition.ALIAS_ADD, AddAliasCommand.INSTANCE);
+        resourceRegistration.registerOperationHandler(CacheContainerResourceDefinition.ALIAS_REMOVE, RemoveAliasCommand.INSTANCE);
     }
 
     @Override
@@ -195,10 +195,10 @@ public class CacheContainerResource extends SimpleResourceDefinition {
         super.registerChildren(resourceRegistration);
 
         // child resources
-        resourceRegistration.registerSubModel(new TransportResource());
-        resourceRegistration.registerSubModel(new LocalCacheResource(resolvePathHandler));
-        resourceRegistration.registerSubModel(new InvalidationCacheResource(resolvePathHandler));
-        resourceRegistration.registerSubModel(new ReplicatedCacheResource(resolvePathHandler));
-        resourceRegistration.registerSubModel(new DistributedCacheResource(resolvePathHandler));
+        resourceRegistration.registerSubModel(new TransportResourceDefinition());
+        resourceRegistration.registerSubModel(new LocalCacheResourceDefinition(resolvePathHandler));
+        resourceRegistration.registerSubModel(new InvalidationCacheResourceDefinition(resolvePathHandler));
+        resourceRegistration.registerSubModel(new ReplicatedCacheResourceDefinition(resolvePathHandler));
+        resourceRegistration.registerSubModel(new DistributedCacheResourceDefinition(resolvePathHandler));
     }
 }

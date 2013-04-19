@@ -45,7 +45,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class BaseStoreResource extends SimpleResourceDefinition {
+public class BaseStoreResourceDefinition extends SimpleResourceDefinition {
 
     // attributes
     static final SimpleAttributeDefinition FETCH_STATE =
@@ -118,7 +118,7 @@ public class BaseStoreResource extends SimpleResourceDefinition {
         .setParameters(COMMON_STORE_PARAMETERS)
         .build();
 
-    public BaseStoreResource(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
+    public BaseStoreResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
         super(pathElement, descriptionResolver, addHandler, removeHandler);
     }
 
@@ -147,8 +147,8 @@ public class BaseStoreResource extends SimpleResourceDefinition {
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
         // child resources
-        resourceRegistration.registerSubModel(new StoreWriteBehindResource());
-        resourceRegistration.registerSubModel(new StorePropertyResource());
+        resourceRegistration.registerSubModel(new StoreWriteBehindResourceDefinition());
+        resourceRegistration.registerSubModel(new StorePropertyResourceDefinition());
     }
 
     // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())

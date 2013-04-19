@@ -40,7 +40,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class BaseJDBCStoreResource extends BaseStoreResource {
+public class BaseJDBCStoreResourceDefinition extends BaseStoreResourceDefinition {
 
     // attributes
     static final SimpleAttributeDefinition DATA_SOURCE =
@@ -136,7 +136,7 @@ public class BaseJDBCStoreResource extends BaseStoreResource {
     static final AttributeDefinition[] COMMON_BASE_JDBC_STORE_ATTRIBUTES = {DATA_SOURCE, BATCH_SIZE, FETCH_SIZE, PREFIX,
     COLUMN_NAME, COLUMN_TYPE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN, ENTRY_TABLE, BUCKET_TABLE, STRING_KEYED_TABLE, BINARY_KEYED_TABLE};
 
-    public BaseJDBCStoreResource(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
+    public BaseJDBCStoreResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
         super(pathElement, descriptionResolver, addHandler, removeHandler);
     }
 

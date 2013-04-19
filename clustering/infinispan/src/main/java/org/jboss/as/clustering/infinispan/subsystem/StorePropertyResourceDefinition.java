@@ -39,7 +39,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class StorePropertyResource extends SimpleResourceDefinition {
+public class StorePropertyResourceDefinition extends SimpleResourceDefinition {
 
     public static final PathElement STORE_PROPERTY_PATH = PathElement.pathElement(ModelKeys.PROPERTY);
 
@@ -51,7 +51,7 @@ public class StorePropertyResource extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
-    public StorePropertyResource() {
+    public StorePropertyResourceDefinition() {
         super(STORE_PROPERTY_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.PROPERTY),
                 CacheConfigOperationHandlers.STORE_PROPERTY_ADD,

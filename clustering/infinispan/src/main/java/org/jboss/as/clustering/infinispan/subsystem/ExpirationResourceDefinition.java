@@ -37,52 +37,48 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/transport=TRANSPORT
+ * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/cache=Y/expiration=EXPIRATION
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class TransportResource extends SimpleResourceDefinition {
+public class ExpirationResourceDefinition extends SimpleResourceDefinition {
 
-    public static final PathElement TRANSPORT_PATH = PathElement.pathElement(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
+    public static final PathElement EXPIRATION_PATH = PathElement.pathElement(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
 
     // attributes
-    static final SimpleAttributeDefinition CLUSTER =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.CLUSTER, ModelType.STRING, true)
-                    .setXmlName(Attribute.CLUSTER.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
-
-    static final SimpleAttributeDefinition EXECUTOR =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.EXECUTOR, ModelType.STRING, true)
-                    .setXmlName(Attribute.EXECUTOR.getLocalName())
-                    .setAllowExpression(false)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
-
-    static final SimpleAttributeDefinition LOCK_TIMEOUT =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.LOCK_TIMEOUT, ModelType.LONG, true)
-                    .setXmlName(Attribute.LOCK_TIMEOUT.getLocalName())
+    static final SimpleAttributeDefinition INTERVAL =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.INTERVAL, ModelType.LONG, true)
+                    .setXmlName(Attribute.INTERVAL.getLocalName())
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(240000))
+                    .setDefaultValue(new ModelNode().set(60000))
                     .build();
 
-    // if stack is null, use default stack
-    static final SimpleAttributeDefinition STACK =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.STACK, ModelType.STRING, true)
-                    .setXmlName(Attribute.STACK.getLocalName())
+    static final SimpleAttributeDefinition LIFESPAN =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.LIFESPAN, ModelType.LONG, true)
+                    .setXmlName(Attribute.LIFESPAN.getLocalName())
+                    .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode().set(-1))
                     .build();
 
-    static final AttributeDefinition[] TRANSPORT_ATTRIBUTES = {STACK, CLUSTER, EXECUTOR, LOCK_TIMEOUT};
+    static final SimpleAttributeDefinition MAX_IDLE =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.MAX_IDLE, ModelType.LONG, true)
+                    .setXmlName(Attribute.MAX_IDLE.getLocalName())
+                    .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode().set(-1))
+                    .build();
 
-    public TransportResource() {
-        super(TRANSPORT_PATH,
-                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.TRANSPORT),
-                CacheConfigOperationHandlers.TRANSPORT_ADD,
+    static final AttributeDefinition[] EXPIRATION_ATTRIBUTES = {MAX_IDLE, LIFESPAN, INTERVAL};
+
+    public ExpirationResourceDefinition() {
+        super(EXPIRATION_PATH,
+                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.EXPIRATION),
+                CacheConfigOperationHandlers.EXPIRATION_ADD,
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
@@ -91,9 +87,14 @@ public class TransportResource extends SimpleResourceDefinition {
         super.registerAttributes(resourceRegistration);
 
         // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(TRANSPORT_ATTRIBUTES);
-        for (AttributeDefinition attr : TRANSPORT_ATTRIBUTES) {
+        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(EXPIRATION_ATTRIBUTES);
+        for (AttributeDefinition attr : EXPIRATION_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+        super.registerOperations(resourceRegistration);
     }
 }

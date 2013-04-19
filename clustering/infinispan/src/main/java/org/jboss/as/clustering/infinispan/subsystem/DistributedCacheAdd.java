@@ -69,9 +69,9 @@ public class DistributedCacheAdd extends SharedStateCacheAdd {
             fromModel.remove(deprecatedKey);
         }
 
-        DistributedCacheResource.OWNERS.validateAndSet(fromModel, toModel);
-        DistributedCacheResource.SEGMENTS.validateAndSet(fromModel, toModel);
-        DistributedCacheResource.L1_LIFESPAN.validateAndSet(fromModel, toModel);
+        DistributedCacheResourceDefinition.OWNERS.validateAndSet(fromModel, toModel);
+        DistributedCacheResourceDefinition.SEGMENTS.validateAndSet(fromModel, toModel);
+        DistributedCacheResourceDefinition.L1_LIFESPAN.validateAndSet(fromModel, toModel);
     }
 
     /**
@@ -90,9 +90,9 @@ public class DistributedCacheAdd extends SharedStateCacheAdd {
         // process the basic clustered configuration
         super.processModelNode(context, containerName, cache, builder, dependencies);
 
-        final int owners = DistributedCacheResource.OWNERS.resolveModelAttribute(context, cache).asInt();
-        final int segments = DistributedCacheResource.SEGMENTS.resolveModelAttribute(context, cache).asInt();
-        final long lifespan = DistributedCacheResource.L1_LIFESPAN.resolveModelAttribute(context, cache).asLong();
+        final int owners = DistributedCacheResourceDefinition.OWNERS.resolveModelAttribute(context, cache).asInt();
+        final int segments = DistributedCacheResourceDefinition.SEGMENTS.resolveModelAttribute(context, cache).asInt();
+        final long lifespan = DistributedCacheResourceDefinition.L1_LIFESPAN.resolveModelAttribute(context, cache).asLong();
 
         // process the additional distributed attributes and elements
         builder.clustering().hash()

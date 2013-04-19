@@ -162,14 +162,14 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME),
-                PathElement.pathElement(CacheContainerResource.CONTAINER_PATH.getKey(), "container"),
-                PathElement.pathElement(DistributedCacheResource.DISTRIBUTED_CACHE_PATH.getKey(), "cache"));
+                PathElement.pathElement(CacheContainerResourceDefinition.CONTAINER_PATH.getKey(), "container"),
+                PathElement.pathElement(DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH.getKey(), "cache"));
         ModelNode addOp = Util.createAddOperation(pa);
-        addOp.get(DistributedCacheResource.VIRTUAL_NODES.getName()).set(1);
+        addOp.get(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName()).set(1);
 
         OperationTransformer.TransformedOperation transformedOperation = mainServices.transformOperation(version140, addOp);
-        Assert.assertFalse(transformedOperation.getTransformedOperation().has(DistributedCacheResource.VIRTUAL_NODES.getName()));
-        Assert.assertEquals(6, transformedOperation.getTransformedOperation().get(DistributedCacheResource.SEGMENTS.getName()).asInt());
+        Assert.assertFalse(transformedOperation.getTransformedOperation().has(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName()));
+        Assert.assertEquals(6, transformedOperation.getTransformedOperation().get(DistributedCacheResourceDefinition.SEGMENTS.getName()).asInt());
 
         ModelNode result = new ModelNode();
         result.get(OUTCOME).set(SUCCESS);
@@ -178,11 +178,11 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         Assert.assertEquals(result, transformedOperation.transformResult(result));
 
         ModelNode writeOp = Util.createEmptyOperation(WRITE_ATTRIBUTE_OPERATION, pa);
-        writeOp.get(NAME).set(DistributedCacheResource.VIRTUAL_NODES.getName());
+        writeOp.get(NAME).set(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName());
         writeOp.get(VALUE).set(1);
 
         transformedOperation = mainServices.transformOperation(version140, writeOp);
-        Assert.assertEquals(DistributedCacheResource.SEGMENTS.getName(), transformedOperation.getTransformedOperation().get(NAME).asString());
+        Assert.assertEquals(DistributedCacheResourceDefinition.SEGMENTS.getName(), transformedOperation.getTransformedOperation().get(NAME).asString());
         Assert.assertEquals(6, transformedOperation.getTransformedOperation().get(VALUE).asInt());
         Assert.assertFalse(transformedOperation.rejectOperation(result));
         Assert.assertEquals(result, transformedOperation.transformResult(result));
@@ -229,71 +229,71 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig() ;
 
         // cache-container attributes
-        config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH),
+        config.addFailedAttribute(subsystemAddress.append(CacheContainerResourceDefinition.CONTAINER_PATH),
                 new FailedOperationTransformationConfig.RejectExpressionsConfig(
                         InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CONTAINER_ATTRIBUTES));
 
         // cache container-transport attributes
-        config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH).append(TransportResource.TRANSPORT_PATH),
+        config.addFailedAttribute(subsystemAddress.append(CacheContainerResourceDefinition.CONTAINER_PATH).append(TransportResourceDefinition.TRANSPORT_PATH),
                 // cluster allowed expressions in 1.3.0
                 new FailedOperationTransformationConfig.RejectExpressionsConfig(
                         InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_TRANSPORT_ATTRIBUTES)) ;
 
         PathElement[] cachePaths = {
-                LocalCacheResource.LOCAL_CACHE_PATH,
-                InvalidationCacheResource.INVALIDATION_CACHE_PATH,
-                ReplicatedCacheResource.REPLICATED_CACHE_PATH,
-                DistributedCacheResource.DISTRIBUTED_CACHE_PATH};
+                LocalCacheResourceDefinition.LOCAL_CACHE_PATH,
+                InvalidationCacheResourceDefinition.INVALIDATION_CACHE_PATH,
+                ReplicatedCacheResourceDefinition.REPLICATED_CACHE_PATH,
+                DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH};
 
         // cache attributes
         for (int i=0; i < cachePaths.length; i++) {
-            config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH).append(cachePaths[i]),
+            config.addFailedAttribute(subsystemAddress.append(CacheContainerResourceDefinition.CONTAINER_PATH).append(cachePaths[i]),
                     FailedOperationTransformationConfig.ChainedConfig.createBuilder(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CACHE_ATTRIBUTES)
                     .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CACHE_ATTRIBUTES))
-                    .addConfig(new RemoveResolvedIndexingPropertiesConfig(CacheResource.INDEXING_PROPERTIES)).build()/*.setNotExpectedWriteFailure(ModelKeys.SEGMENTS)*/);
+                    .addConfig(new RemoveResolvedIndexingPropertiesConfig(CacheResourceDefinition.INDEXING_PROPERTIES)).build()/*.setNotExpectedWriteFailure(ModelKeys.SEGMENTS)*/);
 
             PathElement[] childPaths = {
                     LockingResource.LOCKING_PATH,
-                    TransactionResource.TRANSACTION_PATH,
-                    ExpirationResource.EXPIRATION_PATH,
-                    EvictionResource.EVICTION_PATH,
-                    StateTransferResource.STATE_TRANSFER_PATH
+                    TransactionResourceDefinition.TRANSACTION_PATH,
+                    ExpirationResourceDefinition.EXPIRATION_PATH,
+                    EvictionResourceDefinition.EVICTION_PATH,
+                    StateTransferResourceDefinition.STATE_TRANSFER_PATH
             } ;
 
             // cache child attributes
             for (int j=0; j < childPaths.length; j++) {
                 // reject expressions on operations in children
-                config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH).append(cachePaths[i]).append(childPaths[j]),
+                config.addFailedAttribute(subsystemAddress.append(CacheContainerResourceDefinition.CONTAINER_PATH).append(cachePaths[i]).append(childPaths[j]),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(
                                 InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CHILD_ATTRIBUTES));
             }
 
             PathElement[] storePaths = {
-                    StoreResource.STORE_PATH,
-                    FileStoreResource.FILE_STORE_PATH,
-                    StringKeyedJDBCStoreResource.STRING_KEYED_JDBC_STORE_PATH,
-                    BinaryKeyedJDBCStoreResource.BINARY_KEYED_JDBC_STORE_PATH,
-                    MixedKeyedJDBCStoreResource.MIXED_KEYED_JDBC_STORE_PATH,
-                    RemoteStoreResource.REMOTE_STORE_PATH
+                    StoreResourceDefinition.STORE_PATH,
+                    FileStoreResourceDefinition.FILE_STORE_PATH,
+                    StringKeyedJDBCStoreResourceDefinition.STRING_KEYED_JDBC_STORE_PATH,
+                    BinaryKeyedJDBCStoreResourceDefinition.BINARY_KEYED_JDBC_STORE_PATH,
+                    MixedKeyedJDBCStoreResourceDefinition.MIXED_KEYED_JDBC_STORE_PATH,
+                    RemoteStoreResourceDefinition.REMOTE_STORE_PATH
             } ;
 
 
             FailedOperationTransformationConfig.RejectExpressionsConfig keyedTableComplexChildConfig =
-                    new FailedOperationTransformationConfig.RejectExpressionsConfig(BaseJDBCStoreResource.COMMON_JDBC_STORE_TABLE_ATTRIBUTES);
+                    new FailedOperationTransformationConfig.RejectExpressionsConfig(BaseJDBCStoreResourceDefinition.COMMON_JDBC_STORE_TABLE_ATTRIBUTES);
 
 
             // cache store attributes
             for (int k=0; k < storePaths.length; k++) {
                 // reject expressions on operations on stores and store properties
-                config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH).append(cachePaths[i]).append(storePaths[k]),
+                config.addFailedAttribute(subsystemAddress.append(CacheContainerResourceDefinition.CONTAINER_PATH).append(cachePaths[i]).append(storePaths[k]),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_STORE_ATTRIBUTES)
                             .configureComplexAttribute(ModelKeys.STRING_KEYED_TABLE, keyedTableComplexChildConfig)
                             .configureComplexAttribute(ModelKeys.BINARY_KEYED_TABLE, keyedTableComplexChildConfig));
 
-                config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH).append(cachePaths[i]).append(storePaths[k]).append(StoreWriteBehindResource.STORE_WRITE_BEHIND_PATH),
+                config.addFailedAttribute(subsystemAddress.append(CacheContainerResourceDefinition.CONTAINER_PATH).append(cachePaths[i]).append(storePaths[k]).append(StoreWriteBehindResourceDefinition.STORE_WRITE_BEHIND_PATH),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_STORE_ATTRIBUTES));
 
-                config.addFailedAttribute(subsystemAddress.append(CacheContainerResource.CONTAINER_PATH).append(cachePaths[i]).append(storePaths[k]).append(StorePropertyResource.STORE_PROPERTY_PATH),
+                config.addFailedAttribute(subsystemAddress.append(CacheContainerResourceDefinition.CONTAINER_PATH).append(cachePaths[i]).append(storePaths[k]).append(StorePropertyResourceDefinition.STORE_PROPERTY_PATH),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_STORE_ATTRIBUTES));
             }
         }
@@ -313,7 +313,7 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         @Override
         protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
             //The add does not currently reject the defined indexing-properties
-            if (attribute.isDefined() && attrName.equals(CacheResource.INDEXING_PROPERTIES.getName())) {
+            if (attribute.isDefined() && attrName.equals(CacheResourceDefinition.INDEXING_PROPERTIES.getName())) {
                 ModelNode resolved = attribute.resolve();
                 return resolved.equals(attribute);
             }

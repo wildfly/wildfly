@@ -50,7 +50,7 @@ public class CacheContainerWriteAttributeHandler implements OperationStepHandler
     private final Map<String, AttributeDefinition> attributeDefinitions;
 
     public CacheContainerWriteAttributeHandler() {
-        this(CacheContainerResource.CACHE_CONTAINER_ATTRIBUTES);
+        this(CacheContainerResourceDefinition.CACHE_CONTAINER_ATTRIBUTES);
     }
 
     public CacheContainerWriteAttributeHandler(final AttributeDefinition... definitions) {

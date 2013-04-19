@@ -43,7 +43,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class TransactionResource extends SimpleResourceDefinition {
+public class TransactionResourceDefinition extends SimpleResourceDefinition {
 
     public static final PathElement TRANSACTION_PATH = PathElement.pathElement(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
 
@@ -92,7 +92,7 @@ public class TransactionResource extends SimpleResourceDefinition {
 
     static final AttributeDefinition[] TRANSACTION_METRICS = {COMMITS, PREPARES, ROLLBACKS};
 
-    public TransactionResource() {
+    public TransactionResourceDefinition() {
         super(TRANSACTION_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.TRANSACTION),
                 CacheConfigOperationHandlers.TRANSACTION_ADD,
