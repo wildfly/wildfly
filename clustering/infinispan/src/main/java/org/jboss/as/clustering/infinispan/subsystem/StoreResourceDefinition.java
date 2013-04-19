@@ -43,7 +43,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class StoreResource extends BaseStoreResource {
+public class StoreResourceDefinition extends BaseStoreResourceDefinition {
 
     public static final PathElement STORE_PATH = PathElement.pathElement(ModelKeys.STORE, ModelKeys.STORE_NAME);
 
@@ -64,7 +64,7 @@ public class StoreResource extends BaseStoreResource {
         .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE))
         .build();
 
-    public StoreResource() {
+    public StoreResourceDefinition() {
         super(STORE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE),
                 CacheConfigOperationHandlers.STORE_ADD,

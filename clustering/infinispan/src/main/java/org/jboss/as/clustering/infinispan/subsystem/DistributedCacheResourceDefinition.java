@@ -49,7 +49,7 @@ import org.jboss.dmr.ModelType;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Radoslav Husar
  */
-public class DistributedCacheResource extends SharedCacheResource {
+public class DistributedCacheResourceDefinition extends SharedCacheResourceDefinition {
 
     public static final PathElement DISTRIBUTED_CACHE_PATH = PathElement.pathElement(ModelKeys.DISTRIBUTED_CACHE);
 
@@ -96,7 +96,7 @@ public class DistributedCacheResource extends SharedCacheResource {
 
     static final AttributeDefinition[] DISTRIBUTED_CACHE_ATTRIBUTES = {OWNERS, SEGMENTS, L1_LIFESPAN};
 
-    public DistributedCacheResource(final ResolvePathHandler resolvePathHandler) {
+    public DistributedCacheResourceDefinition(final ResolvePathHandler resolvePathHandler) {
         super(DISTRIBUTED_CACHE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.DISTRIBUTED_CACHE),
                 DistributedCacheAdd.INSTANCE,

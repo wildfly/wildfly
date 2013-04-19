@@ -43,7 +43,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class StoreWriteBehindResource extends SimpleResourceDefinition {
+public class StoreWriteBehindResourceDefinition extends SimpleResourceDefinition {
 
     public static final PathElement STORE_WRITE_BEHIND_PATH = PathElement.pathElement(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME);
 
@@ -89,7 +89,7 @@ public class StoreWriteBehindResource extends SimpleResourceDefinition {
             build();
 
 
-    public StoreWriteBehindResource() {
+    public StoreWriteBehindResourceDefinition() {
         super(STORE_WRITE_BEHIND_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.WRITE_BEHIND),
                 CacheConfigOperationHandlers.STORE_WRITE_BEHIND_ADD,

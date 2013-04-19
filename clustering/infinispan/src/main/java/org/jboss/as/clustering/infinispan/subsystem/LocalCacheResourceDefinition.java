@@ -30,13 +30,13 @@ import org.jboss.as.controller.services.path.ResolvePathHandler;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class LocalCacheResource extends CacheResource {
+public class LocalCacheResourceDefinition extends CacheResourceDefinition {
 
     public static final PathElement LOCAL_CACHE_PATH = PathElement.pathElement(ModelKeys.LOCAL_CACHE);
 
     // attributes
 
-    public LocalCacheResource(final ResolvePathHandler resolvePathHandler) {
+    public LocalCacheResourceDefinition(final ResolvePathHandler resolvePathHandler) {
         super(LOCAL_CACHE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.LOCAL_CACHE),
                 LocalCacheAdd.INSTANCE,
