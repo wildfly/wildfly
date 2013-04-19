@@ -246,6 +246,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>com.fasterxml</groupId>
+                    <artifactId>classmate</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>com.h2database</groupId>
                     <artifactId>h2</artifactId>
                 </dependency>
@@ -375,7 +380,13 @@
                         </exclusion>
                     </exclusions>
                 </dependency>
-                
+
+                <dependency>
+                    <groupId>javax.el</groupId>
+                    <artifactId>javax.el-api</artifactId>
+                    <version>${version.javax.el}</version>
+                </dependency>
+
                 <dependency>
                     <groupId>javax.inject</groupId>
                     <artifactId>javax.inject</artifactId>
@@ -690,6 +701,12 @@
                 <dependency>
                     <groupId>org.glassfish</groupId>
                     <artifactId>javax.json</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.glassfish.web</groupId>
+                    <artifactId>javax.el</artifactId>
+                    <version>${version.javax.el}</version>
                 </dependency>
 
                 <dependency>

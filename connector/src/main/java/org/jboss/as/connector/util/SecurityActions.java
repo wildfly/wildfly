@@ -20,6 +20,7 @@
 
 package org.jboss.as.connector.util;
 
+import org.jboss.as.util.security.GetClassLoaderAction;
 import org.jboss.as.util.security.GetContextClassLoaderAction;
 import org.jboss.as.util.security.ReadPropertyAction;
 import org.jboss.as.util.security.SetContextClassLoaderAction;
@@ -69,5 +70,14 @@ class SecurityActions {
      */
     static String getSystemProperty(final String name) {
         return getSecurityManager() == null ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
+    }
+
+    /**
+     * Returns the class loader for the given class
+     * @param clazz the class of interest
+     * @return the class loader for the given class
+     */
+    static ClassLoader getClassLoader(Class<?> clazz) {
+        return getSecurityManager() == null ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
     }
 }

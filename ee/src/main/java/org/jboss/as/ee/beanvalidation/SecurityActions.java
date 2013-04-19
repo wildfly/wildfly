@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.beanvalidation;
 
+import org.jboss.as.util.security.GetClassLoaderAction;
 import org.jboss.as.util.security.GetContextClassLoaderAction;
 import org.jboss.as.util.security.SetContextClassLoaderAction;
 
@@ -41,14 +42,14 @@ final class SecurityActions {
      * @return the current context classloader
      */
     static ClassLoader getContextClassLoader() {
-        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
+        return getSecurityManager() == null ? currentThread().getContextClassLoader()
+                : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     /**
      * Sets context classloader.
      *
-     * @param classLoader
-     *            the classloader
+     * @param classLoader the classloader
      */
     static void setContextClassLoader(final ClassLoader classLoader) {
         if (getSecurityManager() == null) {
@@ -58,4 +59,12 @@ final class SecurityActions {
         }
     }
 
+    /**
+     * Returns the class loader for the given class
+     * @param clazz the class of interest
+     * @return the class loader for the given class
+     */
+    static ClassLoader getClassLoader(Class<?> clazz) {
+        return getSecurityManager() == null ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
+    }
 }
