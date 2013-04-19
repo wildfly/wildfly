@@ -438,7 +438,7 @@ abstract class AbstractOperationContext implements OperationContext {
                 try {
                     step.handler.execute(this, step.operation);
                     // AS7-6046
-                    if (isBooting() && step.response.hasDefined(FAILURE_DESCRIPTION)) {
+                    if (isErrorLoggingNecessary() && step.response.hasDefined(FAILURE_DESCRIPTION)) {
                         MGMT_OP_LOGGER.operationFailed(step.operation.get(OP), step.operation.get(OP_ADDR),
                                 step.response.get(FAILURE_DESCRIPTION));
                     }
@@ -458,13 +458,11 @@ abstract class AbstractOperationContext implements OperationContext {
                     // completeStep()
                     final ModelNode failDesc = OperationClientException.class.cast(t).getFailureDescription();
                     step.response.get(FAILURE_DESCRIPTION).set(failDesc);
-                    if (isBooting()) {
-                        // An OCE on boot needs to be logged as an ERROR
+                    if (isErrorLoggingNecessary()) {
                         MGMT_OP_LOGGER.operationFailed(step.operation.get(OP), step.operation.get(OP_ADDR),
                                 step.response.get(FAILURE_DESCRIPTION));
                     } else {
-                        // An OCE post-boot is a client-side mistake and is
-                        // logged at DEBUG
+                        // A client-side mistake post-boot that only affects model, not runtime, is logged at DEBUG
                         MGMT_OP_LOGGER.operationFailedOnClientError(step.operation.get(OP), step.operation.get(OP_ADDR),
                                 step.response.get(FAILURE_DESCRIPTION));
                     }
@@ -503,6 +501,17 @@ abstract class AbstractOperationContext implements OperationContext {
 
             finishStep(step);
         }
+    }
+
+    /** Whether ERROR level logging is appropriate for any operation failures*/
+    private boolean isErrorLoggingNecessary() {
+        // Log for any boot failure or for any failure that may affect this processes' runtime services.
+        // Post-boot MODEL failures aren't ERROR logged as they have no impact outside the scope of
+        // the soon-to-be-abandoned OperationContext.
+        // TODO consider logging Stage.DOMAIN problems if it's clear the message will be comprehensible.
+        // Currently Stage.DOMAIN failure handling involves message manipulation before sending the
+        // failure data to the client; logging stuff before that is done is liable to just produce a log mess.
+        return isBooting() || currentStage == Stage.RUNTIME || currentStage == Stage.VERIFY;
     }
 
     private void finishStep(Step step) {
