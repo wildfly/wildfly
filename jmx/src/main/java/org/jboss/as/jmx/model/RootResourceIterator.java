@@ -50,9 +50,8 @@ class RootResourceIterator<T> {
                 if (current.hasChildren(type)) {
                     for (ResourceEntry entry : current.getChildren(type)) {
                         final PathElement pathElement = entry.getPathElement();
-                        final Resource child = current.getChild(pathElement);
                         final PathAddress childAddress = address.append(pathElement);
-                        doIterate(child, childAddress);
+                        doIterate(entry, childAddress);
                     }
                 }
             }
