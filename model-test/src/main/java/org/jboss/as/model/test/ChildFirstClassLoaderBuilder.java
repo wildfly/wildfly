@@ -111,25 +111,33 @@ public class ChildFirstClassLoaderBuilder {
                 }
                 file = file.getParentFile();
             }
-            if (file == null) {
-                throw new IllegalStateException("Could not find a parent file called '" + root + "'");
-            }
-            String separator = cacheFolderName.indexOf("/") != -1 ? "/" : "\\";
-            for (String part : cacheFolderName.split(separator)) {
-                file = new File(file, part);
-                if (file.exists()) {
-                    if (!file.isDirectory()) {
-                        throw new IllegalStateException(file.getAbsolutePath() + " is not a directory");
-                    }
-                } else {
-                    if (!file.mkdir()) {
-                        if (!file.exists()) {
-                            throw new IllegalStateException(file.getAbsolutePath() + " could not be created");
+            if (file != null) {
+                String separator = cacheFolderName.indexOf("/") != -1 ? "/" : "\\";
+                for (String part : cacheFolderName.split(separator)) {
+                    file = new File(file, part);
+                    if (file.exists()) {
+                        if (!file.isDirectory()) {
+                            throw new IllegalStateException(file.getAbsolutePath() + " is not a directory");
+                        }
+                    } else {
+                        if (!file.mkdir()) {
+                            if (!file.exists()) {
+                                throw new IllegalStateException(file.getAbsolutePath() + " could not be created");
+                            }
                         }
                     }
                 }
+                cache = file;
+            } else if (System.getProperty(STRICT_PROPERTY) != null) {
+                throw new IllegalStateException("Could not find a parent file called '" + root + "'");
+            } else {
+                // Probably running in an IDE where the working dir is not the source code root
+                cache = new File("target", "cached-classloader");
+                cache.mkdirs();
+                if (!cache.exists()) {
+                    throw new IllegalStateException("Could not create cache file");
+                }
             }
-            cache = file;
         } else {
             throw new IllegalStateException("You must either set both " + ROOT_PROPERTY + " and " + CACHE_FOLDER_PROPERTY + ", or none of them");
         }
