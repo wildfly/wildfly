@@ -19,7 +19,7 @@
        </periodic-rotating-file-handler>
        <?LOGGERS?>
        <root-logger>
-           <level name="INFO"/>
+           <level name="@@rootlevel@@"/>
            <handlers>
                <handler name="CONSOLE"/>
                <handler name="FILE"/>
@@ -28,6 +28,7 @@
    </subsystem>
    <supplement name="default">
       <replacement placeholder="@@append@@" attributeValue="true"/>
+      <replacement placeholder="@@rootlevel@@" attributeValue="INFO"/>
       <replacement placeholder="LOGGERS">
 	      <logger category="com.arjuna">
 	          <level name="WARN"/>
@@ -51,6 +52,7 @@
    </supplement>
    <supplement name="osgi">
       <replacement placeholder="@@append@@" attributeValue="false"/>
+      <replacement placeholder="@@rootlevel@@" attributeValue="DEBUG"/>
       <replacement placeholder="LOGGERS">
 	       <logger category="org.jboss.osgi">
 	           <level name="DEBUG"/>

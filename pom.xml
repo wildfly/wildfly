@@ -841,6 +841,12 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-camel</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-clustering</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -6060,6 +6066,7 @@
                 <module>build</module>
                 <module>build-config</module>
                 <module>arquillian</module>
+                <module>camel</module>
                 <module>cli</module>
                 <module>client/ejb</module>
                 <module>client/jms</module>
