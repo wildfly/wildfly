@@ -53,6 +53,7 @@
             <modules>
                 <module>smoke</module>
                 <module>basic</module>
+                <module>camel</module>
                 <module>osgi</module>
                 <module>iiop</module>
                 <module>xts</module>
@@ -118,6 +119,7 @@
             <activation><property><name>ts.osgi</name></property></activation>
             <modules>
                 <module>osgi</module>
+                <module>camel</module>
             </modules>
         </profile>
 

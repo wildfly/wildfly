@@ -84,7 +84,7 @@ public class CamelBootstrapService extends AbstractService<Void> {
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
+    public void start(StartContext startContext) throws StartException {
         LOGGER.infoActivatingSubsystem();
 
         final BundleContext syscontext = injectedSystemContext.getValue();
