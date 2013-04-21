@@ -1056,13 +1056,19 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-io</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-jacorb</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-io</artifactId>
+                <artifactId>jboss-as-jaxr</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -6094,6 +6100,7 @@
                 <module>ejb3</module>
                 <module>host-controller</module>
                 <module>jacorb</module>
+                <module>jaxr</module>
                 <module>jaxrs</module>
                 <module>jdr</module>
                 <module>jpa</module>
