@@ -1,5 +1,6 @@
 package org.jboss.as.undertow;
 
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -11,12 +12,12 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.server.handlers.form.MultiPartHandler;
+import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
 import io.undertow.servlet.api.ServletContainer;
 import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
-import org.jboss.as.undertow.deployment.FileResourceLoader;
 import org.jboss.as.web.host.ServletBuilder;
 import org.jboss.as.web.host.WebDeploymentBuilder;
 import org.jboss.as.web.host.WebDeploymentController;
@@ -124,7 +125,7 @@ public class Host implements Service<Host>, WebHost {
         d.setDeploymentName(webDeploymentBuilder.getContextRoot());
         d.setContextPath(webDeploymentBuilder.getContextRoot());
         d.setClassLoader(webDeploymentBuilder.getClassLoader());
-        d.setResourceLoader(new FileResourceLoader(webDeploymentBuilder.getDocumentRoot()));
+        d.setResourceManager(new FileResourceManager(Paths.get(webDeploymentBuilder.getDocumentRoot().getAbsolutePath())));
         for (ServletBuilder servlet : webDeploymentBuilder.getServlets()) {
             ServletInfo s;
             if (servlet.getServlet() == null) {

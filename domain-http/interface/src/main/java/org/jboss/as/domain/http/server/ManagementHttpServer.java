@@ -51,7 +51,6 @@ import io.undertow.server.HttpOpenListener;
 import io.undertow.server.handlers.CanonicalPathHandler;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.cache.CacheHandler;
-import io.undertow.server.handlers.cache.CachedHttpRequest;
 import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.server.handlers.error.SimpleErrorPageHandler;
 import org.jboss.as.controller.ControlledProcessStateService;
@@ -191,7 +190,7 @@ public class ManagementHttpServer {
             current = new SinglePortConfidentialityHandler(current, securePort);
         }
         //caching handler, used for static resources
-        current = new CacheHandler(new DirectBufferCache<CachedHttpRequest>(1024, 1024 * 1024, BufferAllocator.BYTE_BUFFER_ALLOCATOR), current);
+        current = new CacheHandler(new DirectBufferCache(1024,1024 * 10, 1024 * 1000, BufferAllocator.BYTE_BUFFER_ALLOCATOR), current);
         current = new SimpleErrorPageHandler(current);
         canonicalPathHandler.setNext(current);
 
