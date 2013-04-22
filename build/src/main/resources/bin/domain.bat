@@ -7,6 +7,8 @@ rem $Id$
 
 @if not "%ECHO%" == ""  echo %ECHO%
 @if "%OS%" == "Windows_NT" setlocal
+rem Set to all parameters by default
+set SERVER_OPTS=%*
 
 if "%OS%" == "Windows_NT" (
   set "DIRNAME=%~dp0%"
@@ -76,6 +78,36 @@ if exist "%JBOSS_HOME%\jboss-modules.jar" (
   goto END
 )
 
+rem Setup directories, note directories with spaces do not work
+set "CONSOLIDATED_OPTS=%JAVA_OPTS% %SERVER_OPTS%"
+:DIRLOOP
+echo(%CONSOLIDATED_OPTS% | findstr /r /c:"^-Djboss.domain.base.dir" > nul && (
+  for /f "tokens=1,2* delims==" %%a IN ("%CONSOLIDATED_OPTS%") DO (
+    for /f %%i IN ("%%b") DO set "JBOSS_BASE_DIR=%%~fi"
+  )
+)
+echo(%CONSOLIDATED_OPTS% | findstr /r /c:"^-Djboss.domain.config.dir" > nul && (
+  for /f "tokens=1,2* delims==" %%a IN ("%CONSOLIDATED_OPTS%") DO (
+    for /f %%i IN ("%%b") DO set "JBOSS_CONFIG_DIR=%%~fi"
+  )
+)
+echo(%CONSOLIDATED_OPTS% | findstr /r /c:"^-Djboss.domain.log.dir" > nul && (
+  for /f "tokens=1,2* delims==" %%a IN ("%CONSOLIDATED_OPTS%") DO (
+    for /f %%i IN ("%%b") DO set "JBOSS_LOG_DIR=%%~fi"
+  )
+)
+
+for /f "tokens=1* delims= " %%i IN ("%CONSOLIDATED_OPTS%") DO (
+  if %%i == "" (
+    goto ENDDIRLOOP
+  ) else (
+    set CONSOLIDATED_OPTS=%%j
+    GOTO DIRLOOP
+  )
+)
+
+:ENDDIRLOOP
+
 rem Setup JBoss specific properties
 
 rem Set default module root paths
@@ -93,7 +125,7 @@ if "x%JBOSS_LOG_DIR%" == "x" (
 )
 rem Set the domain configuration dir
 if "x%JBOSS_CONFIG_DIR%" == "x" (
-  set  "JBOSS_CONFIG_DIR=%JBOSS_BASE_DIR%/configuration"
+  set  "JBOSS_CONFIG_DIR=%JBOSS_BASE_DIR%\configuration"
 )
 
 echo ===============================================================================
