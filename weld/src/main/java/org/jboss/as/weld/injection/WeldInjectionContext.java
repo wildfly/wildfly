@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.InjectionTarget;
 
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.weld.WeldMessages;
@@ -21,10 +22,10 @@ public class WeldInjectionContext implements Serializable {
 
     //the following fields are transient, as they are only needed at creation time,
     //and should not be needed after injection is complete
-    private final transient WeldEEInjection injectionTarget;
-    private final transient Map<Class<?>, WeldEEInjection> interceptorInjections;
+    private final transient InjectionTarget injectionTarget;
+    private final transient Map<Class<?>, InjectionTarget> interceptorInjections;
 
-    public WeldInjectionContext(CreationalContext<?> ctx, final Bean<?> bean, final boolean delegateProduce, final WeldEEInjection injectionTarget, final Map<Class<?>, WeldEEInjection> interceptorInjections) {
+    public WeldInjectionContext(CreationalContext<?> ctx, final Bean<?> bean, final boolean delegateProduce, final InjectionTarget injectionTarget, final Map<Class<?>, InjectionTarget> interceptorInjections) {
         this.context = ctx;
         this.bean = bean;
         this.delegateProduce = delegateProduce;
@@ -50,7 +51,7 @@ public class WeldInjectionContext implements Serializable {
     }
 
     public void injectInterceptor(Object instance) {
-        final WeldEEInjection injection = interceptorInjections.get(instance.getClass());
+        final InjectionTarget injection = interceptorInjections.get(instance.getClass());
         if (injection != null) {
             injection.inject(instance, context);
         } else {
@@ -62,7 +63,7 @@ public class WeldInjectionContext implements Serializable {
         return context;
     }
 
-    public WeldEEInjection getInjectionTarget() {
+    public InjectionTarget getInjectionTarget() {
         return injectionTarget;
     }
 

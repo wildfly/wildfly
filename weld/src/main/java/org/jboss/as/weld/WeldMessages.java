@@ -31,13 +31,14 @@ import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.NoSuchEJBException;
+import javax.enterprise.inject.spi.InjectionPoint;
 
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 
 /**
  * Date: 05.11.2011
@@ -102,10 +103,10 @@ public interface WeldMessages {
     IllegalArgumentException annotationNotFound(Class<? extends Annotation> type,  Member member);
 
     @Message(id = 16066, value = "Could not resolve @EJB injection for %s on %s")
-    IllegalArgumentException ejbNotResolved(EJB ejb, Member member);
+    IllegalStateException ejbNotResolved(EJB ejb, Member member);
 
     @Message(id = 16067, value = "Resolved more than one EJB for @EJB injection of %s on %s. Found %s")
-    IllegalArgumentException moreThanOneEjbResolved(EJB ejb, Member member, final Set<ViewDescription> viewService);
+    IllegalStateException moreThanOneEjbResolved(EJB ejb, Member member, final Set<ViewDescription> viewService);
 
     @Message(id = 16068, value = "Could not determine bean class from injection point type of %s")
     IllegalArgumentException couldNotDetermineUnderlyingType(Type type);
@@ -130,4 +131,17 @@ public interface WeldMessages {
 
     @Message(id = 16075, value = "BeanDeploymentArchive with id %s not found in deployment")
     IllegalArgumentException beanDeploymentNotFound(String beanDeploymentId);
+
+    @Message(id = 16076, value = "Error injecting resource into CDI managed bean. Can't find a resource named %s")
+    IllegalArgumentException coundNotFindResource(String resourceName, @Cause Throwable cause);
+
+    @Message(id = 16077, value = "Cannot determine resource name. Both jndiName and mappedName are null")
+    IllegalArgumentException cannotDetermineResourceName();
+
+    @Message(id = 16078, value = "Cannot inject injection point %s")
+    IllegalArgumentException cannotInject(InjectionPoint ip);
+
+    @Message(id = 16079, value = "%s cannot be used at runtime")
+    IllegalStateException cannotUseAtRuntime(String description);
+
 }

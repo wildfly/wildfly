@@ -56,7 +56,7 @@ public class DelegatingInterceptorInvocationContext implements InvocationContext
     }
 
     @Override
-    public Constructor getConstructor() {
+    public Constructor<?> getConstructor() {
         return delegateInvocationContext.getConstructor();
     }
 

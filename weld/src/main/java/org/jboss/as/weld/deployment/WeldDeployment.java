@@ -22,25 +22,32 @@
 
 package org.jboss.as.weld.deployment;
 
-import org.jboss.as.weld.WeldModuleResourceLoader;
-import org.jboss.as.weld.services.bootstrap.ProxyServicesImpl;
-import org.jboss.modules.Module;
-import org.jboss.weld.bootstrap.api.ServiceRegistry;
-import org.jboss.weld.bootstrap.api.helpers.SimpleServiceRegistry;
-import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
-import org.jboss.weld.bootstrap.spi.BeansXml;
-import org.jboss.weld.bootstrap.spi.Deployment;
-import org.jboss.weld.bootstrap.spi.Metadata;
-import org.jboss.weld.resources.spi.ResourceLoader;
-import org.jboss.weld.serialization.spi.ProxyServices;
-
-import javax.enterprise.inject.spi.Extension;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import javax.enterprise.inject.spi.Extension;
+
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.as.weld.WeldModuleResourceLoader;
+import org.jboss.as.weld.discovery.WeldAnnotationDiscovery;
+import org.jboss.as.weld.services.bootstrap.ProxyServicesImpl;
+import org.jboss.modules.Module;
+import org.jboss.weld.bootstrap.api.Service;
+import org.jboss.weld.bootstrap.api.ServiceRegistry;
+import org.jboss.weld.bootstrap.api.helpers.SimpleServiceRegistry;
+import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
+import org.jboss.weld.bootstrap.spi.BeansXml;
+import org.jboss.weld.bootstrap.spi.Deployment;
+import org.jboss.weld.bootstrap.spi.Metadata;
+import org.jboss.weld.resources.spi.AnnotationDiscovery;
+import org.jboss.weld.resources.spi.ResourceLoader;
+import org.jboss.weld.serialization.spi.ProxyServices;
 
 /**
  * Abstract implementation of {@link Deployment}.
@@ -53,13 +60,9 @@ import java.util.Set;
 public class WeldDeployment implements Deployment {
 
     public static final String ADDITIONAL_CLASSES_BDA_SUFFIX = ".additionalClasses";
+    public static final String BOOTSTRAP_CLASSLOADER_BDA_ID = "bootstrapBDA" + ADDITIONAL_CLASSES_BDA_SUFFIX;
 
     private final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives;
-
-    /**
-     * The bean deployment archive used for classes added through the SPI that are not present in a existing bean archive
-     */
-    private final BeanDeploymentArchiveImpl additionalBeanDeploymentArchive;
 
     private final Set<Metadata<Extension>> extensions;
 
@@ -82,31 +85,53 @@ public class WeldDeployment implements Deployment {
      */
     private final Map<String, BeanDeploymentArchiveImpl> beanDeploymentsByClassName;
 
-    public WeldDeployment(Set<BeanDeploymentArchiveImpl> beanDeploymentArchives, Collection<Metadata<Extension>> extensions,
-                          Module module, Set<ClassLoader> subDeploymentClassLoaders) {
-        this.subDeploymentClassLoaders = new HashSet<ClassLoader>(subDeploymentClassLoaders);
-        this.additionalBeanDeploymentArchive = new BeanDeploymentArchiveImpl(Collections.<String> emptySet(),
-                BeansXml.EMPTY_BEANS_XML, module, getClass().getName() + ADDITIONAL_CLASSES_BDA_SUFFIX);
+    private final Map<ClassLoader, BeanDeploymentArchiveImpl> additionalBeanDeploymentArchivesByClassloader;
 
+    public WeldDeployment(Set<BeanDeploymentArchiveImpl> beanDeploymentArchives, Collection<Metadata<Extension>> extensions,
+            Module module, Set<ClassLoader> subDeploymentClassLoaders, DeploymentUnit deploymentUnit) {
+        this.subDeploymentClassLoaders = new HashSet<ClassLoader>(subDeploymentClassLoaders);
         this.beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>(beanDeploymentArchives);
         this.extensions = new HashSet<Metadata<Extension>>(extensions);
         this.serviceRegistry = new SimpleServiceRegistry();
         this.beanDeploymentsByClassName = new HashMap<String, BeanDeploymentArchiveImpl>();
+        this.additionalBeanDeploymentArchivesByClassloader = new HashMap<ClassLoader, BeanDeploymentArchiveImpl>();
         this.module = module;
 
         // add static services
         this.serviceRegistry.add(ProxyServices.class, new ProxyServicesImpl(module));
         this.serviceRegistry.add(ResourceLoader.class, new WeldModuleResourceLoader(module));
 
+        CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+        if (index != null) {
+            this.serviceRegistry.add(AnnotationDiscovery.class, new WeldAnnotationDiscovery(index));
+        }
+
         // set up the additional bean archives accessibility rules
         // and map class names to bean deployment archives
         for (BeanDeploymentArchiveImpl bda : beanDeploymentArchives) {
-            bda.addBeanDeploymentArchive(additionalBeanDeploymentArchive);
             for (String className : bda.getBeanClasses()) {
                 beanDeploymentsByClassName.put(className, bda);
             }
         }
-        additionalBeanDeploymentArchive.addBeanDeploymentArchives(this.beanDeploymentArchives);
+
+        calculateAccessibilityGraph(this.beanDeploymentArchives);
+    }
+
+    /**
+     * {@link org.jboss.as.weld.deployment.processors.WeldDeploymentProcessor} assembles a basic accessibility graph based on
+     * the deployment structure. Here, we complete the graph by examining classloader visibility. This allows additional
+     * accessibility edges caused e.g. by the Class-Path declaration in the manifest file, to be recognized.
+     *
+     * @param beanDeploymentArchives
+     */
+    private void calculateAccessibilityGraph(Iterable<BeanDeploymentArchiveImpl> beanDeploymentArchives) {
+        for (BeanDeploymentArchiveImpl from : beanDeploymentArchives) {
+            for (BeanDeploymentArchiveImpl target : beanDeploymentArchives) {
+                if (from.isAccessible(target)) {
+                    from.addBeanDeploymentArchive(target);
+                }
+            }
+        }
     }
 
     /** {@inheritDoc} */
@@ -129,14 +154,48 @@ public class WeldDeployment implements Deployment {
         if (beanDeploymentsByClassName.containsKey(beanClass.getName())) {
             return beanDeploymentsByClassName.get(beanClass.getName());
         }
-        // if this is a class we have not seen before add it to the additional classes BDA
-        additionalBeanDeploymentArchive.addBeanClass(beanClass);
-        beanDeploymentsByClassName.put(beanClass.getName(), additionalBeanDeploymentArchive);
-        return additionalBeanDeploymentArchive;
+        /*
+         * We haven't found this class in a bean archive so apparently it was added by an extension and the class itself does
+         * not come from a BDA. Before we create a new BDA, let's try to find an existing BDA that uses the same classloader
+         * (and thus has the required accessibility to other BDAs)
+         */
+        if (additionalBeanDeploymentArchivesByClassloader.containsKey(beanClass.getClassLoader())) {
+            return additionalBeanDeploymentArchivesByClassloader.get(beanClass.getClassLoader());
+        }
+        /*
+         * No, there is no BDA for the class' classloader yet. Let's create one.
+         */
+        return createAndRegisterAdditionalBeanDeploymentArchive(beanClass);
     }
 
-    public BeanDeploymentArchiveImpl getAdditionalBeanDeploymentArchive() {
-        return additionalBeanDeploymentArchive;
+    protected BeanDeploymentArchiveImpl createAndRegisterAdditionalBeanDeploymentArchive(Class<?> beanClass) {
+        Module module = Module.forClass(beanClass);
+        String id = null;
+        if (module == null) {
+            id = BOOTSTRAP_CLASSLOADER_BDA_ID;
+        } else {
+            id = module.getIdentifier() + ADDITIONAL_CLASSES_BDA_SUFFIX;
+        }
+        BeanDeploymentArchiveImpl newBda = new BeanDeploymentArchiveImpl(Collections.singleton(beanClass.getName()),
+                BeansXml.EMPTY_BEANS_XML, module, id, false);
+        newBda.addBeanClass(beanClass);
+        newBda.getServices().addAll(serviceRegistry.entrySet());
+        // handle BDAs visible from the new BDA
+        for (BeanDeploymentArchiveImpl bda : beanDeploymentArchives) {
+            if (newBda.isAccessible(bda)) {
+                newBda.addBeanDeploymentArchive(bda);
+            }
+        }
+        // handle visibility of the new BDA from other BDAs
+        for (BeanDeploymentArchiveImpl bda : beanDeploymentArchives) {
+            if (bda.isAccessible(newBda)) {
+                bda.addBeanDeploymentArchive(newBda);
+            }
+        }
+        beanDeploymentsByClassName.put(beanClass.getName(), newBda);
+        additionalBeanDeploymentArchivesByClassloader.put(beanClass.getClassLoader(), newBda);
+        beanDeploymentArchives.add(newBda);
+        return newBda;
     }
 
     public Module getModule() {
@@ -145,5 +204,12 @@ public class WeldDeployment implements Deployment {
 
     public Set<ClassLoader> getSubDeploymentClassLoaders() {
         return Collections.unmodifiableSet(subDeploymentClassLoaders);
+    }
+
+    public synchronized <T extends Service> void addWeldService(Class<T> type, T service) {
+        serviceRegistry.add(type, service);
+        for (BeanDeploymentArchiveImpl bda : additionalBeanDeploymentArchivesByClassloader.values()) {
+            bda.getServices().add(type, service);
+        }
     }
 }

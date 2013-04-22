@@ -123,4 +123,8 @@ public interface WeldLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.WARN)
     @Message(value = "URL scanner does not understand the URL protocol %s, CDI beans will not be scanned.", id = 16016)
     void doNotUnderstandProtocol(URL url);
+
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(value = "Found both WEB-INF/beans.xml and WEB-INF/classes/META-INF/beans.xml. It is not portable to use both locations at the same time. Weld is going to use the former location for this deployment.", id = 16017)
+    void duplicateBeansXml();
 }

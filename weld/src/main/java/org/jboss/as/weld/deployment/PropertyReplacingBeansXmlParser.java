@@ -19,41 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.weld.util;
+package org.jboss.as.weld.deployment;
 
-import static org.jboss.weld.util.reflection.Reflections.cast;
+import java.net.URL;
 
+import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacement;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.metadata.property.PropertyReplacer;
+import org.jboss.weld.xml.BeansXmlParser;
 
 /**
+ * Fork of {@link org.jboss.weld.xml.BeansXmlParser} to fix some minor XML parsing issues.
  *
  * @author Stuart Douglas
- *
+ * @author Pete Muir
+ * @author Jozef Hartinger
  */
-public class Reflections {
+public class PropertyReplacingBeansXmlParser extends BeansXmlParser {
 
-    public static <T> T newInstance(String className, ClassLoader classLoader) {
-        try {
-            Class<?> clazz = classLoader.loadClass(className);
-            return (T) clazz.newInstance();
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        }
+    private final PropertyReplacer replacer;
+
+    public PropertyReplacingBeansXmlParser(DeploymentUnit deploymentUnit) {
+        this.replacer = SpecDescriptorPropertyReplacement.propertyReplacer(deploymentUnit);
     }
 
-    public static boolean isAccessible(String className, ClassLoader classLoader) {
-        return loadClass(className, classLoader) != null;
+    protected PropertyReplacingBeansXmlHandler getHandler(final URL beansXml) {
+        return new PropertyReplacingBeansXmlHandler(beansXml, replacer);
     }
-
-    public static <T> Class<T> loadClass(String className, ClassLoader classLoader) {
-        try {
-            return cast(classLoader.loadClass(className));
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
 }
