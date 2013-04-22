@@ -22,6 +22,8 @@
 
 package org.jboss.as.undertow.deployment;
 
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,6 +44,7 @@ import javax.servlet.http.HttpServletRequest;
 import io.undertow.jsp.JspFileWrapper;
 import io.undertow.jsp.JspServletBuilder;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.servlet.api.ClassIntrospecter;
 import io.undertow.servlet.api.DefaultServletConfig;
 import io.undertow.servlet.api.DeploymentInfo;
@@ -347,7 +350,11 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 d.setDisplayName(mergedMetaData.getDescriptionGroup().getDisplayName());
             }
             d.setDeploymentName(deploymentUnit.getName());
-            d.setResourceLoader(new DeploymentResourceLoader(deploymentRoot));
+            try {
+                d.setResourceManager(new FileResourceManager(Paths.get(deploymentRoot.getPhysicalFile().getAbsolutePath())));
+            } catch (IOException e) {
+                throw new DeploymentUnitProcessingException(e);
+            }
             d.setClassLoader(module.getClassLoader());
             final String servletVersion = mergedMetaData.getServletVersion();
             if(servletVersion != null) {
