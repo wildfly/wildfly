@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.camel;
+package org.jboss.as.camel.service;
 
 import java.util.List;
 

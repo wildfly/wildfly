@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="org.jboss.as.camel">
+<module xmlns="urn:jboss:module:1.1" name="org.springframework.core">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -31,24 +31,8 @@
         <!-- Insert resources here -->
     </resources>
 
-    <exports>
-        <exclude path="org/jboss/as/camel/service"/>
-    </exports>
-    
     <dependencies>
-        <module name="org.apache.camel"/>
-        <module name="org.jboss.as.controller"/>
-        <module name="org.jboss.as.server"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.jboss.modules"/>
-        <module name="org.jboss.msc"/>
-        <module name="org.jboss.osgi.framework"/>
-        <module name="org.jboss.osgi.resolver"/>
-        <module name="org.jboss.staxmapper"/>
-        <module name="org.springframework.beans"/>
-        <module name="org.springframework.core"/>
-        <module name="org.springframework.context"/>
-        <module name="org.osgi.core"/>
+      <module name="javax.api" />
+      <module name="org.apache.commons.logging" />
     </dependencies>
-
 </module>

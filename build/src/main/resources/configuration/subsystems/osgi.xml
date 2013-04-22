@@ -46,6 +46,10 @@
         <replacement placeholder="CAPABILITIES">
             <capabilities>
                 <!-- modules registered with the OSGi layer on startup -->
+                <capability name="org.apache.camel.core" />
+                <capability name="org.apache.camel.core.xml" />
+                <capability name="org.apache.camel.spring" />
+                <capability name="org.jboss.as.camel" />
                 <capability name="org.slf4j" />
             </capabilities>
         </replacement>

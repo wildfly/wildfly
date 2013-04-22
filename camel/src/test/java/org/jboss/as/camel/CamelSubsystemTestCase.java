@@ -23,7 +23,7 @@ package org.jboss.as.camel;
 
 import java.io.IOException;
 
-import org.jboss.as.camel.CamelExtension;
+import org.jboss.as.camel.service.CamelExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 
 /**

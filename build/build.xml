@@ -545,8 +545,18 @@
             <maven-resource group="net.jcip" artifact="jcip-annotations"/>
         </module-def>
 
-        <module-def name="org.apache.camel">
+        <module-def name="org.apache.camel"/>
+    	
+        <module-def name="org.apache.camel.core">
             <maven-resource group="org.apache.camel" artifact="camel-core"/>
+        </module-def>
+    	
+        <module-def name="org.apache.camel.core.xml">
+            <maven-resource group="org.apache.camel" artifact="camel-core-xml"/>
+        </module-def>
+    	
+        <module-def name="org.apache.camel.spring">
+            <maven-resource group="org.apache.camel" artifact="camel-spring"/>
         </module-def>
     	
         <module-def name="org.apache.commons.beanutils">
@@ -1297,6 +1307,24 @@
 
         <module-def name="org.slf4j.ext">
             <maven-resource group="org.slf4j" artifact="slf4j-ext"/>
+        </module-def>
+
+        <module-def name="org.springframework.beans">
+            <maven-resource group="org.springframework" artifact="spring-beans"/>
+        </module-def>
+
+        <module-def name="org.springframework.context">
+            <maven-resource group="org.springframework" artifact="spring-context"/>
+            <maven-resource group="org.springframework" artifact="spring-aop"/>
+        </module-def>
+
+        <module-def name="org.springframework.core">
+            <maven-resource group="org.springframework" artifact="spring-asm"/>
+            <maven-resource group="org.springframework" artifact="spring-core"/>
+        </module-def>
+
+        <module-def name="org.springframework.expression">
+            <maven-resource group="org.springframework" artifact="spring-expression"/>
         </module-def>
 
         <module-def name="org.yaml.snakeyaml">
