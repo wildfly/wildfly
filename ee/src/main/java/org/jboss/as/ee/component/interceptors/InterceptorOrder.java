@@ -102,6 +102,7 @@ public class InterceptorOrder {
         public static final int EJB_SET_CONTEXT_METHOD_INVOCATION_INTERCEPTOR = 0xC00;
         public static final int COMPONENT_WELD_INJECTION = 0xD00;
         public static final int JPA_SFSB_CREATE = 0xE00;
+        public static final int REQUEST_SCOPE_ACTIVATING_INTERCEPTOR = 0xE80;
         public static final int INTERCEPTOR_USER_INTERCEPTORS = 0xF00;
         public static final int CDI_INTERCEPTORS = 0x1000;
         public static final int COMPONENT_USER_INTERCEPTORS = 0x1100;

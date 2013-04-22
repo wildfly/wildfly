@@ -21,11 +21,6 @@ import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import javax.enterprise.context.ContextNotActiveException;
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.Bean;
-
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.weld.WeldBootstrapService;
 import org.jboss.invocation.Interceptor;
@@ -34,8 +29,8 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.weld.context.ejb.EjbLiteral;
 import org.jboss.weld.context.ejb.EjbRequestContext;
+import org.jboss.weld.ejb.AbstractEJBRequestScopeActivationInterceptor;
 import org.jboss.weld.manager.BeanManagerImpl;
 
 /**
@@ -49,8 +44,11 @@ import org.jboss.weld.manager.BeanManagerImpl;
  * This interceptor is largely stateless, and can be re-used
  *
  * @author Stuart Douglas
+ * @author Jozef Hartinger
  */
-public class EjbRequestScopeActivationInterceptor implements Serializable, org.jboss.invocation.Interceptor {
+public class EjbRequestScopeActivationInterceptor extends AbstractEJBRequestScopeActivationInterceptor implements Serializable, org.jboss.invocation.Interceptor {
+
+    private static final long serialVersionUID = -503029523442133584L;
 
     private volatile EjbRequestContext requestContext;
     private volatile BeanManagerImpl beanManager;
@@ -61,42 +59,29 @@ public class EjbRequestScopeActivationInterceptor implements Serializable, org.j
     }
 
     @Override
-    public Object processInvocation(final InterceptorContext context) throws Exception {
-        //get the reference to the bean manager on the first invocation
-        if(beanManager == null) {
+    protected BeanManagerImpl getBeanManager() {
+        // get the reference to the bean manager on the first invocation
+        if (beanManager == null) {
             final WeldBootstrapService weldContainer = (WeldBootstrapService) currentServiceContainer().getRequiredService(weldContainerServiceName).getValue();
             beanManager = (BeanManagerImpl) weldContainer.getBeanManager();
         }
+        return beanManager;
+    }
 
-        try {
-            //if this call succeeds then the context is active
-            beanManager.getContext(RequestScoped.class);
-            return context.proceed();
-        } catch (ContextNotActiveException exception) {
-        }
-
-
+    @Override
+    protected EjbRequestContext getEjbRequestContext() {
         //create the context lazily, on the first invocation
         //we can't do this on interceptor creation, as the timed object invoker may create the interceptor
         //before we have been injected
         if (requestContext == null) {
-            //it does not matter if this happens twice
-            //we just look up the service rather than using a dependency
-            //the component itself has a dependency on this service, which means that it has to be up
+            requestContext = super.getEjbRequestContext();
+        }
+        return requestContext;
+    }
 
-            final Bean<?> bean = beanManager.resolve(beanManager.getBeans(EjbRequestContext.class, EjbLiteral.INSTANCE));
-            final CreationalContext<?> ctx = beanManager.createCreationalContext(bean);
-            requestContext = (EjbRequestContext) beanManager.getReference(bean, EjbRequestContext.class, ctx);
-        }
-        try {
-            requestContext.associate(context.getInvocationContext());
-            requestContext.activate();
-            return context.proceed();
-        } finally {
-            requestContext.invalidate();
-            requestContext.deactivate();
-            requestContext.dissociate(context.getInvocationContext());
-        }
+    @Override
+    public Object processInvocation(final InterceptorContext context) throws Exception {
+        return aroundInvoke(context.getInvocationContext());
     }
 
 

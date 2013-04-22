@@ -21,14 +21,20 @@
  */
 package org.jboss.as.weld.injection;
 
-import java.lang.annotation.Annotation;
+import static org.jboss.weld.util.reflection.Reflections.cast;
+
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.InjectionTarget;
 
+import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
+import org.jboss.as.web.common.WebComponentDescription;
+import org.jboss.as.webservices.injection.WSComponentDescription;
 import org.jboss.as.weld.WeldBootstrapService;
 import org.jboss.as.weld.WeldLogger;
 import org.jboss.msc.service.Service;
@@ -37,7 +43,10 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.bean.ManagedBean;
+import org.jboss.weld.bean.SessionBean;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
+import org.jboss.weld.injection.producer.InjectionTargetService;
+import org.jboss.weld.literal.AnyLiteral;
 import org.jboss.weld.manager.BeanManagerImpl;
 
 /**
@@ -51,9 +60,10 @@ public class WeldComponentService implements Service<WeldComponentService> {
     private final InjectedValue<WeldBootstrapService> weldContainer;
     private final String ejbName;
     private final Set<Class<?>> interceptorClasses;
-    private final Map<Class<?>, WeldEEInjection> interceptorInjections = new HashMap<Class<?>, WeldEEInjection>();
+    private final Map<Class<?>, InjectionTarget> interceptorInjections = new HashMap<Class<?>, InjectionTarget>();
     private final ClassLoader classLoader;
     private final String beanDeploymentArchiveId;
+    private final ComponentDescription componentDescription;
 
     /**
      * If this is true and bean is not null then weld will create the bean directly, this
@@ -62,11 +72,11 @@ public class WeldComponentService implements Service<WeldComponentService> {
      */
     private final boolean delegateProduce;
 
-    private WeldEEInjection injectionTarget;
+    private InjectionTarget injectionTarget;
     private Bean<?> bean;
     private BeanManagerImpl beanManager;
 
-    public WeldComponentService(Class<?> componentClass, String ejbName, final Set<Class<?>> interceptorClasses, final ClassLoader classLoader, final String beanDeploymentArchiveId, final boolean delegateProduce) {
+    public WeldComponentService(Class<?> componentClass, String ejbName, final Set<Class<?>> interceptorClasses, final ClassLoader classLoader, final String beanDeploymentArchiveId, final boolean delegateProduce, ComponentDescription componentDescription) {
         this.componentClass = componentClass;
         this.ejbName = ejbName;
         this.beanDeploymentArchiveId = beanDeploymentArchiveId;
@@ -74,6 +84,7 @@ public class WeldComponentService implements Service<WeldComponentService> {
         this.weldContainer = new InjectedValue<WeldBootstrapService>();
         this.interceptorClasses = interceptorClasses;
         this.classLoader = classLoader;
+        this.componentDescription = componentDescription;
     }
 
     public WeldInjectionContext createInjectionContext() {
@@ -86,10 +97,10 @@ public class WeldComponentService implements Service<WeldComponentService> {
         final ClassLoader cl = SecurityActions.getContextClassLoader();
         try {
             SecurityActions.setContextClassLoader(classLoader);
-            beanManager = (BeanManagerImpl) weldContainer.getValue().getBeanManager(beanDeploymentArchiveId);
+            beanManager = weldContainer.getValue().getBeanManager(beanDeploymentArchiveId);
 
             for (final Class<?> interceptor : interceptorClasses) {
-                interceptorInjections.put(interceptor, WeldEEInjection.createWeldEEInjection(interceptor, null, beanManager));
+                interceptorInjections.put(interceptor, new NonContextualComponentInjectionTarget(interceptor, null, beanManager));
             }
 
             if (ejbName != null) {
@@ -98,32 +109,53 @@ public class WeldComponentService implements Service<WeldComponentService> {
                 if (descriptor != null) {
                     bean = beanManager.getBean(descriptor);
                 }
-            } else if (delegateProduce) {
-                final Set<Annotation> qualifiers = new HashSet<Annotation>();
-                for(Annotation annotation : componentClass.getAnnotations()) {
-                    if(beanManager.isQualifier(annotation.annotationType())) {
-                        qualifiers.add(annotation);
-                    }
-                }
-                Set<Bean<?>> beans = beanManager.getBeans(componentClass, qualifiers);
-                boolean found = false;
-                for(Bean<?> bean : beans) {
-                    if(bean instanceof ManagedBean) {
-                        found = true;
-                        this.bean = bean;
-                        break;
-                    }
-                }
-                if(!found){
-                    WeldLogger.DEPLOYMENT_LOGGER.debugf("Could not find bean for %s, interception and decoration will be unavailable", componentClass);
+            }
+
+            if (bean instanceof SessionBean<?>) {
+                SessionBean<?> sessionBean = (SessionBean<?>) bean;
+                this.injectionTarget = sessionBean.getInjectionTarget();
+                return;
+            }
+
+            if (componentDescription instanceof WSComponentDescription) {
+                ManagedBean<?> bean = findManagedBeanForWSComponent(componentClass);
+                if (bean != null) {
+                    injectionTarget = bean.getInjectionTarget();
+                    return;
                 }
             }
-            injectionTarget = WeldEEInjection.createWeldEEInjection(componentClass, bean, beanManager);
+
+            NonContextualComponentInjectionTarget injectionTarget = new NonContextualComponentInjectionTarget(componentClass, bean, beanManager);
+            if (componentDescription instanceof MessageDrivenComponentDescription || componentDescription instanceof WebComponentDescription) {
+                // fire ProcessInjectionTarget for non-contextual components
+                this.injectionTarget = beanManager.fireProcessInjectionTarget(injectionTarget.getAnnotated(), injectionTarget);
+            } else {
+                this.injectionTarget = injectionTarget;
+            }
+            beanManager.getServices().get(InjectionTargetService.class).validateProducer(injectionTarget);
 
         } finally {
             SecurityActions.setContextClassLoader(cl);
         }
+    }
 
+    private <T> ManagedBean<T> findManagedBeanForWSComponent(Class<T> definingClass) {
+        Set<Bean<?>> beans = beanManager.getBeans(definingClass, AnyLiteral.INSTANCE);
+        for (Iterator<Bean<?>> i = beans.iterator(); i.hasNext();) {
+            Bean<?> bean = i.next();
+            if (bean instanceof ManagedBean<?> && bean.getBeanClass().equals(definingClass)) {
+                continue;
+            }
+            i.remove();
+        }
+        if (beans.isEmpty()) {
+            WeldLogger.DEPLOYMENT_LOGGER.debugf("Could not find bean for %s, interception and decoration will be unavailable", componentClass);
+            return null;
+        }
+        if (beans.size() > 1) {
+            WeldLogger.DEPLOYMENT_LOGGER.debugf("Multiple beans for %s : %s ", componentClass, beans);
+        }
+        return cast(beans.iterator().next());
     }
 
     @Override

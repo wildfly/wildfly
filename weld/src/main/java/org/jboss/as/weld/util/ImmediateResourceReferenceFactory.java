@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,31 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.weld.services.bootstrap;
 
-import org.jboss.weld.validation.spi.ValidationServices;
+package org.jboss.as.weld.util;
 
-import javax.validation.ValidatorFactory;
+import org.jboss.weld.injection.spi.ResourceReference;
+import org.jboss.weld.injection.spi.ResourceReferenceFactory;
+import org.jboss.weld.injection.spi.helpers.SimpleResourceReference;
 
 /**
- * Implementation of ValidationServices
+ * @author Stuart Douglas
  */
-public class WeldValidationServices implements ValidationServices {
+public class ImmediateResourceReferenceFactory<T> implements ResourceReferenceFactory<T> {
+    private final T instance;
 
-
-    private final ValidatorFactory factory;
-
-    public WeldValidationServices(ValidatorFactory factory) {
-        this.factory = factory;
+    public ImmediateResourceReferenceFactory(final T instance) {
+        this.instance = instance;
     }
 
     @Override
-    public ValidatorFactory getDefaultValidatorFactory() {
-        return factory;
+    public ResourceReference<T> createResource() {
+        return new SimpleResourceReference<T>(instance);
     }
-
-    @Override
-    public void cleanup() {
-    }
-
 }

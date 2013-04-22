@@ -21,14 +21,7 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
-import org.jboss.as.weld.WeldLogger;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.weld.injection.spi.ResourceInjectionServices;
-import org.jboss.weld.injection.spi.helpers.AbstractResourceServices;
+import java.lang.reflect.Method;
 
 import javax.annotation.Resource;
 import javax.ejb.TimerService;
@@ -38,10 +31,19 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-public class WeldResourceInjectionServices extends AbstractResourceServices implements Service<WeldResourceInjectionServices>,
-        ResourceInjectionServices {
+import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.deployment.ContextNames.BindInfo;
+import org.jboss.as.weld.WeldLogger;
+import org.jboss.as.weld.WeldMessages;
+import org.jboss.as.weld.util.ResourceInjectionUtilities;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.weld.injection.spi.ResourceInjectionServices;
+import org.jboss.weld.injection.spi.ResourceReference;
+import org.jboss.weld.injection.spi.ResourceReferenceFactory;
+import org.jboss.weld.injection.spi.helpers.SimpleResourceReference;
 
-    public static final ServiceName SERVICE_NAME = ServiceName.of("WeldResourceInjectionServices");
+public class WeldResourceInjectionServices extends AbstractResourceInjectionServices implements ResourceInjectionServices {
 
     private static final String USER_TRANSACTION_LOCATION = "java:comp/UserTransaction";
     private static final String USER_TRANSACTION_CLASS_NAME = "javax.transaction.UserTransaction";
@@ -50,19 +52,6 @@ public class WeldResourceInjectionServices extends AbstractResourceServices impl
     private static final String ORB_CLASS_NAME = "org.omg.CORBA.ORB";
 
     private final Context context;
-
-    @Override
-    public void start(StartContext context) throws StartException {
-    }
-
-    @Override
-    public void stop(StopContext context) {
-    }
-
-    @Override
-    public WeldResourceInjectionServices getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
-    }
 
     protected static String getEJBResourceName(InjectionPoint injectionPoint, String proposedName) {
         if (injectionPoint.getType() instanceof Class<?>) {
@@ -83,8 +72,8 @@ public class WeldResourceInjectionServices extends AbstractResourceServices impl
         return proposedName;
     }
 
-
-    public WeldResourceInjectionServices() {
+    public WeldResourceInjectionServices(final ServiceRegistry serviceRegistry, final EEModuleDescription moduleDescription) {
+        super(serviceRegistry, moduleDescription);
         try {
             this.context = new InitialContext();
         } catch (NamingException e) {
@@ -92,12 +81,6 @@ public class WeldResourceInjectionServices extends AbstractResourceServices impl
         }
     }
 
-    @Override
-    protected Context getContext() {
-        return context;
-    }
-
-    @Override
     protected String getResourceName(InjectionPoint injectionPoint) {
         Resource resource = injectionPoint.getAnnotated().getAnnotation(Resource.class);
         String mappedName = resource.mappedName();
@@ -108,12 +91,80 @@ public class WeldResourceInjectionServices extends AbstractResourceServices impl
         if (!mappedName.isEmpty()) {
             return mappedName;
         }
-        String proposedName = super.getResourceName(injectionPoint);
+        String proposedName = ResourceInjectionUtilities.getResourceName(injectionPoint);
         return getEJBResourceName(injectionPoint, proposedName);
+    }
+
+    @Override
+    public ResourceReferenceFactory<Object> registerResourceInjectionPoint(final InjectionPoint injectionPoint) {
+        final String result = getResourceName(injectionPoint);
+        if (isKnownNamespace(result)) {
+            return handleServiceLookup(result, injectionPoint);
+        } else {
+
+            return new ResourceReferenceFactory<Object>() {
+                @Override
+                public ResourceReference<Object> createResource() {
+                    return new SimpleResourceReference<Object>(resolveResource(injectionPoint));
+                }
+            };
+        }
+    }
+
+    @Override
+    public ResourceReferenceFactory<Object> registerResourceInjectionPoint(final String jndiName, final String mappedName) {
+        final String result = ResourceInjectionUtilities.getResourceName(jndiName, mappedName);
+        if (isKnownNamespace(result)) {
+            return handleServiceLookup(result, null);
+        } else {
+
+            return new ResourceReferenceFactory<Object>() {
+                @Override
+                public ResourceReference<Object> createResource() {
+                    return new SimpleResourceReference<Object>(resolveResource(jndiName, mappedName));
+                }
+            };
+        }
+    }
+
+    private boolean isKnownNamespace(String name) {
+        return name.startsWith("java:global") || name.startsWith("java:app") || name.startsWith("java:module")
+                || name.startsWith("java:comp") || name.startsWith("java:jboss");
     }
 
     @Override
     public void cleanup() {
     }
 
+    @Override
+    protected BindInfo getBindInfo(String result) {
+        return ContextNames.bindInfoForEnvEntry(moduleDescription.getApplicationName(), moduleDescription.getModuleName(),
+                moduleDescription.getModuleName(), false, result);
+    }
+
+    @Override
+    public Object resolveResource(InjectionPoint injectionPoint) {
+        if (!injectionPoint.getAnnotated().isAnnotationPresent(Resource.class)) {
+            throw WeldMessages.MESSAGES.annotationNotFound(Resource.class, injectionPoint.getMember());
+        }
+        if (injectionPoint.getMember() instanceof Method && ((Method) injectionPoint.getMember()).getParameterTypes().length != 1) {
+            throw WeldMessages.MESSAGES.injectionPointNotAJavabean((Method) injectionPoint.getMember());
+        }
+        String name = getResourceName(injectionPoint);
+        try {
+            return context.lookup(name);
+        } catch (NamingException e) {
+            throw WeldMessages.MESSAGES.coundNotFindResource(name, e);
+        }
+    }
+
+    @Override
+    public Object resolveResource(String jndiName, String mappedName) {
+        String name = ResourceInjectionUtilities.getResourceName(jndiName, mappedName);
+        try {
+            return context.lookup(name);
+        } catch (NamingException e) {
+            throw WeldMessages.MESSAGES.coundNotFindResource(name, e);
+        }
+    }
 }

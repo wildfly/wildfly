@@ -29,10 +29,12 @@ import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.resources.spi.ResourceLoader;
+import org.jboss.weld.util.reflection.Reflections;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -63,7 +65,13 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     private final Set<EjbDescriptor<?>> ejbDescriptors;
 
+    private final boolean root; // indicates whether this is a root BDA
+
     public BeanDeploymentArchiveImpl(Set<String> beanClasses, BeansXml beansXml, Module module, String id) {
+        this(beanClasses, beansXml, module, id, false);
+    }
+
+    public BeanDeploymentArchiveImpl(Set<String> beanClasses, BeansXml beansXml, Module module, String id, boolean root) {
         this.beanClasses = new ConcurrentSkipListSet<String>(beanClasses);
         this.beanDeploymentArchives = new CopyOnWriteArraySet<BeanDeploymentArchive>();
         this.beansXml = beansXml;
@@ -73,6 +81,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         this.serviceRegistry.add(ResourceLoader.class, resourceLoader);
         this.module = module;
         this.ejbDescriptors = new HashSet<EjbDescriptor<?>>();
+        this.root = root;
     }
 
     /**
@@ -147,5 +156,48 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     public Module getModule() {
         return module;
+    }
+
+    public boolean isRoot() {
+        return root;
+    }
+
+    /**
+     * Determines if a class from this {@link BeanDeploymentArchiveImpl} instance can access a class in the
+     * {@link BeanDeploymentArchive} instance represented by the specified <code>BeanDeploymentArchive</code> parameter
+     * according to the Java EE class accessibility requirements.
+     *
+     * @param target
+     * @return true if an only if a class this archive can access a class from the archive represented by the specified parameter
+     */
+    public boolean isAccessible(BeanDeploymentArchive target) {
+        if (this == target) {
+            return true;
+        }
+        Iterator<String> beanClasses = target.getBeanClasses().iterator();
+        if (!beanClasses.hasNext()) {
+            // the target archive has no classes - thus it should not matter whether we see the BDA or not
+            return false;
+        }
+        if (module == null) {
+            /*
+             * This BDA is the bootstrap BDA - it bundles classes loaded by the bootstrap classloader. We assume that a
+             * bean whose class is loaded by the bootstrap classloader can only see other beans in the "bootstrap BDA".
+             */
+            return target instanceof BeanDeploymentArchiveImpl && Reflections.<BeanDeploymentArchiveImpl>cast(target).getModule() == null;
+        }
+
+        String targetClass = beanClasses.next();
+        try {
+            module.getClassLoader().loadClass(targetClass);
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "BeanDeploymentArchiveImpl [id=" + id + "]";
     }
 }
