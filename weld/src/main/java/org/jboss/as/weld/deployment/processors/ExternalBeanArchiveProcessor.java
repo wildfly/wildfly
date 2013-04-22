@@ -118,6 +118,12 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                     if (existing.contains(beansXml)) {
                         continue;
                     }
+                    /*
+                     * Workaround for http://java.net/jira/browse/JAVASERVERFACES-2837
+                     */
+                    if (beansXml.toString().contains("jsf-impl-2.2")) {
+                        continue;
+                    }
                     WeldLogger.DEPLOYMENT_LOGGER.debugf("Found external beans.xml: %s", beansXml.toString());
                     List<DeploymentUnit> dus = deploymentUnitMap.get(beansXml);
                     if (dus == null) {
