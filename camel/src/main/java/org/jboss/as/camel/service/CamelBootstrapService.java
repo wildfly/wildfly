@@ -24,18 +24,14 @@ package org.jboss.as.camel.service;
 
 import static org.jboss.as.camel.CamelLogger.LOGGER;
 
+import org.jboss.as.camel.CamelConstants;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.Services;
-import org.osgi.framework.BundleContext;
 
 /**
  * Service responsible for creating and managing the life-cycle of the Camel subsystem.
@@ -45,15 +41,9 @@ import org.osgi.framework.BundleContext;
  */
 public class CamelBootstrapService extends AbstractService<Void> {
 
-    public static final ModuleIdentifier CAMEL_MODULE_IDENTIFIER = ModuleIdentifier.create("org.apache.camel");
-    public static final ServiceName CAMEL_NAME = ServiceName.JBOSS.append("as", "camel");
-
-    private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
-
     public static ServiceController<Void> addService(ServiceTarget serviceTarget, ServiceVerificationHandler verificationHandler) {
         CamelBootstrapService service = new CamelBootstrapService();
-        ServiceBuilder<Void> builder = serviceTarget.addService(CAMEL_NAME, service);
-        builder.addDependency(Services.FRAMEWORK_ACTIVE, BundleContext.class, service.injectedSystemContext);
+        ServiceBuilder<Void> builder = serviceTarget.addService(CamelConstants.CAMEL_BASE_NAME, service);
         builder.addListener(verificationHandler);
         return builder.install();
     }

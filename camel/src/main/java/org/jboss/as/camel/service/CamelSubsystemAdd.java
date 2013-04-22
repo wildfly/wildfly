@@ -24,11 +24,14 @@ package org.jboss.as.camel.service;
 
 import java.util.List;
 
+import org.jboss.as.camel.deployment.CamelContextCreateProcessor;
+import org.jboss.as.camel.deployment.CamelContextRegistrationProcessor;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -49,8 +52,12 @@ class CamelSubsystemAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
 
         newControllers.add(CamelBootstrapService.addService(context.getServiceTarget(), verificationHandler));
+        newControllers.add(CamelContextRegistryService.addService(context.getServiceTarget(), verificationHandler));
+
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
+                processorTarget.addDeploymentProcessor(CamelExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_CAMEL_CONTEXT_CREATE, new CamelContextCreateProcessor());
+                processorTarget.addDeploymentProcessor(CamelExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_CAMEL_CONTEXT_REGISTRATION, new CamelContextRegistrationProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
     }

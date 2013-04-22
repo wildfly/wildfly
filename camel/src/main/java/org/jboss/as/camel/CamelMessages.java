@@ -22,13 +22,11 @@
 
 package org.jboss.as.camel;
 
+import org.apache.camel.CamelContext;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.StartException;
-import org.osgi.framework.Bundle;
 
 /**
  * Logging Id ranges: 20100-20199
@@ -49,13 +47,19 @@ public interface CamelMessages {
     @Message(id = 20100, value = "%s is null")
     IllegalArgumentException illegalArgumentNull(String name);
 
-    @Message(id = 20101, value = "Cannot obtain camel module: %s")
-    StartException cannotObtainCamelModule(@Cause Throwable th, ModuleIdentifier moduleIdentifier);
+    @Message(id = 20101, value = "Cannot create camel context: %s")
+    IllegalStateException cannotCreateCamelContext(@Cause Throwable th, String runtimeName);
 
-    @Message(id = 20102, value = "Cannot register camel bundle")
-    StartException cannotRegisterCamelBundle(@Cause Throwable th);
+    @Message(id = 20102, value = "Cannot start camel context: %s")
+    IllegalStateException cannotStartCamelContext(@Cause Throwable th, CamelContext context);
 
-    @Message(id = 20103, value = "Cannot start camel bundle: %s")
-    StartException cannotStartCamelBundle(@Cause Throwable th, Bundle bundle);
+    @Message(id = 20103, value = "Cannot stop camel context: %s")
+    IllegalStateException cannotStopCamelContext(@Cause Throwable th, CamelContext context);
+
+    @Message(id = 20104, value = "Illegal camel context name: %s")
+    IllegalArgumentException illegalCamelContextName(String name);
+
+    @Message(id = 20105, value = "Camel context with that name already registered: %s")
+    IllegalStateException camelContextAlreadyRegistered(String contextName);
 }
 

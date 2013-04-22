@@ -32,6 +32,7 @@
     </resources>
 
     <exports>
+        <exclude path="org/jboss/as/camel/deployment"/>
         <exclude path="org/jboss/as/camel/service"/>
     </exports>
     
@@ -45,6 +46,7 @@
         <module name="org.jboss.osgi.framework"/>
         <module name="org.jboss.osgi.resolver"/>
         <module name="org.jboss.staxmapper"/>
+        <module name="org.jboss.vfs"/>
         <module name="org.springframework.beans"/>
         <module name="org.springframework.core"/>
         <module name="org.springframework.context"/>

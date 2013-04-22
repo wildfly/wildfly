@@ -20,7 +20,7 @@ import java.net.URL;
 import java.util.Hashtable;
 
 import org.apache.camel.CamelContext;
-import org.jboss.as.camel.utils.CamelContextFactory;
+import org.jboss.as.camel.CamelContextFactory;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -31,14 +31,14 @@ import org.osgi.framework.BundleContext;
  * @author thomas.diesler@jboss.com
  * @since 21-Apr-2013
  */
-public class CamelSpringTransformActivator implements BundleActivator {
+public class SpringCamelContextActivator implements BundleActivator {
 
     private CamelContext camelctx;
 
     @Override
     public void start(BundleContext context) throws Exception {
         Bundle bundle = context.getBundle();
-        URL resourceUrl = bundle.getResource("/camel/simple/simple-transform-context.xml");
+        URL resourceUrl = bundle.getResource("simple-transform-context.xml");
         camelctx = CamelContextFactory.createSpringCamelContext(resourceUrl);
         camelctx.start();
         Hashtable<String, String> properties = new Hashtable<String, String>();
