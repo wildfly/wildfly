@@ -3333,6 +3333,12 @@
                 <groupId>org.apache.ws.xmlschema</groupId>
                 <artifactId>xmlschema-core</artifactId>
                 <version>${version.org.apache.ws.xmlschema}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.bcel</groupId>
+                        <artifactId>bcel</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
