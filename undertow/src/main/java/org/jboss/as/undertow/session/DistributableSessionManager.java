@@ -48,7 +48,6 @@ import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionIdGenerator;
 import io.undertow.server.session.SessionListener;
-import io.undertow.servlet.api.Deployment;
 import org.jboss.as.clustering.web.BatchingManager;
 import org.jboss.as.clustering.web.ClusteringNotSupportedException;
 import org.jboss.as.clustering.web.DistributableSessionMetadata;
@@ -222,16 +221,16 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
      * Instantiate a SnapshotManager and ClusteredSessionValve and add the valve to our parent Context's pipeline. Add a
      * JvmRouteValve and BatchReplicationClusteredSessionValve if needed.
      */
-    public HttpHandler wrapHandlers(final HttpHandler handler, final Deployment deployment) {
+    public HttpHandler wrapHandlers(final HttpHandler handler) {
         HttpHandler current = handler;
         current = new LockingHandler(this.valveLock, current);
 
         if (this.getUseJK()) {
-            current = new JvmRouteHandler(this, current, deployment);
+            current = new JvmRouteHandler(this, current);
         }
 
         // Add clustered session valve
-        current = new ClusteredSessionHandler(deployment, this, null, current);
+        current = new ClusteredSessionHandler(this, null, current);
         return current;
     }
 

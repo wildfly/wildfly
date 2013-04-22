@@ -28,7 +28,7 @@ import javax.servlet.ServletException;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.servlet.api.Deployment;
+import io.undertow.servlet.spec.HttpServletRequestImpl;
 import org.jboss.as.clustering.web.BatchingManager;
 import org.jboss.as.undertow.UndertowMessages;
 import org.jboss.logging.Logger;
@@ -46,8 +46,6 @@ public class ClusteredSessionHandler implements HttpHandler {
 
     protected static final Logger log = Logger.getLogger(ClusteredSessionHandler.class);
 
-    private final Deployment deployment;
-
     private final SessionManager manager;
 
     private final BatchingManager tm;
@@ -57,8 +55,7 @@ public class ClusteredSessionHandler implements HttpHandler {
     /**
      * Create a new Valve.
      */
-    public ClusteredSessionHandler(final Deployment deployment, SessionManager manager, BatchingManager tm, final HttpHandler next) {
-        this.deployment = deployment;
+    public ClusteredSessionHandler(final SessionManager manager, BatchingManager tm, final HttpHandler next) {
         this.next = next;
         assert manager != null : UndertowMessages.MESSAGES.nullParamter("manager");
 
@@ -85,10 +82,11 @@ public class ClusteredSessionHandler implements HttpHandler {
         try {
             // Workaround to JBAS-5735. Ensure we get the session from the manager
             // rather than a cached ref from the Request.
+            final HttpServletRequestImpl request = HttpServletRequestImpl.getRequestImpl(exchange.getAttachment(HttpServletRequestImpl.ATTACHMENT_KEY));
 
-            String requestedId = deployment.getServletContext().getSessionCookieConfig().findSessionId(exchange);
+            String requestedId = request.getServletContext().getSessionCookieConfig().findSessionId(exchange);
             if (requestedId != null) {
-                manager.getSession(exchange, deployment.getServletContext().getSessionCookieConfig());
+                manager.getSession(exchange, request.getServletContext().getSessionCookieConfig());
             }
 
             // let the servlet invocation go through

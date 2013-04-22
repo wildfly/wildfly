@@ -22,42 +22,23 @@
 
 package org.jboss.as.undertow.deployment;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
-import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.servlet.api.ConfidentialPortManager;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
-import io.undertow.servlet.api.ThreadSetupAction;
-import io.undertow.servlet.core.CompositeThreadSetupAction;
-import io.undertow.servlet.core.ContextClassLoaderSetupAction;
-import org.jboss.as.clustering.ClassLoaderAwareClassResolver;
-import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
-import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
-import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.undertow.Host;
 import org.jboss.as.undertow.ServletContainerService;
 import org.jboss.as.undertow.UndertowLogger;
 import org.jboss.as.undertow.UndertowMessages;
-import org.jboss.as.undertow.UndertowService;
-import org.jboss.as.undertow.security.AuditNotificationReceiver;
-import org.jboss.as.undertow.security.JAASIdentityManagerImpl;
-import org.jboss.as.undertow.session.DistributableSessionManager;
 import org.jboss.as.web.common.StartupContext;
 import org.jboss.as.web.common.WebInjectionContainer;
 import org.jboss.as.web.host.ContextActivator;
-import org.jboss.marshalling.ClassResolver;
-import org.jboss.marshalling.ModularClassResolver;
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StabilityMonitor;
@@ -65,64 +46,27 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.security.audit.AuditManager;
 
 /**
  * @author Stuart Douglas
  */
 public class UndertowDeploymentService implements Service<UndertowDeploymentService> {
 
-    private final DeploymentInfo deploymentInfo;
     private final InjectedValue<ServletContainerService> container = new InjectedValue<>();
     private final WebInjectionContainer webInjectionContainer;
-    private final Module module;
-    private final JBossWebMetaData jBossWebMetaData;
-    private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
-    private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
-    private final InjectedValue<DistributedCacheManagerFactory> distributedCacheManagerFactoryInjectedValue = new InjectedValue<DistributedCacheManagerFactory>();
     private final InjectedValue<Host> host = new InjectedValue<>();
+    private final InjectedValue<DeploymentInfo> deploymentInfoInjectedValue = new InjectedValue<>();
+
     private volatile DeploymentManager deploymentManager;
-    private volatile DistributableSessionManager<OutgoingDistributableSessionData> sessionManager;
 
-    public UndertowDeploymentService(final DeploymentInfo deploymentInfo, final WebInjectionContainer webInjectionContainer, final Module module, final JBossWebMetaData jBossWebMetaData) {
-        this.deploymentInfo = deploymentInfo;
+    public UndertowDeploymentService(final WebInjectionContainer webInjectionContainer) {
         this.webInjectionContainer = webInjectionContainer;
-        this.module = module;
-        this.jBossWebMetaData = jBossWebMetaData;
-
-        //todo: fix this
-        if(jBossWebMetaData.getDistributable() != null) {
-            deploymentInfo.addOuterHandlerChainWrapper(new HandlerWrapper() {
-                @Override
-                public HttpHandler wrap(final HttpHandler handler) {
-                    return sessionManager.wrapHandlers(handler, deploymentManager.getDeployment());
-                }
-            });
-        }
     }
 
     @Override
     public void start(final StartContext startContext) throws StartException {
-        if(jBossWebMetaData.getDistributable() != null) {
-            String instanceId = undertowService.getValue().getInstanceId();
-            ClassResolver resolver = ModularClassResolver.getInstance(module.getModuleLoader());
-            sessionManager = new DistributableSessionManager<OutgoingDistributableSessionData>(this.distributedCacheManagerFactoryInjectedValue.getValue(), jBossWebMetaData, new ClassLoaderAwareClassResolver(resolver, module.getClassLoader()), deploymentInfo.getContextPath(), module.getClassLoader(), instanceId);
-            deploymentInfo.setSessionManager(sessionManager);
-        }
+        DeploymentInfo deploymentInfo = deploymentInfoInjectedValue.getValue();
 
-        //TODO Darren, check this!
-        final List<ThreadSetupAction> setup = new ArrayList<ThreadSetupAction>();
-        setup.add(new ContextClassLoaderSetupAction(deploymentInfo.getClassLoader()));
-        setup.addAll(deploymentInfo.getThreadSetupActions());
-        final CompositeThreadSetupAction threadSetupAction = new CompositeThreadSetupAction(setup);
-
-        SecurityDomainContext sdc = securityDomainContextValue.getValue();
-        deploymentInfo.setIdentityManager(new JAASIdentityManagerImpl(sdc, jBossWebMetaData.getPrincipalVersusRolesMap(), threadSetupAction));
-        AuditManager auditManager = sdc.getAuditManager();
-        if (auditManager != null) {
-            deploymentInfo.addNotificationReceiver(new AuditNotificationReceiver(auditManager));
-        }
-        deploymentInfo.setConfidentialPortManager(getConfidentialPortManager());
         StartupContext.setInjectionContainer(webInjectionContainer);
         try {
             deploymentManager = container.getValue().getServletContainer().addDeployment(deploymentInfo);
@@ -146,9 +90,7 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
             throw new RuntimeException(e);
         }
         deploymentManager.undeploy();
-        deploymentInfo.setIdentityManager(null);
-        sessionManager = null;
-        host.getValue().unregisterDeployment(deploymentInfo);
+        host.getValue().unregisterDeployment(deploymentInfoInjectedValue.getValue());
     }
 
     @Override
@@ -164,27 +106,10 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
         return host;
     }
 
-    public InjectedValue<SecurityDomainContext> getSecurityDomainContextValue() {
-        return securityDomainContextValue;
+    public InjectedValue<DeploymentInfo> getDeploymentInfoInjectedValue() {
+        return deploymentInfoInjectedValue;
     }
 
-    public InjectedValue<UndertowService> getUndertowService() {
-        return undertowService;
-    }
-
-    private ConfidentialPortManager getConfidentialPortManager() {
-        return new ConfidentialPortManager() {
-
-            @Override
-            public int getConfidentialPort(HttpServerExchange exchange) {
-                return container.getValue().lookupSecurePort("default");
-            }
-        };
-    }
-
-    public InjectedValue<DistributedCacheManagerFactory> getDistributedCacheManagerFactoryInjectedValue() {
-        return distributedCacheManagerFactoryInjectedValue;
-    }
 
     /**
      * Provides an API to start/stop the {@link UndertowDeploymentService}.
