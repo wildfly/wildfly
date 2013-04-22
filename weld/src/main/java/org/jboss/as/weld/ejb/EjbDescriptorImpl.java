@@ -63,6 +63,7 @@ public class EjbDescriptorImpl<T> implements EjbDescriptor<T> {
     private final boolean stateful;
     private final boolean singleton;
     private final boolean messageDriven;
+    private final boolean passivationCapable;
 
     public EjbDescriptorImpl(EJBComponentDescription componentDescription, BeanDeploymentArchiveImpl beanDeploymentArchive, final DeploymentReflectionIndex reflectionIndex) {
         final SessionBeanComponentDescription description = componentDescription instanceof SessionBeanComponentDescription ? (SessionBeanComponentDescription) componentDescription : null;
@@ -116,6 +117,8 @@ public class EjbDescriptorImpl<T> implements EjbDescriptor<T> {
         this.messageDriven = componentDescription.isMessageDriven();
         this.stateful = componentDescription.isStateful();
         this.singleton = componentDescription.isSingleton();
+
+        this.passivationCapable = componentDescription.isPassivationApplicable();
     }
 
     private MethodIntf getMethodIntf(final ViewDescription view) {
@@ -186,5 +189,10 @@ public class EjbDescriptorImpl<T> implements EjbDescriptor<T> {
 
     public Map<Class<?>, ServiceName> getViewServices() {
         return viewServices;
+    }
+
+    @Override
+    public boolean isPassivationCapable() {
+        return passivationCapable;
     }
 }

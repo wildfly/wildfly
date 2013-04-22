@@ -29,9 +29,9 @@ import java.util.Set;
 
 import javax.enterprise.inject.spi.BeanManager;
 
+import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.WeldDeployment;
 import org.jboss.as.weld.services.ModuleGroupSingletonProvider;
-import org.jboss.as.weld.services.bootstrap.WeldResourceInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldSecurityServices;
 import org.jboss.as.weld.services.bootstrap.WeldTransactionServices;
 import org.jboss.msc.service.Service;
@@ -42,13 +42,13 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.Environment;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
-import org.jboss.weld.injection.spi.ResourceInjectionServices;
+import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.transaction.spi.TransactionServices;
 
 /**
- * Provides the initial bootstrap of the Weld container. This does not actually finish starting the container,
- * merely gets it to the point that the bean manager is available.
+ * Provides the initial bootstrap of the Weld container. This does not actually finish starting the container, merely gets it to
+ * the point that the bean manager is available.
  *
  * @author Stuart Douglas
  */
@@ -60,9 +60,10 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
     private final WeldDeployment deployment;
     private final Environment environment;
     private final Map<String, BeanDeploymentArchive> beanDeploymentArchives;
+    private final BeanDeploymentArchiveImpl rootBeanDeploymentArchive;
+
     private final String deploymentName;
 
-    private final InjectedValue<WeldResourceInjectionServices> resourceInjectionServices = new InjectedValue<WeldResourceInjectionServices>();
     private final InjectedValue<WeldSecurityServices> securityServices = new InjectedValue<WeldSecurityServices>();
     private final InjectedValue<WeldTransactionServices> weldTransactionServices = new InjectedValue<WeldTransactionServices>();
 
@@ -74,10 +75,17 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
         this.deploymentName = deploymentName;
         this.bootstrap = new WeldBootstrap();
         Map<String, BeanDeploymentArchive> bdas = new HashMap<String, BeanDeploymentArchive>();
+        BeanDeploymentArchiveImpl rootBeanDeploymentArchive = null;
         for (BeanDeploymentArchive archive : deployment.getBeanDeploymentArchives()) {
             bdas.put(archive.getId(), archive);
+            if (archive instanceof BeanDeploymentArchiveImpl) {
+                BeanDeploymentArchiveImpl bda = (BeanDeploymentArchiveImpl) archive;
+                if (bda.isRoot()) {
+                    rootBeanDeploymentArchive = bda;
+                }
+            }
         }
-        bdas.put(deployment.getAdditionalBeanDeploymentArchive().getId(), deployment.getAdditionalBeanDeploymentArchive());
+        this.rootBeanDeploymentArchive = rootBeanDeploymentArchive;
         this.beanDeploymentArchives = Collections.unmodifiableMap(bdas);
     }
 
@@ -97,11 +105,9 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
         addWeldService(SecurityServices.class, securityServices.getValue());
         addWeldService(TransactionServices.class, weldTransactionServices.getValue());
 
-        for (BeanDeploymentArchive bda : getBeanDeploymentArchives()) {
-            bda.getServices().add(ResourceInjectionServices.class, resourceInjectionServices.getValue());
-        }
+        ModuleGroupSingletonProvider.addClassLoaders(deployment.getModule().getClassLoader(),
+                deployment.getSubDeploymentClassLoaders());
 
-        ModuleGroupSingletonProvider.addClassLoaders(deployment.getModule().getClassLoader(), deployment.getSubDeploymentClassLoaders());
         ClassLoader oldTccl = SecurityActions.getContextClassLoader();
         try {
             SecurityActions.setContextClassLoader(deployment.getModule().getClassLoader());
@@ -136,10 +142,10 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
     /**
      * Gets the {@link BeanManager} for a given bean deployment archive id.
      *
-     * @throws IllegalStateException    if the container is not running
+     * @throws IllegalStateException if the container is not running
      * @throws IllegalArgumentException if the bean deployment archive id is not found
      */
-    public BeanManager getBeanManager(String beanArchiveId) {
+    public BeanManagerImpl getBeanManager(String beanArchiveId) {
         if (!started) {
             throw WeldMessages.MESSAGES.notStarted("WeldContainer");
         }
@@ -154,13 +160,12 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
      * Adds a {@link Service} to the deployment. This method must not be called after the container has started
      */
     public <T extends org.jboss.weld.bootstrap.api.Service> void addWeldService(Class<T> type, T service) {
-        deployment.getServices().add(type, service);
-        deployment.getAdditionalBeanDeploymentArchive().getServices().add(type, service);
+        deployment.addWeldService(type, service);
     }
 
     /**
-     * Gets the {@link BeanManager} linked to the additional classes bean deployment archive. This BeanManager has access to all
-     * beans in a deployment
+     * Gets the {@link BeanManager} linked to the root bean deployment archive. This BeanManager has access to all beans in a
+     * deployment
      *
      * @throws IllegalStateException if the container is not running
      */
@@ -168,7 +173,7 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
         if (!started) {
             throw WeldMessages.MESSAGES.notStarted("WeldContainer");
         }
-        return bootstrap.getManager(deployment.getAdditionalBeanDeploymentArchive());
+        return bootstrap.getManager(rootBeanDeploymentArchive);
     }
 
     /**
@@ -189,10 +194,6 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
     @Override
     public WeldBootstrapService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
-    }
-
-    public InjectedValue<WeldResourceInjectionServices> getResourceInjectionServices() {
-        return resourceInjectionServices;
     }
 
     public InjectedValue<WeldSecurityServices> getSecurityServices() {

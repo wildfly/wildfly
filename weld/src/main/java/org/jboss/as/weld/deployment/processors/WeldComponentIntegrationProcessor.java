@@ -113,7 +113,6 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
 
                     addWeldIntegration(context.getServiceTarget(), configuration, description, componentClass, beanName, weldBootstrapService, weldStartService, interceptorClasses, classLoader, description.getBeanDeploymentArchiveId());
 
-
                     //add a context key for weld interceptor replication
                     if (description instanceof StatefulComponentDescription) {
                         configuration.getInterceptorContextKeys().add(SerializedCdiInterceptorsKey.class);
@@ -131,10 +130,10 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
 
         final ServiceName serviceName = configuration.getComponentDescription().getServiceName().append("WeldInstantiator");
 
-        final WeldComponentService weldComponentService = new WeldComponentService(componentClass, beanName, interceptorClasses, classLoader, beanDeploymentArchiveId, description.isCDIInterceptorEnabled());
-        ServiceBuilder<WeldComponentService> builder = target.addService(serviceName, weldComponentService)
-                .addDependency(weldServiceName, WeldBootstrapService.class, weldComponentService.getWeldContainer())
-                .addDependency(weldStartService);
+        final WeldComponentService weldComponentService = new WeldComponentService(componentClass, beanName, interceptorClasses, classLoader, beanDeploymentArchiveId, description.isCDIInterceptorEnabled(), description);
+                ServiceBuilder<WeldComponentService> builder = target.addService(serviceName, weldComponentService)
+                        .addDependency(weldServiceName, WeldBootstrapService.class, weldComponentService.getWeldContainer())
+                         .addDependency(weldStartService);
 
         configuration.setInstanceFactory(WeldManagedReferenceFactory.INSTANCE);
         configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
@@ -175,6 +174,13 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
             final Jsr299BindingsInterceptor.Factory postConstruct = new Jsr299BindingsInterceptor.Factory(description.getBeanDeploymentArchiveId(), beanName, InterceptionType.POST_CONSTRUCT, classLoader);
             builder.addDependency(weldServiceName, WeldBootstrapService.class, postConstruct.getWeldContainer());
             configuration.addPostConstructInterceptor(postConstruct, InterceptorOrder.ComponentPostConstruct.CDI_INTERCEPTORS);
+
+            /*
+             * Add interceptor to activate the request scope for the @PostConstruct callback.
+             * See https://issues.jboss.org/browse/CDI-219 for details
+             */
+            final EjbRequestScopeActivationInterceptor.Factory postConstructRequestContextActivationFactory = new EjbRequestScopeActivationInterceptor.Factory(weldServiceName);
+            configuration.addPostConstructInterceptor(postConstructRequestContextActivationFactory, InterceptorOrder.ComponentPostConstruct.REQUEST_SCOPE_ACTIVATING_INTERCEPTOR);
 
         }
 

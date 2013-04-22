@@ -31,6 +31,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.weld.bean.builtin.BeanManagerProxy;
+import org.jboss.weld.manager.BeanManagerImpl;
 
 /**
  * Service that provides access to the BeanManger for a (sub)deployment
@@ -44,7 +46,7 @@ public class BeanManagerService implements Service<BeanManager> {
 
     private final InjectedValue<WeldBootstrapService> weldContainer = new InjectedValue<WeldBootstrapService>();
     private final String beanDeploymentArchiveId;
-    private volatile BeanManager beanManager;
+    private volatile BeanManagerImpl beanManager;
 
     public BeanManagerService(String beanDeploymentArchiveId) {
         this.beanDeploymentArchiveId = beanDeploymentArchiveId;
@@ -62,7 +64,7 @@ public class BeanManagerService implements Service<BeanManager> {
 
     @Override
     public BeanManager getValue() throws IllegalStateException, IllegalArgumentException {
-        return beanManager;
+        return new BeanManagerProxy(beanManager);
     }
 
     public InjectedValue<WeldBootstrapService> getWeldContainer() {

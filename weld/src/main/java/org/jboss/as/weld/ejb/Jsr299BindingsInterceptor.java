@@ -176,7 +176,6 @@ public class Jsr299BindingsInterceptor implements org.jboss.invocation.Intercept
         return interceptorBindings;
     }
 
-    @SuppressWarnings("unchecked")
     private void addInterceptorInstance(Interceptor<Object> interceptor, BeanManagerImpl beanManager, Map<String, SerializableContextualInstance<Interceptor<Object>, Object>> instances) {
         Object instance = beanManager.getContext(interceptor.getScope()).get(interceptor, creationalContext);
         SerializableContextualInstance<Interceptor<Object>, Object> serializableContextualInstance
@@ -205,7 +204,7 @@ public class Jsr299BindingsInterceptor implements org.jboss.invocation.Intercept
 
             //we use the interception type as the context key
             //as there are potentially up to six instances of this interceptor for every component
-            final Jsr299BindingsInterceptor interceptor = new Jsr299BindingsInterceptor((BeanManagerImpl) weldContainer.getValue().getBeanManager(beanArchiveId), ejbName, context, interceptionType, classLoader);
+            final Jsr299BindingsInterceptor interceptor = new Jsr299BindingsInterceptor(weldContainer.getValue().getBeanManager(beanArchiveId), ejbName, context, interceptionType, classLoader);
             return interceptor;
         }
 

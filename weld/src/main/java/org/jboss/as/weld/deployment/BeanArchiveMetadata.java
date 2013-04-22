@@ -55,8 +55,19 @@ public class BeanArchiveMetadata {
      */
     private final BeansXml beansXml;
 
+    /**
+     * The location of an additional beans.xml file for this bean archive. This may happen if a web archive defines
+     * both META-INF/beans.xml and WEB-INF/beans.xml
+     */
+    private final VirtualFile additionalBeansXmlFile;
+
     public BeanArchiveMetadata(VirtualFile beansXmlFile, ResourceRoot resourceRoot, BeansXml beansXml, boolean deploymentRoot) {
+        this(beansXmlFile, null, resourceRoot, beansXml, deploymentRoot);
+    }
+
+    public BeanArchiveMetadata(VirtualFile beansXmlFile, VirtualFile additionalBeansXmlFile, ResourceRoot resourceRoot, BeansXml beansXml, boolean deploymentRoot) {
         this.beansXmlFile = beansXmlFile;
+        this.additionalBeansXmlFile = additionalBeansXmlFile;
         this.resourceRoot = resourceRoot;
         this.deploymentRoot = deploymentRoot;
         this.beansXml = beansXml;
@@ -78,4 +89,7 @@ public class BeanArchiveMetadata {
         return beansXml;
     }
 
+    public VirtualFile getAdditionalBeansXmlFile() {
+        return additionalBeansXmlFile;
+    }
 }
