@@ -22,13 +22,19 @@
 
 package org.jboss.as.test.integration.ejb.mdb;
 
-import org.jboss.logging.Logger;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
+import javax.sql.DataSource;
+
+import org.jboss.logging.Logger;
 
 /**
  * User: jpai
@@ -37,21 +43,48 @@ public class DDBasedMDB implements MessageListener {
 
     @EJB
     private JMSMessagingUtil jmsMessagingUtil;
+    @EJB
+    private BMTSLSB bmtslsb;
+
+    @Resource(lookup = "java:jboss/datasources/ExampleDS")
+    private DataSource dataSource;
 
     private static final Logger logger = Logger.getLogger(DDBasedMDB.class);
 
     @Override
     public void onMessage(Message message) {
         logger.info("Received message " + message + " in MDB " + this.getClass().getName());
+        Connection conn = null;
         try {
             final Destination replyTo = message.getJMSReplyTo();
             if (replyTo == null) {
                 return;
             }
+
+            logger.info("Doing a DB operation using a DataSource");
+            try {
+                conn = dataSource.getConnection();
+                final PreparedStatement preparedStatement = conn.prepareStatement("select upper('foo')");
+                preparedStatement.execute();
+            } catch (SQLException e) {
+                throw  new RuntimeException(e);
+            }
+            logger.info("Done invoking DB operation. Holding on to connection till this method completes");
+            logger.info("Invoking a BMT SLSB which will use UserTransaction");
+            bmtslsb.doSomethingWithUserTransaction();
             logger.info("Sending a reply to destination " + replyTo);
             jmsMessagingUtil.reply(message);
         } catch (JMSException e) {
             throw new RuntimeException(e);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
     }
+
 }
