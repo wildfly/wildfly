@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.ee.injection.resource.superclass;
 
 import javax.annotation.ManagedBean;
+import javax.annotation.Resource;
 
 /**
  * @author Stuart Douglas
@@ -33,4 +34,16 @@ public class Bean2 extends SuperBean {
         return simpleManagedBean;
     }
 
+    int setCount = 0;
+
+    @Resource(lookup = "java:module/string2")
+    public void setSimpleString(final String simpleString) {
+        super.setSimpleString(simpleString);
+        //keep a count to make sure this is not injected twice
+        ++setCount;
+    }
+
+    public int getSetCount() {
+        return setCount;
+    }
 }

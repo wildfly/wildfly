@@ -23,7 +23,6 @@
 package org.jboss.as.ee.component;
 
 import static org.jboss.as.ee.EeMessages.MESSAGES;
-import static org.jboss.as.server.deployment.Attachments.MODULE;
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 import java.lang.reflect.Method;
@@ -32,14 +31,14 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
+import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.InterceptorFactory;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.value.Value;
 
 /**
@@ -61,20 +60,28 @@ public final class MethodInjectionTarget extends InjectionTarget {
         return new ManagedReferenceMethodInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, getMethod(deploymentUnit), optional);
     }
 
-    private Method getMethod(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+    public Method getMethod(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         final String name = getName();
         final String className = getClassName();
         final String paramType = getDeclaredValueClassName();
-        final Module module = deploymentUnit.getAttachment(MODULE);
-        final ModuleClassLoader classLoader = module.getClassLoader();
         final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(REFLECTION_INDEX);
-        final ClassReflectionIndex<?> classIndex;
+        final DeploymentClassIndex index = deploymentUnit.getAttachment(Attachments.CLASS_INDEX);
+        final Class<?> clazz;
         try {
-            classIndex = reflectionIndex.getClassIndex(Class.forName(className, false, classLoader));
+             clazz = index.classIndex(className).getModuleClass();
         } catch (ClassNotFoundException e) {
             throw new DeploymentUnitProcessingException(e);
         }
+        Method method = getMethod(reflectionIndex, clazz);
+        return method;
+    }
+
+    public Method getMethod(final DeploymentReflectionIndex reflectionIndex, final Class<?> clazz) throws DeploymentUnitProcessingException {
+        final ClassReflectionIndex<?> classIndex = reflectionIndex.getClassIndex(clazz);
         Collection<Method> methods = null;
+        final String paramType = getDeclaredValueClassName();
+        final String name = getName();
+        final String className = getClassName();
         if (paramType != null) {
             // find the methods with the specific name and the param types
             methods = ClassReflectionIndexUtil.findMethods(reflectionIndex, classIndex, name, paramType);
