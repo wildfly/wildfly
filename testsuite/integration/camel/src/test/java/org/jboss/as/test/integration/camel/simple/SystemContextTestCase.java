@@ -17,16 +17,13 @@
 package org.jboss.as.test.integration.camel.simple;
 
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Collection;
-
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
 import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -44,25 +41,22 @@ import org.osgi.framework.ServiceReference;
  * @since 21-Apr-2013
  */
 @RunWith(Arquillian.class)
-public class SpringCamelContextDeploymentTestCase {
+public class SystemContextTestCase {
 
-    static final String SPRING_CONTEXT_XML = "simple-transform-context.xml";
+    @ArquillianResource
+    Deployer deployer;
 
     @ArquillianResource
     BundleContext context;
 
-    @ArquillianResource
-    ManagementClient managementClient;
-
     @Deployment
     public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "camel-deployment-tests");
-        archive.addAsResource("camel/simple/" + SPRING_CONTEXT_XML, SPRING_CONTEXT_XML);
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "camel-system-tests");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.jboss.as.controller-client,org.apache.camel");
+                builder.addManifestHeader("Dependencies", "org.apache.camel");
                 return builder.openStream();
             }
         });
@@ -70,19 +64,14 @@ public class SpringCamelContextDeploymentTestCase {
     }
 
     @Test
-    public void testSimpleTransformFromModule() throws Exception {
-        URL resourceUrl = getClass().getResource("/" + SPRING_CONTEXT_XML);
-        ServerDeploymentHelper server = new ServerDeploymentHelper(managementClient.getControllerClient());
-        String runtimeName = server.deploy(SPRING_CONTEXT_XML, resourceUrl.openStream());
-        try {
-            String filter = "(name=spring-context)";
-            Collection<ServiceReference<CamelContext>> srefs = context.getServiceReferences(CamelContext.class, filter);
-            CamelContext camelctx = context.getService(srefs.iterator().next());
-            ProducerTemplate producer = camelctx.createProducerTemplate();
-            String result = producer.requestBody("direct:start", "Kermit", String.class);
-            Assert.assertEquals("Hello Kermit", result);
-        } finally {
-            server.undeploy(runtimeName);
-        }
+    public void testSystemTransformFromModule() throws Exception {
+        Collection<ServiceReference<CamelContext>> srefs = context.getServiceReferences(CamelContext.class, null);
+        ServiceReference<CamelContext> sref = srefs.iterator().next();
+        Assert.assertEquals("system-context-1", sref.getProperty("name"));
+        CamelContext camelctx = context.getService(sref);
+        camelctx.start();
+        ProducerTemplate producer = camelctx.createProducerTemplate();
+        String result = producer.requestBody("direct:start", "Kermit", String.class);
+        Assert.assertEquals("Hello Kermit", result);
     }
 }

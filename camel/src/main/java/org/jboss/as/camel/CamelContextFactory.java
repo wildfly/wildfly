@@ -31,6 +31,8 @@ import org.springframework.beans.factory.xml.NamespaceHandler;
 import org.springframework.beans.factory.xml.NamespaceHandlerResolver;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 
 /**
@@ -46,9 +48,20 @@ public final class CamelContextFactory {
     }
 
     /**
-     * Create a {@link SpringCamelContext} from the given input stream
+     * Create a {@link SpringCamelContext} from the given URL
      */
     public static CamelContext createSpringCamelContext(URL contextUrl) throws Exception {
+        return createSpringCamelContext(new UrlResource(contextUrl));
+    }
+
+    /**
+     * Create a {@link SpringCamelContext} from the given bytes
+     */
+    public static CamelContext createSpringCamelContext(byte[] contextBytes) throws Exception {
+        return createSpringCamelContext(new ByteArrayResource(contextBytes));
+    }
+
+    private static CamelContext createSpringCamelContext(Resource resource) throws Exception {
         GenericApplicationContext appContext = new GenericApplicationContext();
         XmlBeanDefinitionReader xmlReader = new XmlBeanDefinitionReader(appContext) {
             @Override
@@ -57,7 +70,7 @@ public final class CamelContextFactory {
                 return new CamelNamespaceHandlerResolver(defaultResolver);
             }
         };
-        xmlReader.loadBeanDefinitions(new UrlResource(contextUrl));
+        xmlReader.loadBeanDefinitions(resource);
         appContext.refresh();
         return SpringCamelContext.springCamelContext(appContext);
     }

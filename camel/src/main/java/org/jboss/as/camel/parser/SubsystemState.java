@@ -20,23 +20,45 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.camel;
+package org.jboss.as.camel.parser;
 
-import org.apache.camel.CamelContext;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 
 /**
- * A simple {@link CamelContext} registry.
+ * The Camel subsystem state.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 19-Apr-2013
+ * @since 22-Apr-2013
  */
-public interface CamelContextRegistry {
+public final class SubsystemState  {
 
-    CamelContext getCamelContext(String name);
+    private Map<String, String> contextDefinitions = new HashMap<String,String>();
 
-    CamelContextRegistration registerCamelContext(CamelContext camelContext);
-
-    interface CamelContextRegistration {
-        void unregister();
+    public Set<String> getContextDefinitionNames() {
+        synchronized (contextDefinitions) {
+            return contextDefinitions.keySet();
+        }
     }
+
+    public String getContextDefinition(String name) {
+        synchronized (contextDefinitions) {
+            return contextDefinitions.get(name);
+        }
+    }
+
+    public void putContextDefinition(String name, String contextDefinition) {
+        synchronized (contextDefinitions) {
+            contextDefinitions.put(name, contextDefinition);
+        }
+    }
+
+    public String removeContextDefinition(String name) {
+        synchronized (contextDefinitions) {
+            return contextDefinitions.remove(name);
+        }
+    }
+
 }

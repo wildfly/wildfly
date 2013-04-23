@@ -22,43 +22,40 @@
 
 package org.jboss.as.camel.service;
 
-import static org.jboss.as.camel.CamelLogger.LOGGER;
-
 import org.jboss.as.camel.CamelConstants;
 import org.jboss.as.camel.parser.SubsystemState;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.value.InjectedValue;
 
 /**
- * Service responsible for creating and managing the life-cycle of the Camel subsystem.
+ * The {@link SubsystemState} service
  *
  * @author Thomas.Diesler@jboss.com
  * @since 19-Apr-2013
  */
-public class CamelBootstrapService extends AbstractService<Void> {
+public class SubsystemStateService extends AbstractService<SubsystemState> {
 
-    private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
+    static final ServiceName SERVICE_NAME = CamelConstants.CAMEL_BASE_NAME.append("state");
+    private final SubsystemState subsystemState;
 
-    public static ServiceController<Void> addService(ServiceTarget serviceTarget, ServiceVerificationHandler verificationHandler) {
-        CamelBootstrapService service = new CamelBootstrapService();
-        ServiceBuilder<Void> builder = serviceTarget.addService(CamelConstants.CAMEL_BASE_NAME, service);
-        builder.addDependency(SubsystemStateService.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
+    public static ServiceController<SubsystemState> addService(ServiceTarget serviceTarget, SubsystemState subsystemState, ServiceVerificationHandler verificationHandler) {
+        SubsystemStateService service = new SubsystemStateService(subsystemState);
+        ServiceBuilder<SubsystemState> builder = serviceTarget.addService(SERVICE_NAME, service);
         builder.addListener(verificationHandler);
         return builder.install();
     }
 
     // Hide ctor
-    private CamelBootstrapService() {
+    private SubsystemStateService(SubsystemState subsystemState) {
+        this.subsystemState = subsystemState;
     }
 
     @Override
-    public void start(StartContext startContext) throws StartException {
-        LOGGER.infoActivatingSubsystem();
+    public SubsystemState getValue() {
+        return subsystemState;
     }
 }

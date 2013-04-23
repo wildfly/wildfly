@@ -1,0 +1,4 @@
+<subsystem xmlns="urn:jboss:domain:camel:1.0">
+  <camelContext id="system-context-1">
+    <![CDATA[<route><from uri="direct:start"/><transform><simple>Hello ${body}</simple></transform></route>]]></camelContext>
+</subsystem>

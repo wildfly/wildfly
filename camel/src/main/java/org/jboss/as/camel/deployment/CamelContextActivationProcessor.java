@@ -26,23 +26,18 @@ import static org.jboss.as.camel.CamelMessages.MESSAGES;
 
 import org.apache.camel.CamelContext;
 import org.jboss.as.camel.CamelConstants;
-import org.jboss.as.camel.CamelContextRegistry;
-import org.jboss.as.camel.CamelContextRegistry.CamelContextRegistration;
-import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
 /**
- * Register a {@link CamelContext} with the {@link CamelContextRegistry}.
+ * Start/Stop the {@link CamelContext}
  *
  * @author Thomas.Diesler@jboss.com
  * @since 22-Apr-2013
  */
-public class CamelContextRegistrationProcessor implements DeploymentUnitProcessor {
-
-    AttachmentKey<CamelContextRegistration> CAMEL_CONTEXT_REGISTRATION_KEY = AttachmentKey.create(CamelContextRegistration.class);
+public class CamelContextActivationProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -51,11 +46,9 @@ public class CamelContextRegistrationProcessor implements DeploymentUnitProcesso
         if (camelContext == null)
             return;
 
-        // Register the camel context
-        CamelContextRegistry registry = depUnit.getAttachment(CamelConstants.CAMEL_CONTEXT_REGISTRY_KEY);
+        // Start the camel context
         try {
-            CamelContextRegistration registration = registry.registerCamelContext(camelContext);
-            depUnit.putAttachment(CAMEL_CONTEXT_REGISTRATION_KEY, registration);
+            camelContext.start();
         } catch (Exception ex) {
             throw MESSAGES.cannotStartCamelContext(ex, camelContext);
         }
@@ -63,10 +56,14 @@ public class CamelContextRegistrationProcessor implements DeploymentUnitProcesso
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        // Unregister the camel context
-        CamelContextRegistration registration = depUnit.getAttachment(CAMEL_CONTEXT_REGISTRATION_KEY);
-        if (registration != null) {
-            registration.unregister();
+        // Stop the camel context
+        CamelContext camelContext = depUnit.getAttachment(CamelConstants.CAMEL_CONTEXT_KEY);
+        if (camelContext != null) {
+            try {
+                camelContext.stop();
+            } catch (Exception ex) {
+                throw MESSAGES.cannotStopCamelContext(ex, camelContext);
+            }
         }
     }
 }

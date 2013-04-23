@@ -35,8 +35,8 @@ import org.jboss.logging.annotations.MessageLogger;
  *
  * https://community.jboss.org/wiki/LoggingIds
  *
- * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author Thomas.Diesler@jboss.com
+ * @since 22-Apr-2013
  */
 @MessageLogger(projectCode = "JBAS")
 public interface CamelLogger extends BasicLogger {
@@ -49,4 +49,8 @@ public interface CamelLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 20000, value = "Activating Camel Subsystem")
     void infoActivatingSubsystem();
+
+    @LogMessage(level = INFO)
+    @Message(id = 20001, value = "Register camel context: %s")
+    void infoRegisterCamelContext(String name);
 }

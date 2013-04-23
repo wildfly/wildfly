@@ -473,6 +473,7 @@ public enum Phase {
     public static final int INSTALL_EJB_MANAGEMENT_RESOURCES            = 0x2000;
     public static final int INSTALL_APPLICATION_CLIENT                  = 0x2010;
     public static final int INSTALL_CAMEL_CONTEXT_REGISTRATION          = 0x2020;
+    public static final int INSTALL_CAMEL_CONTEXT_ACTIVATION          = 0x2025;
     public static final int INSTALL_MESSAGING_XML_RESOURCES             = 0x2030;
     public static final int INSTALL_BUNDLE_ACTIVATE                     = 0x2040;
     public static final int INSTALL_WAB_SERVLETCONTEXT_SERVICE          = 0x2050;

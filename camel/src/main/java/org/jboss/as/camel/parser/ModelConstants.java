@@ -20,23 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.camel;
+package org.jboss.as.camel.parser;
 
-import org.apache.camel.CamelContext;
 
 /**
- * A simple {@link CamelContext} registry.
+ * Camel subsystem model constants.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 19-Apr-2013
+ * @since 23-Aug-2013
  */
-public interface CamelContextRegistry {
+interface ModelConstants {
 
-    CamelContext getCamelContext(String name);
+    String NAME = "name";
+    String CONTEXT = "context";
+    String VALUE = "value";
 
-    CamelContextRegistration registerCamelContext(CamelContext camelContext);
-
-    interface CamelContextRegistration {
-        void unregister();
-    }
 }

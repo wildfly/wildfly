@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,24 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.camel.parser;
 
-package org.jboss.as.camel;
-
-import org.apache.camel.CamelContext;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 
 /**
- * A simple {@link CamelContext} registry.
- *
  * @author Thomas.Diesler@jboss.com
- * @since 19-Apr-2013
+ * @since 23-Aug-2013
  */
-public interface CamelContextRegistry {
+final class CamelResolvers {
 
-    CamelContext getCamelContext(String name);
+    static final String RESOURCE_NAME = CamelResolvers.class.getPackage().getName() + ".LocalDescriptions";
 
-    CamelContextRegistration registerCamelContext(CamelContext camelContext);
-
-    interface CamelContextRegistration {
-        void unregister();
+    static ResourceDescriptionResolver getResolver(String keyPrefix) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, SecurityActions.getClassLoader(CamelResolvers.class), true, true);
     }
+
 }

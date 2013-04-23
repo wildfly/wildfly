@@ -20,12 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.camel.service;
+package org.jboss.as.camel.parser;
 
 import java.util.List;
 
+import org.jboss.as.camel.deployment.CamelContextActivationProcessor;
 import org.jboss.as.camel.deployment.CamelContextCreateProcessor;
 import org.jboss.as.camel.deployment.CamelContextRegistrationProcessor;
+import org.jboss.as.camel.service.CamelBootstrapService;
+import org.jboss.as.camel.service.CamelContextRegistryService;
+import org.jboss.as.camel.service.SubsystemStateService;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -41,9 +45,13 @@ import org.jboss.msc.service.ServiceController;
  * @author Thomas.Diesler@jboss.com
  * @since 19-Apr-2013
  */
-class CamelSubsystemAdd extends AbstractBoottimeAddStepHandler {
+final class CamelSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    static final CamelSubsystemAdd INSTANCE = new CamelSubsystemAdd();
+    private final SubsystemState subsystemState;
+
+    public CamelSubsystemAdd(SubsystemState subsystemState) {
+        this.subsystemState = subsystemState;
+    }
 
     protected void populateModel(ModelNode operation, ModelNode model) {
         model.setEmptyObject();
@@ -51,13 +59,17 @@ class CamelSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
 
+        // Register subsystem services
         newControllers.add(CamelBootstrapService.addService(context.getServiceTarget(), verificationHandler));
         newControllers.add(CamelContextRegistryService.addService(context.getServiceTarget(), verificationHandler));
+        newControllers.add(SubsystemStateService.addService(context.getServiceTarget(), subsystemState, verificationHandler));
 
+        // Register deployment unit processors
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(CamelExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_CAMEL_CONTEXT_CREATE, new CamelContextCreateProcessor());
                 processorTarget.addDeploymentProcessor(CamelExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_CAMEL_CONTEXT_REGISTRATION, new CamelContextRegistrationProcessor());
+                processorTarget.addDeploymentProcessor(CamelExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_CAMEL_CONTEXT_ACTIVATION, new CamelContextActivationProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
     }

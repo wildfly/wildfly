@@ -23,22 +23,23 @@ package org.jboss.as.camel;
 
 import java.io.IOException;
 
-import org.jboss.as.camel.service.CamelExtension;
+import org.jboss.as.camel.parser.CamelExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 
 /**
+ * A simple camel subsystem test.
  *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Thomas.Diesler@jboss.com
+ * @since 19-Apr-2013
  */
 public class CamelSubsystemTestCase extends AbstractSubsystemBaseTest {
 
-    public CamelSubsystemTestCase() {
-        super(CamelExtension.SUBSYSTEM_NAME, new CamelExtension());
-    }
+        public CamelSubsystemTestCase() {
+            super(CamelExtension.SUBSYSTEM_NAME, new CamelExtension());
+        }
 
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        return "<subsystem xmlns='urn:jboss:domain:camel:1.0'/>";
-    }
-
+        @Override
+        protected String getSubsystemXml() throws IOException {
+            return readResource("subsystem-camel-1.0.xml");
+        }
 }

@@ -16,9 +16,11 @@
  */
 package org.jboss.as.test.integration.camel.simple;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collection;
+
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -26,7 +28,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.camel.CamelContextFactory;
-import org.jboss.as.test.integration.camel.simple.subA.SpringCamelContextActivator;
+import org.jboss.as.test.integration.camel.simple.subA.SpringContextActivator;
 import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -47,9 +49,10 @@ import org.osgi.framework.ServiceReference;
  * @since 21-Apr-2013
  */
 @RunWith(Arquillian.class)
-public class SpringCamelContextTestCase {
+public class SpringContextTestCase {
 
     static final String SPRING_CONTEXT_XML = "simple-transform-context.xml";
+    static final String SPRING_CONTEXT_RESOURCE = "/camel/simple/" + SPRING_CONTEXT_XML;
     static final String CAMEL_BUNDLE = "camel-spring-bundle.jar";
 
     @ArquillianResource
@@ -61,7 +64,7 @@ public class SpringCamelContextTestCase {
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "camel-spring-tests");
-        archive.addAsResource("camel/simple/" + SPRING_CONTEXT_XML, SPRING_CONTEXT_XML);
+        archive.addAsResource("camel/simple/" + SPRING_CONTEXT_XML);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -74,8 +77,8 @@ public class SpringCamelContextTestCase {
     }
 
     @Test
-    public void testSimpleTransformFromModule() throws Exception {
-        URL resourceUrl = getClass().getResource("/" + SPRING_CONTEXT_XML);
+    public void testSpringContextFromURL() throws Exception {
+        URL resourceUrl = getClass().getResource(SPRING_CONTEXT_RESOURCE);
         CamelContext camelctx = CamelContextFactory.createSpringCamelContext(resourceUrl);
         camelctx.start();
         ProducerTemplate producer = camelctx.createProducerTemplate();
@@ -84,7 +87,23 @@ public class SpringCamelContextTestCase {
     }
 
     @Test
-    public void testSimpleTransformFromBundle() throws Exception {
+    public void testSpringContextFromByteArray() throws Exception {
+        InputStream input = getClass().getResource(SPRING_CONTEXT_RESOURCE).openStream();
+        int count;
+        byte[] buffer = new byte[1024];
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        while ((count = input.read(buffer)) > 0) {
+            out.write(buffer, 0, count);
+        }
+        CamelContext camelctx = CamelContextFactory.createSpringCamelContext(out.toByteArray());
+        camelctx.start();
+        ProducerTemplate producer = camelctx.createProducerTemplate();
+        String result = producer.requestBody("direct:start", "Kermit", String.class);
+        Assert.assertEquals("Hello Kermit", result);
+    }
+
+    @Test
+    public void testSpringContextFromBundle() throws Exception {
         InputStream input = deployer.getDeployment(CAMEL_BUNDLE);
         Bundle bundle = context.installBundle(CAMEL_BUNDLE, input);
         try {
@@ -104,15 +123,15 @@ public class SpringCamelContextTestCase {
     @Deployment(name = CAMEL_BUNDLE, managed = false, testable = false)
     public static JavaArchive getBundle() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, CAMEL_BUNDLE);
-        archive.addAsResource("camel/simple/" + SPRING_CONTEXT_XML, SPRING_CONTEXT_XML);
-        archive.addClasses(SpringCamelContextActivator.class);
+        archive.addAsResource("camel/simple/" + SPRING_CONTEXT_XML);
+        archive.addClasses(SpringContextActivator.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addBundleActivator(SpringCamelContextActivator.class);
+                builder.addBundleActivator(SpringContextActivator.class);
                 builder.addImportPackages(CamelContext.class, CamelContextFactory.class);
                 builder.addImportPackages(BundleActivator.class);
                 return builder.openStream();

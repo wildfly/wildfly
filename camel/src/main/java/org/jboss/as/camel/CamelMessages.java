@@ -33,8 +33,8 @@ import org.jboss.logging.annotations.MessageBundle;
  *
  * https://community.jboss.org/wiki/LoggingIds
  *
- * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author Thomas.Diesler@jboss.com
+ * @since 22-Apr-2013
  */
 @MessageBundle(projectCode = "JBAS")
 public interface CamelMessages {
