@@ -476,20 +476,19 @@ public final class ManagedServerOperationsFactory {
     }
 
     private void addSocketBindings(List<ModelNode> updates, ModelNode group, final String groupName, ModelNode defaultInterface) {
-        if (!group.hasDefined(SOCKET_BINDING)) {
-            return;
-        }
-        for (final Property socketBinding : group.get(SOCKET_BINDING).asPropertyList()) {
-            final String name = socketBinding.getName();
-            final ModelNode binding = socketBinding.getValue();
-            if (!binding.isDefined()) {
-                continue;
+        if (group.hasDefined(SOCKET_BINDING)) {
+            for (final Property socketBinding : group.get(SOCKET_BINDING).asPropertyList()) {
+                final String name = socketBinding.getName();
+                final ModelNode binding = socketBinding.getValue();
+                if (!binding.isDefined()) {
+                    continue;
+                }
+                if (!binding.get(DEFAULT_INTERFACE).isDefined()) {
+                    binding.get(DEFAULT_INTERFACE).set(defaultInterface);
+                }
+                updates.add(SocketBindingAddHandler.getOperation(PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, groupName),
+                        PathElement.pathElement(SOCKET_BINDING, name)), binding));
             }
-            if (!binding.get(DEFAULT_INTERFACE).isDefined()) {
-                binding.get(DEFAULT_INTERFACE).set(defaultInterface);
-            }
-            updates.add(SocketBindingAddHandler.getOperation(PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, groupName),
-                    PathElement.pathElement(SOCKET_BINDING, name)), binding));
         }
         // outbound-socket-binding (for local destination)
         if (group.hasDefined(LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING)) {
