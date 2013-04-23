@@ -37,6 +37,7 @@
     </exports>
     
     <dependencies>
+        <module name="javax.api"/>
         <module name="org.apache.camel"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.server"/>

@@ -22,6 +22,8 @@
 
 package org.jboss.as.camel;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 
 import org.apache.camel.CamelContext;
@@ -34,6 +36,9 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * A {@link CamelContext} factory utility.
@@ -42,6 +47,9 @@ import org.springframework.core.io.UrlResource;
  * @since 19-Apr-2013
  */
 public final class CamelContextFactory {
+
+    private static final String SPRING_BEANS_SYSTEM_ID = "http://www.springframework.org/schema/beans/spring-beans.xsd";
+    private static final String CAMEL_SPRING_SYSTEM_ID = "http://camel.apache.org/schema/spring/camel-spring.xsd";
 
     // Hide ctor
     private CamelContextFactory() {
@@ -70,6 +78,24 @@ public final class CamelContextFactory {
                 return new CamelNamespaceHandlerResolver(defaultResolver);
             }
         };
+        xmlReader.setEntityResolver(new EntityResolver() {
+            @Override
+            public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+                InputStream inputStream = null;
+                if (CAMEL_SPRING_SYSTEM_ID.equals(systemId)) {
+                    inputStream = SpringCamelContext.class.getResourceAsStream("/camel-spring.xsd");
+                } else if (SPRING_BEANS_SYSTEM_ID.equals(systemId)) {
+                    inputStream = XmlBeanDefinitionReader.class.getResourceAsStream("spring-beans-3.1.xsd");
+                }
+                InputSource result = null;
+                if (inputStream != null) {
+                    result = new InputSource();
+                    result.setSystemId(systemId);
+                    result.setByteStream(inputStream);
+                }
+                return result;
+            }
+        });
         xmlReader.loadBeanDefinitions(resource);
         appContext.refresh();
         return SpringCamelContext.springCamelContext(appContext);
