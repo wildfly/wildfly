@@ -60,11 +60,12 @@ public class JSFModuleIdFactory {
 
     private JSFModuleIdFactory() {
         String modulePath = System.getProperty("module.path", System.getenv("JAVA_MODULEPATH"));
-        if (isBogusPath(modulePath)) {
-            loadIdsManually();
-        } else {
+        if (!isBogusPath(modulePath)) {
             loadIdsFromModulePath(modulePath);
-            if (activeVersions.isEmpty()) loadIdsManually();
+        }
+
+        if (!activeVersions.contains("main")) {
+            loadIdsManually();
         }
 
         JSFLogger.ROOT_LOGGER.activatedJSFImplementations(activeVersions);
