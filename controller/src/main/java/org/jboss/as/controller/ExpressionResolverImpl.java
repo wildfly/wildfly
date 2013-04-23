@@ -21,6 +21,7 @@
 */
 package org.jboss.as.controller;
 
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -37,14 +38,16 @@ public class ExpressionResolverImpl implements ExpressionResolver {
 
     @Override
     public final ModelNode resolveExpressions(final ModelNode node) throws OperationFailedException {
-        ModelNode resolved = resolveExpressionsRecursively(node);
+        ModelNode resolved = node;
         try {
-            return resolved.resolve();
+            resolved = resolveExpressionsRecursively(resolved);
+            resolved = resolved.resolve();
         } catch (SecurityException e) {
             throw new OperationFailedException(new ModelNode().set(ControllerMessages.MESSAGES.noPermissionToResolveExpression(resolved, e)));
         } catch (IllegalStateException e) {
             throw new OperationFailedException(new ModelNode().set(ControllerMessages.MESSAGES.cannotResolveExpression(resolved, e)));
         }
+        return resolved;
     }
 
     private ModelNode resolveExpressionsRecursively(final ModelNode node) throws OperationFailedException {
@@ -56,6 +59,12 @@ public class ExpressionResolverImpl implements ExpressionResolver {
         if (node.getType() == ModelType.EXPRESSION) {
             resolved = node.clone();
             resolvePluggableExpression(resolved);
+            resolved = resolved.resolve();
+            while (ParseUtils.isExpression(resolved.asString())) {
+                resolved = ParseUtils.parsePossibleExpression(resolved.asString());
+                resolvePluggableExpression(resolved);
+                resolved = resolved.resolve();
+            }
         } else if (node.getType() == ModelType.OBJECT) {
             resolved = node.clone();
             for (Property prop : resolved.asPropertyList()) {

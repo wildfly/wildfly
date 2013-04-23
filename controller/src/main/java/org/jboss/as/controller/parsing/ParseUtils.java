@@ -441,10 +441,14 @@ public final class ParseUtils {
         }
     }
 
+    public static boolean isExpression(String value) {
+        int openIdx = value.indexOf("${");
+        return openIdx > -1 && value.lastIndexOf('}') > openIdx;
+    }
+
     public static ModelNode parsePossibleExpression(String value) {
         ModelNode result = new ModelNode();
-        int openIdx = value.indexOf("${");
-        if (openIdx > -1 && value.lastIndexOf('}') > openIdx) {
+        if (isExpression(value)) {
             result.setExpression(value);
         }
         else {
