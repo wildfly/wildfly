@@ -35,7 +35,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-management-client-content</artifactId>
 
-    <name>JBoss Application Server: Management Client Content</name>
+    <name>WildFly: Management Client Content</name>
 
     <dependencies>
         <dependency>

@@ -35,7 +35,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-cli</artifactId>
 
-    <name>JBoss Application Server: Command line interface</name>
+    <name>WildFly: Command line interface</name>
 
     <build>
         <plugins>

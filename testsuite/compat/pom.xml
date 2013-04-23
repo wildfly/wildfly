@@ -33,7 +33,7 @@
     </parent>
 
     <artifactId>jboss-as-testsuite-compat</artifactId>
-    <name>JBoss Application Server Test Suite: Compatibility Tests</name>
+    <name>WildFly Test Suite: Compatibility Tests</name>
     <properties>
 
         <!-- This project's testsuite dir. To be changed for every submodule (until we figure out how to do it automatically). -->
@@ -44,7 +44,7 @@
 
         <!-- Used to provide an absolute location for the distribution under test. -->
         <!-- This value is overridden in modules with the correct relative pathname. -->
-        <jboss.dist>${jbossas.project.dir}/build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
+        <jboss.dist>${jbossas.project.dir}/build/target/wildfly-${jboss.as.release.version}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
 
         <!-- Used to provide an absolute location for the XSLT scripts. -->

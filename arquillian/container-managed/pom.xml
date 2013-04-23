@@ -32,12 +32,12 @@
     </parent>
     <artifactId>jboss-as-arquillian-container-managed</artifactId>
 
-    <name>JBoss Application Server: Arquillian Managed Container</name>
+    <name>WildFly: Arquillian Managed Container</name>
 
     <packaging>jar</packaging>
 
     <properties>
-        <jboss.home>${project.basedir}/../../build/target/jboss-as-${jboss.as.release.version}</jboss.home>
+        <jboss.home>${project.basedir}/../../build/target/wildfly-${jboss.as.release.version}</jboss.home>
     </properties>
 
     <dependencies>

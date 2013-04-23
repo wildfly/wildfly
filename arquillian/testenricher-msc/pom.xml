@@ -17,7 +17,7 @@
     <artifactId>jboss-as-arquillian-testenricher-msc</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Arquillian TestEnricher MSC</name>
+    <name>WildFly: Arquillian TestEnricher MSC</name>
 
     <!-- Properties -->
     <properties>

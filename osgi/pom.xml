@@ -37,7 +37,7 @@
     <artifactId>jboss-as-osgi</artifactId>
     <packaging>pom</packaging>
 
-    <name>JBoss Application Server: OSGi</name>
+    <name>WildFly: OSGi</name>
 
     <modules>
         <module>service</module>

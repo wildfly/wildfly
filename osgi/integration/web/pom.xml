@@ -34,7 +34,7 @@
     </parent>
 
     <artifactId>jboss-as-osgi-web</artifactId>
-    <name>JBoss Application Server: OSGi Integration WebApp</name>
+    <name>WildFly: OSGi Integration WebApp</name>
 
     <dependencies>
         <dependency>

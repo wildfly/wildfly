@@ -33,7 +33,7 @@
     </parent>
 
     <artifactId>jboss-as-subsystem-test-tests</artifactId>
-    <name>JBoss Application Server: Subsystem Test Framework Tests</name>
+    <name>WildFly: Subsystem Test Framework Tests</name>
     
     <build>
        <plugins>

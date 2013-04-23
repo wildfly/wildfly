@@ -33,7 +33,7 @@
     <artifactId>jboss-as-mail</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Mail subsystem</name>
+    <name>WildFly: Mail subsystem</name>
 
     <packaging>jar</packaging>
 

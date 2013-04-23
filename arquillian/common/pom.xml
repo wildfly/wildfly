@@ -33,7 +33,7 @@
 
     <artifactId>jboss-as-arquillian-common</artifactId>
 
-    <name>JBoss Application Server: Arquillian Common</name>
+    <name>WildFly: Arquillian Common</name>
 
     <packaging>jar</packaging>
 

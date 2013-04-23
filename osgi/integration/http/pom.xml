@@ -34,7 +34,7 @@
     </parent>
 
     <artifactId>jboss-as-osgi-http</artifactId>
-    <name>JBoss Application Server: OSGi Integration Http</name>
+    <name>WildFly: OSGi Integration Http</name>
     <packaging>bundle</packaging>
 
     <dependencies>

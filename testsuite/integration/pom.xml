@@ -15,7 +15,7 @@
     <packaging>pom</packaging>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
-    <name>JBoss Application Server Test Suite: Integration</name>
+    <name>WildFly Test Suite: Integration</name>
 
     <properties>
         <!-- Current module's directory. Will automatically pick up sub-module's basedir. -->
@@ -35,7 +35,7 @@
         </jvm.args.dirs>
 
         <!-- Used to provide an absolute location for the distribution under test. -->
-        <jboss.dist>${jbossas.project.dir}/build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
+        <jboss.dist>${jbossas.project.dir}/build/target/wildfly-${jboss.as.release.version}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
 
         <!-- Used to provide an absolute location for the XSLT scripts. -->

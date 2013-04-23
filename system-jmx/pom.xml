@@ -36,7 +36,7 @@
     <artifactId>jboss-as-system-jmx</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
-    <name>JBoss Application Server: System JMX Module</name>
+    <name>WildFly: System JMX Module</name>
     
     <build>
         <plugins>

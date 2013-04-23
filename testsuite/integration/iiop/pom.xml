@@ -17,7 +17,7 @@
     <artifactId>jboss-as-ts-integ-iiop</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
-    <name>JBoss Application Server Test Suite: Integration - IIOP</name>
+    <name>WildFly Test Suite: Integration - IIOP</name>
 
     <properties>
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>

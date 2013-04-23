@@ -35,7 +35,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-transactions</artifactId>
 
-    <name>JBoss Application Server: Transaction Subsystem</name>
+    <name>WildFly: Transaction Subsystem</name>
 
     <build>
        <plugins>

@@ -23,8 +23,8 @@
 <project name="modular-config" basedir="." default="all">
 
 	<property name="build.resources.dir" value="${basedir}/../build/src/main/resources" />
-	<property name="server.input.dir" value="${basedir}/../build/target/jboss-as-${jboss.as.release.version}" />
-	<property name="server.output.dir" value="target/jboss-as-${modular.config.name}-${jboss.as.release.version}" />
+	<property name="server.input.dir" value="${basedir}/../build/target/wildfly-${jboss.as.release.version}" />
+	<property name="server.output.dir" value="target/wildfly-${modular.config.name}-${jboss.as.release.version}" />
 	<property name="standalone.configs.target" value="${server.output.dir}/standalone/configuration" />
 	<property name="domain.configs.target" value="${server.output.dir}/domain/configuration" />
 	<property name="generated.standalone.subsystems" value="${basedir}/target/standalone-subsystems.xml" />

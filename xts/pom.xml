@@ -35,7 +35,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-xts</artifactId>
 
-    <name>JBoss Application Server: XTS Subsystem</name>
+    <name>WildFly: XTS Subsystem</name>
 
     <build>
        <plugins>

@@ -35,7 +35,7 @@
     <artifactId>jboss-as-clustering-singleton</artifactId>
     <packaging>jar</packaging>
 
-    <name>JBoss Application Server: Clustered singleton services</name>
+    <name>WildFly: Clustered singleton services</name>
 
     <dependencies>
         <dependency>

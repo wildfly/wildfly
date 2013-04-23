@@ -35,7 +35,7 @@
     <artifactId>jboss-as-clustering-impl</artifactId>
     <packaging>jar</packaging>
 
-    <name>JBoss Application Server: Clustering Server API implementation</name>
+    <name>WildFly: Clustering Server API implementation</name>
 
     <dependencies>
         <dependency>

@@ -36,6 +36,7 @@
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-io</artifactId>
+    <name>WildFly: IO Subsystem</name>
 
     <dependencies>
         <dependency>

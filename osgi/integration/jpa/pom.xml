@@ -34,7 +34,7 @@
     </parent>
 
     <artifactId>jboss-as-osgi-jpa</artifactId>
-    <name>JBoss Application Server: OSGi Integration JPA</name>
+    <name>WildFly: OSGi Integration JPA</name>
     <packaging>bundle</packaging>
 
     <dependencies>

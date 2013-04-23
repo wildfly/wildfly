@@ -39,7 +39,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-arquillian-protocol-servlet</artifactId>
 
-    <name>JBoss Application Server: Arquillian Protocol Servlet</name>
+    <name>WildFly: Arquillian Protocol Servlet</name>
 
     <packaging>jar</packaging>
     

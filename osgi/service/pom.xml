@@ -40,7 +40,7 @@
     </parent>
 
     <artifactId>jboss-as-osgi-service</artifactId>
-    <name>JBoss Application Server: OSGi Subsystem</name>
+    <name>WildFly: OSGi Subsystem</name>
 
     <dependencies>
         <dependency>

@@ -36,7 +36,7 @@
     <artifactId>jboss-as-sar</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Service Archive Subsystem</name>
+    <name>WildFly: Service Archive Subsystem</name>
 
     <build>
         <plugins>

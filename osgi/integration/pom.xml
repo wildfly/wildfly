@@ -34,7 +34,7 @@
     </parent>
 
     <artifactId>jboss-as-osgi-integration</artifactId>
-    <name>JBoss Application Server: OSGi Integration</name>
+    <name>WildFly: OSGi Integration</name>
     <packaging>pom</packaging>
 
     <modules>

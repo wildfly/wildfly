@@ -36,7 +36,7 @@
     <artifactId>jboss-as-webservices</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>JBoss Application Server: Web Services Subsystem</name>
+    <name>WildFly: Web Services Subsystem</name>
 
     <modules>
         <module>server-integration</module>

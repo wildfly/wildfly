@@ -33,7 +33,7 @@
     </parent>
 
     <artifactId>jboss-as-jdr</artifactId>
-    <name>JBoss Application Server: JDR</name>
+    <name>WildFly: JDR</name>
 
     <build>
        <plugins>

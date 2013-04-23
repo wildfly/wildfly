@@ -35,7 +35,7 @@
     <artifactId>jboss-as-clustering-infinispan</artifactId>
     <packaging>jar</packaging>
 
-    <name>JBoss Application Server: Infinispan Subsystem</name>
+    <name>WildFly: Infinispan Subsystem</name>
 
     <dependencies>
         <dependency>
