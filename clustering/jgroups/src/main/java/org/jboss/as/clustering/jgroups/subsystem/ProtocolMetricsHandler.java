@@ -1,3 +1,24 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2013, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.subsystem.ChannelInstanceResource.JGROUPS_PROTOCOL_PKG;
@@ -11,6 +32,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.clustering.jgroups.JGroupsMessages;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -36,7 +58,7 @@ import org.jgroups.stack.Protocol;
  * field.getDouble(protocolObject)
  * to get the value of the attribute
  *
- * @author Richard Achmatowicz (c) 2012 Red Hat Inc.
+ * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
 public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
 
@@ -106,7 +128,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
             protocolClass = Protocol.class.getClassLoader().loadClass(className).asSubclass(Protocol.class);
             loaded = true;
         } catch (ClassNotFoundException e) {
-            context.getFailureDescription().set(String.format("Can't load protocol class %s", protocolName));
+            context.getFailureDescription().set(JGroupsMessages.MESSAGES.unableToLoadProtocol(className));
         }
 
         if (loaded) {
@@ -117,7 +139,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
                 field = getField(protocolClass, attrName);
                 fieldFound = true;
             } catch (NoSuchFieldException e) {
-                context.getFailureDescription().set(String.format("Unknown metric %s", attrName));
+                context.getFailureDescription().set(JGroupsMessages.MESSAGES.unknownMetric(attrName));
             }
 
             // we now have a valid protocol instance and a valid field, get the value
@@ -131,8 +153,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
                 Protocol protocol = channel.getProtocolStack().findProtocol(protocolName);
 
                 if (protocol == null) {
-                    System.out.println("protocol is null");
-                    context.getFailureDescription().set(String.format("Could not retrieve protocol %s", protocolName));
+                    context.getFailureDescription().set(JGroupsMessages.MESSAGES.protocolNotFoundInStack(protocolName));
                 }
 
                 // get the type of the attribute and call the appropriate set method
@@ -147,13 +168,11 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
                     result = getProtocolFieldValue(protocol, field, type);
                 }
                 catch (PrivilegedActionException pae) {
-                    context.getFailureDescription().set(String.format("Privileged access exception on attribute %s", attrName));
-                    System.out.println(pae.toString());
+                    context.getFailureDescription().set(JGroupsMessages.MESSAGES.privilegedAccessExceptionForAttribute(attrName));
                 }
                 catch (InstantiationException ie){
-                    context.getFailureDescription().set(String.format("Instantiation exception on converter for attribute %s", attrName));
-                    System.out.println(ie.toString());
-                }
+                    context.getFailureDescription().set(JGroupsMessages.MESSAGES.instantiationExceptionOnConverterForAttribute(attrName));
+               }
 
             context.getResult().set(result);
         }
