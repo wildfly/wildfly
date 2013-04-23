@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
@@ -49,37 +48,25 @@ public class AdditionalSetupInterceptor implements Interceptor {
 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        final InvocationType invocationType = context.getPrivateData(InvocationType.class);
-        if(invocationType == null) {
+        try {
+            for (SetupAction action : actions) {
+                action.setup(Collections.<String, Object>emptyMap());
+            }
             return context.proceed();
-        }
-        switch (invocationType) {
-            case TIMER:
-            case ASYNC:
-            case REMOTE:
-            case MESSAGE_DELIVERY:
+        } finally {
+            final ListIterator<SetupAction> iterator = actions.listIterator(actions.size());
+            Throwable error = null;
+            while (iterator.hasPrevious()) {
+                SetupAction action = iterator.previous();
                 try {
-                    for (SetupAction action : actions) {
-                        action.setup(Collections.<String, Object>emptyMap());
-                    }
-                    return context.proceed();
-                } finally {
-                    final ListIterator<SetupAction> iterator = actions.listIterator(actions.size());
-                    Throwable error = null;
-                    while (iterator.hasPrevious()) {
-                        SetupAction action = iterator.previous();
-                        try {
-                            action.teardown(Collections.<String, Object>emptyMap());
-                        } catch (Throwable e) {
-                            error = e;
-                        }
-                    }
-                    if (error != null) {
-                        throw new RuntimeException(error);
-                    }
+                    action.teardown(Collections.<String, Object>emptyMap());
+                } catch (Throwable e) {
+                    error = e;
                 }
-            default:
-                return context.proceed();
+            }
+            if (error != null) {
+                throw new RuntimeException(error);
+            }
         }
     }
 
