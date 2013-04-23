@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -33,7 +32,7 @@ import org.jboss.dmr.ModelType;
 /**
  * The root resource of the JGroups subsystem.
  *
- * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ * @author Richard Achmatowicz (c) 2012 Red Hat Inc.
  */
 public class JGroupsSubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
