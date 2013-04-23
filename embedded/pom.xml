@@ -33,7 +33,7 @@
     </parent>
 
     <artifactId>jboss-as-embedded</artifactId>
-    <name>JBoss Application Server: Embedded</name>
+    <name>WildFly: Embedded</name>
 
     <dependencies>
         <!-- For the EJB scanner -->

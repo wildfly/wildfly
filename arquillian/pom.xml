@@ -34,7 +34,7 @@
 
     <artifactId>jboss-as-arquillian</artifactId>
 
-    <name>JBoss Application Server: Arquillian</name>
+    <name>WildFly: Arquillian</name>
 
     <modules>
         <module>common</module>

@@ -39,7 +39,7 @@
 			which one to use. 
 		-->
     <artifactId>jboss-as-subsystem-test</artifactId>
-    <name>JBoss Application Server: Subsystem Test POM</name>
+    <name>WildFly: Subsystem Test POM</name>
     <packaging>pom</packaging>
     <dependencies>
         <dependency>

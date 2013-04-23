@@ -34,7 +34,7 @@
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-protocol</artifactId>
-    <name>JBoss Application Server: Protocol Utilities</name>
+    <name>WildFly: Protocol Utilities</name>
 
     <properties>
         <test.level>INFO</test.level>

@@ -37,7 +37,7 @@
     <artifactId>jboss-as-jpa-openjpa</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
-    <name>JBoss Application Server: OpenJPA 2.x JPA integration</name>
+    <name>WildFly: OpenJPA 2.x JPA integration</name>
 
     <dependencies>
 

@@ -35,7 +35,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-controller-client</artifactId>
 
-    <name>JBoss Application Server: Controller Client</name>
+    <name>WildFly: Controller Client</name>
 
     <build>
         <plugins>

@@ -36,7 +36,7 @@
     <artifactId>jboss-as-pojo</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
-    <name>JBoss Application Server: POJO Subsystem</name>
+    <name>WildFly: POJO Subsystem</name>
 
     <build>
        <plugins>

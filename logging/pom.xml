@@ -36,7 +36,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-logging</artifactId>
 
-    <name>JBoss Application Server: Logging Subsystem</name>
+    <name>WildFly: Logging Subsystem</name>
 
     <build>
         <plugins>

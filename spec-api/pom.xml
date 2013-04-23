@@ -32,7 +32,7 @@
   </parent>
 
   <artifactId>jboss-as-spec-api</artifactId>
-  <name>JBoss Application Server: Exported Java EE Specification APIs</name>
+  <name>WildFly: Exported Java EE Specification APIs</name>
   <description>Java EE Specification APIs exported by the Application Server</description>
 
   <packaging>pom</packaging>

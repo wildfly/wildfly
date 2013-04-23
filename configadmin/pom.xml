@@ -36,7 +36,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-configadmin</artifactId>
 
-    <name>JBoss Application Server: Config Admin</name>
+    <name>WildFly: Config Admin</name>
 
     <build>
        <plugins>

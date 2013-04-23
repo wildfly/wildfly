@@ -37,7 +37,7 @@
     <artifactId>jboss-as-domain-http</artifactId>
     <packaging>pom</packaging>
 
-    <name>JBoss Application Server: Domain HTTP Interface</name>
+    <name>WildFly: Domain HTTP Interface</name>
 
     <modules>
         <module>interface</module>

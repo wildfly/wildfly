@@ -35,7 +35,7 @@
     <artifactId>jboss-as-clustering-common</artifactId>
     <packaging>jar</packaging>
 
-    <name>JBoss Application Server: Common code for clustering subsystems</name>
+    <name>WildFly: Common code for clustering subsystems</name>
 
     <dependencies>
         <dependency>

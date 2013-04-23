@@ -35,7 +35,7 @@
     <artifactId>jboss-as-clustering</artifactId>
     <packaging>pom</packaging>
 
-    <name>JBoss Application Server: Clustering Subsystem</name>
+    <name>WildFly: Clustering Subsystem</name>
 
     <modules>
         <module>api</module>

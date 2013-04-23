@@ -35,7 +35,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-deployment-scanner</artifactId>
 
-    <name>JBoss Application Server: Deployment Scanner</name>
+    <name>WildFly: Deployment Scanner</name>
 
     <dependencies>
         <dependency>

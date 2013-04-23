@@ -35,7 +35,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-testsuite-stress</artifactId>
 
-    <name>JBoss Application Server Test Suite: Stress Tests</name>
+    <name>WildFly Test Suite: Stress Tests</name>
 
     <properties>
         <skip.stress.tests>false</skip.stress.tests>

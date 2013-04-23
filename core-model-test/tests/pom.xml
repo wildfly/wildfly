@@ -33,7 +33,7 @@
     </parent>
 
     <artifactId>jboss-as-core-model-test-tests</artifactId>
-    <name>JBoss Application Server: Core Model Tests</name>
+    <name>WildFly: Core Model Tests</name>
     
     <build>
        <plugins>

@@ -16,7 +16,7 @@
     <packaging>jar</packaging>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
-    <name>JBoss Application Server Test Suite: Shared</name>
+    <name>WildFly Test Suite: Shared</name>
     
     
     <properties>

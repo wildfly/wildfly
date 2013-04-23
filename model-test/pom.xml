@@ -34,7 +34,7 @@
 
     <artifactId>jboss-as-model-test</artifactId>
 
-    <name>JBoss Application Server: Common Code for Subsystem and Non-subsystem Test Harness</name>
+    <name>WildFly: Common Code for Subsystem and Non-subsystem Test Harness</name>
 
     <build>
         <resources>

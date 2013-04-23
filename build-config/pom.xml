@@ -35,7 +35,7 @@
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-build-config</artifactId>
-    <name>JBoss Application Server: Build Configuration</name>
+    <name>WildFly: Build Configuration</name>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
     <licenses>

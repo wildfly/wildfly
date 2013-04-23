@@ -34,7 +34,7 @@
     <artifactId>jboss-as-osgi-configadmin</artifactId>
     <packaging>bundle</packaging>
 
-    <name>JBoss Application Server: OSGi Integration ConfigAdmin</name>
+    <name>WildFly: OSGi Integration ConfigAdmin</name>
 
     <dependencies>
         <dependency>

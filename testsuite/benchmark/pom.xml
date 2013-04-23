@@ -34,7 +34,7 @@
 
     <artifactId>jboss-as-testsuite-benchmark</artifactId>
 
-    <name>JBoss Application Server Test Suite: Benchmark Tests</name>
+    <name>WildFly Test Suite: Benchmark Tests</name>
 
     <properties>
         <skip.benchmark.tests>false</skip.benchmark.tests>

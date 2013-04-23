@@ -32,7 +32,7 @@
   </parent>
 
   <artifactId>jboss-as-spec-api-test</artifactId>
-  <name>JBoss Application Server: Validation Tests for Exported Java EE Specification APIs</name>
+  <name>WildFly: Validation Tests for Exported Java EE Specification APIs</name>
   <description>Validation Tests for Java EE Specification APIs exported by the Application Server</description>
 
 </project>

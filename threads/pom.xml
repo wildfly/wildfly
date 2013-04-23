@@ -35,7 +35,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-threads</artifactId>
 
-    <name>JBoss Application Server: Threading Subsystem</name>
+    <name>WildFly: Threading Subsystem</name>
 
     <properties>
         <test.level>INFO</test.level>

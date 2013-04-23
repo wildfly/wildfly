@@ -37,7 +37,7 @@
     <artifactId>jboss-as-ejb-client-bom</artifactId>
     <packaging>pom</packaging>
 
-    <name>JBoss Application Server: EJB Client BOM</name>
+    <name>WildFly: EJB Client BOM</name>
 
     <description>
         This artifact provides a bill of materials (BOM) for remoting based EJB usage.

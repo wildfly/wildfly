@@ -34,7 +34,7 @@
 
     <artifactId>jboss-as-modcluster</artifactId>
 
-    <name>JBoss Application Server: ModCluster Subsystem</name>
+    <name>WildFly: ModCluster Subsystem</name>
 
     <build>
         <plugins>

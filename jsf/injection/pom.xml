@@ -36,7 +36,7 @@
     <artifactId>jboss-as-jsf-injection</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
-    <name>JBoss Application Server: JSF Injection Handlers</name>
+    <name>WildFly: JSF Injection Handlers</name>
 
     <dependencies>
         <dependency>

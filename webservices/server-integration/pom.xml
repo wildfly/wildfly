@@ -36,7 +36,7 @@
     <version>8.0.0.Alpha1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>JBoss Application Server: Web Services Server Integration Subsystem</name>
+    <name>WildFly: Web Services Server Integration Subsystem</name>
 
     <build>
         <plugins>

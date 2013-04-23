@@ -37,7 +37,7 @@
     <artifactId>jboss-as-dist</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Distribution</name>
+    <name>WildFly: Distribution</name>
     <packaging>pom</packaging>
 
     <dependencies>
@@ -74,7 +74,7 @@
                                     <descriptors>
                                         <descriptor>assembly.xml</descriptor>
                                     </descriptors>
-                                    <finalName>jboss-as-${project.version}</finalName>
+                                    <finalName>wildfly-${project.version}</finalName>
                                     <appendAssemblyId>false</appendAssemblyId>
                                     <outputDirectory>target/</outputDirectory>
                                     <workDirectory>target/assembly/work</workDirectory>
@@ -91,7 +91,7 @@
                                     <descriptors>
                                         <descriptor>assembly-src.xml</descriptor>
                                     </descriptors>
-                                    <finalName>jboss-as-${project.version}</finalName>
+                                    <finalName>wildfly-${project.version}</finalName>
                                     <appendAssemblyId>true</appendAssemblyId>
                                     <outputDirectory>target/</outputDirectory>
                                     <workDirectory>target/assembly-src/work</workDirectory>

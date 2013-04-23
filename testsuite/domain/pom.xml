@@ -33,13 +33,13 @@
     </parent>
 
     <artifactId>jboss-as-testsuite-integration-domain</artifactId>
-    <name>JBoss Application Server Test Suite: Domain Mode Integration Tests</name>
+    <name>WildFly Test Suite: Domain Mode Integration Tests</name>
 
     <properties>
 
         <!-- used to provide an absolute location for the distribution under test -->
         <!-- this value is overridden in modules with the correct relative pathname -->
-        <jboss.dist>${project.basedir}/../../build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
+        <jboss.dist>${project.basedir}/../../build/target/wildfly-${jboss.as.release.version}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
 
         <!-- Used to provide an absolute location for the XSLT scripts. -->

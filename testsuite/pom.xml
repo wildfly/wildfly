@@ -65,7 +65,7 @@
     <version>8.0.0.Alpha1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>JBoss Application Server Test Suite: Aggregator</name>
+    <name>WildFly Test Suite: Aggregator</name>
 
     <modules>
         <module>integration</module>
@@ -87,7 +87,7 @@
 
         <!-- Used to provide an absolute location for the distribution under test. -->
         <!-- This value is overridden in modules with the correct relative pathname. -->
-        <jboss.dist>${project.basedir}/../build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
+        <jboss.dist>${project.basedir}/../build/target/wildfly-${jboss.as.release.version}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
 
         <!-- Used to provide an absolute location for the XSLT scripts. -->

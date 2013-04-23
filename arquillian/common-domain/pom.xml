@@ -26,7 +26,7 @@
 
     <artifactId>jboss-as-arquillian-common-domain</artifactId>
 
-    <name>JBoss Application Server: Arquillian Common Domain</name>
+    <name>WildFly: Arquillian Common Domain</name>
 
     <packaging>jar</packaging>
 
