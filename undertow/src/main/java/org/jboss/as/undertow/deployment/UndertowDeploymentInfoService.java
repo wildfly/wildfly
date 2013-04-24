@@ -176,15 +176,18 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
         for (final SetupAction action : setupActions) {
             deploymentInfo.addThreadSetupAction(new ThreadSetupAction() {
+
+                private final Handle handle = new Handle() {
+                    @Override
+                    public void tearDown() {
+                        action.teardown(Collections.EMPTY_MAP);
+                    }
+                };
+
                 @Override
                 public Handle setup(final HttpServerExchange exchange) {
-                    action.setup(Collections.<String, Object>emptyMap());
-                    return new Handle() {
-                        @Override
-                        public void tearDown() {
-                            action.teardown(Collections.<String, Object>emptyMap());
-                        }
-                    };
+                    action.setup(Collections.EMPTY_MAP);
+                    return handle;
                 }
             });
         }
