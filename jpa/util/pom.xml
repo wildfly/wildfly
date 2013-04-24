@@ -37,7 +37,7 @@
     <artifactId>jboss-as-jpa-util</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
-    <name>JBoss Application Server: JPA UTIL</name>
+    <name>WildFly: JPA UTIL</name>
 
     <dependencies>
         <!-- Internal -->

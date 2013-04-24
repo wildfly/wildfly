@@ -15,7 +15,7 @@
     <!-- ********************************************************************************** -->
     <artifactId>jboss-as-ts-integ-clust</artifactId>
 
-    <name>JBoss Application Server Test Suite: Integration - Clustering</name>
+    <name>WildFly Test Suite: Integration - Clustering</name>
 
     <properties>
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>

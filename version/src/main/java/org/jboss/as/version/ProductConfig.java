@@ -126,14 +126,14 @@ public class ProductConfig implements Serializable {
         if (name != null)
            return String.format("JBoss %s %s (AS %s)", name, version, Version.AS_VERSION);
 
-        return String.format("JBoss AS %s \"%s\"", Version.AS_VERSION, Version.AS_RELEASE_CODENAME);
+        return String.format("WildFly %s \"%s\"", Version.AS_VERSION, Version.AS_RELEASE_CODENAME);
     }
 
     public static String getPrettyVersionString(final String name, String version1, String version2) {
         if(name != null) {
             return String.format("JBoss %s %s (AS %s)", name, version1, version2);
         }
-        return String.format("JBoss AS %s \"%s\"", version1, version2);
+        return String.format("WildFly %s \"%s\"", version1, version2);
     }
 
     private void setSystemProperties(final Properties propConfProps, final Map providedProperties) {

@@ -36,7 +36,7 @@
 
     <packaging>jar</packaging>
 
-    <name>JBoss Application Server: Web Common Classes</name>
+    <name>WildFly: Web Common Classes</name>
 
     <dependencies>
 

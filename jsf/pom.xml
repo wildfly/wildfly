@@ -37,7 +37,7 @@
     <version>8.0.0.Alpha1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>JBoss Application Server: JSF</name>
+    <name>WildFly: JSF</name>
 
     <modules>
        <module>subsystem</module>

@@ -35,7 +35,7 @@
     <artifactId>jboss-as-clustering-jgroups</artifactId>
     <packaging>jar</packaging>
 
-    <name>JBoss Application Server: JGroups Subsystem</name>
+    <name>WildFly: JGroups Subsystem</name>
 
     <dependencies>
         <dependency>

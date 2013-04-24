@@ -34,7 +34,7 @@
     </parent>
 
     <artifactId>jboss-as-osgi-naming</artifactId>
-    <name>JBoss Application Server: OSGi Integration Naming</name>
+    <name>WildFly: OSGi Integration Naming</name>
 
     <dependencies>
         <dependency>

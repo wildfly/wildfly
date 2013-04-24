@@ -36,7 +36,7 @@
     <artifactId>jboss-as-process-controller</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Process Controller</name>
+    <name>WildFly: Process Controller</name>
 
     <build>
       <plugins>

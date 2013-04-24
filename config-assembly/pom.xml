@@ -35,7 +35,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-config-assembly</artifactId>
 
-    <name>JBoss Application Server: Config Assembly</name>
+    <name>WildFly: Config Assembly</name>
 
     <properties>
         <test.level>INFO</test.level>

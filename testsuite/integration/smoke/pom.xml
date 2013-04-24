@@ -25,7 +25,7 @@
     <artifactId>jboss-as-ts-integ-smoke</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
-    <name>JBoss Application Server Test Suite: Integration - Smoke</name>
+    <name>WildFly Test Suite: Integration - Smoke</name>
 
     <properties>
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>

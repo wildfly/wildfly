@@ -36,7 +36,7 @@ vi:ts=4:sw=4:expandtab
 
     <artifactId>jboss-as-ejb3</artifactId>
 
-    <name>JBoss Application Server: EJB Subsystem</name>
+    <name>WildFly: EJB Subsystem</name>
 
     <build>
         <plugins>

@@ -35,7 +35,7 @@
     <artifactId>jboss-as-clustering-web-spi</artifactId>
     <packaging>jar</packaging>
 
-    <name>JBoss Application Server: Distributed Web Session SPI</name>
+    <name>WildFly: Distributed Web Session SPI</name>
 
     <dependencies>
         <dependency>

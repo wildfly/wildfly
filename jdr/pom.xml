@@ -35,7 +35,7 @@
     <artifactId>jdr</artifactId>
     <packaging>pom</packaging>
 
-    <name>JBoss Application Server: JBoss Diagnostic Reporter</name>
+    <name>WildFly: JBoss Diagnostic Reporter</name>
     
     <modules>
         <module>jboss-as-jdr</module>

@@ -35,7 +35,7 @@
 
     <artifactId>jboss-as-build-modular</artifactId>
 
-    <name>JBoss Application Server: Build Modular</name>
+    <name>WildFly: Build Modular</name>
     <packaging>pom</packaging>
 
     <properties>
@@ -130,7 +130,7 @@
 		                                <ant antfile="build-modular-config.xml" inheritRefs="true">
 		                                    <target name="all"/>
 		                                </ant>
-		                                <property name="server.output.dir" value="target/jboss-as-${modular.config.name}-${jboss.as.release.version}" />
+		                                <property name="server.output.dir" value="target/${server.output.dir.prefix}-${modular.config.name}-${jboss.as.release.version}" />
 		                                <echo file="${server.output.dir}/bin/standalone.conf" append="true">
 # Karaf system properties
 JBHOME=`cd "$DIRNAME/.."; pwd`

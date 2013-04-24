@@ -36,7 +36,7 @@
     <artifactId>jboss-as-jsr77</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
-    <name>JBoss Application Server: JSR-77 Subsystem</name>
+    <name>WildFly: JSR-77 Subsystem</name>
 
     <build>
         <plugins>

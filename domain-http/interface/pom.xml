@@ -35,7 +35,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-domain-http-interface</artifactId>
 
-    <name>JBoss Application Server: Domain HTTP Interface</name>
+    <name>WildFly: Domain HTTP Interface</name>
 
     <build>
         <plugins>

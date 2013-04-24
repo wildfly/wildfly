@@ -34,7 +34,7 @@
 
     <artifactId>jboss-as-subsystem-test-framework</artifactId>
 
-    <name>JBoss Application Server: Subsystem Test Harness</name>
+    <name>WildFly: Subsystem Test Harness</name>
 
     <dependencies>
         <dependency>

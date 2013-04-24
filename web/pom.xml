@@ -36,7 +36,7 @@
 
     <packaging>jar</packaging>
 
-    <name>JBoss Application Server: Web Subsystem</name>
+    <name>WildFly: Web Subsystem</name>
 
     <dependencies>
 

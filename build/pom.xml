@@ -35,7 +35,7 @@
 
     <artifactId>jboss-as-build</artifactId>
 
-    <name>JBoss Application Server: Build</name>
+    <name>WildFly: Build</name>
     <packaging>pom</packaging>
 
     <properties>
@@ -1915,10 +1915,10 @@
                                 <phase>package</phase>
                                 <configuration>
                                     <licensesOutputDirectory>
-                                        ${project.build.directory}/jboss-as-${jboss.as.release.version}/docs/licenses
+                                        ${project.basedir}/../${wildfly.build.output.dir}/docs/licenses
                                     </licensesOutputDirectory>
                                     <licensesOutputFile>
-                                        ${project.build.directory}/jboss-as-${jboss.as.release.version}/docs/licenses/licenses.xml
+                                        ${project.basedir}/../${wildfly.build.output.dir}/docs/licenses/licenses.xml
                                     </licensesOutputFile>
                                 </configuration>
                             </execution>
@@ -1967,7 +1967,7 @@
         <profile>
             <id>javadocDist</id>
             <properties>
-                <javadoc.branding>JBoss Application Server public API - ${project.version}</javadoc.branding>
+                <javadoc.branding>WildFly public API - ${project.version}</javadoc.branding>
             </properties>
             <build>
                 <plugins>

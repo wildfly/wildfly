@@ -38,12 +38,12 @@
     </parent>
 
     <artifactId>jboss-as-osgi-launcher</artifactId>
-    <name>JBoss Application Server: OSGi Launcher</name>
+    <name>WildFly: OSGi Launcher</name>
 
 	<packaging>jar</packaging>
 
 	<properties>
-		<jboss.home>${project.basedir}/../../build/target/jboss-as-${jboss.as.release.version}</jboss.home>
+        <jboss.home>${project.basedir}/../../${wildfly.build.output.dir}</jboss.home>
 	</properties>
 
 	<dependencies>

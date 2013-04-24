@@ -32,11 +32,11 @@
     </parent>
 
     <artifactId>jboss-as-arquillian-testng-integration</artifactId>
-    <name>JBoss Application Server: Arquillian TestNG Integration</name>
+    <name>WildFly: Arquillian TestNG Integration</name>
     <packaging>jar</packaging>
 
     <properties>
-        <jboss.home>${project.basedir}/../../build/target/jboss-as-${jboss.as.release.version}</jboss.home>
+        <jboss.home>${project.basedir}/../../${wildfly.build.output.dir}</jboss.home>
     </properties>
 
     <dependencies>

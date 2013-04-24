@@ -35,7 +35,7 @@
     <artifactId>jboss-as-clustering-registry</artifactId>
     <packaging>jar</packaging>
 
-    <name>JBoss Application Server: Clustered registry service</name>
+    <name>WildFly: Clustered registry service</name>
 
     <dependencies>
         <dependency>

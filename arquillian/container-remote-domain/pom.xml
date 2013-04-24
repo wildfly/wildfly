@@ -35,7 +35,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-arquillian-container-domain-remote</artifactId>
 
-    <name>JBoss Application Server: Arquillian Remote Domain Container</name>
+    <name>WildFly: Arquillian Remote Domain Container</name>
 
     <packaging>jar</packaging>
 

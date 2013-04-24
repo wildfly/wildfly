@@ -35,7 +35,7 @@
 	<artifactId>jboss-as-arquillian-protocol-jmx</artifactId>
 	<version>8.0.0.Alpha1-SNAPSHOT</version>
 
-	<name>JBoss Application Server: Arquillian Protocol JMX</name>
+	<name>WildFly: Arquillian Protocol JMX</name>
 
 	<packaging>jar</packaging>
 

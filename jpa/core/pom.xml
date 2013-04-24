@@ -38,7 +38,7 @@
     <artifactId>jboss-as-jpa</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
-    <name>JBoss Application Server: JPA Subsystem</name>
+    <name>WildFly: JPA Subsystem</name>
 
     <build>
         <plugins>

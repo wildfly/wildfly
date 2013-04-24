@@ -35,7 +35,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-host-controller</artifactId>
 
-    <name>JBoss Application Server: Host Controller</name>
+    <name>WildFly: Host Controller</name>
 
     <dependencies>
         <dependency>

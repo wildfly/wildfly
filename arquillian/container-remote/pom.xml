@@ -36,7 +36,7 @@
     <artifactId>jboss-as-arquillian-container-remote</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Arquillian Remote Container</name>
+    <name>WildFly: Arquillian Remote Container</name>
 
     <packaging>jar</packaging>
 

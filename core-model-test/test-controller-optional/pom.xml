@@ -40,7 +40,7 @@
 		-->
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-core-model-test-controller-optional</artifactId>
-    <name>JBoss Application Server: Core Model Test Controller Optional</name>
+    <name>WildFly: Core Model Test Controller Optional</name>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
     <dependencies>

@@ -38,7 +38,7 @@
     <packaging>pom</packaging>
 
 
-    <name>JBoss Application Server: JMS Client BOM</name>
+    <name>WildFly: JMS Client BOM</name>
 
     <description>
         This artifact provides a bill of materials (BOM) for JMS client usage.

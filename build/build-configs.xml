@@ -22,7 +22,7 @@
 
 <project name="module-repository" basedir="." default="all">
 
-    <property name="output.dir" value="target/jboss-as-${jboss.as.release.version}"/>
+    <property name="output.dir" value="../${wildfly.build.output.dir}"/>
 
     <target name="generate-configs" description="Generate standard standalone configurations">
     	<!-- make output file directory -->

@@ -35,7 +35,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-security-util</artifactId>
 
-    <name>JBoss Application Server: Shared Security Utilities</name>
+    <name>WildFly: Shared Security Utilities</name>
 
     <properties>
         <test.level>INFO</test.level>

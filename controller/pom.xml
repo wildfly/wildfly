@@ -35,7 +35,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-controller</artifactId>
 
-    <name>JBoss Application Server: Controller Core</name>
+    <name>WildFly: Controller Core</name>
 
     <properties>
         <test.level>INFO</test.level>

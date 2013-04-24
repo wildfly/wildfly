@@ -35,7 +35,7 @@
     <artifactId>jboss-as-clustering-ejb3-infinispan</artifactId>
     <packaging>jar</packaging>
     
-    <name>JBoss Application Server: Clustered Stateful Session Bean cache Infinispan provider</name>
+    <name>WildFly: Clustered Stateful Session Bean cache Infinispan provider</name>
 
     <dependencies>
         <dependency>

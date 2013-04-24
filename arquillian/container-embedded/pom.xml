@@ -39,12 +39,12 @@
 
 	<artifactId>jboss-as-arquillian-container-embedded</artifactId>
 
-	<name>JBoss Application Server: Arquillian Embedded Container</name>
+	<name>WildFly: Arquillian Embedded Container</name>
 
 	<packaging>jar</packaging>
 
 	<properties>
-		<jboss.home>${project.basedir}/../../build/target/jboss-as-${jboss.as.release.version}</jboss.home>
+		<jboss.home>${project.basedir}/../../${wildfly.build.output.dir}</jboss.home>
 	</properties>
 
 	<dependencies>
