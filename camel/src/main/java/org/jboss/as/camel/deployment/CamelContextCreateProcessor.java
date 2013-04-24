@@ -57,7 +57,7 @@ public class CamelContextCreateProcessor implements DeploymentUnitProcessor {
             } else {
                 VirtualFile rootFile = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
                 for (VirtualFile child : rootFile.getChild("META-INF").getChildren()) {
-                    if (child.getName().endsWith("-context.xml")) {
+                    if (child.getName().endsWith(CamelConstants.NAME_SUFFIX_CONTEXT_XML)) {
                         contextDefinitionURL = child.asFileURL();
                         break;
                     }
