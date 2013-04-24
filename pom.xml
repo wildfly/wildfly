@@ -62,6 +62,7 @@
         <!-- Build configuration -->
         <maven.compiler.target>1.7</maven.compiler.target>
         <maven.compiler.source>1.7</maven.compiler.source>
+        <version.compiler.plugin>3.1</version.compiler.plugin>
         <version.surefire.plugin>2.11</version.surefire.plugin>
         <version.checkstyle.plugin>2.10</version.checkstyle.plugin>
         <!--
@@ -286,6 +287,8 @@
 
         <!-- tools.jar location, this needs to be overriden on OSX -->
         <com.sun.tools.path>${java.home}/../lib/tools.jar</com.sun.tools.path>
+        <server.output.dir.prefix>wildfly</server.output.dir.prefix>
+        <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${jboss.as.release.version}</wildfly.build.output.dir>
 
         <!--
             See ChildFirstClassLoaderBuilder in model-test for the explanation of the org.jboss.model.test.cache.root and org.jboss.model.test.classpath.cache properties.

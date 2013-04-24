@@ -24,7 +24,7 @@
 
     <import file="lib.xml"/>
 
-    <property name="output.dir" value="target/wildfly-${jboss.as.release.version}"/>
+    <property name="output.dir" value="../${wildfly.build.output.dir}"/>
 
     <target name="base" depends="clean-target, modules-minimalistic, copy-files, make-dirs"/>
 
