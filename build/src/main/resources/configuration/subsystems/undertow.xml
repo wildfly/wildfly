@@ -27,7 +27,9 @@
 <config>
     <extension-module>org.jboss.as.undertow</extension-module>
     <subsystem xmlns="urn:jboss:domain:undertow:1.0">
-
+        <buffer-caches>
+            <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10" />
+        </buffer-caches>
         <server name="default-server" >
             <http-listener name="default" socket-binding="http"/>
             <?AJP?>

@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.servlet.api.DeploymentInfo;
 import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
 import org.jboss.as.clustering.web.DistributedCacheManagerFactoryService;
@@ -43,6 +44,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
+import org.jboss.as.undertow.BufferCacheService;
 import org.jboss.as.undertow.DeploymentDefinition;
 import org.jboss.as.undertow.Host;
 import org.jboss.as.undertow.ServletContainerService;
@@ -198,6 +200,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(UndertowService.SERVLET_CONTAINER.append(defaultContainer), ServletContainerService.class, undertowDeploymentInfoService.getContainer())
                 .addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class, undertowDeploymentInfoService.getSecurityDomainContextValue())
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, undertowDeploymentInfoService.getUndertowService())
+                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, BufferCacheService.SERVICE_NAME.append("default"), DirectBufferCache.class, undertowDeploymentInfoService.getBufferCacheInjectedValue())
                 .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES));
 
 

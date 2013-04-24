@@ -28,6 +28,11 @@ package org.jboss.as.undertow;
 
 public interface Constants {
     String AJP_LISTENER = "ajp-listener";
+    String BUFFER_CACHE = "buffer-cache";
+    String BUFFER_CACHES = "buffer-caches";
+    String BUFFER_SIZE = "buffer-size";
+    String BUFFERS_PER_REGION = "buffers-per-region";
+    String MAX_REGIONS = "max-regions";
     String BUFFER_POOL = "buffer-pool";
     String SETTING = "setting";
     String SECURITY_REALM = "security-realm";

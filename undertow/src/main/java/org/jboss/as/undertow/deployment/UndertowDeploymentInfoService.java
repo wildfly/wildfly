@@ -23,6 +23,8 @@ import io.undertow.jsp.JspServletBuilder;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.cache.DirectBufferCache;
+import io.undertow.server.handlers.resource.CachingResourceManager;
 import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.servlet.api.ClassIntrospecter;
 import io.undertow.servlet.api.ConfidentialPortManager;
@@ -147,6 +149,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<DistributedCacheManagerFactory> distributedCacheManagerFactoryInjectedValue = new InjectedValue<DistributedCacheManagerFactory>();
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
     private final InjectedValue<ServletContainerService> container = new InjectedValue<>();
+    private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
 
     public UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final DeploymentClassIndex classReflectionIndex, final WebInjectionContainer injectionContainer, final ComponentRegistry componentRegistry, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions) {
         this.mergedMetaData = mergedMetaData;
@@ -254,7 +257,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             }
             d.setDeploymentName(deploymentName);
             try {
-                d.setResourceManager(new FileResourceManager(Paths.get(deploymentRoot.getPhysicalFile().getAbsolutePath())));
+                //TODO: make the caching limits configurable
+                d.setResourceManager(new CachingResourceManager(100, 10 * 1024 * 1024, bufferCacheInjectedValue.getOptionalValue(), new FileResourceManager(Paths.get(deploymentRoot.getPhysicalFile().getAbsolutePath()))));
             } catch (IOException e) {
                 throw new StartException(e);
             }
@@ -852,6 +856,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     public InjectedValue<UndertowService> getUndertowService() {
         return undertowService;
+    }
+
+    public InjectedValue<DirectBufferCache> getBufferCacheInjectedValue() {
+        return bufferCacheInjectedValue;
     }
 
     private static class ComponentClassIntrospector implements ClassIntrospecter {
