@@ -30,7 +30,7 @@ If you already have Maven 3.0.4 (or newer) installed you can use it directly
 > mvn install
 
 
-Starting and Stopping JBoss
+Starting and Stopping WildFly 
 ------------------------------------------
 Change to the bin directory after a successful build
 
