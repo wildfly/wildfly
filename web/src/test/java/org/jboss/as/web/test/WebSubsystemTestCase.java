@@ -199,9 +199,16 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
                                         "max-connections", "executor"))
                         // Connector https
                         .addFailedAttribute(subsystem.append(PathElement.pathElement("connector", "https"), PathElement.pathElement("configuration", "ssl")),
+                                new FailedOperationTransformationConfig.NewAttributesConfig("ssl-protocol")
+                        )
+                        .addFailedAttribute(subsystem.append(PathElement.pathElement("connector", "https"), PathElement.pathElement("configuration", "ssl")),
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig("certificate-key-file", "ca-certificate-file", "key-alias",
                                         "password", "cipher-suite", "protocol", "verify-client", "verify-depth", "certificate-file", "ca-revocation-url",
-                                        "ca-certificate-password", "keystore-type", "truststore-type", "session-cache-size", "session-timeout"))
+                                        "ca-certificate-password", "keystore-type", "truststore-type", "session-cache-size", "session-timeout", "ssl-protocol" )
+
+                        )
+
+
                         // Connector http-vs
                         .addFailedAttribute(subsystem.append(PathElement.pathElement("connector", "http-vs")),
                                 new FailedOperationTransformationConfig.NewAttributesConfig("virtual-server"))
@@ -254,6 +261,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelNode sslConfig = mainModel.get(Constants.CONNECTOR, "https", Constants.CONFIGURATION, Constants.SSL);
         Assert.assertTrue(sslConfig.isDefined());
         Assert.assertFalse(legacyModel.get(Constants.CONNECTOR, "https", Constants.CONFIGURATION, Constants.SSL).isDefined());
+        sslConfig.remove(Constants.NAME);
         compare(sslConfig, legacyModel.get(Constants.CONNECTOR, "https", Constants.SSL, Constants.CONFIGURATION), true);
 
         ModelNode ssoConfig = mainModel.get(Constants.VIRTUAL_SERVER, "default-host", Constants.CONFIGURATION, Constants.SSO);
