@@ -23,7 +23,7 @@
 package org.jboss.as.web;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
+import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -169,6 +169,14 @@ public class WebSSLDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
+    protected static final SimpleAttributeDefinition SSL_PROTOCOL =
+            new SimpleAttributeDefinitionBuilder(Constants.SSL_PROTOCOL, ModelType.STRING)
+                    .setAllowNull(true)
+                    .setValidator(new StringLengthValidator(1, true))
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .build();
+
     protected static SimpleAttributeDefinition[] SSL_ATTRIBUTES = {
             // IMPORTANT -- keep these in xsd order as this order controls marshalling
             KEY_ALIAS,
@@ -185,7 +193,8 @@ public class WebSSLDefinition extends SimpleResourceDefinition {
             KEYSTORE_TYPE,
             TRUSTSTORE_TYPE,
             SESSION_CACHE_SIZE,
-            SESSION_TIMEOUT
+            SESSION_TIMEOUT,
+            SSL_PROTOCOL
         };
 
 
@@ -199,8 +208,7 @@ public class WebSSLDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration ssl) {
-        // FIXME AS7-6203 why is this read-write?
-        ssl.registerReadWriteAttribute(NAME, null, new ModelOnlyWriteAttributeHandler(NAME));
+        ssl.registerReadOnlyAttribute(NAME, ReadResourceNameOperationStepHandler.INSTANCE);
         for (AttributeDefinition attr : SSL_ATTRIBUTES) {
             ssl.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
         }
