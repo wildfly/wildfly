@@ -1,5 +1,23 @@
-<subsystem xmlns="urn:jboss:domain:web:1.4" default-virtual-server="default-host">
+<subsystem xmlns="urn:jboss:domain:web:1.5" default-virtual-server="default-host">
     <connector name="http" scheme="http" protocol="HTTP/1.1" socket-binding="http"/>
+       <connector name="https" scheme="https" protocol="HTTP/1.1" secure="true" socket-binding="https">
+       <ssl certificate-key-file="${jboss.server.config.dir}/keystore.p12"
+               ca-certificate-file="${jboss.server.config.dir}/truststore.jks"
+               key-alias="${prop.key-alias:tomcat}"
+               password="${prop.password:changeit}"
+               cipher-suite="${prop.cipher-suite:SSL_RSA_WITH_3DES_EDE_CBC_SHA}"
+               protocol="${prop.native:SSLv3}"
+               verify-client="${prop.verify-client:true}"
+               verify-depth="${prop.verify-depth:3}"
+               certificate-file="${prop.certificate-file:certificate-file.ext}"
+               ca-revocation-url="${prop.ca-revocation-url:https://example.org/some/url}"
+               ca-certificate-password="${prop.ca-certificate-password:changeit}"
+               keystore-type="${prop.keystore-type:PKCS12}"
+               truststore-type="${prop.truststore-type:JKS}"
+               session-cache-size="${prop.session-cache-size:512}"
+               session-timeout="${prop.session-timeout:3000}"
+               ssl-protocol="${prop.ssl-protocol:RFC4279}" />
+       </connector>
     <virtual-server name="default-host" enable-welcome-root="true">
         <alias name="localhost"/>
         <alias name="example.com"/>

@@ -249,6 +249,10 @@ class WebConnectorService implements Service<Connector> {
                             Method m = connector.getProtocolHandler().getClass().getMethod("setProtocols", String.class);
                             m.invoke(connector.getProtocolHandler(), ssl.get(Constants.PROTOCOL).asString());
                         }
+                        if (ssl.hasDefined(Constants.SSL_PROTOCOL)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setAttribute", String.class, Object.class);
+                            m.invoke(connector.getProtocolHandler(), "protocol", ssl.get(Constants.SSL_PROTOCOL).asString());
+                        }
                         if (ssl.hasDefined(Constants.VERIFY_CLIENT)) {
                             Method m = connector.getProtocolHandler().getClass().getMethod("setClientauth", String.class);
                             m.invoke(connector.getProtocolHandler(), ssl.get(Constants.VERIFY_CLIENT).asString());

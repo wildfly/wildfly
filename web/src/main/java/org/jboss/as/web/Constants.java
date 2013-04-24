@@ -100,6 +100,7 @@ public interface Constants {
     String SMAP = "smap";
     String SOCKET_BINDING = "socket-binding";
     String SOURCE_VM = "source-vm";
+    String SSL_PROTOCOL = "ssl-protocol";
     String SSL = "ssl";
     String SSO = "sso";
     String STATIC_RESOURCES = "static-resources";

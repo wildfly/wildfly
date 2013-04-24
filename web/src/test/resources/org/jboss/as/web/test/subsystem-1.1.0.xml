@@ -25,7 +25,7 @@
 <!--
    This file should be kept in sync with subsystem.xml. The only known difference is the commented out stuff below - see https://issues.jboss.org/browse/JBPAPP-9314
   -->
-        <subsystem xmlns="urn:jboss:domain:web:1.4" default-virtual-server="default-host" native="true">
+        <subsystem xmlns="urn:jboss:domain:web:1.5" default-virtual-server="default-host" native="true">
             <configuration>
                 <static-resources max-depth="5"/>
                 <jsp-configuration development="true" />

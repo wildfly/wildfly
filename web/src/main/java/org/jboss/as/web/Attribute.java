@@ -94,6 +94,7 @@ enum Attribute {
     SMAP(Constants.SMAP),
     SOCKET_BINDING(Constants.SOCKET_BINDING),
     SOURCE_VM(Constants.SOURCE_VM),
+    SSL_PROTOCOL(Constants.SSL_PROTOCOL),
     SUBSTITUTION(Constants.SUBSTITUTION),
     TARGET_VM(Constants.TARGET_VM),
     TRIM_SPACES(Constants.TRIM_SPACES),

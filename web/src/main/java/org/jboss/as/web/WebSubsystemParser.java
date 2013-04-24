@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
@@ -39,19 +38,15 @@ import static org.jboss.as.web.Constants.CONDITION;
 import static org.jboss.as.web.Constants.CONFIGURATION;
 import static org.jboss.as.web.Constants.CONNECTOR;
 import static org.jboss.as.web.Constants.CONTAINER;
-import static org.jboss.as.web.Constants.FLAGS;
 import static org.jboss.as.web.Constants.JSP_CONFIGURATION;
 import static org.jboss.as.web.Constants.MIME_MAPPING;
 import static org.jboss.as.web.Constants.NAME;
 import static org.jboss.as.web.Constants.PARAM;
 import static org.jboss.as.web.Constants.PATH;
-import static org.jboss.as.web.Constants.PATTERN;
 import static org.jboss.as.web.Constants.RELATIVE_TO;
 import static org.jboss.as.web.Constants.REWRITE;
 import static org.jboss.as.web.Constants.SSO;
 import static org.jboss.as.web.Constants.STATIC_RESOURCES;
-import static org.jboss.as.web.Constants.SUBSTITUTION;
-import static org.jboss.as.web.Constants.TEST;
 import static org.jboss.as.web.Constants.VALVE;
 import static org.jboss.as.web.Constants.VIRTUAL_SERVER;
 import static org.jboss.as.web.Constants.WELCOME_FILE;
@@ -389,7 +384,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     }
                     break;
                 }
-                case WEB_1_4: {
+                case WEB_1_4:
+                case WEB_1_5: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CONTAINER_CONFIG: {
@@ -742,7 +738,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     }
                     break;
                 }
-                case WEB_1_4: {
+                case WEB_1_4:
+                case WEB_1_5:{
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case ALIAS:
@@ -840,7 +837,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_1:
                 case WEB_1_2:
                 case WEB_1_3:
-                case WEB_1_4: {
+                case WEB_1_4:
+                case WEB_1_5: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CONDITION:
@@ -925,7 +923,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_1:
                 case WEB_1_2:
                 case WEB_1_3:
-                case WEB_1_4: {
+                case WEB_1_4:
+                case WEB_1_5: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case DIRECTORY:
@@ -1014,7 +1013,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_1:
                 case WEB_1_2:
                 case WEB_1_3:
-                case WEB_1_4: {
+                case WEB_1_4:
+                case WEB_1_5: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case SSL:
@@ -1092,6 +1092,9 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     break;
                 case TRUSTSTORE_TYPE:
                     WebSSLDefinition.TRUSTSTORE_TYPE.parseAndSetParameter(value, ssl, reader);
+                    break;
+                case SSL_PROTOCOL:
+                    WebSSLDefinition.SSL_PROTOCOL.parseAndSetParameter(value, ssl, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
