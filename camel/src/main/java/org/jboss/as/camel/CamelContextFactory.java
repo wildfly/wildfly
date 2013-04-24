@@ -22,7 +22,6 @@
 
 package org.jboss.as.camel;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -61,19 +60,6 @@ public final class CamelContextFactory {
      */
     public static CamelContext createSpringCamelContext(URL contextUrl, ClassLoader classsLoader) throws Exception {
         return createSpringCamelContext(new UrlResource(contextUrl), classsLoader);
-    }
-
-    /**
-     * Create a {@link SpringCamelContext} from the given input stream
-     */
-    public static CamelContext createSpringCamelContext(InputStream input, ClassLoader classsLoader) throws Exception {
-        int count;
-        byte[] buffer = new byte[1024];
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        while ((count = input.read(buffer)) > 0) {
-            out.write(buffer, 0, count);
-        }
-        return createSpringCamelContext(new ByteArrayResource(out.toByteArray()), classsLoader);
     }
 
     /**

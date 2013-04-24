@@ -43,7 +43,10 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
 /**
- * Test simple camel transform
+ * Deploys a module/bundle which contain a {@link HelloBean} referenced from a spring context definition.
+ *
+ * The tests then build a route through the {@link CamelContextFactory} API.
+ * This verifies access to beans within the same deployemnt.
  *
  * @author thomas.diesler@jboss.com
  * @since 21-Apr-2013
@@ -81,16 +84,6 @@ public class SpringBeanTransformTestCase {
     public void testSpringContextFromURL() throws Exception {
         URL resourceUrl = getClass().getResource(SPRING_CONTEXT_RESOURCE);
         CamelContext camelctx = CamelContextFactory.createSpringCamelContext(resourceUrl, null);
-        camelctx.start();
-        ProducerTemplate producer = camelctx.createProducerTemplate();
-        String result = producer.requestBody("direct:start", "Kermit", String.class);
-        Assert.assertEquals("Hello Kermit", result);
-    }
-
-    @Test
-    public void testSpringContextFromByteArray() throws Exception {
-        InputStream input = getClass().getResource(SPRING_CONTEXT_RESOURCE).openStream();
-        CamelContext camelctx = CamelContextFactory.createSpringCamelContext(input, null);
         camelctx.start();
         ProducerTemplate producer = camelctx.createProducerTemplate();
         String result = producer.requestBody("direct:start", "Kermit", String.class);

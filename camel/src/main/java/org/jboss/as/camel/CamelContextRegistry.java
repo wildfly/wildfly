@@ -25,17 +25,40 @@ package org.jboss.as.camel;
 import org.apache.camel.CamelContext;
 
 /**
- * A simple {@link CamelContext} registry.
+ * An abstraction of {@link CamelContext} registration.
+ *
+ * The {@link CamelContextRegistry} is the entry point for {@link CamelContext} registration and lookup.
+ * The default implementation creates an msc {@link org.jboss.msc.service.Service} as well as an OSGi service.
+ *
+ * JBoss services can create a dependency on the {@link CamelContext} service like this
+ *
+ * <code>
+        ServiceName serviceName = CamelConstants.CAMEL_CONTEXT_BASE_NAME.append(contextName);
+        builder.addDependency(serviceName, CamelContext.class, service.injectedCamelContext);
+ * </code>
+ *
+ * or do an OSGi service lookup like this
+ *
+ * <code>
+        String filter = "(name=" + contextName + ")";
+        Collection<ServiceReference<CamelContext>> srefs = context.getServiceReferences(CamelContext.class, filter);
+        CamelContext camelctx = context.getService(srefs.iterator().next());
+ * </code>
+ *
+ * @see {@link CamelContextRegistryService}
  *
  * @author Thomas.Diesler@jboss.com
  * @since 19-Apr-2013
  */
 public interface CamelContextRegistry {
 
+    /** Get the camel context for the given name */
     CamelContext getCamelContext(String name);
 
+    /** Register the camel context in this registry */
     CamelContextRegistration registerCamelContext(CamelContext camelContext);
 
+    /** The return handle for camel context registrations */
     interface CamelContextRegistration {
         void unregister();
     }

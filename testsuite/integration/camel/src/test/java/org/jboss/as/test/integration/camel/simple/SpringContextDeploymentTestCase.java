@@ -38,7 +38,10 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
 /**
- * Test simple camel transform
+ * Deploys a spring context definition as single XML file.
+ *
+ * The tests expect the {@link CamelContext} to be created/started during deployment.
+ * The tests then perfom a {@link CamelContext} lookup and do a simple invokation.
  *
  * @author thomas.diesler@jboss.com
  * @since 21-Apr-2013

@@ -42,7 +42,10 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
 /**
- * Test simple camel transform
+ * Deploys a module/bundle with dependency on the Camel API;
+ *
+ * The tests then build a route that uses the Camel API.
+ * This verifies basic access to the Camel API.
  *
  * @author thomas.diesler@jboss.com
  * @since 21-Apr-2013

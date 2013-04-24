@@ -44,7 +44,10 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
 /**
- * Test simple bean transform
+ * Deploys a module/bundle which contain a {@link HelloBean}.
+ *
+ * The tests then build a route that uses the bean through the Camel API.
+ * This verifies access to beans within the same deployemnt that uses the Camel API.
  *
  * @author thomas.diesler@jboss.com
  * @since 24-Apr-2013

@@ -35,7 +35,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
 /**
- * Test simple camel transform
+ * Performs an invocation on a preconfigured system context.
+ * This verifies that the {@link CamelContext} is created/registered at subsystem boot time.
  *
  * @author thomas.diesler@jboss.com
  * @since 21-Apr-2013
