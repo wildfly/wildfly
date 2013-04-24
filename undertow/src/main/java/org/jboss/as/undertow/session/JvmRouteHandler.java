@@ -29,6 +29,7 @@ import javax.servlet.http.HttpSession;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.servlet.handlers.ServletAttachments;
 import io.undertow.servlet.spec.HttpServletRequestImpl;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.logging.Logger;
@@ -82,9 +83,10 @@ public class JvmRouteHandler implements HttpHandler {
     }
 
     public void checkJvmRoute(final HttpServerExchange exchange) throws IOException, ServletException {
-        final HttpServletRequestImpl request = HttpServletRequestImpl.getRequestImpl(exchange.getAttachment(HttpServletRequestImpl.ATTACHMENT_KEY));
+        final ServletAttachments servletAttachments = exchange.getAttachment(ServletAttachments.ATTACHMENT_KEY);
+        final HttpServletRequestImpl request = HttpServletRequestImpl.getRequestImpl(servletAttachments.getServletRequest());
         String requestedId = request.getServletContext().getSessionCookieConfig().findSessionId(exchange);
-        HttpServletRequestImpl req = (HttpServletRequestImpl) exchange.getAttachment(HttpServletRequestImpl.ATTACHMENT_KEY);
+        HttpServletRequestImpl req = (HttpServletRequestImpl) servletAttachments.getServletRequest();
         HttpSession session = req.getSession(false);
         if (session != null) {
             String sessionId = session.getId();
@@ -145,7 +147,7 @@ public class JvmRouteHandler implements HttpHandler {
 
             /* Change the sessionid cookie if needed */
             if (newId != null) {
-                final HttpServletRequestImpl request = HttpServletRequestImpl.getRequestImpl(exchange.getAttachment(HttpServletRequestImpl.ATTACHMENT_KEY));
+                final HttpServletRequestImpl request = HttpServletRequestImpl.getRequestImpl(exchange.getAttachment(ServletAttachments.ATTACHMENT_KEY).getServletRequest());
                 request.getServletContext().getSessionCookieConfig().setSessionId(exchange, newId);
             }
         }
@@ -158,7 +160,7 @@ public class JvmRouteHandler implements HttpHandler {
      * @param newId new session id the session object should have
      */
     private void resetSessionId(HttpServerExchange exchange, String oldId, String newId) throws IOException {
-        final HttpServletRequestImpl request = HttpServletRequestImpl.getRequestImpl(exchange.getAttachment(HttpServletRequestImpl.ATTACHMENT_KEY));
+        final HttpServletRequestImpl request = HttpServletRequestImpl.getRequestImpl(exchange.getAttachment(ServletAttachments.ATTACHMENT_KEY).getServletRequest());
         ClusteredSession<? extends OutgoingDistributableSessionData> session = (ClusteredSession<?>) manager.getSession(exchange, request.getServletContext().getSessionCookieConfig());
         // change session id with the new one using local jvmRoute.
         if (session != null) {

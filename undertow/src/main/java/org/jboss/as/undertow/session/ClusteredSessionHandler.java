@@ -28,6 +28,7 @@ import javax.servlet.ServletException;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.servlet.handlers.ServletAttachments;
 import io.undertow.servlet.spec.HttpServletRequestImpl;
 import org.jboss.as.clustering.web.BatchingManager;
 import org.jboss.as.undertow.UndertowMessages;
@@ -82,7 +83,7 @@ public class ClusteredSessionHandler implements HttpHandler {
         try {
             // Workaround to JBAS-5735. Ensure we get the session from the manager
             // rather than a cached ref from the Request.
-            final HttpServletRequestImpl request = HttpServletRequestImpl.getRequestImpl(exchange.getAttachment(HttpServletRequestImpl.ATTACHMENT_KEY));
+            final HttpServletRequestImpl request = HttpServletRequestImpl.getRequestImpl(exchange.getAttachment(ServletAttachments.ATTACHMENT_KEY).getServletRequest());
 
             String requestedId = request.getServletContext().getSessionCookieConfig().findSessionId(exchange);
             if (requestedId != null) {

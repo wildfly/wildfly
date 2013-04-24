@@ -59,7 +59,7 @@ public class SecurityContextAssociationHandler implements HttpHandler {
         String identity = null;
         try {
             SecurityActions.setSecurityContextOnAssociation(sc);
-            ServletChain servlet = exchange.getAttachment(ServletAttachments.CURRENT_SERVLET);
+            ServletChain servlet = exchange.getAttachment(ServletAttachments.ATTACHMENT_KEY).getCurrentServlet();
             identity = servlet.getManagedServlet().getServletInfo().getRunAs();
             RunAsIdentity runAsIdentity = null;
             if (identity != null) {
