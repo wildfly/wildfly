@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.servlet.spec.HttpServletResponseImpl;
+import io.undertow.servlet.handlers.ServletAttachments;
 import org.jboss.logging.Logger;
 
 /**
@@ -63,7 +63,7 @@ public class LockingHandler implements HttpHandler {
                     this.lock.unlock();
                 }
             } else {
-                HttpServletResponse response = (HttpServletResponse) exchange.getAttachment(HttpServletResponseImpl.ATTACHMENT_KEY);
+                HttpServletResponse response = (HttpServletResponse) exchange.getAttachment(ServletAttachments.ATTACHMENT_KEY).getServletResponse();
                 response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
             }
         } catch (InterruptedException e) {
