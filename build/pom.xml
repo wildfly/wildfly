@@ -1915,10 +1915,10 @@
                                 <phase>package</phase>
                                 <configuration>
                                     <licensesOutputDirectory>
-                                        ${project.build.directory}/wildfly-${jboss.as.release.version}/docs/licenses
+                                        ${project.basedir}/../${wildfly.build.output.dir}/docs/licenses
                                     </licensesOutputDirectory>
                                     <licensesOutputFile>
-                                        ${project.build.directory}/wildfly-${jboss.as.release.version}/docs/licenses/licenses.xml
+                                        ${project.basedir}/../${wildfly.build.output.dir}/docs/licenses/licenses.xml
                                     </licensesOutputFile>
                                 </configuration>
                             </execution>
