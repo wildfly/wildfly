@@ -26,6 +26,7 @@ public class UndertowExtension implements Extension {
     protected static final PathElement HTTP_LISTENER_PATH = PathElement.pathElement(Constants.HTTP_LISTENER);
     protected static final PathElement HTTPS_LISTENER_PATH = PathElement.pathElement(Constants.HTTPS_LISTENER);
     protected static final PathElement PATH_SERVLET_CONTAINER = PathElement.pathElement(Constants.SERVLET_CONTAINER);
+    protected static final PathElement PATH_BUFFER_CACHE = PathElement.pathElement(Constants.BUFFER_CACHE);
     protected static final PathElement PATH_LOCATION = PathElement.pathElement(Constants.LOCATION);
     protected static final PathElement SERVER_PATH = PathElement.pathElement(Constants.SERVER);
     private static final String RESOURCE_NAME = UndertowExtension.class.getPackage().getName() + ".LocalDescriptions";
@@ -52,6 +53,7 @@ public class UndertowExtension implements Extension {
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE, false);
         registration.registerSubModel(ServerDefinition.INSTANCE);
         registration.registerSubModel(ServletContainerDefinition.INSTANCE);
+        registration.registerSubModel(BufferCacheDefinition.INSTANCE);
 
         final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(DeploymentDefinition.INSTANCE);
         deployments.registerSubModel(DeploymentServletDefinition.INSTANCE);
