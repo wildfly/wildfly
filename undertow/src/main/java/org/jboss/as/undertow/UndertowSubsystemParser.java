@@ -1,10 +1,7 @@
 package org.jboss.as.undertow;
 
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-
 import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -17,6 +14,10 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -38,6 +39,11 @@ public class UndertowSubsystemParser implements XMLStreamConstants, XMLElementRe
         UndertowRootDefinition.DEFAULT_VIRTUAL_HOST.marshallAsAttribute(model, writer);
         UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER.marshallAsAttribute(model, writer);
         UndertowRootDefinition.INSTANCE_ID.marshallAsAttribute(model, writer);
+        if (model.hasDefined(Constants.BUFFER_CACHE)) {
+            writer.writeStartElement(Constants.BUFFER_CACHES);
+            BufferCacheDefinition.INSTANCE.persist(writer, model);
+            writer.writeEndElement();
+        }
         ServerDefinition.INSTANCE.persist(writer, model);
         ServletContainerDefinition.INSTANCE.persist(writer, model);
         writer.writeEndElement();
@@ -86,6 +92,9 @@ public class UndertowSubsystemParser implements XMLStreamConstants, XMLElementRe
                             ServletContainerDefinition.INSTANCE.parse(reader, address, list);
                             break;
                         }
+                        case Constants.BUFFER_CACHES:
+                            parseBufferCaches(reader, address, list);
+                            break;
                         default: {
                             throw unexpectedElement(reader);
                         }
@@ -99,6 +108,22 @@ public class UndertowSubsystemParser implements XMLStreamConstants, XMLElementRe
         }
         ParseUtils.requireNoContent(reader);
 
+    }
+
+    private void parseBufferCaches(final XMLExtendedStreamReader reader, final PathAddress address, final List<ModelNode> list) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (reader.getLocalName()) {
+                case Constants.BUFFER_CACHE: {
+                    BufferCacheDefinition.INSTANCE.parse(reader, address, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+            break;
+        }
+        ParseUtils.requireNoContent(reader);
     }
 }
 

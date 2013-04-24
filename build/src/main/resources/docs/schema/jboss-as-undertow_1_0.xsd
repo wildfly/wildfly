@@ -40,10 +40,11 @@
             ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:choice minOccurs="1" maxOccurs="unbounded">
-            <xs:element name="server" type="serverType"/>
-            <xs:element name="servlet-container" type="servletContainerType"/>
-        </xs:choice>
+        <xs:sequence>
+            <xs:element name="buffer-caches" type="buffer-cachesType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="server" type="serverType" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="servlet-container" type="servletContainerType" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
         <xs:attribute name="default-server" type="xs:string" default="default-server"/>
         <xs:attribute name="default-virtual-host" type="xs:string" default="default-host"/>
         <xs:attribute name="default-servlet-container" type="xs:string" default="default"/>
@@ -141,4 +142,31 @@
         <xs:attribute name="cache-buffers" use="optional" type="xs:int" default="1024"/>
     </xs:complexType>
 
+    <xs:complexType name="buffer-cachesType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                  The configuration of buffer caches that are used to cache response data.
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="buffer-cache" type="buffer-cacheType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="buffer-cacheType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                  A buffer cache. I cache consists of 1 or more regions, that are split up into smaller buffers.
+                  The total cache size is the buffer size * the buffers per region * the number of regions.
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="buffer-size" use="required" type="xs:string"/>
+        <xs:attribute name="buffers-per-region" use="required" type="xs:string"/>
+        <xs:attribute name="max-regions" use="required" type="xs:string"/>
+    </xs:complexType>
 </xs:schema>
