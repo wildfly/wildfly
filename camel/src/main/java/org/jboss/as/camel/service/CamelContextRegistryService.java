@@ -103,8 +103,9 @@ public class CamelContextRegistryService extends AbstractService<CamelContextReg
                 public CamelContext getService(Bundle bundle, ServiceRegistration<CamelContext> registration) {
                     if (camelContext == null) {
                         try {
+                            ClassLoader classLoader = CamelContextRegistry.class.getClassLoader();
                             String beansXML = getBeansXML(name, subsystemState.getContextDefinition(name));
-                            camelContext = CamelContextFactory.createSpringCamelContext(beansXML.getBytes());
+                            camelContext = CamelContextFactory.createSpringCamelContext(beansXML.getBytes(), classLoader);
                         } catch (Exception ex) {
                             throw MESSAGES.cannotCreateCamelContext(ex, name);
                         }

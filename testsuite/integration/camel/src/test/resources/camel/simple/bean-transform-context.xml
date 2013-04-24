@@ -1,0 +1,17 @@
+<spring:beans xmlns:spring="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://camel.apache.org/schema/spring"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+  <spring:bean id="helloBean" class="org.jboss.as.test.integration.camel.simple.subA.HelloBean"/>
+  
+  <camelContext id="spring-context">
+    <route>
+      <from uri="direct:start"/>
+      <bean ref="helloBean" method="hello"/>
+    </route>
+  </camelContext>
+  
+</spring:beans>

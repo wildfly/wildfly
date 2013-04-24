@@ -16,11 +16,12 @@
  */
 package org.jboss.as.test.integration.camel.simple.subA;
 
+import java.net.URL;
 import java.util.Hashtable;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.impl.DefaultCamelContext;
+import org.jboss.as.camel.CamelContextFactory;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
@@ -30,20 +31,16 @@ import org.osgi.framework.BundleContext;
  * @author thomas.diesler@jboss.com
  * @since 21-Apr-2013
  */
-public class CamelTransformActivator implements BundleActivator {
+public class SpringBeanTransformActivator implements BundleActivator {
 
-    private DefaultCamelContext camelctx;
+    private CamelContext camelctx;
 
     @Override
     public void start(BundleContext context) throws Exception {
-        camelctx = new DefaultCamelContext();
-        camelctx.setName(context.getBundle().getSymbolicName());
-        camelctx.addRoutes(new RouteBuilder() {
-            @Override
-            public void configure() throws Exception {
-                from("direct:start").transform(body().prepend("Hello "));
-            }
-        });
+        Bundle bundle = context.getBundle();
+        ClassLoader classLoader = SpringBeanTransformActivator.class.getClassLoader();
+        URL resourceUrl = bundle.getResource("camel/simple/bean-transform-context.xml");
+        camelctx = CamelContextFactory.createSpringCamelContext(resourceUrl, classLoader);
         camelctx.start();
         Hashtable<String, String> properties = new Hashtable<String, String>();
         properties.put("name", camelctx.getName());

@@ -24,8 +24,8 @@ package org.jboss.as.camel.deployment;
 
 import static org.jboss.as.camel.CamelMessages.MESSAGES;
 
+import java.io.IOException;
 import java.net.URL;
-
 import org.apache.camel.CamelContext;
 import org.jboss.as.camel.CamelConstants;
 import org.jboss.as.camel.CamelContextFactory;
@@ -34,6 +34,8 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.modules.Module;
+import org.jboss.vfs.VirtualFile;
 
 /**
  * Processes deployments that can create a {@link CamelContext}.
@@ -47,14 +49,32 @@ public class CamelContextCreateProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         final String runtimeName = depUnit.getName();
-        if (!runtimeName.endsWith(CamelConstants.NAME_SUFFIX_CONTEXT_XML))
+
+        URL contextDefinitionURL = null;
+        try {
+            if (runtimeName.endsWith(CamelConstants.NAME_SUFFIX_CONTEXT_XML)) {
+                contextDefinitionURL = depUnit.getAttachment(Attachments.DEPLOYMENT_CONTENTS).asFileURL();
+            } else {
+                VirtualFile rootFile = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+                for (VirtualFile child : rootFile.getChild("META-INF").getChildren()) {
+                    if (child.getName().endsWith("-context.xml")) {
+                        contextDefinitionURL = child.asFileURL();
+                        break;
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            throw MESSAGES.cannotCreateCamelContext(ex, runtimeName);
+        }
+
+        if (contextDefinitionURL == null)
             return;
 
         // Create the camel context
         CamelContext camelContext;
         try {
-            URL fileURL = depUnit.getAttachment(Attachments.DEPLOYMENT_CONTENTS).asFileURL();
-            camelContext = CamelContextFactory.createSpringCamelContext(fileURL);
+            Module module = depUnit.getAttachment(Attachments.MODULE);
+            camelContext = CamelContextFactory.createSpringCamelContext(contextDefinitionURL, module.getClassLoader());
         } catch (Exception ex) {
             throw MESSAGES.cannotCreateCamelContext(ex, runtimeName);
         }
