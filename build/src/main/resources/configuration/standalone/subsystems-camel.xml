@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+   <subsystems>
+      <subsystem supplement="osgi">configuration/subsystems/logging.xml</subsystem>
+      <subsystem>configuration/subsystems/camel.xml</subsystem>
+      <subsystem>configuration/subsystems/deployment-scanner.xml</subsystem>
+      <subsystem supplement="camel">configuration/subsystems/osgi.xml</subsystem>
+      <subsystem>configuration/subsystems/jmx.xml</subsystem>
+   </subsystems>
+</config>

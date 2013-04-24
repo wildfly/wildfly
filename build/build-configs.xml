@@ -48,10 +48,14 @@
            paramTemplateFile="configuration/standalone/template.xml"
            paramSubsystemsFile="configuration/standalone/subsystems.xml"
            paramOutputFile="${generated.configs.standalone}/standalone.xml"/>
-      <generate-server-config
-           paramTemplateFile="configuration/standalone/template.xml"
-           paramSubsystemsFile="configuration/standalone/subsystems-osgi.xml"
-           paramOutputFile="${generated.configs.standalone}/standalone-osgi.xml"/>
+        <generate-server-config
+             paramTemplateFile="configuration/standalone/template.xml"
+             paramSubsystemsFile="configuration/standalone/subsystems-camel.xml"
+             paramOutputFile="${generated.configs.standalone}/standalone-camel.xml"/>
+        <generate-server-config
+             paramTemplateFile="configuration/standalone/template.xml"
+             paramSubsystemsFile="configuration/standalone/subsystems-osgi.xml"
+             paramOutputFile="${generated.configs.standalone}/standalone-osgi.xml"/>
       <generate-server-config
            paramTemplateFile="configuration/standalone/template.xml"
            paramSubsystemsFile="configuration/standalone/subsystems-full.xml"

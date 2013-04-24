@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+   <extension-module>org.jboss.as.camel</extension-module>
+   <subsystem xmlns="urn:jboss:domain:camel:1.0">
+      <camelContext id="system-context-1">
+        <![CDATA[
+        <route>
+          <from uri="direct:start"/>
+          <transform>
+            <simple>Hello #{body}</simple>
+          </transform>
+        </route>
+        ]]>
+      </camelContext>
+   </subsystem>
+</config>

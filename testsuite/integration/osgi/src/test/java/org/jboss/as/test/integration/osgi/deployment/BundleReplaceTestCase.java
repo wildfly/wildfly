@@ -33,6 +33,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper.ServerDeploymentException;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.osgi.deployment.bundle.ServletV100;
 import org.jboss.as.test.integration.osgi.deployment.bundle.ServletV101;
@@ -48,10 +49,12 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 import org.osgi.framework.wiring.FrameworkWiring;
 
 /**
@@ -99,16 +102,17 @@ public class BundleReplaceTestCase {
 
     @Test
     public void testRepeatedDeploy() throws Exception {
-
         ServerDeploymentHelper server = new ServerDeploymentHelper(managementClient.getControllerClient());
         String runtimeName = server.deploy(V100_JAR, deployer.getDeployment(V100_JAR));
         try {
             Bundle bundleA = FrameworkUtils.getBundles(context, V100_JAR, null)[0];
             Assert.assertEquals(V100_JAR, bundleA.getSymbolicName());
-
-            runtimeName = server.deploy(V100_JAR, deployer.getDeployment(V100_JAR));
-            Bundle bundleB = FrameworkUtils.getBundles(context, V100_JAR, null)[0];
-            Assert.assertSame(bundleA, bundleB);
+            try {
+                server.deploy(V100_JAR, deployer.getDeployment(V100_JAR));
+                Assert.fail("ServerDeploymentException expected");
+            } catch (ServerDeploymentException e) {
+                // expected
+            }
         } finally {
             server.undeploy(runtimeName);
         }
@@ -128,8 +132,23 @@ public class BundleReplaceTestCase {
     }
 
     @Test
-    public void testDirectBundleReplace() throws Exception {
+    public void testInstallRuntimeNameExists() throws Exception {
+        ServerDeploymentHelper server = new ServerDeploymentHelper(managementClient.getControllerClient());
+        String runtimeName = server.deploy(V200_JAR, deployer.getDeployment(V200_JAR));
+        try {
+            try {
+                context.installBundle(V200_JAR, deployer.getDeployment(V100_JAR));
+                Assert.fail("BundleException expected");
+            } catch (BundleException ex) {
+                // expected
+            }
+        } finally {
+            server.undeploy(runtimeName);
+        }
+    }
 
+    @Test
+    public void testDirectBundleReplace() throws Exception {
         ServerDeploymentHelper server = new ServerDeploymentHelper(managementClient.getControllerClient());
         String runtimeName = server.deploy(BUNDLE_V100_WAB, deployer.getDeployment(BUNDLE_V100_WAB));
         try {
@@ -149,8 +168,8 @@ public class BundleReplaceTestCase {
     }
 
     @Test
+    @Ignore("[AS7-6957] Cannot replace jar that bundle depends on")
     public void testDependentJarReplace() throws Exception {
-
         ServerDeploymentHelper server = new ServerDeploymentHelper(managementClient.getControllerClient());
         String jarName = server.deploy(V200_JAR, deployer.getDeployment(V200_JAR));
         String webappName = server.deploy(WEBAPP_V200_WAR, deployer.getDeployment(WEBAPP_V200_WAR));
@@ -167,7 +186,6 @@ public class BundleReplaceTestCase {
             Assert.assertEquals("Revision deployment.v200.jar:main", result);
             result = performCall("webapp-v200", "message.txt", null);
             Assert.assertEquals("Resource V2.0.0", result);
-
         } finally {
             server.undeploy(webappName);
             server.undeploy(jarName);

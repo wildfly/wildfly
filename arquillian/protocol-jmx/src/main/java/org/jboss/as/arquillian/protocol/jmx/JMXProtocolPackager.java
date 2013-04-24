@@ -146,6 +146,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
                 StringBuffer dependencies = new StringBuffer();
+                dependencies.append("javax.inject.api,");
                 dependencies.append("org.jboss.as.jmx,");
                 dependencies.append("org.jboss.as.server,");
                 dependencies.append("org.jboss.as.controller-client,");
