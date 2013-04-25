@@ -23,9 +23,15 @@
 package org.jboss.as.domain.http.server.security;
 
 import java.io.IOException;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSession;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+
+import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
@@ -47,7 +53,7 @@ abstract class RealmReadinessHandler implements HttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        if (securityRealm == null || securityRealm.isReady()) {
+        if (securityRealm == null || securityRealm.isReady() || clientCertPotentiallyPossible(exchange)) {
             next.handleRequest(exchange);
         } else {
             try {
@@ -58,6 +64,22 @@ abstract class RealmReadinessHandler implements HttpHandler {
                 exchange.endExchange();
             }
         }
+    }
+
+    private boolean clientCertPotentiallyPossible(final HttpServerExchange exchange) {
+        if (securityRealm.getSupportedAuthenticationMechanisms().contains(AuthMechanism.CLIENT_CERT) == false) {
+            return false;
+        }
+
+        SSLSession session = exchange.getConnection().getSslSession();
+        if (session != null) {
+            try {
+                return session.getPeerCertificates()[0] instanceof X509Certificate;
+            } catch (SSLPeerUnverifiedException e) {
+            }
+        }
+
+        return false;
     }
 
     /**
