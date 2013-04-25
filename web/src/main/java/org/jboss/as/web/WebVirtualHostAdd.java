@@ -167,7 +167,7 @@ class WebVirtualHostAdd extends AbstractAddStepHandler {
             if (prop.getValue().hasDefined(Constants.CONDITION)) {
                 for (Property conditionProp : prop.getValue().get(Constants.CONDITION).asPropertyList()) {
                     ModelNode resolvedCondition = resolveExpressions(context, conditionProp.getValue(), WebReWriteConditionDefinition.ATTRIBUTES);
-                    resolvedParent.get(Constants.CONDITION, conditionProp.getName()).set(resolvedCondition);
+                    result.get(prop.getName()).get(Constants.CONDITION, conditionProp.getName()).set(resolvedCondition);
                 }
             }
         }
