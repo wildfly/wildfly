@@ -133,7 +133,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             switch (namespace) {
                 case LOGGING_1_0:
                 case LOGGING_1_1:
-                case LOGGING_1_2: {
+                case LOGGING_1_2:
+                case LOGGING_2_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case LOGGER: {
