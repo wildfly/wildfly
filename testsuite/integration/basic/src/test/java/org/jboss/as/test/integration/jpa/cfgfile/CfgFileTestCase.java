@@ -59,7 +59,7 @@ public class CfgFileTestCase {
 		  	"    <property name=\"connection.driver_class\">org.hsqldb.jdbcDriver</property>" +
 		  	"    <property name=\"hibernate.connection.datasource\">java:jboss/datasources/ExampleDS</property>" +
 		  	"    <property name=\"dialect\">org.hibernate.dialect.HSQLDialect</property>" +
-		  	"    <property name=\"hbm2ddl.auto\">create-drop</property>" +
+		  	"    <property name=\"hibernate.hbm2ddl.auto\">create-drop</property>" +
 		  	"  </session-factory>" +
 		  "</hibernate-configuration>";
     

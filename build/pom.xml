@@ -245,6 +245,11 @@
                     <artifactId>cal10n-api</artifactId>
                 </dependency>
 
+                <dependency> 
+                    <groupId>com.fasterxml</groupId>
+                    <artifactId>classmate</artifactId>
+                </dependency>
+
                 <dependency>
                     <groupId>com.h2database</groupId>
                     <artifactId>h2</artifactId>
@@ -734,7 +739,7 @@
 
                 <dependency>
                     <groupId>org.hibernate.javax.persistence</groupId>
-                    <artifactId>hibernate-jpa-2.0-api</artifactId>
+                    <artifactId>hibernate-jpa-2.1-api</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1212,8 +1217,8 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-jpa-hibernate3</artifactId>
+                    <groupId>org.jipijapa</groupId>
+                    <artifactId>hibernate3</artifactId>
                     <exclusions>
                         <exclusion>
                             <groupId>org.hibernate</groupId>
@@ -1223,18 +1228,23 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-jpa-hibernate4</artifactId>
+                    <groupId>org.jipijapa</groupId>
+                    <artifactId>hibernate4-3</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-jpa-openjpa</artifactId>
+                    <groupId>org.jipijapa</groupId>
+                    <artifactId>openjpa</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-jpa-spi</artifactId>
+                    <groupId>org.jipijapa</groupId>
+                    <artifactId>spi</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jipijapa</groupId>
+                    <artifactId>core</artifactId>
                 </dependency>
 
                 <dependency>
@@ -2048,7 +2058,7 @@
                                         <include>org.hibernate:hibernate-envers</include>
                                         <include>org.hibernate:hibernate-infinispan</include>
                                         <include>org.hibernate:hibernate-validator</include>
-                                        <include>org.hibernate.javax.persistence:hibernate-jpa-2.0-api</include>
+                                        <include>org.hibernate.javax.persistence:hibernate-jpa-2.1-api</include>
                                         <include>org.hornetq:hornetq-commons</include>
                                         <include>org.hornetq:hornetq-core-client</include>
                                         <include>org.hornetq:hornetq-jms-client</include>
@@ -2237,10 +2247,10 @@
                                         <exclude>org.wildfly:wildfly-jdr</exclude>
                                         <exclude>org.wildfly:wildfly-jmx</exclude>
                                         <exclude>org.wildfly:wildfly-jpa</exclude>
-                                        <exclude>org.wildfly:wildfly-jpa-hibernate3</exclude>
-                                        <exclude>org.wildfly:wildfly-jpa-hibernate4</exclude>
-                                        <exclude>org.wildfly:wildfly-jpa-openjpa</exclude>
-                                        <exclude>org.wildfly:wildfly-jpa-spi</exclude>
+                                        <exclude>org.jipijapa:hibernate3</exclude>
+                                        <exclude>org.jipijapa:hibernate4-3</exclude>
+                                        <exclude>org.jipijapa:openjpa</exclude>
+                                        <exclude>org.jipijapa:spi</exclude>
                                         <exclude>org.wildfly:wildfly-jpa-util</exclude>
                                         <exclude>org.wildfly:wildfly-jsf</exclude>
                                         <exclude>org.wildfly:wildfly-jsf-injection</exclude>

@@ -62,6 +62,7 @@ public class Hibernate3EmbeddedProviderNullDataSourceTestCase {
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
                     "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
                     "  <persistence-unit name=\"hibernate3_pc\">" +
+                    "    <provider>org.hibernate.ejb.HibernatePersistence</provider>" +
                     "    <description>Persistence Unit." +
                     "    </description>" +
                     "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
@@ -81,6 +82,7 @@ public class Hibernate3EmbeddedProviderNullDataSourceTestCase {
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
                     "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
                     "  <persistence-unit name=\"web_hibernate3_pc\">" +
+                    "    <provider>org.hibernate.ejb.HibernatePersistence</provider>" +
                     "    <description>Persistence Unit." +
                     "    </description>" +
                     "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +

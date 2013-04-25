@@ -27,8 +27,8 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
-import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.metadata.property.PropertyReplacers;
+import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

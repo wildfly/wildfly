@@ -25,7 +25,6 @@ package org.jboss.as.jpa.processor;
 import org.jboss.as.jpa.classloader.JPADelegatingClassFileTransformer;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
-import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -33,6 +32,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.module.DelegatingClassFileTransformer;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 /**
  * Deployment processor which ensures the persistence provider ClassFileTransformer are used.

@@ -39,7 +39,6 @@ import org.jboss.as.ee.naming.JavaNamespaceSetup;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
-import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
@@ -56,7 +55,7 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.UserTransactionService;
 import org.jboss.as.weld.WeldBootstrapService;
-import org.jboss.as.weld.WeldDeploymentMarker;
+import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.WeldLogger;
 import org.jboss.as.weld.WeldStartService;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
@@ -83,6 +82,7 @@ import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.injection.spi.EjbInjectionServices;
 import org.jboss.weld.injection.spi.JpaInjectionServices;
 import org.jboss.weld.injection.spi.ResourceInjectionServices;
+import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 /**
  * Deployment processor that installs the weld services and all other required services

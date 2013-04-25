@@ -36,7 +36,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.weld.WeldDeploymentMarker;
+import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.WeldLogger;
 import org.jboss.as.weld.WeldMessages;
 import org.jboss.as.weld.deployment.PropertyReplacingBeansXmlParser;

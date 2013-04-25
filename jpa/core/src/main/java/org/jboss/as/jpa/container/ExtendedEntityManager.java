@@ -22,14 +22,14 @@
 
 package org.jboss.as.jpa.container;
 
-import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
+import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 import java.io.Serializable;
 
 import javax.persistence.EntityManager;
+import javax.persistence.SynchronizationType;
 
-import org.jboss.as.jpa.JpaMessages;
 import org.jboss.as.jpa.transaction.TransactionUtil;
 
 /**
@@ -190,7 +190,7 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
 
         // referenceCount should never be negative, if it is we need to fix the bug that caused it to decrement too much
         if (referenceCount < 0) {
-            throw JpaMessages.MESSAGES.referenceCountedEntityManagerNegativeCount(referenceCount, getScopedPuName());
+            throw MESSAGES.referenceCountedEntityManagerNegativeCount(referenceCount, getScopedPuName());
         }
 
     }
@@ -239,4 +239,8 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
         return ID != null ? ID.hashCode() : 0;
     }
 
+    @Override
+    public SynchronizationType getSynchronizationType() {
+        return SynchronizationType.SYNCHRONIZED;
+    }
 }

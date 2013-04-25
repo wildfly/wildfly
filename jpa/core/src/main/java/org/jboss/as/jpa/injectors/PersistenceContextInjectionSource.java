@@ -22,8 +22,8 @@
 
 package org.jboss.as.jpa.injectors;
 
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 import java.lang.reflect.Proxy;
 import java.util.Map;
@@ -31,6 +31,7 @@ import java.util.Map;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContextType;
+import javax.persistence.SynchronizationType;
 
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.jpa.config.ExtendedPersistenceInheritance;
@@ -44,7 +45,6 @@ import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.jpa.processor.JpaAttachments;
 import org.jboss.as.jpa.service.JPAService;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
-import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
@@ -56,6 +56,7 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.ImmediateValue;
+import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 /**
  * Represents the PersistenceContext injected into a component.
@@ -82,11 +83,11 @@ public class PersistenceContextInjectionSource extends InjectionSource {
      *                          for example "org.hibernate.Session" in which case, EntityManager.unwrap(org.hibernate.Session.class is called)
      * @param pu
      */
-    public PersistenceContextInjectionSource(final PersistenceContextType type, final Map properties, final ServiceName puServiceName, final DeploymentUnit deploymentUnit, final String scopedPuName, final String injectionTypeName, final PersistenceUnitMetadata pu) {
+    public PersistenceContextInjectionSource(final PersistenceContextType type, final SynchronizationType synchronizationType , final Map properties, final ServiceName puServiceName, final DeploymentUnit deploymentUnit, final String scopedPuName, final String injectionTypeName, final PersistenceUnitMetadata pu) {
 
         this.type = type;
 
-        injectable = new PersistenceContextJndiInjectable(puServiceName, deploymentUnit, this.type, properties, scopedPuName, injectionTypeName, pu);
+        injectable = new PersistenceContextJndiInjectable(puServiceName, deploymentUnit, this.type, synchronizationType , properties, scopedPuName, injectionTypeName, pu);
         this.puServiceName = puServiceName;
     }
 
@@ -113,6 +114,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
         private final ServiceName puServiceName;
         private final DeploymentUnit deploymentUnit;
         private final PersistenceContextType type;
+        private final SynchronizationType synchronizationType;
         private final Map properties;
         private final String unitName;
         private final String injectionTypeName;
@@ -124,6 +126,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
             final ServiceName puServiceName,
             final DeploymentUnit deploymentUnit,
             final PersistenceContextType type,
+            SynchronizationType synchronizationType,
             final Map properties,
             final String unitName,
             final String injectionTypeName,
@@ -136,6 +139,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
             this.unitName = unitName;
             this.injectionTypeName = injectionTypeName;
             this.pu = pu;
+            this.synchronizationType = synchronizationType;
         }
 
         @Override
@@ -146,7 +150,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
             boolean standardEntityManager = ENTITY_MANAGER_CLASS.equals(injectionTypeName);
 
             if (type.equals(PersistenceContextType.TRANSACTION)) {
-                entityManager = new TransactionScopedEntityManager(unitName, properties, emf);
+                entityManager = new TransactionScopedEntityManager(unitName, properties, emf, synchronizationType);
                 if (JPA_LOGGER.isDebugEnabled())
                     JPA_LOGGER.debugf("created new TransactionScopedEntityManager for unit name=%s", unitName);
             } else {

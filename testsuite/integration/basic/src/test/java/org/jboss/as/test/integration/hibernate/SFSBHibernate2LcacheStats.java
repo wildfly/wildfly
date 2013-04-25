@@ -39,14 +39,12 @@ import javax.ejb.TransactionManagementType;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
+import org.hibernate.engine.transaction.jta.platform.internal.JBossAppServerJtaPlatform;
 import org.hibernate.internal.util.config.ConfigurationHelper;
-import org.hibernate.service.BootstrapServiceRegistryBuilder;
-import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.ServiceRegistryBuilder;
-import org.hibernate.service.jta.platform.internal.JBossAppServerJtaPlatform;
 import org.hibernate.stat.SessionStatistics;
 import org.hibernate.stat.Statistics;
 import org.infinispan.manager.CacheContainer;
@@ -60,10 +58,6 @@ import org.infinispan.manager.CacheContainer;
 public class SFSBHibernate2LcacheStats {
 
     private static SessionFactory sessionFactory;
-    // private static Configuration configuration;
-    private static ServiceRegistryBuilder builder;
-    private static ServiceRegistry serviceRegistry;
-    private static Session session;
 
     /**
      * Lookup the Infinispan cache container to start it.
@@ -98,17 +92,15 @@ public class SFSBHibernate2LcacheStats {
 
             // fetch the properties
             Properties properties = new Properties();
+            configuration = configuration.configure("hibernate.cfg.xml");
             properties.putAll(configuration.getProperties());
+
             Environment.verifyProperties(properties);
             ConfigurationHelper.resolvePlaceHolders(properties);
 
             // build the serviceregistry
-            final BootstrapServiceRegistryBuilder bootstrapbuilder = new BootstrapServiceRegistryBuilder();
-            builder = new ServiceRegistryBuilder(bootstrapbuilder.build()).applySettings(properties);
-            serviceRegistry = builder.buildServiceRegistry();
-            // Create the SessionFactory from Configuration
-            sessionFactory = configuration.configure("hibernate.cfg.xml").buildSessionFactory(serviceRegistry);
-            // Session session = sessionFactory.openSession();
+            StandardServiceRegistryBuilder registry = new StandardServiceRegistryBuilder().applySettings(properties);
+            sessionFactory = configuration.buildSessionFactory(registry.build());
 
         } catch (Throwable ex) { // Make sure you log the exception, as it might be swallowed
             System.err.println("Initial SessionFactory creation failed." + ex);

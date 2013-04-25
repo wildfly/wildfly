@@ -36,7 +36,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.PrivateSubDeploymentMarker;
 import org.jboss.as.server.deployment.ServicesAttachment;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.as.weld.WeldDeploymentMarker;
+import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.WeldLogger;
 import org.jboss.as.weld.WeldMessages;
 import org.jboss.as.weld.deployment.WeldAttachments;

@@ -22,7 +22,7 @@
 
 package org.jboss.as.jpa.container;
 
-import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 import java.util.HashMap;
 import java.util.Map;

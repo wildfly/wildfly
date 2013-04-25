@@ -367,6 +367,10 @@
             <maven-resource group="ch.qos.cal10n" artifact="cal10n-api"/>
         </module-def>
 
+        <module-def name="com.fasterxml.classmate">
+            <maven-resource group="com.fasterxml" artifact="classmate" />
+        </module-def>
+
         <module-def name="com.github.relaxng">
             <maven-resource group="com.github.relaxng" artifact="relaxngDatatype" />
         </module-def>
@@ -476,7 +480,7 @@
         </module-def>
 
         <module-def name="javax.persistence.api">
-            <maven-resource group="org.hibernate.javax.persistence" artifact="hibernate-jpa-2.0-api"/>
+            <maven-resource group="org.hibernate.javax.persistence" artifact="hibernate-jpa-2.1-api"/>
         </module-def>
 
         <module-def name="javax.resource.api">
@@ -870,19 +874,20 @@
         </module-def>
 
         <module-def name="org.jboss.as.jpa.hibernate" slot="3">
-            <maven-resource group="org.wildfly" artifact="wildfly-jpa-hibernate3"/>
+            <maven-resource group="org.jipijapa" artifact="hibernate3"/>
         </module-def>
 
         <module-def name="org.jboss.as.jpa.hibernate" slot="4">
-            <maven-resource group="org.wildfly" artifact="wildfly-jpa-hibernate4"/>
+            <maven-resource group="org.jipijapa" artifact="hibernate4-3"/>
         </module-def>
 
         <module-def name="org.jboss.as.jpa.openjpa">
-            <maven-resource group="org.wildfly" artifact="wildfly-jpa-openjpa"/>
+            <maven-resource group="org.jipijapa" artifact="openjpa"/>
         </module-def>
 
         <module-def name="org.jboss.as.jpa.spi">
-            <maven-resource group="org.wildfly" artifact="wildfly-jpa-spi"/>
+            <maven-resource group="org.jipijapa" artifact="core"/>
+            <maven-resource group="org.jipijapa" artifact="spi"/>
         </module-def>
 
         <module-def name="org.jboss.as.jpa.util">

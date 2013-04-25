@@ -25,7 +25,7 @@ package org.jboss.as.jpa.container;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 /**
  * Tracks the lifecycle of created XPC Entity Managers

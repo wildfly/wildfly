@@ -35,9 +35,9 @@ import javax.persistence.spi.ClassTransformer;
 import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.sql.DataSource;
 
-import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
-import org.jboss.as.jpa.spi.TempClassLoaderFactory;
 import org.jboss.jandex.Index;
+import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
+import org.jipijapa.plugin.spi.TempClassLoaderFactory;
 
 /**
  * Represents the persistence unit definition

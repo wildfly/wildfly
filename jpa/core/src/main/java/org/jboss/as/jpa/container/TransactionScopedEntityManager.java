@@ -30,6 +30,7 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.SynchronizationType;
 
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.transaction.TransactionUtil;
@@ -38,7 +39,8 @@ import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 /**
  * Transaction scoped entity manager will be injected into SLSB or SFSB beans.  At bean invocation time, they
@@ -51,35 +53,38 @@ import static org.jboss.as.jpa.JpaMessages.MESSAGES;
  */
 public class TransactionScopedEntityManager extends AbstractEntityManager implements Serializable {
 
-    private static final long serialVersionUID = 455498111L;
+    private static final long serialVersionUID = 455498112L;
 
     private final String puScopedName;          // Scoped name of the persistent unit
     private final Map properties;
     private transient EntityManagerFactory emf;
+    private transient boolean isJPA21=true;          // true if persistence provider supports JPA 2.1
+    private final SynchronizationType synchronizationType;
 
-    public TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf) {
+    public TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf, SynchronizationType synchronizationType) {
         this.puScopedName = puScopedName;
         this.properties = properties;
         this.emf = emf;
+        this.synchronizationType = synchronizationType;
     }
 
     @Override
     protected EntityManager getEntityManager() {
-        EntityManager result;
+        EntityManager entityManager;
         boolean isInTx;
 
         isInTx = TransactionUtil.isInTx();
 
         if (isInTx) {
-            result = TransactionUtil.getOrCreateTransactionScopedEntityManager(emf, puScopedName, properties);
+            entityManager = getOrCreateTransactionScopedEntityManager(emf, puScopedName, properties, synchronizationType);
         } else {
-            result = NonTxEmCloser.get(puScopedName);
-            if (result == null) {
-                result = EntityManagerUtil.createEntityManager(emf, properties);
-                NonTxEmCloser.add(puScopedName, result);
+            entityManager = NonTxEmCloser.get(puScopedName);
+            if (entityManager == null) {
+                entityManager = createEntityManager(emf, properties, synchronizationType);
+                NonTxEmCloser.add(puScopedName, entityManager);
             }
         }
-        return result;
+        return entityManager;
     }
 
     @Override
@@ -107,6 +112,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         final ServiceController<?> controller = currentServiceContainer().getService(JPAServiceNames.getPUServiceName(puScopedName));
         final PersistenceUnitServiceImpl persistenceUnitService = (PersistenceUnitServiceImpl) controller.getService();
         emf = persistenceUnitService.getEntityManagerFactory();
+        isJPA21 = true;
     }
 
 
@@ -118,4 +124,83 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
             }
         });
     }
+
+    @Override
+    public SynchronizationType getSynchronizationType() {
+        return synchronizationType;
+    }
+
+    /**
+     * get or create a Transactional entity manager.
+     * Only call while a transaction is active in the current thread.
+     *
+     * @param emf
+     * @param scopedPuName
+     * @param properties
+     * @param synchronizationType
+     * @return
+     */
+    private EntityManager getOrCreateTransactionScopedEntityManager(
+            final EntityManagerFactory emf,
+            final String scopedPuName,
+            final Map properties,
+            final SynchronizationType synchronizationType) {
+        EntityManager entityManager = TransactionUtil.getTransactionScopedEntityManager(puScopedName);
+        if (entityManager == null) {
+            entityManager = createEntityManager(emf, properties, synchronizationType);
+            if (JPA_LOGGER.isDebugEnabled())
+                JPA_LOGGER.debugf("%s: created entity manager session %s", TransactionUtil.getEntityManagerDetails(entityManager),
+                TransactionUtil.getTransaction().toString());
+            TransactionUtil.registerSynchronization(entityManager, scopedPuName);
+            TransactionUtil.putEntityManagerInTransactionRegistry(scopedPuName, entityManager);
+        }
+        else {
+            testForMixedSyncronizationTypes(entityManager, puScopedName, synchronizationType);
+            if (JPA_LOGGER.isDebugEnabled()) {
+                JPA_LOGGER.debugf("%s: reuse entity manager session already in tx %s", TransactionUtil.getEntityManagerDetails(entityManager),
+                    getTransaction().toString());
+            }
+        }
+        return entityManager;
+    }
+
+    private EntityManager createEntityManager(
+        EntityManagerFactory emf, Map properties, final SynchronizationType synchronizationType) {
+        if (isJPA21()) {
+            try {
+                return emf.createEntityManager(synchronizationType, properties); // properties may be null in jpa 2.1
+            } catch (AbstractMethodError consideredNotJPA21Exception) {          // dealing with JPA 1.0 or 2.0 provider?
+                setJPA21(false);
+            }
+
+        }
+
+        if (properties != null && properties.size() > 0) {
+            return emf.createEntityManager(properties);
+        }
+        return emf.createEntityManager();
+    }
+
+    private boolean isJPA21() {
+        return isJPA21;
+    }
+
+    private void setJPA21(boolean value) {
+        isJPA21 = value;
+    }
+
+
+    /**
+     * throw error if jta transaction already has an UNSYNCHRONIZED persistence context and a SYNCHRONIZED persistence context
+     * is requested.  We are only fussy in this test, if the target component persistence context is SYNCHRONIZED.
+     */
+    private static void testForMixedSyncronizationTypes(EntityManager entityManager, String scopedPuName, final SynchronizationType targetSynchronizationType) {
+        if (SynchronizationType.SYNCHRONIZED.equals(targetSynchronizationType)
+                && entityManager instanceof AbstractEntityManager
+                && SynchronizationType.UNSYNCHRONIZED.equals( ((AbstractEntityManager)entityManager).getSynchronizationType())) {
+            throw MESSAGES.badSynchronizationTypeCombination(scopedPuName);
+        }
+    }
+
+
 }
