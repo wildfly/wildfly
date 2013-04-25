@@ -22,7 +22,7 @@
 
 package org.jboss.as.jpa.persistenceprovider;
 
-import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +34,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.persistence.spi.PersistenceProvider;
 import javax.persistence.spi.PersistenceProviderResolver;
 
-import org.jboss.as.jpa.JpaMessages;
+import org.jboss.as.jpa.messages.JpaMessages;
 import org.jboss.modules.ModuleClassLoader;
 import org.wildfly.security.manager.WildFlySecurityManager;
 

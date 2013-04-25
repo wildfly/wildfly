@@ -22,7 +22,7 @@
 package org.jboss.as.jpa.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
 
 import java.util.Collections;
 import java.util.List;
@@ -48,12 +48,8 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.ExtendedPersistenceInheritance;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderLoader;
-import org.jboss.as.jpa.processor.PersistenceProviderAdaptorLoader;
-import org.jboss.as.jpa.spi.ManagementAdaptor;
-import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.staxmapper.XMLElementReader;
@@ -105,16 +101,9 @@ public class JPAExtension implements Extension {
             JPA_LOGGER.errorPreloadingDefaultProvider(e);
         }
 
-        try {
-            // load the default persistence provider adaptor
-            PersistenceProviderAdaptor provider = PersistenceProviderAdaptorLoader.loadPersistenceAdapterModule(Configuration.ADAPTER_MODULE_DEFAULT);
-            final ManagementAdaptor managementAdaptor = provider.getManagementAdaptor();
-            if (managementAdaptor != null && context.isRuntimeOnlyRegistrationValid()) {
-                final ManagementResourceRegistration jpaSubsystemDeployments = registration.registerDeploymentModel(JPADefinition.INSTANCE);
-                managementAdaptor.register(jpaSubsystemDeployments, PersistenceUnitRegistryImpl.INSTANCE);
-            }
-        } catch (ModuleLoadException e) {
-            JPA_LOGGER.errorPreloadingDefaultProviderAdaptor(e);
+        if (context.isRuntimeOnlyRegistrationValid()) {
+            final ManagementResourceRegistration jpaSubsystemDeployments = registration.registerDeploymentModel(JPADefinition.INSTANCE);
+
         }
     }
 

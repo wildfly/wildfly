@@ -25,7 +25,8 @@ package org.jboss.as.jpa.config;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
+import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
+
 
 /**
  * configuration properties that may appear in persistence.xml
@@ -39,9 +40,14 @@ public class Configuration {
     public static final String PROVIDER_MODULE = "jboss.as.jpa.providerModule";
 
     /**
-     * Hibernate 4 persistence provider
+     * Hibernate 4.3.x (default) persistence provider
      */
-    public static final String PROVIDER_MODULE_HIBERNATE4 = "org.hibernate";
+    public static final String PROVIDER_MODULE_HIBERNATE4_3 = "org.hibernate";
+
+    /**
+     * Hibernate 4.1.x persistence provider, note that Hibernate 4.1.x is expected to be in the 4.1 slot
+     */
+    public static final String PROVIDER_MODULE_HIBERNATE4_1 = "org.hibernate:4.1";
 
     /**
      * Hibernate OGM persistence provider
@@ -66,12 +72,17 @@ public class Configuration {
     /**
      * default if no PROVIDER_MODULE is specified.
      */
-    public static final String PROVIDER_MODULE_DEFAULT = PROVIDER_MODULE_HIBERNATE4;
+    public static final String PROVIDER_MODULE_DEFAULT = PROVIDER_MODULE_HIBERNATE4_3;
 
     /**
-     * Hibernate persistence provider class
+     * Hibernate 4.1.x persistence provider class
      */
-    public static final String PROVIDER_CLASS_HIBERNATE = "org.hibernate.ejb.HibernatePersistence";
+    public static final String PROVIDER_CLASS_HIBERNATE4_1 = "org.hibernate.ejb.HibernatePersistence";
+
+    /**
+     * Hibernate 4.3.x persistence provider class
+     */
+    public static final String PROVIDER_CLASS_HIBERNATE = "org.hibernate.jpa.HibernatePersistenceProvider";
 
     /**
      * Hibernate OGM persistence provider class
@@ -157,7 +168,8 @@ public class Configuration {
     static {
         // always choose the default hibernate version for the Hibernate provider class mapping
         // if the user wants a different version. they can specify the provider module name
-        providerClassToModuleName.put(PROVIDER_CLASS_HIBERNATE, PROVIDER_MODULE_HIBERNATE4);
+        providerClassToModuleName.put(PROVIDER_CLASS_HIBERNATE, PROVIDER_MODULE_HIBERNATE4_3);
+        providerClassToModuleName.put(PROVIDER_CLASS_HIBERNATE4_1, PROVIDER_MODULE_HIBERNATE4_1);
         providerClassToModuleName.put(PROVIDER_CLASS_HIBERNATE_OGM, PROVIDER_MODULE_HIBERNATE_OGM);
         providerClassToModuleName.put(PROVIDER_CLASS_TOPLINK_ESSENTIALS, PROVIDER_MODULE_TOPLINK);
         providerClassToModuleName.put(PROVIDER_CLASS_TOPLINK, PROVIDER_MODULE_TOPLINK);

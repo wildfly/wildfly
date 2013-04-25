@@ -37,7 +37,6 @@ import javax.validation.ValidatorFactory;
 /**
  * Serializable validator factory
  * <p/>
- * TODO:  clustering support is needed (readResolve should set delegate to already initialized validator factory)
  *
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @author Scott Marlow

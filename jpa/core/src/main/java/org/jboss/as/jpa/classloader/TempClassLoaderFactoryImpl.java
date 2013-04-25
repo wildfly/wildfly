@@ -22,7 +22,7 @@
 
 package org.jboss.as.jpa.classloader;
 
-import org.jboss.as.jpa.spi.TempClassLoaderFactory;
+import org.jipijapa.plugin.spi.TempClassLoaderFactory;
 
 /**
  * Factory implementation that creates {@link TempClassLoader} instances.

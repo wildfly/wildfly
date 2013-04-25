@@ -22,7 +22,7 @@
 
 package org.jboss.as.jpa.processor;
 
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -34,7 +34,6 @@ import javax.persistence.spi.PersistenceProvider;
 
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderResolverImpl;
-import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.transaction.JtaManagerImpl;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -44,6 +43,7 @@ import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.ServicesAttachment;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
+import org.jipijapa.plugin.spi.PersistenceProviderAdaptor;
 
 /**
  * Deploy JPA Persistence providers that are found in the application deployment.

@@ -26,7 +26,7 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 
-import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
+import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 /**
  * Helps implement PersistenceUnitInfo.addClassTransformer() by using DelegatingClassFileTransformer

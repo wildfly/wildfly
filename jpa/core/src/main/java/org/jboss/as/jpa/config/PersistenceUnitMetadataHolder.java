@@ -26,8 +26,8 @@ import java.util.List;
 
 import javax.persistence.spi.PersistenceUnitInfo;
 
-import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 /**
  * Holds the defined persistence units

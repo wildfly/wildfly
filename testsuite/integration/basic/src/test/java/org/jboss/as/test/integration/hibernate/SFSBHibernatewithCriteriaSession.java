@@ -37,16 +37,15 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.criterion.Property;
-import org.hibernate.ejb.metamodel.MetamodelImpl;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.transaction.jta.platform.internal.JBossAppServerJtaPlatform;
 import org.hibernate.internal.util.config.ConfigurationHelper;
-import org.hibernate.service.BootstrapServiceRegistryBuilder;
-import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.ServiceRegistryBuilder;
+import org.hibernate.jpa.internal.metamodel.MetamodelImpl;
 import org.hibernate.stat.Statistics;
 
 /**
@@ -59,8 +58,6 @@ import org.hibernate.stat.Statistics;
 public class SFSBHibernatewithCriteriaSession {
 
     private static SessionFactory sessionFactory;
-    private static ServiceRegistryBuilder builder;
-    private static ServiceRegistry serviceRegistry;
 
     protected static final Class[] NO_CLASSES = new Class[0];
     protected static final String NO_MAPPINGS = new String();
@@ -76,24 +73,22 @@ public class SFSBHibernatewithCriteriaSession {
             // prepare the configuration
             Configuration configuration = new Configuration().setProperty(AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS,
                     "true");
+            configuration.getProperties().put(AvailableSettings.JTA_PLATFORM, JBossAppServerJtaPlatform.class);
             configuration.setProperty(Environment.HBM2DDL_AUTO, "create-drop");
             configuration.setProperty(Environment.DATASOURCE, "java:jboss/datasources/ExampleDS");
             configuration.setProperty("hibernate.listeners.envers.autoRegister", "false");
 
             // fetch the properties
             Properties properties = new Properties();
+            configuration = configuration.configure("hibernate.cfg.xml");
             properties.putAll(configuration.getProperties());
 
             Environment.verifyProperties(properties);
             ConfigurationHelper.resolvePlaceHolders(properties);
 
             // build the serviceregistry
-            final BootstrapServiceRegistryBuilder bootstrapbuilder = new BootstrapServiceRegistryBuilder();
-            builder = new ServiceRegistryBuilder(bootstrapbuilder.build()).applySettings(properties);
-            serviceRegistry = builder.buildServiceRegistry();
-
-            // Create the SessionFactory from Configuration
-            sessionFactory = configuration.configure("hibernate.cfg.xml").buildSessionFactory(serviceRegistry);
+            StandardServiceRegistryBuilder registry = new StandardServiceRegistryBuilder().applySettings(properties);
+            sessionFactory = configuration.buildSessionFactory(registry.build());
 
             // build metamodel
             SessionFactoryImplementor sfi = (SessionFactoryImplementor) sessionFactory;
