@@ -160,7 +160,7 @@ public class LoggingExtension implements Extension {
             registerTransformers(subsystem);
         }
 
-        subsystem.registerXMLElementWriter(LoggingSubsystemParser.INSTANCE);
+        subsystem.registerXMLElementWriter(LoggingSubsystemWriter.INSTANCE);
     }
 
     private void registerTransformers(SubsystemRegistration subsystem) {
