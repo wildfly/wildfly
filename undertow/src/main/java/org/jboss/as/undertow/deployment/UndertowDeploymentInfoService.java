@@ -26,6 +26,7 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.server.handlers.resource.CachingResourceManager;
 import io.undertow.server.handlers.resource.FileResourceManager;
+import io.undertow.server.session.SessionManager;
 import io.undertow.servlet.api.ClassIntrospecter;
 import io.undertow.servlet.api.ConfidentialPortManager;
 import io.undertow.servlet.api.DefaultServletConfig;
@@ -83,6 +84,7 @@ import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.AttributeMetaData;
+import org.jboss.metadata.web.spec.CookieConfigMetaData;
 import org.jboss.metadata.web.spec.DispatcherType;
 import org.jboss.metadata.web.spec.EmptyRoleSemanticType;
 import org.jboss.metadata.web.spec.ErrorPageMetaData;
@@ -173,6 +175,12 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         DeploymentInfo deploymentInfo = createServletConfig();
         handleSessionReplication(deploymentInfo);
         handleIdentityManager(deploymentInfo);
+
+        if(mergedMetaData.getSessionConfig().getSessionTimeoutSet()) {
+            SessionManager sessionManager = deploymentInfo.getSessionManager();
+            sessionManager.setDefaultSessionTimeout(mergedMetaData.getSessionConfig().getSessionTimeout());
+        }
+        //TODO: the rest of the session config
 
         for (final SetupAction action : setupActions) {
             deploymentInfo.addThreadSetupAction(new ThreadSetupAction() {
