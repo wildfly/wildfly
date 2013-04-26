@@ -388,6 +388,8 @@ public class DistributedCacheManagerTest {
         this.manager.evictSession(sessionId);
 
         CacheInvoker.Operation<String, Map<Object, Object>, Void> operation = capturedOperation.getValue();
+        when(this.cache.getAdvancedCache()).thenReturn(this.cache);
+        when(this.cache.lock(sessionId)).thenReturn(true);
 
         Void result = operation.invoke(this.cache);
 
@@ -409,6 +411,8 @@ public class DistributedCacheManagerTest {
         this.manager.evictSession(sessionId, null);
 
         CacheInvoker.Operation<String, Map<Object, Object>, Void> operation = capturedOperation.getValue();
+        when(this.cache.getAdvancedCache()).thenReturn(this.cache);
+        when(this.cache.lock(sessionId)).thenReturn(true);
 
         Void result = operation.invoke(this.cache);
 

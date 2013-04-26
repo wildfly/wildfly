@@ -304,7 +304,9 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
         Operation<Void> operation = new Operation<Void>() {
             @Override
             public Void invoke(Cache<String, Map<Object, Object>> cache) {
-                cache.evict(sessionId);
+                if (cache.getAdvancedCache().lock(sessionId)) {
+                    cache.evict(sessionId);
+                }
                 return null;
             }
         };

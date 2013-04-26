@@ -125,7 +125,7 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
 
         final InjectedValue<EmbeddedCacheManager> container = new InjectedValue<EmbeddedCacheManager>();
         final InjectedValue<Configuration> config = new InjectedValue<Configuration>();
-        target.addService(cacheConfigurationServiceName, new WebSessionCacheConfigurationService(cacheName, container, config))
+        target.addService(cacheConfigurationServiceName, new WebSessionCacheConfigurationService(cacheName, container, config, metaData))
                 .addDependency(containerServiceName, EmbeddedCacheManager.class, container)
                 .addDependency(templateCacheConfigurationServiceName, Configuration.class, config)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
