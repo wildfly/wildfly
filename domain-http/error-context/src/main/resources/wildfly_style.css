@@ -53,9 +53,10 @@ a:hover {
 .dualbrand {
 	padding-top: 20px;
 }
-.as7 {
+.wildfly {
 	float:left;
 	margin-left: 10px;
+	padding: -20px auto;
 }
 .note {
 	font-size: 8pt;
