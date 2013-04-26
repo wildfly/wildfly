@@ -14,12 +14,12 @@
             <directory>../build/target</directory>
             <outputDirectory/>
             <includes>
-                <include>jboss-*/**</include>
+                <include>${server.output.dir.prefix}-*/**</include>
             </includes>
             <excludes>
                 <exclude>**/*.sh</exclude>
-                <exclude>jboss-*/domain/tmp/auth</exclude>
-                <exclude>jboss-*/standalone/tmp/auth</exclude>
+                <exclude>${server.output.dir.prefix}-*/domain/tmp/auth</exclude>
+                <exclude>${server.output.dir.prefix}-*/standalone/tmp/auth</exclude>
                 <exclude>**/*-users.properties</exclude>
             </excludes>
         </fileSet>
@@ -27,7 +27,7 @@
             <directory>../build/target</directory>
             <outputDirectory/>
             <includes>
-                <include>jboss-*/**/*.sh</include>
+                <include>${server.output.dir.prefix}-*/**/*.sh</include>
             </includes>
             <fileMode>0755</fileMode>
         </fileSet>
@@ -43,8 +43,8 @@
             <directory>../build/target</directory>
             <outputDirectory/>
             <includes>
-                <include>jboss-*/domain/tmp/auth</include>
-                <include>jboss-*/standalone/tmp/auth</include>
+                <include>${server.output.dir.prefix}-*/domain/tmp/auth</include>
+                <include>${server.output.dir.prefix}-*/standalone/tmp/auth</include>
             </includes>
             <directoryMode>0700</directoryMode>
         </fileSet>
