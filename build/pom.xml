@@ -693,6 +693,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.glassfish</groupId>
+                    <artifactId>javax.el</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.hibernate</groupId>
                     <artifactId>hibernate-core</artifactId>
                 </dependency>
@@ -2167,6 +2172,7 @@
                                         <exclude>org.codehaus.woodstox:woodstox-core-asl</exclude>
                                         <exclude>org.eclipse.jdt.core.compiler:ecj</exclude>
                                         <exclude>org.fusesource.jansi:jansi</exclude>
+                                        <exclude>org.glassfish:javax.el</exclude>
                                         <exclude>org.glassfish:javax.json</exclude>
                                         <exclude>org.hornetq:hornetq-ra</exclude>
                                         <exclude>org.infinispan:infinispan-cachestore-jdbc</exclude>
@@ -2765,6 +2771,10 @@
                                         <group>
                                             <title>Module org.codehaus.jettison</title>
                                             <packages>org.codehaus.jettison:org.codehaus.jettison.badgerfish:org.codehaus.jettison.json:org.codehaus.jettison.mapped:org.codehaus.jettison.util</packages>
+                                        </group>
+                                        <group>
+                                            <title>Module org.glassfish.javax.el</title>
+                                            <packages>javax.el:com.sun.glassfish:com.sun.el</packages>
                                         </group>
                                         <group>
                                             <title>Module org.glassfish.javax.json</title>

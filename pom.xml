@@ -143,6 +143,7 @@
         <version.org.codehaus.woodstox.woodstox-core-asl>4.2.0</version.org.codehaus.woodstox.woodstox-core-asl>
         <version.org.eclipse.jdt.core.compiler>3.7.2</version.org.eclipse.jdt.core.compiler>
         <version.org.fusesource.jansi>1.9</version.org.fusesource.jansi>
+        <version.org.glassfish.javax.el>3.0-b07</version.org.glassfish.javax.el>
         <version.org.hibernate>4.2.0.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>4.0.1.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
@@ -3412,6 +3413,13 @@
                 <groupId>org.glassfish</groupId>
                 <artifactId>javax.json</artifactId>
                 <version>${version.javax.json-api}</version>
+            </dependency>
+
+            <!-- EL3 RI implementation -->
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>javax.el</artifactId>
+                <version>${version.org.glassfish.javax.el}</version>
             </dependency>
 
             <dependency>
