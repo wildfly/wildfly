@@ -191,25 +191,25 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
         }
 
         @Override
-        public XBundleRevision createBundleRevision(BundleContext context, Deployment dep) throws BundleException {
+        public XBundleRevision createBundleRevision(BundleContext context, Deployment deployment) throws BundleException {
 
             // Do the install directly if we have a running management op
             // https://issues.jboss.org/browse/AS7-5642
             if (OperationAssociation.INSTANCE.getAssociation() != null) {
-                LOGGER.warnCannotDeployBundleFromManagementOperation(dep);
-                return bundleManager.createBundleRevision(context, dep, null);
+                LOGGER.warnCannotDeployBundleFromManagementOperation(deployment);
+                return bundleManager.createBundleRevision(context, deployment, null);
             }
 
             // Check if a bundle with that location already exists
-            if (!dep.isBundleUpdate() && bundleManager.getBundleByLocation(dep.getLocation()) != null) {
-                return bundleManager.createBundleRevision(context, dep, null);
+            if (!deployment.isBundleUpdate() && bundleManager.getBundleByLocation(deployment.getLocation()) != null) {
+                return bundleManager.createBundleRevision(context, deployment, null);
             }
 
-            LOGGER.debugf("Install deployment: %s", dep);
-            String runtimeName = getRuntimeName(dep);
-            putDeployment(runtimeName, dep);
+            LOGGER.debugf("Install deployment: %s", deployment);
+            String runtimeName = getRuntimeName(deployment);
+            putDeployment(runtimeName, deployment);
             try {
-                InputStream input = dep.getRoot().openStream();
+                InputStream input = deployment.getRoot().openStream();
                 try {
                     ServerDeploymentHelper server = new ServerDeploymentHelper(serverDeploymentManager);
                     server.deploy(runtimeName, input);
@@ -219,12 +219,12 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
             } catch (RuntimeException rte) {
                 throw rte;
             } catch (Exception ex) {
-                throw MESSAGES.cannotDeployBundleRevision(ex, dep);
+                throw MESSAGES.cannotDeployBundleRevision(ex, deployment);
             }
 
             // For an already existing bundle (i.e. same location) the
             // {@link Deployment} may not have the bundle revision attached
-            DeploymentUnit depUnit = dep.getAttachment(BundleDeploymentProcessor.DEPLOYMENT_UNIT_KEY);
+            DeploymentUnit depUnit = deployment.getAttachment(BundleDeploymentProcessor.DEPLOYMENT_UNIT_KEY);
             XBundleRevision brev = depUnit.getAttachment(OSGiConstants.BUNDLE_REVISION_KEY);
             return brev;
         }
@@ -315,8 +315,8 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
         private void undeployRevision(XBundleRevision brev) {
             ServerDeploymentHelper server = new ServerDeploymentHelper(serverDeploymentManager);
             try {
-                Deployment dep = brev.getAttachment(IntegrationConstants.DEPLOYMENT_KEY);
-                server.undeploy(getRuntimeName(dep));
+                Deployment deployment = brev.getAttachment(IntegrationConstants.DEPLOYMENT_KEY);
+                server.undeploy(getRuntimeName(deployment));
             } catch (Exception ex) {
                 LOGGER.warnCannotUndeployBundleRevision(ex, brev);
             }
@@ -413,10 +413,10 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
         }
 
         // Maps the bundle.location to a deployment runtime name
-        private String getRuntimeName(Deployment dep) {
-            String runtimeName = dep.getAttachment(RUNTIME_NAME_KEY);
+        private String getRuntimeName(Deployment deployment) {
+            String runtimeName = deployment.getAttachment(RUNTIME_NAME_KEY);
             if (runtimeName == null) {
-                runtimeName = dep.getLocation();
+                runtimeName = deployment.getLocation();
                 try {
                     // Strip the query off the location if it is a valid URI
                     new URI(runtimeName);
@@ -427,9 +427,9 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                 } catch (URISyntaxException ex) {
                     // ignore
                 }
-                if (dep.isBundleUpdate()) {
+                if (deployment.isBundleUpdate()) {
                     String suffix = "";
-                    XBundle bundle = dep.getAttachment(IntegrationConstants.BUNDLE_KEY);
+                    XBundle bundle = deployment.getAttachment(IntegrationConstants.BUNDLE_KEY);
                     BundleRevisions brevs = bundle.adapt(BundleRevisions.class);
                     int revid = brevs.getRevisions().size();
                     int dotindex = runtimeName.length() - 4;
@@ -439,7 +439,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                     }
                     runtimeName += "-rev" + revid + suffix;
                 }
-                dep.putAttachment(RUNTIME_NAME_KEY, runtimeName);
+                deployment.putAttachment(RUNTIME_NAME_KEY, runtimeName);
             }
             return runtimeName;
         }
@@ -460,10 +460,10 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                 this.bundle = bundle;
 
                 XBundleRevision brev = bundle.getBundleRevision();
-                Deployment dep = brev.getAttachment(IntegrationConstants.DEPLOYMENT_KEY);
+                Deployment deployment = bundle.adapt(Deployment.class);
 
                 try {
-                    InputStream inputStream = dep.getRoot().getStreamURL().openStream();
+                    InputStream inputStream = deployment.getRoot().getStreamURL().openStream();
                     rootFile = AbstractVFS.toVirtualFile(inputStream);
                 } catch (IOException ex) {
                     throw FrameworkMessages.MESSAGES.cannotObtainVirtualFile(ex);
@@ -478,15 +478,15 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
 
                 // Create the revision {@link Deployment}
                 DeploymentProvider deploymentManager = injectedDeploymentManager.getValue();
-                Deployment dep = deploymentManager.createDeployment(bundle.getLocation(), rootFile);
-                dep.putAttachment(IntegrationConstants.BUNDLE_KEY, bundle);
-                dep.setAutoStart(false);
+                Deployment deployment = deploymentManager.createDeployment(bundle.getLocation(), rootFile);
+                deployment.putAttachment(IntegrationConstants.BUNDLE_KEY, bundle);
+                deployment.setAutoStart(false);
 
-                String runtimeName = getRuntimeName(dep);
-                putDeployment(runtimeName, dep);
+                String runtimeName = getRuntimeName(deployment);
+                putDeployment(runtimeName, deployment);
 
                 try {
-                    InputStream input = dep.getRoot().openStream();
+                    InputStream input = deployment.getRoot().openStream();
                     try {
                         ServerDeploymentHelper server = new ServerDeploymentHelper(serverDeploymentManager);
                         server.deploy(runtimeName, input);
@@ -496,7 +496,7 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
                 } catch (RuntimeException rte) {
                     throw rte;
                 } catch (Exception ex) {
-                    throw MESSAGES.cannotDeployBundleRevision(ex, dep);
+                    throw MESSAGES.cannotDeployBundleRevision(ex, deployment);
                 }
             }
 
