@@ -141,8 +141,13 @@ public class JGroupsSubsystemRootResource implements Resource {
     @Override
     public Resource navigate(PathAddress address) {
         if (address.size() > 0 && MetricKeys.CHANNEL.equals(address.getElement(0).getKey())) {
+            // resource too deep
             if (address.size() > 1) {
                 throw new NoSuchResourceException(address.getElement(1));
+            }
+            // resource doesn't exist
+            if (!hasChannel(address.getElement(0))) {
+                throw new NoSuchResourceException(address.getElement(0));
             }
             String name = address.getElement(0).getValue();
             ServiceName serviceName = getServiceNameFromName(name);
