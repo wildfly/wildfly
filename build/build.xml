@@ -679,6 +679,10 @@
             <maven-resource group="org.codehaus.jettison" artifact="jettison" />
         </module-def>
 
+        <module-def name="org.glassfish.javax.el">
+            <maven-resource group="org.glassfish" artifact="javax.el"/>
+        </module-def>
+
         <module-def name="org.glassfish.javax.json">
             <maven-resource group="org.glassfish" artifact="javax.json"/>
         </module-def>
