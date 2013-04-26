@@ -87,11 +87,11 @@ class SSLIdentityService implements Service<SSLIdentity>, SSLIdentity {
             if (theTrustStore != null) {
                 trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
                 trustManagerFactory.init(theTrustStore.getKeyStore());
-                TrustManager[] tmpTrustManagers = trustManagerFactory.getTrustManagers();
 
+                TrustManager[] tmpTrustManagers = trustManagerFactory.getTrustManagers();
                 trustManagers = new TrustManager[tmpTrustManagers.length];
                 for (int i = 0; i < tmpTrustManagers.length; i++) {
-                    trustManagers[i] = new DeligatingTrustManager((X509TrustManager) tmpTrustManagers[i],theTrustStore);
+                    trustManagers[i] = new DeligatingTrustManager((X509TrustManager) tmpTrustManagers[i], theTrustStore);
                 }
             }
 
@@ -106,7 +106,7 @@ class SSLIdentityService implements Service<SSLIdentity>, SSLIdentity {
                 sslContext.init(null, trustManagers, null);
             }
             trustOnlyContext = sslContext;
-       } catch (NoSuchAlgorithmException nsae) {
+        } catch (NoSuchAlgorithmException nsae) {
             throw MESSAGES.unableToStart(nsae);
         } catch (KeyManagementException kme) {
             throw MESSAGES.unableToStart(kme);
@@ -144,61 +144,61 @@ class SSLIdentityService implements Service<SSLIdentity>, SSLIdentity {
         return (truststore.getOptionalValue() != null);
     }
 
-   private class DeligatingTrustManager implements X509TrustManager {
+    private class DeligatingTrustManager implements X509TrustManager {
 
-    private X509TrustManager delegate;
-    private final FileKeystore theTrustStore;
+        private X509TrustManager delegate;
+        private final FileKeystore theTrustStore;
 
-    public DeligatingTrustManager(X509TrustManager trustManager, FileKeystore theTrustStore) {
-        this.delegate = trustManager;
-        this.theTrustStore = theTrustStore;
-    }
+        public DeligatingTrustManager(X509TrustManager trustManager, FileKeystore theTrustStore) {
+            this.delegate = trustManager;
+            this.theTrustStore = theTrustStore;
+        }
 
-    @Override
-    public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-        getDelegate().checkClientTrusted(chain, authType);
-    }
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            getDelegate().checkClientTrusted(chain, authType);
+        }
 
-    @Override
-    public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-        getDelegate().checkServerTrusted(chain, authType);
-    }
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            getDelegate().checkServerTrusted(chain, authType);
+        }
 
-    @Override
-    public X509Certificate[] getAcceptedIssuers() {
-        return getDelegate().getAcceptedIssuers();
-    }
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return getDelegate().getAcceptedIssuers();
+        }
 
-    /*
-     * Internal Methods
-     */
-    private synchronized X509TrustManager getDelegate() {
-        if (theTrustStore.isModified()) {
-            try {
-                theTrustStore.load();
-            } catch (StartException e1) {
-                throw new IllegalStateException("Unable to load key trust file.");
-            }
-            try {
-                trustManagerFactory.init(theTrustStore.getKeyStore());
-                TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-                for (TrustManager current : trustManagers) {
-                    if (current instanceof X509TrustManager) {
-                        delegate = (X509TrustManager) current;
-                        break;
-                    }
+        /*
+         * Internal Methods
+         */
+        private synchronized X509TrustManager getDelegate() {
+            if (theTrustStore.isModified()) {
+                try {
+                    theTrustStore.load();
+                } catch (StartException e1) {
+                    throw new IllegalStateException("Unable to load key trust file.");
                 }
-            } catch (GeneralSecurityException e) {
-                throw new IllegalStateException("Unable to operate on trust store.", e);
+                try {
+                    trustManagerFactory.init(theTrustStore.getKeyStore());
+                    TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+                    for (TrustManager current : trustManagers) {
+                        if (current instanceof X509TrustManager) {
+                            delegate = (X509TrustManager) current;
+                            break;
+                        }
+                    }
+                } catch (GeneralSecurityException e) {
+                    throw new IllegalStateException("Unable to operate on trust store.", e);
 
+                }
             }
-        }
-        if (delegate == null) {
-            throw new IllegalStateException("Unable to create delegate trust manager.");
+            if (delegate == null) {
+                throw new IllegalStateException("Unable to create delegate trust manager.");
+            }
+
+            return delegate;
         }
 
-        return delegate;
     }
-
-   }
 }
