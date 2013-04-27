@@ -84,7 +84,6 @@ import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.AttributeMetaData;
-import org.jboss.metadata.web.spec.CookieConfigMetaData;
 import org.jboss.metadata.web.spec.DispatcherType;
 import org.jboss.metadata.web.spec.EmptyRoleSemanticType;
 import org.jboss.metadata.web.spec.ErrorPageMetaData;
@@ -176,7 +175,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         handleSessionReplication(deploymentInfo);
         handleIdentityManager(deploymentInfo);
 
-        if(mergedMetaData.getSessionConfig().getSessionTimeoutSet()) {
+        if(mergedMetaData.getSessionConfig() != null && mergedMetaData.getSessionConfig().getSessionTimeoutSet()) {
             SessionManager sessionManager = deploymentInfo.getSessionManager();
             sessionManager.setDefaultSessionTimeout(mergedMetaData.getSessionConfig().getSessionTimeout());
         }
