@@ -82,9 +82,10 @@ To run all the tests
 Using Eclipse
 -------------
 1. Install the latest version of eclipse
-2. Make sure Xmx in eclipse.ini is at least 512M, and it's using java 7
-3. Launch eclispe and install the m2eclipse plugin, make sure it uses your repo configs
-   (get it from: http://m2eclipse.sonatype.org/sites/m2e)
+2. Make sure Xmx in eclipse.ini is at least 1280M, and it's using java 7
+3. Launch eclipse and install the m2e plugin, make sure it uses your repo configs
+   (get it from: http://download.eclipse.org/technology/m2e/releases/
+   or install "Maven Integration for Eclipse" from the Eclipse Marketplace)
 4. In eclipse preferences Java->Compiler->Errors/Warnings->Deprecated and restricted
    set forbidden reference to WARNING
 5. In eclipse preferences Java->Code Style, import the cleanup, templates, and
@@ -92,7 +93,7 @@ Using Eclipse
 6. In eclipse preferences Java->Editor->Save Actions enable "Additional Actions",
    and deselect all actions except for "Remove trailing whitespace"
 7. Use import on the root pom, which will pull in all modules
-8. Wait (m2eclipse takes awhile on initial import)
+8. Wait (m2e takes awhile on initial import)
 
 License
 -------
