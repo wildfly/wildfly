@@ -48,7 +48,8 @@
             <systemPropertyVariables>
                 <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
 	              <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
-		        </systemPropertyVariables>
+                <org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>
+            </systemPropertyVariables>
           </configuration>
         </plugin>
       </plugins>
@@ -148,12 +149,12 @@
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jboss.common</groupId>
             <artifactId>jboss-common-beans</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

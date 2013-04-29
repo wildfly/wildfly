@@ -46,12 +46,13 @@
                   <systemPropertyVariables>
                       <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
                       <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
+                      <org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>
                   </systemPropertyVariables>
               </configuration>
           </plugin>
        </plugins>
     </build>
-    
+
     <dependencies>
         <dependency>
             <groupId>commons-cli</groupId>

@@ -283,6 +283,7 @@
                                         <jboss.inst>${basedir}/target/jbossas</jboss.inst>
                                         <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
                                         <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
+																				<org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>

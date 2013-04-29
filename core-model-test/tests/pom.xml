@@ -34,7 +34,7 @@
 
     <artifactId>jboss-as-core-model-test-tests</artifactId>
     <name>WildFly: Core Model Tests</name>
-    
+
     <build>
        <plugins>
           <plugin>
@@ -45,7 +45,7 @@
                     <id>default-test</id>
                     <configuration>
                        <argLine>${maven.test.jvmargs}</argLine>
-                       <forkMode>always</forkMode> 
+                       <forkMode>always</forkMode>
                     </configuration>
                  </execution>
               </executions>
@@ -55,12 +55,13 @@
                   <systemPropertyVariables>
                       <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
                       <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
+                      <org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>
                   </systemPropertyVariables>
               </configuration>
           </plugin>
        </plugins>
     </build>
-    
+
     <dependencies>
         <dependency>
            <groupId>org.jboss.as</groupId>
@@ -70,7 +71,7 @@
            <groupId>org.jboss.as</groupId>
 	        <artifactId>jboss-as-core-model-test-controller-optional</artifactId>
            <scope>provided</scope>
-           <optional>true</optional>   
+           <optional>true</optional>
         </dependency>
         <dependency>
            <groupId>junit</groupId>
