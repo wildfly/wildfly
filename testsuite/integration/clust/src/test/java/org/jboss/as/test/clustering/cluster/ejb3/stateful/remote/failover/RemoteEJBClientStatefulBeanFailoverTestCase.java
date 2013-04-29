@@ -62,7 +62,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("AS7-6379")
+@Ignore("AS7-6604") // now WFLY-828
 public class RemoteEJBClientStatefulBeanFailoverTestCase extends ClusterAbstractTestCase {
 
     private static final Logger logger = Logger.getLogger(RemoteEJBClientStatefulBeanFailoverTestCase.class);
