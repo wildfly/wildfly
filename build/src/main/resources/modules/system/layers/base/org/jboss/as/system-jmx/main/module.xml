@@ -24,7 +24,7 @@
 
 <module xmlns="urn:jboss:module:1.1" name="org.jboss.as.system-jmx">
     <properties>
-        <property name="jboss.api" value="private"/>
+        <property name="jboss.api" value="preview"/>
     </properties>
 
     <resources>
