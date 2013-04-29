@@ -108,7 +108,8 @@
                         <org.jboss.byteman.contrib.bmunit.agent.inhibit>true</org.jboss.byteman.contrib.bmunit.agent.inhibit>
                         <org.jboss.byteman.contrib.bmunit.agent.port>9091</org.jboss.byteman.contrib.bmunit.agent.port>
                         <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
-	                      <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
+                        <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
+                        <org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>

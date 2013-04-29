@@ -103,16 +103,6 @@ public class ChildFirstClassLoader extends URLClassLoader {
         }
         return parent;
     }
-
-    public static void main(String[] args) {
-        Pattern pattern = Pattern.compile("org\\.jboss\\.as\\.core\\.model\\.adapter\\.common\\..*");
-        System.out.println(pattern);
-        String className = "org.jboss.as.core.model.adapter.common.BLah";
-        System.out.println(className);
-
-        System.out.println(pattern.matcher(className).matches());
-
-    }
 }
 
 

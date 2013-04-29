@@ -65,6 +65,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -101,12 +102,14 @@ class MavenUtil {
         }
 
         RepositorySystemSession session = newRepositorySystemSession();
-        RemoteRepository central = newCentralRepository();
+        List<RemoteRepository> remoteRepositories = createRemoteRepositories();
         //TODO add more remote repositories - especially the JBoss one
 
         ArtifactRequest artifactRequest = new ArtifactRequest();
         artifactRequest.setArtifact(artifact);
-        artifactRequest.addRepository(central);
+        for (RemoteRepository remoteRepo : remoteRepositories){
+            artifactRequest.addRepository(remoteRepo);
+        }
 
         ArtifactResult artifactResult;
         try {
@@ -141,12 +144,14 @@ class MavenUtil {
         }
 
         RepositorySystemSession session = newRepositorySystemSession();
-        RemoteRepository central = newCentralRepository();
+        List<RemoteRepository> remoteRepositories = createRemoteRepositories();
         //TODO add more remote repositories - especially the JBoss one
 
         ArtifactRequest artifactRequest = new ArtifactRequest();
         artifactRequest.setArtifact(artifact);
-        artifactRequest.addRepository(central);
+        for (RemoteRepository remoteRepo : remoteRepositories){
+            artifactRequest.addRepository(remoteRepo);
+        }
 
         ArtifactResult artifactResult;
         try {
@@ -160,7 +165,9 @@ class MavenUtil {
 
         CollectRequest collectRequest = new CollectRequest();
         collectRequest.setRoot(new Dependency(artifact, "compile" ));
-        collectRequest.addRepository( central );
+        for (RemoteRepository remoteRepo : remoteRepositories) {
+            collectRequest.addRepository( remoteRepo );
+        }
         DependencyNode node = REPOSITORY_SYSTEM.collectDependencies( session, collectRequest ).getRoot();
         DependencyFilter filter = new ExclusionsDependencyFilter(Arrays.asList(excludes));
         DependencyRequest dependencyRequest = new DependencyRequest( node, filter );
@@ -180,8 +187,19 @@ class MavenUtil {
         return urls;
     }
 
-    private static RemoteRepository newCentralRepository() {
-        return new RemoteRepository("jboss-developer", "default", "http://repository.jboss.org/nexus/content/groups/developer/");
+    private static List<RemoteRepository> createRemoteRepositories() {
+        String remoteReposFromSysProp = System.getProperty(ChildFirstClassLoaderBuilder.MAVEN_REPOSITORY_URLS);
+        if (remoteReposFromSysProp == null || remoteReposFromSysProp.trim().length() == 0){
+            return Collections.singletonList(new RemoteRepository("jboss-developer", "default", "http://repository.jboss.org/nexus/content/groups/developer/"));
+        } else {
+            int i = 0;
+            List<RemoteRepository> remoteRepositories = new ArrayList<RemoteRepository>();
+            for (String repoUrl : remoteReposFromSysProp.split(",")){
+                remoteRepositories.add(new RemoteRepository("repo" + i, "default", repoUrl.trim()));
+                i++;
+            }
+            return remoteRepositories;
+        }
     }
 
     private static RepositorySystemSession newRepositorySystemSession() {
@@ -448,5 +466,4 @@ class MavenUtil {
         }
 
     }
-
 }

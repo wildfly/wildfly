@@ -54,6 +54,9 @@ public class ChildFirstClassLoaderBuilder {
     /** The relative location of the cache directory to the directory indicated by {@link #ROOT_PROPERTY} */
     private static final String CACHE_FOLDER_PROPERTY = "org.jboss.model.test.classpath.cache";
 
+    /** A comma separated list of maven repository urls. If not set it will use http://repository.jboss.org/nexus/content/groups/developer/ */
+    static final String MAVEN_REPOSITORY_URLS = "org.jboss.model.test.maven.repository.urls";
+
 
     private final File cache;
     private final List<URL> classloaderURLs = new ArrayList<URL>();
