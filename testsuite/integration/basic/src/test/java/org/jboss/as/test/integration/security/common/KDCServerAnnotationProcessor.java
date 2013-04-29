@@ -1,23 +1,25 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * This product includes software developed at
+ * The Apache Software Foundation (http://www.apache.org/).
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Modified from work covered by the following permission notice:
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.jboss.as.test.integration.security.common;
 
@@ -32,11 +34,15 @@ import org.apache.directory.server.protocol.shared.transport.UdpTransport;
 import org.apache.mina.util.AvailablePortFinder;
 
 /**
- * Annotation processor for creating Kerberos servers - based on original implementation in
- * {@link org.apache.directory.server.factory.ServerAnnotationProcessor}. This implementation only adds a workaround for
+ * Annotation processor for creating Kerberos servers -
+ *
+ * This implementation only adds a workaround for
  * https://issues.apache.org/jira/browse/DIRKRB-85<br/>
  * Use this class together with {@link ExtCreateKdcServer} annotation.
- * 
+ *
+ * Based on code from
+ * @author <a href="mailto:dev@directory.apache.org">Apache Directory Project</a>
+ *
  * @author Josef Cacek
  * @see ExtCreateKdcServer
  */
@@ -46,7 +52,7 @@ public class KDCServerAnnotationProcessor {
 
     /**
      * Creates and starts KdcServer based on configuration from {@link ExtCreateKdcServer} annotation.
-     * 
+     *
      * @param directoryService
      * @param startPort start port number used for searching free ports in case the transport has no port number preconfigured.
      * @param address if not null, use this bind address instead of the value configured in {@link Transport} annotation.
@@ -62,7 +68,7 @@ public class KDCServerAnnotationProcessor {
 
     /**
      * Creates and starts {@link KdcServer} instance based on given configuration.
-     * 
+     *
      * @param createKdcServer
      * @param directoryService
      * @param startPort
