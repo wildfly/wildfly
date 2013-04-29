@@ -59,7 +59,7 @@ public class ChannelInstanceResource implements Resource {
 
     private final ServiceController controller;
 
-    public ChannelInstanceResource(ServiceController controller) {
+    public ChannelInstanceResource(final ServiceController controller) {
         this.controller = controller;
     }
 
@@ -68,6 +68,9 @@ public class ChannelInstanceResource implements Resource {
     }
 
     public Channel getChannel() {
+        if (getController() == null)
+            return null ;
+
         return (Channel) controller.getValue();
     }
 
@@ -188,10 +191,12 @@ public class ChannelInstanceResource implements Resource {
     }
 
     private Set<String> getProtocolNames() {
-        assert getChannel() != null;
-
+        Channel channel = getChannel();
+        if (channel == null) {
+            return Collections.emptySet();
+        }
         Set<String> names = new HashSet<String>();
-        List<Protocol> protocols = getChannel().getProtocolStack().getProtocols();
+        List<Protocol> protocols = channel.getProtocolStack().getProtocols();
         for (Protocol protocol : protocols) {
             String fullyQualifiedProtocolName = protocol.getClass().getPackage() + "." + protocol.getName();
             String protocolName = fullyQualifiedProtocolName.substring(JGROUPS_PROTOCOL_PACKAGE.length()+1);
@@ -202,7 +207,6 @@ public class ChannelInstanceResource implements Resource {
         }
         return names ;
     }
-
 
     /*
      * ResourceEntry extends the resource and additionally provides information on its path
