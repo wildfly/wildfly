@@ -34,7 +34,7 @@
 
     <artifactId>jboss-as-subsystem-test-tests</artifactId>
     <name>WildFly: Subsystem Test Framework Tests</name>
-    
+
     <build>
        <plugins>
           <plugin>
@@ -45,7 +45,7 @@
                     <id>default-test</id>
                     <configuration>
                        <argLine>${maven.test.jvmargs}</argLine>
-                       <forkMode>always</forkMode> 
+                       <forkMode>always</forkMode>
                     </configuration>
                  </execution>
               </executions>
@@ -55,12 +55,13 @@
                   <systemPropertyVariables>
                       <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
                       <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
+                      <org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>
                   </systemPropertyVariables>
               </configuration>
           </plugin>
        </plugins>
     </build>
-    
+
     <dependencies>
         <dependency>
            <groupId>org.jboss.as</groupId>
