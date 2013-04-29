@@ -40,6 +40,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -61,6 +62,7 @@ import org.junit.runner.RunWith;
  *         modulename/main/module.jar
  */
 @RunWith(Arquillian.class)
+@Ignore("May deploy duplicate multiple.jar")
 @ServerSetup(TwoModulesJarTestCase.ModuleAcDeploymentTestCaseSetup.class)
 public class TwoModulesJarTestCase extends TwoModulesFlatTestCase {
 
