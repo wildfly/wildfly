@@ -69,6 +69,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("May deploy duplicate cluster-passivation-test-helper.jar")
 public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
     private static Logger log = Logger.getLogger(ClusterPassivationTestCase.class);
     public static final String ARCHIVE_NAME = "cluster-passivation-test";
@@ -325,7 +326,7 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
         DMRUtil.setPassivationOnReplicate(client2.getControllerClient(), isPassivated);
         DMRUtil.reload(client1);
         DMRUtil.reload(client2);
-        
+
         runPassivation(isPassivated);
         startServers(client1, client2);
     }
@@ -342,7 +343,7 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
         DMRUtil.setPassivationOnReplicate(client2.getControllerClient(), isPassivated);
         DMRUtil.reload(client1);
         DMRUtil.reload(client2);
-        
+
         runPassivation(isPassivated);
         startServers(client1, client2);
     }
@@ -431,7 +432,7 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
         if(client1.isServerInRunningState()) {
             unsetPassivationAttributes(client1.getControllerClient());
         }
-        
+
         if(client2.isServerInRunningState()) {
             unsetPassivationAttributes(client2.getControllerClient());
         }

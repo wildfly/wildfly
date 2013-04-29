@@ -17,6 +17,8 @@
 package org.jboss.as.controller.client.helpers.standalone;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Future;
 
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -40,59 +42,77 @@ public class ServerDeploymentHelper {
     }
 
     public String deploy(String runtimeName, InputStream input) throws ServerDeploymentException {
-        ServerDeploymentActionResult actionResult;
+        ServerDeploymentPlanResult planResult;
+        List<DeploymentAction> actions = new ArrayList<DeploymentAction>();
         try {
             DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-            builder = builder.add(runtimeName, input).andDeploy();
+            AddDeploymentPlanBuilder addBuilder = builder.add(runtimeName, input);
+            actions.add(addBuilder.getLastAction());
+            builder = addBuilder.andDeploy();
+            actions.add(builder.getLastAction());
             DeploymentPlan plan = builder.build();
-            DeploymentAction action = builder.getLastAction();
             Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
-            ServerDeploymentPlanResult planResult = future.get();
-            actionResult = planResult.getDeploymentActionResult(action.getId());
+            planResult = future.get();
         } catch (Exception ex) {
             throw new ServerDeploymentException(ex);
         }
-        if (actionResult.getDeploymentException() != null)
-            throw new ServerDeploymentException(actionResult);
+        for (DeploymentAction action : actions) {
+            ServerDeploymentActionResult actionResult = planResult.getDeploymentActionResult(action.getId());
+            if (actionResult.getDeploymentException() != null)
+                throw new ServerDeploymentException(actionResult);
+        }
         return runtimeName;
     }
 
     public String replace(String runtimeName, String replaceName, InputStream input, boolean removeUndeployed) throws ServerDeploymentException {
-        ServerDeploymentActionResult actionResult;
+        ServerDeploymentPlanResult planResult;
+        List<DeploymentAction> actions = new ArrayList<DeploymentAction>();
         try {
             DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-            builder = builder.add(runtimeName, input).andReplace(replaceName);
+            AddDeploymentPlanBuilder addBuilder = builder.add(runtimeName, input);
+            actions.add(addBuilder.getLastAction());
+            ReplaceDeploymentPlanBuilder replaceBuilder = addBuilder.andReplace(replaceName);
+            actions.add(replaceBuilder.getLastAction());
             if (removeUndeployed) {
-                builder = ((ReplaceDeploymentPlanBuilder)builder).andRemoveUndeployed();
+                builder = replaceBuilder.andRemoveUndeployed();
+                actions.add(builder.getLastAction());
+            } else {
+                builder = replaceBuilder;
             }
             DeploymentPlan plan = builder.build();
-            DeploymentAction action = builder.getLastAction();
             Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
-            ServerDeploymentPlanResult planResult = future.get();
-            actionResult = planResult.getDeploymentActionResult(action.getId());
+            planResult = future.get();
         } catch (Exception ex) {
             throw new ServerDeploymentException(ex);
         }
-        if (actionResult.getDeploymentException() != null)
-            throw new ServerDeploymentException(actionResult);
+        for (DeploymentAction action : actions) {
+            ServerDeploymentActionResult actionResult = planResult.getDeploymentActionResult(action.getId());
+            if (actionResult.getDeploymentException() != null)
+                throw new ServerDeploymentException(actionResult);
+        }
         return runtimeName;
     }
 
     public void undeploy(String runtimeName) throws ServerDeploymentException {
-        ServerDeploymentActionResult actionResult;
+        ServerDeploymentPlanResult planResult;
+        List<DeploymentAction> actions = new ArrayList<DeploymentAction>();
         try {
             DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-            builder = builder.undeploy(runtimeName).andRemoveUndeployed();
+            UndeployDeploymentPlanBuilder undeployBuilder = builder.undeploy(runtimeName);
+            actions.add(undeployBuilder.getLastAction());
+            builder = undeployBuilder.andRemoveUndeployed();
+            actions.add(builder.getLastAction());
             DeploymentPlan plan = builder.build();
-            DeploymentAction action = builder.getLastAction();
             Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
-            ServerDeploymentPlanResult planResult = future.get();
-            actionResult = planResult.getDeploymentActionResult(action.getId());
+            planResult = future.get();
         } catch (Exception ex) {
             throw new ServerDeploymentException(ex);
         }
-        if (actionResult.getDeploymentException() != null)
-            throw new ServerDeploymentException(actionResult);
+        for (DeploymentAction action : actions) {
+            ServerDeploymentActionResult actionResult = planResult.getDeploymentActionResult(action.getId());
+            if (actionResult.getDeploymentException() != null)
+                throw new ServerDeploymentException(actionResult);
+        }
     }
 
     public static class ServerDeploymentException extends Exception {
