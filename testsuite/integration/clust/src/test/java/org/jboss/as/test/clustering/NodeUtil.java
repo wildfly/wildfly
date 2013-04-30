@@ -56,7 +56,7 @@ public final class NodeUtil {
             deployer.deploy(deployment);
             log.info("Started deployment=" + deployment + ", container=" + container);
         } catch (Throwable e) {
-            log.error(e);
+            log.error("Failed to start container(s)", e);
         }
     }
 
@@ -67,7 +67,7 @@ public final class NodeUtil {
                 log.info("Starting deployment=NONE, container=" + containers[i]);
                 controller.start(containers[i]);
             } catch (Throwable e) {
-                log.error(e);
+                log.error("Failed to start containers", e);
             }
         }
     }
@@ -77,7 +77,7 @@ public final class NodeUtil {
             log.info("Starting deployment=NONE, container=" + container);
             controller.start(container);
         } catch (Throwable e) {
-            log.error(e);
+            log.error("Failed to start containers", e);
         }
     }
 
@@ -88,7 +88,7 @@ public final class NodeUtil {
                 controller.stop(containers[i]);
                 log.info("Stopped container=" + containers[i]);
             } catch (Throwable e) {
-                log.error(e);
+                log.error("Failed to stop containers", e);
             }
         }
     }
@@ -100,7 +100,7 @@ public final class NodeUtil {
             controller.stop(container);
             log.info("Stopped deployment=" + deployment + ", container=" + container);
         } catch (Throwable e) {
-            log.error(e);
+            log.error("Failed to stop containers", e);
         }
     }
 
@@ -109,7 +109,7 @@ public final class NodeUtil {
             controller.stop(container);
             log.info("Stopped deployment=NONE, container=" + container);
         } catch (Throwable e) {
-            log.error(e);
+            log.error("Failed to stop containers", e);
         }
     }
 
