@@ -5,3 +5,4 @@ org.jboss.jbossts:jbossxts-api
 org.jboss.weld:weld-core
 org.picketbox:picketbox-commons
 xalan:serializer
+org.apache.ws.security:wss4j
