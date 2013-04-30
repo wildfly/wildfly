@@ -52,14 +52,17 @@ import org.jboss.modules.Module;
 public class ELExpressionFactoryProcessor implements DeploymentUnitProcessor {
 
     public static final String FACTORY_ID = ExpressionFactory.class.getName();
-    private static final Method purge;
+    private static Method purge;
 
     static {
         try {
             purge = BeanELResolver.class.getDeclaredMethod("purgeBeanClasses", ClassLoader.class);
+        } catch (Throwable t) {
+            // Ignore, because other EL implementations may not have it
+            purge = null;
+        }
+        if (purge != null) {
             purge.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -102,16 +105,26 @@ public class ELExpressionFactoryProcessor implements DeploymentUnitProcessor {
             }
         } catch (SecurityException se) {
         }
-        FactoryFinderCache.addCacheEntry(module.getClassLoader(), FACTORY_ID, ExpressionFactoryImpl.class.getName());
+        try {
+            FactoryFinderCache.addCacheEntry(module.getClassLoader(), FACTORY_ID, ExpressionFactoryImpl.class.getName());
+        } catch (Throwable t) {
+            // Ignore, because other EL implementations may not have it
+        }
     }
 
     @Override
     public void undeploy(final DeploymentUnit deploymentUnit) {
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-        if(module != null) {
-            FactoryFinderCache.clearClassLoader(module.getClassLoader());
+        if (module != null) {
             try {
-                purge.invoke(new BeanELResolver(), module.getClassLoader());
+                FactoryFinderCache.clearClassLoader(module.getClassLoader());
+            } catch (Throwable t) {
+                // Ignore, because other EL implementations may not have it
+            }
+            try {
+                if (purge != null) {
+                    purge.invoke(new BeanELResolver(), module.getClassLoader());
+                }
             } catch (Exception e) {
                 WebLogger.ROOT_LOGGER.couldNotPurgeELCache(e);
             }
