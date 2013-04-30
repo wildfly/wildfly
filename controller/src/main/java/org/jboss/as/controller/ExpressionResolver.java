@@ -32,6 +32,9 @@ import org.jboss.dmr.ModelNode;
  */
 public interface ExpressionResolver {
 
+    /** A {@link Pattern} that can be used to identify strings that include expression syntax */
+    Pattern EXPRESSION_PATTERN = Pattern.compile(".*\\$\\{.*\\}.*");
+
     /**
      * Resolves any expressions in the passed in ModelNode.
      * Expressions may either represent system properties or vaulted date. For vaulted data the format is
@@ -68,7 +71,6 @@ public interface ExpressionResolver {
      * that all expression have already been resolved.
      */
     ExpressionResolver REJECTING = new ExpressionResolverImpl() {
-        private final Pattern EXPRESSION_PATTERN = Pattern.compile(".*\\$\\{.*\\}.*");
         @Override
         protected void resolvePluggableExpression(ModelNode node) throws OperationFailedException {
             String expression = node.asString();
