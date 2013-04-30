@@ -65,6 +65,7 @@ import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ResourceInjectionTarget;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.EJBComponentUnavailableException;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
@@ -2338,7 +2339,7 @@ public interface EjbMessages {
     IllegalStateException noEjbContextAvailable();
 
     @Message(id = 14559, value = "Invocation cannot proceed as component is shutting down")
-    EJBException componentIsShuttingDown();
+    EJBComponentUnavailableException componentIsShuttingDown();
 
     @Message(id = 14560, value = "Could not open message outputstream for writing to Channel")
     IOException failedToOpenMessageOutputStream(@Cause Throwable e);

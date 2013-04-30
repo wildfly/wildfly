@@ -22,11 +22,23 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.ObjectStreamException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.component.EJBComponentUnavailableException;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
@@ -50,17 +62,6 @@ import org.jboss.marshalling.Unmarshaller;
 import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.MessageOutputStream;
 import org.xnio.IoUtils;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.ObjectStreamException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
 
 /**
@@ -202,8 +203,15 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                         result = invokeMethod(invocationId, componentView, invokedMethod, methodParams, locator, attachments);
                     } catch (Throwable throwable) {
                         try {
-                            // write out the failure
-                            MethodInvocationMessageHandler.this.writeException(channelAssociation, MethodInvocationMessageHandler.this.marshallerFactory, invocationId, throwable, attachments);
+                            // if the EJB is shutting down when the invocation was done, then it's as good as the EJB not being available. The client has to know about this as
+                            // a "no such EJB" failure so that it can retry the invocation on a different node if possible.
+                            if (throwable instanceof EJBComponentUnavailableException) {
+                                EjbLogger.EJB3_INVOCATION_LOGGER.debug("Cannot handle method invocation: " + invokedMethod + " on bean: " + beanName + " due to EJB component unavailability exception. Returning a no such EJB available message back to client");
+                                MethodInvocationMessageHandler.this.writeNoSuchEJBFailureMessage(channelAssociation, invocationId, appName, moduleName, distinctName, beanName, viewClassName);
+                            } else {
+                                // write out the failure
+                                MethodInvocationMessageHandler.this.writeException(channelAssociation, MethodInvocationMessageHandler.this.marshallerFactory, invocationId, throwable, attachments);
+                            }
                         } catch (Throwable ioe) {
                             // we couldn't write out a method invocation failure message. So let's at least log the
                             // actual method invocation exception, for debugging/reference
@@ -311,7 +319,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
             // keep track of the cancellation flag for this invocation
             this.remoteAsyncInvocationCancelStatus.registerAsyncInvocation(invocationId, asyncInvocationCancellationFlag);
             try {
-                return ((Future)componentView.invoke(interceptorContext)).get();
+                return ((Future) componentView.invoke(interceptorContext)).get();
             } finally {
                 // now that the async invocation is done, we no longer need to keep track of the
                 // cancellation flag for this invocation

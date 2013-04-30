@@ -22,6 +22,16 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.clustering.registry.RegistryCollector;
 import org.jboss.as.ejb3.EjbLogger;
@@ -40,16 +50,6 @@ import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.MessageOutputStream;
 import org.xnio.IoUtils;
-
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
 
 /**
  * @author Jaikiran Pai
@@ -420,7 +420,15 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             outputStream = new DataOutputStream(messageOutputStream);
             final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
             try {
-                EjbLogger.ROOT_LOGGER.debug(removedNodes.size() + " nodes removed from cluster " + clusterName + ", writing a protocol message to channel " + this.channelReceiver.channelAssociation.getChannel());
+                if (EjbLogger.ROOT_LOGGER.isDebugEnabled()) {
+                    EjbLogger.ROOT_LOGGER.debug("Following " + removedNodes.size() + " nodes removed from cluster " + clusterName + ", writing a protocol message to channel " + this.channelReceiver.channelAssociation.getChannel());
+                    final StringBuffer sb = new StringBuffer();
+                    for (final String nodeName : removedNodes) {
+                        sb.append(nodeName);
+                        sb.append("\n");
+                    }
+                    EjbLogger.ROOT_LOGGER.debug(sb.toString());
+                }
                 clusterTopologyWriter.writeNodesRemoved(outputStream, clusterName, removedNodes);
             } finally {
                 channelAssociation.releaseChannelMessageOutputStream(messageOutputStream);
@@ -439,7 +447,16 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             outputStream = new DataOutputStream(messageOutputStream);
             final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
             try {
-                EjbLogger.ROOT_LOGGER.debug(addedNodes.size() + " nodes added to cluster " + clusterName + ", writing a protocol message to channel " + this.channelReceiver.channelAssociation.getChannel());
+                if (EjbLogger.ROOT_LOGGER.isDebugEnabled()) {
+                    EjbLogger.ROOT_LOGGER.debug("Following " + addedNodes.size() + " nodes added to cluster " + clusterName + ", writing a protocol message to channel " + this.channelReceiver.channelAssociation.getChannel());
+                    final StringBuffer sb = new StringBuffer();
+                    for (final String nodeName : addedNodes.keySet()) {
+                        sb.append(nodeName);
+                        sb.append("\n");
+                    }
+                    EjbLogger.ROOT_LOGGER.debug(sb.toString());
+                }
+
                 clusterTopologyWriter.writeNewNodesAdded(outputStream, clusterName, addedNodes);
             } finally {
                 channelAssociation.releaseChannelMessageOutputStream(messageOutputStream);
