@@ -24,6 +24,14 @@
 
 package org.jboss.as.ejb3;
 
+import java.io.File;
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.sql.SQLException;
+import java.util.Date;
+
+import javax.ejb.Timer;
+
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
@@ -40,13 +48,6 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
-
-import javax.ejb.Timer;
-import java.io.File;
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.sql.SQLException;
-import java.util.Date;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
@@ -523,8 +524,8 @@ public interface EjbLogger extends BasicLogger {
     void couldNotWriteMethodInvocation(@Cause Throwable cause, Method invokedMethod, String beanName, String appName, String moduleName, String distinctName);
 
     @LogMessage(level = ERROR)
-    @Message(id = 14251, value = "IOException while generating session id for invocation id: %s on channel %s")
-    void exceptionGeneratingSessionId(@Cause Throwable cause, short invocationId, Channel channel);
+    @Message(id = 14251, value = "Exception while generating session id for component %s with invocation id: %s on channel %s")
+    void exceptionGeneratingSessionId(@Cause Throwable cause, String componentName, short invocationId, Channel channel);
 
     @LogMessage(level = ERROR)
     @Message(id = 14252, value = "Could not write out message to channel due to")
