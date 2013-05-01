@@ -24,6 +24,8 @@ package org.jboss.as.osgi.deployment;
 
 import java.util.jar.Manifest;
 
+import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.osgi.OSGiConstants.DeploymentType;
 import org.jboss.as.osgi.service.BundleLifecycleIntegration;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -48,28 +50,26 @@ public class OSGiManifestStructureProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        if (depUnit.hasAttachment(Attachments.OSGI_MANIFEST))
+        DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        Manifest manifest = depUnit.getAttachment(Attachments.OSGI_MANIFEST);
+        if (manifest != null)
             return;
 
         // Check if we already have a bundle {@link Deployment}
         Deployment dep = BundleLifecycleIntegration.getDeployment(depUnit.getName());
         if (dep != null) {
-            Manifest manifest = dep.getAttachment(IntegrationConstants.MANIFEST_KEY);
-            if (manifest != null) {
-                depUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
-                return;
-            }
+            manifest = dep.getAttachment(IntegrationConstants.MANIFEST_KEY);
         }
 
-        final ResourceRoot deploymentRoot = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        if (deploymentRoot == null)
-            return;
+        ResourceRoot deploymentRoot = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        if (manifest == null && deploymentRoot != null) {
+            manifest = deploymentRoot.getAttachment(Attachments.MANIFEST);
+        }
 
         // Check whether this is an OSGi manifest
-        Manifest manifest = deploymentRoot.getAttachment(Attachments.MANIFEST);
         if (OSGiManifestBuilder.isValidBundleManifest(manifest)) {
             depUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
+            depUnit.putAttachment(OSGiConstants.DEPLOYMENT_TYPE_KEY, DeploymentType.Bundle);
         }
     }
 

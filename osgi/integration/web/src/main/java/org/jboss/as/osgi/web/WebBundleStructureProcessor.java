@@ -24,11 +24,13 @@ package org.jboss.as.osgi.web;
 import java.util.jar.Manifest;
 
 import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.osgi.service.BundleLifecycleIntegration;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 
@@ -43,17 +45,24 @@ public class WebBundleStructureProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        // Generate the OSGi metadata from a webbundle:// URI
+        // Check if we already have {@link OSGiMetaData} or a bundle {@link Deployment}
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         OSGiMetaData metadata = depUnit.getAttachment(OSGiConstants.OSGI_METADATA_KEY);
-        if (metadata == null) {
-            // [TODO] this should generate OSGiMetaData directly
-            Manifest manifest = WebBundleURIParser.parse(depUnit.getName());
-            if (manifest != null) {
-                metadata = OSGiMetaDataBuilder.load(manifest);
-                depUnit.putAttachment(OSGiConstants.OSGI_METADATA_KEY, metadata);
-                depUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
-            }
+        if (metadata != null)
+            return;
+
+        // Check if we already have a bundle {@link Deployment}
+        Deployment dep = BundleLifecycleIntegration.getDeployment(depUnit.getName());
+        if (dep != null)
+            return;
+
+        // Generate the OSGi metadata from a webbundle:// URI
+        // [TODO] this should generate OSGiMetaData directly
+        Manifest manifest = WebBundleURIParser.parse(depUnit.getName());
+        if (manifest != null) {
+            metadata = OSGiMetaDataBuilder.load(manifest);
+            depUnit.putAttachment(OSGiConstants.OSGI_METADATA_KEY, metadata);
+            depUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
         }
     }
 
