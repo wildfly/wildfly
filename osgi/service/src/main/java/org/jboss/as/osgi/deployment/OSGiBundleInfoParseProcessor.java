@@ -25,6 +25,7 @@ package org.jboss.as.osgi.deployment;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 
 import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.osgi.OSGiConstants.DeploymentType;
 import org.jboss.as.osgi.service.BundleLifecycleIntegration;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -55,9 +56,10 @@ public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
         if (BundleLifecycleIntegration.getDeployment(runtimeName) != null)
             return;
 
-        // Get the manifest from the deployment's virtual file
+        // Construct the {@link BundleInfo} if we have valid {@link OSGiMetaData} for a bundle deployment
         OSGiMetaData metadata = depUnit.getAttachment(OSGiConstants.OSGI_METADATA_KEY);
-        if (metadata != null) {
+        DeploymentType deploymentType = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_TYPE_KEY);
+        if (metadata != null && deploymentType != DeploymentType.Module) {
             try {
                 // Construct and attach the {@link BundleInfo} from {@link OSGiMetaData}
                 VirtualFile virtualFile = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();

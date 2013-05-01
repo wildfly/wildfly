@@ -26,6 +26,8 @@ import java.util.jar.Manifest;
 
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.BundleLifecycleIntegration;
+import org.jboss.as.osgi.service.FrameworkBootstrapService;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -50,23 +52,24 @@ public class OSGiMetaDataStructureProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        if (depUnit.hasAttachment(OSGiConstants.OSGI_METADATA_KEY))
-            return;
+        OSGiMetaData metadata = depUnit.getAttachment(OSGiConstants.OSGI_METADATA_KEY);
 
         // Check if we already have a bundle {@link Deployment}
         Deployment dep = BundleLifecycleIntegration.getDeployment(depUnit.getName());
-        if (dep != null) {
-            OSGiMetaData metadata = dep.getAttachment(IntegrationConstants.OSGI_METADATA_KEY);
-            if (metadata != null) {
-                depUnit.putAttachment(OSGiConstants.OSGI_METADATA_KEY, metadata);
-                return;
-            }
+        if (metadata == null && dep != null) {
+            metadata = dep.getAttachment(IntegrationConstants.OSGI_METADATA_KEY);
         }
 
         Manifest manifest = depUnit.getAttachment(Attachments.OSGI_MANIFEST);
-        if (manifest != null) {
-            OSGiMetaData metadata = OSGiMetaDataBuilder.load(manifest);
+        if (metadata == null && manifest != null) {
+            metadata = OSGiMetaDataBuilder.load(manifest);
+        }
+
+        // Add a dependency on the {@link FrameworkBootstrapService}
+        // for any deployment that has valid {@link OSGiMetaData}
+        if (metadata != null) {
             depUnit.putAttachment(OSGiConstants.OSGI_METADATA_KEY, metadata);
+            phaseContext.addDependency(FrameworkBootstrapService.SERVICE_NAME, AttachmentKey.create(Void.class));
         }
     }
 

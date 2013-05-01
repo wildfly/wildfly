@@ -28,11 +28,14 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.osgi.OSGiConstants.DeploymentType;
+import org.jboss.as.osgi.service.BundleLifecycleIntegration;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.jboss.vfs.VirtualFile;
@@ -50,9 +53,12 @@ public class OSGiXServiceParseProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        // Check if we already have an OSGi deployment
+        // Check if we already have {@link OSGiMetaData} attached
+        // or if we already have a bundle {@link Deployment}
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        if (depUnit.hasAttachment(OSGiConstants.OSGI_METADATA_KEY))
+        OSGiMetaData metadata = depUnit.getAttachment(OSGiConstants.OSGI_METADATA_KEY);
+        Deployment dep = BundleLifecycleIntegration.getDeployment(depUnit.getName());
+        if (metadata != null || dep != null)
             return;
 
         // Get the OSGi XService properties
@@ -64,11 +70,13 @@ public class OSGiXServiceParseProcessor implements DeploymentUnitProcessor {
         try {
             Properties props = new Properties();
             props.load(xserviceFile.openStream());
-            OSGiMetaData metadata = OSGiMetaDataBuilder.load(props);
-            depUnit.putAttachment(OSGiConstants.OSGI_METADATA_KEY, metadata);
+            metadata = OSGiMetaDataBuilder.load(props);
         } catch (IOException ex) {
             throw MESSAGES.cannotParseOSGiMetadata(ex, xserviceFile);
         }
+
+        depUnit.putAttachment(OSGiConstants.OSGI_METADATA_KEY, metadata);
+        depUnit.putAttachment(OSGiConstants.DEPLOYMENT_TYPE_KEY, DeploymentType.Module);
     }
 
     @Override

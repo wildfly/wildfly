@@ -72,8 +72,8 @@ import org.osgi.framework.Constants;
  */
 public class FrameworkBootstrapService implements Service<Void> {
 
-    static final ServiceName SERVICE_NAME = SERVICE_BASE_NAME.append("framework", "bootstrap");
-    static final String MAPPED_OSGI_SOCKET_BINDINGS = "org.jboss.as.osgi.socket.bindings";
+    public static final ServiceName SERVICE_NAME = SERVICE_BASE_NAME.append("framework", "bootstrap");
+    public static final String MAPPED_OSGI_SOCKET_BINDINGS = "org.jboss.as.osgi.socket.bindings";
 
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();

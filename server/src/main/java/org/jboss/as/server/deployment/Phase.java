@@ -188,8 +188,9 @@ public enum Phase {
     public static final int STRUCTURE_MOUNT                             = 0x0200;
     public static final int STRUCTURE_MANIFEST                          = 0x0300;
     public static final int STRUCTURE_OSGI_MANIFEST                     = 0x0400;
-    public static final int STRUCTURE_OSGI_METADATA                     = 0x0420;
-    public static final int STRUCTURE_OSGI_WEBBUNDLE                    = 0x0430;
+    public static final int STRUCTURE_OSGI_PROPERTIES                   = 0x0410;
+    public static final int STRUCTURE_OSGI_WEBBUNDLE                    = 0x0420;
+    public static final int STRUCTURE_OSGI_METADATA                     = 0x0430;
     public static final int STRUCTURE_REMOUNT_EXPLODED                  = 0x0450;
     public static final int STRUCTURE_EE_SPEC_DESC_PROPERTY_REPLACEMENT = 0x0500;
     public static final int STRUCTURE_EE_JBOSS_DESC_PROPERTY_REPLACEMENT= 0x0550;
@@ -238,7 +239,6 @@ public enum Phase {
     public static final int PARSE_EXTENSION_LIST                        = 0x0700;
     public static final int PARSE_EXTENSION_NAME                        = 0x0800;
     public static final int PARSE_OSGI_BUNDLE_INFO                      = 0x0900;
-    public static final int PARSE_OSGI_PROPERTIES                       = 0x0A00;
     public static final int PARSE_WEB_DEPLOYMENT                        = 0x0B00;
     public static final int PARSE_WEB_DEPLOYMENT_FRAGMENT               = 0x0C00;
     public static final int PARSE_JSF_VERSION                           = 0x0C50;
