@@ -209,7 +209,7 @@ public class ManagementHttpServer {
 
         ManagementRootConsoleRedirectHandler rootConsoleRedirectHandler = new ManagementRootConsoleRedirectHandler(consoleHandler);
         DomainApiCheckHandler domainApiHandler = new DomainApiCheckHandler(modelControllerClient, controlledProcessStateService);
-        pathHandler.setDefaultHandler(rootConsoleRedirectHandler);
+        pathHandler.addPath("/", rootConsoleRedirectHandler);
         if (consoleHandler != null) {
             HttpHandler readinessHandler = new RedirectReadinessHandler(securityRealm, consoleHandler.getHandler(),
                     ErrorContextHandler.ERROR_CONTEXT);

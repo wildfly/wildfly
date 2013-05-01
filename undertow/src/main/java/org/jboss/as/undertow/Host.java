@@ -10,7 +10,6 @@ import javax.servlet.Servlet;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
-import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.server.handlers.form.MultiPartHandler;
 import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.servlet.api.DeploymentInfo;
@@ -51,7 +50,6 @@ public class Host implements Service<Host>, WebHost {
 
     @Override
     public void start(StartContext context) throws StartException {
-        pathHandler.setDefaultHandler(ResponseCodeHandler.HANDLE_404);
         rootHandler.setNext(pathHandler);
         server.getValue().registerHost(this);
         UndertowLogger.ROOT_LOGGER.infof("Starting host %s", name);
