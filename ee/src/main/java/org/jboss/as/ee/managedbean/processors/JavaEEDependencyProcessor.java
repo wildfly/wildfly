@@ -37,7 +37,6 @@ import org.jboss.modules.filter.PathFilters;
 /**
  * Deployment processor which adds the java EE APIs to EE deployments
  * <p/>
- * TODO: This needs to be removed, so that the relevant API's are added by the corresponding sub systems
  *
  * @author John E. Bailey
  * @author Jason T. Greene
@@ -45,12 +44,40 @@ import org.jboss.modules.filter.PathFilters;
  */
 public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static ModuleIdentifier JAVAEE_API_ID = ModuleIdentifier.create("javaee.api");
-
     private static ModuleIdentifier HIBERNATE_VALIDATOR_ID = ModuleIdentifier.create("org.hibernate.validator");
 
     private static ModuleIdentifier JBOSS_INVOCATION_ID = ModuleIdentifier.create("org.jboss.invocation");
     private static ModuleIdentifier JBOSS_AS_EE = ModuleIdentifier.create("org.jboss.as.ee");
+
+    private static final ModuleIdentifier[] JAVA_EE_API_MODULES = {
+            ModuleIdentifier.create("javax.activation.api"),
+            ModuleIdentifier.create("javax.annotation.api"),
+            ModuleIdentifier.create("javax.ejb.api"),
+            ModuleIdentifier.create("javax.el.api"),
+            ModuleIdentifier.create("javax.enterprise.api"),
+            ModuleIdentifier.create("javax.inject.api"),
+            ModuleIdentifier.create("javax.interceptor.api"),
+            ModuleIdentifier.create("javax.json.api"),
+            ModuleIdentifier.create("javax.jms.api"),
+            ModuleIdentifier.create("javax.jws.api"),
+            ModuleIdentifier.create("javax.mail.api"),
+            ModuleIdentifier.create("javax.management.j2ee.api"),
+            ModuleIdentifier.create("javax.persistence.api"),
+            ModuleIdentifier.create("javax.resource.api"),
+            ModuleIdentifier.create("javax.rmi.api"),
+            ModuleIdentifier.create("javax.security.auth.message.api"),
+            ModuleIdentifier.create("javax.security.jacc.api"),
+            ModuleIdentifier.create("javax.servlet.api"),
+            ModuleIdentifier.create("javax.servlet.jsp.api"),
+            ModuleIdentifier.create("javax.transaction.api"),
+            ModuleIdentifier.create("javax.validation.api"),
+            ModuleIdentifier.create("javax.ws.rs.api"),
+            ModuleIdentifier.create("javax.websocket.api"),
+            ModuleIdentifier.create("javax.xml.bind.api"),
+            ModuleIdentifier.create("javax.xml.soap.api"),
+            ModuleIdentifier.create("javax.xml.ws.api"),
+            ModuleIdentifier.create("javax.api")
+    };
 
 
     /**
@@ -65,7 +92,6 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAEE_API_ID, false, false, true, false));
         // TODO: Post 7.0, we have to rethink this whole hibernate dependencies that we add to user deployments
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HIBERNATE_VALIDATOR_ID, false, false, true, false));
 
@@ -77,6 +103,14 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
         ModuleDependency ee = new ModuleDependency(moduleLoader, JBOSS_AS_EE, false, false, false, false);
         ee.addImportFilter(PathFilters.is("org.jboss.as.ee.component.serialization"), true);
         moduleSpecification.addSystemDependency(ee);
+
+
+        //we always add all Java EE API modules, as the platform spec requires them to always be available
+        //we do not just add the javaee.api module, as this breaks excludes
+
+        for (final ModuleIdentifier moduleIdentifier : JAVA_EE_API_MODULES) {
+            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
+        }
     }
 
     public void undeploy(final DeploymentUnit context) {
