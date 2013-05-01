@@ -58,6 +58,9 @@ public interface OSGiConstants {
     /** Attachment key for a bundle deployment. */
     AttachmentKey<Deployment> DEPLOYMENT_KEY = AttachmentKey.create(Deployment.class);
 
+    /** Attachment key for a bundle deployment. */
+    AttachmentKey<DeploymentType> DEPLOYMENT_TYPE_KEY = AttachmentKey.create(DeploymentType.class);
+
     /** Attachment key for the {@link XEnvironment}. */
     AttachmentKey<XEnvironment> ENVIRONMENT_KEY = AttachmentKey.create(XEnvironment.class);
 
@@ -75,4 +78,12 @@ public interface OSGiConstants {
 
     /** The {@link org.jboss.as.osgi.parser.SubsystemState} service */
     ServiceName SUBSYSTEM_STATE_SERVICE_NAME = SERVICE_BASE_NAME.append("subsystemstate");
+
+    /** The OSGi deployment type */
+    enum DeploymentType {
+        /** A bundle deployment */
+        Bundle,
+        /** An adapted module deployment */
+        Module
+    }
 }
