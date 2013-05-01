@@ -45,12 +45,6 @@ import static org.jboss.as.server.deployment.EjbDeploymentMarker.isEjbDeployment
  */
 public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
-    // TODO: This should be centralized some place
-    /**
-     * Module id for Java EE module
-     */
-    private static final ModuleIdentifier JAVAEE_MODULE_IDENTIFIER = ModuleIdentifier.create("javaee.api");
-
     /**
      * Needed for timer handle persistence
      * TODO: restrict visibility
@@ -102,8 +96,6 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
         //this must be the first dep listed in the module
         if (Boolean.getBoolean("org.jboss.as.ejb3.EMBEDDED"))
             moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, ModuleIdentifier.CLASSPATH, false, false, false, false));
-
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAEE_MODULE_IDENTIFIER, false, false, false, false));
 
     }
 
