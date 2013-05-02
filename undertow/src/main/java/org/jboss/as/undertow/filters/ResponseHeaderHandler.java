@@ -1,44 +1,42 @@
-package org.jboss.as.undertow.handlers;
+package org.jboss.as.undertow.filters;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 
 import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.error.SimpleErrorPageHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.undertow.AbstractHandlerResourceDefinition;
+import org.jboss.as.undertow.AbstractHandlerDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class FileErrorPageHandler extends AbstractHandlerResourceDefinition {
+public class ResponseHeaderHandler extends AbstractHandlerDefinition {
 
-    private static final AttributeDefinition CODE = new SimpleAttributeDefinitionBuilder("code", ModelType.INT)
+    private static final AttributeDefinition NAME = new SimpleAttributeDefinitionBuilder("header-name", ModelType.STRING)
+            .setAllowNull(false)
             .setAllowExpression(true)
-            .setAllowNull(true)
             .build();
-    private static final AttributeDefinition FILE = new SimpleAttributeDefinitionBuilder("file", ModelType.STRING)
+    private static final AttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder("header-value", ModelType.STRING)
+            .setAllowNull(false)
             .setAllowExpression(true)
-            .setAllowNull(true)
             .build();
-    /*<file-error-page code="404" file="/my/error/page.html"/>*/
 
-    public FileErrorPageHandler() {
-        super("file-error-page");
+    public ResponseHeaderHandler() {
+        super("response-header");
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(CODE, FILE);
+        return Arrays.asList(NAME, VALUE);
     }
 
-    @Override
     public HttpHandler createHandler(HttpHandler next, OperationContext context, ModelNode model) throws OperationFailedException {
-        return new io.undertow.server.handlers.error.FileErrorPageHandler(new File("500.html"), 500);
+        return new SimpleErrorPageHandler(next);
     }
 }

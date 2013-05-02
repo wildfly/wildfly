@@ -28,6 +28,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.net.InetSocketAddress;
 
+import io.undertow.server.HttpHandler;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.undertow.session.ClusteredSession;
 import org.jboss.jandex.ClassInfo;
@@ -247,4 +248,8 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 17524, value = "Could not load web socket application config %s.")
     void couldNotLoadWebSocketConfig(String s, @Cause Exception e);
+
+    @LogMessage(level = INFO)
+    @Message(id = 17525, value = "Started http handler %s.")
+    void startedHttpHandler(HttpHandler handler);
 }

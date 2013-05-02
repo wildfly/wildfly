@@ -37,12 +37,10 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimplePersistentResourceDefinition;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceBuilder;
@@ -84,14 +82,6 @@ class BufferPoolResourceDefinition extends SimplePersistentResourceDefinition {
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return (Collection) ATTRIBUTES;
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-        for (AttributeDefinition attr : BufferPoolResourceDefinition.ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
-        }
     }
 
     private static class BufferPoolAdd extends AbstractAddStepHandler {

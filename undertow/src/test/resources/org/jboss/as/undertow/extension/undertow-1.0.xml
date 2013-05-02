@@ -1,25 +1,19 @@
-<subsystem xmlns="urn:jboss:domain:undertow:1.0" default-virtual-host="default-virtual-host" default-servlet-container="default-servlet-container" default-server="some-server" instance-id="some-id">
+<subsystem xmlns="urn:jboss:domain:undertow:1.0" default-virtual-host="default-virtual-host" default-servlet-container="default-servlet-container"
+           default-server="some-server" instance-id="some-id">
 
     <buffer-caches>
-        <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10" />
+        <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10"/>
     </buffer-caches>
 
     <server name="default-server" default-host="localhost" servlet-container="blah">
-        <http-listener name="default" socket-binding="http" />
         <ajp-listener name="ajp-connector" socket-binding="ajp"/>
+        <http-listener name="default" socket-binding="http"/>
 
-        <handlers>
-            <simple-error-page/>
-        </handlers>
-
-        <host name="default-host" alias="localhost">
-            <handlers>
-                <file-error-page code="404" file="/my/error/page.html"/>
-            </handlers>
-            <location name="/">
-                    <file path="${jboss.home.dir}/welcome-content" cache-buffer-size="1024" cache-buffers="1024"/>
+        <host name="default-host" alias="localhost, some.host">
+            <location name="/" handler="welcome-content">
+                <filter-ref name="security-other"/>
+                <filter-ref name="headers"/>
             </location>
-
         </host>
 
     </server>
@@ -48,5 +42,18 @@
                     x-powered-by="${prop.x-powered-by:true}"
                     display-source-fragment="${prop.display-source-fragment:true}"/>
     </servlet-container>
+
+    <error-handlers>
+        <error-page name="404-handler" code="404" path="/opt/data/404.html"/>
+        <simple-error-page name="401-handler" code="401"/>
+    </error-handlers>
+
+    <handlers>
+        <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true"/>
+    </handlers>
+    <filters>
+        <basic-auth name="security-other" security-domain="other"/>
+        <response-header name="headers" header-name="MY_HEADER" header-value="someValue"/>
+    </filters>
 
 </subsystem>

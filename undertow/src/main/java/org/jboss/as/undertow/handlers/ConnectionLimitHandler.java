@@ -9,14 +9,14 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.undertow.AbstractHandlerResourceDefinition;
+import org.jboss.as.undertow.AbstractHandlerDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class ConnectionLimitHandler extends AbstractHandlerResourceDefinition {
+public class ConnectionLimitHandler extends AbstractHandlerDefinition {
 
     private static final AttributeDefinition HIGH_WATER_MARK = new SimpleAttributeDefinitionBuilder("high-water-mark", ModelType.INT)
             .setAllowExpression(true)
@@ -41,7 +41,6 @@ public class ConnectionLimitHandler extends AbstractHandlerResourceDefinition {
     }
 
 
-    @Override
     public HttpHandler createHandler(HttpHandler next, OperationContext context, ModelNode model) throws OperationFailedException {
         return new RequestLimitingHandler(1000, next);
     }
