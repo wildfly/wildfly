@@ -29,16 +29,19 @@ public class UndertowService implements Service<UndertowService> {
     public static final ServiceName AJP_LISTENER = UNDERTOW.append("ajp-listener");
     public static final ServiceName HTTP_LISTENER = UNDERTOW.append("http-listener");
     public static final ServiceName HTTPS_LISTENER = UNDERTOW.append("https-listener");
+    public static final ServiceName HANDLER = UNDERTOW.append(Constants.HANDLER);
+    public static final ServiceName FILTER = UNDERTOW.append(Constants.FILTER);
+    public static final ServiceName ERROR_HANDLER = UNDERTOW.append(Constants.ERROR_HANDLER);
     /**
-     * The base name for jboss.web deployments.
+     * The base name for web deployments.
      */
     static final ServiceName WEB_DEPLOYMENT_BASE = UNDERTOW.append("deployment");
     private final String defaultContainer;
     private final String defaultServer;
     private final String defaultVirtualHost;
-    private volatile String instanceId;//todo this should be final and no setter should be exposed, currently mod cluster "wants it", this needs to change
     private final Set<Server> registeredServers = new CopyOnWriteArraySet<>();
     private final List<UndertowEventListener> listeners = new CopyOnWriteArrayList<>();
+    private volatile String instanceId;//todo this should be final and no setter should be exposed, currently mod cluster "wants it", this needs to change
 
     protected UndertowService(String defaultContainer, String defaultServer, String defaultVirtualHost, String instanceId) {
         this.defaultContainer = defaultContainer;

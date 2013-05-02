@@ -32,6 +32,7 @@ public interface Constants {
     String BUFFER_CACHES = "buffer-caches";
     String BUFFER_SIZE = "buffer-size";
     String BUFFERS_PER_REGION = "buffers-per-region";
+    String CONFIGURATION = "configuration";
     String MAX_REGIONS = "max-regions";
     String BUFFER_POOL = "buffer-pool";
     String SETTING = "setting";
@@ -51,18 +52,16 @@ public interface Constants {
     String HANDLERS = "handlers";
     String SERVER = "server";
     String HOST = "host";
-    String CHAIN = "chain";
-    String CHAINS = "chains";
-    String CHAIN_REF = "chain-ref";
     String PROPERTIES = "properties";
     String CLASS = "class";
-    String PROPERTY = "property";
-    String PATHS = "paths";
     String DEFAULT_HOST = "default-host";
     String DEFAULT_VIRTUAL_HOST = "default-virtual-host";
     String DEFAULT_SERVLET_CONTAINER = "default-servlet-container";
     String DEFAULT_SERVER = "default-server";
     String ALIAS = "alias";
+    String ERROR_PAGE = "error-page";
+    String ERROR_HANDLER = "error-handler";
+    String SIMPLE_ERROR_PAGE = "simple-error-page";
     /*JSP config */
     String CHECK_INTERVAL = "check-interval";
     String CONTAINER = "container";
@@ -97,4 +96,7 @@ public interface Constants {
     String WELCOME_FILE = "welcome-file";
     String X_POWERED_BY = "x-powered-by";
     String ENABLED = "enabled";
+    String DIRECTORY_LISTING = "directory-listing";
+    String FILTER = "filter";
+    String FILTER_REF = "filter-ref";
 }

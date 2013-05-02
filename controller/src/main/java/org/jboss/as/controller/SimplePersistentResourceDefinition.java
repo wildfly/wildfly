@@ -12,8 +12,10 @@ import java.util.Map;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -38,7 +40,6 @@ public abstract class SimplePersistentResourceDefinition extends SimpleResourceD
     protected SimplePersistentResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler, OperationEntry.Flag addRestartLevel, OperationEntry.Flag removeRestartLevel) {
         super(pathElement, descriptionResolver, addHandler, removeHandler, addRestartLevel, removeRestartLevel);
     }
-
 
     protected Map<String, AttributeDefinition> getAttributeMap() {
         Map<String, AttributeDefinition> res = new HashMap<>();
@@ -72,6 +73,15 @@ public abstract class SimplePersistentResourceDefinition extends SimpleResourceD
     }
 
     @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        super.registerAttributes(resourceRegistration);
+        ReloadRequiredWriteAttributeHandler handler = new ReloadRequiredWriteAttributeHandler(getAttributes());
+        for (AttributeDefinition attr : getAttributes()) {
+            resourceRegistration.registerReadWriteAttribute(attr, null, handler);
+        }
+    }
+
+    @Override
     public void parse(final XMLExtendedStreamReader reader, PathAddress parentAddress, List<ModelNode> list) throws XMLStreamException {
         if (getXmlWrapperElement() != null) {
             if (reader.getLocalName().equals(getXmlWrapperElement())) {
@@ -98,7 +108,9 @@ public abstract class SimplePersistentResourceDefinition extends SimpleResourceD
                 AttributeDefinition def = attributes.get(attributeName);
                 if (def instanceof SimpleAttributeDefinition) {
                     ((SimpleAttributeDefinition) def).parseAndSetParameter(value, op, reader);
-                } else {
+                } else if (def instanceof StringListAttributeDefinition) {
+                    ((StringListAttributeDefinition) def).parseAndSetParameter(value, op, reader);
+                }else{
                     throw new IllegalArgumentException("we should know how to handle " + def);
                 }
             } else {
@@ -121,7 +133,11 @@ public abstract class SimplePersistentResourceDefinition extends SimpleResourceD
     private Map<String, PersistentResourceDefinition> getChildrenMap() {
         Map<String, PersistentResourceDefinition> res = new HashMap<>();
         for (PersistentResourceDefinition child : getChildren()) {
-            res.put(child.getXmlElementName(), child);
+            if (child.getXmlWrapperElement() != null) {
+                res.put(child.getXmlWrapperElement(), child);
+            } else {
+                res.put(child.getXmlElementName(), child);
+            }
         }
         return res;
     }
@@ -148,22 +164,57 @@ public abstract class SimplePersistentResourceDefinition extends SimpleResourceD
 
     @Override
     public void persist(XMLExtendedStreamWriter writer, ModelNode model) throws XMLStreamException {
+        persist(writer, model, null);
+    }
+
+    private void writeStartElement(XMLExtendedStreamWriter writer, String namespaceURI, String localName) throws XMLStreamException {
+        if (namespaceURI != null) {
+            writer.writeStartElement(namespaceURI, localName);
+        } else {
+            writer.writeStartElement(localName);
+        }
+    }
+
+    public void startSubsystemElement(XMLExtendedStreamWriter writer, String namespaceURI, boolean empty) throws XMLStreamException {
+
+        if (writer.getNamespaceContext().getPrefix(namespaceURI) == null) {
+            // Unknown namespace; it becomes default
+            writer.setDefaultNamespace(namespaceURI);
+            if (empty) {
+                writer.writeEmptyElement(Element.SUBSYSTEM.getLocalName());
+            } else {
+                writer.writeStartElement(Element.SUBSYSTEM.getLocalName());
+            }
+            writer.writeNamespace(null, namespaceURI);
+        } else {
+            if (empty) {
+                writer.writeEmptyElement(namespaceURI, Element.SUBSYSTEM.getLocalName());
+            } else {
+                writer.writeStartElement(namespaceURI, Element.SUBSYSTEM.getLocalName());
+            }
+        }
+
+    }
+
+    public void persist(XMLExtendedStreamWriter writer, ModelNode model, String namespaceURI) throws XMLStreamException {
         boolean wildcard = getPathElement().isWildcard();
         model = wildcard ? model.get(getPathElement().getKey()) : model.get(getPathElement().getKeyValuePair());
         if (!model.isDefined() && !useValueAsElementName()) {
             return;
         }
+        boolean isSubsystem = getPathElement().getKey().equals(ModelDescriptionConstants.SUBSYSTEM);
+
         boolean writeWrapper = getXmlWrapperElement() != null;
         if (writeWrapper) {
-            writer.writeStartElement(getXmlWrapperElement());
+            writeStartElement(writer, namespaceURI, getXmlWrapperElement());
         }
 
         if (wildcard) {
             for (Property p : model.asPropertyList()) {
                 if (useValueAsElementName()) {
-                    writer.writeStartElement(p.getName());
+                    writeStartElement(writer, namespaceURI, p.getName());
                 } else {
-                    writer.writeStartElement(getXmlElementName());
+                    writeStartElement(writer, namespaceURI, getXmlElementName());
                     writer.writeAttribute(NAME, p.getName());
                 }
                 for (AttributeDefinition def : getAttributes()) {
@@ -173,10 +224,13 @@ public abstract class SimplePersistentResourceDefinition extends SimpleResourceD
                 writer.writeEndElement();
             }
         } else {
-            if (useValueAsElementName()){
-                writer.writeStartElement(getPathElement().getValue());
-            }else{
-                writer.writeStartElement(getXmlElementName());
+            if (useValueAsElementName()) {
+                writeStartElement(writer, namespaceURI, getPathElement().getValue());
+            } else if (isSubsystem) {
+                startSubsystemElement(writer, namespaceURI, getChildren().isEmpty());
+            } else {
+                writeStartElement(writer, namespaceURI, getXmlElementName());
+
             }
             for (AttributeDefinition def : getAttributes()) {
                 def.getAttributeMarshaller().marshallAsAttribute(def, model, false, writer);

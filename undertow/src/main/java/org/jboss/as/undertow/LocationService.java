@@ -1,7 +1,6 @@
 package org.jboss.as.undertow;
 
 import io.undertow.server.HttpHandler;
-
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -14,18 +13,17 @@ import org.jboss.msc.value.InjectedValue;
 public class LocationService implements Service<LocationService> {
 
     private final String locationPath;
-    private final HttpHandler handlerChain;
+    private final InjectedValue<HttpHandler> httpHandler = new InjectedValue<>();
     private final InjectedValue<Host> host = new InjectedValue<>();
 
-    public LocationService(String locationPath, HttpHandler handlerChain) {
+    public LocationService(String locationPath) {
         this.locationPath = locationPath;
-        this.handlerChain = handlerChain;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        UndertowLogger.ROOT_LOGGER.infof("registering handler %s under path '%s'", handlerChain, locationPath);
-        host.getValue().registerHandler(locationPath, handlerChain);
+        UndertowLogger.ROOT_LOGGER.infof("registering handler %s under path '%s'", httpHandler, locationPath);
+        host.getValue().registerHandler(locationPath, httpHandler.getValue());
     }
 
     @Override
@@ -40,5 +38,9 @@ public class LocationService implements Service<LocationService> {
 
     public InjectedValue<Host> getHost() {
         return host;
+    }
+
+    public InjectedValue<HttpHandler> getHttpHandler() {
+        return httpHandler;
     }
 }

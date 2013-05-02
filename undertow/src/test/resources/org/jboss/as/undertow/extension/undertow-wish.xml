@@ -1,43 +1,46 @@
 <subsystem xmlns="urn:jboss:domain:undertow:1.0">
-<server name="default-server" default-host="localhost" servlet-container="blah">
-    <http-listener name="default" socket-binding="http" worker="default" buffer-pool="default"/>
-    <ajp-listener name="ajp-connector" socket-binding="ajp"/>
+    <buffer-caches>
+        <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10"/>
+    </buffer-caches>
+    <server name="default-server" default-host="localhost" servlet-container="blah">
+        <http-listener name="default" socket-binding="http" worker="default" buffer-pool="default"/>
+        <ajp-listener name="ajp-connector" socket-binding="ajp"/>
 
-    <!-- each host is a sub-resource -->
-    <host name="localhost" aliases="www.localhost localhost.localdomain">
-        <!-- each location is a sub-resource -->
-        <location name="/app/myData" handler="opt-file-handler">
-            <filter name="security-other"/>
-            <filter name="headers"/>
-        </location>
-    </host>
-    <host name="www.mysite.com">
-        <location name="/" handler="redirect-1">
-            <filter name="security-other"/>
-        </location>
-    </host>
-    <host name="disallowed-site.com">
-        <error-page code="404" path="/opt/data/custom/404.html"/>
-    </host>
+        <!-- each host is a sub-resource -->
+        <host name="localhost" aliases="www.localhost localhost.localdomain">
+            <!-- each location is a sub-resource -->
+            <location name="/app/myData" handler="opt-file-handler">
+                <filter name="security-other"/>
+                <filter name="headers"/>
+            </location>
+        </host>
+        <host name="www.mysite.com">
+            <location name="/" handler="redirect-1">
+                <filter name="security-other"/>
+            </location>
+        </host>
+        <host name="disallowed-site.com">
+            <error-page code="404" path="/opt/data/custom/404.html"/>
+        </host>
 
-    <default-host>
-    </default-host>
+        <default-host>
+        </default-host>
 
-    <error-handlers>
-        <error-page code="404" path="/opt/data/404.html"/>
-    </error-handlers>
+        <error-handlers>
+            <error-page code="404" path="/opt/data/404.html"/>
+        </error-handlers>
 
-    <servlet-container name="default">
-        <jsp-config>.....</jsp-config>
-    </servlet-container>
+        <servlet-container name="default">
+            <jsp-config>.....</jsp-config>
+        </servlet-container>
 
-    <filters>
-        <basic-auth name="security-other" security-domain="other"/>
-        <response-header name="headers" header-name="MY_HEADER" header-value="someValue"/>
-    </filters>
+        <filters>
+            <basic-auth name="security-other" security-domain="other"/>
+            <response-header name="headers" header-name="MY_HEADER" header-value="someValue"/>
+        </filters>
 
-    <handlers>
-        <file name="opt-file-handler" path="/opt/data" cache-buffer-size="1024" cache-buffers="1024"/>
-    </handlers>
-</server>
+        <handlers>
+            <file name="opt-file-handler" path="/opt/data" cache-buffer-size="1024" cache-buffers="1024"/>
+        </handlers>
+    </server>
 </subsystem>
