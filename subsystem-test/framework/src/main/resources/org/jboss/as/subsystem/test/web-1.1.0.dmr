@@ -624,7 +624,7 @@
                     },
                     "errorCount" => {
                         "type" => INT,
-                        "description" => "Number of error that occurs when processing requests by the connector.",
+                        "description" => "Max time spent processing a requestnnector.",
                         "expressions-allowed" => false,
                         "nillable" => true
                     },
@@ -669,7 +669,7 @@
                     },
                     "requestCount" => {
                         "type" => INT,
-                        "description" => "Number of the request processed by the connector.",
+                        "description" => "Number of requests processed by the connector.",
                         "expressions-allowed" => false,
                         "nillable" => true
                     },
@@ -713,7 +713,7 @@
                     },
                     "processingTime" => {
                         "type" => INT,
-                        "description" => "Processing time used by the connector. Im milli-seconds.",
+                        "description" => "Processing time used by the connector. In milli-seconds.",
                         "expressions-allowed" => false,
                         "nillable" => true
                     },
