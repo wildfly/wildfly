@@ -27,6 +27,7 @@ import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_PREFI
 import static org.jboss.osgi.framework.spi.IntegrationConstants.MODULE_IDENTIFIER_KEY;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.FilterSpecification;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.as.server.moduleservice.ModuleDefinition;
 import org.jboss.as.server.moduleservice.ModuleLoadService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.DependencySpec;
@@ -202,8 +204,10 @@ final class ModuleLoaderIntegration extends FrameworkModuleLoaderPlugin {
             ModuleIdentifier identifier = moduleSpec.getModuleIdentifier();
             LOGGER.tracef("Add module spec to loader: %s", identifier);
             ServiceName moduleSpecName = ServiceModuleLoader.moduleSpecServiceName(identifier);
-            ImmediateValue<ModuleSpec> value = new ImmediateValue<ModuleSpec>(moduleSpec);
-            serviceTarget.addService(moduleSpecName, new ValueService<ModuleSpec>(value)).install();
+            ImmediateValue<ModuleDefinition> value = new ImmediateValue<>(new ModuleDefinition(identifier, Collections.<ModuleDependency>emptySet(), moduleSpec));
+            serviceTarget.addService(moduleSpecName, new ValueService<>(value)).install();
+
+            ServiceModuleLoader.installModuleResolvedService(serviceTarget, identifier);
         }
 
         /**
@@ -257,6 +261,7 @@ final class ModuleLoaderIntegration extends FrameworkModuleLoaderPlugin {
             ModuleIdentifier identifier = brev.getModuleIdentifier();
             serviceNames.add(getModuleSpecServiceName(identifier));
             serviceNames.add(getModuleServiceName(identifier));
+            serviceNames.add(ServiceModuleLoader.moduleResolvedServiceName(identifier));
             for (ServiceName serviceName : serviceNames) {
                 ServiceController<?> controller = serviceContainer.getService(serviceName);
                 if (controller != null) {

@@ -47,6 +47,7 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -115,7 +116,8 @@ public final class ExtensionIndexService implements Service<ExtensionIndex>, Ext
                             // now register a module spec service for this extension
                             // this makes it available for loading
                             ExternalModuleSpecService service = new ExternalModuleSpecService(moduleIdentifier, jar);
-                            serviceContainer.addService(ServiceModuleLoader.moduleSpecServiceName(moduleIdentifier), service)
+                            ServiceName serviceName = ServiceModuleLoader.moduleSpecServiceName(moduleIdentifier);
+                            serviceContainer.addService(serviceName, service)
                                     .addDependency(org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT_EXTENSION_INDEX)
                                     .setInitialMode(Mode.ON_DEMAND).install();
 
