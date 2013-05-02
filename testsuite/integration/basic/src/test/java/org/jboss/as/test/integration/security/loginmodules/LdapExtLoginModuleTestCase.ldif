@@ -59,10 +59,8 @@ ref: ldap://${hostname}:${ldapPort2}/ou=SharedRoles,dc=jboss,dc=com
 
 dn: o=example2,dc=jboss,dc=org
 objectClass: top
-objectClass: dcObject
 objectClass: organization
-dc: jboss
-o: JBoss
+o: example2
 
 dn: ou=People,o=example2,dc=jboss,dc=org
 objectClass: top
@@ -163,10 +161,8 @@ ref: ldap://${hostname}:${ldapPort2}/ou=SharedRoles,dc=jboss,dc=com
 
 dn: o=example3,dc=jboss,dc=org
 objectclass: top
-objectclass: dcObject
 objectclass: organization
-dc: jboss
-o: JBoss
+o: example3
 
 dn: ou=People,o=example3,dc=jboss,dc=org
 objectclass: top
@@ -216,7 +212,7 @@ objectClass: top
 ou: RefRoles
 ref: ldap://${hostname}:${ldapPort2}/ou=SharedRoles,dc=jboss,dc=com
 
-# Example4: "Java Duke" - "RG2", "R1", "R2", "R3", "R5"
+# Example4: "Java Duke" - "RG/2", "R1", "R2", "R3", "R5"
 #baseCtxDN= ou=People,o=example4,dc=jboss,dc=org"
 #baseFilter= (cn={0})
 #rolesCtxDN= ou=Roles,o=example4,dc=jboss,dc=org
@@ -227,10 +223,8 @@ ref: ldap://${hostname}:${ldapPort2}/ou=SharedRoles,dc=jboss,dc=com
 
 dn: o=example4,dc=jboss,dc=org
 objectclass: top
-objectclass: dcObject
 objectclass: organization
-dc: jboss
-o: JBoss
+o: example4
 
 dn: ou=People,o=example4,dc=jboss,dc=org
 objectclass: top
@@ -242,8 +236,9 @@ objectClass: top
 objectClass: uidObject
 objectClass: person
 objectClass: inetOrgPerson
-cn: Java Duke
-employeeNumber: jduke-123
+description: cn=RG/2,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
+cn: jduke
+employeeNumber: Java Duke
 sn: Duke
 uid: jduke
 userPassword:: dGhlZHVrZQ==
@@ -259,10 +254,10 @@ objectClass: top
 cn: RG1
 member: cn=empty
 
-dn: cn=RG2,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
+dn: cn=RG/2,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
 objectClass: groupOfNames
 objectClass: top
-cn: RG2
+cn: RG/2
 member: cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
 member: uid=jduke,ou=People,o=example4,dc=jboss,dc=org
 
@@ -276,19 +271,19 @@ dn: cn=R1,ou=Roles,o=example4,dc=jboss,dc=org
 objectClass: groupOfNames
 objectClass: top
 cn: R1
-member: cn=RG2,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
+member: cn=RG/2,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
 
 dn: cn=R2,ou=Roles,o=example4,dc=jboss,dc=org
 objectClass: groupOfNames
 objectClass: top
 cn: R2
-member: cn=RG2,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
+member: cn=RG/2,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
 
 dn: cn=R3,ou=Roles,o=example4,dc=jboss,dc=org
 objectClass: groupOfNames
 objectClass: top
 cn: R3
-member: cn=RG2,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
+member: cn=RG/2,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
 member: cn=RG3,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
 
 dn: cn=R4,ou=Roles,o=example4,dc=jboss,dc=org
@@ -311,13 +306,21 @@ objectClass: top
 ou: RefRoles
 ref: ldap://${hostname}:${ldapPort2}/ou=SharedRoles,dc=jboss,dc=com
 
+# Example4_direct (bz#953513 regresion test): "jduke" - "jduke", "RG/2"
+#baseCtxDN= o=example4,dc=jboss,dc=org
+#baseFilter= (uid={0})
+#rolesCtxDN= o=example4,dc=jboss,dc=org
+#roleFilter= (cn={0})
+#roleAttributeIsDN=true
+#roleAttributeID=description
+#roleNameAttributeID=cn
+#roleRecursion= 5
+
 # Example5 - role name in user's attribute (employeeNumber)
 dn: o=example5,dc=jboss,dc=org
 objectclass: top
-objectclass: dcObject
 objectclass: organization
-dc: jboss
-o: JBoss
+o: example5
 
 dn: ou=People,o=example5,dc=jboss,dc=org
 objectclass: top
@@ -334,3 +337,4 @@ employeeNumber: R1
 sn: Duke
 uid: jduke
 userPassword: theduke
+
