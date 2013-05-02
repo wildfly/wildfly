@@ -1,7 +1,0 @@
-#here you list all handlers that implement Handler interface
-org.jboss.as.undertow.handlers.ConnectionLimitHandler
-org.jboss.as.undertow.handlers.SimpleErrorPageHandler
-org.jboss.as.undertow.handlers.FileErrorPageHandler
-org.jboss.as.undertow.handlers.BasicAuthHandler
-org.jboss.as.undertow.handlers.FileHandler
-org.jboss.as.undertow.handlers.ResponseHeaderHandler

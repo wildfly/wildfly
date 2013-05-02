@@ -31,9 +31,7 @@ import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimplePersistentResourceDefinition;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.xnio.Options;
 
@@ -107,14 +105,6 @@ class WorkerResourceDefinition extends SimplePersistentResourceDefinition {
                 WorkerAdd.INSTANCE,
                 ReloadRequiredRemoveStepHandler.INSTANCE
         );
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-        for (AttributeDefinition attr : WorkerResourceDefinition.ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
-        }
     }
 
     @Override

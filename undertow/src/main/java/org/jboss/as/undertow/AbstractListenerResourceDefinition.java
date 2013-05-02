@@ -4,9 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimplePersistentResourceDefinition;
@@ -74,13 +72,4 @@ abstract class AbstractListenerResourceDefinition extends SimplePersistentResour
     }
 
     protected abstract AbstractListenerAdd getAddHandler();
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-        OperationStepHandler handler = new ReloadRequiredWriteAttributeHandler(getAttributes());
-        for (AttributeDefinition attr : getAttributes()) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, handler);
-        }
-    }
 }

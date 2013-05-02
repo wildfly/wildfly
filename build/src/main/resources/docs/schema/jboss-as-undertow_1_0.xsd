@@ -44,6 +44,9 @@
             <xs:element name="buffer-caches" type="buffer-cachesType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="server" type="serverType" minOccurs="1" maxOccurs="unbounded"/>
             <xs:element name="servlet-container" type="servletContainerType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="error-handlers" type="servletContainerType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="handlers" type="handlerType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="filters" type="servletContainerType" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
         <xs:attribute name="default-server" type="xs:string" default="default-server"/>
         <xs:attribute name="default-virtual-host" type="xs:string" default="default-host"/>
@@ -91,7 +94,6 @@
     </xs:complexType>
     <xs:complexType name="hostType">
         <xs:sequence>
-            <xs:element name="handlers" type="handlerType" maxOccurs="1" minOccurs="0"/>
             <xs:element name="location" type="locationType" maxOccurs="1" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
@@ -121,25 +123,31 @@
     </xs:complexType>
     <xs:complexType name="handlerType">
         <xs:sequence>
+            <xs:element name="file" type="file-handlerType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="errorHandlerType">
+        <xs:sequence>
             <xs:element name="file-error-page" type="file-error-page-type" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="file-handler" type="file-handlerType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="locationType">
-        <xs:sequence>
-            <xs:element name="file" type="file-handlerType" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="handler" use="required" type="xs:string"/>
     </xs:complexType>
     <xs:complexType name="file-error-page-type">
+        <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="code" use="required" type="xs:string"/>
         <xs:attribute name="file" use="required" type="xs:string"/>
     </xs:complexType>
     <xs:complexType name="file-handlerType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="path" use="required" type="xs:string"/>
         <xs:attribute name="cache-buffer-size" use="optional" type="xs:int" default="1024"/>
         <xs:attribute name="cache-buffers" use="optional" type="xs:int" default="1024"/>
+        <xs:attribute name="directory-listing" use="optional" type="xs:boolean" default="true"/>
     </xs:complexType>
 
     <xs:complexType name="buffer-cachesType">

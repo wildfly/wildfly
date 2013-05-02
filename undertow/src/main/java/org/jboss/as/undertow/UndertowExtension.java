@@ -19,7 +19,12 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 public class UndertowExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "undertow";
-    public static final PathElement PATH_JSP = PathElement.pathElement(Constants.SETTING, Constants.JSP);
+    public static final PathElement PATH_ERROR_PAGE = PathElement.pathElement(Constants.ERROR_PAGE);
+    public static final PathElement PATH_SIMPLE_ERROR_PAGE = PathElement.pathElement(Constants.SIMPLE_ERROR_PAGE);
+    public static final PathElement PATH_ERROR_HANDLERS = PathElement.pathElement(Constants.CONFIGURATION, Constants.ERROR_HANDLER);
+    public static final PathElement PATH_HANDLERS = PathElement.pathElement(Constants.CONFIGURATION, Constants.HANDLER);
+    public static final PathElement PATH_FILTERS = PathElement.pathElement(Constants.CONFIGURATION, Constants.FILTER);
+    protected static final PathElement PATH_JSP = PathElement.pathElement(Constants.SETTING, Constants.JSP);
     protected static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
     protected static final PathElement AJP_LISTENER_PATH = PathElement.pathElement(Constants.AJP_LISTENER);
     protected static final PathElement HOST_PATH = PathElement.pathElement(Constants.HOST);
@@ -30,6 +35,7 @@ public class UndertowExtension implements Extension {
     protected static final PathElement PATH_LOCATION = PathElement.pathElement(Constants.LOCATION);
     protected static final PathElement SERVER_PATH = PathElement.pathElement(Constants.SERVER);
     private static final String RESOURCE_NAME = UndertowExtension.class.getPackage().getName() + ".LocalDescriptions";
+    public static final PathElement PATH_FILTER_REF = PathElement.pathElement(Constants.FILTER_REF);
 
     public static StandardResourceDescriptionResolver getResolver(final String... keyPrefix) {
         /*StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -51,13 +57,14 @@ public class UndertowExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0, 0);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(UndertowRootDefinition.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE, false);
+     /*   registration.registerSubModel(BufferCacheDefinition.INSTANCE);
         registration.registerSubModel(ServerDefinition.INSTANCE);
         registration.registerSubModel(ServletContainerDefinition.INSTANCE);
-        registration.registerSubModel(BufferCacheDefinition.INSTANCE);
+        registration.registerSubModel(ErrorHandlerDefinition.INSTANCE);*/
+
 
         final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(DeploymentDefinition.INSTANCE);
         deployments.registerSubModel(DeploymentServletDefinition.INSTANCE);
-
 
         subsystem.registerXMLElementWriter(UndertowSubsystemParser.INSTANCE);
     }
