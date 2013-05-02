@@ -10,7 +10,7 @@
            <protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
            <protocol type="FD"/>
            <protocol type="VERIFY_SUSPECT"/>
-           <protocol type="pbcast.NAKACK2"/>
+           <protocol type="pbcast.NAKACK"/>
            <protocol type="UNICAST2"/>
            <protocol type="pbcast.STABLE"/>
            <protocol type="pbcast.GMS"/>
@@ -26,7 +26,7 @@
            <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
            <protocol type="FD"/>
            <protocol type="VERIFY_SUSPECT"/>
-           <protocol type="pbcast.NAKACK2"/>
+           <protocol type="pbcast.NAKACK"/>
            <protocol type="UNICAST2"/>
            <protocol type="pbcast.STABLE"/>
            <protocol type="pbcast.GMS"/>
