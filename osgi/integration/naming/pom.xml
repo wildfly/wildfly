@@ -28,22 +28,22 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-osgi-integration</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-osgi-integration</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-osgi-naming</artifactId>
+    <artifactId>wildfly-osgi-naming</artifactId>
     <name>WildFly: OSGi Integration Naming</name>
 
     <dependencies>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-naming</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-naming</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-osgi-service</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-osgi-service</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>

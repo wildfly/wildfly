@@ -32,12 +32,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-osgi</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-osgi</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-osgi-launcher</artifactId>
+    <artifactId>wildfly-osgi-launcher</artifactId>
     <name>WildFly: OSGi Launcher</name>
 
 	<packaging>jar</packaging>
@@ -48,12 +48,12 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.jboss.as</groupId>
-			<artifactId>jboss-as-embedded</artifactId>
+			<groupId>org.wildfly</groupId>
+			<artifactId>wildfly-embedded</artifactId>
 		</dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-security-util</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-security-util</artifactId>
         </dependency>
         <dependency>
 			<groupId>org.jboss.logging</groupId>
@@ -77,8 +77,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-build</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-build</artifactId>
             <scope>provided</scope>
             <type>pom</type>
         </dependency>
@@ -90,8 +90,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-testsuite-shared</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

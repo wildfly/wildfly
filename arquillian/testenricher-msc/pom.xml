@@ -4,8 +4,8 @@
 
     <!-- Parent -->
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-arquillian</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-arquillian</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
@@ -13,8 +13,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!-- Artifact Configuration -->
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-arquillian-testenricher-msc</artifactId>
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
     <name>WildFly: Arquillian TestEnricher MSC</name>
@@ -36,8 +36,8 @@
             <artifactId>arquillian-container-test-spi</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-server</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.inject</groupId>

@@ -27,13 +27,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-deployment-repository</artifactId>
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-deployment-repository</artifactId>
 
     <name>WildFly: Deployment Repository</name>
 
@@ -67,8 +67,8 @@
             <artifactId>jboss-vfs</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-protocol</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-protocol</artifactId>
         </dependency>
         <!-- Test Dependencies -->
         <dependency>

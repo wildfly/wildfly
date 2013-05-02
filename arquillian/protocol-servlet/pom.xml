@@ -31,13 +31,13 @@
      -->
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-arquillian</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-arquillian</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-arquillian-protocol-servlet</artifactId>
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-arquillian-protocol-servlet</artifactId>
 
     <name>WildFly: Arquillian Protocol Servlet</name>
 

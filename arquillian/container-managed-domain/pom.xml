@@ -26,11 +26,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-arquillian</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-arquillian</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
-    <artifactId>jboss-as-arquillian-container-domain-managed</artifactId>
+    <artifactId>wildfly-arquillian-container-domain-managed</artifactId>
 
     <name>WildFly: Arquillian Managed Domain Container</name>
 
@@ -42,8 +42,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-common-domain</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-arquillian-common-domain</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>

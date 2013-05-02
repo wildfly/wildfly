@@ -28,12 +28,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-jpa-parent</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-jpa-parent</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-jpa-hibernate4</artifactId>
+    <artifactId>wildfly-jpa-hibernate4</artifactId>
 
     <name>WildFly: Hibernate 4.0.x JPA integration</name>
 
@@ -41,13 +41,13 @@
         <!-- Internal -->
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-clustering-infinispan</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-infinispan</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-jpa-spi</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-jpa-spi</artifactId>
         </dependency>
 
         <!-- External -->

@@ -33,8 +33,8 @@
       <relativePath></relativePath>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-core-model-test-controller-7.1.2</artifactId>
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-core-model-test-controller-7.1.2</artifactId>
     <name>WildFly: Core Model Test Controller 7.1.2</name>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
@@ -51,8 +51,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-core-model-test-framework</artifactId>
+           <groupId>org.wildfly</groupId>
+           <artifactId>wildfly-core-model-test-framework</artifactId>
            <version>${project.version}</version>
 	        <scope>provided</scope>
            <exclusions>

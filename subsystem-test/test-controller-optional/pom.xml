@@ -27,8 +27,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-subsystem-test-parent</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-subsystem-test-parent</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
     <!--
@@ -38,18 +38,18 @@
 			the classpath when setting up the legacy controller classloaders, and want to be able to choose
 			which one to use. 
 		-->
-    <artifactId>jboss-as-subsystem-test</artifactId>
+    <artifactId>wildfly-subsystem-test</artifactId>
     <name>WildFly: Subsystem Test POM</name>
     <packaging>pom</packaging>
     <dependencies>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-subsystem-test-controller-7.1.2</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-subsystem-test-controller-7.1.2</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-subsystem-test-framework</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-subsystem-test-framework</artifactId>
         </dependency>
     </dependencies>
 </project>
