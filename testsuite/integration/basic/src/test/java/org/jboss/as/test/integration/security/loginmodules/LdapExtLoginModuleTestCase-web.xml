@@ -27,7 +27,7 @@
   <security-role><role-name>jduke</role-name></security-role>
   <security-role><role-name>jduke2</role-name></security-role>
   <security-role><role-name>RG1</role-name></security-role>
-  <security-role><role-name>RG2</role-name></security-role>
+  <security-role><role-name>RG/2</role-name></security-role>
   <security-role><role-name>RG3</role-name></security-role>
   <security-role><role-name>R1</role-name></security-role>
   <security-role><role-name>R2</role-name></security-role>
