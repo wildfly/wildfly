@@ -31,7 +31,6 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleNotFoundException;
-import org.jboss.modules.ModuleSpec;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -55,7 +54,7 @@ import static org.jboss.msc.service.ServiceBuilder.DependencyType.REQUIRED;
 public class ModuleLoadService implements Service<Module> {
 
     private final InjectedValue<ServiceModuleLoader> serviceModuleLoader = new InjectedValue<ServiceModuleLoader>();
-    private final InjectedValue<ModuleSpec> moduleSpec = new InjectedValue<ModuleSpec>();
+    private final InjectedValue<ModuleDefinition> moduleDefinitionInjectedValue = new InjectedValue<ModuleDefinition>();
     private final List<ModuleDependency> dependencies;
 
     private volatile Module module;
@@ -68,7 +67,7 @@ public class ModuleLoadService implements Service<Module> {
     public synchronized void start(StartContext context) throws StartException {
         try {
             final ServiceModuleLoader moduleLoader = serviceModuleLoader.getValue();
-            final Module module = moduleLoader.loadModule(moduleSpec.getValue().getModuleIdentifier());
+            final Module module = moduleLoader.loadModule(moduleDefinitionInjectedValue.getValue().getModuleIdentifier());
             moduleLoader.relinkModule(module);
             for (ModuleDependency dependency : dependencies) {
                 if (dependency.isUserSpecified()) {
@@ -77,9 +76,9 @@ public class ModuleLoadService implements Service<Module> {
                         String val = moduleLoader.loadModule(id).getProperty("jboss.api");
                         if (val != null) {
                             if (val.equals("private")) {
-                                PRIVATE_DEP_LOGGER.privateApiUsed(moduleSpec.getValue().getModuleIdentifier().getName(), id);
+                                PRIVATE_DEP_LOGGER.privateApiUsed(moduleDefinitionInjectedValue.getValue().getModuleIdentifier().getName(), id);
                             } else if (val.equals("unsupported")) {
-                                UNSUPPORTED_DEP_LOGGER.unsupportedApiUsed(moduleSpec.getValue().getModuleIdentifier().getName(), id);
+                                UNSUPPORTED_DEP_LOGGER.unsupportedApiUsed(moduleDefinitionInjectedValue.getValue().getModuleIdentifier().getName(), id);
                             }
                         }
                     } catch (ModuleNotFoundException ignore) {
@@ -89,7 +88,7 @@ public class ModuleLoadService implements Service<Module> {
             }
             this.module = module;
         } catch (ModuleLoadException e) {
-            throw ServerMessages.MESSAGES.failedToLoadModule(moduleSpec.getValue().getModuleIdentifier(), e);
+            throw ServerMessages.MESSAGES.failedToLoadModule(moduleDefinitionInjectedValue.getValue().getModuleIdentifier(), e);
         }
     }
 
@@ -109,7 +108,9 @@ public class ModuleLoadService implements Service<Module> {
         final ServiceName serviceName = ServiceModuleLoader.moduleServiceName(identifier);
         final ServiceBuilder<Module> builder = target.addService(serviceName, service);
         builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.getServiceModuleLoader());
-        builder.addDependency(ServiceModuleLoader.moduleSpecServiceName(identifier), ModuleSpec.class, service.getModuleSpec());
+        builder.addDependency(ServiceModuleLoader.moduleSpecServiceName(identifier), ModuleDefinition.class, service.getModuleDefinitionInjectedValue());
+        builder.addDependency(ServiceModuleLoader.moduleResolvedServiceName(identifier)); //don't attempt to load until all dependent module specs are up, even transitive ones
+
         for (ModuleDependency dependency : dependencies) {
             final ModuleIdentifier moduleIdentifier = dependency.getIdentifier();
             if (moduleIdentifier.getName().startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
@@ -133,7 +134,7 @@ public class ModuleLoadService implements Service<Module> {
         return serviceModuleLoader;
     }
 
-    public InjectedValue<ModuleSpec> getModuleSpec() {
-        return moduleSpec;
+    public InjectedValue<ModuleDefinition> getModuleDefinitionInjectedValue() {
+        return moduleDefinitionInjectedValue;
     }
 }

@@ -21,6 +21,7 @@
  */
 package org.jboss.as.server.moduleservice;
 
+import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleSpec;
@@ -34,6 +35,7 @@ import org.jboss.vfs.VFSUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.jar.JarFile;
 
 /**
@@ -42,13 +44,13 @@ import java.util.jar.JarFile;
  * @author Stuart Douglas
  *
  */
-public class ExternalModuleSpecService implements Service<ModuleSpec> {
+public class ExternalModuleSpecService implements Service<ModuleDefinition> {
 
     private final ModuleIdentifier moduleIdentifier;
 
     private final File file;
 
-    private volatile ModuleSpec moduleSpec;
+    private volatile ModuleDefinition moduleDefinition;
 
     private volatile JarFile jarFile;
 
@@ -67,22 +69,28 @@ public class ExternalModuleSpecService implements Service<ModuleSpec> {
         final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleIdentifier);
         addResourceRoot(specBuilder, jarFile);
         //TODO: We need some way of configuring module dependencies for external archives
-        specBuilder.addDependency(DependencySpec.createModuleDependencySpec(ModuleIdentifier.create("javaee.api")));
+        ModuleIdentifier javaee = ModuleIdentifier.create("javaee.api");
+        specBuilder.addDependency(DependencySpec.createModuleDependencySpec(javaee));
         specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
         // TODO: external resource need some kind of dependency mechanism
-        moduleSpec = specBuilder.create();
+        ModuleSpec moduleSpec = specBuilder.create();
+        this.moduleDefinition = new ModuleDefinition(moduleIdentifier, Collections.<ModuleDependency>emptySet(), moduleSpec);
+
+
+        ServiceModuleLoader.installModuleResolvedService(context.getChildTarget(), moduleIdentifier);
+
     }
 
     @Override
     public synchronized void stop(StopContext context) {
         VFSUtils.safeClose(jarFile);
         jarFile = null;
-        moduleSpec = null;
+        moduleDefinition = null;
     }
 
     @Override
-    public ModuleSpec getValue() throws IllegalStateException, IllegalArgumentException {
-        return moduleSpec;
+    public ModuleDefinition getValue() throws IllegalStateException, IllegalArgumentException {
+        return moduleDefinition;
     }
 
     private static void addResourceRoot(final ModuleSpec.Builder specBuilder, final JarFile file) {
