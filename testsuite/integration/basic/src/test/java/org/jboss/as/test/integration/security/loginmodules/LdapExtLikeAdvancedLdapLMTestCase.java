@@ -85,6 +85,7 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
     private static final String DEP2_THROW = "DEP2-throw";
     private static final String DEP3 = "DEP3";
     private static final String DEP4 = "DEP4";
+    private static final String DEP4_DIRECT = "DEP4-direct";
     private static final String DEP5 = "DEP5";
 
     // Public methods --------------------------------------------------------
@@ -140,6 +141,16 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
     }
 
     /**
+     * Creates {@link WebArchive} for {@link #test4_direct(URL)}.
+     * 
+     * @return
+     */
+    @Deployment(name = DEP4_DIRECT)
+    public static WebArchive deployment4_direct() {
+        return createWar(SECURITY_DOMAIN_NAME_PREFIX + DEP4_DIRECT);
+    }
+
+    /**
      * Creates {@link WebArchive} for {@link #test5(URL)}.
      * 
      * @return
@@ -156,7 +167,7 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
      */
     @Test
     @OperateOnDeployment(DEP1)
-    @Ignore("AS7-5737 - referrals don't work when they reference to another LDAP instance")
+    @Ignore("WFLY-808 - referrals don't work when they reference to another LDAP instance")
     public void test1(@ArquillianResource URL webAppURL) throws Exception {
         testDeployment(webAppURL, "jduke", "TheDuke", "Echo", "Admin");
     }
@@ -169,15 +180,15 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
     @Test
     @OperateOnDeployment(DEP2)
     public void test2(@ArquillianResource URL webAppURL) throws Exception {
-        //JBPAPP-10173 - ExtendedLdap LM would contain also "jduke"
+        // JBPAPP-10173 - ExtendedLdap LM would contain also "jduke"
         testDeployment(webAppURL, "jduke", "TheDuke", "Echo");
     }
 
     @Test
     @OperateOnDeployment(DEP2_THROW)
-    @Ignore("AS7-5737 - referrals don't work when they reference to another LDAP instance")
+    @Ignore("WFLY-808 - referrals don't work when they reference to another LDAP instance")
     public void test2throw(@ArquillianResource URL webAppURL) throws Exception {
-        //JBPAPP-10173 - ExtendedLdap LM would contain also "jduke"
+        // JBPAPP-10173 - ExtendedLdap LM would contain also "jduke"
         testDeployment(webAppURL, "jduke", "TheDuke", "Echo");
     }
 
@@ -201,9 +212,21 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
     @Test
     @OperateOnDeployment(DEP4)
     public void test4(@ArquillianResource URL webAppURL) throws Exception {
-        //JBPAPP-10173 - ExtendedLdap LM would contain also "R1", "R2", "R3"
-        //recursion in AdvancedLdapLoginModule is enabled only if the roleAttributeIsDN module option is true. This is not required in LdapExtLogiModule.
-        testDeployment(webAppURL, "Java Duke", "RG2", "R5");
+        // JBPAPP-10173 - ExtendedLdap LM would contain also "R1", "R2", "R3"
+        // recursion in AdvancedLdapLoginModule is enabled only if the roleAttributeIsDN module option is true. This is not
+        // required in LdapExtLogiModule.
+        testDeployment(webAppURL, "Java Duke", "RG/2", "R5");
+    }
+
+    /**
+     * Test case for Example 4 (direct).
+     * 
+     * @throws Exception
+     */
+    @Test
+    @OperateOnDeployment(DEP4_DIRECT)
+    public void test4_direct(@ArquillianResource URL webAppURL) throws Exception {
+        testDeployment(webAppURL, "jduke", "RG/2");
     }
 
     /**
@@ -360,10 +383,24 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
                                     .putOption("java.naming.provider.url",
                                             "ldaps://" + secondaryTestAddress + ":" + LdapExtLDAPServerSetupTask.LDAPS_PORT)
                                     .putOption("baseCtxDN", "ou=People,o=example4,dc=jboss,dc=org")
-                                    .putOption("baseFilter", "(cn={0})")
+                                    .putOption("baseFilter", "(employeeNumber={0})")
                                     .putOption("rolesCtxDN", "ou=Roles,o=example4,dc=jboss,dc=org")
                                     .putOption("roleFilter", "(|(objectClass=referral)(member={1}))")
                                     .putOption("roleAttributeID", "cn").putOption("recurseRoles", "true").build()) //
+                    .build();
+            final SecurityDomain sd4_direct = new SecurityDomain.Builder()
+                    .name(SECURITY_DOMAIN_NAME_PREFIX + DEP4_DIRECT)
+                    .loginModules(
+                            new SecurityModule.Builder()
+                                    .name(lmClassName)
+                                    .options(getCommonOptions())
+                                    .putOption(Context.REFERRAL, "ignore")
+                                    .putOption("java.naming.provider.url",
+                                            "ldap://" + secondaryTestAddress + ":" + LdapExtLDAPServerSetupTask.LDAP_PORT)
+                                    .putOption("baseCtxDN", "ou=People,o=example4,dc=jboss,dc=org")
+                                    .putOption("baseFilter", "(uid={0})").putOption("roleAttributeIsDN", "true")
+                                    .putOption("roleNameAttributeID", "cn").putOption("roleAttributeID", "description")
+                                    .putOption("recurseRoles", "true").build()) //
                     .build();
             final SecurityDomain sd5 = new SecurityDomain.Builder()
                     .name(SECURITY_DOMAIN_NAME_PREFIX + DEP5)
@@ -380,7 +417,7 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
                                     .putOption("roleFilter", "(uid={0})") //
                                     .putOption("roleAttributeID", "employeeNumber").build()) //
                     .build();
-            return new SecurityDomain[] { sd1, sd2, sd2throw, sd3, sd4, sd5 };
+            return new SecurityDomain[] { sd1, sd2, sd2throw, sd3, sd4, sd4_direct, sd5 };
         }
 
         private Map<String, String> getCommonOptions() {
