@@ -5,16 +5,16 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-ts-integ</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-ts-integ</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
     <!-- ************************* Manual-mode Integration Tests ************************** -->
     <!-- ********************************************************************************** -->
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-ts-integ-manualmode</artifactId>
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-ts-integ-manualmode</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
     <name>WildFly Test Suite: Integration - Manual Mode Tests</name>

@@ -27,13 +27,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-version</artifactId>
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-version</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
     <name>WildFly: Version</name>

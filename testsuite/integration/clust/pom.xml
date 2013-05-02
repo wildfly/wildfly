@@ -5,15 +5,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-ts-integ</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-ts-integ</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
     <!-- *********************************** Clustering *********************************** -->
     <!-- ********************************************************************************** -->
-    <artifactId>jboss-as-ts-integ-clust</artifactId>
+    <artifactId>wildfly-ts-integ-clust</artifactId>
 
     <name>WildFly Test Suite: Integration - Clustering</name>
 
@@ -26,11 +26,11 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jboss-as-clustering-common</artifactId>
+            <artifactId>wildfly-clustering-common</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jboss-as-clustering-singleton</artifactId>
+            <artifactId>wildfly-clustering-singleton</artifactId>
         </dependency>
     </dependencies>
 

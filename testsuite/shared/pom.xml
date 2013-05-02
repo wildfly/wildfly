@@ -5,14 +5,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-testsuite-shared</artifactId>
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-testsuite-shared</artifactId>
     <packaging>jar</packaging>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
@@ -37,8 +37,8 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-build</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-build</artifactId>
             <type>pom</type>
             <exclusions>
                 <exclusion>
@@ -47,17 +47,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!--
+
         <dependency>
-            <groupId>org.jboss.arquillian.junit</groupId>
-            <artifactId>arquillian-junit-container</artifactId>
-            <scope>test</scope>
-        </dependency>
-        -->
-        <!-- org.jboss.as.arquillian.container.* -->
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-container-managed</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-arquillian-container-managed</artifactId>
             <version>${version.arquillian_as7}</version>
         </dependency>
         <dependency>

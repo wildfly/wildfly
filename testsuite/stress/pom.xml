@@ -27,13 +27,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-testsuite</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-testsuite</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-testsuite-stress</artifactId>
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-testsuite-stress</artifactId>
 
     <name>WildFly Test Suite: Stress Tests</name>
 

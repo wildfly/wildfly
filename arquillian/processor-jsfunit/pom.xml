@@ -31,12 +31,12 @@
      -->
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-arquillian</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-arquillian</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-arquillian-processor-jsfunit</artifactId>
+    <artifactId>wildfly-arquillian-processor-jsfunit</artifactId>
 
     <name>WildFly: Arquillian Common</name>
 

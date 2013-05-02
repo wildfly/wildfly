@@ -27,13 +27,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-remoting-test</artifactId>
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-remoting-test</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
     <name>WildFly: Remoting Subsystem Test</name>
@@ -74,8 +74,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-remoting</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-remoting</artifactId>
         </dependency>
 
         <!-- Test deps -->
@@ -91,8 +91,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-subsystem-test</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-subsystem-test</artifactId>
 						<type>pom</type>
             <scope>test</scope>
         </dependency>

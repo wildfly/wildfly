@@ -55,13 +55,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-testsuite</artifactId>
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-testsuite</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -176,13 +176,13 @@
             <artifactId>netty</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-testsuite-shared</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-build</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-build</artifactId>
             <type>pom</type>
         </dependency>
         <!-- Needed for @Resource(lookup=). -->
@@ -200,8 +200,8 @@
             <artifactId>arquillian-testenricher-initialcontext</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-container-managed</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-arquillian-container-managed</artifactId>
             <version>${version.arquillian_as7}</version>
         </dependency>
         <dependency>

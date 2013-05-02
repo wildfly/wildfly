@@ -27,20 +27,20 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-clustering</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-clustering</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-clustering-api</artifactId>
+    <artifactId>wildfly-clustering-api</artifactId>
     <packaging>jar</packaging>
 
     <name>WildFly: Clustering Server API</name>
 
     <dependencies>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-security-util</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-security-util</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>

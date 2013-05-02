@@ -27,12 +27,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-webservices</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-webservices</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-webservices-server-integration</artifactId>
+    <artifactId>wildfly-webservices-server-integration</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -101,33 +101,33 @@
     </dependency>
 
     <dependency>
-       <groupId>org.jboss.as</groupId>
-       <artifactId>jboss-as-security-util</artifactId>
+       <groupId>org.wildfly</groupId>
+       <artifactId>wildfly-security-util</artifactId>
     </dependency>
 
     <dependency>
-       <groupId>org.jboss.as</groupId>
-       <artifactId>jboss-as-server</artifactId>
+       <groupId>org.wildfly</groupId>
+       <artifactId>wildfly-server</artifactId>
     </dependency>
 
     <dependency>
-       <groupId>org.jboss.as</groupId>
-       <artifactId>jboss-as-ee</artifactId>
+       <groupId>org.wildfly</groupId>
+       <artifactId>wildfly-ee</artifactId>
     </dependency>
 
     <dependency>
-       <groupId>org.jboss.as</groupId>
-       <artifactId>jboss-as-ejb3</artifactId>
+       <groupId>org.wildfly</groupId>
+       <artifactId>wildfly-ejb3</artifactId>
     </dependency>
 
     <dependency>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-web-common</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-web-common</artifactId>
     </dependency>
     <!-- TODO remove when undertow is merged in-->
     <dependency>
-       <groupId>org.jboss.as</groupId>
-       <artifactId>jboss-as-web</artifactId>
+       <groupId>org.wildfly</groupId>
+       <artifactId>wildfly-web</artifactId>
        <scope>test</scope>
     </dependency>
 
@@ -161,8 +161,8 @@
     </dependency>
 
     <dependency>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-subsystem-test</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-subsystem-test</artifactId>
 				<type>pom</type>
         <scope>test</scope>
     </dependency>

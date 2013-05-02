@@ -24,15 +24,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-jaxr</artifactId>
+    <artifactId>wildfly-jaxr</artifactId>
     <packaging>jar</packaging>
 
-    <name>JBoss Application Server: JAXR Client</name>
+    <name>WildFly: JAXR Client</name>
 
     <build>
         <plugins>
@@ -56,7 +56,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jboss-as-controller</artifactId>
+            <artifactId>wildfly-controller</artifactId>
         </dependency>
 
         <dependency>
@@ -80,8 +80,8 @@ projects that depend on this project.-->
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-subsystem-test</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-subsystem-test</artifactId>
             <type>pom</type>
             <scope>test</scope>
         </dependency>
