@@ -365,6 +365,10 @@
             <maven-resource group="ch.qos.cal10n" artifact="cal10n-api"/>
         </module-def>
 
+        <module-def name="com.fasterxml.classmate">
+            <maven-resource group="com.fasterxml" artifact="classmate" />
+        </module-def>
+
         <module-def name="com.github.relaxng">
             <maven-resource group="com.github.relaxng" artifact="relaxngDatatype" />
         </module-def>

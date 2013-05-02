@@ -29,6 +29,7 @@ import java.io.Serializable;
 
 import javax.validation.ConstraintValidatorFactory;
 import javax.validation.MessageInterpolator;
+import javax.validation.ParameterNameProvider;
 import javax.validation.TraversableResolver;
 import javax.validation.Validator;
 import javax.validation.ValidatorContext;
@@ -67,6 +68,9 @@ public class SerializableValidatorFactory implements ValidatorFactory, Serializa
         return delegate.getMessageInterpolator();
     }
 
+    public ParameterNameProvider getParameterNameProvider() {
+        return delegate.getParameterNameProvider();
+    }
 
     /**
      * Get the validator
@@ -94,6 +98,10 @@ public class SerializableValidatorFactory implements ValidatorFactory, Serializa
      */
     public <T> T unwrap(Class<T> type) {
         return delegate.unwrap(type);
+    }
+
+    public void close() {
+        delegate.close();
     }
 
     /**

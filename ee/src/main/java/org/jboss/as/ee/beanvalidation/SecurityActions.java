@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.beanvalidation;
 
+import org.wildfly.security.manager.GetClassLoaderAction;
 import org.wildfly.security.manager.GetContextClassLoaderAction;
 import org.wildfly.security.manager.SetContextClassLoaderAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -58,4 +59,12 @@ final class SecurityActions {
         }
     }
 
+    /**
+     * Returns the class loader for the given class
+     * @param clazz the class of interest
+     * @return the class loader for the given class
+     */
+    static ClassLoader getClassLoader(Class<?> clazz) {
+        return ! WildFlySecurityManager.isChecking() ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
+    }
 }
