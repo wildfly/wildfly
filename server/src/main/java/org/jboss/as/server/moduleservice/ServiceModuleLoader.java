@@ -43,6 +43,8 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.ImmediateValue;
 
 /**
  * {@link ModuleLoader} that loads module definitions from msc services. Module specs are looked up in msc services that
@@ -65,7 +67,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
      * @author Stuart Douglas
      *
      */
-    private class ModuleSpecLoadListener extends AbstractServiceListener<ModuleSpec> {
+    private class ModuleSpecLoadListener extends AbstractServiceListener<ModuleDefinition> {
 
         private final CountDownLatch latch = new CountDownLatch(1);
         private volatile StartException startException;
@@ -75,7 +77,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
         }
 
         @Override
-        public void listenerAdded(ServiceController<? extends ModuleSpec> controller) {
+        public void listenerAdded(ServiceController<? extends ModuleDefinition> controller) {
             log.tracef("listenerAdded: %s", controller);
             State state = controller.getState();
             if (state == State.UP || state == State.START_FAILED) {
@@ -84,7 +86,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
         }
 
         @Override
-        public void transition(final ServiceController<? extends ModuleSpec> controller, final ServiceController.Transition transition) {
+        public void transition(final ServiceController<? extends ModuleDefinition> controller, final ServiceController.Transition transition) {
             switch (transition) {
                 case STARTING_to_UP:
                     log.tracef("serviceStarted: %s", controller);
@@ -108,10 +110,10 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
             }
         }
 
-        private void done(ServiceController<? extends ModuleSpec> controller, StartException reason) {
+        private void done(ServiceController<? extends ModuleDefinition> controller, StartException reason) {
             startException = reason;
             if (startException == null) {
-                moduleSpec = controller.getValue();
+                moduleSpec = controller.getValue().getModuleSpec();
             }
             latch.countDown();
         }
@@ -126,6 +128,9 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
     public static final ServiceName MODULE_SPEC_SERVICE_PREFIX = ServiceName.JBOSS.append("module", "spec", "service");
 
     public static final ServiceName MODULE_SERVICE_PREFIX = ServiceName.JBOSS.append("module", "service");
+
+    public static final ServiceName MODULE_RESOLVED_SERVICE_PREFIX = ServiceName.of("module", "resolved", "service");
+
 
     public static final String MODULE_PREFIX = "deployment.";
 
@@ -149,7 +154,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
     @SuppressWarnings("unchecked")
     @Override
     public ModuleSpec findModule(ModuleIdentifier identifier) throws ModuleLoadException {
-        ServiceController<ModuleSpec> controller = (ServiceController<ModuleSpec>) serviceContainer.getService(moduleSpecServiceName(identifier));
+        ServiceController<ModuleDefinition> controller = (ServiceController<ModuleDefinition>) serviceContainer.getService(moduleSpecServiceName(identifier));
         if (controller == null) {
             ServerLogger.MODULE_SERVICE_LOGGER.debugf("Could not load module '%s' as corresponding module spec service '%s' was not found", identifier, identifier);
             return null;
@@ -202,10 +207,41 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
      * @return The service name of the ModuleSpec service
      */
     public static ServiceName moduleSpecServiceName(ModuleIdentifier identifier) {
-        if (!identifier.getName().startsWith(MODULE_PREFIX)) {
+        if (!isDynamicModule(identifier)) {
             ServerMessages.MESSAGES.missingModulePrefix(identifier, MODULE_PREFIX);
         }
         return MODULE_SPEC_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
+    }
+
+    public static void installModuleResolvedService(ServiceTarget serviceTarget, ModuleIdentifier identifier) {
+        final ValueService<ModuleIdentifier> resolvedService = new ValueService<ModuleIdentifier>(new ImmediateValue<ModuleIdentifier>(identifier));
+        serviceTarget.addService(ServiceModuleLoader.moduleResolvedServiceName(identifier), resolvedService)
+                .addDependency(moduleSpecServiceName(identifier))
+                .install();
+    }
+
+    /**
+     * Returns the corresponding module resolved service name for the given module.
+     *
+     * The module resolved service is basically a latch that prevents the module from being loaded
+     * until all the transitive dependencies that it depends upon have have their module spec services
+     * come up.
+     *
+     * @param identifier The module identifier
+     * @return The service name of the ModuleSpec service
+     */
+    public static ServiceName moduleResolvedServiceName(ModuleIdentifier identifier) {
+        if (!isDynamicModule(identifier)) {
+            ServerMessages.MESSAGES.missingModulePrefix(identifier, MODULE_PREFIX);
+        }
+        return MODULE_RESOLVED_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
+    }
+
+    /**
+     * Returns true if the module identifier is a dynamic module that will be loaded by this module loader
+     */
+    public static boolean isDynamicModule(ModuleIdentifier identifier) {
+        return identifier.getName().startsWith(MODULE_PREFIX);
     }
 
     /**
