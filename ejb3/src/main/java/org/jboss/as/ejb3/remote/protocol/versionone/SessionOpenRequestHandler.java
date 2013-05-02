@@ -22,6 +22,11 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
@@ -36,11 +41,6 @@ import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.MessageOutputStream;
 import org.xnio.IoUtils;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.concurrent.ExecutorService;
 
 /**
  * @author Jaikiran Pai
@@ -145,6 +145,7 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
                 try {
                     sessionID = statefulSessionComponent.createSession();
                 } catch (Throwable t) {
+                    EjbLogger.ROOT_LOGGER.exceptionGeneratingSessionId(t, statefulSessionComponent.getComponentName(), invocationId, channelAssociation.getChannel());
                     SessionOpenRequestHandler.this.writeException(channelAssociation, SessionOpenRequestHandler.this.marshallerFactory, invocationId, t, null);
                     return;
                 }
@@ -152,7 +153,7 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
                 final Affinity hardAffinity = statefulSessionComponent.getCache().getStrictAffinity();
                 SessionOpenRequestHandler.this.writeSessionId(channelAssociation, invocationId, sessionID, hardAffinity);
             } catch (IOException ioe) {
-                EjbLogger.ROOT_LOGGER.exceptionGeneratingSessionId(ioe, invocationId, channelAssociation.getChannel());
+                EjbLogger.ROOT_LOGGER.exceptionGeneratingSessionId(ioe, statefulSessionComponent.getComponentName(), invocationId, channelAssociation.getChannel());
                 // close the channel
                 IoUtils.safeClose(this.channelAssociation.getChannel());
                 return;
