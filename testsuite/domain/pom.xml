@@ -27,12 +27,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>jboss-as-testsuite</artifactId>
-        <groupId>org.jboss.as</groupId>
+        <artifactId>wildfly-testsuite</artifactId>
+        <groupId>org.wildfly</groupId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-testsuite-integration-domain</artifactId>
+    <artifactId>wildfly-testsuite-integration-domain</artifactId>
     <name>WildFly Test Suite: Domain Mode Integration Tests</name>
 
     <properties>

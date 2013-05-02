@@ -5,16 +5,16 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-ts-integ</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-ts-integ</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
     <!-- *********************************** XTS       ************************************ -->
     <!-- ********************************************************************************** -->
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-ts-integ-xts</artifactId>
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-ts-integ-xts</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
     <name>WildFly Test Suite: Integration - XTS</name>

@@ -27,12 +27,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-clustering</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-clustering</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-clustering-ejb3-infinispan</artifactId>
+    <artifactId>wildfly-clustering-ejb3-infinispan</artifactId>
     <packaging>jar</packaging>
     
     <name>WildFly: Clustered Stateful Session Bean cache Infinispan provider</name>
@@ -47,20 +47,20 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-clustering-infinispan</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-infinispan</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-clustering-impl</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-impl</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-clustering-registry</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-registry</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-ejb3</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-ejb3</artifactId>
         </dependency>
     </dependencies>
     

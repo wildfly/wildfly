@@ -27,13 +27,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-domain-http</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-domain-http</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-domain-http-interface</artifactId>
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-domain-http-interface</artifactId>
 
     <name>WildFly: Domain HTTP Interface</name>
 
@@ -58,16 +58,16 @@
           <artifactId>undertow-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-controller</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-controller</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-controller-client</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-controller-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-domain-management</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-domain-management</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>

@@ -28,12 +28,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-osgi</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-osgi</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-osgi-integration</artifactId>
+    <artifactId>wildfly-osgi-integration</artifactId>
     <name>WildFly: OSGi Integration</name>
     <packaging>pom</packaging>
 

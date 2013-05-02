@@ -27,32 +27,32 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-clustering</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-clustering</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-clustering-web-infinispan</artifactId>
+    <artifactId>wildfly-clustering-web-infinispan</artifactId>
     <packaging>jar</packaging>
 
     <name>WildFly: Distributed Web Session Infinispan provider</name>
 
     <dependencies>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-clustering-impl</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-impl</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-clustering-web-spi</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-web-spi</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-clustering-infinispan</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-infinispan</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-clustering-registry</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-registry</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>

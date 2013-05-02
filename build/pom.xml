@@ -28,12 +28,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-build</artifactId>
+    <artifactId>wildfly-build</artifactId>
 
     <name>WildFly: Build</name>
     <packaging>pom</packaging>
@@ -130,39 +130,39 @@
 
         <!-- Add this dependency to make sure that the core model is tested before we build the server -->
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-core-model-test-framework</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-core-model-test-framework</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-model-test</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-model-test</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-domain-http-error-context</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-domain-http-error-context</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-io</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-io</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-jmx</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-jmx</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-security-util</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-security-util</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-server</artifactId>
         </dependency>
 
         <dependency>
@@ -818,106 +818,106 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-appclient</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-appclient</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-config-assembly</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-config-assembly</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-cli</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-cli</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-cli</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-cli</artifactId>
                     <classifier>client</classifier>
                     <scope>provided</scope>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-client-all</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-client-all</artifactId>
                     <scope>provided</scope>
                     <exclusions>
                         <exclusion>
-                            <groupId>org.jboss.as</groupId>
-                            <artifactId>jboss-as-ejb-client-bom</artifactId>
+                            <groupId>org.wildfly</groupId>
+                            <artifactId>wildfly-ejb-client-bom</artifactId>
                         </exclusion>
                         <exclusion>
-                            <groupId>org.jboss.as</groupId>
-                            <artifactId>jboss-as-jms-client-bom</artifactId>
+                            <groupId>org.wildfly</groupId>
+                            <artifactId>wildfly-jms-client-bom</artifactId>
                         </exclusion>
                     </exclusions>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-clustering-api</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-api</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-clustering-common</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-common</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-clustering-ejb3-infinispan</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-ejb3-infinispan</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-clustering-impl</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-impl</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-clustering-infinispan</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-infinispan</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-clustering-jgroups</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-jgroups</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-clustering-registry</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-registry</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-clustering-service</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-service</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-clustering-singleton</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-singleton</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-clustering-web-infinispan</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-web-infinispan</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-clustering-web-spi</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-web-spi</artifactId>
                 </dependency>
 
                 <dependency>
-                   <groupId>org.jboss.as</groupId>
-                   <artifactId>jboss-as-cmp</artifactId>
+                   <groupId>org.wildfly</groupId>
+                   <artifactId>wildfly-cmp</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-configadmin</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-configadmin</artifactId>
                 </dependency>
 
                 <dependency>
@@ -927,253 +927,253 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-connector</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-connector</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-controller</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-controller</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-controller-client</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-controller-client</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-domain-http-interface</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-domain-http-interface</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-domain-management</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-domain-management</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-deployment-repository</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-deployment-repository</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-deployment-scanner</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-deployment-scanner</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-ee</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-ee</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-ejb3</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-ejb3</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-embedded</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-embedded</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-jaxr</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-jaxr</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-jaxrs</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-jaxrs</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-jdr</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-jdr</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-jsf</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-jsf</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-jsf-injection</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-jsf-injection</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-jsr77</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-jsr77</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-host-controller</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-host-controller</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-jacorb</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-jacorb</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-logging</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-logging</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-mail</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-mail</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-management-client-content</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-management-client-content</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-messaging</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-messaging</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-modcluster</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-modcluster</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-naming</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-naming</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-network</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-network</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-osgi-configadmin</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-osgi-configadmin</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-osgi-http</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-osgi-http</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-osgi-jmx</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-osgi-jmx</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-osgi-jpa</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-osgi-jpa</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-osgi-jta</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-osgi-jta</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-osgi-naming</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-osgi-naming</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-osgi-service</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-osgi-service</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-osgi-web</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-osgi-web</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-platform-mbean</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-platform-mbean</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-pojo</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-pojo</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-process-controller</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-process-controller</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-protocol</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-protocol</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-remoting</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-remoting</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-sar</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-sar</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-security</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-security</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-security-util</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-security-util</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-system-jmx</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-system-jmx</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-threads</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-threads</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-transactions</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-transactions</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-version</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-version</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-web</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-web</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-web-common</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-web-common</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-weld</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-weld</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-webservices-server-integration</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-webservices-server-integration</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-xts</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-xts</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1202,13 +1202,13 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-jpa</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-jpa</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-jpa-hibernate3</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-jpa-hibernate3</artifactId>
                     <exclusions>
                         <exclusion>
                             <groupId>org.hibernate</groupId>
@@ -1218,23 +1218,23 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-jpa-hibernate4</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-jpa-hibernate4</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-jpa-openjpa</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-jpa-openjpa</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-jpa-spi</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-jpa-spi</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-jpa-util</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-jpa-util</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1696,8 +1696,8 @@
                 </dependency>
 
                 <dependency>
-                <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-undertow</artifactId>
+                <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-undertow</artifactId>
                 </dependency>
 
                 <dependency>
@@ -2046,7 +2046,7 @@
                                         <include>org.hornetq:hornetq-journal</include>
                                         <include>org.hornetq:hornetq-server</include>
                                         <include>org.infinispan:infinispan-core</include>
-                                        <!--     <include># org.jboss.as:jboss-as-controller-client</include> -->
+                                        <!--     <include># org.wildfly:wildfly-controller-client</include> -->
                                         <include>org.jboss.ejb3:jboss-ejb3-ext-api</include>
                                         <!--     <include># org.jboss:jboss-dmr</include> -->
                                         <include>org.jboss:jboss-ejb-client</include>
@@ -2196,76 +2196,76 @@
                                         <exclude>org.jacorb:jacorb</exclude>
                                         <exclude>org.javassist:javassist</exclude>
                                         <exclude>org.jboss.aesh:aesh</exclude>
-                                        <exclude>org.jboss.as:jboss-as-appclient</exclude>
-                                        <exclude>org.jboss.as:jboss-as-cli</exclude>
-                                        <exclude>org.jboss.as:jboss-as-clustering-api</exclude>
-                                        <exclude>org.jboss.as:jboss-as-clustering-common</exclude>
-                                        <exclude>org.jboss.as:jboss-as-clustering-ejb3-infinispan</exclude>
-                                        <exclude>org.jboss.as:jboss-as-clustering-impl</exclude>
-                                        <exclude>org.jboss.as:jboss-as-clustering-infinispan</exclude>
-                                        <exclude>org.jboss.as:jboss-as-clustering-jgroups</exclude>
-                                        <exclude>org.jboss.as:jboss-as-clustering-registry</exclude>
-                                        <exclude>org.jboss.as:jboss-as-clustering-service</exclude>
-                                        <exclude>org.jboss.as:jboss-as-clustering-singleton</exclude>
-                                        <exclude>org.jboss.as:jboss-as-clustering-web-infinispan</exclude>
-                                        <exclude>org.jboss.as:jboss-as-clustering-web-spi</exclude>
-                                        <exclude>org.jboss.as:jboss-as-configadmin</exclude>
-                                        <exclude>org.jboss.as:jboss-as-connector</exclude>
-                                        <exclude>org.jboss.as:jboss-as-controller</exclude>
-                                        <exclude>org.jboss.as:jboss-as-deployment-repository</exclude>
-                                        <exclude>org.jboss.as:jboss-as-deployment-scanner</exclude>
-                                        <exclude>org.jboss.as:jboss-as-domain-http-error-context</exclude>
-                                        <exclude>org.jboss.as:jboss-as-domain-http-interface</exclude>
-                                        <exclude>org.jboss.as:jboss-as-domain-management</exclude>
-                                        <exclude>org.jboss.as:jboss-as-ee</exclude>
-                                        <exclude>org.jboss.as:jboss-as-ejb3</exclude>
-                                        <exclude>org.jboss.as:jboss-as-embedded</exclude>
-                                        <exclude>org.jboss.as:jboss-as-host-controller</exclude>
-                                        <exclude>org.jboss.as:jboss-as-jacorb</exclude>
-                                        <exclude>org.jboss.as:jboss-as-jaxrs</exclude>
-                                        <exclude>org.jboss.as:jboss-as-jdr</exclude>
-                                        <exclude>org.jboss.as:jboss-as-jmx</exclude>
-                                        <exclude>org.jboss.as:jboss-as-jpa</exclude>
-                                        <exclude>org.jboss.as:jboss-as-jpa-hibernate3</exclude>
-                                        <exclude>org.jboss.as:jboss-as-jpa-hibernate4</exclude>
-                                        <exclude>org.jboss.as:jboss-as-jpa-openjpa</exclude>
-                                        <exclude>org.jboss.as:jboss-as-jpa-spi</exclude>
-                                        <exclude>org.jboss.as:jboss-as-jpa-util</exclude>
-                                        <exclude>org.jboss.as:jboss-as-jsf</exclude>
-                                        <exclude>org.jboss.as:jboss-as-jsf-injection</exclude>
-                                        <exclude>org.jboss.as:jboss-as-jsr77</exclude>
-                                        <exclude>org.jboss.as:jboss-as-logging</exclude>
-                                        <exclude>org.jboss.as:jboss-as-mail</exclude>
-                                        <exclude>org.jboss.as:jboss-as-management-client-content</exclude>
-                                        <exclude>org.jboss.as:jboss-as-messaging</exclude>
-                                        <exclude>org.jboss.as:jboss-as-modcluster</exclude>
-                                        <exclude>org.jboss.as:jboss-as-naming</exclude>
-                                        <exclude>org.jboss.as:jboss-as-network</exclude>
-                                        <exclude>org.jboss.as:jboss-as-osgi-http</exclude>
-                                        <exclude>org.jboss.as:jboss-as-osgi-jmx</exclude>
-                                        <exclude>org.jboss.as:jboss-as-osgi-jpa</exclude>
-                                        <exclude>org.jboss.as:jboss-as-osgi-jta</exclude>
-                                        <exclude>org.jboss.as:jboss-as-osgi-naming</exclude>
-                                        <exclude>org.jboss.as:jboss-as-osgi-service</exclude>
-                                        <exclude>org.jboss.as:jboss-as-osgi-web</exclude>
-                                        <exclude>org.jboss.as:jboss-as-platform-mbean</exclude>
-                                        <exclude>org.jboss.as:jboss-as-pojo</exclude>
-                                        <exclude>org.jboss.as:jboss-as-process-controller</exclude>
-                                        <exclude>org.jboss.as:jboss-as-protocol</exclude>
-                                        <exclude>org.jboss.as:jboss-as-remoting</exclude>
-                                        <exclude>org.jboss.as:jboss-as-sar</exclude>
-                                        <exclude>org.jboss.as:jboss-as-security</exclude>
-                                        <exclude>org.jboss.as:jboss-as-security-util</exclude>
-                                        <exclude>org.jboss.as:jboss-as-server</exclude>
-                                        <exclude>org.jboss.as:jboss-as-system-jmx</exclude>
-                                        <exclude>org.jboss.as:jboss-as-threads</exclude>
-                                        <exclude>org.jboss.as:jboss-as-transactions</exclude>
-                                        <exclude>org.jboss.as:jboss-as-version</exclude>
-                                        <exclude>org.jboss.as:jboss-as-web</exclude>
-                                        <exclude>org.jboss.as:jboss-as-web-common</exclude>
-                                        <exclude>org.jboss.as:jboss-as-webservices-server-integration</exclude>
-                                        <exclude>org.jboss.as:jboss-as-weld</exclude>
-                                        <exclude>org.jboss.as:jboss-as-xts</exclude>
+                                        <exclude>org.wildfly:wildfly-appclient</exclude>
+                                        <exclude>org.wildfly:wildfly-cli</exclude>
+                                        <exclude>org.wildfly:wildfly-clustering-api</exclude>
+                                        <exclude>org.wildfly:wildfly-clustering-common</exclude>
+                                        <exclude>org.wildfly:wildfly-clustering-ejb3-infinispan</exclude>
+                                        <exclude>org.wildfly:wildfly-clustering-impl</exclude>
+                                        <exclude>org.wildfly:wildfly-clustering-infinispan</exclude>
+                                        <exclude>org.wildfly:wildfly-clustering-jgroups</exclude>
+                                        <exclude>org.wildfly:wildfly-clustering-registry</exclude>
+                                        <exclude>org.wildfly:wildfly-clustering-service</exclude>
+                                        <exclude>org.wildfly:wildfly-clustering-singleton</exclude>
+                                        <exclude>org.wildfly:wildfly-clustering-web-infinispan</exclude>
+                                        <exclude>org.wildfly:wildfly-clustering-web-spi</exclude>
+                                        <exclude>org.wildfly:wildfly-configadmin</exclude>
+                                        <exclude>org.wildfly:wildfly-connector</exclude>
+                                        <exclude>org.wildfly:wildfly-controller</exclude>
+                                        <exclude>org.wildfly:wildfly-deployment-repository</exclude>
+                                        <exclude>org.wildfly:wildfly-deployment-scanner</exclude>
+                                        <exclude>org.wildfly:wildfly-domain-http-error-context</exclude>
+                                        <exclude>org.wildfly:wildfly-domain-http-interface</exclude>
+                                        <exclude>org.wildfly:wildfly-domain-management</exclude>
+                                        <exclude>org.wildfly:wildfly-ee</exclude>
+                                        <exclude>org.wildfly:wildfly-ejb3</exclude>
+                                        <exclude>org.wildfly:wildfly-embedded</exclude>
+                                        <exclude>org.wildfly:wildfly-host-controller</exclude>
+                                        <exclude>org.wildfly:wildfly-jacorb</exclude>
+                                        <exclude>org.wildfly:wildfly-jaxrs</exclude>
+                                        <exclude>org.wildfly:wildfly-jdr</exclude>
+                                        <exclude>org.wildfly:wildfly-jmx</exclude>
+                                        <exclude>org.wildfly:wildfly-jpa</exclude>
+                                        <exclude>org.wildfly:wildfly-jpa-hibernate3</exclude>
+                                        <exclude>org.wildfly:wildfly-jpa-hibernate4</exclude>
+                                        <exclude>org.wildfly:wildfly-jpa-openjpa</exclude>
+                                        <exclude>org.wildfly:wildfly-jpa-spi</exclude>
+                                        <exclude>org.wildfly:wildfly-jpa-util</exclude>
+                                        <exclude>org.wildfly:wildfly-jsf</exclude>
+                                        <exclude>org.wildfly:wildfly-jsf-injection</exclude>
+                                        <exclude>org.wildfly:wildfly-jsr77</exclude>
+                                        <exclude>org.wildfly:wildfly-logging</exclude>
+                                        <exclude>org.wildfly:wildfly-mail</exclude>
+                                        <exclude>org.wildfly:wildfly-management-client-content</exclude>
+                                        <exclude>org.wildfly:wildfly-messaging</exclude>
+                                        <exclude>org.wildfly:wildfly-modcluster</exclude>
+                                        <exclude>org.wildfly:wildfly-naming</exclude>
+                                        <exclude>org.wildfly:wildfly-network</exclude>
+                                        <exclude>org.wildfly:wildfly-osgi-http</exclude>
+                                        <exclude>org.wildfly:wildfly-osgi-jmx</exclude>
+                                        <exclude>org.wildfly:wildfly-osgi-jpa</exclude>
+                                        <exclude>org.wildfly:wildfly-osgi-jta</exclude>
+                                        <exclude>org.wildfly:wildfly-osgi-naming</exclude>
+                                        <exclude>org.wildfly:wildfly-osgi-service</exclude>
+                                        <exclude>org.wildfly:wildfly-osgi-web</exclude>
+                                        <exclude>org.wildfly:wildfly-platform-mbean</exclude>
+                                        <exclude>org.wildfly:wildfly-pojo</exclude>
+                                        <exclude>org.wildfly:wildfly-process-controller</exclude>
+                                        <exclude>org.wildfly:wildfly-protocol</exclude>
+                                        <exclude>org.wildfly:wildfly-remoting</exclude>
+                                        <exclude>org.wildfly:wildfly-sar</exclude>
+                                        <exclude>org.wildfly:wildfly-security</exclude>
+                                        <exclude>org.wildfly:wildfly-security-util</exclude>
+                                        <exclude>org.wildfly:wildfly-server</exclude>
+                                        <exclude>org.wildfly:wildfly-system-jmx</exclude>
+                                        <exclude>org.wildfly:wildfly-threads</exclude>
+                                        <exclude>org.wildfly:wildfly-transactions</exclude>
+                                        <exclude>org.wildfly:wildfly-version</exclude>
+                                        <exclude>org.wildfly:wildfly-web</exclude>
+                                        <exclude>org.wildfly:wildfly-web-common</exclude>
+                                        <exclude>org.wildfly:wildfly-webservices-server-integration</exclude>
+                                        <exclude>org.wildfly:wildfly-weld</exclude>
+                                        <exclude>org.wildfly:wildfly-xts</exclude>
                                         <exclude>org.jboss.classfilewriter:jboss-classfilewriter</exclude>
                                         <exclude>org.jboss.common:jboss-common-beans</exclude>
                                         <exclude>org.jboss.com.sun.httpserver:httpserver</exclude>
@@ -2341,7 +2341,7 @@
                                         <exclude>xom:xom</exclude>
                                         <!-- Blacklisted artifacts - see build/javadoc/artifactsBlacklist.txt. -->
                                         <!-- [ERROR] java.lang.ClassCastException: com.sun.tools.javadoc.ClassDocImpl cannot be cast to com.sun.javadoc.AnnotationTypeDoc -->
-                                        <exclude>org.jboss.as:jboss-as-controller-client</exclude>
+                                        <exclude>org.wildfly:wildfly-controller-client</exclude>
                                         <exclude>org.jboss:jboss-dmr</exclude>
                                         <exclude>org.jboss.jbossts:jbossxts</exclude>
                                         <exclude>org.jboss.jbossts:jbossxts-api</exclude>
@@ -2360,68 +2360,64 @@
                                             <packages>org.apache.log4j:org.apache.log4j.chainsaw:org.apache.log4j.config:org.apache.log4j.helpers:org.apache.log4j.jdbc:org.apache.log4j.jmx:org.apache.log4j.lf5:org.apache.log4j.lf5.util:org.apache.log4j.lf5.viewer:org.apache.log4j.lf5.viewer.categoryexplorer:org.apache.log4j.lf5.viewer.configure:org.apache.log4j.net:org.apache.log4j.nt:org.apache.log4j.or:org.apache.log4j.or.jms:org.apache.log4j.or.sax:org.apache.log4j.pattern:org.apache.log4j.spi:org.apache.log4j.varia:org.apache.log4j.xml</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.controller</title>
+                                            <title>Module org.wildfly.controller</title>
                                             <packages>org.jboss.as.controller:org.jboss.as.controller.descriptions:org.jboss.as.controller.descriptions.common:org.jboss.as.controller.extension:org.jboss.as.controller.interfaces:org.jboss.as.controller.operations:org.jboss.as.controller.operations.common:org.jboss.as.controller.operations.global:org.jboss.as.controller.operations.validation:org.jboss.as.controller.parsing:org.jboss.as.controller.persistence:org.jboss.as.controller.registry:org.jboss.as.controller.remote:org.jboss.as.controller.resource:org.jboss.as.controller.security:org.jboss.as.controller.services.path:org.jboss.as.controller.transform:org.jboss.as.controller.transform.description</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.controller-client</title>
+                                            <title>Module org.wildfly.controller-client</title>
                                             <packages>org.jboss.as.controller.client:org.jboss.as.controller.client.helpers:org.jboss.as.controller.client.helpers.domain:org.jboss.as.controller.client.helpers.domain.impl:org.jboss.as.controller.client.helpers.standalone:org.jboss.as.controller.client.helpers.standalone.impl:org.jboss.as.controller.client.impl</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.deployment-repository</title>
+                                            <title>Module org.wildfly.deployment-repository</title>
                                             <packages>org.jboss.as.repository</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.domain-http-interface</title>
+                                            <title>Module org.wildfly.domain-http-interface</title>
                                             <packages>org.jboss.as.domain.http.server:org.jboss.as.domain.http.server.security</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.domain-management</title>
+                                            <title>Module org.wildfly.domain-management</title>
                                             <packages>org.jboss.as.domain.management:org.jboss.as.domain.management.connections:org.jboss.as.domain.management.connections.ldap:org.jboss.as.domain.management.parsing:org.jboss.as.domain.management.plugin:org.jboss.as.domain.management.security:org.jboss.as.domain.management.security.password:org.jboss.as.domain.management.security.password.simple:org.jboss.as.domain.management.security.state</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.embedded</title>
+                                            <title>Module org.wildfly.embedded</title>
                                             <packages>org.jboss.as.embedded:org.jboss.as.embedded.ejb3</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.jmx</title>
+                                            <title>Module org.wildfly.jmx</title>
                                             <packages>org.jboss.as.jmx:org.jboss.as.jmx.model</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.network</title>
+                                            <title>Module org.wildfly.network</title>
                                             <packages>org.jboss.as.network</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.platform-mbean</title>
+                                            <title>Module org.wildfly.platform-mbean</title>
                                             <packages>org.jboss.as.platform.mbean</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.process-controller</title>
+                                            <title>Module org.wildfly.process-controller</title>
                                             <packages>org.jboss.as.process:org.jboss.as.process.protocol</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.protocol</title>
+                                            <title>Module org.wildfly.protocol</title>
                                             <packages>org.jboss.as.protocol:org.jboss.as.protocol.mgmt:org.jboss.as.protocol.mgmt.support</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.remoting</title>
+                                            <title>Module org.wildfly.remoting</title>
                                             <packages>org.jboss.as.remoting:org.jboss.as.remoting.management</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.security-util</title>
+                                            <title>Module org.wildfly.security-util</title>
                                             <packages>org.jboss.as.util.security</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.server</title>
+                                            <title>Module org.wildfly.server</title>
                                             <packages>org.jboss.as.server:org.jboss.as.server.controller.descriptions:org.jboss.as.server.controller.resources:org.jboss.as.server.deployment:org.jboss.as.server.deployment.annotation:org.jboss.as.server.deployment.client:org.jboss.as.server.deployment.dependencies:org.jboss.as.server.deployment.integration:org.jboss.as.server.deployment.jbossallxml:org.jboss.as.server.deployment.module:org.jboss.as.server.deployment.module.descriptor:org.jboss.as.server.deploymentoverlay:org.jboss.as.server.deploymentoverlay.service:org.jboss.as.server.deployment.reflect:org.jboss.as.server.deployment.service:org.jboss.as.server.jmx:org.jboss.as.server.mgmt:org.jboss.as.server.mgmt.domain:org.jboss.as.server.moduleservice:org.jboss.as.server.operations:org.jboss.as.server.parsing:org.jboss.as.server.services.net:org.jboss.as.server.services.path:org.jboss.as.server.services.security</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.threads</title>
+                                            <title>Module org.wildfly.threads</title>
                                             <packages>org.jboss.as.threads</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.com.sun.httpserver</title>
-                                            <packages>org.jboss.com.sun.net.httpserver:org.jboss.com.sun.net.httpserver.spi:org.jboss.sun.net.httpserver</packages>
                                         </group>
                                         <group>
                                             <title>Module org.jboss.common-beans</title>
@@ -2852,223 +2848,223 @@
                                             <packages>org.jdom:org.jdom.adapters:org.jdom.filter:org.jdom.input:org.jdom.output:org.jdom.transform:org.jdom.xpath</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.appclient</title>
+                                            <title>Module org.wildfly.appclient</title>
                                             <packages>org.jboss.as.appclient.component:org.jboss.as.appclient.deployment:org.jboss.as.appclient.logging:org.jboss.as.appclient.service:org.jboss.as.appclient.subsystem:org.jboss.as.appclient.subsystem.parsing</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.cli</title>
+                                            <title>Module org.wildfly.cli</title>
                                             <packages>org.jboss.as.cli:org.jboss.as.cli.batch:org.jboss.as.cli.batch.impl:org.jboss.as.cli.gui:org.jboss.as.cli.gui.component:org.jboss.as.cli.gui.metacommand:org.jboss.as.cli.handlers:org.jboss.as.cli.handlers.batch:org.jboss.as.cli.handlers.ifelse:org.jboss.as.cli.handlers.jca:org.jboss.as.cli.handlers.jms:org.jboss.as.cli.handlers.module:org.jboss.as.cli.handlers.trycatch:org.jboss.as.cli.impl:org.jboss.as.cli.operation:org.jboss.as.cli.operation.impl:org.jboss.as.cli.parsing:org.jboss.as.cli.parsing.arguments:org.jboss.as.cli.parsing.command:org.jboss.as.cli.parsing.operation:org.jboss.as.cli.parsing.operation.header:org.jboss.as.cli.scriptsupport:org.jboss.as.cli.util</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.clustering.api</title>
+                                            <title>Module org.wildfly.clustering.api</title>
                                             <packages>org.jboss.as.clustering:org.jboss.as.clustering.lock</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.clustering.common</title>
+                                            <title>Module org.wildfly.clustering.common</title>
                                             <packages>org.jboss.as.clustering.concurrent:org.jboss.as.clustering.msc</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.clustering.ejb3.infinispan</title>
+                                            <title>Module org.wildfly.clustering.ejb3.infinispan</title>
                                             <packages>org.jboss.as.clustering.ejb3.cache.backing.infinispan</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.clustering.impl</title>
+                                            <title>Module org.wildfly.clustering.impl</title>
                                             <packages>org.jboss.as.clustering.impl:org.jboss.as.clustering.lock.impl</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.clustering.infinispan</title>
+                                            <title>Module org.wildfly.clustering.infinispan</title>
                                             <packages>org.jboss.as.clustering.infinispan:org.jboss.as.clustering.infinispan.affinity:org.jboss.as.clustering.infinispan.atomic:org.jboss.as.clustering.infinispan.invoker:org.jboss.as.clustering.infinispan.io:org.jboss.as.clustering.infinispan.subsystem</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.clustering.jgroups</title>
+                                            <title>Module org.wildfly.clustering.jgroups</title>
                                             <packages>org.jboss.as.clustering.jgroups:org.jboss.as.clustering.jgroups.subsystem</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.clustering.registry</title>
+                                            <title>Module org.wildfly.clustering.registry</title>
                                             <packages>org.jboss.as.clustering.registry</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.clustering.service</title>
+                                            <title>Module org.wildfly.clustering.service</title>
                                             <packages>org.jboss.as.clustering.service</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.clustering.singleton</title>
+                                            <title>Module org.wildfly.clustering.singleton</title>
                                             <packages>org.jboss.as.clustering.singleton:org.jboss.as.clustering.singleton.election</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.clustering.web.infinispan</title>
+                                            <title>Module org.wildfly.clustering.web.infinispan</title>
                                             <packages>org.jboss.as.clustering.web.infinispan:org.jboss.as.clustering.web.sso.infinispan</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.clustering.web.spi</title>
+                                            <title>Module org.wildfly.clustering.web.spi</title>
                                             <packages>org.jboss.as.clustering.web:org.jboss.as.clustering.web.impl:org.jboss.as.clustering.web.sso</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.configadmin</title>
+                                            <title>Module org.wildfly.configadmin</title>
                                             <packages>org.jboss.as.configadmin:org.jboss.as.configadmin.parser:org.jboss.as.configadmin.service</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.cmp</title>
+                                            <title>Module org.wildfly.cmp</title>
                                             <packages>org.jboss.as.cmp:org.jboss.as.cmp.subsystem</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.connector</title>
+                                            <title>Module org.wildfly.connector</title>
                                             <packages>org.jboss.as.connector:org.jboss.as.connector.annotations.repository.jandex:org.jboss.as.connector.deployers:org.jboss.as.connector.deployers.datasource:org.jboss.as.connector.deployers.ds:org.jboss.as.connector.deployers.ds.processors:org.jboss.as.connector.deployers.ra:org.jboss.as.connector.deployers.ra.processors:org.jboss.as.connector.dynamicresource.descriptionproviders:org.jboss.as.connector.dynamicresource.operations:org.jboss.as.connector.logging:org.jboss.as.connector.metadata.deployment:org.jboss.as.connector.metadata.xmldescriptors:org.jboss.as.connector.services.bootstrap:org.jboss.as.connector.services.driver:org.jboss.as.connector.services.driver.registry:org.jboss.as.connector.services.jca:org.jboss.as.connector.services.mdr:org.jboss.as.connector.services.rarepository:org.jboss.as.connector.services.resourceadapters:org.jboss.as.connector.services.resourceadapters.deployment:org.jboss.as.connector.services.resourceadapters.deployment.registry:org.jboss.as.connector.services.resourceadapters.repository:org.jboss.as.connector.services.transactionintegration:org.jboss.as.connector.services.workmanager:org.jboss.as.connector.subsystems.common.pool:org.jboss.as.connector.subsystems.datasources:org.jboss.as.connector.subsystems.jca:org.jboss.as.connector.subsystems.resourceadapters:org.jboss.as.connector.util</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.deployment-scanner</title>
+                                            <title>Module org.wildfly.deployment-scanner</title>
                                             <packages>org.jboss.as.server.deployment.scanner:org.jboss.as.server.deployment.scanner.api</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.ee</title>
+                                            <title>Module org.wildfly.ee</title>
                                             <packages>org.jboss.as.ee:org.jboss.as.ee.beanvalidation:org.jboss.as.ee.component:org.jboss.as.ee.component.deployers:org.jboss.as.ee.component.interceptors:org.jboss.as.ee.component.serialization:org.jboss.as.ee.managedbean.component:org.jboss.as.ee.managedbean.processors:org.jboss.as.ee.metadata:org.jboss.as.ee.metadata.property:org.jboss.as.ee.naming:org.jboss.as.ee.structure:org.jboss.as.ee.subsystem:org.jboss.as.ee.utils</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.ejb3</title>
+                                            <title>Module org.wildfly.ejb3</title>
                                             <packages>org.jboss.as.ejb3:org.jboss.as.ejb3.cache:org.jboss.as.ejb3.cache.impl:org.jboss.as.ejb3.cache.impl.backing:org.jboss.as.ejb3.cache.impl.backing.clustering:org.jboss.as.ejb3.cache.impl.factory:org.jboss.as.ejb3.cache.spi:org.jboss.as.ejb3.cache.spi.impl:org.jboss.as.ejb3.clustering:org.jboss.as.ejb3.component:org.jboss.as.ejb3.component.allowedmethods:org.jboss.as.ejb3.component.entity:org.jboss.as.ejb3.component.entity.entitycache:org.jboss.as.ejb3.component.entity.interceptors:org.jboss.as.ejb3.component.interceptors:org.jboss.as.ejb3.component.invocationmetrics:org.jboss.as.ejb3.component.messagedriven:org.jboss.as.ejb3.component.pool:org.jboss.as.ejb3.component.session:org.jboss.as.ejb3.component.singleton:org.jboss.as.ejb3.component.stateful:org.jboss.as.ejb3.component.stateless:org.jboss.as.ejb3.concurrency:org.jboss.as.ejb3.context:org.jboss.as.ejb3.deployment:org.jboss.as.ejb3.deployment.processors:org.jboss.as.ejb3.deployment.processors.annotation:org.jboss.as.ejb3.deployment.processors.dd:org.jboss.as.ejb3.deployment.processors.entity:org.jboss.as.ejb3.deployment.processors.merging:org.jboss.as.ejb3.deployment.processors.security:org.jboss.as.ejb3.iiop:org.jboss.as.ejb3.iiop.handle:org.jboss.as.ejb3.iiop.stub:org.jboss.as.ejb3.inflow:org.jboss.as.ejb3.interceptor:org.jboss.as.ejb3.pool:org.jboss.as.ejb3.pool.strictmax:org.jboss.as.ejb3.remote:org.jboss.as.ejb3.remote.protocol.versionone:org.jboss.as.ejb3.resourceadapterbinding.metadata:org.jboss.as.ejb3.resourceadapterbinding.parser:org.jboss.as.ejb3.security:org.jboss.as.ejb3.security.metadata:org.jboss.as.ejb3.security.parser:org.jboss.as.ejb3.subsystem:org.jboss.as.ejb3.subsystem.deployment:org.jboss.as.ejb3.timerservice:org.jboss.as.ejb3.timerservice.persistence:org.jboss.as.ejb3.timerservice.persistence.database:org.jboss.as.ejb3.timerservice.persistence.filestore:org.jboss.as.ejb3.timerservice.schedule:org.jboss.as.ejb3.timerservice.schedule.attribute:org.jboss.as.ejb3.timerservice.schedule.util:org.jboss.as.ejb3.timerservice.schedule.value:org.jboss.as.ejb3.timerservice.spi:org.jboss.as.ejb3.timerservice.task:org.jboss.as.ejb3.tx:org.jboss.as.ejb3.tx.util:org.jboss.as.ejb3.util</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.host-controller</title>
+                                            <title>Module org.wildfly.host-controller</title>
                                             <packages>org.jboss.as.domain.controller:org.jboss.as.domain.controller.operations:org.jboss.as.domain.controller.operations.coordination:org.jboss.as.domain.controller.operations.deployment:org.jboss.as.domain.controller.plan:org.jboss.as.domain.controller.resources:org.jboss.as.domain.controller.transformers:org.jboss.as.host.controller:org.jboss.as.host.controller.descriptions:org.jboss.as.host.controller.discovery:org.jboss.as.host.controller.ignored:org.jboss.as.host.controller.jmx:org.jboss.as.host.controller.mgmt:org.jboss.as.host.controller.model.host:org.jboss.as.host.controller.model.jvm:org.jboss.as.host.controller.operations:org.jboss.as.host.controller.parsing:org.jboss.as.host.controller.resources</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.jsr77</title>
+                                            <title>Module org.wildfly.jsr77</title>
                                             <packages>org.jboss.as.jsr77:org.jboss.as.jsr77.ejb:org.jboss.as.jsr77.managedobject:org.jboss.as.jsr77.subsystem</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.jacorb</title>
+                                            <title>Module org.wildfly.jacorb</title>
                                             <packages>org.jboss.as.jacorb:org.jboss.as.jacorb.csiv2:org.jboss.as.jacorb.csiv2.idl:org.jboss.as.jacorb.deployment:org.jboss.as.jacorb.naming:org.jboss.as.jacorb.naming.jndi:org.jboss.as.jacorb.rmi:org.jboss.as.jacorb.rmi.ir:org.jboss.as.jacorb.rmi.marshal:org.jboss.as.jacorb.rmi.marshal.strategy:org.jboss.as.jacorb.security:org.jboss.as.jacorb.service:org.jboss.as.jacorb.tm</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.jaxr</title>
+                                            <title>Module org.wildfly.jaxr</title>
                                             <packages>org.jboss.as.jaxr:org.jboss.as.jaxr.extension:org.jboss.as.jaxr.service</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.jaxrs</title>
+                                            <title>Module org.wildfly.jaxrs</title>
                                             <packages>org.jboss.as.jaxrs:org.jboss.as.jaxrs.deployment</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.jdr</title>
+                                            <title>Module org.wildfly.jdr</title>
                                             <packages>org.jboss.as.jdr:org.jboss.as.jdr.commands:org.jboss.as.jdr.plugins:org.jboss.as.jdr.util:org.jboss.as.jdr.vfs</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.jpa</title>
+                                            <title>Module org.wildfly.jpa</title>
                                             <packages>org.jboss.as.jpa.classloader:org.jboss.as.jpa.classloader.:org.jboss.as.jpa.config:org.jboss.as.jpa.container:org.jboss.as.jpa.injectors:org.jboss.as.jpa.interceptor:org.jboss.as.jpa.jbossjpaparser:org.jboss.as.jpa.persistenceprovider:org.jboss.as.jpa.processor:org.jboss.as.jpa.puparser:org.jboss.as.jpa.service:org.jboss.as.jpa.subsystem:org.jboss.as.jpa.transaction:org.jboss.as.jpa.validator</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.jpa.openjpa</title>
+                                            <title>Module org.wildfly.jpa.openjpa</title>
                                             <packages>org.jboss.as.jpa.openjpa</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.jpa.spi</title>
+                                            <title>Module org.wildfly.jpa.spi</title>
                                             <packages>org.jboss.as.jpa:org.jboss.as.jpa.spi</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.jpa.util</title>
+                                            <title>Module org.wildfly.jpa.util</title>
                                             <packages>org.jboss.as.jpa.util</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.jsf</title>
+                                            <title>Module org.wildfly.jsf</title>
                                             <packages>org.jboss.as.jsf:org.jboss.as.jsf.deployment:org.jboss.as.jsf.subsystem</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.jsf-injection</title>
+                                            <title>Module org.wildfly.jsf-injection</title>
                                             <packages>org.jboss.as.jsf.injection</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.logging</title>
+                                            <title>Module org.wildfly.logging</title>
                                             <packages>org.jboss.as.logging:org.jboss.as.logging.correctors:org.jboss.as.logging.logmanager:org.jboss.as.logging.resolvers:org.jboss.as.logging.stdio:org.jboss.as.logging.validators</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.mail</title>
+                                            <title>Module org.wildfly.mail</title>
                                             <packages>org.jboss.as.mail.extension</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.management-client-content</title>
+                                            <title>Module org.wildfly.management-client-content</title>
                                             <packages>org.jboss.as.management.client.content</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.messaging</title>
+                                            <title>Module org.wildfly.messaging</title>
                                             <packages>org.jboss.as.messaging:org.jboss.as.messaging.deployment:org.jboss.as.messaging.jms:org.jboss.as.messaging.jms.bridge</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.modcluster</title>
+                                            <title>Module org.wildfly.modcluster</title>
                                             <packages>org.jboss.modcluster:org.jboss.modcluster.advertise:org.jboss.modcluster.advertise.impl:org.jboss.modcluster.config:org.jboss.modcluster.config.impl:org.jboss.modcluster.load:org.jboss.modcluster.load.impl:org.jboss.modcluster.load.metric:org.jboss.modcluster.load.metric.impl:org.jboss.modcluster.mcmp:org.jboss.modcluster.mcmp.impl:org.jboss.modcluster.container.catalina:org.jboss.modcluster.container.jbossweb:org.jboss.modcluster.container:org.jboss.as.modcluster</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.pojo</title>
+                                            <title>Module org.wildfly.pojo</title>
                                             <packages>org.jboss.as.pojo:org.jboss.as.pojo.api:org.jboss.as.pojo.descriptor:org.jboss.as.pojo.service</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.naming</title>
+                                            <title>Module org.wildfly.naming</title>
                                             <packages>org.jboss.as.naming:org.jboss.as.naming.context:org.jboss.as.naming.deployment:org.jboss.as.naming.interfaces.java:org.jboss.as.naming.management:org.jboss.as.naming.remote:org.jboss.as.naming.service:org.jboss.as.naming.subsystem:org.jboss.as.naming.util</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.osgi</title>
+                                            <title>Module org.wildfly.osgi</title>
                                             <packages>org.jboss.as.osgi:org.jboss.as.osgi.deployment:org.jboss.as.osgi.management:org.jboss.as.osgi.parser:org.jboss.as.osgi.service</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.osgi.http</title>
+                                            <title>Module org.wildfly.osgi.http</title>
                                             <packages>org.jboss.as.osgi.httpservice:org.osgi.service.http</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.osgi.jmx</title>
+                                            <title>Module org.wildfly.osgi.jmx</title>
                                             <packages>org.jboss.as.osgi.jmx</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.osgi.jpa</title>
+                                            <title>Module org.wildfly.osgi.jpa</title>
                                             <packages>org.jboss.as.osgi.jpa:org.osgi.service.jpa</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.osgi.jta</title>
+                                            <title>Module org.wildfly.osgi.jta</title>
                                             <packages>org.jboss.as.osgi.jta</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.osgi.naming</title>
+                                            <title>Module org.wildfly.osgi.naming</title>
                                             <packages>org.jboss.as.osgi.naming</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.osgi.web</title>
+                                            <title>Module org.wildfly.osgi.web</title>
                                             <packages>org.jboss.as.osgi.web</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.sar</title>
+                                            <title>Module org.wildfly.sar</title>
                                             <packages>org.jboss.as.service:org.jboss.as.service.component:org.jboss.as.service.descriptor</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.security</title>
+                                            <title>Module org.wildfly.security</title>
                                             <packages>org.jboss.as.security:org.jboss.as.security.context:org.jboss.as.security.deployment:org.jboss.as.security.plugins:org.jboss.as.security.remoting:org.jboss.as.security.service:org.jboss.as.security.vault</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.system-jmx</title>
+                                            <title>Module org.wildfly.system-jmx</title>
                                             <packages>org.jboss.system</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.transactions</title>
+                                            <title>Module org.wildfly.transactions</title>
                                             <packages>org.jboss.as.txn:org.jboss.as.txn.deployment:org.jboss.as.txn.service:org.jboss.as.txn.subsystem:org.jboss.iiop.tm</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.version</title>
+                                            <title>Module org.wildfly.version</title>
                                             <packages>org.jboss.as.version</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.web</title>
+                                            <title>Module org.wildfly.web</title>
                                             <packages>org.jboss.as.web:org.jboss.as.web.deployment:org.jboss.as.web.deployment.component:org.jboss.as.web.deployment.helpers:org.jboss.as.web.deployment.mock:org.jboss.as.web.ext:org.jboss.as.web.security:org.jboss.as.web.security.jaspi:org.jboss.as.web.security.jaspi.modules:org.jboss.as.web.session:org.jboss.as.web.session.notification:org.jboss.as.web.sso:org.eclipse.jdt.core:org.eclipse.jdt.core.compiler:org.eclipse.jdt.core.compiler.batch:org.eclipse.jdt.internal.antadapter:org.eclipse.jdt.internal.compiler:org.eclipse.jdt.internal.compiler.apt.dispatch:org.eclipse.jdt.internal.compiler.apt.model:org.eclipse.jdt.internal.compiler.apt.util:org.eclipse.jdt.internal.compiler.ast:org.eclipse.jdt.internal.compiler.batch:org.eclipse.jdt.internal.compiler.classfmt:org.eclipse.jdt.internal.compiler.classfmt.:org.eclipse.jdt.internal.compiler.codegen:org.eclipse.jdt.internal.compiler.env:org.eclipse.jdt.internal.compiler.flow:org.eclipse.jdt.internal.compiler.impl:org.eclipse.jdt.internal.compiler.lookup:org.eclipse.jdt.internal.compiler.parser:org.eclipse.jdt.internal.compiler.parser.diagnose:org.eclipse.jdt.internal.compiler.problem:org.eclipse.jdt.internal.compiler.tool:org.eclipse.jdt.internal.compiler.util:org.apache.catalina:org.apache.catalina.authenticator:org.apache.catalina.connector:org.apache.catalina.core:org.apache.catalina.deploy:org.apache.catalina.deploy.jsp:org.apache.catalina.filters:org.apache.catalina.realm:org.apache.catalina.security:org.apache.catalina.servlets:org.apache.catalina.session:org.apache.catalina.ssi:org.apache.catalina.startup:org.apache.catalina.util:org.apache.catalina.valves:org.apache.cometd.bayeux:org.apache.coyote:org.apache.coyote.ajp:org.apache.coyote.http11:org.apache.coyote.http11.filters:org.apache.coyote.memory:org.apache.el:org.apache.el.lang:org.apache.el.parser:org.apache.el.util:org.apache.jasper:org.apache.jasper.compiler:org.apache.jasper.compiler.tagplugin:org.apache.jasper.el:org.apache.jasper.runtime:org.apache.jasper.security:org.apache.jasper.servlet:org.apache.jasper.tagplugins.jstl:org.apache.jasper.tagplugins.jstl.core:org.apache.jasper.util:org.apache.jasper.xmlparser:org.apache.naming:org.apache.naming.resources:org.apache.naming.resources.jndi:org.apache.tomcat:org.apache.tomcat.bayeux:org.apache.tomcat.bayeux.request:org.apache.tomcat.jni:org.apache.tomcat.util:org.apache.tomcat.util.buf:org.apache.tomcat.util.http:org.apache.tomcat.util.http.fileupload:org.apache.tomcat.util.http.fileupload.disk:org.apache.tomcat.util.http.fileupload.servlet:org.apache.tomcat.util.http.fileupload.util:org.apache.tomcat.util.http.mapper:org.apache.tomcat.util.json:org.apache.tomcat.util.modeler:org.apache.tomcat.util.modeler.modules:org.apache.tomcat.util.net:org.apache.tomcat.util.net.jsse:org.jboss.servlet.http:org.jboss.web:org.jboss.web.php:org.jboss.web.rewrite</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.web-common</title>
+                                            <title>Module org.wildfly.web-common</title>
                                             <packages>org.jboss.as.web.common</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.webservices</title>
+                                            <title>Module org.wildfly.webservices</title>
                                             <packages>org.jboss.as.webservices:org.jboss.as.webservices.config:org.jboss.as.webservices.deployers:org.jboss.as.webservices.deployers.deployment:org.jboss.as.webservices.dmr:org.jboss.as.webservices.injection:org.jboss.as.webservices.invocation:org.jboss.as.webservices.metadata:org.jboss.as.webservices.metadata.model:org.jboss.as.webservices.parser:org.jboss.as.webservices.publish:org.jboss.as.webservices.security:org.jboss.as.webservices.service:org.jboss.as.webservices.tomcat:org.jboss.as.webservices.util:org.jboss.as.webservices.webserviceref</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.weld</title>
+                                            <title>Module org.wildfly.weld</title>
                                             <packages>org.jboss.as.weld:org.jboss.as.weld.arquillian:org.jboss.as.weld.deployment:org.jboss.as.weld.deployment.processors:org.jboss.as.weld.ejb:org.jboss.as.weld.injection:org.jboss.as.weld.services:org.jboss.as.weld.services.bootstrap:org.jboss.as.weld.util:org.jboss.as.weld.webtier.jsf:org.jboss.as.weld.webtier.jsp</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.as.xts</title>
+                                            <title>Module org.wildfly.xts</title>
                                             <packages>org.jboss.as.xts</packages>
                                         </group>
                                         <group>

@@ -27,12 +27,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-subsystem-test-parent</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-subsystem-test-parent</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-subsystem-test-tests</artifactId>
+    <artifactId>wildfly-subsystem-test-tests</artifactId>
     <name>WildFly: Subsystem Test Framework Tests</name>
 
     <build>
@@ -64,8 +64,8 @@
 
     <dependencies>
         <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-subsystem-test</artifactId>
+           <groupId>org.wildfly</groupId>
+           <artifactId>wildfly-subsystem-test</artifactId>
            <type>pom</type>
         </dependency>
         <dependency>

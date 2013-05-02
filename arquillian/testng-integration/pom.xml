@@ -26,12 +26,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-arquillian</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-arquillian</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-arquillian-testng-integration</artifactId>
+    <artifactId>wildfly-arquillian-testng-integration</artifactId>
     <name>WildFly: Arquillian TestNG Integration</name>
     <packaging>jar</packaging>
 
@@ -42,14 +42,14 @@
     <dependencies>
     
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-spec-api</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-spec-api</artifactId>
             <type>pom</type>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-          <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-arquillian-container-managed</artifactId>
+          <groupId>org.wildfly</groupId>
+          <artifactId>wildfly-arquillian-container-managed</artifactId>
           <scope>test</scope>
         </dependency>
         <dependency>

@@ -27,24 +27,24 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-management-client-content</artifactId>
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-management-client-content</artifactId>
 
     <name>WildFly: Management Client Content</name>
 
     <dependencies>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-controller</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-controller</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-deployment-repository</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-deployment-repository</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>

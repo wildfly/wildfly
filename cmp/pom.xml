@@ -29,14 +29,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-cmp</artifactId>
+    <artifactId>wildfly-cmp</artifactId>
 
-    <name>JBoss Application Server: EJB Container Managed Persistence Subsystem</name>
+    <name>WildFly: EJB Container Managed Persistence Subsystem</name>
 
     <build>
         <plugins>
@@ -59,7 +59,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jboss-as-controller</artifactId>
+            <artifactId>wildfly-controller</artifactId>
         </dependency>
 
         <dependency>
@@ -83,8 +83,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-subsystem-test</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-subsystem-test</artifactId>
 			<type>pom</type>
             <scope>test</scope>
         </dependency>

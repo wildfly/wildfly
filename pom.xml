@@ -29,8 +29,8 @@
       <version>10</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-parent</artifactId>
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-parent</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
     <name>WildFly: Parent Aggregator</name>
@@ -380,8 +380,8 @@
                     </configuration>
                     <dependencies>
                         <dependency>
-                            <groupId>org.jboss.as</groupId>
-                            <artifactId>jboss-as-build-config</artifactId>
+                            <groupId>org.wildfly</groupId>
+                            <artifactId>wildfly-build-config</artifactId>
                             <version>${project.version}</version>
                         </dependency>
                     </dependencies>
@@ -754,8 +754,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-build-config</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-build-config</artifactId>
         </dependency>
     </dependencies>
 
@@ -765,68 +765,68 @@
             <!-- Modules in this project -->
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-appclient</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-appclient</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-common</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-arquillian-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-container-embedded</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-arquillian-container-embedded</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-container-managed</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-arquillian-container-managed</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-container-remote</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-arquillian-container-remote</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-common-domain</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-arquillian-common-domain</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-container-domain-managed</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-arquillian-container-domain-managed</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-container-domain-remote</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-arquillian-container-domain-remote</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-protocol-jmx</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-testenricher-msc</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-build</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-build</artifactId>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.spec.javax.servlet</groupId>
@@ -838,480 +838,480 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-build-config</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-build-config</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-clustering</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-clustering-api</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-clustering-common</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-clustering-ejb3-infinispan</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-ejb3-infinispan</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-clustering-impl</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-impl</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-clustering-infinispan</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-infinispan</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-clustering-jgroups</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-jgroups</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-clustering-registry</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-registry</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-clustering-service</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-clustering-singleton</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-singleton</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-clustering-web-infinispan</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-web-infinispan</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-clustering-web-spi</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-web-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-cmp</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-cmp</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-configadmin</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-configadmin</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-config-assembly</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-config-assembly</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-connector</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-connector</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-controller</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-controller</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-controller-client</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-controller-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-deployment-repository</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-deployment-repository</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-deployment-scanner</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-deployment-scanner</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-domain-http-error-context</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-domain-http-error-context</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-domain-http-interface</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-domain-http-interface</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-domain-management</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-domain-management</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-cli</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-cli</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-cli</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-cli</artifactId>
                 <classifier>client</classifier>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-client-all</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-client-all</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-core-model-test</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-core-model-test</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-core-model-test-framework</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-core-model-test-framework</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-core-model-test-controller-optional</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-core-model-test-controller-optional</artifactId>
                 <version>${project.version}</version>
              </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-core-model-test-controller-7.1.2</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-core-model-test-controller-7.1.2</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-ee</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-ee</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-ejb3</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-ejb3</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-ejb-client-bom</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-embedded</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-host-controller</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-io</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jacorb</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jaxr</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jaxrs</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jdr</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jmx</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jms-client-bom</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-ejb-client-bom</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jsr77</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-embedded</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-logging</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-host-controller</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-management-client-content</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-io</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-mail</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jacorb</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-messaging</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jaxr</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-modcluster</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jaxrs</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-model-test</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jdr</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-naming</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jmx</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-network</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jms-client-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jsr77</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-pojo</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-logging</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-osgi-configadmin</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-management-client-content</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-osgi-service</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-mail</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-osgi-http</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-messaging</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-osgi-jmx</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-modcluster</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-osgi-jpa</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-model-test</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-osgi-jta</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-naming</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-osgi-launcher</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-network</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-osgi-naming</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-pojo</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-osgi-web</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-osgi-configadmin</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-platform-mbean</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-osgi-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-process-controller</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-osgi-http</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-protocol</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-osgi-jmx</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-remoting</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-osgi-jpa</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-security</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-osgi-jta</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-security-util</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-osgi-launcher</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-sar</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-osgi-naming</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-server</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-osgi-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-subsystem-test</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-platform-mbean</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-process-controller</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-remoting</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-security</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-security-util</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-sar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-subsystem-test</artifactId>
                 <type>pom</type>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-subsystem-test-controller-7.1.2</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-subsystem-test-controller-7.1.2</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-subsystem-test-framework</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-subsystem-test-framework</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-system-jmx</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-system-jmx</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-threads</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-threads</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-transactions</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-transactions</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-undertow</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-undertow</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-version</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-version</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-web</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-web</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
@@ -1322,26 +1322,26 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-web-common</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-web-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-webservices-server-integration</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-webservices-server-integration</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-weld</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-weld</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-xts</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-xts</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1366,8 +1366,8 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-testsuite-shared</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-testsuite-shared</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>
             </dependency>
@@ -4142,26 +4142,26 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jpa</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jpa</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jpa-spi</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jpa-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jpa-util</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jpa-util</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jpa-hibernate3</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jpa-hibernate3</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
@@ -4180,8 +4180,8 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jpa-hibernate4</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jpa-hibernate4</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
@@ -4199,20 +4199,20 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jpa-openjpa</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jpa-openjpa</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jsf</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jsf</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jsf-injection</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jsf-injection</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
