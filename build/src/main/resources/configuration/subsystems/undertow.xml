@@ -25,7 +25,7 @@
 
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
-    <extension-module>org.jboss.as.undertow</extension-module>
+    <extension-module>org.wildfly.extension.undertow</extension-module>
     <subsystem xmlns="urn:jboss:domain:undertow:1.0">
         <buffer-caches>
             <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10"/>
