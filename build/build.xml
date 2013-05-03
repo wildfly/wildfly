@@ -177,7 +177,7 @@
           ~ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
           -->
 
-    	<module-def name="io.undertow.core">
+        <module-def name="io.undertow.core">
             <maven-resource group="io.undertow" artifact="undertow-core"/>
         </module-def>
 
@@ -1323,8 +1323,8 @@
 
         <module-def name="ibm.jdk"/>
 
-        <module-def name="org.jboss.as.undertow">
-            <maven-resource group="org.wildfly" artifact="wildfly-undertow"/>
+        <module-def name="org.wildfly.extension.undertow">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-undertow"/>
         </module-def>
         <module-def name="io.undertow.servlet">
             <maven-resource group="io.undertow" artifact="undertow-servlet"/>
