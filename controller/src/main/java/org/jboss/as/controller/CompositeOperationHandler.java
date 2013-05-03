@@ -30,11 +30,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
+import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -56,7 +61,7 @@ public final class CompositeOperationHandler implements OperationStepHandler {
     private static final AttributeDefinition STEPS = new PrimitiveListAttributeDefinition.Builder(ModelDescriptionConstants.STEPS, ModelType.OBJECT)
             .build();
 
-    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(NAME, ControllerResolver.getResolver("root"))
+    public static final OperationDefinition DEFINITION = new WFLY1316HackOperationDefinitionBuilder(NAME, ControllerResolver.getResolver("root"))
         .addParameter(STEPS)
         .setReplyType(ModelType.OBJECT)
         .setPrivateEntry()
@@ -123,5 +128,37 @@ public final class CompositeOperationHandler implements OperationStepHandler {
                 context.getFailureDescription().set(failureMsg);
             }
         });
+    }
+
+    private static class WFLY1316HackOperationDefinitionBuilder extends SimpleOperationDefinitionBuilder {
+
+        public WFLY1316HackOperationDefinitionBuilder(String name, ResourceDescriptionResolver resolver) {
+            super(name, resolver);
+        }
+
+        @Override
+        protected SimpleOperationDefinition internalBuild(final ResourceDescriptionResolver resolver, final ResourceDescriptionResolver attributeResolver) {
+            // Make this a bit more robust in case WFLY-1315 is fixed but this hack gets left around
+            if (entryType != OperationEntry.EntryType.PRIVATE) {
+                return super.internalBuild(resolver, attributeResolver);
+            }
+
+            return new SimpleOperationDefinition(name, resolver, attributeResolver, entryType, flags, replyType, replyValueType, replyAllowNull, deprecationData, replyParameters, parameters) {
+                /**
+                 * Override the superclass behavior to go ahead and provide a description even though we are EntryType.PRIVATE
+                 *
+                 * {@inheritDoc}
+                 */
+                @Override
+                public DescriptionProvider getDescriptionProvider() {
+                    return new DescriptionProvider() {
+                        @Override
+                        public ModelNode getModelDescription(Locale locale) {
+                            return new DefaultOperationDescriptionProvider(getName(), resolver, attributeResolver, replyType, replyValueType, deprecationData, replyParameters, parameters).getModelDescription(locale);
+                        }
+                    };
+                }
+            };
+        }
     }
 }

@@ -241,4 +241,21 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
         }
         assertTrue("Connector still live: " + response, failed);
     }
+
+    @Test
+    public void testCompositeOp() throws Exception {
+        cli.sendLine("/:composite(steps=[{\"operation\"=>\"read-resource\"}])");
+        CLIOpResult result = cli.readAllAsOpResult();
+
+        assertTrue(result.isIsOutcomeSuccess());
+        assertTrue(result.getResult() instanceof Map);
+        Map map = (Map) result.getResult();
+
+        assertTrue(map.get("step-1") instanceof Map);
+
+        assertTrue(((Map)map.get("step-1")).get("result") instanceof Map);
+
+        assertTrue(((Map)((Map)map.get("step-1")).get("result")).containsKey("management-major-version"));
+
+    }
 }
