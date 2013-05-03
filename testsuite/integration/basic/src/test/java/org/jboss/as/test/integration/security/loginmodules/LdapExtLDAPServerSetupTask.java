@@ -59,7 +59,7 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
     static final int LDAPS_PORT = 10636;
 
     static final String[] ROLE_NAMES = { "TheDuke", "Echo", "TheDuke2", "Echo2", "JBossAdmin", "jduke", "jduke2", "RG1", "RG2",
-            "RG3", "R1", "R2", "R3", "R4", "R5", "Roles", "User", "Admin", "SharedRoles" };
+            "RG3", "R1", "R2", "R3", "R4", "R5", "Roles", "User", "Admin", "SharedRoles", "RX" };
 
     static final String QUERY_ROLES;
     static {

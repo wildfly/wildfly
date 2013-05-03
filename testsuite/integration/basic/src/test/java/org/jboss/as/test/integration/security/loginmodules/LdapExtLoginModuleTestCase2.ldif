@@ -21,9 +21,9 @@ member: uid=jduke,ou=People,o=example3,dc=jboss,dc=org
 member: uid=jduke,ou=People,o=example4,dc=jboss,dc=org
 
 # If the Example2 has referral follow, then this would be used to map the User role for jduke
-dn: cn=jduke,ou=SharedRoles,dc=jboss,dc=com
+dn: cn=RX,ou=SharedRoles,dc=jboss,dc=com
 objectClass: top
 objectClass: groupOfNames
-cn: jduke
+cn: RX
 description: cn=User,ou=SharedRoles,dc=jboss,dc=com
-member: 
+member: uid=jduke,ou=People,o=example2,dc=jboss,dc=org
