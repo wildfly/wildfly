@@ -43,6 +43,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 /**
  * @author John Bailey
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Tomasz Adamski
  */
 public final class JBossServiceXmlDescriptorParser implements XMLElementReader<ParseResult<JBossServiceXmlDescriptor>>, XMLStreamConstants {
 
@@ -357,9 +358,11 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
             throw missingAttributes(reader.getLocation(), required);
         }
 
+        final StringBuilder valueBuilder = new StringBuilder();
         while (reader.hasNext()) {
             switch (reader.next()) {
                 case END_ELEMENT:
+                    attributeConfig.setValue(propertyReplacer.replaceProperties(valueBuilder.toString().trim()));
                     return attributeConfig;
                 case START_ELEMENT:
                     switch (Namespace.of(reader.getNamespaceURI())) {
@@ -381,7 +384,7 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
                     }
                     break;
                 case CHARACTERS:
-                    attributeConfig.setValue(propertyReplacer.replaceProperties(reader.getText()));
+                    valueBuilder.append(reader.getText());
             }
         }
         throw unexpectedContent(reader);
@@ -564,10 +567,11 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
     }
 
     private void parseDependency(final XMLExtendedStreamReader reader, final JBossServiceDependencyConfig dependencyConfig) throws XMLStreamException {
-       while (reader.hasNext()) {
+        final StringBuilder nameBuilder = new StringBuilder();
+        while (reader.hasNext()) {
             switch (reader.next()) {
                 case END_ELEMENT:
-
+                    dependencyConfig.setDependencyName(nameBuilder.toString().trim());
                     return;
                 case START_ELEMENT:
                     switch (Namespace.of(reader.getNamespaceURI())) {
@@ -586,20 +590,20 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
                     }
                     break;
                 case CHARACTERS:
-                    dependencyConfig.setDependencyName(reader.getText());
+                    nameBuilder.append(reader.getText());
                     break;
             }
         }
     }
 
     private String parseTextElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        String value = null;
-        while(reader.hasNext()) {
+        final StringBuilder valueBuilder = new StringBuilder();
+        while (reader.hasNext()) {
             switch(reader.next()) {
                 case END_ELEMENT:
-                    return value;
+                    return valueBuilder.toString().trim();
                 case CHARACTERS:
-                    value = reader.getText();
+                    valueBuilder.append(reader.getText());
                     break;
             }
         }
