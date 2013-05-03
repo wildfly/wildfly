@@ -22,31 +22,21 @@
  * /
  */
 
-package org.jboss.as.io;
-
-import java.util.Collection;
-import java.util.Collections;
-
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimplePersistentResourceDefinition;
+package org.wildfly.extension.io;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-class IORootDefinition extends SimplePersistentResourceDefinition {
-    static final IORootDefinition INSTANCE = new IORootDefinition();
-
-
-    private IORootDefinition() {
-        super(IOExtension.SUBSYSTEM_PATH,
-                IOExtension.getResolver(),
-                IOSubsystemAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
-    }
-
-    @Override
-    public Collection<AttributeDefinition> getAttributes() {
-        return Collections.emptySet();
-    }
+interface Constants {
+    String BUFFER_POOL = "buffer-pool";
+    String BUFFER_SIZE = "buffer-size";
+    String BUFFER_PER_SLICE = "buffers-per-slice";
+    String WORKER = "worker";
+    String WORKER_IO_THREADS = "io-threads";
+    String WORKER_TASK_CORE_THREADS = "task-core-threads";
+    String WORKER_TASK_KEEPALIVE = "task-keepalive";
+    String WORKER_TASK_LIMIT = "task-limit";
+    String WORKER_TASK_MAX_THREADS = "task-max-threads";
+    String THREAD_DAEMON = "thread-daemon";
+    String STACK_SIZE = "stack-size";
 }

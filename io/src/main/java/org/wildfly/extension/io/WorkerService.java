@@ -21,55 +21,48 @@
  *  02110-1301 USA, or see the FSF site: http://www.fsf.org.
  * /
  */
-package org.jboss.as.io;
 
-import java.util.HashMap;
-import java.util.Map;
+package org.wildfly.extension.io;
+
+import java.io.IOException;
+
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.xnio.OptionMap;
+import org.xnio.Xnio;
+import org.xnio.XnioWorker;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-enum Namespace {
+public class WorkerService implements Service<XnioWorker> {
+    private final OptionMap options;
+    private volatile XnioWorker worker;
 
-    // must be first
-    UNKNOWN(null),
-
-    IO_1_0("urn:jboss:domain:io:1.0");
-
-    /**
-     * The current namespace version.
-     */
-    public static final Namespace CURRENT = IO_1_0;
-
-    private final String name;
-
-    Namespace(final String name) {
-        this.name = name;
+    protected WorkerService(OptionMap options) {
+        this.options = options;
     }
 
-    /**
-     * Get the URI of this namespace.
-     *
-     * @return the URI
-     */
-    public String getUriString() {
-        return name;
-    }
+    @Override
+    public void start(StartContext startContext) throws StartException {
+        final Xnio xnio = Xnio.getInstance();
 
-    private static final Map<String, Namespace> MAP;
-
-    static {
-        final Map<String, Namespace> map = new HashMap<String, Namespace>();
-        for (Namespace namespace : values()) {
-            final String name = namespace.getUriString();
-            if (name != null) { map.put(name, namespace); }
+        try {
+            worker = xnio.createWorker(options);
+        } catch (IOException e) {
+            throw new StartException("Could not create worker!", e);
         }
-        MAP = map;
     }
 
-    public static Namespace forUri(String uri) {
-        final Namespace element = MAP.get(uri);
-        return element == null ? UNKNOWN : element;
+    @Override
+    public void stop(StopContext stopContext) {
+        worker.shutdown();
     }
 
+    @Override
+    public XnioWorker getValue() throws IllegalStateException, IllegalArgumentException {
+        return worker;
+    }
 }

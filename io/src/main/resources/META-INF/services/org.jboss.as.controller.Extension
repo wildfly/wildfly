@@ -1,2 +1,2 @@
-org.jboss.as.io.IOExtension
+org.wildfly.extension.io.IOExtension
 

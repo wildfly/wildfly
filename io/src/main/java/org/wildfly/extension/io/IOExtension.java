@@ -22,7 +22,7 @@
  * /
  */
 
-package org.jboss.as.io;
+package org.wildfly.extension.io;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 

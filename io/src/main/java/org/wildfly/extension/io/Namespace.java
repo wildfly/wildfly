@@ -21,48 +21,55 @@
  *  02110-1301 USA, or see the FSF site: http://www.fsf.org.
  * /
  */
+package org.wildfly.extension.io;
 
-package org.jboss.as.io;
-
-import java.io.IOException;
-
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.xnio.OptionMap;
-import org.xnio.Xnio;
-import org.xnio.XnioWorker;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-public class WorkerService implements Service<XnioWorker> {
-    private final OptionMap options;
-    private volatile XnioWorker worker;
+enum Namespace {
 
-    protected WorkerService(OptionMap options) {
-        this.options = options;
+    // must be first
+    UNKNOWN(null),
+
+    IO_1_0("urn:jboss:domain:io:1.0");
+
+    /**
+     * The current namespace version.
+     */
+    public static final Namespace CURRENT = IO_1_0;
+
+    private final String name;
+
+    Namespace(final String name) {
+        this.name = name;
     }
 
-    @Override
-    public void start(StartContext startContext) throws StartException {
-        final Xnio xnio = Xnio.getInstance();
+    /**
+     * Get the URI of this namespace.
+     *
+     * @return the URI
+     */
+    public String getUriString() {
+        return name;
+    }
 
-        try {
-            worker = xnio.createWorker(options);
-        } catch (IOException e) {
-            throw new StartException("Could not create worker!", e);
+    private static final Map<String, Namespace> MAP;
+
+    static {
+        final Map<String, Namespace> map = new HashMap<String, Namespace>();
+        for (Namespace namespace : values()) {
+            final String name = namespace.getUriString();
+            if (name != null) { map.put(name, namespace); }
         }
+        MAP = map;
     }
 
-    @Override
-    public void stop(StopContext stopContext) {
-        worker.shutdown();
+    public static Namespace forUri(String uri) {
+        final Namespace element = MAP.get(uri);
+        return element == null ? UNKNOWN : element;
     }
 
-    @Override
-    public XnioWorker getValue() throws IllegalStateException, IllegalArgumentException {
-        return worker;
-    }
 }
