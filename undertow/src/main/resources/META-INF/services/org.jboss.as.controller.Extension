@@ -1,2 +1,2 @@
-org.jboss.as.undertow.UndertowExtension
+org.wildfly.extension.undertow.UndertowExtension
 
