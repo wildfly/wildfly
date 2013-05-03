@@ -41,6 +41,36 @@ public class ExpressionResolverUnitTestCase {
     }
 
     @Test
+    public void testDefaultExpressionResolverWithRecursiveSystemPropertyResolutions() throws OperationFailedException {
+        System.setProperty("test.prop.expr", "EXPR");
+        System.setProperty("test.prop.b", "B");
+        System.setProperty("test.prop.c", "C");
+        System.setProperty("test.prop.two", "TWO");
+        System.setProperty("test.prop.three", "THREE");
+        
+        // recursive example
+        System.setProperty("test.prop.prop", "${test.prop.prop.intermediate}");
+        System.setProperty("test.prop.prop.intermediate", "PROP");
+        
+        // recursive example with a property expression as the default
+        System.setProperty("test.prop.expr", "${NOTHERE:${ISHERE}}");
+        System.setProperty("ISHERE", "EXPR");
+        
+        //PROP
+        try {
+            ModelNode node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(createModelNode());
+            checkResolved(node);
+        } finally {
+            System.clearProperty("test.prop.expr");
+            System.clearProperty("test.prop.b");
+            System.clearProperty("test.prop.c");
+            System.clearProperty("test.prop.two");
+            System.clearProperty("test.prop.three");
+            System.clearProperty("test.prop.prop");
+        }
+    }
+    
+    @Test
     public void testDefaultExpressionResolverWithSystemPropertyResolutions() throws OperationFailedException {
         System.setProperty("test.prop.expr", "EXPR");
         System.setProperty("test.prop.b", "B");
@@ -60,6 +90,35 @@ public class ExpressionResolverUnitTestCase {
             System.clearProperty("test.prop.prop");
         }
     }
+    
+    @Test
+    public void testPluggableExpressionResolverRecursive() throws OperationFailedException {
+        ModelNode node = new ExpressionResolverImpl() {
+            @Override
+            protected void resolvePluggableExpression(ModelNode node) {
+                String s = node.asString();
+                if (s.equals("${test.prop.expr}")) {
+                    node.set("${test.prop.expr.inner}");
+                } else if (s.equals("${test.prop.expr.inner}")) {
+                    node.set("EXPR");
+                } else if (s.equals("${test.prop.b}")) {
+                    node.set("B");
+                } else if (s.equals("${test.prop.c}")) {
+                    node.set("C");
+                } else if (s.equals("${test.prop.two}")) {
+                    node.set("TWO");
+                } else if (s.equals("${test.prop.three}")) {
+                    node.set("THREE");
+                } else if (s.equals("${test.prop.prop}")) {
+                    node.set("PROP");
+                }
+            }
+
+        }.resolveExpressions(createModelNode());
+
+        checkResolved(node);
+    }
+    
     @Test
     public void testPluggableExpressionResolver() throws OperationFailedException {
         ModelNode node = new ExpressionResolverImpl() {
