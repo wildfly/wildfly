@@ -22,47 +22,31 @@
  * /
  */
 
-package org.jboss.as.io;
+package org.wildfly.extension.io;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
 
-import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.SimplePersistentResourceDefinition;
 
 /**
- * Handler responsible for adding the subsystem resource to the model
- *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-class IOSubsystemAdd extends AbstractBoottimeAddStepHandler {
+class IORootDefinition extends SimplePersistentResourceDefinition {
+    static final IORootDefinition INSTANCE = new IORootDefinition();
 
-    static final IOSubsystemAdd INSTANCE = new IOSubsystemAdd();
 
-    private IOSubsystemAdd() {
+    private IORootDefinition() {
+        super(IOExtension.SUBSYSTEM_PATH,
+                IOExtension.getResolver(),
+                IOSubsystemAdd.INSTANCE,
+                ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
+    public Collection<AttributeDefinition> getAttributes() {
+        return Collections.emptySet();
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void performBoottime(OperationContext context, ModelNode operation, final ModelNode model,
-                                ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
-            throws OperationFailedException {
-
-
-    }
-
 }

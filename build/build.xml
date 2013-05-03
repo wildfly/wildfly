@@ -842,7 +842,7 @@
             <maven-resource group="org.wildfly" artifact="wildfly-host-controller"/>
         </module-def>
 
-        <module-def name="org.jboss.as.io">
+        <module-def name="org.wildfly.extension.io">
             <maven-resource group="org.wildfly" artifact="wildfly-io"/>
         </module-def>
 
@@ -1324,7 +1324,7 @@
         <module-def name="ibm.jdk"/>
 
         <module-def name="org.wildfly.extension.undertow">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-undertow"/>
+            <maven-resource group="org.wildfly" artifact="wildfly-undertow"/>
         </module-def>
         <module-def name="io.undertow.servlet">
             <maven-resource group="io.undertow" artifact="undertow-servlet"/>

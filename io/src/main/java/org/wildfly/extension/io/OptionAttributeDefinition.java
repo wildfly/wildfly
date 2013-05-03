@@ -22,7 +22,7 @@
  * /
  */
 
-package org.jboss.as.io;
+package org.wildfly.extension.io;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
