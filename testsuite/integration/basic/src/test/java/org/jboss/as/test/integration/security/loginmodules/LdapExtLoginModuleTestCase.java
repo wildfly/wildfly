@@ -55,7 +55,6 @@ import org.jboss.logging.Logger;
 import org.jboss.security.auth.spi.LdapExtLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -165,7 +164,6 @@ public class LdapExtLoginModuleTestCase {
      */
     @Test
     @OperateOnDeployment(DEP1)
-    @Ignore("AS7-5737 - referrals don't work when they reference to another LDAP instance")
     public void test1(@ArquillianResource URL webAppURL) throws Exception {
         testDeployment(webAppURL, "jduke", "TheDuke", "Echo", "Admin");
     }
@@ -194,7 +192,6 @@ public class LdapExtLoginModuleTestCase {
      */
     @Test
     @OperateOnDeployment(DEP3)
-    @Ignore("AS7-5737 - referrals don't work when they reference to another LDAP instance")
     public void test3(@ArquillianResource URL webAppURL) throws Exception {
         testDeployment(webAppURL, "Java Duke", "TheDuke", "Echo", "Admin");
     }
@@ -336,7 +333,9 @@ public class LdapExtLoginModuleTestCase {
                                                     + org.jboss.as.test.integration.security.loginmodules.LdapExtLDAPServerSetupTask.LDAP_PORT)
                                     .putOption("baseFilter", "(uid={0})").putOption("rolesCtxDN", "ou=Roles,dc=jboss,dc=org")
                                     .putOption("roleFilter", "(|(objectClass=referral)(member={1}))")
-                                    .putOption("roleAttributeID", "cn").build()) //
+                                    .putOption("roleAttributeID", "cn")
+                                    .putOption("referralUserAttributeIDToCheck", "member")
+                                    .build()) //
                     .build();
             final SecurityModule.Builder sd2LoginModuleBuilder = new SecurityModule.Builder()
                     .name("LdapExtended")
@@ -346,14 +345,18 @@ public class LdapExtLoginModuleTestCase {
                             "java.naming.provider.url",
                             "ldap://" + secondaryTestAddress + ":"
                                     + org.jboss.as.test.integration.security.loginmodules.LdapExtLDAPServerSetupTask.LDAP_PORT)
-                    .putOption("baseCtxDN", "ou=People,o=example2,dc=jboss,dc=org").putOption("baseFilter", "(uid={0})")
+                    .putOption("baseCtxDN", "ou=People,o=example2,dc=jboss,dc=org")
+                    .putOption("baseFilter", "(uid={0})")
                     .putOption("rolesCtxDN", "ou=Roles,o=example2,dc=jboss,dc=org")
-                    .putOption("roleFilter", "(|(objectClass=referral)(cn={0}))").putOption("roleAttributeID", "description")
-                    .putOption("roleAttributeIsDN", "true").putOption("roleNameAttributeID", "cn")
+                    .putOption("roleFilter", "(|(objectClass=referral)(cn={0}))")
+                    .putOption("roleAttributeID", "description")
+                    .putOption("roleAttributeIsDN", "true")
+                    .putOption("roleNameAttributeID", "cn")
                     .putOption("roleRecursion", "0");
             final SecurityDomain sd2 = new SecurityDomain.Builder().name(SECURITY_DOMAIN_NAME_PREFIX + DEP2)
                     .loginModules(sd2LoginModuleBuilder.build()).build();
-            sd2LoginModuleBuilder.putOption(Context.REFERRAL, "throw");
+            sd2LoginModuleBuilder.putOption(Context.REFERRAL, "throw")
+                    .putOption("referralUserAttributeIDToCheck", "member");
             final SecurityDomain sd2throw = new SecurityDomain.Builder().name(SECURITY_DOMAIN_NAME_PREFIX + DEP2_THROW)
                     .loginModules(sd2LoginModuleBuilder.build()).build();
             final SecurityDomain sd3 = new SecurityDomain.Builder()
@@ -373,7 +376,9 @@ public class LdapExtLoginModuleTestCase {
                                     .putOption("baseFilter", "(cn={0})")
                                     .putOption("rolesCtxDN", "ou=Roles,o=example3,dc=jboss,dc=org")
                                     .putOption("roleFilter", "(|(objectClass=referral)(member={1}))")
-                                    .putOption("roleAttributeID", "cn").putOption("roleRecursion", "0").build()) //
+                                    .putOption("roleAttributeID", "cn").putOption("roleRecursion", "0")
+                                    .putOption("referralUserAttributeIDToCheck", "member")
+                                    .build()) //
                     .build();
             final SecurityDomain sd4 = new SecurityDomain.Builder()
                     .name(SECURITY_DOMAIN_NAME_PREFIX + DEP4)
