@@ -25,7 +25,7 @@
 
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
-    <extension-module>org.jboss.as.io</extension-module>
+    <extension-module>org.wildfly.extension.io</extension-module>
     <subsystem xmlns="urn:jboss:domain:io:1.0">
         <worker name="default" io-threads="3"/>
         <buffer-pool name="default" buffer-size="2048" buffers-per-slice="512"/>

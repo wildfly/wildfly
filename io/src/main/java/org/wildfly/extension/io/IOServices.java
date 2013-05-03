@@ -22,21 +22,16 @@
  * /
  */
 
-package org.jboss.as.io;
+package org.wildfly.extension.io;
+
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-interface Constants {
-    String BUFFER_POOL = "buffer-pool";
-    String BUFFER_SIZE = "buffer-size";
-    String BUFFER_PER_SLICE = "buffers-per-slice";
-    String WORKER = "worker";
-    String WORKER_IO_THREADS = "io-threads";
-    String WORKER_TASK_CORE_THREADS = "task-core-threads";
-    String WORKER_TASK_KEEPALIVE = "task-keepalive";
-    String WORKER_TASK_LIMIT = "task-limit";
-    String WORKER_TASK_MAX_THREADS = "task-max-threads";
-    String THREAD_DAEMON = "thread-daemon";
-    String STACK_SIZE = "stack-size";
+public final class IOServices {
+
+    public static final ServiceName IO = ServiceName.JBOSS.append("io");
+    public static final ServiceName WORKER = IO.append("worker");
+    public static final ServiceName BUFFER_POOL = IO.append("buffer-pool");
 }

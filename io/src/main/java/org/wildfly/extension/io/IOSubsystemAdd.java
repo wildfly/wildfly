@@ -22,16 +22,47 @@
  * /
  */
 
-package org.jboss.as.io;
+package org.wildfly.extension.io;
 
-import org.jboss.msc.service.ServiceName;
+import java.util.List;
+
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+
 
 /**
+ * Handler responsible for adding the subsystem resource to the model
+ *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public final class IOServices {
+class IOSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    public static final ServiceName IO = ServiceName.JBOSS.append("io");
-    public static final ServiceName WORKER = IO.append("worker");
-    public static final ServiceName BUFFER_POOL = IO.append("buffer-pool");
+    static final IOSubsystemAdd INSTANCE = new IOSubsystemAdd();
+
+    private IOSubsystemAdd() {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void performBoottime(OperationContext context, ModelNode operation, final ModelNode model,
+                                ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
+            throws OperationFailedException {
+
+
+    }
+
 }

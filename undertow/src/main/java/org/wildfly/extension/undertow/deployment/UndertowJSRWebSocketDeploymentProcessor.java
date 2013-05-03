@@ -44,7 +44,7 @@ import io.undertow.websockets.jsr.JsrWebSocketFilter;
 import io.undertow.websockets.jsr.JsrWebSocketLogger;
 import io.undertow.websockets.jsr.ServerWebSocketContainer;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.io.IOServices;
+import org.wildfly.extension.io.IOServices;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
