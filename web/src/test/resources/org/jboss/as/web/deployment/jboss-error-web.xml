@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-web>
+  <servlet>typo
+    <servlet-name>TestServlet</servlet-name>
+    <run-as-principal>User1</run-as-principal>
+  </servlet>
+</jboss-web>
