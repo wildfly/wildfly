@@ -44,9 +44,9 @@ Starting a Standalone Server
 ----------------------------
 An AS7 standalone server runs a single instance of AS7.
 
-<JBOSS_HOME>/bin/standalone.sh      (Unix / Linux)
+<WILDFLY_HOME>/bin/standalone.sh      (Unix / Linux)
 
-<JBOSS_HOME>\bin\standalone.bat     (Windows)
+<WILDFLY_HOME>\bin\standalone.bat     (Windows)
 
 
 Starting a Managed Domain
@@ -56,9 +56,9 @@ of AS7, potentially across several physical (or virtual) machines.  The default
 configuration includes a domain controller and a single server group with three 
 servers (two of which start automatically), all running on the localhost.
 
-<JBOSS_HOME>/bin/domain.sh      (Unix / Linux)
+<WILDFLY_HOME>/bin/domain.sh      (Unix / Linux)
 
-<JBOSS_HOME>\bin\domain.bat     (Windows)
+<WILDFLY_HOME>\bin\domain.bat     (Windows)
  
 
 Accessing the Web Console
@@ -77,5 +77,5 @@ The JBoss AS7 server can be stopped by pressing Ctrl-C on the command line.
 If the server is running in a background process, the server can be stopped
 using the JBoss CLI:
 
-<JBOSS_HOME>/bin/jboss-cli.sh --connect --command=:shutdown
+<WILDFLY_HOME>/bin/jboss-cli.sh --connect --command=:shutdown
 

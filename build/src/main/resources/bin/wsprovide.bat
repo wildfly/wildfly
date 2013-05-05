@@ -15,11 +15,11 @@ if "x%JAVA_HOME%" == "x" (
 ) else (
   set "JAVA=%JAVA_HOME%\bin\java"
 )
-set JBOSS_HOME=%DIRNAME%\..
+set WILDFLY_HOME=%DIRNAME%\..
 
 rem Execute the command
 "%JAVA%" %JAVA_OPTS% ^
-    -jar "%JBOSS_HOME%\jboss-modules.jar" ^
-    -mp "%JBOSS_HOME%\modules" ^
+    -jar "%WILDFLY_HOME%\jboss-modules.jar" ^
+    -mp "%WILDFLY_HOME%\modules" ^
     org.jboss.ws.tools.wsprovide ^
     %*

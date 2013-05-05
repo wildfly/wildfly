@@ -8,8 +8,8 @@ set DIRNAME="%~dp0"
 call :DeQuote DIRNAME
 set PROGNAME=%0
 
-rem Setup JBOSS_HOME
-set JBOSS_HOME=%DIRNAME%\..
+rem Setup WILDFLY_HOME
+set WILDFLY_HOME=%DIRNAME%\..
 
 rem Setup the JVM
 IF NOT DEFINED JAVA (
@@ -22,7 +22,7 @@ IF NOT DEFINED JAVA (
 )
 
 IF NOT DEFINED MODULEPATH (
-    set MODULEPATH="%JBOSS_HOME%\modules"
+    set MODULEPATH="%WILDFLY_HOME%\modules"
 	call :DeQuote MODULEPATH
 )
 
@@ -33,14 +33,14 @@ echo =========================================================================
 echo.
 echo   JBoss Vault
 echo.
-echo   JBOSS_HOME: %JBOSS_HOME%
+echo   WILDFLY_HOME: %WILDFLY_HOME%
 echo.
 echo   JAVA: %JAVA%
 echo.
 echo =========================================================================
 echo.
 
-%JAVA% -jar %JBOSS_HOME%\jboss-modules.jar -mp %MODULEPATH% org.jboss.as.vault-tool %*
+%JAVA% -jar %WILDFLY_HOME%\jboss-modules.jar -mp %MODULEPATH% org.jboss.as.vault-tool %*
 
 ENDLOCAL
 

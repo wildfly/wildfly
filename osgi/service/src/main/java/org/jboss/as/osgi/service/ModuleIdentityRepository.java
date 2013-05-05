@@ -83,9 +83,9 @@ final class ModuleIdentityRepository extends AbstractRepository {
                     contentFile = getRepositoryEntryFromModuleLoader(moduleIdentifier);
                 }
                 if (contentFile == null) {
-                    // As a last gasp, try $JBOSS_HOME/modules. Following AS7-6344 this will no longer
+                    // As a last gasp, try $WILDFLY_HOME/modules. Following AS7-6344 this will no longer
                     // find any standard module shipped with the AS or by a layered distribution or
-                    // add-on based upon it. It may, however, find user provided modules, since $JBOSS_HOME/modules
+                    // add-on based upon it. It may, however, find user provided modules, since $WILDFLY_HOME/modules
                     // is a valid root for user modules.
                     contentFile = getRepositoryEntry(modulesDir, moduleIdentifier);
                 }

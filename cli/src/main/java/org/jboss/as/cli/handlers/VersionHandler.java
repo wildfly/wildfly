@@ -66,7 +66,7 @@ public class VersionHandler implements CommandHandler {
     public void handle(CommandContext ctx) throws CommandFormatException {
         final StringBuilder buf = new StringBuilder();
         buf.append("JBoss Admin Command-line Interface\n");
-        buf.append("JBOSS_HOME: ").append(SecurityActions.getEnvironmentVariable("JBOSS_HOME")).append('\n');
+        buf.append("WILDFLY_HOME: ").append(SecurityActions.getEnvironmentVariable("WILDFLY_HOME")).append('\n');
         buf.append("JBoss AS release: ");
         final ModelControllerClient client = ctx.getModelControllerClient();
         if(client == null) {

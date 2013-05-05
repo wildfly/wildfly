@@ -39,27 +39,27 @@ fi
 
 # For Cygwin, ensure paths are in UNIX format before anything is touched
 if $cygwin ; then
-    [ -n "$JBOSS_HOME" ] &&
-        JBOSS_HOME=`cygpath --unix "$JBOSS_HOME"`
+    [ -n "$WILDFLY_HOME" ] &&
+        WILDFLY_HOME=`cygpath --unix "$WILDFLY_HOME"`
     [ -n "$JAVA_HOME" ] &&
         JAVA_HOME=`cygpath --unix "$JAVA_HOME"`
     [ -n "$JAVAC_JAR" ] &&
         JAVAC_JAR=`cygpath --unix "$JAVAC_JAR"`
 fi
 
-# Setup JBOSS_HOME
-RESOLVED_JBOSS_HOME=`cd "$DIRNAME/.."; pwd`
-if [ "x$JBOSS_HOME" = "x" ]; then
+# Setup WILDFLY_HOME
+RESOLVED_WILDFLY_HOME=`cd "$DIRNAME/.."; pwd`
+if [ "x$WILDFLY_HOME" = "x" ]; then
     # get the full path (without any relative bits)
-    JBOSS_HOME=$RESOLVED_JBOSS_HOME
+    WILDFLY_HOME=$RESOLVED_WILDFLY_HOME
 else
- SANITIZED_JBOSS_HOME=`cd "$JBOSS_HOME"; pwd`
- if [ "$RESOLVED_JBOSS_HOME" != "$SANITIZED_JBOSS_HOME" ]; then
-   echo "WARNING JBOSS_HOME may be pointing to a different installation - unpredictable results may occur."
+ SANITIZED_WILDFLY_HOME=`cd "$WILDFLY_HOME"; pwd`
+ if [ "$RESOLVED_WILDFLY_HOME" != "$SANITIZED_WILDFLY_HOME" ]; then
+   echo "WARNING WILDFLY_HOME may be pointing to a different installation - unpredictable results may occur."
    echo ""
  fi
 fi
-export JBOSS_HOME
+export WILDFLY_HOME
 
 # Setup the JVM
 if [ "x$JAVA" = "x" ]; then
@@ -110,7 +110,7 @@ else
 fi
 
 if [ "x$JBOSS_MODULEPATH" = "x" ]; then
-    JBOSS_MODULEPATH="$JBOSS_HOME/modules"
+    JBOSS_MODULEPATH="$WILDFLY_HOME/modules"
 fi
 
 if $linux || $solaris; then
@@ -155,7 +155,7 @@ if $darwin; then
 fi
 # determine the default base dir, if not set
 if [ "x$JBOSS_BASE_DIR" = "x" ]; then
-   JBOSS_BASE_DIR="$JBOSS_HOME/domain"
+   JBOSS_BASE_DIR="$WILDFLY_HOME/domain"
 fi
 # determine the default log dir, if not set
 if [ "x$JBOSS_LOG_DIR" = "x" ]; then
@@ -172,7 +172,7 @@ JAVA_FROM_JVM="$JAVA"
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
-    JBOSS_HOME=`cygpath --path --windows "$JBOSS_HOME"`
+    WILDFLY_HOME=`cygpath --path --windows "$WILDFLY_HOME"`
     JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
     JAVA_FROM_JVM=`cygpath --path --absolute --windows "$JAVA_FROM_JVM"`
     JBOSS_BASE_DIR=`cygpath --path --windows "$JBOSS_BASE_DIR"`
@@ -186,7 +186,7 @@ echo "========================================================================="
 echo ""
 echo "  JBoss Bootstrap Environment"
 echo ""
-echo "  JBOSS_HOME: $JBOSS_HOME"
+echo "  WILDFLY_HOME: $WILDFLY_HOME"
 echo ""
 echo "  JAVA: $JAVA"
 echo ""
@@ -201,10 +201,10 @@ while true; do
       eval \"$JAVA\" -D\"[Process Controller]\" $PROCESS_CONTROLLER_JAVA_OPTS \
          \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/process-controller.log\" \
          \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
-         -jar \"$JBOSS_HOME/jboss-modules.jar\" \
+         -jar \"$WILDFLY_HOME/jboss-modules.jar\" \
          -mp \"${JBOSS_MODULEPATH}\" \
          org.jboss.as.process-controller \
-         -jboss-home \"$JBOSS_HOME\" \
+         -jboss-home \"$WILDFLY_HOME\" \
          -jvm \"$JAVA_FROM_JVM\" \
          -mp \"${JBOSS_MODULEPATH}\" \
          -- \
@@ -220,10 +220,10 @@ while true; do
       eval \"$JAVA\" -D\"[Process Controller]\" $PROCESS_CONTROLLER_JAVA_OPTS \
          \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/process-controller.log\" \
          \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
-         -jar \"$JBOSS_HOME/jboss-modules.jar\" \
+         -jar \"$WILDFLY_HOME/jboss-modules.jar\" \
          -mp \"${JBOSS_MODULEPATH}\" \
          org.jboss.as.process-controller \
-         -jboss-home \"$JBOSS_HOME\" \
+         -jboss-home \"$WILDFLY_HOME\" \
          -jvm \"$JAVA_FROM_JVM\" \
          -mp \"${JBOSS_MODULEPATH}\" \
          -- \

@@ -167,12 +167,12 @@ public final class Main {
         }
         if (modulePath == null) {
             // if "-mp" (i.e. module path) wasn't part of the command line args, then check the system property.
-            // if system property not set, then default to JBOSS_HOME/modules
+            // if system property not set, then default to WILDFLY_HOME/modules
             // TODO: jboss-modules setting module.path is not a reliable API; log a WARN or something if we get here
             modulePath = SecurityActions.getSystemProperty("module.path", jbossHome + File.separator + "modules");
         }
         if (bootJar == null) {
-            // if "-jar" wasn't part of the command line args, then default to JBOSS_HOME/jboss-modules.jar
+            // if "-jar" wasn't part of the command line args, then default to WILDFLY_HOME/jboss-modules.jar
             bootJar = jbossHome + File.separator + "jboss-modules.jar";
         }
 

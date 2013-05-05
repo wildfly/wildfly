@@ -49,7 +49,7 @@ public class CliArgumentsTestCase extends CliScriptTestBase {
         execute(false, "--version");
         final String result = getLastCommandOutput();
         assertNotNull(result);
-        assertTrue(result, result.contains("JBOSS_HOME"));
+        assertTrue(result, result.contains("WILDFLY_HOME"));
         assertTrue(result, result.contains("JBoss AS release"));
         assertTrue(result, result.contains("JAVA_HOME"));
         assertTrue(result, result.contains("java.version"));
@@ -64,7 +64,7 @@ public class CliArgumentsTestCase extends CliScriptTestBase {
         execute(false, "--command=version");
         final String result = getLastCommandOutput();
         assertNotNull(result);
-        assertTrue(result, result.contains("JBOSS_HOME"));
+        assertTrue(result, result.contains("WILDFLY_HOME"));
         assertTrue(result, result.contains("JBoss AS release"));
         assertTrue(result, result.contains("JAVA_HOME"));
         assertTrue(result, result.contains("java.version"));
@@ -86,7 +86,7 @@ public class CliArgumentsTestCase extends CliScriptTestBase {
         execute(false, "--file=" + cliScriptFile.getAbsolutePath());
         final String result = getLastCommandOutput();
         assertNotNull(result);
-        assertTrue(result, result.contains("JBOSS_HOME"));
+        assertTrue(result, result.contains("WILDFLY_HOME"));
         assertTrue(result, result.contains("JBoss AS release"));
         assertTrue(result, result.contains("JAVA_HOME"));
         assertTrue(result, result.contains("java.version"));
@@ -104,7 +104,7 @@ public class CliArgumentsTestCase extends CliScriptTestBase {
 
         final String result = getLastCommandOutput();
         assertNotNull(result);
-        assertTrue(result, result.contains("JBOSS_HOME"));
+        assertTrue(result, result.contains("WILDFLY_HOME"));
         assertTrue(result, result.contains("JBoss AS release"));
         assertTrue(result, result.contains("JAVA_HOME"));
         assertTrue(result, result.contains("java.version"));

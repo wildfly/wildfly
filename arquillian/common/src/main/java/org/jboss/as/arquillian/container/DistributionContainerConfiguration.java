@@ -26,7 +26,7 @@ import org.jboss.arquillian.container.spi.client.deployment.Validate;
  */
 public class DistributionContainerConfiguration extends CommonContainerConfiguration {
 
-    private String jbossHome = System.getenv("JBOSS_HOME");
+    private String jbossHome = System.getenv("WILDFLY_HOME");
 
     private String javaHome = System.getenv("JAVA_HOME");
 

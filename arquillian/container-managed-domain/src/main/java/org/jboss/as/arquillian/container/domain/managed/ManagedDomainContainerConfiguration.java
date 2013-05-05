@@ -29,7 +29,7 @@ import org.jboss.as.arquillian.container.domain.CommonDomainContainerConfigurati
  */
 public class ManagedDomainContainerConfiguration extends CommonDomainContainerConfiguration {
 
-    private String jbossHome = System.getenv("JBOSS_HOME");
+    private String jbossHome = System.getenv("WILDFLY_HOME");
 
     private String javaHome = System.getenv("JAVA_HOME");
 

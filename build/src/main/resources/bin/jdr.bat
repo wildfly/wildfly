@@ -20,19 +20,19 @@ if "%OS%" == "Windows_NT" (
 )
 
 pushd %DIRNAME%..
-set "RESOLVED_JBOSS_HOME=%CD%"
+set "RESOLVED_WILDFLY_HOME=%CD%"
 popd
 
-if "x%JBOSS_HOME%" == "x" (
-  set "JBOSS_HOME=%RESOLVED_JBOSS_HOME%" 
+if "x%WILDFLY_HOME%" == "x" (
+  set "WILDFLY_HOME=%RESOLVED_WILDFLY_HOME%"
 )
 
-pushd "%JBOSS_HOME%"
-set "SANITIZED_JBOSS_HOME=%CD%"
+pushd "%WILDFLY_HOME%"
+set "SANITIZED_WILDFLY_HOME=%CD%"
 popd
 
-if "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
-    echo WARNING JBOSS_HOME may be pointing to a different installation - unpredictable results may occur.
+if "%RESOLVED_WILDFLY_HOME%" NEQ "%SANITIZED_WILDFLY_HOME%" (
+    echo WARNING WILDFLY_HOME may be pointing to a different installation - unpredictable results may occur.
 )
 
 set DIRNAME=
@@ -53,10 +53,10 @@ if "x%JAVA_HOME%" == "x" (
 )
 
 rem Find jboss-modules.jar, or we can't continue
-if exist "%JBOSS_HOME%\jboss-modules.jar" (
-    set "RUNJAR=%JBOSS_HOME%\jboss-modules.jar"
+if exist "%WILDFLY_HOME%\jboss-modules.jar" (
+    set "RUNJAR=%WILDFLY_HOME%\jboss-modules.jar"
 ) else (
-  echo Could not locate "%JBOSS_HOME%\jboss-modules.jar".
+  echo Could not locate "%WILDFLY_HOME%\jboss-modules.jar".
   echo Please check that you are in the bin directory when running this script.
   goto END
 )
@@ -65,12 +65,12 @@ rem Setup JBoss specific properties
 
 rem Set default module root paths
 if "x%JBOSS_MODULEPATH%" == "x" (
-  set  "JBOSS_MODULEPATH=%JBOSS_HOME%\modules"
+  set  "JBOSS_MODULEPATH=%WILDFLY_HOME%\modules"
 )
 
 "%JAVA%" ^
-    -Djboss.home.dir="%JBOSS_HOME%" ^
-    -jar "%JBOSS_HOME%\jboss-modules.jar" ^
+    -Djboss.home.dir="%WILDFLY_HOME%" ^
+    -jar "%WILDFLY_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_MODULEPATH%" ^
      org.jboss.as.jdr ^
      %*

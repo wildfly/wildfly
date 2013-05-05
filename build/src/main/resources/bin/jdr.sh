@@ -18,27 +18,27 @@ fi
 
 # For Cygwin, ensure paths are in UNIX format before anything is touched
 if $cygwin ; then
-    [ -n "$JBOSS_HOME" ] &&
-        JBOSS_HOME=`cygpath --unix "$JBOSS_HOME"`
+    [ -n "$WILDFLY_HOME" ] &&
+        WILDFLY_HOME=`cygpath --unix "$WILDFLY_HOME"`
     [ -n "$JAVA_HOME" ] &&
         JAVA_HOME=`cygpath --unix "$JAVA_HOME"`
     [ -n "$JAVAC_JAR" ] &&
         JAVAC_JAR=`cygpath --unix "$JAVAC_JAR"`
 fi
 
-# Setup JBOSS_HOME
-RESOLVED_JBOSS_HOME=`cd "$DIRNAME/.."; pwd`
-if [ "x$JBOSS_HOME" = "x" ]; then
+# Setup WILDFLY_HOME
+RESOLVED_WILDFLY_HOME=`cd "$DIRNAME/.."; pwd`
+if [ "x$WILDFLY_HOME" = "x" ]; then
     # get the full path (without any relative bits)
-    JBOSS_HOME=$RESOLVED_JBOSS_HOME
+    WILDFLY_HOME=$RESOLVED_WILDFLY_HOME
 else
- SANITIZED_JBOSS_HOME=`cd "$JBOSS_HOME"; pwd`
- if [ "$RESOLVED_JBOSS_HOME" != "$SANITIZED_JBOSS_HOME" ]; then
-   echo "WARNING JBOSS_HOME may be pointing to a different installation - unpredictable results may occur."
+ SANITIZED_WILDFLY_HOME=`cd "$WILDFLY_HOME"; pwd`
+ if [ "$RESOLVED_WILDFLY_HOME" != "$SANITIZED_WILDFLY_HOME" ]; then
+   echo "WARNING WILDFLY_HOME may be pointing to a different installation - unpredictable results may occur."
    echo ""
  fi
 fi
-export JBOSS_HOME
+export WILDFLY_HOME
 
 # Setup the JVM
 if [ "x$JAVA" = "x" ]; then
@@ -50,18 +50,18 @@ if [ "x$JAVA" = "x" ]; then
 fi
 
 if [ "x$JBOSS_MODULEPATH" = "x" ]; then
-    JBOSS_MODULEPATH="$JBOSS_HOME/modules"
+    JBOSS_MODULEPATH="$WILDFLY_HOME/modules"
 fi
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
-    JBOSS_HOME=`cygpath --path --windows "$JBOSS_HOME"`
+    WILDFLY_HOME=`cygpath --path --windows "$WILDFLY_HOME"`
     JBOSS_MODULEPATH=`cygpath --path --windows "$JBOSS_MODULEPATH"`
 fi
 
 eval \"$JAVA\" $JAVA_OPTS \
-         -Djboss.home.dir=\"$JBOSS_HOME\" \
-         -jar \"$JBOSS_HOME/jboss-modules.jar\" \
+         -Djboss.home.dir=\"$WILDFLY_HOME\" \
+         -jar \"$WILDFLY_HOME/jboss-modules.jar\" \
          -mp \"${JBOSS_MODULEPATH}\" \
          org.jboss.as.jdr \
          "$@" 
