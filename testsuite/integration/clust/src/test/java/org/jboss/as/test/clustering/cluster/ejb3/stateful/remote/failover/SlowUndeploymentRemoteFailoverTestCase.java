@@ -136,6 +136,7 @@ public class SlowUndeploymentRemoteFailoverTestCase {
      * @throws Exception
      */
     @Test
+    @Ignore("https://issues.jboss.org/browse/WFLY-1306")
     public void testSLSBInvocationRetryWhenOriginalInvocationHappensDuringEJBContainerShutdown() throws Exception {
         final NodeNameRetriever bean = (NodeNameRetriever) jndiContext.lookup("ejb:/" + MODULE_NAME + "/" + "" + "/" + SlowUndeployingClusteredSLSB.class.getSimpleName() + "!" + NodeNameRetriever.class.getName());
         doTest(bean);
@@ -150,6 +151,7 @@ public class SlowUndeploymentRemoteFailoverTestCase {
      * @throws Exception
      */
     @Test
+    @Ignore("https://issues.jboss.org/browse/WFLY-1306")
     public void testSFSBInvocationRetryWhenOriginalInvocationHappensDuringEJBContainerShutdown() throws Exception {
         final NodeNameRetriever bean = (NodeNameRetriever) jndiContext.lookup("ejb:/" + MODULE_NAME + "/" + "" + "/" + SlowUndeployingClusteredSFSB.class.getSimpleName() + "!" + NodeNameRetriever.class.getName() + "?stateful");
         doTest(bean);
