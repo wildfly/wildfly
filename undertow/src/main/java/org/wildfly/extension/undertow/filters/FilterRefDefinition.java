@@ -27,8 +27,8 @@ package org.wildfly.extension.undertow.filters;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.DefaultAddHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimplePersistentResourceDefinition;
 import org.wildfly.extension.undertow.Constants;
@@ -45,7 +45,7 @@ public class FilterRefDefinition extends SimplePersistentResourceDefinition {
     private FilterRefDefinition() {
         super(UndertowExtension.PATH_FILTER_REF,
                 UndertowExtension.getResolver(Constants.FILTER_REF),
-                new DefaultAddHandler(),
+                new AbstractAddStepHandler(),
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 

@@ -1,18 +1,18 @@
 package org.wildfly.extension.undertow;
 
+import java.util.Collection;
+
 import io.undertow.server.HttpHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.controller.AttributeDefinition;
 
 /**
- * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
+ * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
-public interface Handler extends PersistentResourceDefinition {
+public interface Handler {
+    Collection<AttributeDefinition> getAttributes();
 
-    String getName();
+    String getXmlElementName();
 
-    HttpHandler createHandler(final HttpHandler next, OperationContext context, ModelNode model) throws OperationFailedException;
+    Class<? extends HttpHandler> getHandlerClass();
 
 }

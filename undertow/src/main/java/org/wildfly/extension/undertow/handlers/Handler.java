@@ -32,15 +32,15 @@ import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimplePersistentResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowService;
-import org.jboss.dmr.ModelNode;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
-public abstract class Handler extends SimplePersistentResourceDefinition {
+abstract class Handler extends SimplePersistentResourceDefinition {
     private String name;
 
     protected Handler(String name) {

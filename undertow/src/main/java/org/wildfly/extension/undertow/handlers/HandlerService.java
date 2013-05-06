@@ -25,11 +25,11 @@
 package org.wildfly.extension.undertow.handlers;
 
 import io.undertow.server.HttpHandler;
-import org.wildfly.extension.undertow.UndertowLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.wildfly.extension.undertow.UndertowLogger;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
