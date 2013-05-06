@@ -6,7 +6,6 @@ import java.util.Collections;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.DefaultAddHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimplePersistentResourceDefinition;
@@ -17,7 +16,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public abstract class AbstractHandlerDefinition extends SimplePersistentResourceDefinition {
+public abstract class AbstractHandlerDefinition extends SimplePersistentResourceDefinition implements Handler {
     protected final String name;
 
     protected AbstractHandlerDefinition(final String name, AbstractAddStepHandler addHandler, AbstractRemoveStepHandler removeHandler) {
@@ -34,7 +33,7 @@ public abstract class AbstractHandlerDefinition extends SimplePersistentResource
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
         if (resourceRegistration.getOperationEntry(PathAddress.EMPTY_ADDRESS, ModelDescriptionConstants.ADD) == null) {
-            registerAddOperation(resourceRegistration, new DefaultAddHandler(getAttributes()), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+            registerAddOperation(resourceRegistration, new AbstractAddStepHandler(getAttributes()), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
         }
         if (resourceRegistration.getOperationEntry(PathAddress.EMPTY_ADDRESS, ModelDescriptionConstants.REMOVE) == null) {
             registerRemoveOperation(resourceRegistration, new DefaultHandlerRemove(), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);

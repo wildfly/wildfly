@@ -29,8 +29,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.DefaultAddHandler;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimplePersistentResourceDefinition;
@@ -45,13 +45,13 @@ public class FilterDefinitions extends SimplePersistentResourceDefinition {
     public static final FilterDefinitions INSTANCE = new FilterDefinitions();
     private static List<? extends SimplePersistentResourceDefinition> FILTERS = Collections.unmodifiableList(Arrays.asList(
             new BasicAuthHandler(),
-            new ResponseHeaderHandler()
+            new ConnectionLimitHandler()
     ));
 
     private FilterDefinitions() {
         super(UndertowExtension.PATH_FILTERS,
                 UndertowExtension.getResolver(Constants.FILTER),
-                new DefaultAddHandler(),
+                new AbstractAddStepHandler(),
                 ReloadRequiredRemoveStepHandler.INSTANCE
         );
     }
