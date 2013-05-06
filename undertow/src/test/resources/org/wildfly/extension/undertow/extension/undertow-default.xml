@@ -41,7 +41,9 @@
         </host>
 
     </server>
-    <server name="test" default-host="test-context" servlet-container="blah"/>
+     <server name="test" default-host="test-context" servlet-container="blah">
+           <host name="default-host"/>
+       </server>
 
     <servlet-container name="default">
         <jsp-config development="${prop.development:true}"

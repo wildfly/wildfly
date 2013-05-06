@@ -23,6 +23,9 @@
 package org.jboss.as.controller;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.registry.Resource;
@@ -34,7 +37,29 @@ import org.jboss.msc.service.ServiceController;
  *
  * @author John Bailey
  */
-public abstract class AbstractAddStepHandler implements OperationStepHandler {
+public class AbstractAddStepHandler implements OperationStepHandler {
+    protected Collection<AttributeDefinition> attributes;
+
+    public AbstractAddStepHandler(){ //default constructor to preserve backward compatibility
+
+    }
+
+    public AbstractAddStepHandler(Collection<AttributeDefinition> attributes) {
+        this.attributes = attributes;
+    }
+
+    /**
+     * Constructs add handler
+     *
+     * @param attributes for which model will be populated
+     */
+    public AbstractAddStepHandler(AttributeDefinition... attributes) {
+        if (attributes.length > 0) {
+            this.attributes = Arrays.asList(attributes);
+        } else {
+            this.attributes = Collections.emptySet();
+        }
+    }
 
     /** {@inheritDoc */
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -111,7 +136,13 @@ public abstract class AbstractAddStepHandler implements OperationStepHandler {
      *
      * @throws OperationFailedException if {@code operation} is invalid or populating the model otherwise fails
      */
-    protected abstract void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException;
+    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        if (attributes != null) {
+            for (AttributeDefinition attr : attributes) {
+                attr.validateAndSet(operation, model);
+            }
+        }
+    }
 
     /**
      * Gets whether {@link #performRuntime(OperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode, ServiceVerificationHandler, java.util.List)}}

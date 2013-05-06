@@ -12,14 +12,13 @@
         <host name="default-host" alias="localhost, some.host">
             <location name="/" handler="welcome-content">
                 <filter-ref name="security-other"/>
-                <filter-ref name="headers"/>
+                <filter-ref name="connection-limit"/>
+                <!--<filter-ref name="headers"/>-->
             </location>
         </host>
 
     </server>
-    <server name="test" default-host="test-context" servlet-container="blah">
-        <host name="default-host"/>
-    </server>
+
 
     <servlet-container name="default">
         <jsp-config development="${prop.development:true}"
@@ -53,7 +52,8 @@
     </handlers>
     <filters>
         <basic-auth name="security-other" security-domain="other"/>
-        <response-header name="headers" header-name="MY_HEADER" header-value="someValue"/>
+        <connection-limit name="limit-connections" max-concurrent-requests="15000"/>
+        <!--<response-header name="headers" header-name="MY_HEADER" header-value="someValue"/>-->
     </filters>
 
 </subsystem>

@@ -28,21 +28,19 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
-import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.error.FileErrorPageHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.AbstractHandlerDefinition;
 import org.wildfly.extension.undertow.Constants;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class ErrorPageDefinition extends AbstractHandlerDefinition {
 
+    static final ErrorPageDefinition INSTANCE = new ErrorPageDefinition();
     private static final AttributeDefinition CODE = new SimpleAttributeDefinitionBuilder("code", ModelType.INT)
             .setAllowExpression(true)
             .setAllowNull(true)
@@ -52,7 +50,6 @@ class ErrorPageDefinition extends AbstractHandlerDefinition {
             .setAllowNull(true)
             .build();
     private static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(CODE, PATH));
-    static final ErrorPageDefinition INSTANCE = new ErrorPageDefinition();
 
     private ErrorPageDefinition() {
         super(Constants.ERROR_PAGE);
@@ -63,7 +60,8 @@ class ErrorPageDefinition extends AbstractHandlerDefinition {
         return ATTRIBUTES;
     }
 
-    public HttpHandler createHandler(HttpHandler next, OperationContext context, ModelNode model) throws OperationFailedException {
-        return null;
+    @Override
+    public Class getHandlerClass() {
+        return FileErrorPageHandler.class;
     }
 }

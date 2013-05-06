@@ -29,8 +29,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.DefaultAddHandler;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimplePersistentResourceDefinition;
@@ -50,7 +50,7 @@ public class HandlerDefinitions extends SimplePersistentResourceDefinition {
     private HandlerDefinitions() {
         super(UndertowExtension.PATH_HANDLERS,
                 UndertowExtension.getResolver(Constants.HANDLER),
-                new DefaultAddHandler(),
+                new AbstractAddStepHandler(),
                 ReloadRequiredRemoveStepHandler.INSTANCE
         );
     }

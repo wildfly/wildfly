@@ -27,15 +27,12 @@ package org.wildfly.extension.undertow.errorhandler;
 import java.util.Collection;
 import java.util.Collections;
 
-import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.error.SimpleErrorPageHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.AbstractHandlerDefinition;
 import org.wildfly.extension.undertow.Constants;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
@@ -57,7 +54,8 @@ class SimpleErrorPageDefinition extends AbstractHandlerDefinition {
         return Collections.singleton(CODE);
     }
 
-    public HttpHandler createHandler(OperationContext context, ModelNode model) throws OperationFailedException {
-        return null;
+    @Override
+    public Class getHandlerClass() {
+        return SimpleErrorPageHandler.class;
     }
 }

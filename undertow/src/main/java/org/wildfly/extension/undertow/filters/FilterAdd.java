@@ -22,13 +22,14 @@
  * /
  */
 
-package org.wildfly.extension.undertow.handlers;
+package org.wildfly.extension.undertow.filters;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -36,15 +37,17 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.extension.undertow.Handler;
 import org.wildfly.extension.undertow.UndertowService;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
-class HandlerAdd extends AbstractAddStepHandler {
+class FilterAdd extends AbstractAddStepHandler {
+
     private Handler handler;
 
-    HandlerAdd(Handler handler) {
+    FilterAdd(Handler handler) {
         super(handler.getAttributes());
         this.handler = handler;
     }
@@ -54,10 +57,20 @@ class HandlerAdd extends AbstractAddStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
-        final HandlerService service = new HandlerService(handler.createHandler(context, model));
+        final FilterService service = new FilterService(handler, getResolvedModel(context, model));
         final ServiceTarget target = context.getServiceTarget();
-        newControllers.add(target.addService(UndertowService.HANDLER.append(name), service)
+        newControllers.add(target.addService(UndertowService.FILTER.append(name), service)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install());
+
     }
+
+    private ModelNode getResolvedModel(OperationContext context, ModelNode model) throws OperationFailedException {
+        ModelNode resolved = new ModelNode();
+        for (AttributeDefinition attribute : attributes) {
+            resolved.get(attribute.getName()).set(attribute.resolveModelAttribute(context, model));
+        }
+        return resolved;
+    }
+
 }

@@ -29,6 +29,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.dmr.ModelNode;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
@@ -190,5 +191,8 @@ public interface UndertowMessages {
 
     @Message(id = 17345, value = "Timeout context service activation: %s")
     TimeoutException timeoutContextActivation(ServiceName service);
+
+    @Message(id = 17346, value = "Could not construct handler for class: %s. with parameters %s")
+    RuntimeException cannotCreateHttpHandler(Class handlerClass, ModelNode parameters, @Cause Throwable cause);
 
 }
