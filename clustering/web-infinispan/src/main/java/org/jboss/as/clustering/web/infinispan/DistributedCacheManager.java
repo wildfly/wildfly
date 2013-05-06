@@ -81,6 +81,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     private final SharedLocalYieldingClusterLockManager lockManager;
     private final Cache<String, Map<Object, Object>> cache;
     private final ForceSynchronousCacheInvoker invoker;
+    private final CacheInvoker txInvoker;
     private final BatchingManager batchingManager;
     private final boolean passivationEnabled;
     private final boolean persistenceEnabled;
@@ -91,13 +92,14 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     public DistributedCacheManager(LocalDistributableSessionManager manager,
             Cache<String, Map<Object, Object>> cache, Registry<String, Void> registry,
             SharedLocalYieldingClusterLockManager lockManager, SessionAttributeStorage<T> attributeStorage,
-            BatchingManager batchingManager, CacheInvoker invoker, KeyAffinityServiceFactory affinityFactory) {
+            BatchingManager batchingManager, CacheInvoker invoker, CacheInvoker txInvoker, KeyAffinityServiceFactory affinityFactory) {
         this.manager = manager;
         this.lockManager = lockManager;
         this.cache = cache;
         this.attributeStorage = attributeStorage;
         this.batchingManager = batchingManager;
         this.invoker = new ForceSynchronousCacheInvoker(invoker);
+        this.txInvoker = txInvoker;
         this.lockTimeout = this.cache.getCacheConfiguration().locking().lockAcquisitionTimeout();
 
         Configuration configuration = this.cache.getCacheConfiguration();
@@ -310,7 +312,11 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
                 return null;
             }
         };
-        this.invoker.invoke(this.cache, operation, Flag.FAIL_SILENTLY);
+        try {
+            this.txInvoker.invoke(this.cache, operation, Flag.FAIL_SILENTLY);
+        } catch (Throwable e) {
+            ROOT_LOGGER.debugf(e, "Failed to evict session %s", sessionId);
+        }
     }
 
     /**

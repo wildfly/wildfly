@@ -87,6 +87,7 @@ public class DistributedCacheManagerTest {
     private SharedLocalYieldingClusterLockManager lockManager = mock(SharedLocalYieldingClusterLockManager.class);
     private BatchingManager batchingManager = mock(BatchingManager.class);
     private CacheInvoker invoker = mock(CacheInvoker.class);
+    private CacheInvoker txInvoker = mock(CacheInvoker.class);
     private DistributedCacheManager<OutgoingDistributableSessionData> manager;
     @SuppressWarnings("unchecked")
     private KeyAffinityService<String> affinity = mock(KeyAffinityService.class);
@@ -103,7 +104,7 @@ public class DistributedCacheManagerTest {
         when(this.cache.getCacheConfiguration()).thenReturn(builder.build());
         when(affinityFactory.createService(same(this.cache), capturedKeyGenerator.capture())).thenReturn(this.affinity);
 
-        this.manager = new DistributedCacheManager<OutgoingDistributableSessionData>(this.sessionManager, this.cache, this.registry, this.lockManager, this.storage, this.batchingManager, this.invoker, affinityFactory);
+        this.manager = new DistributedCacheManager<OutgoingDistributableSessionData>(this.sessionManager, this.cache, this.registry, this.lockManager, this.storage, this.batchingManager, this.invoker, this.txInvoker, affinityFactory);
 
         assertSame(this.manager, capturedKeyGenerator.getValue());
         
@@ -382,7 +383,8 @@ public class DistributedCacheManagerTest {
         @SuppressWarnings("rawtypes")
         ArgumentCaptor<CacheInvoker.Operation> capturedOperation = ArgumentCaptor.forClass(CacheInvoker.Operation.class);
 
-        when(this.invoker.invoke(same(this.cache), capturedOperation.capture(), same(Flag.FAIL_SILENTLY))).thenReturn(null);
+        when(this.txInvoker.invoke(same(this.cache), capturedOperation.capture(), same(Flag.FAIL_SILENTLY))).thenReturn(null);
+        when(this.txInvoker.invoke(same(this.cache), capturedOperation.capture())).thenReturn(null);
         when(this.cache.startBatch()).thenReturn(false);
 
         this.manager.evictSession(sessionId);
@@ -406,7 +408,7 @@ public class DistributedCacheManagerTest {
         @SuppressWarnings("rawtypes")
         ArgumentCaptor<CacheInvoker.Operation> capturedOperation = ArgumentCaptor.forClass(CacheInvoker.Operation.class);
 
-        when(this.invoker.invoke(same(this.cache), capturedOperation.capture(), same(Flag.FAIL_SILENTLY))).thenReturn(null);
+        when(this.txInvoker.invoke(same(this.cache), capturedOperation.capture(), same(Flag.FAIL_SILENTLY))).thenReturn(null);
 
         this.manager.evictSession(sessionId, null);
 

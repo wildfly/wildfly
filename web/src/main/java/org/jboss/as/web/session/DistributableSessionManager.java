@@ -1176,149 +1176,157 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
             // were going to be re-requested by the thread
             SessionInvalidationTracker.suspend();
 
-            // First, handle the sessions we are actively managing
-            for (Session s: this.sessions.values()) {
-                if (!this.started) return;
-
-                boolean likelyExpired = false;
-                String realId = null;
-
+            if (this.valveLock.tryLock(0, TimeUnit.SECONDS)) {
                 try {
-                    ClusteredSession<O> session = cast(s);
+                    // First, handle the sessions we are actively managing
+                    for (Session s: this.sessions.values()) {
+                        if (!this.started) return;
 
-                    realId = session.getRealId();
-                    likelyExpired = expire;
+                        boolean likelyExpired = false;
+                        String realId = null;
 
-                    if (expire) {
-                        // JBAS-2403. Check for outdated sessions where we think
-                        // the local copy has timed out. If found, refresh the
-                        // session from the cache in case that might change the timeout
-                        likelyExpired = (session.isValid(false) == false);
-                        if (likelyExpired && this.outdatedSessionChecker.isSessionOutdated(session)) {
-                            // With JBC, every time we get a notification from the distributed
-                            // cache of an update, we get the latest timestamp. So
-                            // we shouldn't need to do a full session load here. A load
-                            // adds a risk of an unintended data gravitation. However,
-                            // with a database instead of JBC we don't get notifications
+                        try {
+                            ClusteredSession<O> session = cast(s);
 
-                            // JBAS-2792 don't assign the result of loadSession to session
-                            // just update the object from the cache or fall through if
-                            // the session has been removed from the cache
-                            loadSession(session.getRealId());
+                            realId = session.getRealId();
+                            likelyExpired = expire;
+
+                            if (expire) {
+                                // JBAS-2403. Check for outdated sessions where we think
+                                // the local copy has timed out. If found, refresh the
+                                // session from the cache in case that might change the timeout
+                                likelyExpired = (session.isValid(false) == false);
+                                if (likelyExpired && this.outdatedSessionChecker.isSessionOutdated(session)) {
+                                    // With JBC, every time we get a notification from the distributed
+                                    // cache of an update, we get the latest timestamp. So
+                                    // we shouldn't need to do a full session load here. A load
+                                    // adds a risk of an unintended data gravitation. However,
+                                    // with a database instead of JBC we don't get notifications
+
+                                    // JBAS-2792 don't assign the result of loadSession to session
+                                    // just update the object from the cache or fall through if
+                                    // the session has been removed from the cache
+                                    loadSession(session.getRealId());
+                                }
+
+                                // Do a normal invalidation check that will expire the
+                                // session if it has timed out
+                                // DON'T SYNCHRONIZE on session here -- isValid() and
+                                // expire() are meant to be multi-threaded and synchronize
+                                // properly internally; synchronizing externally can lead
+                                // to deadlocks!!
+                                if (!session.isValid())
+                                    continue;
+
+                                likelyExpired = false;
+                            }
+
+                            // we now have a valid session; store it so we can check later
+                            // if we need to passivate it
+                            if (passivate) {
+                                passivationChecks.add(new PassivationCheck(session));
+                            }
+
+                        } catch (Exception e) {
+                            if (likelyExpired) {
+                                // JBAS-7397 clean up
+                                bruteForceCleanup(realId, e);
+                            } else {
+                                log.error(MESSAGES.failToPassivateLoad(realId), e);
+                            }
+
                         }
-
-                        // Do a normal invalidation check that will expire the
-                        // session if it has timed out
-                        // DON'T SYNCHRONIZE on session here -- isValid() and
-                        // expire() are meant to be multi-threaded and synchronize
-                        // properly internally; synchronizing externally can lead
-                        // to deadlocks!!
-                        if (!session.isValid())
-                            continue;
-
-                        likelyExpired = false;
                     }
 
-                    // we now have a valid session; store it so we can check later
-                    // if we need to passivate it
-                    if (passivate) {
-                        passivationChecks.add(new PassivationCheck(session));
-                    }
+                    // Next, handle any unloaded sessions
 
-                } catch (Exception e) {
-                    if (likelyExpired) {
-                        // JBAS-7397 clean up
-                        bruteForceCleanup(realId, e);
-                    } else {
-                        log.error(MESSAGES.failToPassivateLoad(realId), e);
-                    }
+                    // We may have not gotten replication of a timestamp for requests
+                    // that occurred w/in maxUnreplicatedInterval of the previous
+                    // request. So we add a grace period to avoid flushing a session early
+                    // and permanently losing part of its node structure in JBoss Cache.
+                    long maxUnrep = maxUnreplicatedInterval < 0 ? 60 : maxUnreplicatedInterval;
 
-                }
-            }
+                    for (Map.Entry<String, OwnedSessionUpdate> entry : this.unloadedSessions.entrySet()) {
+                        if (!this.started) return;
 
-            // Next, handle any unloaded sessions
+                        String realId = entry.getKey();
+                        OwnedSessionUpdate osu = entry.getValue();
+                        boolean likelyExpired = false;
 
-            // We may have not gotten replication of a timestamp for requests
-            // that occurred w/in maxUnreplicatedInterval of the previous
-            // request. So we add a grace period to avoid flushing a session early
-            // and permanently losing part of its node structure in JBoss Cache.
-            long maxUnrep = maxUnreplicatedInterval < 0 ? 60 : maxUnreplicatedInterval;
+                        long now = System.currentTimeMillis();
+                        long elapsed = (now - osu.getUpdateTime());
+                        try {
+                            likelyExpired = expire && osu.getMaxInactive() >= 1 && elapsed >= (osu.getMaxInactive() + maxUnrep) * 1000L;
+                            if (likelyExpired) {
+                                // if (osu.passivated && osu.owner == null)
+                                if (osu.isPassivated()) {
+                                    // Passivated session needs to be expired. A call to
+                                    // findSession will bring it out of passivation
+                                    Session session = findSession(realId);
+                                    if (session != null) {
+                                        session.isValid(); // will expire
+                                        continue;
+                                    }
+                                }
 
-            for (Map.Entry<String, OwnedSessionUpdate> entry : this.unloadedSessions.entrySet()) {
-                if (!this.started) return;
+                                // If we get here either !osu.passivated, or we don't own
+                                // the session or the session couldn't be reactivated (invalidated by user).
+                                // Either way, do a cleanup
+                                this.distributedCacheManager.removeSessionLocal(realId, osu.getOwner());
+                                unloadedSessions.remove(realId);
+                                this.getReplicationStatistics().removeStats(realId);
 
-                String realId = entry.getKey();
-                OwnedSessionUpdate osu = entry.getValue();
-                boolean likelyExpired = false;
-
-                long now = System.currentTimeMillis();
-                long elapsed = (now - osu.getUpdateTime());
-                try {
-                    likelyExpired = expire && osu.getMaxInactive() >= 1 && elapsed >= (osu.getMaxInactive() + maxUnrep) * 1000L;
-                    if (likelyExpired) {
-                        // if (osu.passivated && osu.owner == null)
-                        if (osu.isPassivated()) {
-                            // Passivated session needs to be expired. A call to
-                            // findSession will bring it out of passivation
-                            Session session = findSession(realId);
-                            if (session != null) {
-                                session.isValid(); // will expire
-                                continue;
+                            } else if (passivate && !osu.isPassivated()) {
+                                // we now have a valid session; store it so we can check later
+                                // if we need to passivate it
+                                passivationChecks.add(new PassivationCheck(realId, osu));
+                            }
+                        } catch (Exception e) {
+                            // JBAS-7397 Don't try forever
+                            if (likelyExpired) {
+                                // JBAS-7397
+                                bruteForceCleanup(realId, e);
+                            } else {
+                                log.error(MESSAGES.failToPassivateUnloaded(realId), e);
                             }
                         }
-
-                        // If we get here either !osu.passivated, or we don't own
-                        // the session or the session couldn't be reactivated (invalidated by user).
-                        // Either way, do a cleanup
-                        this.distributedCacheManager.removeSessionLocal(realId, osu.getOwner());
-                        unloadedSessions.remove(realId);
-                        this.getReplicationStatistics().removeStats(realId);
-
-                    } else if (passivate && !osu.isPassivated()) {
-                        // we now have a valid session; store it so we can check later
-                        // if we need to passivate it
-                        passivationChecks.add(new PassivationCheck(realId, osu));
                     }
-                } catch (Exception e) {
-                    // JBAS-7397 Don't try forever
-                    if (likelyExpired) {
-                        // JBAS-7397
-                        bruteForceCleanup(realId, e);
-                    } else {
-                        log.error(MESSAGES.failToPassivateUnloaded(realId), e);
+
+                    if (!this.started) return;
+
+                    // Now, passivations
+                    if (passivate) {
+                        // Iterate through sessions, earliest lastAccessedTime to latest
+                        for (PassivationCheck passivationCheck : passivationChecks) {
+                            try {
+                                long timeNow = System.currentTimeMillis();
+                                long timeIdle = timeNow - passivationCheck.getLastUpdate();
+                                // if maxIdle time configured, means that we need to passivate sessions that have
+                                // exceeded the max allowed idle time
+                                if (passivationMax >= 0 && timeIdle > passivationMax) {
+                                    passivationCheck.passivate();
+                                }
+                                // If the session didn't exceed the passivationMaxIdleTime_, see
+                                // if the number of sessions managed by this manager greater than the max allowed
+                                // active sessions, passivate the session if it exceed passivationMinIdleTime_
+                                else if ((maxActiveAllowed > 0) && (passivationMin > 0) && (calcActiveSessions() >= maxActiveAllowed) && (timeIdle > passivationMin)) {
+                                    passivationCheck.passivate();
+                                } else {
+                                    // the entries are ordered by lastAccessed, so once
+                                    // we don't passivate one, we won't passivate any
+                                    break;
+                                }
+                            } catch (Exception e) {
+                                log.error(MESSAGES.failToPassivate(passivationCheck.isUnloaded() ? "unloaded " : "", passivationCheck.getRealId()), e);
+                            }
+                        }
                     }
+                } finally {
+                    this.valveLock.unlock();
                 }
             }
-
-            if (!this.started) return;
-
-            // Now, passivations
-            if (passivate) {
-                // Iterate through sessions, earliest lastAccessedTime to latest
-                for (PassivationCheck passivationCheck : passivationChecks) {
-                    try {
-                        long timeNow = System.currentTimeMillis();
-                        long timeIdle = timeNow - passivationCheck.getLastUpdate();
-                        // if maxIdle time configured, means that we need to passivate sessions that have
-                        // exceeded the max allowed idle time
-                        if (passivationMax >= 0 && timeIdle > passivationMax) {
-                            passivationCheck.passivate();
-                        }
-                        // If the session didn't exceed the passivationMaxIdleTime_, see
-                        // if the number of sessions managed by this manager greater than the max allowed
-                        // active sessions, passivate the session if it exceed passivationMinIdleTime_
-                        else if ((maxActiveAllowed > 0) && (passivationMin > 0) && (calcActiveSessions() >= maxActiveAllowed) && (timeIdle > passivationMin)) {
-                            passivationCheck.passivate();
-                        } else {
-                            // the entries are ordered by lastAccessed, so once
-                            // we don't passivate one, we won't passivate any
-                            break;
-                        }
-                    } catch (Exception e) {
-                        log.error(MESSAGES.failToPassivate(passivationCheck.isUnloaded() ? "unloaded " : "", passivationCheck.getRealId()), e);
-                    }
-                }
-            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         } catch (Exception ex) {
             log.error(MESSAGES.processExpirationPassivationException(ex.getLocalizedMessage()), ex);
         } finally {

@@ -38,6 +38,7 @@ import org.jboss.as.clustering.infinispan.atomic.AtomicMapCache;
 import org.jboss.as.clustering.infinispan.invoker.BatchCacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
+import org.jboss.as.clustering.infinispan.invoker.TransactionCacheInvoker;
 import org.jboss.as.clustering.infinispan.subsystem.AbstractCacheConfigurationService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
@@ -77,6 +78,7 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
 
     private SessionAttributeStorageFactory storageFactory = new SessionAttributeStorageFactoryImpl();
     private CacheInvoker invoker = new RetryingCacheInvoker(new BatchCacheInvoker(), 10, 100);
+    private CacheInvoker txInvoker = new TransactionCacheInvoker();
     private SessionAttributeMarshallerFactory marshallerFactory = new SessionAttributeMarshallerFactoryImpl();
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Registry> registry = new InjectedValue<Registry>();
@@ -100,7 +102,7 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
         BatchingManager batchingManager = new TransactionBatchingManager(cache.getTransactionManager());
         SessionAttributeStorage<T> storage = this.storageFactory.createStorage(manager.getReplicationConfig().getReplicationGranularity(), this.marshallerFactory.createMarshaller(manager));
 
-        return new DistributedCacheManager<T>(manager, new AtomicMapCache<String, Object, Object>(cache), jvmRouteRegistry, this.lockManager.getOptionalValue(), storage, batchingManager, this.invoker, this.affinityFactory.getValue());
+        return new DistributedCacheManager<T>(manager, new AtomicMapCache<String, Object, Object>(cache), jvmRouteRegistry, this.lockManager.getOptionalValue(), storage, batchingManager, this.invoker, this.txInvoker, this.affinityFactory.getValue());
     }
 
     @Override
