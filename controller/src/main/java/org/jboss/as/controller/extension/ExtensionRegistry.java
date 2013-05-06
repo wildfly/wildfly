@@ -352,7 +352,7 @@ public class ExtensionRegistry {
         final Map<String, SubsystemInformation> subsystemsInfo = getAvailableSubsystems(moduleName);
         if(subsystemsInfo != null && ! subsystemsInfo.isEmpty()) {
             for(final Map.Entry<String, SubsystemInformation> entry : subsystemsInfo.entrySet()) {
-                subsystems.add(entry.getKey(), entry.getValue().getManagementInterfaceMajorVersion() +"."+ entry.getValue().getManagementInterfaceMinorVersion());
+                subsystems.add(entry.getKey(), entry.getValue().getManagementInterfaceMajorVersion() +"."+ entry.getValue().getManagementInterfaceMicroVersion());
             }
         }
     }
