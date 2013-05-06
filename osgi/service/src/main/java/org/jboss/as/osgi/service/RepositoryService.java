@@ -22,10 +22,12 @@
 
 package org.jboss.as.osgi.service;
 
-import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.osgi.repository.XRepository.MODULE_IDENTITY_NAMESPACE;
+import static org.jboss.osgi.repository.XRepository.SERVICE_NAMES;
 
 import java.io.File;
+import java.util.Dictionary;
+import java.util.Hashtable;
 
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.ServerEnvironment;
@@ -45,9 +47,14 @@ import org.jboss.osgi.repository.RepositoryStorageException;
 import org.jboss.osgi.repository.RepositoryStorageFactory;
 import org.jboss.osgi.repository.XRepository;
 import org.jboss.osgi.repository.core.FileBasedRepositoryStorage;
-import org.jboss.osgi.repository.core.XRepositoryBuilder;
+import org.jboss.osgi.repository.core.MavenRepository;
+import org.jboss.osgi.repository.core.MavenRepository.ConfigurationPropertyProvider;
+import org.jboss.osgi.repository.spi.AbstractPersistentRepository;
+import org.jboss.osgi.repository.spi.AggregatingRepository;
 import org.jboss.osgi.resolver.XResource;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
+import org.osgi.framework.ServiceRegistration;
 
 /**
  * The standalone {@link XRepository} service.
@@ -59,6 +66,7 @@ class RepositoryService extends AbstractService<XRepository> {
 
     private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
+    private ServiceRegistration<?> registration;
     private XRepository repository;
 
     static ServiceController<?> addService(final ServiceTarget target) {
@@ -74,14 +82,14 @@ class RepositoryService extends AbstractService<XRepository> {
     }
 
     @Override
-    public synchronized void start(StartContext context) throws StartException {
-        ServiceController<?> serviceController = context.getController();
-        LOGGER.tracef("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
+    public synchronized void start(StartContext startContext) throws StartException {
+
+        // Create the {@link RepositoryStorageFactory}
         final ServerEnvironment serverenv = injectedServerEnvironment.getValue();
-        final File storageDir = new File(serverenv.getServerDataDir().getPath() + File.separator + "repository");
         RepositoryStorageFactory factory = new RepositoryStorageFactory() {
             @Override
             public RepositoryStorage create(XRepository repository) {
+                File storageDir = new File(serverenv.getServerDataDir().getPath() + File.separator + "repository");
                 return new FileBasedRepositoryStorage(repository, storageDir) {
                     @Override
                     public XResource addResource(XResource res) throws RepositoryStorageException {
@@ -95,17 +103,33 @@ class RepositoryService extends AbstractService<XRepository> {
                 };
             }
         };
-        BundleContext syscontext = injectedSystemContext.getValue();
-        XRepositoryBuilder builder = XRepositoryBuilder.create(syscontext);
-        builder.addRepository(new ModuleIdentityRepository(serverenv));
-        builder.addRepositoryStorage(factory);
-        repository = builder.addDefaultRepositories();
+
+        // Create the {@link ConfigurationPropertyProvider}
+        final BundleContext syscontext = injectedSystemContext.getValue();
+        ConfigurationPropertyProvider propProvider = new ConfigurationPropertyProvider() {
+            @Override
+            public String getProperty(String key, String defaultValue) {
+                String value = syscontext.getProperty(key);
+                return value != null ? value : defaultValue;
+            }
+        };
+
+        AggregatingRepository aggregator = new AggregatingRepository();
+        aggregator.addRepository(new ModuleIdentityRepository(serverenv));
+        aggregator.addRepository(new MavenRepository(propProvider));
+        repository = new AbstractPersistentRepository(factory, aggregator);
+
+        // Register the top level repository
+        Dictionary<String, Object> props = new Hashtable<String, Object>();
+        props.put(Constants.SERVICE_DESCRIPTION, repository.getName());
+        registration = syscontext.registerService(SERVICE_NAMES, repository, props);
     }
 
     @Override
     public synchronized void stop(StopContext context) {
-        ServiceController<?> serviceController = context.getController();
-        LOGGER.tracef("Stopping: %s in mode %s", serviceController.getName(), serviceController.getMode());
+        if (registration != null) {
+            registration.unregister();
+        }
         repository = null;
     }
 
