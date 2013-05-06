@@ -325,7 +325,7 @@ public class SecurityExtension implements Extension {
             } else {
                 // Convert to a composite of an add without the module list + a write-attribute for the module list
                 PathAddress pa = PathAddress.pathAddress(operation.get(OP_ADDR));
-                transformedOp = Util.createEmptyOperation(COMPOSITE, pa);
+                transformedOp = Util.createEmptyOperation(COMPOSITE, null);
                 ModelNode steps = transformedOp.get(STEPS);
                 ModelNode clone = operation.clone();
                 clone.remove(attributeName);
