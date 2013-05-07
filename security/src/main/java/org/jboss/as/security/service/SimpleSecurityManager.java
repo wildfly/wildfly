@@ -21,8 +21,6 @@
  */
 package org.jboss.as.security.service;
 
-import static java.security.AccessController.doPrivileged;
-
 import java.lang.reflect.Method;
 import java.security.CodeSource;
 import java.security.Principal;
@@ -37,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.security.ServerSecurityManager;
@@ -44,7 +43,6 @@ import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.as.controller.security.UniqueIdUserInfo;
 import org.jboss.as.domain.management.security.PasswordCredential;
 import org.jboss.as.security.SecurityMessages;
-import org.jboss.as.security.remoting.RemotingContext;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.remoting3.security.UserInfo;
 import org.jboss.security.AuthenticationManager;
@@ -70,6 +68,8 @@ import org.jboss.security.identity.plugins.SimpleIdentity;
 import org.jboss.security.identity.plugins.SimpleRoleGroup;
 import org.jboss.security.javaee.AbstractEJBAuthorizationHelper;
 import org.jboss.security.javaee.SecurityHelperFactory;
+
+import static java.security.AccessController.doPrivileged;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -268,104 +268,146 @@ public class SimpleSecurityManager implements ServerSecurityManager {
      * @param extraRoles
      */
     public void push(final String securityDomain, final String runAs, final String runAsPrincipal, final Set<String> extraRoles) {
+        boolean contextPushed = false;
+        boolean securityContextEstablished = false;
+
         // TODO - Handle a null securityDomain here? Yes I think so.
         final SecurityContext previous = SecurityContextAssociation.getSecurityContext();
-        contexts.push(previous);
-        SecurityContext current = establishSecurityContext(securityDomain);
-        if (previous != null) {
-            current.setSubjectInfo(previous.getSubjectInfo());
-            current.setIncomingRunAs(previous.getOutgoingRunAs());
-        }
+        try {
+            contexts.push(previous);
+            contextPushed = true;
 
-        RunAs currentRunAs = current.getIncomingRunAs();
-        boolean trusted = currentRunAs != null && currentRunAs instanceof RunAsIdentity;
+            SecurityContext current = establishSecurityContext(securityDomain);
+            securityContextEstablished = true;
 
-        if (trusted == false) {
-            /*
-             * We should only be switching to a context based on an identity from the Remoting connection
-             * if we don't already have a trusted identity - this allows for beans to reauthenticate as a
-             * different identity.
-             */
-            boolean authenticated = false;
-            if (SecurityActions.remotingContextIsSet()) {
-                // In this case the principal and credential will not have been set to set some random values.
-                SecurityContextUtil util = current.getUtil();
+            if (previous != null) {
+                current.setSubjectInfo(previous.getSubjectInfo());
+                current.setIncomingRunAs(previous.getOutgoingRunAs());
+            }
 
-                UserInfo userInfo = SecurityActions.remotingContextGetConnection().getUserInfo();
-                Principal p = null;
-                String credential = null;
-                Subject subject = null;
-                if (userInfo instanceof SubjectUserInfo) {
-                    SubjectUserInfo sinfo = (SubjectUserInfo) userInfo;
-                    subject = sinfo.getSubject();
+            RunAs currentRunAs = current.getIncomingRunAs();
+            boolean trusted = currentRunAs != null && currentRunAs instanceof RunAsIdentity;
 
-                    Set<PasswordCredential> pcSet = subject.getPrivateCredentials(PasswordCredential.class);
-                    if (pcSet.size() > 0) {
-                        PasswordCredential pc = pcSet.iterator().next();
-                        p = new SimplePrincipal(pc.getUserName());
-                        credential = new String(pc.getCredential());
-                        SecurityActions.remotingContextClear(); // Now that it has been used clear it.
+            if (trusted == false) {
+                /*
+                 * We should only be switching to a context based on an identity from the Remoting connection
+                 * if we don't already have a trusted identity - this allows for beans to reauthenticate as a
+                 * different identity.
+                 */
+                boolean authenticated = false;
+                if (SecurityActions.remotingContextIsSet()) {
+                    // In this case the principal and credential will not have been set to set some random values.
+                    SecurityContextUtil util = current.getUtil();
+
+                    UserInfo userInfo = SecurityActions.remotingContextGetConnection().getUserInfo();
+                    Principal p = null;
+                    String credential = null;
+                    Subject subject = null;
+                    if (userInfo instanceof SubjectUserInfo) {
+                        SubjectUserInfo sinfo = (SubjectUserInfo) userInfo;
+                        subject = sinfo.getSubject();
+
+                        Set<PasswordCredential> pcSet = subject.getPrivateCredentials(PasswordCredential.class);
+                        if (pcSet.size() > 0) {
+                            PasswordCredential pc = pcSet.iterator().next();
+                            p = new SimplePrincipal(pc.getUserName());
+                            credential = new String(pc.getCredential());
+                            SecurityActions.remotingContextClear(); // Now that it has been used clear it.
+                        }
+                        if ((p == null || credential == null) && userInfo instanceof UniqueIdUserInfo) {
+                            UniqueIdUserInfo uinfo = (UniqueIdUserInfo) userInfo;
+                            p = new SimplePrincipal(sinfo.getUserName());
+                            credential = uinfo.getId();
+                            // In this case we do not clear the RemotingContext as it is still to be used
+                            // here extracting the ID just ensures we are not continually calling the modules
+                            // for each invocation.
+                        }
                     }
-                    if ((p == null || credential == null) && userInfo instanceof UniqueIdUserInfo) {
-                        UniqueIdUserInfo uinfo = (UniqueIdUserInfo) userInfo;
-                        p = new SimplePrincipal(sinfo.getUserName());
-                        credential = uinfo.getId();
-                        // In this case we do not clear the RemotingContext as it is still to be used
-                        // here extracting the ID just ensures we are not continually calling the modules
-                        // for each invocation.
+
+                    if (p == null || credential == null) {
+                        p = new SimplePrincipal(UUID.randomUUID().toString());
+                        credential = UUID.randomUUID().toString();
                     }
+
+                    util.createSubjectInfo(p, credential, subject);
                 }
 
-                if (p == null || credential == null) {
-                    p = new SimplePrincipal(UUID.randomUUID().toString());
-                    credential = UUID.randomUUID().toString();
+                // If we have a trusted identity no need for a re-auth.
+                if (authenticated == false) {
+                    authenticated = authenticate(current, null);
                 }
-
-                util.createSubjectInfo(p, credential, subject);
+                if (authenticated == false) {
+                    // TODO - Better type needed.
+                    throw SecurityMessages.MESSAGES.invalidUserException();
+                }
             }
 
-            // If we have a trusted identity no need for a re-auth.
-            if (authenticated == false) {
-                authenticated = authenticate(current, null);
+            if (runAs != null) {
+                RunAs runAsIdentity = new RunAsIdentity(runAs, runAsPrincipal, extraRoles);
+                current.setOutgoingRunAs(runAsIdentity);
+            } else if (previous != null && previous.getOutgoingRunAs() != null) {
+                // Ensure the propagation continues.
+                current.setOutgoingRunAs(previous.getOutgoingRunAs());
             }
-            if (authenticated == false) {
-                // TODO - Better type needed.
-                throw SecurityMessages.MESSAGES.invalidUserException();
+        } catch (Throwable t) {
+            // cleanup whatever we had pushed or set in threadlocal
+            if (securityContextEstablished) {
+                SecurityContextAssociation.setSecurityContext(previous);
             }
-        }
+            if (contextPushed) {
+                contexts.pop();
+            }
+            if (t instanceof RuntimeException) {
+                throw (RuntimeException) t;
+            }
+            throw new RuntimeException(t);
 
-        if (runAs != null) {
-            RunAs runAsIdentity = new RunAsIdentity(runAs, runAsPrincipal, extraRoles);
-            current.setOutgoingRunAs(runAsIdentity);
-        } else if (previous != null && previous.getOutgoingRunAs() != null) {
-            // Ensure the propagation continues.
-            current.setOutgoingRunAs(previous.getOutgoingRunAs());
         }
     }
 
     public void push(final String securityDomain, String userName, char[] password, final Subject subject) {
+        boolean contextPushed = false;
+        boolean securityContextEstablished = false;
         final SecurityContext previous = SecurityContextAssociation.getSecurityContext();
-        contexts.push(previous);
-        SecurityContext current = establishSecurityContext(securityDomain);
-        if (previous != null) {
-            current.setSubjectInfo(previous.getSubjectInfo());
-            current.setIncomingRunAs(previous.getOutgoingRunAs());
-        }
+        try {
+            contexts.push(previous);
+            contextPushed = true;
 
-        RunAs currentRunAs = current.getIncomingRunAs();
-        boolean trusted = currentRunAs != null && currentRunAs instanceof RunAsIdentity;
+            SecurityContext current = establishSecurityContext(securityDomain);
+            securityContextEstablished = true;
 
-        if (trusted == false) {
-            SecurityContextUtil util = current.getUtil();
-            util.createSubjectInfo(new SimplePrincipal(userName), new String(password), subject);
-            if (authenticate(current, subject) == false) {
-                throw SecurityMessages.MESSAGES.invalidUserException();
+            if (previous != null) {
+                current.setSubjectInfo(previous.getSubjectInfo());
+                current.setIncomingRunAs(previous.getOutgoingRunAs());
             }
-        }
 
-        if (previous != null && previous.getOutgoingRunAs() != null) {
-            // Ensure the propagation continues.
-            current.setOutgoingRunAs(previous.getOutgoingRunAs());
+            RunAs currentRunAs = current.getIncomingRunAs();
+            boolean trusted = currentRunAs != null && currentRunAs instanceof RunAsIdentity;
+
+            if (trusted == false) {
+                SecurityContextUtil util = current.getUtil();
+                util.createSubjectInfo(new SimplePrincipal(userName), new String(password), subject);
+                if (authenticate(current, subject) == false) {
+                    throw SecurityMessages.MESSAGES.invalidUserException();
+                }
+            }
+
+            if (previous != null && previous.getOutgoingRunAs() != null) {
+                // Ensure the propagation continues.
+                current.setOutgoingRunAs(previous.getOutgoingRunAs());
+            }
+        } catch (Throwable t) {
+            // cleanup whatever we had pushed or set in threadlocal
+            if (securityContextEstablished) {
+                SecurityContextAssociation.setSecurityContext(previous);
+            }
+            if (contextPushed) {
+                contexts.pop();
+            }
+            if (t instanceof RuntimeException) {
+                throw (RuntimeException) t;
+            }
+            throw new RuntimeException(t);
         }
     }
 
@@ -449,7 +491,6 @@ public class SimpleSecurityManager implements ServerSecurityManager {
      * @param level
      * @param auditManager
      * @param userPrincipal
-     * @param entries
      */
     private void audit(String level, AuditManager auditManager, Principal userPrincipal) {
         AuditEvent auditEvent = new AuditEvent(AuditLevel.SUCCESS);
