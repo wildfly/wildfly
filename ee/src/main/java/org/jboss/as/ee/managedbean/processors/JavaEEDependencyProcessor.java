@@ -55,6 +55,7 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
             ModuleIdentifier.create("javax.ejb.api"),
             ModuleIdentifier.create("javax.el.api"),
             ModuleIdentifier.create("javax.enterprise.api"),
+            ModuleIdentifier.create("javax.enterprise.concurrent.api"),
             ModuleIdentifier.create("javax.inject.api"),
             ModuleIdentifier.create("javax.interceptor.api"),
             ModuleIdentifier.create("javax.json.api"),
