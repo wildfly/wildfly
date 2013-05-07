@@ -432,11 +432,15 @@
         <module-def name="javax.el.api">
             <maven-resource group="org.jboss.spec.javax.el" artifact="jboss-el-api_2.2_spec"/>
         </module-def>
-
+    	       	
         <module-def name="javax.enterprise.api">
             <maven-resource group="javax.enterprise" artifact="cdi-api"/>
         </module-def>
 
+    	<module-def name="javax.enterprise.concurrent.api">
+    		<maven-resource group="org.jboss.spec.javax.enterprise.concurrent" artifact="jboss-concurrency-api_1.0_spec"/>
+    	</module-def>
+    	
         <module-def name="javax.faces.api">
             <maven-resource group="org.jboss.spec.javax.faces" artifact="jboss-jsf-api_2.2_spec"/>
         </module-def>
