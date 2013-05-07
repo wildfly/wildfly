@@ -27,13 +27,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-webservices</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-webservices</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-webservices-tests-integration</artifactId>
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-webservices-tests-integration</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -58,12 +58,12 @@
             <artifactId>jbossws-spi</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-controller-client</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-controller-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-security</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-security</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.hornetq</groupId>

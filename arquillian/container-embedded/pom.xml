@@ -32,12 +32,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.jboss.as</groupId>
-		<artifactId>jboss-as-arquillian</artifactId>
+		<groupId>org.wildfly</groupId>
+		<artifactId>wildfly-arquillian</artifactId>
 		<version>8.0.0.Alpha1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>jboss-as-arquillian-container-embedded</artifactId>
+	<artifactId>wildfly-arquillian-container-embedded</artifactId>
 
 	<name>WildFly: Arquillian Embedded Container</name>
 
@@ -49,12 +49,12 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.jboss.as</groupId>
-			<artifactId>jboss-as-arquillian-common</artifactId>
+			<groupId>org.wildfly</groupId>
+			<artifactId>wildfly-arquillian-common</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.jboss.as</groupId>
-			<artifactId>jboss-as-embedded</artifactId>
+			<groupId>org.wildfly</groupId>
+			<artifactId>wildfly-embedded</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.logging</groupId>

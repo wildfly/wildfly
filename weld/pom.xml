@@ -27,13 +27,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-weld</artifactId>
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-weld</artifactId>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
     <name>WildFly: Weld Integration</name>
@@ -91,48 +91,48 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-ee</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-ee</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-ejb3</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-ejb3</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-jpa</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-jpa</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-naming</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-naming</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-security-util</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-security-util</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-server</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-transactions</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-transactions</artifactId>
         </dependency>
 
         <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-web-common</artifactId>
+           <groupId>org.wildfly</groupId>
+           <artifactId>wildfly-web-common</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-webservices-server-integration</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-webservices-server-integration</artifactId>
         </dependency>
 
         <dependency>
@@ -212,8 +212,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-subsystem-test</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-subsystem-test</artifactId>
 						<type>pom</type>
             <scope>test</scope>
         </dependency>

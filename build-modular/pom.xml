@@ -28,12 +28,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-build-modular</artifactId>
+    <artifactId>wildfly-build-modular</artifactId>
 
     <name>WildFly: Build Modular</name>
     <packaging>pom</packaging>
@@ -47,8 +47,8 @@
     
     <dependencies>
     	<dependency>
-    		<groupId>org.jboss.as</groupId>
-    		<artifactId>jboss-as-config-assembly</artifactId>
+    		<groupId>org.wildfly</groupId>
+    		<artifactId>wildfly-config-assembly</artifactId>
     	</dependency>
     </dependencies>
         

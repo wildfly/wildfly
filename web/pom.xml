@@ -27,12 +27,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-web</artifactId>
+    <artifactId>wildfly-web</artifactId>
 
     <packaging>jar</packaging>
 
@@ -57,38 +57,38 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-server</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-clustering-registry</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-registry</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-clustering-web-spi</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-web-spi</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-ee</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-ee</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-security</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-security</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-security-util</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-security-util</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-web-common</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-web-common</artifactId>
         </dependency>
 
         <dependency>
@@ -146,8 +146,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-clustering-web-infinispan</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-web-infinispan</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -171,8 +171,8 @@
 			<scope>test</scope>
 		</dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-subsystem-test</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-subsystem-test</artifactId>
 						<type>pom</type>
             <scope>test</scope>
          </dependency>

@@ -26,13 +26,13 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.jboss.as</groupId>
-		<artifactId>jboss-as-arquillian</artifactId>
+		<groupId>org.wildfly</groupId>
+		<artifactId>wildfly-arquillian</artifactId>
 		<version>8.0.0.Alpha1-SNAPSHOT</version>
 	</parent>
 
-	<groupId>org.jboss.as</groupId>
-	<artifactId>jboss-as-arquillian-protocol-jmx</artifactId>
+	<groupId>org.wildfly</groupId>
+	<artifactId>wildfly-arquillian-protocol-jmx</artifactId>
 	<version>8.0.0.Alpha1-SNAPSHOT</version>
 
 	<name>WildFly: Arquillian Protocol JMX</name>
@@ -41,20 +41,20 @@
 
     <dependencies>
         <dependency>
-          <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-arquillian-common</artifactId>
+          <groupId>org.wildfly</groupId>
+          <artifactId>wildfly-arquillian-common</artifactId>
         </dependency>
         <dependency>
-          <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-osgi-service</artifactId>
+          <groupId>org.wildfly</groupId>
+          <artifactId>wildfly-osgi-service</artifactId>
         </dependency>
         <dependency>
-          <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-security-util</artifactId>
+          <groupId>org.wildfly</groupId>
+          <artifactId>wildfly-security-util</artifactId>
         </dependency>
         <dependency>
-          <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-arquillian-testenricher-msc</artifactId>
+          <groupId>org.wildfly</groupId>
+          <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.arquillian.core</groupId>

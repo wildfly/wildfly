@@ -30,11 +30,10 @@
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
       <version>10</version>
-      <relativePath>../..</relativePath>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-subsystem-test-controller-7.1.2</artifactId>
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-subsystem-test-controller-7.1.2</artifactId>
     <name>WildFly: Subsystem Test Controller 7.1.2</name>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
@@ -57,14 +56,14 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-subsystem-test-framework</artifactId>
+           <groupId>org.wildfly</groupId>
+           <artifactId>wildfly-subsystem-test-framework</artifactId>
            <version>${project.version}</version>
 	        <scope>provided</scope>
            <exclusions>
                <exclusion>
-                   <groupId>org.jboss.as</groupId>
-                   <artifactId>jboss-as-server</artifactId>
+                   <groupId>org.wildfly</groupId>
+                   <artifactId>wildfly-server</artifactId>
                </exclusion>
            </exclusions>
         </dependency>

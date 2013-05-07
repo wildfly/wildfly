@@ -27,12 +27,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>jboss-as-subsystem-test-parent</artifactId>
+    <artifactId>wildfly-subsystem-test-parent</artifactId>
     <packaging>pom</packaging>
     <name>WildFly: Core Model Test Parent</name>
 
@@ -46,8 +47,8 @@
 
     <dependencies>
         <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-model-test</artifactId>
+           <groupId>org.wildfly</groupId>
+           <artifactId>wildfly-model-test</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.marshalling</groupId>

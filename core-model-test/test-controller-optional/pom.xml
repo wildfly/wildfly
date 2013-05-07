@@ -27,8 +27,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-core-model-test</artifactId>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-core-model-test</artifactId>
         <version>8.0.0.Alpha1-SNAPSHOT</version>
     </parent>
     <!--
@@ -38,15 +38,15 @@
 			the classpath when setting up the legacy controller classloaders, and want to be able to choose
 			which one to use. 
 		-->
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-core-model-test-controller-optional</artifactId>
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-core-model-test-controller-optional</artifactId>
     <name>WildFly: Core Model Test Controller Optional</name>
     <version>8.0.0.Alpha1-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-core-model-test-controller-7.1.2</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-core-model-test-controller-7.1.2</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>
