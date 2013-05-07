@@ -53,7 +53,6 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
             ModuleIdentifier.create("javax.activation.api"),
             ModuleIdentifier.create("javax.annotation.api"),
             ModuleIdentifier.create("javax.ejb.api"),
-            ModuleIdentifier.create("javax.el.api"),
             ModuleIdentifier.create("javax.enterprise.api"),
             ModuleIdentifier.create("javax.enterprise.concurrent.api"),
             ModuleIdentifier.create("javax.inject.api"),
@@ -77,7 +76,8 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
             ModuleIdentifier.create("javax.xml.bind.api"),
             ModuleIdentifier.create("javax.xml.soap.api"),
             ModuleIdentifier.create("javax.xml.ws.api"),
-            ModuleIdentifier.create("javax.api")
+            ModuleIdentifier.create("javax.api"),
+            ModuleIdentifier.create("org.glassfish.javax.el")
     };
 
 
