@@ -67,7 +67,7 @@ public class EmbeddedServerFactory {
     private static final String SYSPROP_KEY_CLASS_PATH = "java.class.path";
     private static final String SYSPROP_KEY_MODULE_PATH = "module.path";
     private static final String SYSPROP_KEY_LOGMANAGER = "java.util.logging.manager";
-    private static final String SYSPROP_KEY_JBOSS_HOME_DIR = "jboss.home.dir";
+    private static final String SYSPROP_KEY_WILDFLY_HOME_DIR = "jboss.home.dir";
     private static final String SYSPROP_KEY_JBOSS_MODULES_DIR = "jboss.modules.dir";
     private static final String SYSPROP_KEY_JBOSS_BUNDLES_DIR = "jboss.bundles.dir";
     private static final String SYSPROP_VALUE_JBOSS_LOGMANAGER = "org.jboss.logmanager.LogManager";
@@ -108,7 +108,7 @@ public class EmbeddedServerFactory {
         setupLoggingSystem(moduleLoader);
 
         // Embedded Server wants this, too. Seems redundant, but supply it.
-        SecurityActions.setSystemProperty(SYSPROP_KEY_JBOSS_HOME_DIR, jbossHomeDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(SYSPROP_KEY_WILDFLY_HOME_DIR, jbossHomeDir.getAbsolutePath());
 
         // Load the Embedded Server Module
         final Module embeddedModule;

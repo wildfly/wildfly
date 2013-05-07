@@ -177,11 +177,11 @@ public interface DomainManagementMessages {
     IllegalStateException noConsoleAvailable();
 
     /**
-     * A message indicating JBOSS_HOME not set.
+     * A message indicating WILDFLY_HOME not set.
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15233, value = "JBOSS_HOME environment variable not set.")
+    @Message(id = 15233, value = "WILDFLY_HOME environment variable not set.")
     String jbossHomeNotSet();
 
     /**

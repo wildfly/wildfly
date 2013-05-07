@@ -852,7 +852,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
 
     /**
      * Gets the base directory in which managed domain files are stored.
-     * <p>Defaults to {@link #getHomeDir() JBOSS_HOME}/domain</p>
+     * <p>Defaults to {@link #getHomeDir() WILDFLY_HOME}/domain</p>
      *
      * @return the domain base directory, or {@code null} if this server is not running in a managed domain.
      */

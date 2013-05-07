@@ -75,7 +75,7 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
         }
     }
 
-    private static final String JBOSS_HOME = "JBOSS_HOME";
+    private static final String WILDFLY_HOME = "WILDFLY_HOME";
 
     private static final String PATH_SEPARATOR = File.pathSeparator;
     private static final String MODULE_SEPARATOR = ",";
@@ -357,9 +357,9 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
         if(modulesDir != null) {
             return modulesDir;
         }
-        final String modulesDirStr = SecurityActions.getEnvironmentVariable(JBOSS_HOME);
+        final String modulesDirStr = SecurityActions.getEnvironmentVariable(WILDFLY_HOME);
         if(modulesDirStr == null) {
-            throw new CommandLineException(JBOSS_HOME + " environment variable is not set.");
+            throw new CommandLineException(WILDFLY_HOME + " environment variable is not set.");
         }
         modulesDir = new File(modulesDirStr, "modules");
         if(!modulesDir.exists()) {

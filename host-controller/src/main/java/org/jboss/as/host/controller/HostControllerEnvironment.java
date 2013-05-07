@@ -579,7 +579,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
 
     /**
      * Gets the base directory in which managed domain files are stored.
-     * <p>Defaults to {@link #getHomeDir() JBOSS_HOME}/domain</p>
+     * <p>Defaults to {@link #getHomeDir() WILDFLY_HOME}/domain</p>
      *
      * @return the domain base directory.
      */

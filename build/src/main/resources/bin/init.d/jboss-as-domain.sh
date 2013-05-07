@@ -24,10 +24,10 @@ fi
 
 # Set defaults.
 
-if [ -z "$JBOSS_HOME" ]; then
-  JBOSS_HOME=/usr/share/jboss-as
+if [ -z "$WILDFLY_HOME" ]; then
+  WILDFLY_HOME=/usr/share/jboss-as
 fi
-export JBOSS_HOME
+export WILDFLY_HOME
 
 if [ -z "$JBOSS_PIDFILE" ]; then
   JBOSS_PIDFILE=/var/run/jboss-as/jboss-as-domain.pid
@@ -54,7 +54,7 @@ if [ -z "$JBOSS_HOST_CONFIG" ]; then
   JBOSS_HOST_CONFIG=host.xml
 fi
 
-JBOSS_SCRIPT=$JBOSS_HOME/bin/domain.sh
+JBOSS_SCRIPT=$WILDFLY_HOME/bin/domain.sh
 
 prog='jboss-as'
 

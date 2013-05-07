@@ -25,7 +25,7 @@ rem # Specify the JBoss Profiler configuration file to load.
 rem #
 rem # Default is to not load a JBoss Profiler configuration file.
 rem #
-rem set "PROFILER=%JBOSS_HOME%\bin\jboss-profiler.properties"
+rem set "PROFILER=%WILDFLY_HOME%\bin\jboss-profiler.properties"
 
 rem #
 rem # Specify the location of the Java home directory (it is recommended that

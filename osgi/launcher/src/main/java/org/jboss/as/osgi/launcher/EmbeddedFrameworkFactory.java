@@ -38,7 +38,7 @@ public final class EmbeddedFrameworkFactory implements FrameworkFactory {
 
     private static Logger log = Logger.getLogger(EmbeddedFrameworkFactory.class);
 
-    private static final String SYSPROP_KEY_JBOSS_HOME = "jboss.home";
+    private static final String SYSPROP_KEY_WILDFLY_HOME = "jboss.home";
     private static final String SYSPROP_KEY_MODULE_PATH = "module.path";
     private static final String SYSPROP_KEY_BUNDLE_PATH = "bundle.path";
     private static final String SYSPROP_KEY_JBOSS_SERVER_CONFIG = "jboss.server.config.file.name";
@@ -70,7 +70,7 @@ public final class EmbeddedFrameworkFactory implements FrameworkFactory {
         addConfiguredPackages(syspackages, props, Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA);
         addConfiguredPackages(syspackages, props, Constants.FRAMEWORK_BOOTDELEGATION);
 
-        String jbossHome = getProperty(props, SYSPROP_KEY_JBOSS_HOME, null);
+        String jbossHome = getProperty(props, SYSPROP_KEY_WILDFLY_HOME, null);
         String modulePath = getProperty(props, SYSPROP_KEY_MODULE_PATH, null);
         String bundlePath = getProperty(props, SYSPROP_KEY_BUNDLE_PATH, null);
         String serverConfig = getProperty(props, SYSPROP_KEY_JBOSS_SERVER_CONFIG, "standalone-osgi.xml");

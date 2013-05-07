@@ -93,7 +93,7 @@
         <mkdir dir="${output.dir}/modules/system/layers/base/org/jboss/integration/ext-content/main/bundled"/>
         <copy file="${org.jboss.seam.integration:jboss-seam-int-jbossas:jar}" tofile="${output.dir}/modules/system/layers/base/org/jboss/integration/ext-content/main/bundled/jboss-seam-int.jar"/>
 
-        <!-- Copy the EJB specific schemas to the JBOSS_HOME/docs/schema folder -->
+        <!-- Copy the EJB specific schemas to the WILDFLY_HOME/docs/schema folder -->
         <unzip src="${org.jboss.metadata:jboss-metadata-ejb:jar}" dest="${output.dir}/docs/schema/">
             <patternset>
                 <include name="schema/*.xsd"/>
@@ -102,7 +102,7 @@
             <mapper type="flatten"/>
         </unzip>
 
-        <!-- Copy the jboss-metadata-appclient specific schemas to the JBOSS_HOME/docs/schema folder -->
+        <!-- Copy the jboss-metadata-appclient specific schemas to the WILDFLY_HOME/docs/schema folder -->
         <unzip src="${org.jboss.metadata:jboss-metadata-appclient:jar}" dest="${output.dir}/docs/schema/">
             <patternset>
                 <include name="schema/*.xsd"/>
@@ -110,7 +110,7 @@
             <mapper type="flatten"/>
         </unzip>
 
-        <!-- Copy the jboss-metadata-ear specific schemas to the JBOSS_HOME/docs/schema folder -->
+        <!-- Copy the jboss-metadata-ear specific schemas to the WILDFLY_HOME/docs/schema folder -->
         <unzip src="${org.jboss.metadata:jboss-metadata-ear:jar}" dest="${output.dir}/docs/schema/">
             <patternset>
                 <include name="dtd/*.dtd"/>
@@ -120,7 +120,7 @@
             <mapper type="flatten"/>
         </unzip>
 
-        <!-- Copy the jboss-metadata-common specific schemas to the JBOSS_HOME/docs/schema folder -->
+        <!-- Copy the jboss-metadata-common specific schemas to the WILDFLY_HOME/docs/schema folder -->
         <unzip src="${org.jboss.metadata:jboss-metadata-common:jar}" dest="${output.dir}/docs/schema/">
             <patternset>
                 <include name="dtd/*.dtd"/>
@@ -132,7 +132,7 @@
             <mapper type="flatten"/>
         </unzip>
 
-        <!-- Copy the jboss-metadata-web specific schemas to the JBOSS_HOME/docs/schema folder -->
+        <!-- Copy the jboss-metadata-web specific schemas to the WILDFLY_HOME/docs/schema folder -->
         <unzip src="${org.jboss.metadata:jboss-metadata-web:jar}" dest="${output.dir}/docs/schema/">
             <patternset>
                 <include name="dtd/*.dtd"/>
@@ -141,14 +141,14 @@
             <mapper type="flatten"/>
         </unzip>
 
-        <!-- Copy the JBoss AS7 EJB specific schemas to the JBOSS_HOME/docs/schema folder -->
+        <!-- Copy the JBoss AS7 EJB specific schemas to the WILDFLY_HOME/docs/schema folder -->
         <unzip src="${org.jboss.as:jboss-as-ejb3:jar}" dest="${output.dir}/docs/schema/">
             <patternset>
                 <include name="*.xsd"/>
             </patternset>
             <mapper type="flatten"/>
         </unzip>
-        <!-- Copy the JBoss Modules specific schemas to the JBOSS_HOME/docs/schema folder -->
+        <!-- Copy the JBoss Modules specific schemas to the WILDFLY_HOME/docs/schema folder -->
         <unzip src="${org.jboss.modules:jboss-modules:jar}" dest="${output.dir}/docs/schema/">
             <patternset>
                 <include name="schema/*.xsd"/>

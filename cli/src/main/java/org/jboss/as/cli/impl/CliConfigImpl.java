@@ -105,7 +105,7 @@ class CliConfigImpl implements CliConfig {
     }
 
     private static File findCLIFileInJBossHome() {
-        final String jbossHome = SecurityActions.getEnvironmentVariable("JBOSS_HOME");
+        final String jbossHome = SecurityActions.getEnvironmentVariable("WILDFLY_HOME");
         if (jbossHome == null) return null;
 
         File jbossCliFile = new File(jbossHome + File.separatorChar + "bin", JBOSS_CLI_FILE);

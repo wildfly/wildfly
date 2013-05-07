@@ -59,22 +59,22 @@ rem $Id$
 )
 
 pushd %DIRNAME%..
-set "RESOLVED_JBOSS_HOME=%CD%"
+set "RESOLVED_WILDFLY_HOME=%CD%"
 popd
 
-if "x%JBOSS_HOME%" == "x" (
-  set "JBOSS_HOME=%RESOLVED_JBOSS_HOME%"
+if "x%WILDFLY_HOME%" == "x" (
+  set "WILDFLY_HOME=%RESOLVED_WILDFLY_HOME%"
 )
 
-pushd "%JBOSS_HOME%"
-set "SANITIZED_JBOSS_HOME=%CD%"
+pushd "%WILDFLY_HOME%"
+set "SANITIZED_WILDFLY_HOME=%CD%"
 popd
 
-if /i "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
+if /i "%RESOLVED_WILDFLY_HOME%" NEQ "%SANITIZED_WILDFLY_HOME%" (
    echo.
-   echo   WARNING:  JBOSS_HOME may be pointing to a different installation - unpredictable results may occur.
+   echo   WARNING:  WILDFLY_HOME may be pointing to a different installation - unpredictable results may occur.
    echo.
-   echo             JBOSS_HOME: %JBOSS_HOME%
+   echo             WILDFLY_HOME: %WILDFLY_HOME%
    echo.
    rem 2 seconds pause
    ping 127.0.0.1 -n 3 > nul
@@ -149,10 +149,10 @@ if not "%PRESERVE_JAVA_OPTS%" == "true" (
 )
 
 rem Find jboss-modules.jar, or we can't continue
-if exist "%JBOSS_HOME%\jboss-modules.jar" (
-    set "RUNJAR=%JBOSS_HOME%\jboss-modules.jar"
+if exist "%WILDFLY_HOME%\jboss-modules.jar" (
+    set "RUNJAR=%WILDFLY_HOME%\jboss-modules.jar"
 ) else (
-  echo Could not locate "%JBOSS_HOME%\jboss-modules.jar".
+  echo Could not locate "%WILDFLY_HOME%\jboss-modules.jar".
   echo Please check that you are in the bin directory when running this script.
   goto END
 )
@@ -191,12 +191,12 @@ for /f "tokens=1* delims= " %%i IN ("%CONSOLIDATED_OPTS%") DO (
 
 rem Set default module root paths
 if "x%JBOSS_MODULEPATH%" == "x" (
-  set  "JBOSS_MODULEPATH=%JBOSS_HOME%\modules"
+  set  "JBOSS_MODULEPATH=%WILDFLY_HOME%\modules"
 )
 
 rem Set the standalone base dir
 if "x%JBOSS_BASE_DIR%" == "x" (
-  set  "JBOSS_BASE_DIR=%JBOSS_HOME%\standalone"
+  set  "JBOSS_BASE_DIR=%WILDFLY_HOME%\standalone"
 )
 rem Set the standalone log dir
 if "x%JBOSS_LOG_DIR%" == "x" (
@@ -211,7 +211,7 @@ echo ===========================================================================
 echo.
 echo   JBoss Bootstrap Environment
 echo.
-echo   JBOSS_HOME: %JBOSS_HOME%
+echo   WILDFLY_HOME: %WILDFLY_HOME%
 echo.
 echo   JAVA: %JAVA%
 echo.
@@ -224,10 +224,10 @@ echo.
 "%JAVA%" %JAVA_OPTS% ^
  "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\server.log" ^
  "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
-    -jar "%JBOSS_HOME%\jboss-modules.jar" ^
+    -jar "%WILDFLY_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_MODULEPATH%" ^
      org.jboss.as.standalone ^
-    -Djboss.home.dir="%JBOSS_HOME%" ^
+    -Djboss.home.dir="%WILDFLY_HOME%" ^
      %SERVER_OPTS%
 
 if ERRORLEVEL 10 goto RESTART

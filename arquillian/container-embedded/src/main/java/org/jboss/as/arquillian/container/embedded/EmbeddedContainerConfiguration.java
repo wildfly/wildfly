@@ -29,7 +29,7 @@ import org.jboss.as.embedded.EmbeddedStandAloneServerFactory;
  */
 public class EmbeddedContainerConfiguration extends CommonContainerConfiguration {
 
-    private String jbossHome = System.getenv("JBOSS_HOME");
+    private String jbossHome = System.getenv("WILDFLY_HOME");
 
     private String modulePath = System.getProperty("module.path");
 

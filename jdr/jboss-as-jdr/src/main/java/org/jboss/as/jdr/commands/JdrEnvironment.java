@@ -31,7 +31,7 @@ import org.jboss.as.jdr.util.JdrZipFile;
  * Most commands will need to interact with the {@link JdrZipFile} zip member.
  */
 public class JdrEnvironment {
-    private String jbossHome = System.getenv("JBOSS_HOME");
+    private String jbossHome = System.getenv("WILDFLY_HOME");
     private String username;
     private String password;
     private String host;
