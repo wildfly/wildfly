@@ -911,6 +911,11 @@
                 </dependency>
 
                 <dependency>
+                   <groupId>org.jboss.as</groupId>
+                   <artifactId>jboss-as-cmp</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-configadmin</artifactId>
                 </dependency>
@@ -969,6 +974,11 @@
                 <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-embedded</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-jaxr</artifactId>
                 </dependency>
 
                 <dependency>
@@ -2893,6 +2903,10 @@
                                             <packages>org.jboss.as.configadmin:org.jboss.as.configadmin.parser:org.jboss.as.configadmin.service</packages>
                                         </group>
                                         <group>
+                                            <title>Module org.jboss.as.cmp</title>
+                                            <packages>org.jboss.as.cmp:org.jboss.as.cmp.subsystem</packages>
+                                        </group>
+                                        <group>
                                             <title>Module org.jboss.as.connector</title>
                                             <packages>org.jboss.as.connector:org.jboss.as.connector.annotations.repository.jandex:org.jboss.as.connector.deployers:org.jboss.as.connector.deployers.datasource:org.jboss.as.connector.deployers.ds:org.jboss.as.connector.deployers.ds.processors:org.jboss.as.connector.deployers.ra:org.jboss.as.connector.deployers.ra.processors:org.jboss.as.connector.dynamicresource.descriptionproviders:org.jboss.as.connector.dynamicresource.operations:org.jboss.as.connector.logging:org.jboss.as.connector.metadata.deployment:org.jboss.as.connector.metadata.xmldescriptors:org.jboss.as.connector.services.bootstrap:org.jboss.as.connector.services.driver:org.jboss.as.connector.services.driver.registry:org.jboss.as.connector.services.jca:org.jboss.as.connector.services.mdr:org.jboss.as.connector.services.rarepository:org.jboss.as.connector.services.resourceadapters:org.jboss.as.connector.services.resourceadapters.deployment:org.jboss.as.connector.services.resourceadapters.deployment.registry:org.jboss.as.connector.services.resourceadapters.repository:org.jboss.as.connector.services.transactionintegration:org.jboss.as.connector.services.workmanager:org.jboss.as.connector.subsystems.common.pool:org.jboss.as.connector.subsystems.datasources:org.jboss.as.connector.subsystems.jca:org.jboss.as.connector.subsystems.resourceadapters:org.jboss.as.connector.util</packages>
                                         </group>
@@ -2919,6 +2933,10 @@
                                         <group>
                                             <title>Module org.jboss.as.jacorb</title>
                                             <packages>org.jboss.as.jacorb:org.jboss.as.jacorb.csiv2:org.jboss.as.jacorb.csiv2.idl:org.jboss.as.jacorb.deployment:org.jboss.as.jacorb.naming:org.jboss.as.jacorb.naming.jndi:org.jboss.as.jacorb.rmi:org.jboss.as.jacorb.rmi.ir:org.jboss.as.jacorb.rmi.marshal:org.jboss.as.jacorb.rmi.marshal.strategy:org.jboss.as.jacorb.security:org.jboss.as.jacorb.service:org.jboss.as.jacorb.tm</packages>
+                                        </group>
+                                        <group>
+                                            <title>Module org.jboss.as.jaxr</title>
+                                            <packages>org.jboss.as.jaxr:org.jboss.as.jaxr.extension:org.jboss.as.jaxr.service</packages>
                                         </group>
                                         <group>
                                             <title>Module org.jboss.as.jaxrs</title>

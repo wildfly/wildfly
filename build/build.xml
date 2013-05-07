@@ -812,6 +812,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-configadmin"/>
         </module-def>
 
+        <module-def name="org.jboss.as.cmp">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-cmp"/>
+        </module-def>
+
         <module-def name="org.jboss.as.connector">
             <maven-resource group="org.jboss.as" artifact="jboss-as-connector"/>
         </module-def>
@@ -844,6 +848,10 @@
 
         <module-def name="org.jboss.as.jacorb">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jacorb"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.jaxr">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jaxr"/>
         </module-def>
 
         <module-def name="org.jboss.as.jaxrs">

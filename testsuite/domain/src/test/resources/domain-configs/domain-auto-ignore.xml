@@ -47,6 +47,7 @@
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.mail"/>
+        <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.pojo"/>
         <extension module="org.jboss.as.sar"/>
     </extensions>
@@ -141,6 +142,7 @@
                     <smtp-server outbound-socket-binding-ref="mail-smtp"/>
                 </mail-session>
             </subsystem>
+            <subsystem xmlns="urn:jboss:domain:naming:2.0"/>
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
         </profile>
         <profile name="profile3">
@@ -197,7 +199,6 @@
     <interfaces>
         <interface name="management"/>
         <interface name="public"/>
-        <interface name="unsecure"/>
     </interfaces>
     <socket-binding-groups>
         <socket-binding-group name="sockets1" default-interface="public">

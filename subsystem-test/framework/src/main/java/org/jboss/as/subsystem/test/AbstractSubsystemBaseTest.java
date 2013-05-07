@@ -158,29 +158,36 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         compare(modelA, modelB);
 
         // Test the describe operation
-        final ModelNode operation = createDescribeOperation();
-        final ModelNode result = servicesB.executeOperation(operation);
-        Assert.assertTrue("the subsystem describe operation has to generate a list of operations to recreate the subsystem",
-                !result.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION));
-        final List<ModelNode> operations = result.get(ModelDescriptionConstants.RESULT).asList();
+        validateDescribeOperation(servicesB, additionalInit, modelA);
+
+        assertRemoveSubsystemResources(servicesB, getIgnoredChildResourcesForRemovalTest());
         servicesB.shutdown();
-
-        final KernelServices servicesC = super.createKernelServicesBuilder(additionalInit).setBootOperations(operations).build();
-        final ModelNode modelC = servicesC.readWholeModel();
-
-        compare(modelA, modelC);
-
-        assertRemoveSubsystemResources(servicesC, getIgnoredChildResourcesForRemovalTest());
 
         if (configIdResolvedModel != null) {
             final String subsystemResolvedXml = getSubsystemXml(configIdResolvedModel);
             final KernelServices servicesD = super.createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemResolvedXml).build();
-            Assert.assertTrue("Subsystem w/ reolved xml boot failed!", servicesD.isSuccessfulBoot());
+            Assert.assertTrue("Subsystem w/ resolved xml boot failed!", servicesD.isSuccessfulBoot());
             final ModelNode modelD = servicesD.readWholeModel();
             validateModel(modelD);
             resolveandCompareModel(modelA, modelD);
         }
         return servicesA;
+
+    }
+
+    protected void validateDescribeOperation(KernelServices hc, AdditionalInitialization serverInit, ModelNode expectedModel) throws Exception {
+        final ModelNode operation = createDescribeOperation();
+        final ModelNode result = hc.executeOperation(operation);
+        Assert.assertTrue("the subsystem describe operation has to generate a list of operations to recreate the subsystem",
+                !result.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION));
+        final List<ModelNode> operations = result.get(ModelDescriptionConstants.RESULT).asList();
+
+        final KernelServices servicesC = super.createKernelServicesBuilder(serverInit).setBootOperations(operations).build();
+        final ModelNode serverModel = servicesC.readWholeModel();
+
+        compare(expectedModel, serverModel);
+
+        servicesC.shutdown();
 
     }
 

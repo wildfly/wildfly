@@ -52,6 +52,7 @@ class KnownVersions {
         final String CORE_MODEL_7_1_3 = "1.3.0";
         final String CORE_MODEL_7_2_0 = "1.4.0";
         addSubsystemVersion(map, "configadmin", "1.0.0", CORE_MODEL_7_1_3);
+        addSubsystemVersion(map, "cmp", "1.0.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "ee", "1.0.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "jacorb", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "datasources", "1.1.0", CORE_MODEL_7_1_2);
@@ -59,6 +60,7 @@ class KnownVersions {
         addSubsystemVersion(map, "infinispan", "1.3.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "infinispan", "1.4.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "jacorb", "1.1.0", CORE_MODEL_7_1_3);
+        addSubsystemVersion(map, "jaxr", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "jca", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "jgroups", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "jmx", "1.0.0", CORE_MODEL_7_1_2);

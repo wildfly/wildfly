@@ -4,12 +4,13 @@
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
         <extension module="org.jboss.as.clustering.jgroups"/>
-        <!--<extension module="org.jboss.as.cmp"/>-->
+        <extension module="org.jboss.as.cmp"/>
         <extension module="org.jboss.as.configadmin"/>
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
         <extension module="org.jboss.as.jacorb"/>
+        <extension module="org.jboss.as.jaxr"/>
         <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.jdr"/>
         <extension module="org.jboss.as.jmx"/>
@@ -399,7 +400,7 @@
                     </replicated-cache>
                     <!--
                       ~  Clustered cache used internally by EJB subsytem for managing the client-mapping(s) of
-                      ~                 the socketbinding referenced by the EJB remoting connector
+                      ~                 the socketbinding referenced by the EJB remoting connector 
                       -->
                     <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true"/>
                     <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0">
@@ -450,7 +451,7 @@
                 <stack name="udp">
                     <transport type="UDP" socket-binding="jgroups-udp"/>
                     <protocol type="PING"/>
-                    <!--
+                    <!--  
                         MERGE3 does not exist in 7.1.x, so use MERGE2 for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="MERGE3"/>
@@ -459,7 +460,7 @@
                     <protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
                     <protocol type="FD"/>
                     <protocol type="VERIFY_SUSPECT"/>
-                    <!--
+                    <!--  
                         NAKACK does not exist in 7.1.x, so use NAKACK for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="NAKACK2"/>
@@ -480,7 +481,7 @@
                     <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
                     <protocol type="FD"/>
                     <protocol type="VERIFY_SUSPECT"/>
-                    <!--
+                    <!--  
                         NAKACK does not exist in 7.1.x, so use NAKACK for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="NAKACK2"/>
@@ -642,7 +643,7 @@
                     </handlers>
                 </root-logger>
             </subsystem>
-            <!--<subsystem xmlns="urn:jboss:domain:cmp:1.0"/>-->
+            <subsystem xmlns="urn:jboss:domain:cmp:1.0"/>
             <subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>
             <subsystem xmlns="urn:jboss:domain:datasources:1.1">
                 <datasources>
@@ -731,6 +732,9 @@
                 <orb socket-binding="jacorb" ssl-socket-binding="jacorb-ssl">
                     <initializers transactions="spec" security="on"/>
                 </orb>
+            </subsystem>
+            <subsystem xmlns="urn:jboss:domain:jaxr:1.1">
+                <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jca:1.1">
@@ -961,7 +965,7 @@
                     </handlers>
                 </root-logger>
             </subsystem>
-            <!--<subsystem xmlns="urn:jboss:domain:cmp:1.0"/>-->
+            <subsystem xmlns="urn:jboss:domain:cmp:1.0"/>
             <subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>
             <subsystem xmlns="urn:jboss:domain:datasources:1.1">
                 <datasources>
@@ -1050,7 +1054,7 @@
                     </replicated-cache>
                     <!--
                       ~  Clustered cache used internally by EJB subsytem for managing the client-mapping(s) of
-                      ~                 the socketbinding referenced by the EJB remoting connector
+                      ~                 the socketbinding referenced by the EJB remoting connector 
                       -->
                     <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true"/>
                     <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0">
@@ -1081,6 +1085,9 @@
                     <initializers transactions="spec" security="on"/>
                 </orb>
             </subsystem>
+            <subsystem xmlns="urn:jboss:domain:jaxr:1.1">
+                <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jca:1.1">
                 <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
@@ -1106,7 +1113,7 @@
                 <stack name="udp">
                     <transport type="UDP" socket-binding="jgroups-udp"/>
                     <protocol type="PING"/>
-                    <!--
+                    <!--  
                         MERGE3 does not exist in 7.1.x, so use MERGE2 for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="MERGE3"/>
@@ -1115,7 +1122,7 @@
                     <protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
                     <protocol type="FD"/>
                     <protocol type="VERIFY_SUSPECT"/>
-                    <!--
+                    <!--  
                         NAKACK does not exist in 7.1.x, so use NAKACK for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="NAKACK2"/>
@@ -1136,7 +1143,7 @@
                     <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
                     <protocol type="FD"/>
                     <protocol type="VERIFY_SUSPECT"/>
-                    <!--
+                    <!--  
                         NAKACK does not exist in 7.1.x, so use NAKACK for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="NAKACK2"/>
@@ -1349,13 +1356,13 @@
         </profile>
     </profiles>
     <!--
-      ~
+      ~ 
       ~          Named interfaces that can be referenced elsewhere in the configuration. The configuration
       ~          for how to associate these logical names with an actual network interface can either
       ~          be specified here or can be declared on a per-host basis in the equivalent element in host.xml.
-      ~
+      ~ 
       ~          These default configurations require the binding specification to be done in host.xml.
-      ~
+      ~     
       -->
     <interfaces>
         <interface name="management"/>
@@ -1416,9 +1423,9 @@
                 <remote-destination host="localhost" port="25"/>
             </outbound-socket-binding>
         </socket-binding-group>
-        <!--
+        <!-- 
             Use expressions in places they are allowed since expressions should be allowd on all versions.
-            The defaults will be used
+            The defaults will be used 
         -->
         <socket-binding-group name="full-ha-sockets" default-interface="${test.not.set.anywhere:public}">
             <!-- Needed for server groups using the 'full-ha' profile  -->

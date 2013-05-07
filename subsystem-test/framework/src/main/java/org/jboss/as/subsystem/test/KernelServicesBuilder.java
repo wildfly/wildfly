@@ -89,8 +89,9 @@ public interface KernelServicesBuilder {
 
     /**
      * Creates the controller and initializes it with the passed in configuration options.
-     * If {@link #createLegacyKernelServicesBuilder(AdditionalInitialization, ModelVersion)} was called kernel services will be created for the legacy subsystem
-     * controllers as well, accessible from {@link KernelServices#getLegacyServices(ModelVersion)} on the created {@link KernelServices}
+     * If {@link #createLegacyKernelServicesBuilder(AdditionalInitialization, org.jboss.as.model.test.ModelTestControllerVersion, org.jboss.as.controller.ModelVersion)}
+     * was called kernel services will be created for the legacy subsystem controllers as well,
+     * accessible from {@link KernelServices#getLegacyServices(ModelVersion)} on the created {@link KernelServices}
      * @throws IllegalStateException if #build() has already been called
      * @return the kernel services wrapping the controller
      */
