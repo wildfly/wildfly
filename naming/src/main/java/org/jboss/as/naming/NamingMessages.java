@@ -463,4 +463,14 @@ public interface NamingMessages {
      */
     @Message(id = 11874, value = "Binding add operation for external context not supported in Naming Subsystem model version %s")
     String failedToTransformExternalContext(String modelVersion);
+
+    /**
+     * Creates an exception indicating the url context could not be found.
+     *
+     * @param referenceName the reference name.
+     *
+     * @return a {@link NamingException} for the error.
+     */
+    @Message(id = 11875, value = "The url '%s' could not be resolved. The Context.URL_PKG_PREFIXES is not specified, empty or factory cannot be loaded.")
+    NamingException noURLContextFactory(String url);
 }

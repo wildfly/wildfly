@@ -44,7 +44,7 @@ import org.jboss.as.naming.context.NamespaceContextSelector;
  */
 public class InitialContext extends NamingContext {
 
-
+    private static final NamingMessages NAMING_MESSAGES = NamingMessages.MESSAGES;
     /**
      * Map of any additional naming schemes
      */
@@ -110,6 +110,8 @@ public class InitialContext extends NamingContext {
                         Context ctx = NamingManager.getURLContext(scheme, getEnvironment());
                         if(ctx!=null){
                             return ctx.lookup(name);
+                        } else {
+                            throw NAMING_MESSAGES.noURLContextFactory(name.toString());
                         }
                     }
                 }
