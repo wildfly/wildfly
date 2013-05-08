@@ -49,6 +49,8 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.Param;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleNotFoundException;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
@@ -2648,4 +2650,10 @@ public interface ControllerMessages {
     @Message(id = 13452, value = "Legacy extension '%s' is not supported on servers running this version. The extension " +
             "is only supported for use by hosts running a previous release in a mixed-version managed domain")
     String unsupportedLegacyExtension(String extensionName);
+
+    @Message(id = 13453, value = "Extension module %s not found")
+    OperationFailedException extensionModuleNotFound(@Cause ModuleNotFoundException cause, String module);
+
+    @Message(id = 13454, value = "Failed to load Extension module %s")
+    RuntimeException extensionModuleLoadingFailure(@Cause ModuleLoadException cause, String module);
 }
