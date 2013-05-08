@@ -3,6 +3,7 @@
 
     <!-- Import shared ant targets -->
     <import file="common-targets.xml" as="common"/>
+    <import file="clustering-common-targets.xml" as="clustering-common"/>
 
     <!-- Shared clustering config target -->
     <target name="abstract-build-clustering" description="Builds two server configuration for given JGroups stack and cache mode">
