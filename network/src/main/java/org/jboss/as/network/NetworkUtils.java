@@ -30,6 +30,7 @@ import java.security.AccessController;
 import java.util.Arrays;
 import java.util.Locale;
 import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Utility methods related to networking.
@@ -203,7 +204,7 @@ public class NetworkUtils {
     }
 
     private static boolean checkForPresence(final String key, final String value) {
-        final String tmp = System.getSecurityManager() == null ? System.getProperty(key) : AccessController.doPrivileged(new ReadPropertyAction(key));
+        final String tmp = ! WildFlySecurityManager.isChecking() ? System.getProperty(key) : AccessController.doPrivileged(new ReadPropertyAction(key));
         try {
             return tmp != null && tmp.trim().toLowerCase(Locale.ENGLISH).startsWith(value);
         } catch (Throwable t) {

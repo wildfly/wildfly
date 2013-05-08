@@ -25,9 +25,10 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 import org.jboss.remoting3.Connection;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * SecurityActions to maniplate the RemotingContext.
+ * SecurityActions to manipulate the RemotingContext.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
@@ -37,11 +38,11 @@ final class SecurityActions {
     }
 
     static Connection remotingContextGetConnection() {
-        return remotingContextAccociationActions().getConnection();
+        return remotingContextAssociationActions().getConnection();
     }
 
-    private static RemotingContextAssociationActions remotingContextAccociationActions() {
-        return System.getSecurityManager() == null ? RemotingContextAssociationActions.NON_PRIVILEGED
+    private static RemotingContextAssociationActions remotingContextAssociationActions() {
+        return ! WildFlySecurityManager.isChecking() ? RemotingContextAssociationActions.NON_PRIVILEGED
                 : RemotingContextAssociationActions.PRIVILEGED;
     }
 

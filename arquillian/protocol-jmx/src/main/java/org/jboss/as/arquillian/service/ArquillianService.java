@@ -54,8 +54,8 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.resolver.XBundleRevision;
 import org.osgi.framework.BundleContext;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static java.lang.System.getSecurityManager;
 import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
@@ -292,12 +292,12 @@ public class ArquillianService implements Service<ArquillianService> {
     }
 
     private static ClassLoader getTccl() {
-        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
+        return ! WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     private static void setTccl(final ClassLoader cl) {
         assert cl != null : "ClassLoader must be specified";
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             currentThread().setContextClassLoader(cl);
         } else {
             doPrivileged(new SetContextClassLoaderAction(cl));

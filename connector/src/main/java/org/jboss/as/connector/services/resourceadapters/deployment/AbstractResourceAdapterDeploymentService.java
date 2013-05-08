@@ -22,7 +22,6 @@
 
 package org.jboss.as.connector.services.resourceadapters.deployment;
 
-import static java.lang.System.getSecurityManager;
 import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
@@ -77,6 +76,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A ResourceAdapterDeploymentService.
@@ -399,7 +399,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
         @Override
         protected TransactionManager getTransactionManager() {
-            if (getSecurityManager() == null) {
+            if (! WildFlySecurityManager.isChecking()) {
                 currentThread().setContextClassLoader(TransactionIntegration.class.getClassLoader());
             } else {
                 doPrivileged(new SetContextClassLoaderFromClassAction(TransactionIntegration.class));
@@ -407,7 +407,11 @@ public abstract class AbstractResourceAdapterDeploymentService {
             try {
                 return getTxIntegration().getValue().getTransactionManager();
             } finally {
-                doPrivileged(ClearContextClassLoaderAction.getInstance());
+                if (! WildFlySecurityManager.isChecking()) {
+                    currentThread().setContextClassLoader(null);
+                } else {
+                    doPrivileged(ClearContextClassLoaderAction.getInstance());
+                }
             }
         }
 

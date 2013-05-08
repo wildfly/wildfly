@@ -24,8 +24,8 @@ package org.jboss.as.webservices.webserviceref;
 
 import org.wildfly.security.manager.GetContextClassLoaderAction;
 import org.wildfly.security.manager.SetContextClassLoaderAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static java.lang.System.getSecurityManager;
 import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 
@@ -46,7 +46,7 @@ final class SecurityActions {
      * @return the current context classloader
      */
     static ClassLoader getContextClassLoader() {
-        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
+        return ! WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     /**
@@ -56,7 +56,7 @@ final class SecurityActions {
      *            the classloader
      */
     static void setContextClassLoader(final ClassLoader classLoader) {
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             currentThread().setContextClassLoader(classLoader);
         } else {
             doPrivileged(new SetContextClassLoaderAction(classLoader));

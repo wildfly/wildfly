@@ -23,7 +23,6 @@
 package org.jboss.as.server.deployment.module;
 
 import java.io.IOException;
-import java.lang.reflect.ReflectPermission;
 import java.security.Permission;
 import java.security.Permissions;
 import java.util.ArrayList;

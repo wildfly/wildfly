@@ -23,9 +23,9 @@ package org.jboss.as.remoting;
 
 import org.wildfly.security.manager.GetClassLoaderAction;
 import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static java.lang.System.getProperty;
-import static java.lang.System.getSecurityManager;
 import static java.security.AccessController.doPrivileged;
 
 /**
@@ -35,15 +35,15 @@ import static java.security.AccessController.doPrivileged;
 class SecurityActions {
 
     static String getSystemProperty(final String name, final String defaultValue) {
-        return getSecurityManager() == null ? getProperty(name, defaultValue) : doPrivileged(new ReadPropertyAction(name, defaultValue));
+        return ! WildFlySecurityManager.isChecking() ? getProperty(name, defaultValue) : doPrivileged(new ReadPropertyAction(name, defaultValue));
     }
 
     static String getSystemProperty(final String name) {
-        return getSecurityManager() == null ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
+        return ! WildFlySecurityManager.isChecking() ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
     }
 
     static ClassLoader getClassLoader(final Class<?> clazz) {
-        return getSecurityManager() == null ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
+        return ! WildFlySecurityManager.isChecking() ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
     }
 
 }

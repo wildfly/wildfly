@@ -25,11 +25,11 @@ import org.wildfly.security.manager.AddShutdownHookAction;
 import org.wildfly.security.manager.GetClassLoaderAction;
 import org.wildfly.security.manager.ReadEnvironmentPropertyAction;
 import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.WritePropertyAction;
 
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;
-import static java.lang.System.getSecurityManager;
 import static java.lang.System.getenv;
 import static java.lang.System.setProperty;
 import static java.security.AccessController.doPrivileged;
@@ -43,7 +43,7 @@ import static java.security.AccessController.doPrivileged;
  */
 class SecurityActions {
     static void addShutdownHook(Thread hook) {
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             getRuntime().addShutdownHook(hook);
         } else {
             doPrivileged(new AddShutdownHookAction(hook));
@@ -51,11 +51,11 @@ class SecurityActions {
     }
 
     static String getSystemProperty(String name) {
-        return getSecurityManager() == null ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
+        return ! WildFlySecurityManager.isChecking() ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
     }
 
     static void setSystemProperty(String name, String value) {
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             setProperty(name, value);
         } else {
             doPrivileged(new WritePropertyAction(name, value));
@@ -63,10 +63,10 @@ class SecurityActions {
     }
 
     static ClassLoader getClassLoader(Class<?> cls) {
-        return getSecurityManager() == null ? cls.getClassLoader() : doPrivileged(new GetClassLoaderAction(cls));
+        return ! WildFlySecurityManager.isChecking() ? cls.getClassLoader() : doPrivileged(new GetClassLoaderAction(cls));
     }
 
     static String getEnvironmentVariable(String name) {
-        return getSecurityManager() == null ? getenv(name) : doPrivileged(new ReadEnvironmentPropertyAction(name));
+        return ! WildFlySecurityManager.isChecking() ? getenv(name) : doPrivileged(new ReadEnvironmentPropertyAction(name));
     }
 }

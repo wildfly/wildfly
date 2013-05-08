@@ -34,7 +34,6 @@ import java.util.StringTokenizer;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ExitCodes;
-import org.wildfly.security.manager.WildFlySecurityManager;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;

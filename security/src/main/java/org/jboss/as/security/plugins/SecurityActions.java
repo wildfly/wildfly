@@ -34,8 +34,8 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static java.lang.System.getSecurityManager;
 import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 
@@ -48,11 +48,11 @@ class SecurityActions {
 
     static ModuleClassLoader getModuleClassLoader(final ModuleLoader loader, final String moduleSpec) throws ModuleLoadException {
         final Module module = loader.loadModule(ModuleIdentifier.fromString(moduleSpec));
-        return getSecurityManager() != null ? doPrivileged(new GetModuleClassLoaderAction(module)) : module.getClassLoader();
+        return ! WildFlySecurityManager.isChecking() ? doPrivileged(new GetModuleClassLoaderAction(module)) : module.getClassLoader();
     }
 
     static SecurityContext getSecurityContext() {
-        if (getSecurityManager() != null) {
+        if (WildFlySecurityManager.isChecking()) {
             return doPrivileged(new PrivilegedAction<SecurityContext>() {
                 public SecurityContext run() {
                     return SecurityContextAssociation.getSecurityContext();
@@ -64,7 +64,7 @@ class SecurityActions {
     }
 
     static Principal getPrincipal() {
-        if (getSecurityManager() != null) {
+        if (WildFlySecurityManager.isChecking()) {
             return doPrivileged(new PrivilegedAction<Principal>() {
                 public Principal run() {
                     Principal principal = null;
@@ -86,7 +86,7 @@ class SecurityActions {
     }
 
     static Object getCredential() {
-        if (getSecurityManager() != null) {
+        if (WildFlySecurityManager.isChecking()) {
             return doPrivileged(new PrivilegedAction<Object>() {
                 public Object run() {
                     Object credential = null;
@@ -108,6 +108,6 @@ class SecurityActions {
     }
 
     static ClassLoader getContextClassLoader() {
-        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
+        return ! WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 }

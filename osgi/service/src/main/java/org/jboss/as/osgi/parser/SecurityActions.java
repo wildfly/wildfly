@@ -24,10 +24,10 @@ package org.jboss.as.osgi.parser;
 
 import org.wildfly.security.manager.GetClassLoaderAction;
 import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.WritePropertyAction;
 
 import static java.lang.System.getProperty;
-import static java.lang.System.getSecurityManager;
 import static java.lang.System.setProperty;
 import static java.security.AccessController.doPrivileged;
 
@@ -43,14 +43,14 @@ class SecurityActions {
     }
 
     static String getSystemProperty(final String key, final String defaultValue) {
-        return getSecurityManager() == null ? getProperty(key, defaultValue) : doPrivileged(new ReadPropertyAction(key, defaultValue));
+        return ! WildFlySecurityManager.isChecking() ? getProperty(key, defaultValue) : doPrivileged(new ReadPropertyAction(key, defaultValue));
     }
 
     static String setSystemProperty(final String key, final String value) {
-        return getSecurityManager() == null ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
+        return ! WildFlySecurityManager.isChecking() ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
     }
 
     static ClassLoader getClassLoader(final Class<?> clazz) {
-        return getSecurityManager() == null ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
+        return ! WildFlySecurityManager.isChecking() ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
     }
 }

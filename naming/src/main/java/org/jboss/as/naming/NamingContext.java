@@ -53,6 +53,7 @@ import javax.naming.spi.ResolveResult;
 import org.jboss.as.naming.JndiPermission.Action;
 import org.jboss.as.naming.context.ObjectFactoryBuilder;
 import org.jboss.as.naming.util.NameParser;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Naming context implementation which proxies calls to a {@code NamingStore} instance.  This context is
@@ -540,7 +541,7 @@ public class NamingContext implements EventContext {
 
     private void check(Name name, Action... actions) throws NamingException {
         final SecurityManager sm = System.getSecurityManager();
-        if (sm != null) {
+        if (sm != null && WildFlySecurityManager.isChecking()) {
             // build absolute name (including store's base name)
             Name absoluteName = (Name) namingStore.getBaseName().clone();
             if (name.isEmpty()) {

@@ -53,6 +53,7 @@ import org.jboss.vfs.VirtualFileFilter;
 import org.jboss.vfs.VirtualFilePermission;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.FilterVirtualFileVisitor;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static java.security.AccessController.doPrivileged;
 
@@ -89,17 +90,18 @@ public class VFSResourceLoader extends AbstractResourceLoader {
      */
     public VFSResourceLoader(final String rootName, final VirtualFile root, final boolean usePhysicalCodeSource) throws IOException {
         final SecurityManager sm = System.getSecurityManager();
-        if (sm != null) {
+        final boolean checking = WildFlySecurityManager.isChecking();
+        if (checking) {
             sm.checkPermission(new VirtualFilePermission(root.getPathName(), "read"));
         }
         this.root = root;
         this.rootName = rootName;
         try {
-            manifest = doPrivileged(new PrivilegedExceptionAction<Manifest>() {
+            manifest = checking ? doPrivileged(new PrivilegedExceptionAction<Manifest>() {
                 public Manifest run() throws IOException {
                     return VFSUtils.getManifest(root);
                 }
-            });
+            }) : VFSUtils.getManifest(root);
         } catch (PrivilegedActionException pe) {
             try {
                 throw pe.getException();

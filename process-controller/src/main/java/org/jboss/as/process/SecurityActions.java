@@ -28,12 +28,12 @@ import org.wildfly.security.manager.ClearPropertyAction;
 import org.wildfly.security.manager.GetEnvironmentAction;
 import org.wildfly.security.manager.GetSystemPropertiesAction;
 import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.WritePropertyAction;
 
 import static java.lang.System.clearProperty;
 import static java.lang.System.getProperties;
 import static java.lang.System.getProperty;
-import static java.lang.System.getSecurityManager;
 import static java.lang.System.getenv;
 import static java.lang.System.setProperty;
 import static java.security.AccessController.doPrivileged;
@@ -51,26 +51,26 @@ final class SecurityActions {
     }
 
     static String getSystemProperty(final String key) {
-        return getSecurityManager() == null ? getProperty(key) : doPrivileged(new ReadPropertyAction(key));
+        return ! WildFlySecurityManager.isChecking() ? getProperty(key) : doPrivileged(new ReadPropertyAction(key));
     }
 
     static String getSystemProperty(final String key, final String defaultValue) {
-        return getSecurityManager() == null ? getProperty(key, defaultValue) : doPrivileged(new ReadPropertyAction(key, defaultValue));
+        return ! WildFlySecurityManager.isChecking() ? getProperty(key, defaultValue) : doPrivileged(new ReadPropertyAction(key, defaultValue));
     }
 
     static String setSystemProperty(final String key, final String value) {
-        return getSecurityManager() == null ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
+        return ! WildFlySecurityManager.isChecking() ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
     }
 
     static String clearSystemProperty(final String key) {
-        return getSecurityManager() == null ? clearProperty(key) : doPrivileged(new ClearPropertyAction(key));
+        return ! WildFlySecurityManager.isChecking() ? clearProperty(key) : doPrivileged(new ClearPropertyAction(key));
     }
 
     static Properties getSystemProperties() {
-        return getSecurityManager() == null ? getProperties() : doPrivileged(GetSystemPropertiesAction.getInstance());
+        return ! WildFlySecurityManager.isChecking() ? getProperties() : doPrivileged(GetSystemPropertiesAction.getInstance());
     }
 
     static Map<String, String> getSystemEnvironment() {
-        return getSecurityManager() == null ? getenv() : doPrivileged(GetEnvironmentAction.getInstance());
+        return ! WildFlySecurityManager.isChecking() ? getenv() : doPrivileged(GetEnvironmentAction.getInstance());
     }
 }

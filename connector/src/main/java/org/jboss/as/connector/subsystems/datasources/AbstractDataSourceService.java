@@ -22,7 +22,6 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static java.lang.System.getSecurityManager;
 import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.connector.logging.ConnectorLogger.DS_DEPLOYER_LOGGER;
@@ -81,6 +80,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Base service for managing a data-source.
@@ -193,7 +193,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     }
 
     protected TransactionIntegration getTransactionIntegration() {
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             currentThread().setContextClassLoader(TransactionIntegration.class.getClassLoader());
         } else {
             doPrivileged(new SetContextClassLoaderFromClassAction(TransactionIntegration.class));
@@ -210,7 +210,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             return classLoader;
         }
         final Class<? extends Driver> clazz = driverValue.getValue().getClass();
-        return getSecurityManager() == null ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
+        return ! WildFlySecurityManager.isChecking() ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
     }
 
     protected class AS7DataSourceDeployer extends AbstractDsDeployer {
@@ -366,7 +366,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
         @Override
         public TransactionIntegration getTransactionIntegration() {
-            if (getSecurityManager() == null) {
+            if (! WildFlySecurityManager.isChecking()) {
                 currentThread().setContextClassLoader(TransactionIntegration.class.getClassLoader());
             } else {
                 doPrivileged(new SetContextClassLoaderFromClassAction(TransactionIntegration.class));
@@ -374,7 +374,11 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             try {
                 return transactionIntegrationValue.getValue();
             } finally {
-                doPrivileged(ClearContextClassLoaderAction.getInstance());
+                if (! WildFlySecurityManager.isChecking()) {
+                    currentThread().setContextClassLoader(null);
+                } else {
+                    doPrivileged(ClearContextClassLoaderAction.getInstance());
+                }
             }
         }
 

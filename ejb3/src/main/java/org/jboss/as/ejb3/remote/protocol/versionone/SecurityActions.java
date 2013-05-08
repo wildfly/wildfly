@@ -28,8 +28,8 @@ import org.jboss.as.security.remoting.RemotingContext;
 import org.wildfly.security.manager.GetContextClassLoaderAction;
 import org.wildfly.security.manager.SetContextClassLoaderAction;
 import org.jboss.remoting3.Connection;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static java.lang.System.getSecurityManager;
 import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 
@@ -45,7 +45,7 @@ final class SecurityActions {
      * @return the current context classloader
      */
     static ClassLoader getContextClassLoader() {
-        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
+        return ! WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     /**
@@ -55,7 +55,7 @@ final class SecurityActions {
      *            the classloader
      */
     static void setContextClassLoader(final ClassLoader classLoader) {
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             currentThread().setContextClassLoader(classLoader);
         } else {
             doPrivileged(new SetContextClassLoaderAction(classLoader));
@@ -68,18 +68,18 @@ final class SecurityActions {
      * @param connection - The Remoting connection.
      */
     static void remotingContextSetConnection(final Connection connection) {
-        remotingContextAccociationActions().setConnection(connection);
+        remotingContextAssociationActions().setConnection(connection);
     }
 
     /**
      * Clear the Remoting Connection on the RemotingContext.
      */
     static void remotingContextClear() {
-        remotingContextAccociationActions().clear();
+        remotingContextAssociationActions().clear();
     }
 
-    private static RemotingContextAssociationActions remotingContextAccociationActions() {
-        return getSecurityManager() == null ? RemotingContextAssociationActions.NON_PRIVILEGED
+    private static RemotingContextAssociationActions remotingContextAssociationActions() {
+        return ! WildFlySecurityManager.isChecking() ? RemotingContextAssociationActions.NON_PRIVILEGED
                 : RemotingContextAssociationActions.PRIVILEGED;
     }
 

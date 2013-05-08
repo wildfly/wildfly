@@ -23,9 +23,9 @@
 package org.jboss.as.osgi.service;
 
 import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static java.lang.System.getProperty;
-import static java.lang.System.getSecurityManager;
 import static java.lang.System.setProperty;
 import static java.security.AccessController.doPrivileged;
 
@@ -41,10 +41,10 @@ class SecurityActions {
     }
 
     static String getSystemProperty(final String key) {
-        return getSecurityManager() == null ? getProperty(key) : doPrivileged(new ReadPropertyAction(key));
+        return ! WildFlySecurityManager.isChecking() ? getProperty(key) : doPrivileged(new ReadPropertyAction(key));
     }
 
     static String setSystemProperty(final String key, final String value) {
-        return getSecurityManager() == null ? setProperty(key, value) : doPrivileged(new ReadPropertyAction(key, value));
+        return ! WildFlySecurityManager.isChecking() ? setProperty(key, value) : doPrivileged(new ReadPropertyAction(key, value));
     }
 }

@@ -50,9 +50,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static java.lang.System.getProperty;
-import static java.lang.System.getSecurityManager;
 import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.embedded.EmbeddedLogger.ROOT_LOGGER;
 import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
@@ -232,7 +232,7 @@ class ClassPathEjbJarScanner {
     }
 
     private static String getSystemProperty(final String property) {
-        return getSecurityManager() == null ? getProperty(property) : doPrivileged(new ReadPropertyAction(property));
+        return ! WildFlySecurityManager.isChecking() ? getProperty(property) : doPrivileged(new ReadPropertyAction(property));
     }
 
     //-------------------------------------------------------------------------------------||

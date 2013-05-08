@@ -32,8 +32,8 @@ import org.jboss.as.weld.WeldMessages;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.weld.bootstrap.api.Singleton;
 import org.jboss.weld.bootstrap.api.SingletonProvider;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static java.lang.System.getSecurityManager;
 import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 
@@ -123,7 +123,7 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
         }
 
         private ClassLoader getClassLoader() {
-            return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
+            return ! WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
         }
 
         /*

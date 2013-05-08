@@ -31,12 +31,12 @@ import org.wildfly.security.manager.ClearPropertyAction;
 import org.wildfly.security.manager.GetEnvironmentAction;
 import org.wildfly.security.manager.GetSystemPropertiesAction;
 import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.WritePropertyAction;
 
 import static java.lang.System.clearProperty;
 import static java.lang.System.getProperties;
 import static java.lang.System.getProperty;
-import static java.lang.System.getSecurityManager;
 import static java.lang.System.getenv;
 import static java.lang.System.setProperty;
 import static java.security.AccessController.doPrivileged;
@@ -54,11 +54,11 @@ class SecurityActions {
     }
 
     static String getSystemProperty(final String key) {
-        return getSecurityManager() == null ? getProperty(key) : doPrivileged(new ReadPropertyAction(key));
+        return ! WildFlySecurityManager.isChecking() ? getProperty(key) : doPrivileged(new ReadPropertyAction(key));
     }
 
     static void setSystemProperty(final String key, final String value) {
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             setProperty(key, value);
         } else {
             doPrivileged(new WritePropertyAction(key, value));
@@ -66,7 +66,7 @@ class SecurityActions {
     }
 
     static void clearSystemProperty(final String key) {
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             clearProperty(key);
         } else {
             doPrivileged(new ClearPropertyAction(key));
@@ -74,15 +74,15 @@ class SecurityActions {
     }
 
     static Properties getSystemProperties() {
-        return getSecurityManager() == null ? getProperties() : doPrivileged(GetSystemPropertiesAction.getInstance());
+        return ! WildFlySecurityManager.isChecking() ? getProperties() : doPrivileged(GetSystemPropertiesAction.getInstance());
     }
 
     static Map<String, String> getSystemEnvironment() {
-        return getSecurityManager() == null ? getenv() : doPrivileged(GetEnvironmentAction.getInstance());
+        return ! WildFlySecurityManager.isChecking() ? getenv() : doPrivileged(GetEnvironmentAction.getInstance());
     }
 
     static void addProvider(final Provider provider) {
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             Security.addProvider(provider);
         } else {
             doPrivileged(new AddGlobalSecurityProviderAction(provider));

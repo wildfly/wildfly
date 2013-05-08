@@ -24,11 +24,11 @@ package org.jboss.as.server.operations;
 import org.wildfly.security.manager.ClearPropertyAction;
 import org.wildfly.security.manager.GetClassLoaderAction;
 import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.WritePropertyAction;
 
 import static java.lang.System.clearProperty;
 import static java.lang.System.getProperty;
-import static java.lang.System.getSecurityManager;
 import static java.lang.System.setProperty;
 import static java.security.AccessController.doPrivileged;
 
@@ -39,18 +39,18 @@ import static java.security.AccessController.doPrivileged;
 class SecurityActions {
 
     static String setSystemProperty(final String key, final String value) throws SecurityException {
-        return getSecurityManager() == null ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
+        return ! WildFlySecurityManager.isChecking() ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
     }
 
     static String clearSystemProperty(final String key) throws SecurityException {
-        return getSecurityManager() == null ? clearProperty(key) : doPrivileged(new ClearPropertyAction(key));
+        return ! WildFlySecurityManager.isChecking() ? clearProperty(key) : doPrivileged(new ClearPropertyAction(key));
     }
 
     static String getSystemProperty(final String name) {
-        return getSecurityManager() == null ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
+        return ! WildFlySecurityManager.isChecking() ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
     }
 
     static ClassLoader getClassLoader(final Class<?> clazz) {
-        return getSecurityManager() == null ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
+        return ! WildFlySecurityManager.isChecking() ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
     }
 }

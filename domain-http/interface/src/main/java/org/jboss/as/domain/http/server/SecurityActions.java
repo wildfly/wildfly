@@ -23,8 +23,8 @@
 package org.jboss.as.domain.http.server;
 
 import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static java.lang.System.getSecurityManager;
 import static java.security.AccessController.doPrivileged;
 
 /**
@@ -38,6 +38,6 @@ import static java.security.AccessController.doPrivileged;
 class SecurityActions {
 
     static String getProperty(final String key) {
-        return getSecurityManager() == null ? System.getProperty(key) : doPrivileged(new ReadPropertyAction(key));
+        return ! WildFlySecurityManager.isChecking() ? System.getProperty(key) : doPrivileged(new ReadPropertyAction(key));
     }
 }

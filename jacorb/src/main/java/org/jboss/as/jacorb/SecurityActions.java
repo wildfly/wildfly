@@ -22,9 +22,9 @@
 
 package org.jboss.as.jacorb;
 
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.WritePropertyAction;
 
-import static java.lang.System.getSecurityManager;
 import static java.lang.System.setProperty;
 import static java.security.AccessController.doPrivileged;
 
@@ -47,6 +47,6 @@ class SecurityActions {
      * @param value the system property value.
      */
     static String setSystemProperty(final String key, final String value) {
-        return getSecurityManager() == null ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
+        return ! WildFlySecurityManager.isChecking() ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
     }
 }

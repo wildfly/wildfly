@@ -32,6 +32,7 @@ import org.jboss.as.security.remoting.RemotingContext;
 import org.wildfly.security.manager.GetContextClassLoaderAction;
 import org.wildfly.security.manager.GetModuleClassLoaderAction;
 import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.WriteSecurityPropertyAction;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
@@ -40,7 +41,6 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.remoting3.Connection;
 
-import static java.lang.System.getSecurityManager;
 import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 
@@ -56,11 +56,11 @@ class SecurityActions {
     static ModuleClassLoader getModuleClassLoader(final String moduleSpec) throws ModuleLoadException {
         ModuleLoader loader = Module.getCallerModuleLoader();
         final Module module = loader.loadModule(ModuleIdentifier.fromString(moduleSpec));
-        return getSecurityManager() != null ? doPrivileged(new GetModuleClassLoaderAction(module)) : module.getClassLoader();
+        return WildFlySecurityManager.isChecking() ? doPrivileged(new GetModuleClassLoaderAction(module)) : module.getClassLoader();
     }
 
     static void setSecurityProperty(final String key, final String value) {
-        if (getSecurityManager() != null) {
+        if (WildFlySecurityManager.isChecking()) {
             doPrivileged(new WriteSecurityPropertyAction(key, value));
         } else {
             Security.setProperty(key, value);
@@ -68,15 +68,15 @@ class SecurityActions {
     }
 
     static String getSystemProperty(final String name, final String defaultValue) {
-        return getSecurityManager() == null ? System.getProperty(name, defaultValue) : doPrivileged(new ReadPropertyAction(name, defaultValue));
+        return WildFlySecurityManager.isChecking() ? System.getProperty(name, defaultValue) : doPrivileged(new ReadPropertyAction(name, defaultValue));
     }
 
     static ClassLoader getContextClassLoader() {
-        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
+        return WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     static Class<?> loadClass(final String name) throws ClassNotFoundException {
-        if (getSecurityManager() != null) {
+        if (WildFlySecurityManager.isChecking()) {
             try {
                 return doPrivileged(new PrivilegedExceptionAction<Class<?>>() {
                     public Class<?> run() throws ClassNotFoundException {
@@ -133,7 +133,7 @@ class SecurityActions {
     }
 
     private static RemotingContextAssociationActions remotingContextAccociationActions() {
-        return getSecurityManager() == null ? RemotingContextAssociationActions.NON_PRIVILEGED
+        return ! WildFlySecurityManager.isChecking() ? RemotingContextAssociationActions.NON_PRIVILEGED
                 : RemotingContextAssociationActions.PRIVILEGED;
     }
 

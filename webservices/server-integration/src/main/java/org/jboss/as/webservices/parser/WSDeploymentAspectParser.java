@@ -21,7 +21,6 @@
  */
 package org.jboss.as.webservices.parser;
 
-import static java.lang.System.getSecurityManager;
 import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
@@ -45,6 +44,7 @@ import org.wildfly.security.manager.SetContextClassLoaderAction;
 import org.jboss.ws.common.JavaUtils;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.jboss.wsf.spi.util.StAXUtils;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A parser for WS deployment aspects
@@ -361,7 +361,7 @@ public class WSDeploymentAspectParser {
      * @return the current context classloader
      */
     private static ClassLoader getContextClassLoader() {
-        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
+        return ! WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     /**
@@ -370,7 +370,7 @@ public class WSDeploymentAspectParser {
      * @param classLoader the classloader
      */
     private static void setContextClassLoader(final ClassLoader classLoader) {
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             currentThread().setContextClassLoader(classLoader);
         } else {
             doPrivileged(new SetContextClassLoaderAction(classLoader));

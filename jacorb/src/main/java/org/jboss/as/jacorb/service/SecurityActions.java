@@ -26,9 +26,9 @@ import org.wildfly.security.manager.CreateThreadAction;
 import org.wildfly.security.manager.GetClassLoaderAction;
 import org.wildfly.security.manager.GetContextClassLoaderAction;
 import org.wildfly.security.manager.SetContextClassLoaderAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.WritePropertyAction;
 
-import static java.lang.System.getSecurityManager;
 import static java.lang.System.setProperty;
 import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
@@ -51,7 +51,7 @@ class SecurityActions {
      * @param value the system property value.
      */
     static String setSystemProperty(final String key, final String value) {
-        return getSecurityManager() == null ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
+        return ! WildFlySecurityManager.isChecking() ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
     }
 
     /**
@@ -62,7 +62,7 @@ class SecurityActions {
      * @return a reference to the current thread context {@code ClassLoader}.
      */
     static ClassLoader getThreadContextClassLoader() {
-        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
+        return ! WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     /**
@@ -73,7 +73,7 @@ class SecurityActions {
      * @param loader the {@code ClassLoader} to be set.
      */
     static void setThreadContextClassLoader(final ClassLoader loader) {
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             currentThread().setContextClassLoader(loader);
         } else {
             doPrivileged(new SetContextClassLoaderAction(loader));
@@ -89,7 +89,7 @@ class SecurityActions {
      * @return the {@code ClassLoader} of the specified {@code Class} object.
      */
     static ClassLoader getClassLoader(final Class<?> clazz) {
-        return getSecurityManager() == null ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
+        return ! WildFlySecurityManager.isChecking() ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
     }
 
     /**
@@ -102,6 +102,6 @@ class SecurityActions {
      * @return the construct {@code Thread} instance.
      */
     static Thread createThread(final Runnable runnable, final String threadName) {
-        return getSecurityManager() == null ? new Thread(runnable, threadName) : doPrivileged(new CreateThreadAction(runnable, threadName));
+        return ! WildFlySecurityManager.isChecking() ? new Thread(runnable, threadName) : doPrivileged(new CreateThreadAction(runnable, threadName));
     }
 }

@@ -34,6 +34,7 @@ import org.jboss.security.RunAsIdentity;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Privileged Actions
@@ -144,7 +145,7 @@ class SecurityActions {
     }
 
     static void clearAuthException() {
-        if (System.getSecurityManager() != null) {
+        if (WildFlySecurityManager.isChecking()) {
             AccessController.doPrivileged(new PrivilegedAction<Void>() {
 
                 @Override
@@ -161,7 +162,7 @@ class SecurityActions {
     }
 
     static Throwable getAuthException() {
-        if (System.getSecurityManager() != null) {
+        if (WildFlySecurityManager.isChecking()) {
             return AccessController.doPrivileged(new PrivilegedAction<Throwable>() {
 
                 @Override

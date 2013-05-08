@@ -19,7 +19,6 @@
 package org.jboss.as.controller.persistence;
 
 import static java.lang.System.getProperty;
-import static java.lang.System.getSecurityManager;
 import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
@@ -38,6 +37,7 @@ import java.util.regex.Pattern;
 
 import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
 import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Encapsulates the configuration file and manages its history
@@ -510,7 +510,7 @@ public class ConfigurationFile {
     }
 
     private String getStringProperty(final String name) {
-        return getSecurityManager() == null ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
+        return ! WildFlySecurityManager.isChecking() ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
     }
 
     private void deleteRecursive(final File file) {
