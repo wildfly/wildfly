@@ -166,9 +166,9 @@
 
         <attribute name="stack" default="udp"/>
         <attribute name="relay.site" default="siteA"/>
-        <attribute name="remote.site" default="siteB"/>
-        <attribute name="remote.stack" default="tcp"/>
-        <attribute name="remote.cluster" default="bridge"/>
+        <attribute name="remote-site.site" default="siteB"/>
+        <attribute name="remote-site.stack" default="tcp"/>
+        <attribute name="remote-site.cluster" default="bridge"/>
 
         <sequential>
             <echo message="Adding relay layer to stack @{stack} in JGroups subsystem for config @{name}"/>
@@ -177,9 +177,9 @@
                 <transform-params>
                     <param name="stack" expression="@{stack}"/>
                     <param name="relay.site" expression="@{relay.site}"/>
-                    <param name="remote.site" expression="@{remote.site}"/>
-                    <param name="remote.stack" expression="@{remote.stack}"/>
-                    <param name="remote.cluster" expression="@{remote.cluster}"/>
+                    <param name="remote-site.site" expression="@{remote-site.site}"/>
+                    <param name="remote-site.stack" expression="@{remote-site.stack}"/>
+                    <param name="remote-site.cluster" expression="@{remote-site.cluster}"/>
                 </transform-params>
             </execute-xslt-transform>
 
