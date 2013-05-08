@@ -87,4 +87,73 @@
 
     </target>
 
+    <!-- x-site tests:
+         4 nodes defined: ${node0}, ${node1}, ${node2}, ${node3}
+         2 mcast groups defined: ${mcast0}, ${mcast1}
+     -->
+    <target name="build-clustering-xsite" description="Builds server configurations for x-site testing">
+
+        <echo>Building x-site configs with siteA: ${siteA}, siteB: ${siteB}</echo>
+
+        <!-- site A, node 0, mcast 0 -->
+        <echo message="Building config clustering-xsite-${siteA}-0"/>
+        <copy todir="target/jbossas-clustering-xsite-${siteA}-0" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
+        </copy>
+        <ts.config-as.ip-with-multicast name="jbossas-clustering-xsite-${siteA}-0" node="${node0}" mcast="${mcast0}"/>
+        <ts.config-as.add-port-offset name="jbossas-clustering-xsite-${siteA}-0"/>
+        <!-- define relay at JGroups level -->
+        <ts.config-as.copy-stack name="jbossas-clustering-xsite-${siteA}-0" stack.name="udp-xsite" stack.base="udp"/>
+        <ts.config-as.add-xsite-relay name="jbossas-clustering-xsite-${siteA}-0" stack="udp-xsite" relay.site="siteA"
+                                      remote-site.site="siteB" remote-site.stack="tcp" remote-site.cluster="bridge"/>
+        <!-- define cache-container backups at Infinispan level -->
+        <ts.config-as.copy-cache-container name="jbossas-clustering-xsite-${siteA}-0" container.name="xsite-container"
+                                           container.base="web" container.default-cache="repl"/>
+        <ts.config-as.add-xsite-backup name="jbossas-clustering-xsite-${siteA}-0" container="xsite-container"
+                                           cache-type="replicated-cache" cache="repl" backup.site="siteB"/>
+
+
+        <!-- site A, node 1, mcast 0 -->
+        <echo message="Building config clustering-xsite-${siteA}-1"/>
+        <copy todir="target/jbossas-clustering-xsite-${siteA}-1" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
+        </copy>
+        <ts.config-as.ip-with-multicast name="jbossas-clustering-xsite-${siteA}-1" node="${node1}" mcast="${mcast0}"/>
+        <ts.config-as.add-port-offset name="jbossas-clustering-xsite-${siteA}-1" offset="100" nativePort="9999" httpPort="9990"/>
+        <ts.config-as.copy-stack name="jbossas-clustering-xsite-${siteA}-1" stack.name="udp-xsite" stack.base="udp"/>
+        <!-- define relay at JGroups level -->
+        <ts.config-as.add-xsite-relay name="jbossas-clustering-xsite-${siteA}-1" stack="udp-xsite" relay.site="siteA"
+                                      remote-site.site="siteB" remote-site.stack="tcp" remote-site.cluster="bridge"/>
+        <!-- define cache-container backups at Infinispan level -->
+        <ts.config-as.copy-cache-container name="jbossas-clustering-xsite-${siteA}-1" container.name="xsite-container"
+                                           container.base="web" container.default-cache="repl"/>
+        <ts.config-as.add-xsite-backup name="jbossas-clustering-xsite-${siteA}-1" container="xsite-container"
+                                           cache-type="replicated-cache" cache="repl" backup.site="siteB"/>
+
+        <!-- site B, node 2, mcast 1 -->
+        <echo message="Building config clustering-xsite-${siteB}-0"/>
+        <copy todir="target/jbossas-clustering-xsite-${siteB}-0" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
+        </copy>
+        <ts.config-as.ip-with-multicast name="jbossas-clustering-xsite-${siteB}-0" node="${node2}" mcast="${mcast1}"/>
+        <ts.config-as.add-port-offset name="jbossas-clustering-xsite-${siteB}-0" offset="200" nativePort="9999" httpPort="9990"/>
+        <!-- define relay at JGroups level -->
+        <ts.config-as.copy-stack name="jbossas-clustering-xsite-${siteB}-0" stack.name="udp-xsite" stack.base="udp"/>
+        <ts.config-as.add-xsite-relay name="jbossas-clustering-xsite-${siteB}-0" stack="udp-xsite" relay.site="siteB"
+                                      remote-site.site="siteA" remote-site.stack="tcp" remote-site.cluster="bridge"/>
+
+        <!-- site B, node 3, mcast 1 -->
+        <echo message="Building config clustering-xsite-${siteB}-1"/>
+        <copy todir="target/jbossas-clustering-xsite-${siteB}-1" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
+        </copy>
+        <ts.config-as.ip-with-multicast name="jbossas-clustering-xsite-${siteB}-1" node="${node3}" mcast="${mcast1}"/>
+        <ts.config-as.add-port-offset name="jbossas-clustering-xsite-${siteB}-1" offset="300" nativePort="9999" httpPort="9990"/>
+        <!-- define relay at JGroups level -->
+        <ts.config-as.copy-stack name="jbossas-clustering-xsite-${siteB}-1" stack.name="udp-xsite" stack.base="udp"/>
+        <ts.config-as.add-xsite-relay name="jbossas-clustering-xsite-${siteB}-1" stack="udp-xsite" relay.site="siteB"
+                                      remote-site.site="siteA" remote-site.stack="tcp" remote-site.cluster="bridge"/>
+
+    </target>
+
 </project>

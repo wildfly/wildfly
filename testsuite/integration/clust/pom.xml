@@ -386,6 +386,83 @@
             </build>
         </profile>
 
+        <profile>
+            <id>ts.clust.xsite.profile</id>
+            <activation><property><name>!ts.noClustering</name></property></activation>
+
+            <!--
+                Server configuration executions.
+            -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>ts.config-as.clust.xsite</id>
+                                <phase>process-test-resources</phase>
+                                <goals><goal>run</goal></goals>
+                                <configuration>
+                                    <target>
+                                        <echo>In Maven: node0: ${node0}</echo>
+                                        <!-- Build the UDP server configs in target/ . -->
+                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
+                                            <property name="siteA" value="siteA"/>
+                                            <property name="siteB" value="siteB"/>
+                                            <property name="node0" value="127.0.0.1"/>
+                                            <property name="node1" value="127.0.0.1"/>
+                                            <property name="node2" value="127.0.0.1"/>
+                                            <property name="node3" value="127.0.0.1"/>
+                                            <property name="mcast0" value="230.0.0.4"/>
+                                            <property name="mcast1" value="230.0.0.5"/>
+                                            <target name="build-clustering-xsite"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!--
+                       Surefire test executions.
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+
+                            <!-- Disable default-test execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals><goal>test</goal></goals>
+                                <phase>none</phase>
+                            </execution>
+
+                            <!-- Single node clustering tests. -->
+                            <execution>
+                                <id>ts.surefire.clust.xsite</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <arquillian.launch>clustering-xsite</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
 
         <!-- Enable using -Dts.noClustering. -->
         <profile>
