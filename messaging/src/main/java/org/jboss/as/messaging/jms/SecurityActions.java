@@ -25,8 +25,8 @@ package org.jboss.as.messaging.jms;
 import org.wildfly.security.manager.GetContextClassLoaderAction;
 import org.wildfly.security.manager.SetContextClassLoaderAction;
 import org.wildfly.security.manager.SetContextClassLoaderFromClassAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static java.lang.System.getSecurityManager;
 import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 
@@ -42,7 +42,7 @@ public final class SecurityActions {
      * @return the current context classloader
      */
     public static ClassLoader getContextClassLoader() {
-        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
+        return ! WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     /**
@@ -51,7 +51,7 @@ public final class SecurityActions {
      * @param clazz the class
      */
     public static ClassLoader setThreadContextClassLoader(Class clazz) {
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             final Thread thread = currentThread();
             try {
                 return thread.getContextClassLoader();
@@ -69,7 +69,7 @@ public final class SecurityActions {
      * @param cl the class loader
      */
     public static void setThreadContextClassLoader(ClassLoader cl) {
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             currentThread().setContextClassLoader(cl);
         } else {
             doPrivileged(new SetContextClassLoaderAction(cl));

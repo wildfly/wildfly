@@ -23,7 +23,7 @@ package org.jboss.as.test.integration.management.util;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Package privileged actions
@@ -35,7 +35,7 @@ class SecurityActions {
     private interface TCLAction {
         class UTIL {
             static TCLAction getTCLAction() {
-                return System.getSecurityManager() == null ? NON_PRIVILEGED : PRIVILEGED;
+                return WildFlySecurityManager.isChecking() ? PRIVILEGED : NON_PRIVILEGED;
             }
 
             public static String getSystemProperty(String name) {

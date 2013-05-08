@@ -19,6 +19,7 @@ import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * An ObjectFactory that binds an arbitrary InitialContext into JNDI.
@@ -62,7 +63,7 @@ public class ExternalContextObjectFactory implements ObjectFactory {
 
 
         ClassLoader loader;
-        if(System.getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             loader = getClass().getClassLoader();
         } else {
             loader = AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {

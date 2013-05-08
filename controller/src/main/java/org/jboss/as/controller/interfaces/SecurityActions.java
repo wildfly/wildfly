@@ -22,10 +22,10 @@
 
 package org.jboss.as.controller.interfaces;
 
-import static java.lang.System.getSecurityManager;
 import static java.security.AccessController.doPrivileged;
 
 import org.wildfly.security.manager.GetBooleanAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Security actions to perform possibly privileged operations.  No methods in
@@ -36,6 +36,6 @@ import org.wildfly.security.manager.GetBooleanAction;
 class SecurityActions {
 
     static boolean getBoolean(String systemProperty) {
-        return getSecurityManager() == null ? Boolean.getBoolean(systemProperty) : doPrivileged(new GetBooleanAction(systemProperty));
+        return ! WildFlySecurityManager.isChecking() ? Boolean.getBoolean(systemProperty) : doPrivileged(new GetBooleanAction(systemProperty));
     }
 }

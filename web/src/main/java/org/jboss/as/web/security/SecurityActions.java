@@ -32,6 +32,7 @@ import org.jboss.security.SecurityContextFactory;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Privileged Actions
@@ -144,7 +145,7 @@ class SecurityActions {
     public static final String AUTH_EXCEPTION_KEY = "org.jboss.security.exception";
 
     static void clearAuthException() {
-        if (System.getSecurityManager() != null) {
+        if (WildFlySecurityManager.isChecking()) {
             AccessController.doPrivileged(new PrivilegedAction<Void>() {
 
                 @Override
@@ -163,7 +164,7 @@ class SecurityActions {
     }
 
     static Throwable getAuthException() {
-        if (System.getSecurityManager() != null) {
+        if (WildFlySecurityManager.isChecking()) {
             return AccessController.doPrivileged(new PrivilegedAction<Throwable>() {
 
                 @Override

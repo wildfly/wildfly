@@ -36,9 +36,9 @@ import java.util.Set;
 
 import org.jboss.as.controller.ControllerLogger;
 import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static java.lang.System.getProperty;
-import static java.lang.System.getSecurityManager;
 import static java.security.AccessController.doPrivileged;
 
 /**
@@ -159,7 +159,7 @@ public final class OverallInterfaceCriteria implements InterfaceCriteria {
     }
 
     private static Boolean getBoolean(final String property) {
-        final String value = getSecurityManager() == null ? getProperty(property) : doPrivileged(new ReadPropertyAction(property));
+        final String value = ! WildFlySecurityManager.isChecking() ? getProperty(property) : doPrivileged(new ReadPropertyAction(property));
         return value == null ? null : value.equalsIgnoreCase("true");
     }
 

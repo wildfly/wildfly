@@ -24,6 +24,7 @@ package org.jboss.as.arquillian.container.embedded;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Security actions to access system environment information.  No methods in
@@ -37,7 +38,7 @@ class SecurityActions {
     }
 
     static void setSystemProperty(final String key, final String value) {
-        if (System.getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             System.setProperty(key, value);
         } else {
             AccessController.doPrivileged(new PrivilegedAction<Void>() {

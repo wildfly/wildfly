@@ -27,12 +27,12 @@ import org.wildfly.security.manager.GetEnvironmentAction;
 import org.wildfly.security.manager.GetSystemPropertiesAction;
 import org.wildfly.security.manager.ReadPropertyAction;
 import org.wildfly.security.manager.SetContextClassLoaderAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.WritePropertyAction;
 
 import static java.lang.System.clearProperty;
 import static java.lang.System.getProperties;
 import static java.lang.System.getProperty;
-import static java.lang.System.getSecurityManager;
 import static java.lang.System.getenv;
 import static java.lang.System.setProperty;
 import static java.lang.Thread.currentThread;
@@ -53,7 +53,7 @@ final class SecurityActions {
         if (method == null) {
             throw new IllegalArgumentException("method must be specified");
         }
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             method.setAccessible(true);
         } else {
             try {
@@ -78,11 +78,11 @@ final class SecurityActions {
     }
 
     static Map<String, String> getSystemEnvironment() {
-        return getSecurityManager() == null ? getenv() : doPrivileged(GetEnvironmentAction.getInstance());
+        return ! WildFlySecurityManager.isChecking() ? getenv() : doPrivileged(GetEnvironmentAction.getInstance());
     }
 
     static void clearSystemProperty(final String key) {
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             clearProperty(key);
         } else {
             doPrivileged(new ClearPropertyAction(key));
@@ -90,7 +90,7 @@ final class SecurityActions {
     }
 
     static void setSystemProperty(final String key, final String value) {
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             setProperty(key, value);
         } else {
             doPrivileged(new WritePropertyAction(key, value));
@@ -98,19 +98,19 @@ final class SecurityActions {
     }
 
     static String getSystemProperty(final String key) {
-        return getSecurityManager() == null ? getProperty(key) : doPrivileged(new ReadPropertyAction(key));
+        return ! WildFlySecurityManager.isChecking() ? getProperty(key) : doPrivileged(new ReadPropertyAction(key));
     }
 
     static Properties getSystemProperties() {
-        return getSecurityManager() == null ? getProperties() : doPrivileged(GetSystemPropertiesAction.getInstance());
+        return ! WildFlySecurityManager.isChecking() ? getProperties() : doPrivileged(GetSystemPropertiesAction.getInstance());
     }
 
     static ClassLoader getContextClassLoader() {
-        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
+        return ! WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     static void setContextClassLoader(final ClassLoader tccl) {
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             currentThread().setContextClassLoader(tccl);
         } else {
             doPrivileged(new SetContextClassLoaderAction(tccl));

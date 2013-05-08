@@ -25,6 +25,7 @@ package org.jboss.as.security.context;
 import org.wildfly.security.manager.GetClassLoaderAction;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoadException;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static java.security.AccessController.doPrivileged;
 
@@ -36,7 +37,7 @@ import static java.security.AccessController.doPrivileged;
 class SecurityActions {
 
     static ModuleClassLoader getModuleClassLoader() throws ModuleLoadException {
-        if (System.getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             return (ModuleClassLoader) SecurityActions.class.getClassLoader();
         } else {
             return (ModuleClassLoader) doPrivileged(new GetClassLoaderAction(SecurityActions.class));

@@ -24,6 +24,7 @@ package org.jboss.as.domain.controller.operations;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Security actions to perform possibly privileged operations.  No methods in
@@ -34,7 +35,7 @@ import java.security.PrivilegedAction;
 class SecurityActions {
 
     static ClassLoader setThreadContextClassLoader(Class cl) {
-        if (System.getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             return SetThreadContextClassLoaderAction.NON_PRIVILEGED.setThreadContextClassLoader(cl);
         } else {
             return SetThreadContextClassLoaderAction.PRIVILEGED.setThreadContextClassLoader(cl);
@@ -42,7 +43,7 @@ class SecurityActions {
     }
 
     static void setThreadContextClassLoader(ClassLoader cl) {
-        if (System.getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             SetThreadContextClassLoaderAction.NON_PRIVILEGED.setThreadContextClassLoader(cl);
         } else {
             SetThreadContextClassLoaderAction.PRIVILEGED.setThreadContextClassLoader(cl);

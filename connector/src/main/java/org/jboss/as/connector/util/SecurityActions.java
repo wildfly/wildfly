@@ -23,9 +23,9 @@ package org.jboss.as.connector.util;
 import org.wildfly.security.manager.GetContextClassLoaderAction;
 import org.wildfly.security.manager.ReadPropertyAction;
 import org.wildfly.security.manager.SetContextClassLoaderAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static java.lang.System.getProperty;
-import static java.lang.System.getSecurityManager;
 import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 
@@ -47,7 +47,7 @@ class SecurityActions {
      * @return The class loader
      */
     static ClassLoader getThreadContextClassLoader() {
-        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
+        return ! WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
     /**
@@ -55,7 +55,7 @@ class SecurityActions {
      * @param cl The class loader
      */
     static void setThreadContextClassLoader(final ClassLoader cl) {
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             currentThread().setContextClassLoader(cl);
         } else {
             doPrivileged(new SetContextClassLoaderAction(cl));
@@ -68,6 +68,6 @@ class SecurityActions {
      * @return The property value
      */
     static String getSystemProperty(final String name) {
-        return getSecurityManager() == null ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
+        return ! WildFlySecurityManager.isChecking() ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
     }
 }

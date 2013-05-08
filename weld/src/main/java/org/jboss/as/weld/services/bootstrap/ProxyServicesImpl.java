@@ -32,6 +32,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * {@link ProxyServices} implementation that delegates to the module class loader if the bean class loader cannot be determined
@@ -48,8 +49,7 @@ public class ProxyServicesImpl implements ProxyServices {
     }
 
     public ClassLoader getClassLoader(final Class<?> proxiedBeanType) {
-        SecurityManager sm = System.getSecurityManager();
-        if (sm != null) {
+        if (! WildFlySecurityManager.isChecking()) {
             return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
                 public ClassLoader run() {
                     return _getClassLoader(proxiedBeanType);

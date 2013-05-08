@@ -21,7 +21,6 @@
  */
 package org.jboss.as.embedded.ejb3;
 
-import static java.lang.System.getSecurityManager;
 import static java.lang.System.setProperty;
 import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
@@ -42,6 +41,7 @@ import javax.ejb.spi.EJBContainerProvider;
 
 import org.jboss.as.embedded.EmbeddedServerFactory;
 import org.jboss.as.embedded.StandaloneServer;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.WritePropertyAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
@@ -112,6 +112,6 @@ public class JBossStandaloneEJBContainerProvider implements EJBContainerProvider
     }
 
     private static String setSystemProperty(final String key, final String value) {
-        return getSecurityManager() == null ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
+        return ! WildFlySecurityManager.isChecking() ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
     }
 }

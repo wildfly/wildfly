@@ -22,13 +22,13 @@
 
 package org.jboss.as.naming;
 
-import static java.lang.System.getSecurityManager;
 import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 import java.util.Hashtable;
 import org.wildfly.security.manager.GetContextClassLoaderAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -68,7 +68,7 @@ public class InitialContextFactoryBuilder implements javax.naming.spi.InitialCon
     }
 
     private ClassLoader getContextClassLoader() {
-        return getSecurityManager() == null ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
+        return ! WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 
 }

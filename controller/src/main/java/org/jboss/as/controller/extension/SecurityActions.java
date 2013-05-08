@@ -24,8 +24,8 @@ package org.jboss.as.controller.extension;
 
 import org.wildfly.security.manager.SetContextClassLoaderAction;
 import org.wildfly.security.manager.SetContextClassLoaderFromClassAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static java.lang.System.getSecurityManager;
 import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 
@@ -38,7 +38,7 @@ import static java.security.AccessController.doPrivileged;
 class SecurityActions {
 
     static ClassLoader setThreadContextClassLoader(Class cl) {
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             final Thread thread = currentThread();
             try {
                 return thread.getContextClassLoader();
@@ -51,7 +51,7 @@ class SecurityActions {
     }
 
     static void setThreadContextClassLoader(ClassLoader cl) {
-        if (getSecurityManager() == null) {
+        if (! WildFlySecurityManager.isChecking()) {
             currentThread().setContextClassLoader(cl);
         } else {
             doPrivileged(new SetContextClassLoaderAction(cl));
