@@ -109,7 +109,7 @@ public class InitialContext extends NamingContext {
                     }else{
                         Context ctx = NamingManager.getURLContext(scheme, getEnvironment());
                         if(ctx!=null){
-                            return ctx.lookup(name);
+                            return ctx.lookup(name.toString());
                         } else {
                             throw NAMING_MESSAGES.noURLContextFactory(name.toString());
                         }
