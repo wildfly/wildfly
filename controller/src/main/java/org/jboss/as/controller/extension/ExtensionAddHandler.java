@@ -21,6 +21,7 @@ package org.jboss.as.controller.extension;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -30,6 +31,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleNotFoundException;
 
 /**
  * Base handler for the extension resource add operation.
@@ -49,7 +51,7 @@ public class ExtensionAddHandler implements OperationStepHandler {
      * Create the AbstractAddExtensionHandler
      * @param extensionRegistry registry for extensions
      * @param parallelBoot {@code true} is parallel initialization of extensions is in progress; {@code false} if not
-     * @param slaveHC
+     * @param slaveHC {@code true} if this handler will execute in a slave HostController
      */
     public ExtensionAddHandler(final ExtensionRegistry extensionRegistry, final boolean parallelBoot, boolean standalone, boolean slaveHC) {
         assert extensionRegistry != null : "extensionRegistry is null";
@@ -97,8 +99,14 @@ public class ExtensionAddHandler implements OperationStepHandler {
                     SecurityActions.setThreadContextClassLoader(oldTccl);
                 }
             }
+        } catch (ModuleNotFoundException e) {
+            // Treat this as a user mistake, e.g. incorrect module name.
+            // Throw OFE so post-boot it only gets logged at DEBUG.
+            throw ControllerMessages.MESSAGES.extensionModuleNotFound(e, module);
         } catch (ModuleLoadException e) {
-            throw new OperationFailedException(new ModelNode().set(e.toString()));
+            // The module is there but can't be loaded. Treat this as an internal problem.
+            // Throw a runtime exception so it always gets logged at ERROR in the server log with stack trace details.
+            throw ControllerMessages.MESSAGES.extensionModuleLoadingFailure(e, module);
         }
     }
 
