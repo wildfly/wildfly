@@ -21,7 +21,6 @@
 */
 
 body {
-	font-family : Verdana, Arial, Helvetica, sans-serif;
 	background-image:url(bkg.gif);
 	background-repeat: repeat-x;
 	color: #5B5B5B;
@@ -48,17 +47,19 @@ a:hover {
 	color: #8ec6d9;
 }
 .content {
-	margin-left: 230px;
+    margin:0;
+    padding: 0;
 }
 .dualbrand {
 	padding-top: 20px;
 }
-.wildfly {
-	float:left;
-	margin-left: 10px;
-	padding: -20px auto;
+.logo{
+    margin-bottom: 10px;
 }
 .note {
 	font-size: 8pt;
 	color: #aaaaaa;
+}
+img{
+    border: 0;
 }
