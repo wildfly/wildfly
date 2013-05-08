@@ -1,0 +1,11 @@
+
+module mypol 1.0;
+
+require {
+	type httpd_t;
+	type etc_runtime_t;
+	class dir search;
+}
+
+#============= httpd_t ==============
+allow httpd_t etc_runtime_t:dir search;
