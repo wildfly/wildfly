@@ -55,7 +55,7 @@
             <xsl:otherwise>
                 <!-- create a new <backups/> element and add the new backup -->
                 <backups>
-                    <xsl:copy-of select="$new-backup"/>
+                    <xsl:copy-of select="$new-backup-element"/>
                 </backups>
             </xsl:otherwise>
         </xsl:choose>
