@@ -63,7 +63,7 @@ public class MultiObjectActivationFlatTestCase extends
 	private final String cf1 = "java:/testMeRA1";
 
 	static class ModuleAcDeploymentTestCaseSetup extends
-			ModuleDeploymentTestCaseSetup {
+			AbstractModuleDeploymentTestCaseSetup {
 
 		@Override
 		public void doSetup(ManagementClient managementClient) throws Exception {
@@ -81,8 +81,8 @@ public class MultiObjectActivationFlatTestCase extends
 	 * @return The deployment archive
 	 */
 	@Deployment
-	public static JavaArchive createDeployment() throws Exception {
-		return createDeployment(MultiObjectActivationFlatTestCase.class);
+	public static JavaArchive getDeployment() throws Exception {
+		return createDeployment();
 	}
 
 	@Resource(mappedName = cf)
