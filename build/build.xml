@@ -239,8 +239,8 @@
             <maven-resource group="org.wildfly" artifact="wildfly-remoting"/>
         </module-def>
 
-        <module-def name="org.jboss.as.security-util">
-            <maven-resource group="org.wildfly" artifact="wildfly-security-util"/>
+        <module-def name="org.wildfly.security.manager">
+            <maven-resource group="org.wildfly" artifact="wildfly-security-manager"/>
         </module-def>
 
         <module-def name="org.jboss.as.server">

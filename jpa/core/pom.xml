@@ -83,7 +83,7 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-security-util</artifactId>
+            <artifactId>wildfly-security-manager</artifactId>
         </dependency>
 
         <!-- External -->

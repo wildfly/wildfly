@@ -84,7 +84,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
         defaultDependencies.add("org.jboss.modules");
         defaultDependencies.add("org.jboss.msc");
         defaultDependencies.add("org.osgi.core");
-        defaultDependencies.add("org.jboss.as.security-util");
+        defaultDependencies.add("org.wildfly.security.manager");
     }
 
     private static final Logger log = Logger.getLogger(JMXProtocolPackager.class);
@@ -157,7 +157,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
                 dependencies.append("org.jboss.msc,");
                 dependencies.append("org.jboss.osgi.framework,");
                 dependencies.append("org.osgi.core,");
-                dependencies.append("org.jboss.as.security-util");
+                dependencies.append("org.wildfly.security.manager");
                 builder.addManifestHeader("Dependencies", dependencies.toString());
                 return builder.openStream();
             }

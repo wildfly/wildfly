@@ -321,7 +321,7 @@
         <module>process-controller</module>
         <module>protocol</module>
         <module>remoting</module>
-        <module>security-util</module>
+        <module>security-manager</module>
         <module>server</module>
         <module>subsystem-test</module>
         <module>threads</module>
@@ -1244,7 +1244,7 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-security-util</artifactId>
+                <artifactId>wildfly-security-manager</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -6125,7 +6125,7 @@
                 <module>system-jmx</module>
                 <module>sar</module>
                 <module>security</module>
-                <module>security-util</module>
+                <module>security-manager</module>
                 <module>spec-api</module>
                 <module>transactions</module>
                 <module>undertow</module>
