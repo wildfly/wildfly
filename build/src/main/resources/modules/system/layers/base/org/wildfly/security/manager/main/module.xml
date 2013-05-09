@@ -37,4 +37,8 @@
         <module name="javax.api"/>
         <module name="sun.jdk"/>
     </dependencies>
+
+    <exports>
+        <exclude path="org/jboss/wildfly/security/manager/_private"/>
+    </exports>
 </module>
