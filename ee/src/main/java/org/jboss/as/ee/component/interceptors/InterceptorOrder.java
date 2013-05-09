@@ -156,7 +156,8 @@ public class InterceptorOrder {
 
     public static final class View {
         public static final int PRIVILEGED_INTERCEPTOR = 0;
-        public static final int TCCL_INTERCEPTOR = 0x001;
+        public static final int CHECKING_INTERCEPTOR = 1;
+        public static final int TCCL_INTERCEPTOR = 0x003;
         public static final int INVOCATION_TYPE = 0x005;
         public static final int EE_SETUP = 0x010;
         public static final int EJB_IIOP_TRANSACTION = 0x020;
