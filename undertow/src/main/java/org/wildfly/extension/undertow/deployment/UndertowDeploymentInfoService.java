@@ -136,6 +136,7 @@ import org.jboss.security.audit.AuditManager;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.undertow.session.SessionManagerFacadeFactory;
+import org.wildfly.extension.undertow.JSPService;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.SessionCookieConfigService;
 import org.wildfly.extension.undertow.UndertowService;
@@ -392,35 +393,35 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             } else {
                 is22OrOlder = false;
             }
+            JSPService jspService = container.getValue().getJspService().getOptionalValue();
+            final Set<String> seenMappings = new HashSet<>();
 
-            HashMap<String, TagLibraryInfo> tldInfo = createTldsInfo(tldsMetaData, sharedTlds);
-            HashMap<String, JspPropertyGroup> propertyGroups = createJspConfig(mergedMetaData);
-
-            JspServletBuilder.setupDeployment(d, propertyGroups, tldInfo, new UndertowJSPInstanceManager(injectionContainer));
-
-            if(mergedMetaData.getJspConfig() != null) {
-                d.setJspConfigDescriptor(new JspConfigDescriptorImpl(tldInfo.values(), propertyGroups.values()));
-            }
+            HashMap <String, TagLibraryInfo> tldInfo = createTldsInfo(tldsMetaData, sharedTlds);
 
             d.setDefaultServletConfig(new DefaultServletConfig(true, Collections.<String>emptySet()));
 
             //default JSP servlet
-            final ServletInfo jspServlet = new ServletInfo("Default JSP Servlet", JspServlet.class)
-                    .addMapping("*.jsp")
-                    .addMapping("*.jspx")
-                    .addInitParam("development", "false"); //todo: make configurable
-            d.addServlet(jspServlet);
+            final ServletInfo jspServlet = jspService != null ? jspService.getJSPServletInfo() : null;
+            if (jspServlet != null) { //this would be null if jsp support is disabled
+                HashMap<String, JspPropertyGroup> propertyGroups = createJspConfig(mergedMetaData);
+                JspServletBuilder.setupDeployment(d, propertyGroups, tldInfo, new UndertowJSPInstanceManager(injectionContainer));
 
-            final Set<String> jspPropertyGroupMappings = propertyGroups.keySet();
-            for (final String mapping : jspPropertyGroupMappings) {
-                jspServlet.addMapping(mapping);
-            }
+                if (mergedMetaData.getJspConfig() != null) {
+                    d.setJspConfigDescriptor(new JspConfigDescriptorImpl(tldInfo.values(), propertyGroups.values()));
+                }
 
+                d.addServlet(jspServlet);
 
-            //setup JSP expression factory wrapper
-            if (!expressionFactoryWrappers.isEmpty()) {
-                d.addListener(new ListenerInfo(JspInitializationListener.class));
-                d.addServletContextAttribute(JspInitializationListener.CONTEXT_KEY, expressionFactoryWrappers);
+                final Set<String> jspPropertyGroupMappings = propertyGroups.keySet();
+                for (final String mapping : jspPropertyGroupMappings) {
+                    jspServlet.addMapping(mapping);
+                }
+                seenMappings.addAll(jspPropertyGroupMappings);
+                //setup JSP expression factory wrapper
+                if (!expressionFactoryWrappers.isEmpty()) {
+                    d.addListener(new ListenerInfo(JspInitializationListener.class));
+                    d.addServletContextAttribute(JspInitializationListener.CONTEXT_KEY, expressionFactoryWrappers);
+                }
             }
 
             d.setClassIntrospecter(new ComponentClassIntrospector(componentRegistry));
@@ -436,13 +437,12 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     list.add(mapping);
                 }
             }
-            final Set<String> seenMappings = new HashSet<>(jspPropertyGroupMappings);
+
             if (mergedMetaData.getServlets() != null) {
                 for (final JBossServletMetaData servlet : mergedMetaData.getServlets()) {
                     final ServletInfo s;
 
                     if (servlet.getJspFile() != null) {
-                        //TODO: real JSP support
                         s = new ServletInfo(servlet.getName(), JspServlet.class);
                         s.addHandlerChainWrapper(new JspFileWrapper(servlet.getJspFile()));
                     } else {

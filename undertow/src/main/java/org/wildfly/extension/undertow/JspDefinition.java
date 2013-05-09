@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +33,7 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -41,15 +44,15 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author Tomaz Cerar
  * @created 23.2.12 18:47
  */
 class JspDefinition extends PersistentResourceDefinition {
-    static final JspDefinition INSTANCE = new JspDefinition();
-
     protected static final SimpleAttributeDefinition DEVELOPMENT =
             new SimpleAttributeDefinitionBuilder(Constants.DEVELOPMENT, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -68,35 +71,30 @@ class JspDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(new ModelNode(true))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition TRIM_SPACES =
             new SimpleAttributeDefinitionBuilder(Constants.TRIM_SPACES, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(false))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition TAG_POOLING =
             new SimpleAttributeDefinitionBuilder(Constants.TAG_POOLING, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(true))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition MAPPED_FILE =
             new SimpleAttributeDefinitionBuilder(Constants.MAPPED_FILE, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(true))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition CHECK_INTERVAL =
             new SimpleAttributeDefinitionBuilder(Constants.CHECK_INTERVAL, ModelType.INT, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(0))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition MODIFICATION_TEST_INTERVAL =
             new SimpleAttributeDefinitionBuilder(Constants.MODIFICATION_TEST_INTERVAL, ModelType.INT, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -109,57 +107,50 @@ class JspDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(new ModelNode(false))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition SMAP =
             new SimpleAttributeDefinitionBuilder(Constants.SMAP, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(true))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition DUMP_SMAP =
             new SimpleAttributeDefinitionBuilder(Constants.DUMP_SMAP, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(false))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition GENERATE_STRINGS_AS_CHAR_ARRAYS =
             new SimpleAttributeDefinitionBuilder(Constants.GENERATE_STRINGS_AS_CHAR_ARRAYS, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(false))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE =
             new SimpleAttributeDefinitionBuilder(Constants.ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(false))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition SCRATCH_DIR =
             new SimpleAttributeDefinitionBuilder(Constants.SCRATCH_DIR, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, true))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition SOURCE_VM =
             new SimpleAttributeDefinitionBuilder(Constants.SOURCE_VM, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, true))
-                    .setDefaultValue(new ModelNode("1.6"))
+                    .setDefaultValue(new ModelNode("1.7"))
                     .setAllowExpression(true)
                     .build();
     protected static final SimpleAttributeDefinition TARGET_VM =
             new SimpleAttributeDefinitionBuilder(Constants.TARGET_VM, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, true))
-                    .setDefaultValue(new ModelNode("1.6"))
+                    .setDefaultValue(new ModelNode("1.7"))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition JAVA_ENCODING =
             new SimpleAttributeDefinitionBuilder(Constants.JAVA_ENCODING, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -167,8 +158,6 @@ class JspDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(new ModelNode("UTF8"))
                     .setAllowExpression(true)
                     .build();
-
-
     protected static final SimpleAttributeDefinition X_POWERED_BY =
             new SimpleAttributeDefinitionBuilder(Constants.X_POWERED_BY, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -176,7 +165,6 @@ class JspDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(new ModelNode(true))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition DISPLAY_SOURCE_FRAGMENT =
             new SimpleAttributeDefinitionBuilder(Constants.DISPLAY_SOURCE_FRAGMENT, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -206,6 +194,7 @@ class JspDefinition extends PersistentResourceDefinition {
             X_POWERED_BY,
             DISPLAY_SOURCE_FRAGMENT
     };
+    static final JspDefinition INSTANCE = new JspDefinition();
     static final Map<String, AttributeDefinition> ATTRIBUTES_MAP = new HashMap<>();
 
     static {
@@ -238,6 +227,25 @@ class JspDefinition extends PersistentResourceDefinition {
         protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
             try {
                 Class.forName("org.apache.jasper.compiler.JspRuntimeContext", true, this.getClass().getClassLoader());
+
+                final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+                final PathAddress parent = address.subAddress(0, address.size() - 1);
+                String servletContainerName = parent.getLastElement().getValue();
+
+                ModelNode resolved = new ModelNode();
+                for (AttributeDefinition attribute : ATTRIBUTES) {
+                    resolved.get(attribute.getName()).set(attribute.resolveModelAttribute(context, model));
+                }
+                final JSPService jspService = new JSPService(resolved);
+                final ServiceTarget target = context.getServiceTarget();
+                ServiceBuilder<JSPService> svcBuilder = target.addService(UndertowService.SERVLET_CONTAINER.append(servletContainerName).append(Constants.JSP), jspService)
+                        .setInitialMode(ServiceController.Mode.ON_DEMAND);
+
+                if (verificationHandler != null) {
+                    svcBuilder.addListener(verificationHandler);
+                }
+                newControllers.add(svcBuilder.install());
+
             } catch (ClassNotFoundException e) {
                 UndertowLogger.ROOT_LOGGER.couldNotInitJsp(e);
             }

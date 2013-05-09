@@ -60,6 +60,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final ServletContainerService container = new ServletContainerService();
         final ServiceTarget target = context.getServiceTarget();
         newControllers.add(target.addService(UndertowService.SERVLET_CONTAINER.append(name), container)
+                .addDependency(UndertowService.SERVLET_CONTAINER.append(name).append(Constants.JSP), JSPService.class, container.getJspService())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install());
 
