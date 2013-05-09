@@ -352,7 +352,11 @@ public class ExtensionRegistry {
         final Map<String, SubsystemInformation> subsystemsInfo = getAvailableSubsystems(moduleName);
         if(subsystemsInfo != null && ! subsystemsInfo.isEmpty()) {
             for(final Map.Entry<String, SubsystemInformation> entry : subsystemsInfo.entrySet()) {
-                subsystems.add(entry.getKey(), entry.getValue().getManagementInterfaceMajorVersion() +"."+ entry.getValue().getManagementInterfaceMicroVersion());
+                SubsystemInformation subsystem = entry.getValue();
+                subsystems.add(entry.getKey(),
+                        subsystem.getManagementInterfaceMajorVersion() + "."
+                        + subsystem.getManagementInterfaceMinorVersion()
+                        + "." + subsystem.getManagementInterfaceMicroVersion());
             }
         }
     }
@@ -876,7 +880,7 @@ public class ExtensionRegistry {
 
         @Override
         public void registerOperationHandler(OperationDefinition definition, OperationStepHandler handler) {
-            registerOperationHandler(definition,handler,false);
+            registerOperationHandler(definition, handler, false);
         }
 
         @Override
