@@ -156,6 +156,35 @@
     </macrodef>
 
     <!--
+        Make a copy of a cache in the Infinispan subsystem.
+    -->
+    <macrodef name="ts.config-as.copy-cache" description="Make a copy of a cache in the Infinispan subsystem">
+
+        <attribute name="name" default="wildfly"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <attribute name="container.name" default="web"/>
+        <attribute name="cache.base" default="repl"/>
+        <attribute name="cache.name" default="new-cache"/>
+        <attribute name="cache-type" default="replicated-cache"/>
+
+        <sequential>
+            <echo message="Copying cache @{cache.base} to cache @{cache.name} in container @{container.name} in Infinispan subsystem for config @{name}"/>
+
+            <execute-xslt-transform transform="copyCache.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+                <transform-params>
+                    <param name="container.name" expression="@{container.name}"/>
+                    <param name="cache.base" expression="@{cache.base}"/>
+                    <param name="cache.name" expression="@{cache.name}"/>
+                    <param name="cache-type" expression="@{cache-type}"/>
+                </transform-params>
+            </execute-xslt-transform>
+
+        </sequential>
+    </macrodef>
+
+    <!--
         Add a relay protocol layer to a stack in the JGroups subsystem.
     -->
     <macrodef name="ts.config-as.add-xsite-relay" description="Add a relay layer to a stack in the JGroups subsystem">
@@ -217,6 +246,30 @@
                     <param name="backup.strategy" expression="@{backup.strategy}"/>
                     <param name="backup.replication-timeout" expression="@{backup.replication-timeout}"/>
                     <param name="backup.enabled" expression="@{backup.enabled}"/>
+                </transform-params>
+            </execute-xslt-transform>
+        </sequential>
+    </macrodef>
+
+    <!--
+        Add a backup element to a cache in the Infinispan subsystem.
+    -->
+    <macrodef name="ts.config-as.change-container-transport-stack" description="Change the transport stack for a container in the Infinispan subsystem">
+
+        <attribute name="name" default="wildfly"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <attribute name="container" default="web"/>
+        <attribute name="stack" default="udp"/>
+
+        <sequential>
+            <echo message="Change transport stack in container @{container} in Infinispan subsystem for config @{name}"/>
+
+            <execute-xslt-transform transform="changeContainerTransportStack.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+                <transform-params>
+                    <param name="container" expression="@{container}"/>
+                    <param name="stack" expression="@{stack}"/>
                 </transform-params>
             </execute-xslt-transform>
         </sequential>
