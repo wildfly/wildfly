@@ -442,7 +442,7 @@
                             <!-- Single node clustering tests. -->
                             <execution>
                                 <id>ts.surefire.clust.xsite</id>
-                                <phase>test</phase>
+                                <phase>none</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
                                     <!-- Tests to execute. -->

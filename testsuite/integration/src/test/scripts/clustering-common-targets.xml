@@ -28,7 +28,7 @@
     -->
     <macrodef name="ts.config-as.change-transport-stack" description="Change default transport stack in clustering server profiles.">
 
-        <attribute name="name" default="jbossas"/>
+        <attribute name="name" default="wildfly"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
         <attribute name="config.dir.name" default="standalone/configuration"/>
 
@@ -51,7 +51,7 @@
     -->
     <macrodef name="ts.config-as.change-cache-mode" description="Change default cache mode in clustering server profiles.">
 
-        <attribute name="name" default="jbossas"/>
+        <attribute name="name" default="wildfly"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
         <attribute name="config.dir.name" default="standalone/configuration"/>
 
@@ -85,7 +85,7 @@
     -->
     <macrodef name="ts.config-as.add-cache-container" description="Add a cache container to the Infinispan subsystem">
 
-        <attribute name="name" default="jbossas"/>
+        <attribute name="name" default="wildfly"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
         <attribute name="config.dir.name" default="standalone/configuration"/>
 
@@ -108,7 +108,7 @@
     -->
     <macrodef name="ts.config-as.copy-cache-container" description="Make a copy of a cache container in the Infinispan subsystem">
 
-        <attribute name="name" default="jbossas"/>
+        <attribute name="name" default="wildfly"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
         <attribute name="config.dir.name" default="standalone/configuration"/>
 
@@ -135,7 +135,7 @@
     -->
     <macrodef name="ts.config-as.copy-stack" description="Make a copy of a stack in the JGroups subsystem">
 
-        <attribute name="name" default="jbossas"/>
+        <attribute name="name" default="wildfly"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
         <attribute name="config.dir.name" default="standalone/configuration"/>
 
@@ -160,7 +160,7 @@
     -->
     <macrodef name="ts.config-as.add-xsite-relay" description="Add a relay layer to a stack in the JGroups subsystem">
 
-        <attribute name="name" default="jbossas"/>
+        <attribute name="name" default="wildfly"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
         <attribute name="config.dir.name" default="standalone/configuration"/>
 
@@ -191,7 +191,7 @@
     -->
     <macrodef name="ts.config-as.add-xsite-backup" description="Add a backup element to a cache in the Infinispan subsystem">
 
-        <attribute name="name" default="jbossas"/>
+        <attribute name="name" default="wildfly"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
         <attribute name="config.dir.name" default="standalone/configuration"/>
 
@@ -227,7 +227,7 @@
     -->
     <macrodef name="execute-xslt-transform" description="Execute an XSLT transform on an xml file (in place)">
 
-        <attribute name="name" default="jbossas"/>
+        <attribute name="name" default="wildfly"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
         <attribute name="config.dir.name" default="standalone/configuration"/>
 
