@@ -22,15 +22,16 @@
 
 package org.jboss.as.controller.client.impl;
 
+import java.security.AccessControlContext;
 import org.jboss.as.controller.client.ModelControllerClientConfiguration;
-import org.wildfly.security.manager.GetAccessControlContextAction;
-import org.wildfly.security.manager.ReadPropertyAction;
 import org.jboss.threads.JBossThreadFactory;
 
 import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.CallbackHandler;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -39,6 +40,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
 import static java.security.AccessController.doPrivileged;
 
 /**
@@ -53,7 +56,11 @@ public class ClientConfigurationImpl implements ModelControllerClientConfigurati
     private static final AtomicInteger executorCount = new AtomicInteger();
     static ExecutorService createDefaultExecutor() {
         final ThreadGroup group = new ThreadGroup("management-client-thread");
-        final ThreadFactory threadFactory = new JBossThreadFactory(group, Boolean.FALSE, null, "%G " + executorCount.incrementAndGet() + "-%t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
+        final ThreadFactory threadFactory = new JBossThreadFactory(group, Boolean.FALSE, null, "%G " + executorCount.incrementAndGet() + "-%t", null, null, doPrivileged(new PrivilegedAction<AccessControlContext>() {
+            public AccessControlContext run() {
+                return AccessController.getContext();
+            }
+        }));
         return new ThreadPoolExecutor(2, DEFAULT_MAX_THREADS, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), threadFactory);
     }
 
@@ -169,6 +176,11 @@ public class ClientConfigurationImpl implements ModelControllerClientConfigurati
     }
 
     private static String getStringProperty(final String name) {
-        return doPrivileged(new ReadPropertyAction(name));
+        return getSecurityManager() == null ? getProperty(name) : doPrivileged(new PrivilegedAction<String>() {
+            @Override
+            public String run() {
+                return getProperty(name);
+            }
+        });
     }
 }

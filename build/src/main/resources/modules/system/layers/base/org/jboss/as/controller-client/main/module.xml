@@ -33,7 +33,6 @@
     </resources>
 
     <dependencies>
-        <module name="org.wildfly.security.manager"/>
         <module name="org.jboss.as.protocol"/>
         <module name="org.jboss.dmr"/>
         <module name="org.jboss.logging"/>
