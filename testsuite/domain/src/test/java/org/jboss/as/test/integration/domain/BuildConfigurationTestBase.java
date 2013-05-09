@@ -22,14 +22,6 @@
 
 package org.jboss.as.test.integration.domain;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.Closeable;
@@ -38,78 +30,52 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
 import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfigurationParameters;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.junit.Test;
 
 /**
- * Test validating the configuration starts and can accept a simple web request.
+ * Base class for tests that use the standard AS configuration files.
  *
  * @author Emanuel Muckenhuber
+ * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
 public abstract class BuildConfigurationTestBase {
 
     static final String masterAddress = System.getProperty("jboss.test.host.master.address", "localhost");
+
     static final File CONFIG_DIR = new File("target/jbossas/domain/configuration/");
 
-    @Test
-    public void test() throws Exception {
-        final JBossAsManagedConfiguration config = createConfiguration(getDomainConfigFile(), getHostConfigFile(), getClass().getSimpleName());
-        final DomainLifecycleUtil utils = new DomainLifecycleUtil(config);
-        utils.start(); // Start
-        try {
-            URLConnection connection = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(masterAddress) + ":8080").openConnection();
-            connection.connect();
-
-            if (Boolean.getBoolean("expression.audit")) {
-                writeExpressionAudit(utils);
-            }
-        } finally {
-            utils.stop(); // Stop
-        }
+    static JBossAsManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName, final String testConfiguration) {
+        return createConfiguration(domainXmlName, hostXmlName, testConfiguration, "master", masterAddress, 9999);
     }
 
-    protected abstract String getDomainConfigFile();
-
-    protected abstract String getHostConfigFile();
-
-
-    static JBossAsManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName, final String testConfiguration) {
-        final File output = new File("target" + File.separator + "domains" + File.separator + testConfiguration);
+    static JBossAsManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName,
+                                                           final String testConfiguration, final String hostName,
+                                                           final String hostAddress, final int hostPort) {
         final JBossAsManagedConfiguration configuration = new JBossAsManagedConfiguration(JBossAsManagedConfigurationParameters.STANDARD);
 
-        configuration.setHostControllerManagementAddress(masterAddress);
-        configuration.setHostCommandLineProperties("-Djboss.test.host.master.address=" + masterAddress);
-        configuration.setDomainConfigFile(hackReplaceProperty(new File(CONFIG_DIR, domainXmlName)).getAbsolutePath());
-        configuration.setHostConfigFile(hackReplaceInterfaces(new File(CONFIG_DIR, hostXmlName)).getAbsolutePath());
+        configuration.setHostControllerManagementAddress(hostAddress);
+        configuration.setHostControllerManagementPort(hostPort);
+        configuration.setHostCommandLineProperties("-Djboss.domain.master.address=" + masterAddress +
+                " -Djboss.management.native.port=" + hostPort);
+        configuration.setDomainConfigFile(hackFixDomainConfig(new File(CONFIG_DIR, domainXmlName)).getAbsolutePath());
+        configuration.setHostConfigFile(hackFixHostConfig(new File(CONFIG_DIR, hostXmlName), hostName, hostAddress).getAbsolutePath());
 
-        configuration.setHostName("master"); // TODO this shouldn't be needed
+        configuration.setHostName(hostName); // TODO this shouldn't be needed
 
+        final File output = new File("target" + File.separator + "domains" + File.separator + testConfiguration + File.separator + hostName);
         new File(output, "configuration").mkdirs(); // TODO this should not be necessary
         configuration.setDomainDirectory(output.getAbsolutePath());
 
-        System.out.println(configuration.getDomainConfigFile());
-        System.out.println(configuration.getHostConfigFile());
         return configuration;
 
     }
 
-    //HACK to make the interfaces settable - I could not do it in xsl since it was replacing the system property
-    static File hackReplaceInterfaces(File hostConfigFile) {
+    private static File hackFixHostConfig(File hostConfigFile, String hostName, String hostAddress) {
         final File file;
         final BufferedWriter writer;
         try {
@@ -124,27 +90,38 @@ public abstract class BuildConfigurationTestBase {
             try {
                 String line = reader.readLine();
                 while (line != null) {
-                    int start = line.indexOf("<inet-address value=\"");
-                    if (start >= 0) {
+                    int start = line.indexOf("<host");
+                    if (start >= 0 && !line.contains(" name=")) {
                         StringBuilder sb = new StringBuilder();
-                        sb.append(line.substring(0, start));
-                        sb.append("<inet-address value=\"" + masterAddress + "\"/>");
+                        sb.append("<host name=\"");
+                        sb.append(hostName);
+                        sb.append('"');
+                        sb.append(line.substring(start + 5));
                         writer.write(sb.toString());
                     } else {
-                        start = line.indexOf("<option value=\"");
+                        start = line.indexOf("<inet-address value=\"");
                         if (start >= 0) {
                             StringBuilder sb = new StringBuilder();
-                            sb.append(line.substring(0, start));
-                            List<String> opts = new ArrayList<String>();
-                            TestSuiteEnvironment.getIpv6Args(opts);
-                            for (String opt : opts) {
-                                sb.append("<option value=\"" + opt + "\"/>");
-                            }
-
+                            sb.append(line.substring(0, start))
+                                .append("<inet-address value=\"")
+                                .append(hostAddress)
+                                .append("\"/>");
                             writer.write(sb.toString());
                         } else {
-                            start = line.indexOf("java.net.preferIPv4Stack");
-                            if (start < 0) {
+                            start = line.indexOf("<option value=\"");
+                            if (start >= 0) {
+                                StringBuilder sb = new StringBuilder();
+                                sb.append(line.substring(0, start));
+                                List<String> opts = new ArrayList<String>();
+                                TestSuiteEnvironment.getIpv6Args(opts);
+                                for (String opt : opts) {
+                                    sb.append("<option value=\"")
+                                            .append(opt)
+                                            .append("\"/>");
+                                }
+
+                                writer.write(sb.toString());
+                            } else if (!line.contains("java.net.preferIPv4Stack")){
                                 writer.write(line);
                             }
                         }
@@ -164,8 +141,7 @@ public abstract class BuildConfigurationTestBase {
         return file;
     }
 
-    //HACK to make the interfaces settable - I could not do it in xsl since it was replacing the system property
-    static File hackReplaceProperty(File hostConfigFile) {
+    static File hackFixDomainConfig(File hostConfigFile) {
         final File file;
         final BufferedWriter writer;
         try {
@@ -204,63 +180,5 @@ public abstract class BuildConfigurationTestBase {
             c.close();
         } catch (Exception ignore) {
         }
-    }
-
-    private void writeExpressionAudit(final DomainLifecycleUtil utils) throws IOException {
-
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
-        operation.get(OP_ADDR).setEmptyList();
-        operation.get(RECURSIVE).set(true);
-
-        final ModelNode result = utils.getDomainClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertTrue(result.hasDefined(RESULT));
-
-        PathAddress pa = PathAddress.EMPTY_ADDRESS;
-        writeExpressionAudit(pa, result.get(RESULT));
-    }
-
-    private static void writeExpressionAudit(PathAddress pa, ModelNode resourceDescription) {
-        String paString = getPaString(pa);
-        if (resourceDescription.hasDefined(ModelDescriptionConstants.ATTRIBUTES)) {
-            for (Property property : resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES).asPropertyList()) {
-                ModelNode attrdesc = property.getValue();
-                if (!attrdesc.hasDefined(ModelDescriptionConstants.STORAGE) ||
-                        AttributeAccess.Storage.CONFIGURATION.name().toLowerCase().equals(attrdesc.get(ModelDescriptionConstants.STORAGE).asString().toLowerCase())) {
-                    StringBuilder sb = new StringBuilder(paString);
-                    sb.append(",").append(property.getName());
-                    sb.append(",").append(attrdesc.get(ModelDescriptionConstants.TYPE).asString());
-                    sb.append(",").append(attrdesc.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).asBoolean(false));
-                    sb.append(",").append(attrdesc.get(ModelDescriptionConstants.DESCRIPTION).asString());
-                    System.out.println(sb.toString());
-                }
-            }
-        }
-
-        if (resourceDescription.hasDefined(ModelDescriptionConstants.CHILDREN)) {
-            for (Property childTypeProp : resourceDescription.get(ModelDescriptionConstants.CHILDREN).asPropertyList()) {
-                String childType = childTypeProp.getName();
-                ModelNode childTypeDesc = childTypeProp.getValue();
-                if (childTypeDesc.hasDefined(ModelDescriptionConstants.MODEL_DESCRIPTION)) {
-                    for (Property childInstanceProp : childTypeDesc.get(ModelDescriptionConstants.MODEL_DESCRIPTION).asPropertyList()) {
-                        PathAddress childAddress = pa.append(childType, childInstanceProp.getName());
-                        writeExpressionAudit(childAddress, childInstanceProp.getValue());
-                    }
-                }
-            }
-        }
-
-    }
-
-    private static String getPaString(PathAddress pa) {
-        if (pa.size() == 0) {
-            return "/";
-        }
-        StringBuilder sb = new StringBuilder();
-        for (PathElement pe : pa) {
-            sb.append("/").append(pe.getKey()).append("=").append(pe.getValue());
-        }
-        return sb.toString();
     }
 }
