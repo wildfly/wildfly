@@ -23,49 +23,16 @@
 package org.wildfly.extension.undertow;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.spec.MimeMappingMetaData;
-import org.jboss.metadata.web.spec.ServletMappingMetaData;
-import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.metadata.web.spec.ServletsMetaData;
 import org.jboss.metadata.web.spec.SessionConfigMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.metadata.web.spec.WelcomeFileListMetaData;
-
-import static org.wildfly.extension.undertow.Constants.CHECK_INTERVAL;
-import static org.wildfly.extension.undertow.Constants.DEVELOPMENT;
-import static org.wildfly.extension.undertow.Constants.DISABLED;
-import static org.wildfly.extension.undertow.Constants.DISPLAY_SOURCE_FRAGMENT;
-import static org.wildfly.extension.undertow.Constants.DUMP_SMAP;
-import static org.wildfly.extension.undertow.Constants.ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE;
-import static org.wildfly.extension.undertow.Constants.FILE_ENCODING;
-import static org.wildfly.extension.undertow.Constants.GENERATE_STRINGS_AS_CHAR_ARRAYS;
-import static org.wildfly.extension.undertow.Constants.JAVA_ENCODING;
-import static org.wildfly.extension.undertow.Constants.JSP_CONFIGURATION;
-import static org.wildfly.extension.undertow.Constants.KEEP_GENERATED;
-import static org.wildfly.extension.undertow.Constants.LISTINGS;
-import static org.wildfly.extension.undertow.Constants.MAPPED_FILE;
-import static org.wildfly.extension.undertow.Constants.MAX_DEPTH;
-import static org.wildfly.extension.undertow.Constants.MODIFICATION_TEST_INTERVAL;
-import static org.wildfly.extension.undertow.Constants.READ_ONLY;
-import static org.wildfly.extension.undertow.Constants.RECOMPILE_ON_FAIL;
-import static org.wildfly.extension.undertow.Constants.SCRATCH_DIR;
-import static org.wildfly.extension.undertow.Constants.SECRET;
-import static org.wildfly.extension.undertow.Constants.SENDFILE;
-import static org.wildfly.extension.undertow.Constants.SMAP;
-import static org.wildfly.extension.undertow.Constants.SOURCE_VM;
-import static org.wildfly.extension.undertow.Constants.STATIC_RESOURCES;
-import static org.wildfly.extension.undertow.Constants.TAG_POOLING;
-import static org.wildfly.extension.undertow.Constants.TARGET_VM;
-import static org.wildfly.extension.undertow.Constants.TRIM_SPACES;
-import static org.wildfly.extension.undertow.Constants.WEBDAV;
-import static org.wildfly.extension.undertow.Constants.X_POWERED_BY;
 
 /**
  * Internal helper creating a shared web.xml based on the domain configuration.
@@ -74,8 +41,8 @@ import static org.wildfly.extension.undertow.Constants.X_POWERED_BY;
  */
 class SharedWebMetaDataBuilder {
 
-    static final List<String> welcomeFiles = new ArrayList<String>();
-    static final List<MimeMappingMetaData> mimeMappings = new ArrayList<MimeMappingMetaData>();
+    private static final List<String> welcomeFiles = new ArrayList<String>();
+    private static final List<MimeMappingMetaData> mimeMappings = new ArrayList<MimeMappingMetaData>();
 
     static {
         // Create the default mappings
@@ -93,148 +60,6 @@ class SharedWebMetaDataBuilder {
     SharedWebMetaDataBuilder(final ModelNode containerConfig) {
         this.config = containerConfig;
         init();
-    }
-
-    private void init() {
-        ModelNode containerConfig = config.get(Constants.CONTAINER);
-        if (containerConfig.hasDefined(Constants.MIME_MAPPING)) {
-            for (final Property mapping : containerConfig.get(Constants.MIME_MAPPING).asPropertyList()) {
-                mimeMappings.add(createMimeMapping(mapping.getName(), mapping.getValue().asString()));
-            }
-        }
-        if (containerConfig.hasDefined(Constants.WELCOME_FILE)) {
-            for (final ModelNode file : containerConfig.get(Constants.WELCOME_FILE).asList()) {
-                welcomeFiles.add(file.asString());
-            }
-        }
-    }
-
-    WebMetaData create() {
-        final WebMetaData metadata = new WebMetaData();
-
-        metadata.setServlets(new ServletsMetaData());
-
-        // Add DefaultServlet
-        enableStaticResouces(metadata);
-        // Add JSPServlet
-        enableJsp(metadata);
-
-        // Session config
-        final SessionConfigMetaData sessionConfig = new SessionConfigMetaData();
-        sessionConfig.setSessionTimeout(30);
-        metadata.setSessionConfig(sessionConfig);
-
-        // Mime mappings
-        metadata.setMimeMappings(Collections.unmodifiableList(mimeMappings));
-
-        // Welcome files
-        metadata.setWelcomeFileList(new WelcomeFileListMetaData());
-        metadata.getWelcomeFileList().setWelcomeFiles(Collections.unmodifiableList(welcomeFiles));
-        return metadata;
-    }
-
-    /**
-     * Enable resource serving by adding the {@code DefaultServlet}, using the
-     * domain resource serving configuration.
-     *
-     * @param metadata the shared jboss web metadata
-     */
-    void enableStaticResouces(final WebMetaData metadata) {
-        final ModelNode resourcesConfig = config.get(STATIC_RESOURCES);
-        // Check disabled
-        if (true || resourcesConfig.require(DISABLED).asBoolean()) {
-            return;
-        }
-        final ServletMetaData servlet = new ServletMetaData();
-        servlet.setName("default");
-        servlet.setLoadOnStartup("" + 1);
-        if (resourcesConfig.require(WEBDAV).asBoolean()) {
-            servlet.setServletClass("org.apache.catalina.servlets.WebdavServlet");
-        } else {
-            servlet.setServletClass("org.apache.catalina.servlets.DefaultServlet");
-        }
-
-        final List<ParamValueMetaData> initParams = new ArrayList<ParamValueMetaData>();
-        initParams.add(createParameter("listings", resourcesConfig.require(LISTINGS).asString()));
-        initParams.add(createParameter("readonly", resourcesConfig.require(READ_ONLY).asString()));
-        initParams.add(createParameter("sendfile", resourcesConfig.require(SENDFILE).asString()));
-
-        if (resourcesConfig.hasDefined(FILE_ENCODING)) {
-            initParams.add(createParameter("file-encoding", resourcesConfig.get(FILE_ENCODING).asString()));
-        }
-        if (resourcesConfig.hasDefined(SECRET)) {
-            initParams.add(createParameter("secret", resourcesConfig.get(SECRET).asString()));
-        }
-        initParams.add(createParameter("max-depth", resourcesConfig.require(MAX_DEPTH).asString()));
-
-        servlet.setInitParam(initParams);
-        metadata.getServlets().add(servlet);
-        addServletMapping("default", metadata, "/");
-    }
-
-
-    /**
-     * Add the jsp servlet
-     *
-     * @param metadata the shared jboss.web metadata
-     */
-    void enableJsp(final WebMetaData metadata) {
-        final ModelNode config = this.config.get(JSP_CONFIGURATION);
-        if (true || config.get(DISABLED).asBoolean(false)) {
-            return;
-        }
-        final ServletMetaData servlet = new ServletMetaData();
-        servlet.setName("jsp");
-        servlet.setLoadOnStartup("" + 3);
-        servlet.setServletClass("org.apache.jasper.servlet.JspServlet");
-
-        final List<ParamValueMetaData> initParams = new ArrayList<ParamValueMetaData>();
-
-        initParams.add(createParameter("development", config.require(DEVELOPMENT).asString()));
-        initParams.add(createParameter("keepgenerated", config.require(KEEP_GENERATED).asString()));
-        initParams.add(createParameter("trimSpaces", config.require(TRIM_SPACES).asString()));
-        initParams.add(createParameter("enablePooling", config.require(TAG_POOLING).asString()));
-        initParams.add(createParameter("mappedfile", config.require(MAPPED_FILE).asString()));
-        initParams.add(createParameter("checkInterval", config.require(CHECK_INTERVAL).asString()));
-        initParams.add(createParameter("modificationTestInterval", config.require(MODIFICATION_TEST_INTERVAL).asString()));
-        initParams.add(createParameter("recompileOnFail", config.require(RECOMPILE_ON_FAIL).asString()));
-        initParams.add(createParameter("suppressSmap", Boolean.toString(!config.require(SMAP).asBoolean())));
-        initParams.add(createParameter("dumpSmap", config.require(DUMP_SMAP).asString()));
-        initParams.add(createParameter("genStringAsCharArray", config.require(GENERATE_STRINGS_AS_CHAR_ARRAYS).asString()));
-        initParams.add(createParameter("errorOnUseBeanInvalidClassAttribute", config.require(ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE).asString()));
-
-        if (config.hasDefined(SCRATCH_DIR)) {
-            initParams.add(createParameter("scratchdir", config.require(SCRATCH_DIR).asString()));
-        }
-        // jasper will find the right defaults.
-        initParams.add(createParameter("compilerSourceVM", config.require(SOURCE_VM).asString()));
-        initParams.add(createParameter("compilerTargetVM", config.require(TARGET_VM).asString()));
-        initParams.add(createParameter("javaEncoding", config.require(JAVA_ENCODING).asString()));
-        initParams.add(createParameter("xpoweredBy", config.require(X_POWERED_BY).asString()));
-        initParams.add(createParameter("displaySourceFragment", config.require(DISPLAY_SOURCE_FRAGMENT).asString()));
-
-        servlet.setInitParam(initParams);
-        metadata.getServlets().add(servlet);
-        addServletMapping("jsp", metadata, "*.jsp", "*.jspx");
-    }
-
-    static ParamValueMetaData createParameter(String name, String value) {
-        ParamValueMetaData param = new ParamValueMetaData();
-        param.setParamName(name);
-        param.setParamValue(value);
-        return param;
-    }
-
-    static void addServletMapping(final String servlet, final WebMetaData metadata, String... names) {
-        List<ServletMappingMetaData> mappings = metadata.getServletMappings();
-        if (mappings == null) {
-            mappings = new ArrayList<ServletMappingMetaData>();
-            metadata.setServletMappings(mappings);
-        }
-        ServletMappingMetaData mapping = new ServletMappingMetaData();
-        mapping.setUrlPatterns(Arrays.asList(names));
-        mapping.setServletName(servlet);
-        mappings.add(mapping);
     }
 
     static MimeMappingMetaData createMimeMapping(String extension, String mimeType) {
@@ -419,6 +244,39 @@ class SharedWebMetaDataBuilder {
         mappings.add(createMimeMapping("xls", "application/vnd.ms-excel"));
         mappings.add(createMimeMapping("doc", "application/vnd.ms-word"));
         mappings.add(createMimeMapping("ppt", "application/vnd.ms-powerpoint"));
+    }
+
+    private void init() {
+        ModelNode containerConfig = config.get(Constants.CONTAINER);
+        if (containerConfig.hasDefined(Constants.MIME_MAPPING)) {
+            for (final Property mapping : containerConfig.get(Constants.MIME_MAPPING).asPropertyList()) {
+                mimeMappings.add(createMimeMapping(mapping.getName(), mapping.getValue().asString()));
+            }
+        }
+        if (containerConfig.hasDefined(Constants.WELCOME_FILE)) {
+            for (final ModelNode file : containerConfig.get(Constants.WELCOME_FILE).asList()) {
+                welcomeFiles.add(file.asString());
+            }
+        }
+    }
+
+    WebMetaData create() {
+        final WebMetaData metadata = new WebMetaData();
+
+        metadata.setServlets(new ServletsMetaData());
+
+        // Session config
+        final SessionConfigMetaData sessionConfig = new SessionConfigMetaData();
+        sessionConfig.setSessionTimeout(30);
+        metadata.setSessionConfig(sessionConfig);
+
+        // Mime mappings
+        metadata.setMimeMappings(Collections.unmodifiableList(mimeMappings));
+
+        // Welcome files
+        metadata.setWelcomeFileList(new WelcomeFileListMetaData());
+        metadata.getWelcomeFileList().setWelcomeFiles(Collections.unmodifiableList(welcomeFiles));
+        return metadata;
     }
 
 }

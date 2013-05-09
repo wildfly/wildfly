@@ -32,6 +32,7 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * Central Undertow 'Container' HTTP listeners will make this container accessible whilst deployers will add content.
@@ -42,6 +43,7 @@ public class ServletContainerService implements Service<ServletContainerService>
     private volatile ServletContainer servletContainer;
     @Deprecated
     private final Map<String, Integer> secureListeners = new ConcurrentHashMap<>(1);
+    private final InjectedValue<JSPService> jspService = new InjectedValue<>();
 
     static String getDeployedContextPath(DeploymentInfo deploymentInfo) {
         return "".equals(deploymentInfo.getContextPath()) ? "/" : deploymentInfo.getContextPath();
@@ -58,6 +60,10 @@ public class ServletContainerService implements Service<ServletContainerService>
 
     public ServletContainerService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
+    }
+
+    public InjectedValue<JSPService> getJspService() {
+        return jspService;
     }
 
     public ServletContainer getServletContainer() {

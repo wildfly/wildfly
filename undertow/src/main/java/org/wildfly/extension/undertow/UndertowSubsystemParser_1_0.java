@@ -29,7 +29,6 @@ import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.operations.common.Util;
@@ -81,7 +80,7 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                         .addAttributes(HttpListenerResourceDefinition.ATTRIBUTES)
                         ).addChild(
                                 builder(HttpsListenerResourceDefinition.INSTANCE)
-                                        .addAttributes(HttpsListenerResourceDefinition.INSTANCE.getAttributes().toArray(new AttributeDefinition[HttpsListenerResourceDefinition.INSTANCE.getAttributes().size()]))
+                                        .addAttributes(HttpsListenerResourceDefinition.INSTANCE.getAttributes())
                         ).addChild(
                                 builder(HostDefinition.INSTANCE)
                                         .addAttributes(HostDefinition.ALIAS)

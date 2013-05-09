@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.undertow.extension;
+package org.wildfly.extension.undertow;
 
 import java.io.IOException;
 
@@ -79,6 +79,13 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         /*FilterService injectedFilter = locationService.getFilterInjector().get(0).getValue();
         Assert.assertNotNull(injectedFilter);
         */filter.setMode(ServiceController.Mode.REMOVE);
+        final ServiceName jspServiceName = UndertowService.SERVLET_CONTAINER.append("default").append("jsp");
+        ServiceController<JSPService> jspServiceServiceController = (ServiceController<JSPService>) mainServices.getContainer().getService(jspServiceName);
+        Assert.assertNotNull(jspServiceServiceController);
+        JSPService jspService = jspServiceServiceController.getService().getValue();
+        Assert.assertNotNull(jspService);
+        Assert.assertNotNull(jspService.getJSPServletInfo());
+
 
     }
 

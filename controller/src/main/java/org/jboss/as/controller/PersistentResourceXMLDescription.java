@@ -1,6 +1,7 @@
 package org.jboss.as.controller;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -250,6 +251,13 @@ public class PersistentResourceXMLDescription {
         }
 
         public PersistentResourceXMLBuilder addAttributes(AttributeDefinition... attributes) {
+            for (final AttributeDefinition at : attributes) {
+                this.attributes.put(at.getName(), at);
+            }
+            return this;
+        }
+
+        public PersistentResourceXMLBuilder addAttributes(Collection<AttributeDefinition> attributes) {
             for (final AttributeDefinition at : attributes) {
                 this.attributes.put(at.getName(), at);
             }
