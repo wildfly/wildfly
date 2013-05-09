@@ -49,7 +49,7 @@ public class BasicJarTestCase extends BasicFlatTestCase {
 
 
 	static class ModuleAcDeploymentTestCaseSetup extends
-			ModuleDeploymentTestCaseSetup {
+			AbstractModuleDeploymentTestCaseSetup {
 		@Override
 		public void doSetup(ManagementClient managementClient) throws Exception {
 

@@ -57,7 +57,7 @@ import org.junit.runner.RunWith;
 public class TwoModulesFlatTestCase extends TwoRaFlatTestCase {
 
 	static class ModuleAcDeploymentTestCaseSetup extends
-			ModuleDeploymentTestCaseSetup {
+			AbstractModuleDeploymentTestCaseSetup {
 
 		public static ModelNode address1;
 

@@ -24,8 +24,7 @@ package org.jboss.as.test.integration.jca.moduledeployment;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.jboss.as.test.integration.jca.JcaMgmtBase;
-import org.jboss.as.test.integration.jca.JcaMgmtServerSetupTask;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -51,109 +50,111 @@ import static org.junit.Assert.assertTrue;
  * 
  */
 public abstract class AbstractModuleDeploymentTestCase extends
-		ContainerResourceMgmtTestBase {
+        ContainerResourceMgmtTestBase {
 
-	/**
-	 * Define the deployment
-	 * 
-	 * @return The deployment archive
-	 */
-	public static JavaArchive createDeployment(
-			Class<? extends AbstractModuleDeploymentTestCase> clazz)
-			throws Exception {
 
-		JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
-		ja.addClasses(clazz, JcaMgmtServerSetupTask.class, JcaMgmtBase.class,
-				MgmtOperationException.class, XMLElementReader.class,
-				XMLElementWriter.class, AbstractModuleDeploymentTestCase.class,
-				ModuleDeploymentTestCaseSetup.class);
+    /**
+     * Define the deployment
+     *
+     * @return The deployment archive
+     */
+    public static JavaArchive createDeployment(boolean withDependencies) throws Exception {
+        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
+        ja.addClasses(MgmtOperationException.class, XMLElementReader.class,
+                XMLElementWriter.class);
 
-		ja.addPackage(AbstractMgmtTestBase.class.getPackage());
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage())
+                .addPackage(AbstractModuleDeploymentTestCase.class.getPackage());
+        
+        if (withDependencies)
+        	ja.addAsManifestResource(
+                new StringAsset(
+                        "Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"),
+                "MANIFEST.MF");
 
-		ja.addAsManifestResource(
-				new StringAsset(
-						"Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"),
-				"MANIFEST.MF");
+        return ja;
 
-		return ja;
+    }
 
-	}
+    /**
+     * Define the deployment
+     *
+     * @return The deployment archive
+     */
+    public static JavaArchive createDeployment() throws Exception {
+    	return createDeployment(true);
+    }
+ 
+    /**
+     * Test configuration
+     *
+     * @throws Throwable in case of an error
+     */
+    public void testConnectionFactory(ConnectionFactory connectionFactory)
+            throws Throwable {
+        assertNotNull(connectionFactory);
+        assertNotNull(connectionFactory.getConnection());
+    }
 
-	/**
-	 * Test configuration
-	 * 
-	 * @throws Throwable
-	 *             in case of an error
-	 */
-	public void testConnectionFactory(ConnectionFactory connectionFactory)
-			throws Throwable {
-		assertNotNull(connectionFactory);
-		assertNotNull(connectionFactory.getConnection());
-	}
+    /**
+     * Tests connection in pool
+     *
+     * @throws Exception in case of error
+     */
+    public void testConnection(String conName) throws Exception {
+        final ModelNode address1 = getAddress().clone();
+        address1.add("connection-definitions", conName);
+        address1.protect();
 
-	/**
-	 * Tests connection in pool
-	 * 
-	 * @throws Exception
-	 *             in case of error
-	 */
-	public void testConnection(String conName) throws Exception {
-		final ModelNode address1 = getAddress().clone();
-		address1.add("connection-definitions", conName);
-		address1.protect();
+        final ModelNode operation1 = new ModelNode();
+        operation1.get(OP).set("test-connection-in-pool");
+        operation1.get(OP_ADDR).set(address1);
+        executeOperation(operation1);
+    }
 
-		final ModelNode operation1 = new ModelNode();
-		operation1.get(OP).set("test-connection-in-pool");
-		operation1.get(OP_ADDR).set(address1);
-		executeOperation(operation1);
-	}
+    /**
+     * Returns basic address of resource adapter
+     *
+     * @return address
+     */
+    abstract protected ModelNode getAddress();
 
-	/**
-	 * Returns basic address of resource adapter
-	 * 
-	 * @return address
-	 */
-	abstract protected ModelNode getAddress();
+    /**
+     * Finding object by JNDI name and checks, if its String representation
+     * contains expected substrings
+     *
+     * @param jndiName of object
+     * @param contains - substring, must be contained
+     * @throws Exception
+     */
+    public void testJndiObject(String jndiName, String... contains)
+            throws Exception {
+        Object o = new InitialContext().lookup(jndiName);
+        assertNotNull(o);
+        for (String c : contains) {
+            assertTrue(o.toString() + " should contain " + c, o.toString()
+                    .contains(c));
+        }
 
-	/**
-	 * Finding object by JNDI name and checks, if its String representation
-	 * contains expected substrings
-	 * 
-	 * @param jndiName
-	 *            of object
-	 * @param contains
-	 *            - substring, must be contained
-	 * @throws Exception
-	 */
-	public void testJndiObject(String jndiName, String... contains)
-			throws Exception {
-		Object o = new InitialContext().lookup(jndiName);
-		assertNotNull(o);
-		for (String c : contains)
-			assertTrue(o.toString() + " should contain " + c, o.toString()
-					.contains(c));
+    }
 
-	}
-
-	/**
-	 * Checks Set if there is a String element, containing some substring and
-	 * returns it
-	 * 
-	 * @param ids
-	 *            - Set
-	 * @param contain
-	 *            - substring
-	 * @return String
-	 */
-	public String getElementContaining(Set<String> ids, String contain) {
-		Iterator<String> it = ids.iterator();
-		while (it.hasNext()) {
-			String t = it.next();
-			if (t.contains(contain)) {
-				return t;
-			}
-		}
-		return null;
-	}
+    /**
+     * Checks Set if there is a String element, containing some substring and
+     * returns it
+     *
+     * @param ids     - Set
+     * @param contain - substring
+     * @return String
+     */
+    public String getElementContaining(Set<String> ids, String contain) {
+        Iterator<String> it = ids.iterator();
+        while (it.hasNext()) {
+            String t = it.next();
+            if (t.contains(contain)) {
+                return t;
+            }
+        }
+        return null;
+    }
 
 }

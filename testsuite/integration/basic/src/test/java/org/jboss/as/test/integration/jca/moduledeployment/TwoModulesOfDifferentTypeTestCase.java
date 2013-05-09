@@ -24,22 +24,11 @@ package org.jboss.as.test.integration.jca.moduledeployment;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.jca.JcaMgmtBase;
-import org.jboss.as.test.integration.jca.JcaMgmtServerSetupTask;
-import org.jboss.as.test.integration.jca.moduledeployment.TwoModulesFlatTestCase.ModuleAcDeploymentTestCaseSetup;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -65,82 +54,57 @@ import org.junit.runner.RunWith;
 public class TwoModulesOfDifferentTypeTestCase extends TwoModulesFlatTestCase {
 
 
-	static class ModuleAcDeploymentTestCaseSetup extends
-			ModuleDeploymentTestCaseSetup {
-		
-		public static ModelNode address1;
-		
-		@Override
-		public void doSetup(ManagementClient managementClient) throws Exception {
+    static class ModuleAcDeploymentTestCaseSetup extends
+            AbstractModuleDeploymentTestCaseSetup {
 
-			super.doSetup(managementClient);
-			fillModuleWithFlatClasses("ra1.xml");
-			addModule("org/jboss/ironjacamar/ra16out1", "module1-jar.xml");
-			fillModuleWithJar("ra1.xml");
-			setConfiguration("mod-2.xml");
-			address1 = address.clone();
-			setConfiguration("basic.xml");
+        public static ModelNode address1;
 
-		}
-		
-		@Override
-		public void tearDown(ManagementClient managementClient,
-				String containerId) throws Exception {
-			super.tearDown(managementClient, containerId);
-			remove(address1);
-			removeModule("org/jboss/ironjacamar/ra16out1");
-		}
+        @Override
+        public void doSetup(ManagementClient managementClient) throws Exception {
 
-	}
+            super.doSetup(managementClient);
+            fillModuleWithFlatClasses("ra1.xml");
+            addModule("org/jboss/ironjacamar/ra16out1", "module1-jar.xml");
+            fillModuleWithJar("ra1.xml");
+            setConfiguration("mod-2.xml");
+            address1 = address.clone();
+            setConfiguration("basic.xml");
 
-	/**
-	 * Define the deployment
-	 * 
-	 * @return The deployment archive
-	 */
-	@Deployment
-	public static JavaArchive createDeployment() throws Exception {
-		JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
-		ja.addClasses(JcaMgmtServerSetupTask.class, JcaMgmtBase.class,
-				MgmtOperationException.class, XMLElementReader.class,
-				XMLElementWriter.class);
+        }
 
-		ja.addPackage(AbstractMgmtTestBase.class.getPackage())
-			.addPackage(AbstractModuleDeploymentTestCase.class.getPackage());
+        @Override
+        public void tearDown(ManagementClient managementClient,
+                             String containerId) throws Exception {
+            super.tearDown(managementClient, containerId);
+            remove(address1);
+            removeModule("org/jboss/ironjacamar/ra16out1");
+        }
 
-		ja.addAsManifestResource(
-				new StringAsset(
-						"Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"),
-				"MANIFEST.MF");
+    }
 
-		return ja;
+    /**
+     * Tests connection in pool
+     *
+     * @throws Exception in case of error
+     */
+    @Test
+    @RunAsClient
+    public void testConnection2() throws Exception {
+        final ModelNode address1 = ModuleAcDeploymentTestCaseSetup.address1
+                .clone();
+        address1.add("connection-definitions", cf1);
+        address1.protect();
+        final ModelNode operation1 = new ModelNode();
+        operation1.get(OP).set("test-connection-in-pool");
+        operation1.get(OP_ADDR).set(address1);
+        executeOperation(operation1);
 
-	}
+    }
 
-	/**
-	 * Tests connection in pool
-	 * 
-	 * @throws Exception
-	 *             in case of error
-	 */
-	@Test
-	@RunAsClient
-	public void testConnection2() throws Exception {
-		final ModelNode address1 = ModuleAcDeploymentTestCaseSetup.address1
-				.clone();
-		address1.add("connection-definitions", cf1);
-		address1.protect();
-		final ModelNode operation1 = new ModelNode();
-		operation1.get(OP).set("test-connection-in-pool");
-		operation1.get(OP_ADDR).set(address1);
-		executeOperation(operation1);
-
-	}
-
-	@Override
-	protected ModelNode getAddress() {
-		return ModuleAcDeploymentTestCaseSetup.getAddress();
-	}
+    @Override
+    protected ModelNode getAddress() {
+        return ModuleAcDeploymentTestCaseSetup.getAddress();
+    }
 
 
 }

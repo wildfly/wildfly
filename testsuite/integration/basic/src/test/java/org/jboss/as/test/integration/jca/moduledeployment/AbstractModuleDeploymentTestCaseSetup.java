@@ -24,8 +24,8 @@ package org.jboss.as.test.integration.jca.moduledeployment;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
-import org.jboss.as.test.integration.jca.JcaMgmtServerSetupTask;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
+import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -54,7 +54,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
  *
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-public class ModuleDeploymentTestCaseSetup extends JcaMgmtServerSetupTask {
+public class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {
 
 	protected File testModuleRoot;
 	protected File slot;

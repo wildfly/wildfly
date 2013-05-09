@@ -65,7 +65,7 @@ public class TwoRaFlatTestCase extends AbstractModuleDeploymentTestCase {
 	protected final String cf1 = "java:/testMeRA1";
 
 	static class ModuleAcDeploymentTestCaseSetup extends
-			ModuleDeploymentTestCaseSetup {
+			AbstractModuleDeploymentTestCaseSetup {
 
 		public static ModelNode address1;
 
@@ -94,8 +94,8 @@ public class TwoRaFlatTestCase extends AbstractModuleDeploymentTestCase {
 	 * @return The deployment archive
 	 */
 	@Deployment
-	public static JavaArchive createDeployment() throws Exception {
-		return createDeployment(TwoRaFlatTestCase.class);
+	public static JavaArchive getDeployment() throws Exception {
+		return createDeployment();
 	}
 
 	@Resource(mappedName = cf)
