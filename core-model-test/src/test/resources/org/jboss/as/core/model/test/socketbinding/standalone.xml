@@ -28,9 +28,10 @@
         <socket-binding name="management-native" interface="management" port="${jboss.management.native.port:9999}"/>
         <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
         <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9443}"/>
-        <socket-binding name="ajp" port="8009"/>
-        <socket-binding name="http" port="8080"/>
-        <socket-binding name="https" port="8443"/>
+	<socket-binding name="ajp" port="${jboss.ajp.port:8009}"/>
+        <socket-binding name="http" port="${jboss.http.port:8080}"/>
+        <socket-binding name="https" port="${jboss.http.port:8443}"/>
+        <socket-binding name="remoting" port="${jboss.http.port:4447}"/>
         <socket-binding name="jacorb" interface="unsecure" port="3528"/>
         <socket-binding name="jacorb-ssl" interface="unsecure" port="3529"/>
         <socket-binding name="jgroups-mping" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
@@ -43,7 +44,6 @@
                         multicast-port="${jboss.messaging.group.port:9876}"/>
         <socket-binding name="messaging-throughput" port="5455"/>
         <socket-binding name="modcluster" port="0" multicast-address="230.0.0.4" multicast-port="23364"/>
-        <socket-binding name="remoting" port="4447"/>
         <socket-binding name="txn-recovery-environment" port="4712"/>
         <socket-binding name="txn-status-manager" port="4713"/>
         <outbound-socket-binding name="mail-smtp">
