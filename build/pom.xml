@@ -157,7 +157,7 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-security-util</artifactId>
+            <artifactId>wildfly-security-manager</artifactId>
         </dependency>
 
         <dependency>
@@ -1128,7 +1128,7 @@
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-security-util</artifactId>
+                    <artifactId>wildfly-security-manager</artifactId>
                 </dependency>
 
                 <dependency>
@@ -2255,7 +2255,7 @@
                                         <exclude>org.wildfly:wildfly-remoting</exclude>
                                         <exclude>org.wildfly:wildfly-sar</exclude>
                                         <exclude>org.wildfly:wildfly-security</exclude>
-                                        <exclude>org.wildfly:wildfly-security-util</exclude>
+                                        <exclude>org.wildfly:wildfly-security-manager</exclude>
                                         <exclude>org.wildfly:wildfly-server</exclude>
                                         <exclude>org.wildfly:wildfly-system-jmx</exclude>
                                         <exclude>org.wildfly:wildfly-threads</exclude>
@@ -2408,8 +2408,8 @@
                                             <packages>org.jboss.as.remoting:org.jboss.as.remoting.management</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.wildfly.security-util</title>
-                                            <packages>org.jboss.as.util.security</packages>
+                                            <title>Module org.wildfly.security-manager</title>
+                                            <packages>org.wildfly.security.manager</packages>
                                         </group>
                                         <group>
                                             <title>Module org.wildfly.server</title>
