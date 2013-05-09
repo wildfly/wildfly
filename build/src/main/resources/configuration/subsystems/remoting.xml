@@ -5,5 +5,5 @@
    <subsystem xmlns="urn:jboss:domain:remoting:1.1">
        <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
    </subsystem>
-   <socket-binding name="remoting" port="4447"/>
+   <socket-binding name="remoting" port="${jboss.remoting.port:4447}"/>
 </config>
