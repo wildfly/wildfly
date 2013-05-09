@@ -1,21 +1,22 @@
-       ______                     ___   _____    _____
-      / / __ )____  __________   /   | / ___/   /__  /
- __  / / __  / __ \/ ___/ ___/  / /| | \__ \      / / 
-/ /_/ / /_/ / /_/ (__  |__  )  / ___ |___/ /     / /  
-\____/_____/\____/____/____/  /_/  |_/____/     /_/   
+ _       ___ __    __________         ____ 
+| |     / (_) /___/ / ____/ /_  __   ( __ )
+| | /| / / / / __  / /_  / / / / /  / __  |
+| |/ |/ / / / /_/ / __/ / / /_/ /  / /_/ / 
+|__/|__/_/_/\__,_/_/   /_/\__, /   \____/  
+                         /____/            
 
-Welcome to JBoss Application Server 7.2.0
-http://www.jboss.org/jbossas/
+Welcome to WildFly (formerly known as JBoss Application Server)
+http://www.wildfly.org/
 
 Go to the above link for documentation, and additional downloads.
 
-Also, once JBoss AS7 is started you can go to http://localhost:8080/
+Also, once WildFly is started you can go to http://localhost:8080/
 for additional information.
 
 
 Key Features
---------------
-* Java EE 6
+------------
+* Java EE 7 support
 * Fast Startup
 * Small Footprint
 * Modular Design
@@ -26,23 +27,23 @@ Key Features
 Release Notes
 -------------
 You can obtain the release notes here:
-https://community.jboss.org/wiki/AS711FinalReleaseNotes
+TODO
 
 Getting Started
-----------------
-JBoss AS 7 requires JDK 1.6 or later.  For information regarding installation
+---------------
+WildFly requires JDK 1.7 or later. For information regarding installation
 of the JDK, see http://www.oracle.com/technetwork/java/index.html
 
-JBoss AS 7 has two modes of operation: Standalone and Domain.  For more
+WildFly has two modes of operation: Standalone and Domain. For more
 information regarding these modes, please refer to the documentation 
 available on the JBoss.org site:
 
-https://docs.jboss.org/author/display/AS71/Documentation
+https://docs.jboss.org/author/display/AS72/Documentation
 
 
 Starting a Standalone Server
 ----------------------------
-An AS7 standalone server runs a single instance of AS7.
+A WildFly standalone server runs a single instance.
 
 <JBOSS_HOME>/bin/standalone.sh      (Unix / Linux)
 
@@ -50,9 +51,9 @@ An AS7 standalone server runs a single instance of AS7.
 
 
 Starting a Managed Domain
---------------------------
-An AS7 managed domain allows you to control and configure multiple instances 
-of AS7, potentially across several physical (or virtual) machines.  The default 
+-------------------------
+A WildFly managed domain allows you to control and configure multiple instances,
+potentially across several physical (or virtual) machines. The default 
 configuration includes a domain controller and a single server group with three 
 servers (two of which start automatically), all running on the localhost.
 
@@ -62,10 +63,10 @@ servers (two of which start automatically), all running on the localhost.
  
 
 Accessing the Web Console
---------------------------
+-------------------------
 Once the server has started you can access the landing page:
 
-http:/localhost:8080/
+http://localhost:8080/
 
 This page includes links to online documentation, quick start guides, forums 
 and the administration console.
@@ -73,7 +74,7 @@ and the administration console.
 
 Stopping the Server
 -------------------
-The JBoss AS7 server can be stopped by pressing Ctrl-C on the command line.
+A WildFly server can be stopped by pressing Ctrl-C on the command line.
 If the server is running in a background process, the server can be stopped
 using the JBoss CLI:
 
