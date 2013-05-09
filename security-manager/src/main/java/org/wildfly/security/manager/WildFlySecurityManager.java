@@ -91,7 +91,7 @@ public final class WildFlySecurityManager extends SecurityManager {
         if (context instanceof AccessControlContext) {
             checkPermission(perm, (AccessControlContext) context);
         } else {
-            throw new SecurityException("Unknown security context type");
+            throw access.unknownContext();
         }
     }
 
@@ -152,7 +152,7 @@ public final class WildFlySecurityManager extends SecurityManager {
      */
     public void checkPermission(final Permission perm, final AccessControlContext context) throws SecurityException {
         if (perm.implies(SECURITY_MANAGER_PERMISSION)) {
-            throw new SecurityException("Security manager may not be changed");
+            throw access.secMgrChange();
         }
         if (CHECKING.get() == TRUE) {
             if (ENTERED.get() == TRUE) {
