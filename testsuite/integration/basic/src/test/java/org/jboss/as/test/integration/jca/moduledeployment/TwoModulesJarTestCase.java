@@ -24,23 +24,11 @@ package org.jboss.as.test.integration.jca.moduledeployment;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.jca.JcaMgmtBase;
-import org.jboss.as.test.integration.jca.JcaMgmtServerSetupTask;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -62,13 +50,12 @@ import org.junit.runner.RunWith;
  *         modulename/main/module.jar
  */
 @RunWith(Arquillian.class)
-@Ignore("May deploy duplicate multiple.jar")
 @ServerSetup(TwoModulesJarTestCase.ModuleAcDeploymentTestCaseSetup.class)
 public class TwoModulesJarTestCase extends TwoModulesFlatTestCase {
 
 
     static class ModuleAcDeploymentTestCaseSetup extends
-            ModuleDeploymentTestCaseSetup {
+            AbstractModuleDeploymentTestCaseSetup {
 
         public static ModelNode address1;
 
@@ -92,31 +79,6 @@ public class TwoModulesJarTestCase extends TwoModulesFlatTestCase {
             remove(address1);
             removeModule("org/jboss/ironjacamar/ra16out1");
         }
-
-    }
-
-    /**
-     * Define the deployment
-     *
-     * @return The deployment archive
-     */
-    @Deployment(name = "multiple-modules")
-    @TargetsContainer("jboss")
-    public static JavaArchive createDeployment() throws Exception {
-        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
-        ja.addClasses(JcaMgmtServerSetupTask.class, JcaMgmtBase.class,
-                MgmtOperationException.class, XMLElementReader.class,
-                XMLElementWriter.class);
-
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage())
-                .addPackage(AbstractModuleDeploymentTestCase.class.getPackage());
-
-        ja.addAsManifestResource(
-                new StringAsset(
-                        "Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"),
-                "MANIFEST.MF");
-
-        return ja;
 
     }
 

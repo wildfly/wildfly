@@ -24,15 +24,12 @@ package org.jboss.as.test.integration.jca.moduledeployment;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,12 +51,11 @@ import org.junit.runner.RunWith;
  *         modulename/main/module.jar
  */
 @RunWith(Arquillian.class)
-@Ignore("May deploy duplicate multiple.jar")
 @ServerSetup(TwoRaJarTestCase.ModuleAcDeploymentTestCaseSetup1.class)
 public class TwoRaJarTestCase extends TwoRaFlatTestCase {
 
     static class ModuleAcDeploymentTestCaseSetup1 extends
-            ModuleDeploymentTestCaseSetup {
+            AbstractModuleDeploymentTestCaseSetup {
 
         public static ModelNode address1;
 
@@ -81,19 +77,6 @@ public class TwoRaJarTestCase extends TwoRaFlatTestCase {
             super.tearDown(managementClient, containerId);
         }
 
-    }
-
-    /**
-     * Define the deployment
-     *
-     * @return The deployment archive
-     */
-    @Deployment(name = "two-ra-flat")
-    @TargetsContainer("jboss")
-    public static JavaArchive createDeployment() throws Exception {
-        JavaArchive ja = createDeployment(TwoRaFlatTestCase.class);
-        ja.addClass(TwoRaJarTestCase.class);
-        return ja;
     }
 
     /**

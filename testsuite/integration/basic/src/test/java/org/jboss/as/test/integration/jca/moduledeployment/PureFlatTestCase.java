@@ -61,7 +61,7 @@ public class PureFlatTestCase extends AbstractModuleDeploymentTestCase {
     private final String cf = "java:/testMeRA";
 
     static class ModuleAcDeploymentTestCaseSetup extends
-            ModuleDeploymentTestCaseSetup {
+            AbstractModuleDeploymentTestCaseSetup {
 
         @Override
         public void doSetup(ManagementClient managementClient) throws Exception {
@@ -73,15 +73,15 @@ public class PureFlatTestCase extends AbstractModuleDeploymentTestCase {
         }
     }
 
-    /**
-     * Define the deployment
-     *
-     * @return The deployment archive
-     */
-    @Deployment(name = "pure-flat-test")
-    public static JavaArchive createDeployment() throws Exception {
-        return createDeployment(PureFlatTestCase.class);
-    }
+	/**
+	 * Define the deployment
+	 * 
+	 * @return The deployment archive
+	 */
+	@Deployment
+	public static JavaArchive getDeployment() throws Exception {
+		return createDeployment();
+	}
 
     @Resource(mappedName = cf)
     private ConnectionFactory connectionFactory;

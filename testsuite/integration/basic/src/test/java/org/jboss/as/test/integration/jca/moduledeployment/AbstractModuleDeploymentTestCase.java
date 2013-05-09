@@ -31,8 +31,7 @@ import java.util.Set;
 import javax.naming.InitialContext;
 import javax.resource.cci.ConnectionFactory;
 
-import org.jboss.as.test.integration.jca.JcaMgmtBase;
-import org.jboss.as.test.integration.jca.JcaMgmtServerSetupTask;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -51,24 +50,22 @@ import org.jboss.staxmapper.XMLElementWriter;
 public abstract class AbstractModuleDeploymentTestCase extends
         ContainerResourceMgmtTestBase {
 
+
     /**
      * Define the deployment
      *
      * @return The deployment archive
      */
-    public static JavaArchive createDeployment(
-            Class<? extends AbstractModuleDeploymentTestCase> clazz)
-            throws Exception {
-
+    public static JavaArchive createDeployment(boolean withDependencies) throws Exception {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
-        ja.addClasses(clazz, JcaMgmtServerSetupTask.class, JcaMgmtBase.class,
-                MgmtOperationException.class, XMLElementReader.class,
-                XMLElementWriter.class, AbstractModuleDeploymentTestCase.class,
-                ModuleDeploymentTestCaseSetup.class);
+        ja.addClasses(MgmtOperationException.class, XMLElementReader.class,
+                XMLElementWriter.class);
 
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage());
-
-        ja.addAsManifestResource(
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage())
+                .addPackage(AbstractModuleDeploymentTestCase.class.getPackage());
+        
+        if (withDependencies)
+        	ja.addAsManifestResource(
                 new StringAsset(
                         "Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"),
                 "MANIFEST.MF");
@@ -77,6 +74,15 @@ public abstract class AbstractModuleDeploymentTestCase extends
 
     }
 
+    /**
+     * Define the deployment
+     *
+     * @return The deployment archive
+     */
+    public static JavaArchive createDeployment() throws Exception {
+    	return createDeployment(true);
+    }
+ 
     /**
      * Test configuration
      *
