@@ -116,6 +116,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
 
         ModuleIdentifier jsfInjectionModule = moduleIdFactory.getInjectionModId(jsfVersion);
         ModuleDependency jsfInjectionDependency = new ModuleDependency(moduleLoader, jsfInjectionModule, false, true, true, false);
+        jsfInjectionDependency.addImportFilter(PathFilters.getMetaInfFilter(), true);
         moduleSpecification.addSystemDependency(jsfInjectionDependency);
     }
 }
