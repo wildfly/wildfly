@@ -36,7 +36,7 @@ import static org.jboss.logging.Logger.Level.DEBUG;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@MessageLogger(projectCode = "WFSEC")
+@MessageLogger(projectCode = "WFSECMGR")
 public interface SecurityMessages {
     SecurityMessages access = Logger.getMessageLogger(SecurityMessages.class, "org.wildfly.security.access");
 
@@ -50,4 +50,10 @@ public interface SecurityMessages {
 
     @Message(id = 1, value = "Permission check failed for %s")
     AccessControlException accessControlException(@Param Permission permission, Permission permission_);
+
+    @Message(id = 2, value = "Security manager may not be changed")
+    SecurityException secMgrChange();
+
+    @Message(id = 3, value = "Unknown security context type")
+    SecurityException unknownContext();
 }
