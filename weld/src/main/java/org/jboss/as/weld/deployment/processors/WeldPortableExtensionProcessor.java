@@ -121,6 +121,8 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
             throw WeldMessages.MESSAGES.extensionDoesNotImplementExtension(serviceClassName, e);
         } catch (Exception e) {
             WeldLogger.DEPLOYMENT_LOGGER.couldNotLoadPortableExceptionClass(serviceClassName, e);
+        } catch (LinkageError e) {
+            WeldLogger.DEPLOYMENT_LOGGER.couldNotLoadPortableExceptionClass(serviceClassName, e);
         }
         return null;
     }
