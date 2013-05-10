@@ -174,7 +174,7 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
     protected void executeWriteAttribute(String attributeName, OperationContext context, ModelNode operation, T component,
                                          PathAddress address) throws OperationFailedException {
         if (componentType.hasPool() && POOL_MAX_SIZE.getName().equals(attributeName)) {
-            int newSize = POOL_MAX_SIZE.resolveModelAttribute(context, operation).asInt();
+            int newSize = operation.require(ModelDescriptionConstants.VALUE).asInt();
             final Pool<?> pool = componentType.getPool(component);
             final int oldSize = pool.getMaxSize();
             componentType.getPool(component).setMaxSize(newSize);
