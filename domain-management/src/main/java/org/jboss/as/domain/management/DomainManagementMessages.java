@@ -23,6 +23,7 @@
 package org.jboss.as.domain.management;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.Set;
 
 import javax.naming.NamingException;
@@ -30,10 +31,10 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Param;
 import org.jboss.msc.service.StartException;
 
@@ -655,6 +656,15 @@ public interface DomainManagementMessages {
      */
     @Message(id = 15269, value = "Password must have at least '%s' characters!")
     String passwordNotLongEnough(int desiredLength);
+
+    @Message(id = 15270, value = "Unable to load key trust file.")
+    IllegalStateException unableToLoadKeyTrustFile(@Cause Throwable t);
+
+    @Message(id = 15271, value = "Unable to operate on trust store.")
+    IllegalStateException unableToOperateOnTrustStore(@Cause GeneralSecurityException gse);
+
+    @Message(id = 15272, value = "Unable to create delegate trust manager.")
+    IllegalStateException unableToCreateDelegateTrustManager();
 
     /**
      * A prompt to double check the user is really sure they want to set password.

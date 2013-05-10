@@ -39,6 +39,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import org.jboss.as.domain.management.DomainManagementMessages;
 import org.jboss.as.domain.management.SSLIdentity;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -76,7 +77,7 @@ class SSLIdentityService implements Service<SSLIdentity>, SSLIdentity {
         try {
             KeyManager[] keyManagers = null;
             FileKeystore theKeyStore = keystore.getOptionalValue();
-            if (theKeyStore.getKeyStore() != null) {
+            if (theKeyStore != null && theKeyStore.getKeyStore() != null) {
                 KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
                 keyManagerFactory.init(theKeyStore.getKeyStore(), keyPassword == null ? keystorePassword : keyPassword);
                 keyManagers = keyManagerFactory.getKeyManagers();
@@ -91,7 +92,7 @@ class SSLIdentityService implements Service<SSLIdentity>, SSLIdentity {
                 TrustManager[] tmpTrustManagers = trustManagerFactory.getTrustManagers();
                 trustManagers = new TrustManager[tmpTrustManagers.length];
                 for (int i = 0; i < tmpTrustManagers.length; i++) {
-                    trustManagers[i] = new DeligatingTrustManager((X509TrustManager) tmpTrustManagers[i], theTrustStore);
+                    trustManagers[i] = new DelegatingTrustManager((X509TrustManager) tmpTrustManagers[i], theTrustStore);
                 }
             }
 
@@ -144,12 +145,12 @@ class SSLIdentityService implements Service<SSLIdentity>, SSLIdentity {
         return (truststore.getOptionalValue() != null);
     }
 
-    private class DeligatingTrustManager implements X509TrustManager {
+    private class DelegatingTrustManager implements X509TrustManager {
 
         private X509TrustManager delegate;
         private final FileKeystore theTrustStore;
 
-        public DeligatingTrustManager(X509TrustManager trustManager, FileKeystore theTrustStore) {
+        private DelegatingTrustManager(X509TrustManager trustManager, FileKeystore theTrustStore) {
             this.delegate = trustManager;
             this.theTrustStore = theTrustStore;
         }
@@ -177,7 +178,7 @@ class SSLIdentityService implements Service<SSLIdentity>, SSLIdentity {
                 try {
                     theTrustStore.load();
                 } catch (StartException e1) {
-                    throw new IllegalStateException("Unable to load key trust file.");
+                    throw DomainManagementMessages.MESSAGES.unableToLoadKeyTrustFile(e1.getCause());
                 }
                 try {
                     trustManagerFactory.init(theTrustStore.getKeyStore());
@@ -189,12 +190,12 @@ class SSLIdentityService implements Service<SSLIdentity>, SSLIdentity {
                         }
                     }
                 } catch (GeneralSecurityException e) {
-                    throw new IllegalStateException("Unable to operate on trust store.", e);
+                    throw DomainManagementMessages.MESSAGES.unableToOperateOnTrustStore(e);
 
                 }
             }
             if (delegate == null) {
-                throw new IllegalStateException("Unable to create delegate trust manager.");
+                throw DomainManagementMessages.MESSAGES.unableToCreateDelegateTrustManager();
             }
 
             return delegate;

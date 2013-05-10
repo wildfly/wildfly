@@ -43,7 +43,7 @@ import org.jboss.msc.service.StartException;
  * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
  *
  */
-public final class FileKeystore {
+final class FileKeystore {
 
     private KeyStore keyStore;
     private final String path;
@@ -52,7 +52,7 @@ public final class FileKeystore {
     private final char[] keyPassword;
     private final String alias;
 
-    public FileKeystore(final String path, final char[] keystorePassword, final char[] keyPassword,final String alias) {
+    FileKeystore(final String path, final char[] keystorePassword, final char[] keyPassword,final String alias) {
         this.path = path;
         this.keystorePassword = keystorePassword;
         this.keyPassword = keyPassword;
@@ -63,7 +63,7 @@ public final class FileKeystore {
     /**
      * @return true if the keystore file is modified since it was loaded the first time
      */
-    public boolean isModified() {
+    boolean isModified() {
         long lastModified = new File(path).lastModified();
         if (lastModified > this.lastModificationTime) {
             return true;
@@ -78,7 +78,7 @@ public final class FileKeystore {
      * call load() again for updating the keystore
      * @throws StartException
      */
-    public void load() throws StartException {
+    void load() throws StartException {
         FileInputStream fis = null;
         try {
             KeyStore loadedKeystore = KeyStore.getInstance("JKS");
@@ -122,7 +122,7 @@ public final class FileKeystore {
     /**
      * @return the current cached keystore.
      */
-    public KeyStore getKeyStore() {
+    KeyStore getKeyStore() {
         return keyStore;
     }
 

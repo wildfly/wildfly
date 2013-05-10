@@ -38,7 +38,7 @@ public class FileKeystoreService implements Service<FileKeystore> {
     public static final String KEYSTORE_SUFFIX = "keystore";
     public static final String TRUSTSTORE_SUFFIX = "truststore";
 
-    private FileKeystore theKeyStore;
+    private volatile FileKeystore theKeyStore;
     private final String path;
     private final char[] keystorePassword;
     /*
@@ -59,8 +59,9 @@ public class FileKeystoreService implements Service<FileKeystore> {
     public void start(StartContext ctx) throws StartException {
         String relativeTo = this.relativeTo.getOptionalValue();
         String file = relativeTo == null ? path : relativeTo + "/" + path;
-        theKeyStore = new FileKeystore(file, keystorePassword, keyPassword, alias);
-        theKeyStore.load();
+        final FileKeystore fileKeystore = new FileKeystore(file, keystorePassword, keyPassword, alias);
+        fileKeystore.load();
+        theKeyStore = fileKeystore;
     }
 
     public void stop(StopContext ctx) {
