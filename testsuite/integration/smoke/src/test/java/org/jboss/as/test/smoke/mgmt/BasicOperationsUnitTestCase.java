@@ -205,7 +205,7 @@ public class BasicOperationsUnitTestCase {
         final List<ModelNode> steps = getSteps(result.get(RESULT));
         Assert.assertEquals(1, steps.size());
         final ModelNode httpBinding = steps.get(0);
-        Assert.assertEquals(8080, httpBinding.get(RESULT, "port").asInt());
+        Assert.assertEquals(8080, httpBinding.get(RESULT, "port").resolve().asInt());
 
     }
 
