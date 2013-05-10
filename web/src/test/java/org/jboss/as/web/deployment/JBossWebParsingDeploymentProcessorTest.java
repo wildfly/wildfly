@@ -32,6 +32,7 @@ import org.jboss.as.web.common.WarMetaData;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -53,6 +54,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ResourceRoot.class, Module.class, VirtualFile.class})
 @SuppressStaticInitializationFor("org.jboss.modules.Module")
+@Ignore("WFLY-1331 - The order in which this test is run seems to matter")
 public class JBossWebParsingDeploymentProcessorTest {
 
   @Rule
@@ -65,10 +67,10 @@ public class JBossWebParsingDeploymentProcessorTest {
   private DeploymentUnit deploymentUnit;
 
   private JBossWebParsingDeploymentProcessor processor = new JBossWebParsingDeploymentProcessor();
-  
+
   @Before
   public void init() {
-    when(phaseContext.getDeploymentUnit()).thenReturn(deploymentUnit);    
+    when(phaseContext.getDeploymentUnit()).thenReturn(deploymentUnit);
     when(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_TYPE)).thenReturn(DeploymentType.WAR);
     WarMetaData metadata = mock(WarMetaData.class);
     when(deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY)).thenReturn(metadata);
