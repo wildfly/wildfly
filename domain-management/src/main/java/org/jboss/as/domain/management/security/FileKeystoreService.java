@@ -22,17 +22,6 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
-import java.io.Closeable;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableEntryException;
-import java.security.cert.CertificateException;
-
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -44,12 +33,12 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class FileKeystoreService implements Service<KeyStore> {
+public class FileKeystoreService implements Service<FileKeystore> {
 
     public static final String KEYSTORE_SUFFIX = "keystore";
     public static final String TRUSTSTORE_SUFFIX = "truststore";
 
-    private KeyStore theKeyStore;
+    private FileKeystore theKeyStore;
     private final String path;
     private final char[] keystorePassword;
     /*
@@ -70,60 +59,20 @@ public class FileKeystoreService implements Service<KeyStore> {
     public void start(StartContext ctx) throws StartException {
         String relativeTo = this.relativeTo.getOptionalValue();
         String file = relativeTo == null ? path : relativeTo + "/" + path;
-
-        FileInputStream fis = null;
-        try {
-            KeyStore loadedKeystore = KeyStore.getInstance("JKS");
-            fis = new FileInputStream(file);
-            loadedKeystore.load(fis, keystorePassword);
-
-            if (alias == null) {
-                this.theKeyStore = loadedKeystore;
-            } else {
-                KeyStore newKeystore = KeyStore.getInstance("JKS");
-                newKeystore.load(null);
-
-                KeyStore.ProtectionParameter passParam = new KeyStore.PasswordProtection(keyPassword == null ? keystorePassword
-                        : keyPassword);
-                KeyStore.Entry entry = loadedKeystore.getEntry(alias, passParam);
-                newKeystore.setEntry(alias, entry, passParam);
-
-                this.theKeyStore = newKeystore;
-            }
-        } catch (KeyStoreException e) {
-            throw MESSAGES.unableToStart(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw MESSAGES.unableToStart(e);
-        } catch (CertificateException e) {
-            throw MESSAGES.unableToStart(e);
-        } catch (IOException e) {
-            throw MESSAGES.unableToStart(e);
-        } catch (UnrecoverableEntryException e) {
-            throw MESSAGES.unableToStart(e);
-        } finally {
-            safeClose(fis);
-        }
+        theKeyStore = new FileKeystore(file, keystorePassword, keyPassword, alias);
+        theKeyStore.load();
     }
 
     public void stop(StopContext ctx) {
         theKeyStore = null;
     }
 
-    public KeyStore getValue() throws IllegalStateException, IllegalArgumentException {
+    public FileKeystore getValue() throws IllegalStateException, IllegalArgumentException {
         return theKeyStore;
     }
 
     public InjectedValue<String> getRelativeToInjector() {
         return relativeTo;
-    }
-
-    private void safeClose(Closeable c) {
-        if (c != null) {
-            try {
-                c.close();
-            } catch (IOException ignored) {
-            }
-        }
     }
 
 }
