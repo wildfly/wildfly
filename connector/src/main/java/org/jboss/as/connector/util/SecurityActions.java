@@ -20,6 +20,7 @@
 
 package org.jboss.as.connector.util;
 
+import org.wildfly.security.manager.GetClassLoaderAction;
 import org.wildfly.security.manager.GetContextClassLoaderAction;
 import org.wildfly.security.manager.ReadPropertyAction;
 import org.wildfly.security.manager.SetContextClassLoaderAction;
@@ -69,5 +70,14 @@ class SecurityActions {
      */
     static String getSystemProperty(final String name) {
         return ! WildFlySecurityManager.isChecking() ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
+    }
+
+    /**
+     * Returns the class loader for the given class
+     * @param clazz the class of interest
+     * @return the class loader for the given class
+     */
+    static ClassLoader getClassLoader(Class<?> clazz) {
+        return ! WildFlySecurityManager.isChecking() ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
     }
 }
