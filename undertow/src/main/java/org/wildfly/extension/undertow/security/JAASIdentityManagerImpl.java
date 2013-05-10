@@ -76,7 +76,11 @@ public class JAASIdentityManagerImpl implements IdentityManager {
     @Override
     public Account verify(Account account) {
         // This method is called for previously verfified accounts so just accept it for the moment.
-        return account;
+        if(!(account instanceof AccountImpl)) {
+            UndertowLogger.ROOT_LOGGER.tracef("Account is not an AccountImpl", account);
+            return null;
+        }
+        return verifyCredential(account, ((AccountImpl) account).getCredential());
     }
 
     @Override
@@ -125,7 +129,7 @@ public class JAASIdentityManagerImpl implements IdentityManager {
         try {
             boolean isValid = authenticationManager.isValid(incomingPrincipal, credential, subject);
             if (isValid) {
-                UndertowLogger.ROOT_LOGGER.tracef("User: " + incomingPrincipal + " is authenticated");
+                UndertowLogger.ROOT_LOGGER.tracef("User: %s is authenticated", incomingPrincipal);
                 if (sc == null)
                     throw new IllegalStateException("No SecurityContext found!");
                 Principal userPrincipal = getPrincipal(subject);
@@ -143,7 +147,7 @@ public class JAASIdentityManagerImpl implements IdentityManager {
                 for (Role role : roles.getRoles()) {
                     roleSet.add(role.getRoleName());
                 }
-                return new AccountImpl(userPrincipal, roleSet);
+                return new AccountImpl(userPrincipal, roleSet, credential);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

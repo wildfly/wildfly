@@ -41,18 +41,22 @@ public class AccountImpl implements Account, Serializable {
     private final String name;
     private final Set<String> roles = new CopyOnWriteArraySet<>();
     private final Principal principal;
+    private final Object credential;
 
     public AccountImpl(final String name) {
         this.name = name;
         this.principal = new AccountPrincipal();
+        this.credential = null;
     }
 
     public AccountImpl(final Principal principal) {
         this.principal = principal;
         this.name = principal.getName();
+        this.credential = null;
     }
-    public AccountImpl(final Principal principal,Set<String> roles) {
+    public AccountImpl(final Principal principal, Set<String> roles, final Object credential) {
         this.principal = principal;
+        this.credential = credential;
         this.name = principal.getName();
         this.roles.addAll(roles);
     }
@@ -94,6 +98,10 @@ public class AccountImpl implements Account, Serializable {
     @Override
     public boolean isUserInRole(String role) {
         return roles.contains(role);
+    }
+
+    public Object getCredential() {
+        return credential;
     }
 
     private final class AccountPrincipal implements Principal {
