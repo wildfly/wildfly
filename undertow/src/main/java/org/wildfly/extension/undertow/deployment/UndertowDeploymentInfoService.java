@@ -69,8 +69,6 @@ import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.api.ServletSecurityInfo;
 import io.undertow.servlet.api.ThreadSetupAction;
 import io.undertow.servlet.api.WebResourceCollection;
-import io.undertow.servlet.core.CompositeThreadSetupAction;
-import io.undertow.servlet.core.ContextClassLoaderSetupAction;
 import io.undertow.servlet.util.ConstructorInstanceFactory;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
 import org.apache.jasper.deploy.FunctionInfo;
@@ -240,14 +238,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
 
     private void handleIdentityManager(final DeploymentInfo deploymentInfo) {
-        //TODO Darren, check this!
-        final List<ThreadSetupAction> setup = new ArrayList<ThreadSetupAction>();
-        setup.add(new ContextClassLoaderSetupAction(deploymentInfo.getClassLoader()));
-        setup.addAll(deploymentInfo.getThreadSetupActions());
-        final CompositeThreadSetupAction threadSetupAction = new CompositeThreadSetupAction(setup);
 
         SecurityDomainContext sdc = securityDomainContextValue.getValue();
-        deploymentInfo.setIdentityManager(new JAASIdentityManagerImpl(sdc, mergedMetaData.getPrincipalVersusRolesMap(), threadSetupAction));
+        deploymentInfo.setIdentityManager(new JAASIdentityManagerImpl(sdc, mergedMetaData.getPrincipalVersusRolesMap()));
         AuditManager auditManager = sdc.getAuditManager();
         if (auditManager != null) {
             deploymentInfo.addNotificationReceiver(new AuditNotificationReceiver(auditManager));

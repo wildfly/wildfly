@@ -40,11 +40,7 @@ import io.undertow.security.idm.Credential;
 import io.undertow.security.idm.IdentityManager;
 import io.undertow.security.idm.PasswordCredential;
 import io.undertow.security.idm.X509CertificateCredential;
-
-import io.undertow.servlet.api.ThreadSetupAction;
-import io.undertow.servlet.core.CompositeThreadSetupAction;
 import org.jboss.as.security.plugins.SecurityDomainContext;
-import org.wildfly.extension.undertow.UndertowLogger;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
 import org.jboss.security.SecurityConstants;
@@ -56,6 +52,7 @@ import org.jboss.security.identity.RoleGroup;
 import org.jboss.security.mapping.MappingContext;
 import org.jboss.security.mapping.MappingManager;
 import org.jboss.security.mapping.MappingType;
+import org.wildfly.extension.undertow.UndertowLogger;
 
 /**
  * @author Stuart Douglas
@@ -65,18 +62,16 @@ public class JAASIdentityManagerImpl implements IdentityManager {
 
     private final SecurityDomainContext securityDomainContext;
     private final Map<String, Set<String>> principalVersusRolesMap;
-    private final CompositeThreadSetupAction threadSetupAction;
 
-    public JAASIdentityManagerImpl(final SecurityDomainContext securityDomainContext, final Map<String, Set<String>> principalVersusRolesMap, CompositeThreadSetupAction threadSetupAction) {
+    public JAASIdentityManagerImpl(final SecurityDomainContext securityDomainContext, final Map<String, Set<String>> principalVersusRolesMap) {
         this.securityDomainContext = securityDomainContext;
         this.principalVersusRolesMap = principalVersusRolesMap;
-        this.threadSetupAction = threadSetupAction;
     }
 
     @Override
     public Account verify(Account account) {
         // This method is called for previously verfified accounts so just accept it for the moment.
-        if(!(account instanceof AccountImpl)) {
+        if (!(account instanceof AccountImpl)) {
             UndertowLogger.ROOT_LOGGER.tracef("Account is not an AccountImpl", account);
             return null;
         }
@@ -86,32 +81,23 @@ public class JAASIdentityManagerImpl implements IdentityManager {
     @Override
     public Account verify(String id, Credential credential) {
         Account account = getAccount(id);
-        ThreadSetupAction.Handle handle = threadSetupAction.setup(null);
-        try{
-            final char[] password = ((PasswordCredential) credential).getPassword();
-            // The original array may be cleared, this integration relies on it being cached for use later.
-            final char[] duplicate = Arrays.copyOf(password, password.length);
-            return verifyCredential(account, duplicate);
-        }finally {
-            handle.tearDown();
-        }
+        final char[] password = ((PasswordCredential) credential).getPassword();
+        // The original array may be cleared, this integration relies on it being cached for use later.
+        final char[] duplicate = Arrays.copyOf(password, password.length);
+        return verifyCredential(account, duplicate);
+
     }
 
     @Override
     public Account verify(Credential credential) {
-        ThreadSetupAction.Handle handle = threadSetupAction.setup(null);
-        try{
-            if (credential instanceof X509CertificateCredential) {
-                X509CertificateCredential certCredential = (X509CertificateCredential) credential;
-                X509Certificate certificate = certCredential.getCertificate();
-                Account account = getAccount(certificate.getSubjectDN().getName());
+        if (credential instanceof X509CertificateCredential) {
+            X509CertificateCredential certCredential = (X509CertificateCredential) credential;
+            X509Certificate certificate = certCredential.getCertificate();
+            Account account = getAccount(certificate.getSubjectDN().getName());
 
-                return verifyCredential(account, certificate);
-            }
-            throw new IllegalArgumentException("Parameter must be a X509CertificateCredential");
-        }finally {
-            handle.tearDown();
+            return verifyCredential(account, certificate);
         }
+        throw new IllegalArgumentException("Parameter must be a X509CertificateCredential");
     }
 
     @Override
