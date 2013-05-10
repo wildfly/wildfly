@@ -51,7 +51,7 @@
         </replacement>
     </supplement>
     <socket-binding name="http" port="${jboss.http.port:8080}"/>
-    <socket-binding name="https" port="${jboss.http.port:8443}"/>
+    <socket-binding name="https" port="${jboss.https.port:8443}"/>
     <socket-binding name="ajp" port="${jboss.ajp.port:8009}"/>
 </config>
 
