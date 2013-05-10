@@ -240,7 +240,8 @@ public abstract class AttributeDefinition {
 
     /**
      * Finds a value in the given {@code model} whose key matches this attribute's {@link #getName() name},
-     * resolves it and validates it using this attribute's {@link #getValidator() validator}. If the value is
+     * uses the given {@code context} to {@link OperationContext#resolveExpressions(org.jboss.dmr.ModelNode) resolve}
+     * it and validates it using this attribute's {@link #getValidator() validator}. If the value is
      * undefined and a {@link #getDefaultValue() default value} is available, the default value is used.
      *
      * @param context the operation context
@@ -259,11 +260,62 @@ public abstract class AttributeDefinition {
         }, model);
     }
 
+    /**
+     * Finds a value in the given {@code model} whose key matches this attribute's {@link #getName() name},
+     * uses the given {@code resolver} to {@link ExpressionResolver#resolveExpressions(org.jboss.dmr.ModelNode)} resolve}
+     * it and validates it using this attribute's {@link #getValidator() validator}. If the value is
+     * undefined and a {@link #getDefaultValue() default value} is available, the default value is used.
+     *
+     * @param resolver the expression resolver
+     * @param model model node of type {@link ModelType#OBJECT}, typically representing a model resource
+     *
+     * @return the resolved value, possibly the default value if the model does not have a defined value matching
+     *              this attribute's name
+     * @throws OperationFailedException if the value is not valid
+     */
     public ModelNode resolveModelAttribute(final ExpressionResolver resolver, final ModelNode model) throws OperationFailedException {
         final ModelNode node = new ModelNode();
         if(model.has(name)) {
             node.set(model.get(name));
         }
+        return resolveValue(resolver, node);
+    }
+
+    /**
+     * Takes the given {@code value}, resolves it using the given {@code context}
+     * and validates it using this attribute's {@link #getValidator() validator}. If the value is
+     * undefined and a {@link #getDefaultValue() default value} is available, the default value is used.
+     *
+     * @param context the context to use to {@link OperationContext#resolveExpressions(org.jboss.dmr.ModelNode) resolve} the value
+     * @param value a node that is expected to be a valid value for an attribute defined by this definition
+     *
+     * @return the resolved value, possibly the default value if {@code value} is not defined
+     *
+     * @throws OperationFailedException if the value is not valid
+     */
+    public ModelNode resolveValue(final OperationContext context, final ModelNode value) throws OperationFailedException {
+        return resolveValue(new ExpressionResolver() {
+            @Override
+            public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
+                return context.resolveExpressions(node);
+            }
+        }, value);
+    }
+
+    /**
+     * Takes the given {@code value}, resolves it using the given {@code resolver}
+     * and validates it using this attribute's {@link #getValidator() validator}. If the value is
+     * undefined and a {@link #getDefaultValue() default value} is available, the default value is used.
+     *
+     * @param resolver the expression resolver
+     * @param value a node that is expected to be a valid value for an attribute defined by this definition
+     *
+     * @return the resolved value, possibly the default value if {@code value} is not defined
+     *
+     * @throws OperationFailedException if the value is not valid
+     */
+    public ModelNode resolveValue(final ExpressionResolver resolver, final ModelNode value) throws OperationFailedException {
+        final ModelNode node = value.clone();
         if (!node.isDefined() && defaultValue.isDefined()) {
             node.set(defaultValue);
         }
