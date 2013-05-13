@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.remote.protocol.versionone;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.ee.component.Component;
@@ -38,7 +39,6 @@ import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.MessageOutputStream;
 import org.xnio.IoUtils;
 
@@ -61,11 +61,11 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
     }
 
     @Override
-    public void processMessage(ChannelAssociation channelAssociation, MessageInputStream messageInputStream) throws IOException {
-        if (messageInputStream == null) {
+    public void processMessage(ChannelAssociation channelAssociation, InputStream inputStream) throws IOException {
+        if (inputStream == null) {
             throw EjbMessages.MESSAGES.messageInputStreamCannotBeNull();
         }
-        final DataInputStream dataInputStream = new DataInputStream(messageInputStream);
+        final DataInputStream dataInputStream = new DataInputStream(inputStream);
         // read invocation id
         final short invocationId = dataInputStream.readShort();
         final String appName = dataInputStream.readUTF();

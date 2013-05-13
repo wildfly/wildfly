@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.remote.protocol.versiontwo;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 
 import javax.transaction.xa.Xid;
@@ -40,7 +41,6 @@ import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.MessageOutputStream;
 import org.xnio.IoUtils;
 
@@ -67,8 +67,8 @@ class TransactionRecoverMessageHandler extends AbstractMessageHandler {
     }
 
     @Override
-    public void processMessage(ChannelAssociation channelAssociation, MessageInputStream messageInputStream) throws IOException {
-        final DataInputStream input = new DataInputStream(messageInputStream);
+    public void processMessage(ChannelAssociation channelAssociation, InputStream inputStream) throws IOException {
+        final DataInputStream input = new DataInputStream(inputStream);
         // read the invocation id
         final short invocationId = input.readShort();
         final String txParentNodeName = input.readUTF();
