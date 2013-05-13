@@ -70,7 +70,7 @@ public class WebAccessLogDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.PREFIX, ModelType.STRING, true)
                     .setXmlName(Constants.PREFIX)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(new ModelNode("access_log."))
                     .setValidator(new StringLengthValidator(1, true))
                     .build();
 
