@@ -69,9 +69,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAT
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup(ClientCompatibilityUnitTestCase.ClientCompatibilityUnitTestCaseServerSetup.class)
+//@ServerSetup(ClientCompatibilityUnitTestCase.ClientCompatibilityUnitTestCaseServerSetup.class)
 public class ClientCompatibilityUnitTestCase {
-
+    /* TODO: re-enable when the native interface is removed
     static class ClientCompatibilityUnitTestCaseServerSetup implements ServerSetupTask {
 
         @Override
@@ -100,6 +100,7 @@ public class ClientCompatibilityUnitTestCase {
                     .append(MANAGEMENT_INTERFACE, NATIVE_INTERFACE).toModelNode();
         }
     }
+    */
 
     @Deployment
     public static final Archive fakeDeployment() {

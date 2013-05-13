@@ -73,8 +73,8 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>wildflydomain-management</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-domain-management</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
