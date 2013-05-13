@@ -22,6 +22,11 @@
 
 package org.jboss.as.ejb3.remote.protocol.versiontwo;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.clustering.registry.RegistryCollector;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
@@ -31,9 +36,7 @@ import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
 import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.marshalling.MarshallerFactory;
-
-import java.util.List;
-import java.util.concurrent.ExecutorService;
+import org.jboss.remoting3.Channel;
 
 /**
  * @author Jaikiran Pai
@@ -41,6 +44,7 @@ import java.util.concurrent.ExecutorService;
 public class VersionTwoProtocolChannelReceiver extends VersionOneProtocolChannelReceiver {
 
     private static final byte HEADER_TX_RECOVER_MESSAGE = 0x19;
+    private static final byte HEADER_COMPRESSED_MESSAGE = 0x1B;
 
     public VersionTwoProtocolChannelReceiver(final ChannelAssociation channelAssociation, final DeploymentRepository deploymentRepository,
                                              final EJBRemoteTransactionsRepository transactionsRepository, final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector,
@@ -54,8 +58,16 @@ public class VersionTwoProtocolChannelReceiver extends VersionOneProtocolChannel
         switch (header) {
             case HEADER_TX_RECOVER_MESSAGE:
                 return new TransactionRecoverMessageHandler(this.transactionsRepository, this.marshallerFactory, this.executorService);
+            case HEADER_COMPRESSED_MESSAGE:
+                return new CompressedMessageRequestHandler(this);
             default:
                 return super.getMessageHandler(header);
         }
+    }
+
+    // Overridden to make this method visible to message handlers in this package
+    @Override
+    protected void processMessage(Channel channel, InputStream inputStream) throws IOException {
+        super.processMessage(channel, inputStream);
     }
 }

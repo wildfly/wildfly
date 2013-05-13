@@ -26,10 +26,10 @@ import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.remote.RemoteAsyncInvocationCancelStatusService;
 import org.jboss.as.ejb3.remote.protocol.AbstractMessageHandler;
 import org.jboss.logging.Logger;
-import org.jboss.remoting3.MessageInputStream;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Handles a message corresponding to a invocation cancellation request
@@ -47,8 +47,8 @@ class InvocationCancellationMessageHandler extends AbstractMessageHandler {
     }
 
     @Override
-    public void processMessage(ChannelAssociation channelAssociation, MessageInputStream messageInputStream) throws IOException {
-        final DataInputStream input = new DataInputStream(messageInputStream);
+    public void processMessage(ChannelAssociation channelAssociation, InputStream inputStream) throws IOException {
+        final DataInputStream input = new DataInputStream(inputStream);
         // read the id of the invocation which needs to be cancelled
         final short invocationToCancel = input.readShort();
         // get the cancellation flag (if any) for the invocation id
