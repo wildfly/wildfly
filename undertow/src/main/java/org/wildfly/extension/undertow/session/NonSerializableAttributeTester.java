@@ -40,7 +40,7 @@ import javax.servlet.http.HttpSessionBindingEvent;
  * Diagnostic tool to help identify when non-serializable objects are placed in a web session. To use, place this class on the
  * webapp's classpath and add the following to <code>web.xml</code>:
  * <p>
- * <code><listener><listener-class>org.jboss.as.undertow.session.NonSerializableAttributeTester</listener-class></listener></code>
+ * <code><listener><listener-class>org.wildfly.extension.undertow.session.NonSerializableAttributeTester</listener-class></listener></code>
  * </p>
  *
  * @author <a href="brian.stansberry@jboss.com">Brian Stansberry</a>
