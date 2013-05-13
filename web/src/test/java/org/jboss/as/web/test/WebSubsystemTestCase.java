@@ -39,6 +39,7 @@ import static org.jboss.as.web.Constants.ACCESS_LOG;
 import static org.jboss.as.web.Constants.CONFIGURATION;
 import static org.jboss.as.web.Constants.CONNECTOR;
 import static org.jboss.as.web.Constants.DIRECTORY;
+import static org.jboss.as.web.Constants.PREFIX;
 import static org.jboss.as.web.Constants.REDIRECT_PORT;
 import static org.jboss.as.web.Constants.SETTING;
 import static org.jboss.as.web.Constants.SSL;
@@ -55,6 +56,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -65,6 +67,8 @@ import org.jboss.as.web.Constants;
 import org.jboss.as.web.WebExtension;
 import org.jboss.as.web.WebMessages;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -251,11 +255,10 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue(mainServices.isSuccessfulBoot());
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        checkSubsystemModelTransformation(mainServices, modelVersion);
-
+        checkSubsystemModelTransformation(mainServices, modelVersion, AccessLogPrefixFixer.INSTANCE);
 
         ModelNode mainModel = mainServices.readWholeModel().get(SUBSYSTEM, SUBSYSTEM_NAME);
-        ModelNode legacyModel = legacyServices.readWholeModel().get(SUBSYSTEM, SUBSYSTEM_NAME);
+        ModelNode legacyModel = AccessLogPrefixFixer.INSTANCE.fixModel(legacyServices.readWholeModel().get(SUBSYSTEM, SUBSYSTEM_NAME));
 
         //Now do some checks to make sure that the actual data is correct in the transformed model
         ModelNode sslConfig = mainModel.get(Constants.CONNECTOR, "https", Constants.CONFIGURATION, Constants.SSL);
@@ -461,6 +464,27 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         return FailedOperationTransformationConfig.ChainedConfig.createBuilder(allAttributes)
                 .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(rejectedExpression))
                 .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(newAttributes)).build();
+    }
+
+    private static class AccessLogPrefixFixer implements ModelFixer {
+
+        private static final ModelFixer INSTANCE = new AccessLogPrefixFixer();
+
+        @Override
+        public ModelNode fixModel(ModelNode modelNode) {
+            if (modelNode.hasDefined(VIRTUAL_SERVER)) {
+                for (Property property : modelNode.get(VIRTUAL_SERVER).asPropertyList()) {
+                    ModelNode virtualServer = property.getValue();
+                    if (virtualServer.hasDefined(ACCESS_LOG)) {
+                        ModelNode prefix = virtualServer.get(ACCESS_LOG, CONFIGURATION, PREFIX);
+                        if (prefix.getType() == ModelType.BOOLEAN) {
+                            modelNode.get(VIRTUAL_SERVER, property.getName(), ACCESS_LOG, CONFIGURATION, PREFIX).set("access_log.");
+                        }
+                    }
+                }
+            }
+            return modelNode;
+        }
     }
 }
 
