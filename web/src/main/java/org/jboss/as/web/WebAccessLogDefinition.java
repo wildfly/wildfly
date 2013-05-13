@@ -65,7 +65,8 @@ public class WebAccessLogDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.PREFIX, ModelType.STRING, true)
                     .setXmlName(Constants.PREFIX)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode("access_log."))
+                    //WFLY-1333: Should be: .setDefaultValue(new ModelNode("access_log."))
+                    .setDefaultValue(new ModelNode(false))
                     .setValidator(new StringLengthValidator(1, true))
                     .build();
 
