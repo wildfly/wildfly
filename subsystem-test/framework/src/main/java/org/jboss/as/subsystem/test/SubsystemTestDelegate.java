@@ -711,11 +711,13 @@ final class SubsystemTestDelegate {
 
             classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.subsystem.bridge.shared.*");
 
-            classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-subsystem-test-framework:" + ModelTestControllerVersion.CurrentVersion.VERSION);
-            classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-model-test:" + ModelTestControllerVersion.CurrentVersion.VERSION);
+            classLoaderBuilder.addMavenResourceURL("org.wildfly:wildfly-subsystem-test-framework:" + ModelTestControllerVersion.CurrentVersion.VERSION);
+            classLoaderBuilder.addMavenResourceURL("org.wildfly:wildfly-model-test:" + ModelTestControllerVersion.CurrentVersion.VERSION);
 
             if (testControllerVersion != ModelTestControllerVersion.MASTER) {
-                classLoaderBuilder.addRecursiveMavenResourceURL("org.jboss.as:jboss-as-server:" + testControllerVersion.getMavenGavVersion());
+                String groupId = testControllerVersion.getMavenGavVersion().startsWith("7.") ? "org.jboss.as" : "org.wildfly";
+                String serverArtifactId = testControllerVersion.getMavenGavVersion().startsWith("7.") ? "jboss-as-server" : "wildfly-server";
+                classLoaderBuilder.addRecursiveMavenResourceURL(groupId + ":" + serverArtifactId + ":" + testControllerVersion.getMavenGavVersion());
 
                 //TODO Even with this there are some workarounds needed in JGroupsSubsystemTransformerTestCase, InfinispanSubsystemTransformersTestCase and LoggingSubsystemTestCase
                 //Don't load modules from the scoped classloader to avoid some funky stuff going on when initializing the JAXP redirect
@@ -723,7 +725,7 @@ final class SubsystemTestDelegate {
                 classLoaderBuilder.addParentFirstClassPattern("__redirected.*");
                 classLoaderBuilder.addParentFirstClassPattern("org.jboss.modules.*");
 
-                classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-subsystem-test-controller-" + testControllerVersion.getTestControllerVersion() + ":" + ModelTestControllerVersion.CurrentVersion.VERSION);
+                classLoaderBuilder.addMavenResourceURL("org.wildfly:wildfly-subsystem-test-controller-" + testControllerVersion.getTestControllerVersion() + ":" + ModelTestControllerVersion.CurrentVersion.VERSION);
             }
             ClassLoader legacyCl = classLoaderBuilder.build();
 
