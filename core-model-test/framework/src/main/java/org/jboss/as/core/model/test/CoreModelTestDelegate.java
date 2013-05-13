@@ -552,12 +552,15 @@ public class CoreModelTestDelegate {
 
             classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.core.model.bridge.shared.*");
 
-            classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-core-model-test-framework:" + ModelTestControllerVersion.CurrentVersion.VERSION);
-            classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-model-test:" + ModelTestControllerVersion.CurrentVersion.VERSION);
+            classLoaderBuilder.addMavenResourceURL("org.wildfly:wildfly-core-model-test-framework:" + ModelTestControllerVersion.CurrentVersion.VERSION);
+            classLoaderBuilder.addMavenResourceURL("org.wildfly:wildfly-model-test:" + ModelTestControllerVersion.CurrentVersion.VERSION);
 
             if (testControllerVersion != ModelTestControllerVersion.MASTER) {
-                classLoaderBuilder.addRecursiveMavenResourceURL("org.jboss.as:jboss-as-host-controller:" + testControllerVersion.getMavenGavVersion());
-                classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-core-model-test-controller-" + testControllerVersion.getTestControllerVersion() + ":" + ModelTestControllerVersion.CurrentVersion.VERSION);
+                String groupId = testControllerVersion.getMavenGavVersion().startsWith("7.") ? "org.jboss.as" : "org.wildfly";
+                String hostControllerArtifactId = testControllerVersion.getMavenGavVersion().startsWith("7.") ? "jboss-as-host-controller" : "wildfly-host-controller";
+
+                classLoaderBuilder.addRecursiveMavenResourceURL(groupId + ":" + hostControllerArtifactId + ":" + testControllerVersion.getMavenGavVersion());
+                classLoaderBuilder.addMavenResourceURL("org.wildfly:wildfly-core-model-test-controller-" + testControllerVersion.getTestControllerVersion() + ":" + ModelTestControllerVersion.CurrentVersion.VERSION);
             }
             ClassLoader legacyCl = classLoaderBuilder.build();
 
