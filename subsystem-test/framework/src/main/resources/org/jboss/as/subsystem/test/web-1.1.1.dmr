@@ -292,7 +292,7 @@
                                 "description" => "Prefix for the log file name.",
                                 "expressions-allowed" => false,
                                 "nillable" => true,
-                                "default" => false,
+                                "default" => "access_log.",
                                 "min-length" => 1L,
                                 "max-length" => 2147483647L
                             },
