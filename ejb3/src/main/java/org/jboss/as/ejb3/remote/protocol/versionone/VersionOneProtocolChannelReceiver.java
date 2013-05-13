@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -143,21 +144,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     @Override
     public void handleMessage(Channel channel, MessageInputStream messageInputStream) {
         try {
-            // read the first byte to see what type of a message it is
-            final int header = messageInputStream.read();
-            if (EjbLogger.ROOT_LOGGER.isTraceEnabled()) {
-                EjbLogger.ROOT_LOGGER.trace("Got message with header 0x" + Integer.toHexString(header) + " on channel " + channel);
-            }
-            final MessageHandler messageHandler = getMessageHandler((byte) header);
-            if (messageHandler == null) {
-                // enroll for next message (whenever it's available)
-                channel.receiveMessage(this);
-                // log a message that the message wasn't identified
-                EjbLogger.ROOT_LOGGER.unsupportedMessageHeader(Integer.toHexString(header), channel);
-                return;
-            }
-            // process the message
-            messageHandler.processMessage(channelAssociation, messageInputStream);
+            this.processMessage(channel, messageInputStream);
             // enroll for next message (whenever it's available)
             channel.receiveMessage(this);
 
@@ -198,6 +185,21 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             default:
                 return null;
         }
+    }
+
+    protected void processMessage(final Channel channel, final InputStream inputStream) throws IOException {
+        // read the first byte to see what type of a message it is
+        final int header = inputStream.read();
+        if (EjbLogger.ROOT_LOGGER.isTraceEnabled()) {
+            EjbLogger.ROOT_LOGGER.trace("Got message with header 0x" + Integer.toHexString(header) + " on channel " + channel);
+        }
+        final MessageHandler messageHandler = getMessageHandler((byte) header);
+        if (messageHandler == null) {
+            EjbLogger.ROOT_LOGGER.unsupportedMessageHeader(Integer.toHexString(header), channel);
+            return;
+        }
+        // let the message handler process the message
+        messageHandler.processMessage(channelAssociation, inputStream);
     }
 
     @Override
