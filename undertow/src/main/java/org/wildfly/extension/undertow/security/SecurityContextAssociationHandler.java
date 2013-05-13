@@ -35,8 +35,8 @@ import javax.security.jacc.PolicyContext;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.servlet.handlers.ServletAttachments;
 import io.undertow.servlet.handlers.ServletChain;
+import io.undertow.servlet.handlers.ServletRequestContext;
 import org.wildfly.extension.undertow.UndertowLogger;
 import org.jboss.security.RunAsIdentity;
 import org.jboss.security.SecurityContext;
@@ -61,7 +61,7 @@ public class SecurityContextAssociationHandler implements HttpHandler {
         String identity = null;
         try {
             SecurityActions.setSecurityContextOnAssociation(sc);
-            ServletChain servlet = exchange.getAttachment(ServletAttachments.ATTACHMENT_KEY).getCurrentServlet();
+            ServletChain servlet = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY).getCurrentServlet();
             identity = servlet.getManagedServlet().getServletInfo().getRunAs();
             RunAsIdentity runAsIdentity = null;
             if (identity != null) {

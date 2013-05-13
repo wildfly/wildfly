@@ -32,7 +32,7 @@ import javax.servlet.http.HttpSession;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.servlet.handlers.ServletAttachments;
+import io.undertow.servlet.handlers.ServletRequestContext;
 import io.undertow.servlet.spec.HttpServletRequestImpl;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.logging.Logger;
@@ -86,10 +86,10 @@ public class JvmRouteHandler implements HttpHandler {
     }
 
     public void checkJvmRoute(final HttpServerExchange exchange) throws IOException, ServletException {
-        final ServletAttachments servletAttachments = exchange.getAttachment(ServletAttachments.ATTACHMENT_KEY);
-        final HttpServletRequestImpl request = HttpServletRequestImpl.getRequestImpl(servletAttachments.getServletRequest());
+        final ServletRequestContext requestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+        final HttpServletRequestImpl request = requestContext.getOriginalRequest();
         String requestedId = request.getServletContext().getSessionCookieConfig().findSessionId(exchange);
-        HttpServletRequestImpl req = (HttpServletRequestImpl) servletAttachments.getServletRequest();
+        HttpServletRequestImpl req = (HttpServletRequestImpl) requestContext.getServletRequest();
         HttpSession session = req.getSession(false);
         if (session != null) {
             String sessionId = session.getId();
@@ -102,12 +102,12 @@ public class JvmRouteHandler implements HttpHandler {
             if (jvmRoute != null) {
                 // Check if incoming session id has JvmRoute appended. If not, append it.
                 boolean setCookie = !req.isRequestedSessionIdFromURL();
-                handleJvmRoute(requestedId, sessionId, jvmRoute, exchange, setCookie);
+                handleJvmRoute(requestedId, sessionId, jvmRoute, exchange, setCookie, requestContext);
             }
         }
     }
 
-    protected void handleJvmRoute(String requestedId, String sessionId, String jvmRoute, HttpServerExchange exchange, boolean setCookie) throws IOException {
+    protected void handleJvmRoute(String requestedId, String sessionId, String jvmRoute, HttpServerExchange exchange, boolean setCookie, final ServletRequestContext servletRequestContext) throws IOException {
         // The new id we'll give the session if we detect a failover
         String newId = null;
 
@@ -129,7 +129,7 @@ public class JvmRouteHandler implements HttpHandler {
 
         if (newId != null) {
             // Fix the session's id
-            resetSessionId(exchange, sessionId, newId);
+            resetSessionId(exchange, sessionId, newId, servletRequestContext);
         }
 
         // Now we know the session object has a correct id
@@ -150,7 +150,7 @@ public class JvmRouteHandler implements HttpHandler {
 
             /* Change the sessionid cookie if needed */
             if (newId != null) {
-                final HttpServletRequestImpl request = HttpServletRequestImpl.getRequestImpl(exchange.getAttachment(ServletAttachments.ATTACHMENT_KEY).getServletRequest());
+                final HttpServletRequestImpl request = servletRequestContext.getOriginalRequest();
                 request.getServletContext().getSessionCookieConfig().setSessionId(exchange, newId);
             }
         }
@@ -162,8 +162,8 @@ public class JvmRouteHandler implements HttpHandler {
      * @param oldId id of the session to change
      * @param newId new session id the session object should have
      */
-    private void resetSessionId(HttpServerExchange exchange, String oldId, String newId) throws IOException {
-        final HttpServletRequestImpl request = HttpServletRequestImpl.getRequestImpl(exchange.getAttachment(ServletAttachments.ATTACHMENT_KEY).getServletRequest());
+    private void resetSessionId(HttpServerExchange exchange, String oldId, String newId, final ServletRequestContext servletRequestContext) throws IOException {
+        final HttpServletRequestImpl request = servletRequestContext.getOriginalRequest();
         ClusteredSession<? extends OutgoingDistributableSessionData> session = (ClusteredSession<?>) manager.getSession(exchange, request.getServletContext().getSessionCookieConfig());
         // change session id with the new one using local jvmRoute.
         if (session != null) {

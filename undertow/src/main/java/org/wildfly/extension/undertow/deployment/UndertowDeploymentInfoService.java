@@ -54,6 +54,7 @@ import io.undertow.server.session.SessionManager;
 import io.undertow.servlet.api.ClassIntrospecter;
 import io.undertow.servlet.api.ConfidentialPortManager;
 import io.undertow.servlet.api.DefaultServletConfig;
+import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.ErrorPage;
 import io.undertow.servlet.api.FilterInfo;
@@ -67,6 +68,7 @@ import io.undertow.servlet.api.SecurityConstraint;
 import io.undertow.servlet.api.ServletContainerInitializerInfo;
 import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.api.ServletSecurityInfo;
+import io.undertow.servlet.api.SessionManagerFactory;
 import io.undertow.servlet.api.ThreadSetupAction;
 import io.undertow.servlet.api.WebResourceCollection;
 import io.undertow.servlet.util.ConstructorInstanceFactory;
@@ -198,8 +200,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         handleIdentityManager(deploymentInfo);
 
         if(mergedMetaData.getSessionConfig() != null && mergedMetaData.getSessionConfig().getSessionTimeoutSet()) {
-            SessionManager sessionManager = deploymentInfo.getSessionManager();
-            sessionManager.setDefaultSessionTimeout(mergedMetaData.getSessionConfig().getSessionTimeout());
+            deploymentInfo.setDefaultSessionTimeout(mergedMetaData.getSessionConfig().getSessionTimeout() * 60);
         }
         //TODO: the rest of the session config
 
@@ -263,7 +264,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             String instanceId = undertowService.getValue().getInstanceId();
             ClassResolver resolver = ModularClassResolver.getInstance(module.getModuleLoader());
             final DistributableSessionManager<OutgoingDistributableSessionData> sessionManager = new DistributableSessionManager<>(this.distributedCacheManagerFactoryInjectedValue.getValue(), mergedMetaData, new ClassLoaderAwareClassResolver(resolver, module.getClassLoader()), deploymentInfo.getContextPath(), module.getClassLoader(), instanceId);
-            deploymentInfo.setSessionManager(sessionManager);
+            deploymentInfo.setSessionManagerFactory(new ImmediateSessionManagerFactory(sessionManager));
             deploymentInfo.addOuterHandlerChainWrapper(new HandlerWrapper() {
                 @Override
                 public HttpHandler wrap(final HttpHandler handler) {
@@ -1027,6 +1028,23 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
         public UndertowDeploymentInfoService createUndertowDeploymentInfoService() {
             return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, classReflectionIndex, injectionContainer, componentRegistry, scisMetaData, deploymentRoot, securityContextId, attributes, contextPath, setupActions);
+        }
+    }
+
+    /**
+     * TODO: remove this class
+     */
+    private static final class ImmediateSessionManagerFactory implements SessionManagerFactory {
+
+        private final SessionManager sessionManager;
+
+        private ImmediateSessionManagerFactory(final SessionManager sessionManager) {
+            this.sessionManager = sessionManager;
+        }
+
+        @Override
+        public SessionManager createSessionManager(final Deployment deployment) {
+            return sessionManager;
         }
     }
 }
