@@ -23,6 +23,7 @@ package org.jboss.as.osgi.service;
 
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+import static org.jboss.osgi.resolver.XResource.MODULE_IDENTITY_NAMESPACE;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -44,6 +45,7 @@ import org.jboss.osgi.repository.RepositoryResolutionException;
 import org.jboss.osgi.repository.URLResourceBuilderFactory;
 import org.jboss.osgi.repository.spi.AbstractRepository;
 import org.jboss.osgi.resolver.XCapability;
+import org.jboss.osgi.resolver.XResource;
 import org.jboss.osgi.resolver.XResourceBuilder;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -91,7 +93,7 @@ final class ModuleIdentityRepository extends AbstractRepository {
                 }
                 if (contentFile != null) {
                     URL contentURL = contentFile.toURI().toURL();
-                    XResourceBuilder builder = URLResourceBuilderFactory.create(contentURL, null, true);
+                    XResourceBuilder<XResource> builder = URLResourceBuilderFactory.create(contentURL, null, true);
                     XCapability cap = builder.addCapability(MODULE_IDENTITY_NAMESPACE, moduleId);
                     builder.getResource();
                     result.add(cap);

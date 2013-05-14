@@ -72,13 +72,13 @@ import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.jboss.osgi.repository.XRepository;
-import org.jboss.osgi.repository.XRequirementBuilder;
 import org.jboss.osgi.resolver.MavenCoordinates;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
 import org.jboss.osgi.resolver.XBundleRevisionBuilderFactory;
 import org.jboss.osgi.resolver.XCapability;
 import org.jboss.osgi.resolver.XEnvironment;
+import org.jboss.osgi.resolver.XRequirementBuilder;
 import org.jboss.osgi.resolver.XResource;
 import org.jboss.osgi.resolver.XResourceBuilder;
 import org.jboss.osgi.spi.BundleInfo;
@@ -312,7 +312,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
         // not be using this mechanism to provide bundles anyway. Any bundles they ship in the modules repo should
         // be discoverable via the module.getClassLoader().getResource(JarFile.MANIFEST_NAME) mechanism used above
         File homeDir = injectedServerEnvironment.getValue().getHomeDir();
-        final File modulesDir = new File(homeDir + File.separator + "modules");
+        final File modulesDir = new File(homeDir + File.separator + "modules" + File.separator + "system" + File.separator + "layers" + File.separator + "base");
         final ModuleIdentifier identifier = module.getIdentifier();
 
         String identifierPath = identifier.getName().replace('.', File.separatorChar) + File.separator + identifier.getSlot();
