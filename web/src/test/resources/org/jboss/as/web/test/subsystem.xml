@@ -76,7 +76,7 @@
             <virtual-server name="default-host" enable-welcome-root="true">
                <alias name="localhost" />
                <alias name="example.com" />
-               <access-log resolve-hosts="true" prefix="access_log.">
+               <access-log resolve-hosts="true">
                  <directory relative-to="jboss.server.base.dir" path="toto" />
                </access-log>
                <rewrite name="myrewrite" pattern="${prop.pattern:^/helloworld(.*)}" substitution="${prop.substitution:/helloworld/test.jsp}" flags="${prop.flags:L}" />
