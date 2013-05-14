@@ -243,7 +243,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         SecurityDomainContext sdc = securityDomainContextValue.getValue();
         deploymentInfo.setIdentityManager(new JAASIdentityManagerImpl(sdc, mergedMetaData.getPrincipalVersusRolesMap()));
         AuditManager auditManager = sdc.getAuditManager();
-        if (auditManager != null) {
+        if (auditManager != null && !mergedMetaData.isDisableAudit()) {
             deploymentInfo.addNotificationReceiver(new AuditNotificationReceiver(auditManager));
         }
         deploymentInfo.setConfidentialPortManager(getConfidentialPortManager());
