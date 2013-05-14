@@ -47,6 +47,7 @@ import javax.servlet.http.HttpSessionBindingEvent;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionConfig;
+import io.undertow.server.session.SessionListener;
 import org.jboss.as.clustering.web.DistributableSessionMetadata;
 import org.jboss.as.clustering.web.DistributedCacheManager;
 import org.jboss.as.clustering.web.IncomingDistributableSessionData;
@@ -207,7 +208,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     private transient volatile DistributableSessionMetadata metadata = new DistributableSessionMetadata();
 
     /**
-     * The last time {@link #setIsOutdated setIsOutdated(true)} was called or <code>0</code> if
+     * The last time {@link #setIsOutdated(true)} was called or <code>0</code> if
      * <code>setIsOutdated(false)</code> was subsequently called.
      */
     private transient volatile long outdatedTime;
@@ -414,11 +415,6 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
         return manager;
     }
 
-    @Override
-    public void invalidate(final HttpServerExchange exchange) {
-        invalidate();
-    }
-
     /**
      * Set the authenticated Principal that is associated with this Session. This provides an <code>Authenticator</code> with a
      * means to cache a previously authenticated Principal, and avoid potentially expensive <code>Realm.authenticate()</code>
@@ -556,7 +552,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
      *
      * @throws IllegalStateException if this method is called on an invalidated session
      */
-    public void invalidate() {
+    public void invalidate(final HttpServerExchange exchange) {
         if (!isValid())
             throw MESSAGES.expiredSession();
 
@@ -564,16 +560,9 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
         boolean notify = true;
         boolean localCall = true;
         boolean localOnly = false;
-        expire(notify, localCall, localOnly, ClusteredSessionNotificationCause.INVALIDATE);
+        expire(notify, localCall, localOnly, ClusteredSessionNotificationCause.INVALIDATE, exchange);
         // Preemptively relinquish ownership that was acquired in access() - don't wait for endAccess()
         this.relinquishSessionOwnership(false);
-    }
-
-    public void expire() {
-        boolean notify = true;
-        boolean localCall = true;
-        boolean localOnly = false;
-        expire(notify, localCall, localOnly, ClusteredSessionNotificationCause.INVALIDATE);
     }
 
 
@@ -633,13 +622,19 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
         }
 
         // Construct an event with the new value
-        HttpSessionBindingEvent event = null;
+
 
         if (value instanceof HttpSessionActivationListener)
             hasActivationListener = Boolean.TRUE;
 
         // Replace or add this attribute
-        return setAttributeInternal(name, value);
+        Object old = setAttributeInternal(name, value);
+        if(old == null) {
+            manager.getSessionListeners().attributeAdded(this, name, value);
+        } else {
+            manager.getSessionListeners().attributeUpdated(this, name, value, old);
+        }
+        return old;
     }
 
     @Override
@@ -651,7 +646,11 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
         final boolean localCall = true;
         final boolean localOnly = false;
         final boolean notify = true;
-        return removeAttributeInternal(name, localCall, localOnly, notify, ClusteredSessionNotificationCause.MODIFY);
+        Object old =  removeAttributeInternal(name, localCall, localOnly, notify, ClusteredSessionNotificationCause.MODIFY);
+        if(old != null) {
+            manager.getSessionListeners().attributeRemoved(this, name, old);
+        }
+        return old;
     }
 
     // ---------------------------------------------------- DistributableSession
@@ -659,7 +658,6 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     /**
      * Gets the session id with any appended jvmRoute info removed.
      *
-     * @see #getUseJK()
      */
     public String getRealId() {
         return realId;
@@ -873,10 +871,13 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     /**
      * Inform any HttpSessionListener of the creation of this session
      */
-    public void tellNew(ClusteredSessionNotificationCause cause) {
+    public void tellNew(ClusteredSessionNotificationCause cause, final HttpServerExchange exchange) {
         // Notify interested session event listeners
         //fireSessionEvent(Session.SESSION_CREATED_EVENT, null);
 
+        if(cause == ClusteredSessionNotificationCause.CREATE) {
+            manager.getSessionListeners().sessionCreated(this, exchange);
+        }
         //TODO: notifications
     }
 
@@ -907,7 +908,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
                     boolean notify = true;
                     boolean localCall = true;
                     boolean localOnly = true;
-                    expire(notify, localCall, localOnly, ClusteredSessionNotificationCause.TIMEOUT);
+                    expire(notify, localCall, localOnly, ClusteredSessionNotificationCause.TIMEOUT, null);
                 } else {
                     return false;
                 }
@@ -935,7 +936,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
      *                  <code>true</code>.
      * @param cause     the cause of the expiration
      */
-    public void expire(boolean notify, boolean localCall, boolean localOnly, ClusteredSessionNotificationCause cause) {
+    public void expire(boolean notify, boolean localCall, boolean localOnly, ClusteredSessionNotificationCause cause, final HttpServerExchange exchange) {
         if (log.isTraceEnabled()) {
             log.tracef("The session has expired with id: %s  -- is expiration local? %s", id, localOnly);
         }
@@ -970,7 +971,9 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
             }
 
             try {
-                //TODO: listeners
+                if(notify) {
+                    manager.getSessionListeners().sessionDestroyed(this, exchange, translateReason(cause));
+                }
 
                 if (ACTIVITY_CHECK) {
                     accessCount.set(0);
@@ -1007,6 +1010,16 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
                 }
             }
         }
+    }
+
+    protected SessionListener.SessionDestroyedReason translateReason(final ClusteredSessionNotificationCause cause) {
+        switch (cause) {
+            case TIMEOUT:
+                return SessionListener.SessionDestroyedReason.TIMEOUT;
+            case INVALIDATE:
+                return SessionListener.SessionDestroyedReason.INVALIDATED;
+        }
+        return SessionListener.SessionDestroyedReason.UNDEPLOY;
     }
 
     /**
