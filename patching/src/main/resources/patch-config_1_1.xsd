@@ -1,0 +1,328 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2013, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="urn:jboss:patch-config:1.1"
+           targetNamespace="urn:jboss:patch-config:1.1"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+        >
+
+    <xs:element name="patch-config">
+        <xs:annotation>
+            <xs:documentation>
+                Patch description
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1"/>
+                <xs:choice>
+                    <xs:element name="upgrade" type="upgradeType" maxOccurs="1"/>
+                    <xs:element name="no-upgrade" type="no-upgradeType" maxOccurs="1"/>
+                </xs:choice>
+                <xs:element name="distribution-structure" type="distribution-structureType" minOccurs="0" maxOccurs="1"/>
+                <xs:choice>
+                    <xs:element name="generate-by-diff" type="generate-by-diffType" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="specified-content" type="specified-contentType" minOccurs="0" maxOccurs="1"/>
+                </xs:choice>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        Unique identifier of the patch.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="distribution-structureType">
+        <xs:annotation>
+            <xs:documentation>
+                Provides information about the structure of the distribution being patched and the resulting distribution
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="module-search-paths" type="slotted-content-search-pathType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="bundle-search-paths" type="slotted-content-search-pathType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="ignored-path" type="ignored-pathType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="slotted-content-search-pathsType">
+        <xs:sequence>
+            <xs:element name="standard-search-path" type="slotted-content-search-pathType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="exclude-default" type="slotted-content-search-path-exclusionType" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="slotted-content-search-pathType">
+        <xs:annotation>
+            <xs:documentation>
+                Provides information about the standard path of the root of a search location for module or bundle content
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    A unique name for the search path location, which will be used to identify the search path
+                    in the 'search-path' attribute in elements in the patch.xml file.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="path" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    The path of the search location, relative to the root of the distribution
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="affects" type="affectsType" use="optional" default="both"/>
+    </xs:complexType>
+
+    <xs:complexType name="slotted-content-search-path-exclusionType">
+        <xs:annotation>
+            <xs:documentation>
+                Indicates that the default search location for a bundle or module (i.e. modules/ or bundles/) should
+                not be treated as such in the distribution structure
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="affects" type="affectsType" use="optional" default="both"/>
+    </xs:complexType>
+
+    <xs:simpleType name="affectsType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="updated"/>
+            <xs:enumeration value="original"/>
+            <xs:enumeration value="both"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="ignored-pathType">
+        <xs:annotation>
+            <xs:documentation>
+                Indicates that a given path (and all children thereof) should be ignored when analyzing the
+                distribution structure. The "standalone/configuration" and "domain/configuration" paths are
+                always ignored.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="path" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    The path that should be ignored, relative to the root of the distribution
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="affects" type="affectsType" use="optional" default="both"/>
+    </xs:complexType>
+
+    <xs:complexType name="patchType">
+        <xs:annotation>
+            <xs:documentation>
+                Describes the type of the patch
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="applies-to-version" type="xs:string" minOccurs="1" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>
+                        Identifier of the project or product version to which this patch can be applied.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="cumulative-patchType">
+        <xs:annotation>
+            <xs:documentation>
+                Cumulative patch release, invalidating all previous one-off patches
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="applies-to-version" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Identifier of the project or product version to which this patch applies.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="resulting-version" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Identifier of the project or product version that will be installed once this patch is applied.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="generate-by-diffType">
+        <xs:annotation>
+            <xs:documentation>
+                Indicates the patch should be generated by comparing the contents of two distributions.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="in-runtime-use" type="contentType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="specified-contentType">
+        <xs:annotation>
+            <xs:documentation>
+                Indicates the patch should be generated by using the specifically identified herein.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="layer" type="specified-contentProviderType" minOccurs="1", maxOccurs="1"/>
+            <xs:element name="add-on" type="specified-contentProviderType" minOccurs="1", maxOccurs="1"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="specified-contentProviderType">
+        <xs:annotation>
+            <xs:documentation>
+                Indicates the patch should be generated by using the specifically identified herein.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="modules" type="modulesType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="bundles" type="bundlesType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="misc-files" type="misc-filesType" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="modulesType">
+        <xs:sequence>
+            <xs:element name="added" type="slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="updated" type="slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="removed" type="slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="bundlesType">
+        <xs:complexContent>
+            <xs:extension base="modulesType"/>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="misc-filesType">
+        <xs:sequence>
+            <xs:element name="added" type="added-misc-contentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="updated" type="updated-misc-contentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="removed" type="removed-misc-contentType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="contentType">
+        <xs:annotation>
+            <xs:documentation>
+                A piece of patch content.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="path" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Location of the content within the patch file.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="slotted-contentType">
+        <xs:annotation>
+            <xs:documentation>
+                A piece of patch content with a name and a slot.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="slot" type="xs:string"/>
+        <xs:attribute name="search-path" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Name of the searchable path under which the slotted content is stored. If not set, the
+                    default path for the type of content (e.g. modules/ or bundles/) is assumed
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="misc-contentType">
+        <xs:annotation>
+            <xs:documentation>
+                Miscellaneous content base type.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="contentType">
+                <xs:attribute name="directory" type="xs:boolean" use="optional" default="false">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Whether the content is a directory.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="added-misc-contentType">
+        <xs:annotation>
+            <xs:documentation>
+                Miscellaneous content that the patch adds to the installation.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="misc-contentType"/>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="updated-misc-contentType">
+        <xs:annotation>
+            <xs:documentation>
+                Miscellaneous content in the installation being patched that the patch modifies.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="misc-contentType">
+                <xs:attribute name="in-runtime-use" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Whether the content is expected to be in use by a non-admin-only standalone server or Host Controller.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="removed-misc-contentType">
+        <xs:annotation>
+            <xs:documentation>
+                Miscellaneous content in the installation being patched that the patch removes.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="updated-misc-contentType"/>
+        </xs:complexContent>
+    </xs:complexType>
+    
+</xs:schema>

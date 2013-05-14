@@ -20,71 +20,74 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.metadata;
+package org.jboss.as.patching.metadata.xsd1_1;
 
 import static java.util.Collections.unmodifiableList;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.patching.metadata.Builder;
+import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch.PatchType;
+import org.jboss.as.patching.metadata.xsd1_1.impl.UpgradeCallback;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class PatchBuilder implements Builder {
+public class PatchBuilder1_1 implements UpgradeCallback, Builder {
 
     private String patchId;
     private String description;
     private String resultingVersion;
     private PatchType patchType;
-    private List<String> appliesTo;
-    private final List<ContentModification> modifications = new ArrayList<ContentModification>();
+    private Identity identity;
+    private final List<PatchElement> elements = new ArrayList<PatchElement>();
 
-    public static PatchBuilder create() {
-        return new PatchBuilder();
+    public static PatchBuilder1_1 create() {
+        return new PatchBuilder1_1();
     }
 
-    private PatchBuilder() {
+    private PatchBuilder1_1() {
     }
 
-    public PatchBuilder setPatchId(String patchId) {
+    public PatchBuilder1_1 setPatchId(String patchId) {
         this.patchId = patchId;
         return this;
     }
 
-    public PatchBuilder setDescription(String description) {
+    public PatchBuilder1_1 setDescription(String description) {
         this.description = description;
         return this;
     }
 
-    public PatchBuilder setCumulativeType(String appliesToVersion, String resultingVersion) {
+    @Override
+    public PatchBuilder1_1 setUpgrade(String toVersion) {
         this.patchType = PatchType.CUMULATIVE;
-        this.appliesTo = Collections.singletonList(appliesToVersion);
-        this.resultingVersion = resultingVersion;
-        return this;
-    }
-
-    public PatchBuilder setOneOffType(List<String> appliesTo) {
-        this.patchType = PatchType.ONE_OFF;
-        this.appliesTo = Collections.unmodifiableList(appliesTo);
-        return this;
-    }
-
-    public PatchBuilder setOneOffType(String... appliesTo) {
-        return setOneOffType(Arrays.asList(appliesTo));
-    }
-
-    public PatchBuilder addContentModification(ContentModification modification) {
-        this.modifications.add(modification);
+        this.resultingVersion = toVersion;
         return this;
     }
 
     @Override
-    public Patch build() {
-        return new Patch() {
+    public PatchBuilder1_1 setNoUpgrade() {
+        this.patchType = PatchType.ONE_OFF;
+        return this;
+    }
+
+    public PatchBuilder1_1 setIdentity(Identity identity) {
+        this.identity = identity;
+        return this;
+    }
+
+    public PatchBuilder1_1 addElement(PatchElement element) {
+        this.elements.add(element);
+        return this;
+    }
+
+    @Override
+    public Patch1_1 build() {
+        return new Patch1_1() {
 
             @Override
             public String getResultingVersion() {
@@ -102,8 +105,8 @@ public class PatchBuilder implements Builder {
             }
 
             @Override
-            public List<ContentModification> getModifications() {
-                return unmodifiableList(modifications);
+            public List<PatchElement> getElements() {
+                return unmodifiableList(elements);
             }
 
             @Override
@@ -112,8 +115,26 @@ public class PatchBuilder implements Builder {
             }
 
             @Override
+            public Identity getIdentity() {
+                return identity;
+            }
+
+            @Override
             public List<String> getAppliesTo() {
-                return unmodifiableList(appliesTo);
+                // TODO this is adjusting to the previous api version
+                return Collections.singletonList(identity.getVersion());
+            }
+
+            @Override
+            public List<ContentModification> getModifications() {
+                // TODO this is adjusting to the previous api version
+                final List<ContentModification> modifications = new ArrayList<ContentModification>();
+                for(PatchElement e : elements) {
+                    for(ContentModification modification : e.getModifications()) {
+                        modifications.add(modification);
+                    }
+                }
+                return modifications;
             }
         };
     }
