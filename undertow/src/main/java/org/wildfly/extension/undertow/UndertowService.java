@@ -86,6 +86,10 @@ public class UndertowService implements Service<UndertowService> {
         return virtualHostName(server, virtualHost).append(Constants.LOCATION, locationName);
     }
 
+    public static ServiceName consoleRedirectServiceName(final String server, final String virtualHost) {
+        return virtualHostName(server, virtualHost).append("console", "redirect");
+    }
+
     @Override
     public void start(StartContext context) throws StartException {
         UndertowLogger.ROOT_LOGGER.serverStarting(Version.getVersionString());

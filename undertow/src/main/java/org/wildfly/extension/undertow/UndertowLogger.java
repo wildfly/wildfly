@@ -254,4 +254,8 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 17525, value = "Started http handler %s.")
     void startedHttpHandler(HttpHandler handler);
+
+    @LogMessage(level = WARN)
+    @Message(id = 17526, value = "Could not create redirect URI.")
+    void invalidRedirectURI(@Cause Throwable cause);
 }
