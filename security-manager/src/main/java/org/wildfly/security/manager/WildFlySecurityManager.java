@@ -286,11 +286,9 @@ public final class WildFlySecurityManager extends SecurityManager {
         }
         checking.set(FALSE);
         try {
-            try {
-                return action.run();
-            } catch (Exception e) {
-                throw new PrivilegedActionException(e);
-            }
+            return action.run();
+        } catch (Exception e) {
+            throw new PrivilegedActionException(e);
         } finally {
             checking.set(TRUE);
         }
