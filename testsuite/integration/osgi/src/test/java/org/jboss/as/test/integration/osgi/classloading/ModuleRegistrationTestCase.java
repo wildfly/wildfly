@@ -106,7 +106,7 @@ public class ModuleRegistrationTestCase {
         XIdentityCapability icap = xres.getIdentityCapability();
         assertEquals("deployment.example-module-reg", icap.getSymbolicName());
         assertEquals(Version.emptyVersion, icap.getVersion());
-        assertEquals("unknown", icap.getType());
+        assertEquals(XResource.TYPE_MODULE, icap.getType());
     }
 
     @Test
