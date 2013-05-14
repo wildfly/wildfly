@@ -29,6 +29,19 @@
 </head>
 
 <body>
+
+<script type="text/javascript">
+    function getConsoleAddress(){
+          //var address = location.hostname;
+          var address = "localhost"
+          var http= "http://"
+          var uri = ":9990/console";
+          var temp = http.concat(address);
+          var url = temp.concat(uri);
+          location.href = url;
+    }
+</script>
+
 <div class="wrapper">
     <div class="content">
         <div class="logo">
@@ -38,8 +51,8 @@
 
         <h3>Your WildFly 8 is running.</h3>
 
-        <p><a href="documentation.html">Documentation</a> | <a href="https://docs.jboss.org/author/display/AS72/Quickstarts">Quickstarts</a> | <a href="/console">Administration
-            Console</a> </p>
+        <p><a href="documentation.html">Documentation</a> | <a href="https://docs.jboss.org/author/display/AS72/Quickstarts">Quickstarts</a> | <a href="Javascript:getConsoleAddress()">Administration Console</a> 
+ 	</p>
 
         <p><a href="http://wildfly.org">WildFly Project</a> |
             <a href="https://community.jboss.org/en/wildfly">User Forum</a> |
