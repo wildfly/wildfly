@@ -22,30 +22,24 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="org.jboss.ws.cxf.jbossws-cxf-client">
+<module xmlns="urn:jboss:module:1.1" name="org.jboss.ws.cxf.jbossws-cxf-transports-udp">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
 
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <!-- JAXB API + REF IMPL -->
-        <module name="javax.xml.bind.api" export="true"/>
-        <module name="com.sun.xml.bind" export="true" services="export"/>
-        <module name="javax.xml.ws.api" export="true"/>
-        <module name="javax.jws.api" export="true"/>
-        <!-- WSDL4J API -->
-        <module name="javax.wsdl4j.api" export="true"/>
-        <!-- JBossWS API -->
-        <module name="org.jboss.ws.api" export="true" />
-        <!--  JBossWS JAXWS client -->
-        <module name="org.jboss.ws.jaxws-client" export="true" services="export" />
-        <!--  JBossWS configuration of Apache CXF -->
-        <module name="org.jboss.ws.cxf.jbossws-cxf-factories" services="export" />
-        <!-- Apache CXF APIs only -->
-        <module name="org.apache.cxf" export="true" />
-        <module name="org.jboss.ws.cxf.jbossws-cxf-transports-httpserver" export="true" services="export" />
-        <module name="org.jboss.ws.cxf.jbossws-cxf-transports-udp" export="true" services="export" />
-        <module name="org.jboss.jaxbintros" export="true"/>
+        <module name="javax.annotation.api" />
+        <module name="javax.xml.ws.api" />
+        <module name="org.apache.cxf.impl" services="import">
+          <imports>
+            <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
+            <include path="META-INF/"/>
+          </imports>
+        </module>
     </dependencies>
 </module>

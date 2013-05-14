@@ -572,6 +572,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.apache.cxf.services.ws-discovery</groupId>
+                    <artifactId>cxf-services-ws-discovery-api</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.apache.cxf.xjcplugins</groupId>
                     <artifactId>cxf-xjc-boolean</artifactId>
                 </dependency>
@@ -1774,7 +1779,7 @@
                 <dependency>
                     <groupId>org.jboss.ws.cxf</groupId>
                     <artifactId>jbossws-cxf-resources</artifactId>
-                    <classifier>jboss800</classifier>
+                    <classifier>wildfly800</classifier>
                 </dependency>
 
                 <dependency>
@@ -1785,6 +1790,11 @@
                 <dependency>
                     <groupId>org.jboss.ws.cxf</groupId>
                     <artifactId>jbossws-cxf-transports-httpserver</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.ws.cxf</groupId>
+                    <artifactId>jbossws-cxf-transports-udp</artifactId>
                 </dependency>
 
                 <dependency>
@@ -2172,6 +2182,7 @@
                                         <exclude>org.apache.cxf:cxf-tools-wsdlto-databinding-jaxb</exclude>
                                         <exclude>org.apache.cxf:cxf-tools-wsdlto-frontend-jaxws</exclude>
                                         <exclude>org.apache.cxf.services.sts:cxf-services-sts-core</exclude>
+                                        <exclude>org.apache.cxf.services.ws-discovery:cxf-services-ws-discovery-api</exclude>
                                         <exclude>org.apache.cxf.xjcplugins:cxf-xjc-boolean</exclude>
                                         <exclude>org.apache.cxf.xjcplugins:cxf-xjc-dv</exclude>
                                         <exclude>org.apache.cxf.xjcplugins:cxf-xjc-ts</exclude>
@@ -2333,6 +2344,7 @@
                                         <exclude>org.jboss.ws.cxf:jbossws-cxf-factories</exclude>
                                         <exclude>org.jboss.ws.cxf:jbossws-cxf-server</exclude>
                                         <exclude>org.jboss.ws.cxf:jbossws-cxf-transports-httpserver</exclude>
+                                        <exclude>org.jboss.ws.cxf:jbossws-cxf-transports-udp</exclude>
                                         <exclude>org.jboss.ws:jbossws-common</exclude>
                                         <exclude>org.jboss.ws:jbossws-common-tools</exclude>
                                         <exclude>org.jboss.ws:jbossws-spi</exclude>
