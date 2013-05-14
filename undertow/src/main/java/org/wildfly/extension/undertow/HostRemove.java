@@ -50,6 +50,8 @@ class HostRemove extends AbstractRemoveStepHandler {
         final String serverName = parent.getLastElement().getValue();
         final ServiceName virtualHostServiceName = UndertowService.virtualHostName(serverName, name);
         context.removeService(virtualHostServiceName);
+        final ServiceName consoleRedirectName = UndertowService.consoleRedirectServiceName(serverName, name);
+        context.removeService(consoleRedirectName);
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {

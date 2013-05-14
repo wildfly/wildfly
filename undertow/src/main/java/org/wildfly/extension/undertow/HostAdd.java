@@ -33,11 +33,15 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.server.mgmt.UndertowHttpManagementService;
+import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.web.host.WebHost;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -48,12 +52,7 @@ class HostAdd extends AbstractAddStepHandler {
     static final HostAdd INSTANCE = new HostAdd();
 
     private HostAdd() {
-
-    }
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        HostDefinition.ALIAS.validateAndSet(operation, model);
+        super(HostDefinition.ALIAS);
     }
 
     @Override
@@ -79,8 +78,31 @@ class HostAdd extends AbstractAddStepHandler {
         builder.setInitialMode(ServiceController.Mode.ACTIVE);
 
         final ServiceController<Host> serviceController = builder.install();
+
+        // Setup the web console redirect
+        final ServiceName consoleRedirectName = UndertowService.consoleRedirectServiceName(serverName, name);
+        final ServiceController<ConsoleRedirectService> consoleServiceServiceController;
+        // A standalone server is the only process type with a console redirect
+        if (context.getProcessType() == ProcessType.STANDALONE_SERVER) {
+            final ConsoleRedirectService redirectService = new ConsoleRedirectService();
+            final ServiceBuilder<ConsoleRedirectService> redirectBuilder = context.getServiceTarget().addService(consoleRedirectName, redirectService)
+                    .addDependency(UndertowHttpManagementService.SERVICE_NAME, HttpManagement.class, redirectService.getHttpManagementInjector())
+                    .addDependency(virtualHostServiceName, Host.class, redirectService.getHostInjector())
+                    .setInitialMode(Mode.PASSIVE);
+            consoleServiceServiceController = redirectBuilder.install();
+        } else {
+            // Other process types don't have a console, not depending on the UndertowHttpManagementService should
+            // result in a null dependency in the service and redirect accordingly
+            final ConsoleRedirectService redirectService = new ConsoleRedirectService();
+            final ServiceBuilder<ConsoleRedirectService> redirectBuilder = context.getServiceTarget().addService(consoleRedirectName, redirectService)
+                    .addDependency(virtualHostServiceName, Host.class, redirectService.getHostInjector())
+                    .setInitialMode(Mode.PASSIVE);
+            consoleServiceServiceController = redirectBuilder.install();
+        }
+
         if (newControllers != null) {
             newControllers.add(serviceController);
+            newControllers.add(consoleServiceServiceController);
         }
     }
 }
