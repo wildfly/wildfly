@@ -51,7 +51,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * @author Emanuel Muckenhuber
  */
-class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>, XMLElementWriter<Patch> {
+class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilderFactory>, XMLElementWriter<Patch> {
 
     private static final String PATH_DELIMITER = "/";
 
@@ -265,7 +265,9 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
     }
 
     @Override
-    public void readElement(final XMLExtendedStreamReader reader, final PatchBuilder patch) throws XMLStreamException {
+    public void readElement(final XMLExtendedStreamReader reader, final PatchBuilderFactory factory) throws XMLStreamException {
+        PatchBuilder patch = PatchBuilder.create();
+        factory.setBuilder(patch);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {

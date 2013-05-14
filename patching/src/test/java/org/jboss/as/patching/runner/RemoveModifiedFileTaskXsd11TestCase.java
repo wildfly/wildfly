@@ -22,7 +22,9 @@
 package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.HashUtils.hashFile;
-import static org.jboss.as.patching.metadata.ModificationType.MODIFY;
+import static org.jboss.as.patching.IoUtils.NO_CONTENT;
+import static org.jboss.as.patching.metadata.ModificationType.REMOVE;
+import static org.jboss.as.patching.runner.PatchingAssert.assertFileDoesNotExist;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenApplied;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasNotBeenApplied;
@@ -51,15 +53,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
+public class RemoveModifiedFileTaskXsd11TestCase extends AbstractTaskTestCase {
 
     private PatchingRunnerWrapper runner;
     private File zippedPatch;
     private Patch patch;
-    private ContentModification fileUpdated;
-    private File modifiedFile;
+    private ContentModification fileRemoved;
+    private File removedFile;
     private byte[] expectedModifiedHash;
-    private byte[] updatedHash;
 
 
     @Before
@@ -69,21 +70,20 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
         // with a file in it
         File binDir = mkdir(env.getInstalledImage().getJbossHome(), "bin");
         String fileName = "standalone.sh";
-        modifiedFile = touch(binDir, fileName);
-        dump(modifiedFile, "modified script to run standalone AS7");
-        expectedModifiedHash = hashFile(modifiedFile);
+        removedFile = touch(binDir, fileName);
+        dump(removedFile, "modified script to run standalone AS7");
+        expectedModifiedHash = hashFile(removedFile);
         // let's simulate that the file has been modified by the users by using a hash that is not the file checksum
         byte[] unmodifiedHash = randomString().getBytes();
 
-        // build a one-off patch for the base installation
-        // with 1 updated file
         String patchID = randomString();
         File patchDir = mkdir(tempDir, patchID);
 
         File updatedFile = touch(patchDir, "misc", "bin", fileName);
         dump(updatedFile, "updated script");
-        updatedHash = hashFile(updatedFile);
-        fileUpdated = new ContentModification(new MiscContentItem(fileName, new String[] { "bin" }, updatedHash), unmodifiedHash, MODIFY);
+        // build a one-off patch for the base installation
+        // with 1 removed file
+        fileRemoved = new ContentModification(new MiscContentItem(fileName, new String[] { "bin" }, NO_CONTENT), unmodifiedHash, REMOVE);
 
         PatchBuilder1_1 builder = PatchBuilder1_1.create()
                 .setPatchId(patchID)
@@ -100,7 +100,7 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
         provider.require("patch element 02");
         element.setProvider(provider);
 
-        element.addContentModification(fileUpdated);
+        element.addContentModification(fileRemoved);
 
         patch = builder.build();
 
@@ -116,50 +116,49 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
         runner = null;
         zippedPatch = null;
         patch = null;
-        fileUpdated = null;
-        modifiedFile = null;
+        fileRemoved = null;
+        removedFile = null;
         expectedModifiedHash = null;
-         updatedHash = null;
     }
 
     @Test
-    public void testUpdateModifiedFileWithSTRICT() throws Exception {
+    public void testRemoveModifiedFileWithSTRICT() throws Exception {
         try {
-            runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.STRICT);
+            PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.STRICT);
         } catch (PatchingException e) {
-            assertPatchHasNotBeenApplied(e, patch, fileUpdated.getItem(), env);
+            assertPatchHasNotBeenApplied(e, patch, fileRemoved.getItem(), env);
 
             /// file has not been modified in the AS7 installation
-            assertFileExists(modifiedFile);
-            assertArrayEquals(expectedModifiedHash, hashFile(modifiedFile));
+            assertFileExists(removedFile);
+            assertArrayEquals(expectedModifiedHash, hashFile(removedFile));
         }
+
     }
 
     @Test
-    public void testUpdateModifiedFileWithOVERRIDE_ALL() throws Exception {
+    public void testRemovedModifiedFileWithOVERRIDE_ALL() throws Exception {
         PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.OVERRIDE_ALL);
 
         assertPatchHasBeenApplied(result, patch);
 
-        /// file has been updated in the AS7 installation
+        /// file has been removed from the AS7 installation
         // and it's the new one
-        assertFileExists(modifiedFile);
-        assertArrayEquals(updatedHash, hashFile(modifiedFile));
+        assertFileDoesNotExist(removedFile);
         // the existing file has been backed up
-        File backupFile = assertFileExists(env.getInstalledImage().getPatchHistoryDir(patch.getPatchId()), "misc", "bin", modifiedFile.getName());
+        File backupFile = assertFileExists(env.getInstalledImage().getPatchHistoryDir(patch.getPatchId()), "misc", "bin", removedFile.getName());
         assertArrayEquals(expectedModifiedHash, hashFile(backupFile));
     }
 
     @Test
-    public void testUpdateModifiedFileWithPRESERVE_ALL() throws Exception {
+    public void testRemoveModifiedFileWithPRESERVE_ALL() throws Exception {
         try {
-            runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.PRESERVE_ALL);
+            PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.PRESERVE_ALL);
         } catch (PatchingException e) {
-            assertPatchHasNotBeenApplied(e, patch, fileUpdated.getItem(), env);
+            assertPatchHasNotBeenApplied(e, patch, fileRemoved.getItem(), env);
 
             /// file has not been modified in the AS7 installation
-            assertFileExists(modifiedFile);
-            assertArrayEquals(expectedModifiedHash, hashFile(modifiedFile));
+            assertFileExists(removedFile);
+            assertArrayEquals(expectedModifiedHash, hashFile(removedFile));
         }
     }
 }
