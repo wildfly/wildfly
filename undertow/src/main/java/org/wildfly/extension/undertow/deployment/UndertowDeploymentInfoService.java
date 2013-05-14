@@ -898,16 +898,12 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         }
 
         @Override
-        public <T> InstanceFactory<T> createInstanceFactory(final Class<T> clazz) {
-            try {
-                final ComponentRegistry.ComponentManagedReferenceFactory component = componentRegistry.getComponentsByClass().get(clazz);
-                if (component == null) {
-                    return new ConstructorInstanceFactory<>(clazz.getDeclaredConstructor());
-                } else {
-                    return new ManagedReferenceInstanceFactory<>(component);
-                }
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
+        public <T> InstanceFactory<T> createInstanceFactory(final Class<T> clazz) throws NoSuchMethodException {
+            final ComponentRegistry.ComponentManagedReferenceFactory component = componentRegistry.getComponentsByClass().get(clazz);
+            if (component == null) {
+                return new ConstructorInstanceFactory<>(clazz.getDeclaredConstructor());
+            } else {
+                return new ManagedReferenceInstanceFactory<>(component);
             }
         }
     }
