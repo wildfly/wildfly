@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2012, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<patch xmlns="urn:jboss:patch:1.1" id="patch-01">
+
+    <description>patch-01 description</description>
+    <identity name="eap" version="1.2.3"/>
+    <upgrade to-version="2.3.4"/>
+
+    <element id="element-01">
+        <description>element-01 description</description>
+        <layer name="base" version="1.0.0"/>
+        <upgrade to-version="1.0.1" />
+        
+        <modules>
+            <added name="org.jboss.as.test" slot="prod" hash="1a2b3c4d"/>
+	        <added name="org.jboss.as.test2" slot="prod" hash="1a2b3c4d"/>
+	        <updated name="org.jboss.as.test" hash="1a2a3a4a" new-hash="5a6a7a8a"/>
+            <updated name="org.jboss.as.test3" hash="1b2b3b4b" new-hash="5b6b7b8b"/>
+	        <removed name="org.jboss.as.test" hash="1c2c3c4c"/>
+	        <removed name="org.jboss.as.test4" hash="1d2d3d4d"/>
+        </modules>
+
+	    <bundles>
+            <added name="org.jboss.as.test" slot="prod" hash="1a2b3c4d"/>
+	        <added name="org.jboss.as.test2" slot="prod" hash="1a2b3c4d"/>
+	        <updated name="org.jboss.as.test" hash="1a2a3a4a" new-hash="5a6a7a8a"/>
+	        <updated name="org.jboss.as.test3" hash="1b2b3b4b" new-hash="5b6b7b8b"/>
+	        <removed name="org.jboss.as.test" hash="1c2c3c4c"/>
+	        <removed name="org.jboss.as.test4" hash="1d2d3d4d"/>
+        </bundles>
+
+        <misc-files>
+            <added path="test/file" hash="1a2b3c4d" />
+            <added path="test/file2" hash="5e6f7a" directory="true" />
+            <updated path="test/file" hash="1a2b3c4d" new-hash="2b3c4d5e" />
+            <updated path="test/file3" hash="5e6f7a" new-hash="6e7f8e" directory="true" />
+            <removed path="test/file" hash="1a2b3c4d" in-runtime-use="true" />
+            <removed path="test/file4" hash="5e6f7a" directory="true" />
+        </misc-files>
+    </element>
+</patch>
