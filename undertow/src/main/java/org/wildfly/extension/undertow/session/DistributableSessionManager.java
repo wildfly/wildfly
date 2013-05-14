@@ -51,6 +51,7 @@ import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionIdGenerator;
 import io.undertow.server.session.SessionListener;
+import io.undertow.server.session.SessionListeners;
 import org.jboss.as.clustering.web.BatchingManager;
 import org.jboss.as.clustering.web.ClusteringNotSupportedException;
 import org.jboss.as.clustering.web.DistributableSessionMetadata;
@@ -147,6 +148,8 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     private final ClassLoader classLoader;
 
     private final String jvmRoute;
+
+    private final SessionListeners sessionListeners = new SessionListeners();
 
     private static final Logger log = Logger.getLogger(DistributableSessionManager.class);
 
@@ -419,6 +422,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         this.unloadedSessions.clear();
 
         this.passivatedCount.set(0);
+        sessionListeners.clear();
     }
 
     /**
@@ -579,7 +583,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
             getDistributedCacheManager().sessionCreated(session.getRealId());
 
-            session.tellNew(ClusteredSessionNotificationCause.CREATE);
+            session.tellNew(ClusteredSessionNotificationCause.CREATE, serverExchange);
 
             log.tracef("Created a ClusteredSession with id: %s", sessionId);
 
@@ -613,12 +617,12 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
     @Override
     public void registerSessionListener(final SessionListener listener) {
-
+        sessionListeners.addSessionListener(listener);
     }
 
     @Override
     public void removeSessionListener(final SessionListener listener) {
-
+        sessionListeners.removeSessionListener(listener);
     }
 
     @Override
@@ -688,6 +692,8 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
             String realId = session.getRealId();
             if (realId == null)
                 return;
+
+            sessionListeners.sessionDestroyed(s, null, );
 
             log.tracef("Removing session from store with id: %s", realId);
 
@@ -968,6 +974,10 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         return this.replicationConfig;
     }
 
+    SessionListeners getSessionListeners() {
+        return sessionListeners;
+    }
+
     @Override
     public void notifyRemoteInvalidation(String realId) {
         // Remove the session from our local map
@@ -1002,7 +1012,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                 // Don't track this invalidation is if it were from a request
                 SessionInvalidationTracker.suspend();
 
-                session.expire(notify, localCall, localOnly, ClusteredSessionNotificationCause.INVALIDATE);
+                session.expire(notify, localCall, localOnly, ClusteredSessionNotificationCause.INVALIDATE, null);
             } finally {
                 SessionInvalidationTracker.resume();
 
@@ -1312,7 +1322,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                             if (mustAdd) {
                                 add(session, false); // don't replicate
                                 if (!passivated) {
-                                    session.tellNew(ClusteredSessionNotificationCause.FAILOVER);
+                                    session.tellNew(ClusteredSessionNotificationCause.FAILOVER, null);
                                 }
                             }
                             long elapsed = System.currentTimeMillis() - begin;
