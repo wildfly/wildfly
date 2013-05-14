@@ -447,7 +447,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                     boolean notify = true;
                     boolean localCall = true;
                     boolean localOnly = true;
-                    ses.expire(notify, localCall, localOnly, ClusteredSessionNotificationCause.UNDEPLOY);
+                    ses.expire(notify, localCall, localOnly, ClusteredSessionNotificationCause.UNDEPLOY, null);
                 }
             } catch (Throwable t) {
                 UndertowLogger.WEB_SESSION_LOGGER.errorPassivatingSession(ses.getIdInternal(), t);
@@ -692,8 +692,6 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
             String realId = session.getRealId();
             if (realId == null)
                 return;
-
-            sessionListeners.sessionDestroyed(s, null, );
 
             log.tracef("Removing session from store with id: %s", realId);
 
