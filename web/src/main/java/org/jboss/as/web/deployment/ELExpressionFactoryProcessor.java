@@ -31,7 +31,6 @@ import java.util.Properties;
 import javax.el.BeanELResolver;
 import javax.el.ExpressionFactory;
 
-import org.apache.el.ExpressionFactoryImpl;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -106,7 +105,7 @@ public class ELExpressionFactoryProcessor implements DeploymentUnitProcessor {
         } catch (SecurityException se) {
         }
         try {
-            FactoryFinderCache.addCacheEntry(module.getClassLoader(), FACTORY_ID, ExpressionFactoryImpl.class.getName());
+            FactoryFinderCache.addCacheEntry(module.getClassLoader(), FACTORY_ID, "org.apache.el.ExpressionFactoryImpl");
         } catch (Throwable t) {
             // Ignore, because other EL implementations may not have it
         }
