@@ -28,7 +28,6 @@
         ucast_send_buf_size="640000"
         mcast_recv_buf_size="25000000"
         mcast_send_buf_size="640000"
-        enable_bundling="false"
         max_bundle_size="64000"
         max_bundle_timeout="30"
         ip_ttl="2"
@@ -52,7 +51,6 @@
         send_buf_size="640000"
         max_bundle_size="64000"
         max_bundle_timeout="30"
-        enable_bundling="false"
         use_send_queues="false"
         sock_conn_timeout="300"
 

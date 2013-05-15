@@ -26,6 +26,7 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentMap;
 
+import org.infinispan.util.AnyEquivalence;
 import org.infinispan.util.concurrent.BoundedConcurrentHashMap;
 import org.infinispan.util.concurrent.BoundedConcurrentHashMap.Eviction;
 import org.jboss.security.authentication.JBossCachedAuthenticationManager;
@@ -45,7 +46,7 @@ public class DefaultAuthenticationCacheFactory {
      */
     public ConcurrentMap<Principal, DomainInfo> getCache() {
         ConcurrentMap<Principal, DomainInfo> map = new BoundedConcurrentHashMap<Principal, JBossCachedAuthenticationManager.DomainInfo>(
-                1000, 16, Eviction.LIRS, new AuthenticationCacheEvictionListener()) {
+                1000, 16, Eviction.LIRS, new AuthenticationCacheEvictionListener(), new AnyEquivalence<Principal>(), new AnyEquivalence<DomainInfo>()) {
 
             private static final long serialVersionUID = 1459490003748298538L;
 

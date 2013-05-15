@@ -72,7 +72,6 @@ public class DistributedCacheResourceDefinition extends SharedCacheResourceDefin
                     .setValidator(new IntRangeValidator(1, true, true))
                     .build();
 
-    @SuppressWarnings("deprecation")
     @Deprecated
     static final SimpleAttributeDefinition VIRTUAL_NODES =
             new SimpleAttributeDefinitionBuilder(ModelKeys.VIRTUAL_NODES, ModelType.INT, true)
