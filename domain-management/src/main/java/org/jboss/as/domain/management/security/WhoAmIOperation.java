@@ -65,6 +65,7 @@ public class WhoAmIOperation implements OperationStepHandler {
             .build();
     public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(WHOAMI, ControllerResolver.getResolver("core", "management"))
             .setParameters(VERBOSE)
+            .setReadOnly()
             .build();
 
     /**
