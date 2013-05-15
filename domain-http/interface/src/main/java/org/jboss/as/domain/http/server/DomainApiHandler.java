@@ -21,8 +21,10 @@
 */
 package org.jboss.as.domain.http.server;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
@@ -30,6 +32,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.domain.http.server.DomainUtil.writeResponse;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
@@ -50,8 +54,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
 import org.xnio.IoUtils;
 import org.xnio.streams.ChannelInputStream;
@@ -88,16 +94,16 @@ class DomainApiHandler implements HttpHandler {
         }
     }
 
-    private final ModelControllerClient modelController;
+    private final ModelController modelController;
 
-    DomainApiHandler(ModelControllerClient modelController) {
+    DomainApiHandler(ModelController modelController) {
         this.modelController = modelController;
     }
 
     @Override
-    public void handleRequest(HttpServerExchange exchange) {
+    public void handleRequest(final HttpServerExchange exchange) {
 
-        ModelNode dmr;
+        final ModelNode dmr;
         ModelNode response;
 
         HeaderMap requestHeaders = exchange.getRequestHeaders();
@@ -113,22 +119,39 @@ class DomainApiHandler implements HttpHandler {
             return;
         }
 
+        final ResponseCallback callback = new ResponseCallback() {
+            @Override
+            void doSendResponse(final ModelNode response) {
+                if (response.hasDefined(OUTCOME) && FAILED.equals(response.get(OUTCOME).asString())) {
+                    Common.sendError(exchange, get, encode, response.get(FAILURE_DESCRIPTION).asString());
+                    return;
+                }
+                final boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();
+                writeResponse(exchange, get, pretty, response, 200, encode);
+            }
+        };
+
+        final boolean sendPreparedResponse = sendPreparedResponse(dmr);
+        final ModelController.OperationTransactionControl control = sendPreparedResponse ? new ModelController.OperationTransactionControl() {
+            @Override
+            public void operationPrepared(final ModelController.OperationTransaction transaction, final ModelNode result) {
+                transaction.commit();
+                // Fix prepared result
+                result.get(OUTCOME).set(SUCCESS);
+                result.get(RESULT);
+                callback.sendResponse(result);
+            }
+        } : ModelController.OperationTransactionControl.COMMIT;
+
         try {
-            response = modelController.execute(new OperationBuilder(dmr).build());
+            response = modelController.execute(dmr, OperationMessageHandler.logging, control, new OperationBuilder(dmr).build());
         } catch (Throwable t) {
             ROOT_LOGGER.modelRequestError(t);
             Common.sendError(exchange, get, encode, t.getLocalizedMessage());
             return;
         }
 
-        if (response.hasDefined(OUTCOME) && FAILED.equals(response.get(OUTCOME).asString())) {
-            Common.sendError(exchange, get, encode, response.get(FAILURE_DESCRIPTION).asString());
-            return;
-        }
-
-        boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();
-
-        writeResponse(exchange, get, pretty, response, 200, encode);
+        callback.sendResponse(response);
     }
 
     private ModelNode convertPostRequest(HttpServerExchange exchange, boolean encode) throws IOException {
@@ -201,5 +224,46 @@ class DomainApiHandler implements HttpHandler {
         }
     }
 
+    /**
+     * Determine whether the prepared response should be sent, before the operation completed. This is needed in order
+     * that operations like :reload() can be executed without causing communication failures.
+     *
+     * @param operation the operation to be executed
+     * @return {@code true} if the prepared result should be sent, {@code false} otherwise
+     */
+    private boolean sendPreparedResponse(final ModelNode operation) {
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final String op = operation.get(OP).asString();
+        final int size = address.size();
+        if (size == 0) {
+            if (op.equals("reload")) {
+                return true;
+            } else if (op.equals(COMPOSITE)) {
+                // TODO
+                return false;
+            } else {
+                return false;
+            }
+        } else if (size == 1) {
+            if (address.getLastElement().getKey().equals(HOST)) {
+                return op.equals("reload");
+            }
+        }
+        return false;
+    }
+
+    private abstract static class ResponseCallback {
+
+        private volatile boolean complete;
+        void sendResponse(final ModelNode response) {
+            if (complete) {
+                return;
+            }
+            complete = true;
+            doSendResponse(response);
+        }
+
+        abstract void doSendResponse(ModelNode response);
+    }
 
 }

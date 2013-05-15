@@ -22,12 +22,9 @@
 
 package org.jboss.as.host.controller.operations;
 
-import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.host.controller.HostControllerLogger.AS_ROOT_LOGGER;
 
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -49,14 +46,12 @@ import org.jboss.as.remoting.RemotingHttpUpgradeService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.mgmt.UndertowHttpManagementService;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
-import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.threads.JBossThreadFactory;
 import org.xnio.OptionMap;
 
 /**
@@ -130,9 +125,6 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
 
         AS_ROOT_LOGGER.creatingHttpManagementService(interfaceName, port, securePort);
 
-        final ThreadFactory httpMgmtThreads = new JBossThreadFactory(new ThreadGroup("HttpManagementService-threads"),
-                Boolean.FALSE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
-
         ConsoleMode consoleMode = ConsoleMode.CONSOLE;
         if (runningMode == RunningMode.ADMIN_ONLY) {
             consoleMode = ConsoleMode.ADMIN_ONLY;
@@ -148,8 +140,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
                 .addDependency(DomainModelControllerService.SERVICE_NAME, ModelController.class, service.getModelControllerInjector())
                 .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, service.getControlledProcessStateServiceInjector())
                 .addInjection(service.getPortInjector(), port)
-                .addInjection(service.getSecurePortInjector(), securePort)
-                .addInjection(service.getExecutorServiceInjector(), Executors.newCachedThreadPool(httpMgmtThreads));
+                .addInjection(service.getSecurePortInjector(), securePort);
 
         ServiceName realmSvcName = null;
         if (securityRealm != null) {

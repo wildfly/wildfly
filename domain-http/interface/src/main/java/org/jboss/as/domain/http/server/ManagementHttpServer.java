@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 
 import javax.net.ssl.SSLContext;
 
@@ -55,7 +54,7 @@ import io.undertow.server.handlers.cache.CacheHandler;
 import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.server.handlers.error.SimpleErrorPageHandler;
 import org.jboss.as.controller.ControlledProcessStateService;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.domain.http.server.security.AuthenticationMechanismWrapper;
 import org.jboss.as.domain.http.server.security.ConnectionAuthenticationCacheHandler;
 import org.jboss.as.domain.http.server.security.DmrFailureReadinessHandler;
@@ -169,19 +168,22 @@ public class ManagementHttpServer {
     }
 
     public static ManagementHttpServer create(InetSocketAddress bindAddress, InetSocketAddress secureBindAddress, int backlog,
-                                              ModelControllerClient modelControllerClient, ExecutorService executorService, SecurityRealm securityRealm, ControlledProcessStateService controlledProcessStateService,
+                                              ModelController modelController, SecurityRealm securityRealm, ControlledProcessStateService controlledProcessStateService,
                                               ConsoleMode consoleMode, String consoleSlot, final ChannelUpgradeHandler upgradeHandler)
+
             throws IOException {
 
         HttpOpenListener openListener = new HttpOpenListener(new ByteBufferSlicePool(BufferAllocator.DIRECT_BYTE_BUFFER_ALLOCATOR, 4096, 10 * 4096), 4096);
         int securePort = secureBindAddress != null ? secureBindAddress.getPort() : -1;
-        setupOpenListener(openListener, modelControllerClient, consoleMode, consoleSlot, controlledProcessStateService, securePort, securityRealm, upgradeHandler);
+        setupOpenListener(openListener, modelController, consoleMode, consoleSlot, controlledProcessStateService, securePort, securityRealm, upgradeHandler);
         ManagementHttpServer server = new ManagementHttpServer(openListener, bindAddress, secureBindAddress, securityRealm);
 
         return server;
     }
 
-    private static void setupOpenListener(HttpOpenListener listener, ModelControllerClient modelControllerClient, ConsoleMode consoleMode, String consoleSlot, ControlledProcessStateService controlledProcessStateService, int securePort, SecurityRealm securityRealm, final ChannelUpgradeHandler upgradeHandler) {
+
+    private static void setupOpenListener(HttpOpenListener listener, ModelController modelController, ConsoleMode consoleMode, String consoleSlot, ControlledProcessStateService controlledProcessStateService, int securePort, SecurityRealm securityRealm, final ChannelUpgradeHandler upgradeHandler) {
+
         CanonicalPathHandler canonicalPathHandler = new CanonicalPathHandler();
         listener.setRootHandler(canonicalPathHandler);
 
@@ -214,7 +216,7 @@ public class ManagementHttpServer {
         }
 
         ManagementRootConsoleRedirectHandler rootConsoleRedirectHandler = new ManagementRootConsoleRedirectHandler(consoleHandler);
-        DomainApiCheckHandler domainApiHandler = new DomainApiCheckHandler(modelControllerClient, controlledProcessStateService);
+        DomainApiCheckHandler domainApiHandler = new DomainApiCheckHandler(modelController, controlledProcessStateService);
         pathHandler.addPath("/", rootConsoleRedirectHandler);
         if (consoleHandler != null) {
             HttpHandler readinessHandler = new RedirectReadinessHandler(securityRealm, consoleHandler.getHandler(),

@@ -32,8 +32,9 @@ import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormData.FormValue;
 import io.undertow.server.handlers.form.FormDataParser;
 import io.undertow.util.Headers;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
 import org.xnio.IoUtils;
 import org.xnio.streams.ChannelOutputStream;
@@ -49,9 +50,9 @@ import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
  */
 class DomainApiUploadHandler implements HttpHandler {
 
-    private final ModelControllerClient modelController;
+    private final ModelController modelController;
 
-    public DomainApiUploadHandler(ModelControllerClient modelController) {
+    public DomainApiUploadHandler(ModelController modelController) {
         this.modelController = modelController;
     }
 
@@ -73,7 +74,7 @@ class DomainApiUploadHandler implements HttpHandler {
 
                     OperationBuilder operation = new OperationBuilder(dmr);
                     operation.addInputStream(in);
-                    response = modelController.execute(operation.build());
+                    response = modelController.execute(dmr, OperationMessageHandler.logging, ModelController.OperationTransactionControl.COMMIT, operation.build());
                     if (!response.get(OUTCOME).asString().equals(SUCCESS)){
                         Common.sendError(exchange, false, false, response.get(FAILURE_DESCRIPTION).asString());
                         return;

@@ -23,12 +23,10 @@ package org.jboss.as.server.mgmt;
 
 import java.net.BindException;
 import java.net.InetSocketAddress;
-import java.util.concurrent.ExecutorService;
 
 import io.undertow.server.handlers.ChannelUpgradeHandler;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.http.server.ConsoleMode;
 import org.jboss.as.domain.http.server.ManagementHttpServer;
 import org.jboss.as.domain.management.security.SecurityRealmService;
@@ -66,7 +64,6 @@ public class UndertowHttpManagementService implements Service<HttpManagement> {
     private final InjectedValue<SocketBindingManager> injectedSocketBindingManager = new InjectedValue<SocketBindingManager>();
     private final InjectedValue<Integer> portValue = new InjectedValue<Integer>();
     private final InjectedValue<Integer> securePortValue = new InjectedValue<Integer>();
-    private final InjectedValue<ExecutorService> executorServiceValue = new InjectedValue<ExecutorService>();
     private final InjectedValue<SecurityRealmService> securityRealmServiceValue = new InjectedValue<SecurityRealmService>();
     private final InjectedValue<ControlledProcessStateService> controlledProcessStateServiceValue = new InjectedValue<ControlledProcessStateService>();
     private final ConsoleMode consoleMode;
@@ -155,8 +152,6 @@ public class UndertowHttpManagementService implements Service<HttpManagement> {
     public synchronized void start(StartContext context) throws StartException {
         final ModelController modelController = modelControllerValue.getValue();
         final ControlledProcessStateService controlledProcessStateService = controlledProcessStateServiceValue.getValue();
-        final ExecutorService executorService = executorServiceValue.getValue();
-        final ModelControllerClient modelControllerClient = modelController.createClient(executorService);
         socketBindingManager = injectedSocketBindingManager.getOptionalValue();
 
         final SecurityRealmService securityRealmService = securityRealmServiceValue.getOptionalValue();
@@ -198,8 +193,9 @@ public class UndertowHttpManagementService implements Service<HttpManagement> {
 
         try {
 
-            serverManagement = ManagementHttpServer.create(bindAddress, secureBindAddress, 50, modelControllerClient,
-                    executorService, securityRealmService, controlledProcessStateService, consoleMode, consoleSlot, upgradeHandler);
+            serverManagement = ManagementHttpServer.create(bindAddress, secureBindAddress, 50, modelController,
+                    securityRealmService, controlledProcessStateService, consoleMode, consoleSlot, upgradeHandler);
+
             serverManagement.start();
 
             // Register the now-created sockets with the SBM
@@ -294,15 +290,6 @@ public class UndertowHttpManagementService implements Service<HttpManagement> {
 
     public Injector<SocketBinding> getSecureSocketBindingInjector() {
         return injectedSecureSocketBindingValue;
-    }
-
-    /**
-     * Get the executor service injector.
-     *
-     * @return The injector
-     */
-    public Injector<ExecutorService> getExecutorServiceInjector() {
-        return executorServiceValue;
     }
 
     /**
