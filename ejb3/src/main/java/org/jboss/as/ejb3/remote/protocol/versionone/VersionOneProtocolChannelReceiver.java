@@ -150,6 +150,9 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             }
             final MessageHandler messageHandler = getMessageHandler((byte) header);
             if (messageHandler == null) {
+                // enroll for next message (whenever it's available)
+                channel.receiveMessage(this);
+                // log a message that the message wasn't identified
                 EjbLogger.ROOT_LOGGER.unsupportedMessageHeader(Integer.toHexString(header), channel);
                 return;
             }
