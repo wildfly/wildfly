@@ -313,7 +313,7 @@ public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
             boolean isSubclass = interceptorClass.isAssignableFrom(interceptor.getClass());
             if (isSubclass) {
                 Collections.emptyList();
-                return (T) interceptor;
+                return interceptorClass.cast(interceptor);
             }
         }
         return null;

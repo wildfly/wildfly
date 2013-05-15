@@ -30,7 +30,6 @@
            <protocol type="UNICAST2"/>
            <protocol type="pbcast.STABLE"/>
            <protocol type="pbcast.GMS"/>
-           <protocol type="UFC"/>
            <protocol type="MFC"/>
            <protocol type="FRAG2"/>
            <protocol type="RSVP"/>

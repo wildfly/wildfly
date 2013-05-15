@@ -85,6 +85,11 @@ public class LogFactory implements CustomLogFactory {
         }
 
         @Override
+        public void fatal(String msg, Object... args) {
+            this.logger.fatalf(msg, args);
+        }
+
+        @Override
         public void fatal(String msg, Throwable throwable) {
             this.logger.fatal(msg, throwable);
         }
@@ -92,6 +97,11 @@ public class LogFactory implements CustomLogFactory {
         @Override
         public void error(String msg) {
             this.logger.error(msg);
+        }
+
+        @Override
+        public void error(String msg, Object... args) {
+            this.logger.errorf(msg, args);
         }
 
         @Override
@@ -105,6 +115,11 @@ public class LogFactory implements CustomLogFactory {
         }
 
         @Override
+        public void warn(String msg, Object... args) {
+            this.logger.warnf(msg, args);
+        }
+
+        @Override
         public void warn(String msg, Throwable throwable) {
             this.logger.warn(msg, throwable);
         }
@@ -115,8 +130,18 @@ public class LogFactory implements CustomLogFactory {
         }
 
         @Override
+        public void info(String msg, Object... args) {
+            this.logger.infof(msg, args);
+        }
+
+        @Override
         public void debug(String msg) {
             this.logger.debug(msg);
+        }
+
+        @Override
+        public void debug(String msg, Object... args) {
+            this.logger.debugf(msg, args);
         }
 
         @Override
@@ -132,6 +157,11 @@ public class LogFactory implements CustomLogFactory {
         @Override
         public void trace(String msg) {
             this.logger.trace(msg);
+        }
+
+        @Override
+        public void trace(String msg, Object... args) {
+            this.logger.tracef(msg, args);
         }
 
         @Override
