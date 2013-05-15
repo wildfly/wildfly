@@ -116,7 +116,7 @@ import org.jboss.as.repository.LocalFileRepository;
 import org.jboss.as.server.BootstrapListener;
 import org.jboss.as.server.RuntimeExpressionResolver;
 import org.jboss.as.server.controller.resources.VersionModelInitializer;
-import org.jboss.as.server.mgmt._UndertowHttpManagementService;
+import org.jboss.as.server.mgmt.UndertowHttpManagementService;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
@@ -516,7 +516,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
                 // demand http mgmt services
                 serviceTarget.addService(ServiceName.JBOSS.append("http-mgmt-startup"), Service.NULL)
-                        .addDependency(ServiceBuilder.DependencyType.OPTIONAL, _UndertowHttpManagementService.SERVICE_NAME)
+                        .addDependency(ServiceBuilder.DependencyType.OPTIONAL, UndertowHttpManagementService.SERVICE_NAME)
                         .setInitialMode(ServiceController.Mode.ACTIVE)
                         .install();
 

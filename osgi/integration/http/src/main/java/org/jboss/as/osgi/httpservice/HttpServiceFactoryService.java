@@ -28,7 +28,7 @@ import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
-import org.jboss.as.server.mgmt._UndertowHttpManagementService;
+import org.jboss.as.server.mgmt.UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.as.web.host.WebDeploymentController;
@@ -79,7 +79,7 @@ final class HttpServiceFactoryService implements Service<WebDeploymentController
         builder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.injectedPathManager);
         builder.addDependency(WebHost.SERVICE_NAME.append(VIRTUAL_HOST), WebHost.class, service.injectedVirtualHost);
         builder.addDependency(CommonWebServer.SERVICE_NAME, CommonWebServer.class, service.injectedWebServer);
-        builder.addDependency(DependencyType.OPTIONAL, _UndertowHttpManagementService.SERVICE_NAME, HttpManagement.class, service.injectedHttpManagement);
+        builder.addDependency(DependencyType.OPTIONAL, UndertowHttpManagementService.SERVICE_NAME, HttpManagement.class, service.injectedHttpManagement);
         builder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, service.injectedSystemContext);
         return builder.install();
     }
