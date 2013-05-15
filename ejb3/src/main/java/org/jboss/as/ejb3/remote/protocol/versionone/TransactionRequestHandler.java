@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.remote.protocol.versionone;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
@@ -36,7 +37,6 @@ import org.jboss.ejb.client.UserTransactionID;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.MessageOutputStream;
 
 /**
@@ -71,8 +71,8 @@ class TransactionRequestHandler extends AbstractMessageHandler {
     }
 
     @Override
-    public void processMessage(final ChannelAssociation channelAssociation, final MessageInputStream messageInputStream) throws IOException {
-        final DataInputStream input = new DataInputStream(messageInputStream);
+    public void processMessage(final ChannelAssociation channelAssociation, final InputStream inputStream) throws IOException {
+        final DataInputStream input = new DataInputStream(inputStream);
         // read the invocation id
         final short invocationId = input.readShort();
         // read the transaction id length

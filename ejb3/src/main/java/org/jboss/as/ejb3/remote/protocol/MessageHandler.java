@@ -22,16 +22,16 @@
 
 package org.jboss.as.ejb3.remote.protocol;
 
-import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
-import org.jboss.remoting3.MessageInputStream;
-
 import java.io.IOException;
+import java.io.InputStream;
+
+import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
 
 /**
  * User: jpai
  */
 public interface MessageHandler {
 
-    void processMessage(final ChannelAssociation channelAssociation, final MessageInputStream messageInputStream) throws IOException;
+    void processMessage(final ChannelAssociation channelAssociation, final InputStream inputStream) throws IOException;
 
 }
