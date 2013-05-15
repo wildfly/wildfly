@@ -239,6 +239,10 @@
             <maven-resource group="org.wildfly" artifact="wildfly-remoting"/>
         </module-def>
 
+        <module-def name="org.wildfly.extension.security.manager">
+            <maven-resource group="org.wildfly" artifact="wildfly-security-manager"/>
+        </module-def>
+
         <module-def name="org.wildfly.security.manager">
             <maven-resource group="org.wildfly.security" artifact="wildfly-security-manager"/>
         </module-def>

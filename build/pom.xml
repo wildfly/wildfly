@@ -156,6 +156,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-security-manager</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-security-manager</artifactId>
         </dependency>
@@ -1149,6 +1154,11 @@
                 <dependency>
                     <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-security</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-security-manager</artifactId>
                 </dependency>
 
                 <dependency>
@@ -2325,6 +2335,7 @@
                                         <exclude>org.wildfly:wildfly-remoting</exclude>
                                         <exclude>org.wildfly:wildfly-sar</exclude>
                                         <exclude>org.wildfly:wildfly-security</exclude>
+                                        <exclude>org.wildfly:wildfly-security-manager</exclude>
                                         <exclude>org.wildfly.security:wildfly-security-manager</exclude>
                                         <exclude>org.wildfly:wildfly-server</exclude>
                                         <exclude>org.wildfly:wildfly-system-jmx</exclude>
