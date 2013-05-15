@@ -72,9 +72,10 @@ public class GenerateModulesDefinitionTestCase {
         File inputFile = new File(inputname);
         Assert.assertTrue("File exists: " + inputname, inputFile.exists());
 
-        String basedir = "src/test/resources";
+        String resdir = "src/test/resources";
+        String moddir = resdir + "/modules";
         String outputname = "target/subsystem-modules.txt";
-        GenerateModulesDefinition.main(new String[] { inputname, "", basedir, null, outputname });
+        GenerateModulesDefinition.main(new String[] { inputname, "", resdir, moddir, null, outputname });
 
         File outfile = new File(outputname);
         Assert.assertTrue("File exists: " + outfile, outfile.exists());
@@ -97,9 +98,10 @@ public class GenerateModulesDefinitionTestCase {
     @Test
     public void testSkipSubsystems() throws Exception {
 
-        String basedir = "src/test/resources";
+        String resdir = "src/test/resources";
+        String moddir = resdir + "/modules";
         String outputname = "target/" + SKIP_SUBSYSTEMS + ".txt";
-        GenerateModulesDefinition.main(new String[] { SKIP_SUBSYSTEMS, "", basedir, "org.jboss.osgi.framework", outputname });
+        GenerateModulesDefinition.main(new String[] { SKIP_SUBSYSTEMS, "", resdir, moddir, "org.jboss.osgi.framework", outputname });
 
         File outfile = new File(outputname);
         Assert.assertTrue("File exists: " + outfile, outfile.exists());
@@ -113,9 +115,10 @@ public class GenerateModulesDefinitionTestCase {
     @Test
     public void testNoModuleDependencies() throws Exception {
 
-        String basedir = "src/test/resources";
+        String resdir = "src/test/resources";
+        String moddir = resdir + "/modules";
         String outputname = "target/no-modules.txt";
-        GenerateModulesDefinition.main(new String[] { SKIP_SUBSYSTEMS, "", basedir, null, outputname });
+        GenerateModulesDefinition.main(new String[] { SKIP_SUBSYSTEMS, "", resdir, moddir, null, outputname });
 
         File outfile = new File(outputname);
         Assert.assertTrue("File exists: " + outfile, outfile.exists());

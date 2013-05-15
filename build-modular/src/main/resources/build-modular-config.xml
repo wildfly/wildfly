@@ -22,11 +22,14 @@
 
 <project name="modular-config" basedir="." default="all">
 
-	<property name="build.resources.dir" value="${basedir}/../build/src/main/resources" />
-	<property name="server.input.dir" value="${basedir}/../${wildfly.build.output.dir}" />
-	<property name="server.output.dir" value="target/${server.output.dir.prefix}-${modular.config.name}-${jboss.as.release.version}" />
-	<property name="standalone.configs.target" value="${server.output.dir}/standalone/configuration" />
-	<property name="domain.configs.target" value="${server.output.dir}/domain/configuration" />
+	<property name="modular.wildfly.prefix" value="${server.output.dir.prefix}" />
+	<property name="modular.wildfly.version" value="${jboss.as.release.version}" />
+	<property name="modular.wildfly.build.src" value="${basedir}/../${wildfly.build.output.dir}" />
+	<property name="modular.wildfly.modules.src" value="${modular.wildfly.build.src}/modules" />
+	<property name="modular.wildfly.target" value="target/${modular.wildfly.prefix}-${modular.config.name}-${modular.wildfly.version}" />
+	<property name="modular.resources.src" value="${basedir}/../build/src/main/resources" />
+	<property name="modular.standalone.configuration.target" value="${modular.wildfly.target}/standalone/configuration" />
+	<property name="modular.domain.configuration.target" value="${modular.wildfly.target}/domain/configuration" />
 	<property name="generated.standalone.subsystems" value="${basedir}/target/standalone-subsystems.xml" />
 	<property name="generated.standalone.dependencies" value="${basedir}/target/standalone-module-dependencies.txt" />
 	<property name="generated.standalone.configuration" value="${basedir}/target/standalone.xml" />
@@ -73,32 +76,33 @@
 			paramProfiles=""
 			paramOutputFile="${generated.standalone.subsystems}" />
 
-		<generate-module-dependencies 
-			paramGeneratedSubsystems="${generated.standalone.subsystems}" 
-			paramProfile=""
-			paramResourcesDir="${build.resources.dir}" 
-			paramStaticModules="${standalone.seed.modules}" 
-			paramOutputFile="${generated.standalone.dependencies}" />
-
 		<generate-server-config 
 			paramTemplateFile="${standalone.template}" 
 			paramSubsystemsFile="${generated.standalone.subsystems}" 
 			paramOutputFile="${generated.standalone.configuration}" />
 		
+		<generate-module-dependencies 
+			paramGeneratedSubsystems="${generated.standalone.subsystems}" 
+			paramProfile=""
+			paramResourcesDir="${modular.resources.src}" 
+			paramModulesDir="${modular.wildfly.modules.src}" 
+			paramStaticModules="${standalone.seed.modules}" 
+			paramOutputFile="${generated.standalone.dependencies}" />
+
 	</target>
 
 	<target name="build-standalone-server" depends="init.standalone" description="Build the standalone server">
 		<!-- make output file directory -->
-		<mkdir dir="${server.output.dir}/modules/system/layers/base" />
+		<mkdir dir="${modular.wildfly.target}/modules/system/layers/base" />
 		<delete>
-			<fileset dir="${server.output.dir}">
+			<fileset dir="${modular.wildfly.target}">
 				<include name="**/*" />
 			</fileset>
 		</delete>
 
 		<!-- Copy the non-generated server files from the standard build -->
-		<copy todir="${server.output.dir}">
-			<fileset dir="${server.input.dir}">
+		<copy todir="${modular.wildfly.target}">
+			<fileset dir="${modular.wildfly.build.src}">
 				<exclude name="standalone/configuration/standalone*.xml" />
 				<exclude name="domain/**" />
 				<exclude name="modules/**" />
@@ -107,17 +111,17 @@
 		</copy>
 
 		<!-- Copy the generated server configurations -->
-		<copy file="${generated.standalone.configuration}" tofile="${server.output.dir}/standalone/configuration/standalone.xml" />
+		<copy file="${generated.standalone.configuration}" tofile="${modular.wildfly.target}/standalone/configuration/standalone.xml" />
 
 		<!-- Copy the generated modules from the standard build -->
-		<copy todir="${server.output.dir}/modules/system/layers/base">
-	        <fileset dir="${server.input.dir}/modules/system/layers/base" includesfile="${generated.standalone.dependencies}"/>
+		<copy todir="${modular.wildfly.target}/modules/system/layers/base">
+	        <fileset dir="${modular.wildfly.build.src}/modules/system/layers/base" includesfile="${generated.standalone.dependencies}"/>
 		</copy>
 
 		<!-- These files contain digested passwords, which should not be visible to external users -->
-		<chmod perm="600" file="${server.output.dir}/standalone/configuration/mgmt-users.properties" />
+		<chmod perm="600" file="${modular.wildfly.target}/standalone/configuration/mgmt-users.properties" />
 		<chmod perm="755">
-			<fileset dir="${server.output.dir}/bin">
+			<fileset dir="${modular.wildfly.target}/bin">
 				<include name="**/*.sh" />
 			</fileset>
 		</chmod>
@@ -133,7 +137,7 @@
 		<generate-module-dependencies 
 			paramGeneratedSubsystems="skip-subsystems" 
 			paramProfile="default"
-			paramResourcesDir="${build.resources.dir}" 
+			paramResourcesDir="${modular.resources.src}" 
 			paramStaticModules="${domain.seed.modules}" 
 			paramOutputFile="${generated.domain.dependencies}" />
 
@@ -147,8 +151,8 @@
 	<target name="build-domain-server" depends="init.domain" description="Build the domain server" if="domain.enabled.true">
 
 		<!-- Copy the non-generated server files from the standard build -->
-		<copy todir="${server.output.dir}/modules/system/layers/base">
-			<fileset dir="${server.input.dir}">
+		<copy todir="${modular.wildfly.target}/modules/system/layers/base">
+			<fileset dir="${modular.wildfly.build.src}">
 				<include name="domain/**" />
 				<include name="bin/domain*.*" />
 				<exclude name="domain/configuration/domain*.xml" />
@@ -156,17 +160,17 @@
 		</copy>
 
 		<!-- Copy the generated server configurations -->
-		<copy file="${generated.domain.configuration}" tofile="${server.output.dir}/domain/configuration/domain.xml" />
+		<copy file="${generated.domain.configuration}" tofile="${modular.wildfly.target}/domain/configuration/domain.xml" />
 
 		<!-- Copy the generated modules from the standard build -->
-		<copy todir="${server.output.dir}/modules/system/layers/base">
-	        <fileset dir="${server.input.dir}/modules/system/layers/base" includesfile="${generated.domain.dependencies}"/>
+		<copy todir="${modular.wildfly.target}/modules/system/layers/base">
+	        <fileset dir="${modular.wildfly.build.src}/modules/system/layers/base" includesfile="${generated.domain.dependencies}"/>
 		</copy>
 
 		<!-- These files contain digested passwords, which should not be visible to external users -->
-		<chmod perm="600" file="${server.output.dir}/domain/configuration/mgmt-users.properties" />
+		<chmod perm="600" file="${modular.wildfly.target}/domain/configuration/mgmt-users.properties" />
 		<chmod perm="755">
-			<fileset dir="${server.output.dir}/bin">
+			<fileset dir="${modular.wildfly.target}/bin">
 				<include name="**/*.sh" />
 			</fileset>
 		</chmod>
@@ -195,6 +199,7 @@
 		<attribute name="paramGeneratedSubsystems" />
 		<attribute name="paramProfile" />
 		<attribute name="paramResourcesDir" />
+		<attribute name="paramModulesDir" />
 		<attribute name="paramStaticModules" />
 		<attribute name="paramOutputFile" />
 		<sequential>
@@ -207,6 +212,7 @@
 				<arg value="@{paramGeneratedSubsystems}" />
 				<arg value="@{paramProfile}" />
 				<arg value="@{paramResourcesDir}" />
+				<arg value="@{paramModulesDir}" />
 				<arg value="@{paramStaticModules}" />
 				<arg value="@{paramOutputFile}" />
 			</java>
