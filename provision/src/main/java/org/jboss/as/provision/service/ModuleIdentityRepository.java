@@ -19,11 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.osgi.service;
+package org.jboss.as.provision.service;
 
-import static org.jboss.as.osgi.OSGiLogger.LOGGER;
-import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.osgi.resolver.XResource.MODULE_IDENTITY_NAMESPACE;
+import static org.jboss.as.provision.ProvisionLogger.LOGGER;
+import static org.jboss.as.provision.ProvisionMessages.MESSAGES;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -56,12 +56,12 @@ import org.osgi.resource.Requirement;
  * @author thomas.diesler@jboss.com
  * @since 20-Jan-2012
  */
-final class ModuleIdentityRepository extends AbstractRepository {
+public final class ModuleIdentityRepository extends AbstractRepository {
 
     private final File modulesDir;
     private final List<File> bundlesPath;
 
-    ModuleIdentityRepository(ServerEnvironment serverEnvironment) {
+    public ModuleIdentityRepository(ServerEnvironment serverEnvironment) {
         File bundlesDir = serverEnvironment.getBundlesDir();
         if (bundlesDir.isDirectory() == false)
             throw MESSAGES.illegalStateArtifactBaseLocation(bundlesDir);
@@ -93,7 +93,7 @@ final class ModuleIdentityRepository extends AbstractRepository {
                 }
                 if (contentFile != null) {
                     URL contentURL = contentFile.toURI().toURL();
-                    XResourceBuilder<XResource> builder = URLResourceBuilderFactory.create(contentURL, null, true);
+                    XResourceBuilder<XResource> builder = URLResourceBuilderFactory.create(contentURL, null);
                     XCapability cap = builder.addCapability(MODULE_IDENTITY_NAMESPACE, moduleId);
                     builder.getResource();
                     result.add(cap);
@@ -110,7 +110,7 @@ final class ModuleIdentityRepository extends AbstractRepository {
     /**
      * Get file for the singe jar that corresponds to the given identifier
      */
-    static File getRepositoryEntry(List<File> bundlesPath, ModuleIdentifier identifier) throws IOException {
+    public static File getRepositoryEntry(List<File> bundlesPath, ModuleIdentifier identifier) throws IOException {
         String identifierPath = getModuleIdAsPath(identifier);
         for (File bundlesDir : bundlesPath) {
             File contentFile = getRepositoryEntry(bundlesDir, identifierPath);

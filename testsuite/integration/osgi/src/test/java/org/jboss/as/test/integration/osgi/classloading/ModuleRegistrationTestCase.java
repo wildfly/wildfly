@@ -103,7 +103,7 @@ public class ModuleRegistrationTestCase {
             // Verify resource identity
             XBundleRevision brev = (XBundleRevision) caps.get(0).getResource();
             XIdentityCapability icap = brev.getIdentityCapability();
-            Assert.assertEquals("deployment.module-a", icap.getSymbolicName());
+            Assert.assertEquals("deployment.module-a", icap.getName());
             Assert.assertEquals(Version.emptyVersion, icap.getVersion());
             Assert.assertEquals(XResource.TYPE_MODULE, icap.getType());
 
@@ -132,7 +132,7 @@ public class ModuleRegistrationTestCase {
                 Assert.assertEquals(bundleA, wire.getRequirer().getBundle());
                 XBundleRevision provider = (XBundleRevision) wire.getProvider();
                 XIdentityCapability icap = provider.getIdentityCapability();
-                Assert.assertEquals("deployment.module-a", icap.getSymbolicName());
+                Assert.assertEquals("deployment.module-a", icap.getName());
             } finally {
                 bundleA.uninstall();
             }

@@ -235,6 +235,10 @@
             <maven-resource group="org.wildfly" artifact="wildfly-protocol"/>
         </module-def>
 
+        <module-def name="org.jboss.as.provision">
+            <maven-resource group="org.wildfly" artifact="wildfly-provision"/>
+        </module-def>
+
         <module-def name="org.jboss.as.remoting">
             <maven-resource group="org.wildfly" artifact="wildfly-remoting"/>
         </module-def>

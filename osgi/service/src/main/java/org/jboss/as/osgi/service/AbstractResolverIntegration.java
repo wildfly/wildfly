@@ -21,6 +21,7 @@
  */
 package org.jboss.as.osgi.service;
 
+import org.jboss.as.provision.service.AbstractResolverService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.StartContext;

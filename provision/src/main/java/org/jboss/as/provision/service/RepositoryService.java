@@ -20,35 +20,35 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.osgi.service;
+package org.jboss.as.provision.service;
 
 import static org.jboss.osgi.repository.RepositoryMessages.MESSAGES;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.jboss.as.osgi.OSGiConstants;
-import org.jboss.as.osgi.parser.SubsystemState;
+import org.jboss.as.provision.ProvisionConstants;
+import org.jboss.as.provision.parser.SubsystemState;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.repository.RepositoryStorage;
-import org.jboss.osgi.repository.RepositoryStorageException;
 import org.jboss.osgi.repository.RepositoryStorageFactory;
+import org.jboss.osgi.repository.XPersistentRepository;
 import org.jboss.osgi.repository.XRepository;
 import org.jboss.osgi.repository.spi.AbstractPersistentRepository;
 import org.jboss.osgi.repository.spi.AggregatingRepository;
 import org.jboss.osgi.repository.spi.FileBasedRepositoryStorage;
 import org.jboss.osgi.repository.spi.MavenDelegateRepository;
 import org.jboss.osgi.repository.spi.MavenDelegateRepository.ConfigurationPropertyProvider;
-import org.jboss.osgi.resolver.XResource;
 
 /**
  * The standalone {@link XRepository} service.
@@ -56,15 +56,17 @@ import org.jboss.osgi.resolver.XResource;
  * @author Thomas.Diesler@jboss.com
  * @since 31-Aug-2012
  */
-public final class RepositoryService extends AbstractService<XRepository> {
+public final class RepositoryService extends AbstractService<XPersistentRepository> {
+
+    public static final ServiceName SERVICE_NAME = ProvisionConstants.SERVICE_BASE_NAME.append("XRepository");
 
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
     private final SubsystemState subsystemState;
-    private XRepository repository;
+    private XPersistentRepository repository;
 
     public static ServiceController<?> addService(final ServiceTarget target, SubsystemState subsystemState) {
         RepositoryService service = new RepositoryService(subsystemState);
-        ServiceBuilder<?> builder = target.addService(OSGiConstants.REPOSITORY_SERVICE_NAME, service);
+        ServiceBuilder<?> builder = target.addService(SERVICE_NAME, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
         return builder.install();
     }
@@ -91,17 +93,7 @@ public final class RepositoryService extends AbstractService<XRepository> {
             @Override
             public RepositoryStorage create(XRepository repository) {
                 File storageDir = getRepositoryStorageDir(propProvider, serverenv);
-                return new FileBasedRepositoryStorage(repository, storageDir, propProvider) {
-                    @Override
-                    public XResource addResource(XResource res) throws RepositoryStorageException {
-                        // Do not add modules to repository storage
-                        if (res.getCapabilities(XResource.MODULE_IDENTITY_NAMESPACE).isEmpty()) {
-                            return super.addResource(res);
-                        } else {
-                            return res;
-                        }
-                    }
-                };
+                return new FileBasedRepositoryStorage(repository, storageDir, propProvider);
             }
         };
 
@@ -130,7 +122,7 @@ public final class RepositoryService extends AbstractService<XRepository> {
     }
 
     @Override
-    public synchronized XRepository getValue() throws IllegalStateException {
+    public synchronized XPersistentRepository getValue() throws IllegalStateException {
         return repository;
     }
 }

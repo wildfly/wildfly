@@ -116,13 +116,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             Module.registerURLStreamHandlerFactoryModule(coreFrameworkModule);
             Module.registerContentHandlerFactoryModule(coreFrameworkModule);
 
-            // Install
             ServiceTarget serviceTarget = context.getChildTarget();
-            EnvironmentService.addService(serviceTarget);
-            ResourceProvisionerService.addService(serviceTarget);
-            AbstractResolverService.addService(serviceTarget);
-            RepositoryService.addService(serviceTarget, subsystemState);
-
             Activation activation = subsystemState.getActivationPolicy();
             Mode initialMode = (activation == Activation.EAGER ? Mode.ACTIVE : Mode.LAZY);
 

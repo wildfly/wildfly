@@ -191,12 +191,12 @@
         <version.org.jboss.modules.jboss-modules>1.2.1.Final</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.1.2.Final</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.osgi.deployment>2.0.0.CR4</version.org.jboss.osgi.deployment>
-        <version.org.jboss.osgi.framework>3.0.0.CR25</version.org.jboss.osgi.framework>
+        <version.org.jboss.osgi.framework>3.0.0.CR26</version.org.jboss.osgi.framework>
         <version.org.jboss.osgi.logging>1.0.0.Final</version.org.jboss.osgi.logging>
         <version.org.jboss.osgi.metadata>3.0.0.CR1</version.org.jboss.osgi.metadata>
-        <version.org.jboss.osgi.provision>1.0.0.CR1</version.org.jboss.osgi.provision>
-        <version.org.jboss.osgi.resolver>4.0.0.CR15</version.org.jboss.osgi.resolver>
-        <version.org.jboss.osgi.repository>3.0.0.CR5</version.org.jboss.osgi.repository>
+        <version.org.jboss.osgi.provision>1.0.0.CR3</version.org.jboss.osgi.provision>
+        <version.org.jboss.osgi.resolver>4.0.0.CR16</version.org.jboss.osgi.resolver>
+        <version.org.jboss.osgi.repository>3.0.0.CR6</version.org.jboss.osgi.repository>
         <version.org.jboss.osgi.spi>4.0.0.CR2</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>2.0.0.Alpha3</version.org.jboss.osgi.vfs>
         <version.org.jboss.remote-naming>1.0.6.Final</version.org.jboss.remote-naming>
@@ -1231,6 +1231,12 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-provision</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -6231,6 +6237,7 @@
                 <module>naming</module>
                 <module>osgi</module>
                 <module>pojo</module>
+                <module>provision</module>
                 <module>remoting-test</module>
                 <module>system-jmx</module>
                 <module>sar</module>

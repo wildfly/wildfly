@@ -20,9 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.osgi.service;
+package org.jboss.as.provision.service;
 
-import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.provision.ProvisionConstants;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -42,7 +42,8 @@ import org.jboss.osgi.resolver.spi.AbstractResolver;
  */
 public final class AbstractResolverService extends AbstractService<XResolver> {
 
-    static final ServiceName SERVICE_NAME = OSGiConstants.SERVICE_BASE_NAME.append("AbstractResolver");
+    public static final ServiceName SERVICE_NAME = ProvisionConstants.SERVICE_BASE_NAME.append("XResolver");
+
     private XResolver resolver;
 
     public static ServiceController<?> addService(final ServiceTarget target) {

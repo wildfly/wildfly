@@ -73,12 +73,6 @@ public interface OSGiConstants {
     /** Attachment key for the OSGi system context. */
     AttachmentKey<BundleContext> SYSTEM_CONTEXT_KEY = AttachmentKey.create(BundleContext.class);
 
-    /** The {@link org.jboss.osgi.provision.Provisioner} service */
-    ServiceName PROVISION_SERVICE_NAME = SERVICE_BASE_NAME.append("provision");
-
-    /** The {@link org.jboss.osgi.repository.XRepository} service */
-    ServiceName REPOSITORY_SERVICE_NAME = SERVICE_BASE_NAME.append("repository");
-
     /** The {@link org.jboss.as.osgi.parser.SubsystemState} service */
     ServiceName SUBSYSTEM_STATE_SERVICE_NAME = SERVICE_BASE_NAME.append("subsystemstate");
 

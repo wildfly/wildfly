@@ -43,6 +43,9 @@ import java.util.jar.Manifest;
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.osgi.parser.SubsystemState.OSGiCapability;
+import org.jboss.as.provision.service.LayeredBundlePathFactory;
+import org.jboss.as.provision.service.ModuleIdentityRepository;
+import org.jboss.as.provision.service.RepositoryService;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.modules.Module;
@@ -116,13 +119,13 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
     @Override
     protected void addServiceDependencies(ServiceBuilder<Void> builder) {
         super.addServiceDependencies(builder);
-        builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, injectedServerEnvironment);
         builder.addDependency(OSGiConstants.SUBSYSTEM_STATE_SERVICE_NAME, SubsystemState.class, injectedSubsystemState);
-        builder.addDependency(OSGiConstants.REPOSITORY_SERVICE_NAME, XRepository.class, injectedRepository);
+        builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, injectedServerEnvironment);
+        builder.addDependency(RepositoryService.SERVICE_NAME, XRepository.class, injectedRepository);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
-        builder.addDependency(IntegrationServices.STORAGE_MANAGER_PLUGIN, StorageManager.class, injectedStorageManager);
         builder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, injectedSystemContext);
         builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, injectedEnvironment);
+        builder.addDependency(IntegrationServices.STORAGE_MANAGER_PLUGIN, StorageManager.class, injectedStorageManager);
     }
 
     @Override

@@ -20,9 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.osgi.service;
+package org.jboss.as.provision.service;
 
-import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.provision.ProvisionConstants;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -42,7 +42,8 @@ import org.jboss.osgi.resolver.spi.AbstractEnvironment;
  */
 public final class EnvironmentService extends AbstractService<XEnvironment> {
 
-    static final ServiceName SERVICE_NAME = OSGiConstants.SERVICE_BASE_NAME.append("environment");
+    public static final ServiceName SERVICE_NAME = ProvisionConstants.SERVICE_BASE_NAME.append("XEnvironment");
+
     private XEnvironment environment;
 
     public static ServiceController<?> addService(final ServiceTarget target) {

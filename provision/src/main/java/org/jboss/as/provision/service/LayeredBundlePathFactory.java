@@ -20,9 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.osgi.service;
+package org.jboss.as.provision.service;
 
-import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+import static org.jboss.as.provision.ProvisionMessages.MESSAGES;
 
 import java.io.Closeable;
 import java.io.File;
@@ -48,13 +48,13 @@ import org.jboss.as.server.ServerEnvironment;
  *
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
-class LayeredBundlePathFactory {
+public final class LayeredBundlePathFactory {
 
     /**
      * Provides a precedence-ordered list of locations from which bundles can be loaded based on the given
      * {@link ServerEnvironment}.
      */
-    static List<File> resolveLayeredBundlePath(final ServerEnvironment serverEnvironment) {
+    public static List<File> resolveLayeredBundlePath(final ServerEnvironment serverEnvironment) {
 
         File bundlesDir = serverEnvironment.getBundlesDir();
 
@@ -74,7 +74,7 @@ class LayeredBundlePathFactory {
      *
      * @return a new bundle path, including any layers and add-ons, if found
      */
-    static List<File> resolveLayeredBundlePath(final File... bundlePath) {
+    public static List<File> resolveLayeredBundlePath(final File... bundlePath) {
 
         List<File> layeredPath = new ArrayList<File>();
 
