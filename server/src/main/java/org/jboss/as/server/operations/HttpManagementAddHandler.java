@@ -22,7 +22,6 @@
 
 package org.jboss.as.server.operations;
 
-import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.HTTPS_PORT;
 import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.HTTP_PORT;
 import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.INTERFACE;
@@ -32,7 +31,6 @@ import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.SOCKET_B
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -61,13 +59,11 @@ import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt._UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
-import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.threads.JBossThreadFactory;
 import org.xnio.OptionMap;
 
 /**
@@ -232,8 +228,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
         ServiceBuilder<HttpManagement> undertowBuilder = serviceTarget.addService(_UndertowHttpManagementService.SERVICE_NAME, undertowService)
                 .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, undertowService.getModelControllerInjector())
                 .addDependency(SocketBindingManagerImpl.SOCKET_BINDING_MANAGER, SocketBindingManager.class, undertowService.getSocketBindingManagerInjector())
-                .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, undertowService.getControlledProcessStateServiceInjector())
-                .addInjection(undertowService.getExecutorServiceInjector(), Executors.newCachedThreadPool(new JBossThreadFactory(new ThreadGroup("HttpManagementService-threads"), Boolean.FALSE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()))));
+                .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, undertowService.getControlledProcessStateServiceInjector());
 
         if (interfaceSvcName != null) {
             undertowBuilder.addDependency(interfaceSvcName, NetworkInterfaceBinding.class, undertowService.getInterfaceInjector())
