@@ -1273,6 +1273,12 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-security-manager</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-sar</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -6394,6 +6400,7 @@
                 <module>system-jmx</module>
                 <module>sar</module>
                 <module>security</module>
+                <module>security-manager</module>
                 <module>spec-api</module>
                 <module>transactions</module>
                 <module>undertow</module>
