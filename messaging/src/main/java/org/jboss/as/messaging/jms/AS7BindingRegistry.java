@@ -23,20 +23,17 @@
 package org.jboss.as.messaging.jms;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.as.messaging.BinderServiceUtil.installBinderService;
 import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Locale;
 
 import org.hornetq.spi.core.naming.BindingRegistry;
-import org.jboss.as.naming.ServiceBasedNamingStore;
-import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.service.BinderService;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StabilityMonitor;
-import org.jboss.msc.value.Values;
 
 /**
  * A {@link BindingRegistry} implementation for JBoss AS7.
@@ -75,14 +72,8 @@ public class AS7BindingRegistry implements BindingRegistry {
         if (name == null || name.isEmpty()) {
             throw MESSAGES.cannotBindJndiName();
         }
-        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
-        final BinderService binderService = new BinderService(bindInfo.getBindName());
-        container.addService(bindInfo.getBinderServiceName(), binderService)
-                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
-                .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(obj)))
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
-        ROOT_LOGGER.boundJndiName(bindInfo.getAbsoluteJndiName());
+        installBinderService(container, name, obj);
+        ROOT_LOGGER.boundJndiName(name);
         return true;
     }
 

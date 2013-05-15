@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.messaging.BinderServiceUtil.installAliasBinderService;
 import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
@@ -33,8 +34,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
-import javax.naming.InitialContext;
 
 import org.hornetq.api.core.BroadcastEndpointFactoryConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
@@ -49,13 +48,7 @@ import org.jboss.as.connector.services.resourceadapters.deployment.registry.Reso
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.messaging.JGroupsChannelLocator;
-import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
-import org.jboss.as.naming.ContextListManagedReferenceFactory;
-import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.ServiceBasedNamingStore;
-import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.service.SubjectFactoryService;
@@ -117,7 +110,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
 
@@ -344,17 +336,14 @@ public class PooledConnectionFactoryService implements Service<Void> {
     }
 
     private List<ServiceName> createJNDIAliases(final String name, List<String> aliases, ServiceController<ResourceAdapterDeployment> controller) {
+        final ServiceName namingStoreServiceName = ContextNames.bindInfoFor(name).getParentContextServiceName();
             List<ServiceName> serviceNames = new ArrayList<ServiceName>();
             for (final String alias : aliases) {
-                final ContextNames.BindInfo aliasBindInfo = ContextNames.bindInfoFor(alias);
-                final BinderService aliasBinderService = new BinderService(alias);
-                aliasBinderService.getManagedObjectInjector().inject(new AliasManagedReferenceFactory(name));
-
-                controller.getServiceContainer()
-                    .addService(aliasBindInfo.getBinderServiceName(), aliasBinderService)
-                    .addDependency(aliasBindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, aliasBinderService.getNamingStoreInjector())
-                    .addDependency(ContextNames.bindInfoFor(name).getBinderServiceName())
-                    .install();
+                installAliasBinderService(controller.getServiceContainer(),
+                        namingStoreServiceName,
+                        name,
+                        ContextNames.bindInfoFor(alias).getBinderServiceName(),
+                        alias);
                 ROOT_LOGGER.boundJndiName(alias);
             }
             return serviceNames;
@@ -459,36 +448,4 @@ public class PooledConnectionFactoryService implements Service<Void> {
         return hornetQService;
     }
 
-    private final class AliasManagedReferenceFactory implements ContextListAndJndiViewManagedReferenceFactory {
-
-        private final String name;
-
-        /**
-         * @param name original JNDI name
-         */
-        private AliasManagedReferenceFactory(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public ManagedReference getReference() {
-            try {
-                final Object value = new InitialContext().lookup(name);
-                return new ValueManagedReference(new ImmediateValue<Object>(value));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        @Override
-        public String getInstanceClassName() {
-            final Object value = getReference().getInstance();
-            return value != null ? value.getClass().getName() : ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
-        }
-
-        @Override
-        public String getJndiViewInstanceValue() {
-            return String.valueOf(getReference().getInstance());
-        }
-    }
 }
