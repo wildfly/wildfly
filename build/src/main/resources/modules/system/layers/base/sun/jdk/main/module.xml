@@ -80,6 +80,8 @@
                 <path name="sun/io"/>
                 <path name="sun/nio"/>
                 <path name="sun/nio/ch"/>
+                <path name="sun/nio/ext"/>
+                <path name="sun/nio/cs"/>
                 <path name="sun/security"/>
                 <path name="sun/security/krb5"/>
                 <path name="sun/util"/>
