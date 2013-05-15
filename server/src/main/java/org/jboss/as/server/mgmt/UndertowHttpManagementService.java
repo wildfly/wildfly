@@ -53,9 +53,8 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class _UndertowHttpManagementService implements Service<HttpManagement>{
-    //TODO get rid of "undertow" when we make the switch
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("serverManagement", "controller", "management", "http", "undertow");
+public class UndertowHttpManagementService implements Service<HttpManagement> {
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("serverManagement", "controller", "management", "http");
 
 
     public static final ServiceName HTTP_UPGRADE_SERVICE_NAME = ServiceName.JBOSS.append("management", "http-upgrade");
@@ -141,7 +140,7 @@ public class _UndertowHttpManagementService implements Service<HttpManagement>{
         }
     };
 
-    public _UndertowHttpManagementService(ConsoleMode consoleMode, String consoleSlot, final boolean httpUpgrade) {
+    public UndertowHttpManagementService(ConsoleMode consoleMode, String consoleSlot, final boolean httpUpgrade) {
         this.consoleMode = consoleMode;
         this.consoleSlot = consoleSlot;
         this.httpUpgrade = httpUpgrade;

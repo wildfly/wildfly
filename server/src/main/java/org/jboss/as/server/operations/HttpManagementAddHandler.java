@@ -58,7 +58,7 @@ import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
-import org.jboss.as.server.mgmt._UndertowHttpManagementService;
+import org.jboss.as.server.mgmt.UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.wildfly.security.manager.GetAccessControlContextAction;
@@ -228,8 +228,8 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
         }
 
         ServerEnvironment environment = (ServerEnvironment) context.getServiceRegistry(false).getRequiredService(ServerEnvironmentService.SERVICE_NAME).getValue();
-        final _UndertowHttpManagementService undertowService = new _UndertowHttpManagementService(consoleMode, environment.getProductConfig().getConsoleSlot(), httpUpgrade);
-        ServiceBuilder<HttpManagement> undertowBuilder = serviceTarget.addService(_UndertowHttpManagementService.SERVICE_NAME, undertowService)
+        final UndertowHttpManagementService undertowService = new UndertowHttpManagementService(consoleMode, environment.getProductConfig().getConsoleSlot(), httpUpgrade);
+        ServiceBuilder<HttpManagement> undertowBuilder = serviceTarget.addService(UndertowHttpManagementService.SERVICE_NAME, undertowService)
                 .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, undertowService.getModelControllerInjector())
                 .addDependency(SocketBindingManagerImpl.SOCKET_BINDING_MANAGER, SocketBindingManager.class, undertowService.getSocketBindingManagerInjector())
                 .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, undertowService.getControlledProcessStateServiceInjector())

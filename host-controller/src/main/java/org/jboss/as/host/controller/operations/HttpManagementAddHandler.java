@@ -47,7 +47,7 @@ import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.remoting.RemotingHttpUpgradeService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
-import org.jboss.as.server.mgmt._UndertowHttpManagementService;
+import org.jboss.as.server.mgmt.UndertowHttpManagementService;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
@@ -140,8 +140,8 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
             consoleMode = ConsoleMode.SLAVE_HC;
         }
 
-        final _UndertowHttpManagementService service = new _UndertowHttpManagementService(consoleMode, environment.getProductConfig().getConsoleSlot(), httpUpgrade);
-        ServiceBuilder<?> builder = serviceTarget.addService(_UndertowHttpManagementService.SERVICE_NAME, service)
+        final UndertowHttpManagementService service = new UndertowHttpManagementService(consoleMode, environment.getProductConfig().getConsoleSlot(), httpUpgrade);
+        ServiceBuilder<?> builder = serviceTarget.addService(UndertowHttpManagementService.SERVICE_NAME, service)
                 .addDependency(
                         NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
                         NetworkInterfaceBinding.class, service.getInterfaceInjector())

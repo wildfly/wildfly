@@ -22,7 +22,7 @@
 package org.jboss.as.server;
 
 import org.jboss.as.network.NetworkUtils;
-import org.jboss.as.server.mgmt._UndertowHttpManagementService;
+import org.jboss.as.server.mgmt.UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
@@ -99,7 +99,7 @@ public class BootstrapListener extends AbstractServiceListener<Object> {
     }
 
     private void logAdminConsole() {
-        ServiceController<?> controller = serviceContainer.getService(_UndertowHttpManagementService.SERVICE_NAME);
+        ServiceController<?> controller = serviceContainer.getService(UndertowHttpManagementService.SERVICE_NAME);
         if (controller != null) {
             HttpManagement mgmt = (HttpManagement)controller.getValue();
 
