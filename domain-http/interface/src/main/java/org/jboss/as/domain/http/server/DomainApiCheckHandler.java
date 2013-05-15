@@ -22,10 +22,12 @@
 package org.jboss.as.domain.http.server;
 
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
+
+import java.util.Arrays;
+
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.BlockingHandler;
-import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.server.handlers.form.MultiPartHandler;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
@@ -44,6 +46,7 @@ import org.jboss.as.domain.http.server.security.SubjectAssociationHandler;
 class DomainApiCheckHandler implements HttpHandler {
 
     static String PATH = "/management";
+    private static final long ONE_DAY_IN_SECONDS = 24 * 60 * 60;
     private static final String UPLOAD_REQUEST = PATH + "/add-content";
 
     private final ControlledProcessStateService controlledProcessStateService;
@@ -61,6 +64,33 @@ class DomainApiCheckHandler implements HttpHandler {
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         if (!commonChecks(exchange)) {
             return;
+        }
+
+        /*
+         * Allow OPTIONS as part of CORS preflighted requests
+         * TODO Should there be a list of trusted origins when handling CORS requests?
+         */
+        HeaderMap requestHeaders = exchange.getRequestHeaders();
+        if (Methods.OPTIONS.equals(exchange.getRequestMethod())) {
+            if (!requestHeaders.contains(Headers.ORIGIN)) {
+                ROOT_LOGGER.debug("Request rejected due to 'OPTIONS' method without an origin.");
+                Common.METHOD_NOT_ALLOWED_HANDLER.handleRequest(exchange);
+                return;
+            }
+            addOptionsHeader(requestHeaders.getFirst(Headers.ORIGIN), exchange.getResponseHeaders());
+            exchange.setResponseCode(200);
+            return;
+        }
+
+        /*
+         * Add the origin from the request headers as allowed origin to the response header.
+         * None CORS requests will just ignore this and continue to work.
+         */
+        if (requestHeaders.contains(Headers.ORIGIN)) {
+            String origin = requestHeaders.getFirst(Headers.ORIGIN);
+            HeaderMap responseHeaders = exchange.getResponseHeaders();
+            responseHeaders.add(HttpString.tryFromString("Access-Control-Allow-Origin"), origin);
+            responseHeaders.add(HttpString.tryFromString("Access-Control-Allow-Credentials"), "true");
         }
 
         boolean isUpload = UPLOAD_REQUEST.equals(exchange.getCanonicalPath());
@@ -113,39 +143,28 @@ class DomainApiCheckHandler implements HttpHandler {
         }
 
         /*
-         * Completely disallow OPTIONS - if the browser suspects this is a cross site request just reject it.
+         * Disallow anything but GET, POST and OPTIONS
          */
         final HttpString requestMethod = exchange.getRequestMethod();
-        if (!Methods.POST.equals(requestMethod) && !Methods.GET.equals(requestMethod)) {
-            if (Methods.OPTIONS.equals(requestMethod)) {
-                ROOT_LOGGER.debug("Request rejected due to 'OPTIONS' method which is not supported.");
-            } else {
-                ROOT_LOGGER.debug("Request rejected as method not one of (GET,POST).");
-            }
+        if (!Methods.POST.equals(requestMethod) && !Methods.GET.equals(requestMethod) && !Methods.OPTIONS.equals(requestMethod)) {
+            ROOT_LOGGER.debug("Request rejected as method not one of (GET,POST,OPTIONS).");
             Common.METHOD_NOT_ALLOWED_HANDLER.handleRequest(exchange);
             return false;
         }
 
-        /*
-         *  Origin check, if it is set the Origin header should match the Host otherwise reject the request.
-         *
-         *  This check is for cross site scripted GET and POST requests.
-         */
-        final HeaderMap headers = exchange.getRequestHeaders();
-        if (headers.contains(Headers.ORIGIN)) {
-            String origin = headers.getFirst(Headers.ORIGIN);
-            String host = headers.getFirst(Headers.HOST);
-            String protocol = exchange.getRequestScheme();
-            //This browser set header should not need IPv6 escaping
-            String allowedOrigin = protocol + "://" + host;
-
-            // This will reject multi-origin Origin headers due to the exact match.
-            if (origin.equals(allowedOrigin) == false) {
-                ROOT_LOGGER.debug("Request rejected due to HOST/ORIGIN mis-match.");
-                ResponseCodeHandler.HANDLE_403.handleRequest(exchange);
-                return false;
-            }
-        }
         return true;
+    }
+
+    private void addOptionsHeader(final String origin, final HeaderMap responseHeaders) {
+        responseHeaders.add(HttpString.tryFromString("Access-Control-Allow-Origin"), origin);
+        responseHeaders.addAll(HttpString.tryFromString("Access-Control-Allow-Methods"),
+                Arrays.asList(Methods.GET_STRING, Methods.POST_STRING, Methods.OPTIONS_STRING));
+        responseHeaders.add(HttpString.tryFromString("Access-Control-Allow-Headers"), "Authorization");
+        responseHeaders.add(HttpString.tryFromString("Access-Control-Allow-Headers"), "WWW-Authenticate");
+        responseHeaders.add(HttpString.tryFromString("Access-Control-Allow-Headers"), "Content-Type");
+        responseHeaders.add(HttpString.tryFromString("Access-Control-Allow-Credentials"), "true");
+        responseHeaders.add(HttpString.tryFromString("Access-Control-Max-Age"), String.valueOf(ONE_DAY_IN_SECONDS));
+        responseHeaders.add(HttpString.tryFromString("Content-Length"), "0");
+        responseHeaders.add(HttpString.tryFromString("Content-Type"), "text/plain");
     }
 }
