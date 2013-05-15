@@ -22,7 +22,9 @@
 
 package org.wildfly.security.manager;
 
+import java.io.FileDescriptor;
 import java.lang.reflect.Field;
+import java.net.InetAddress;
 import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.CodeSource;
@@ -38,7 +40,10 @@ import sun.reflect.Reflection;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.lang.System.getSecurityManager;
+import static java.security.AccessController.doPrivileged;
 import static org.wildfly.security.manager._private.SecurityMessages.access;
+import static sun.reflect.Reflection.getCallerClass;
 
 /**
  * The security manager.  This security manager implementation can be switched on and off on a per-thread basis,
@@ -57,7 +62,7 @@ public final class WildFlySecurityManager extends SecurityManager {
     private static final Field PD_STACK;
 
     static {
-        PD_STACK = AccessController.doPrivileged(new GetAccessibleDeclaredFieldAction(AccessControlContext.class, "context"));
+        PD_STACK = doPrivileged(new GetAccessibleDeclaredFieldAction(AccessControlContext.class, "context"));
     }
 
     /**
@@ -66,7 +71,7 @@ public final class WildFlySecurityManager extends SecurityManager {
      * @return {@code true} if the security manager is currently checking permissions
      */
     public static boolean isChecking() {
-        final SecurityManager sm = System.getSecurityManager();
+        final SecurityManager sm = getSecurityManager();
         return sm instanceof WildFlySecurityManager ? CHECKING.get() == TRUE : sm != null;
     }
 
@@ -176,6 +181,162 @@ public final class WildFlySecurityManager extends SecurityManager {
         }
     }
 
+    public void checkCreateClassLoader() {
+        if (CHECKING.get() == TRUE) {
+            super.checkCreateClassLoader();
+        }
+    }
+
+    public void checkAccess(final Thread t) {
+        if (CHECKING.get() == TRUE) {
+            super.checkAccess(t);
+        }
+    }
+
+    public void checkAccess(final ThreadGroup g) {
+        if (CHECKING.get() == TRUE) {
+            super.checkAccess(g);
+        }
+    }
+
+    public void checkExit(final int status) {
+        if (CHECKING.get() == TRUE) {
+            super.checkExit(status);
+        }
+    }
+
+    public void checkExec(final String cmd) {
+        if (CHECKING.get() == TRUE) {
+            super.checkExec(cmd);
+        }
+    }
+
+    public void checkLink(final String lib) {
+        if (CHECKING.get() == TRUE) {
+            super.checkLink(lib);
+        }
+    }
+
+    public void checkRead(final FileDescriptor fd) {
+        if (CHECKING.get() == TRUE) {
+            super.checkRead(fd);
+        }
+    }
+
+    public void checkRead(final String file) {
+        if (CHECKING.get() == TRUE) {
+            super.checkRead(file);
+        }
+    }
+
+    public void checkRead(final String file, final Object context) {
+        if (CHECKING.get() == TRUE) {
+            super.checkRead(file, context);
+        }
+    }
+
+    public void checkWrite(final FileDescriptor fd) {
+        if (CHECKING.get() == TRUE) {
+            super.checkWrite(fd);
+        }
+    }
+
+    public void checkWrite(final String file) {
+        if (CHECKING.get() == TRUE) {
+            super.checkWrite(file);
+        }
+    }
+
+    public void checkDelete(final String file) {
+        if (CHECKING.get() == TRUE) {
+            super.checkDelete(file);
+        }
+    }
+
+    public void checkConnect(final String host, final int port) {
+        if (CHECKING.get() == TRUE) {
+            super.checkConnect(host, port);
+        }
+    }
+
+    public void checkConnect(final String host, final int port, final Object context) {
+        if (CHECKING.get() == TRUE) {
+            super.checkConnect(host, port, context);
+        }
+    }
+
+    public void checkListen(final int port) {
+        if (CHECKING.get() == TRUE) {
+            super.checkListen(port);
+        }
+    }
+
+    public void checkAccept(final String host, final int port) {
+        if (CHECKING.get() == TRUE) {
+            super.checkAccept(host, port);
+        }
+    }
+
+    public void checkMulticast(final InetAddress maddr) {
+        if (CHECKING.get() == TRUE) {
+            super.checkMulticast(maddr);
+        }
+    }
+
+    public void checkMulticast(final InetAddress maddr, final byte ttl) {
+        if (CHECKING.get() == TRUE) {
+            super.checkMulticast(maddr, ttl);
+        }
+    }
+
+    public void checkPropertiesAccess() {
+        if (CHECKING.get() == TRUE) {
+            super.checkPropertiesAccess();
+        }
+    }
+
+    public void checkPropertyAccess(final String key) {
+        if (CHECKING.get() == TRUE) {
+            super.checkPropertyAccess(key);
+        }
+    }
+
+    public void checkPrintJobAccess() {
+        if (CHECKING.get() == TRUE) {
+            super.checkPrintJobAccess();
+        }
+    }
+
+    public void checkPackageAccess(final String pkg) {
+        if (CHECKING.get() == TRUE) {
+            super.checkPackageAccess(pkg);
+        }
+    }
+
+    public void checkPackageDefinition(final String pkg) {
+        if (CHECKING.get() == TRUE) {
+            super.checkPackageDefinition(pkg);
+        }
+    }
+
+    public void checkSetFactory() {
+        if (CHECKING.get() == TRUE) {
+            super.checkSetFactory();
+        }
+    }
+
+    public void checkMemberAccess(final Class<?> clazz, final int which) {
+        if (CHECKING.get() == TRUE) {
+            super.checkMemberAccess(clazz, which);
+        }
+    }
+
+    public void checkSecurityAccess(final String target) {
+        if (CHECKING.get() == TRUE) {
+            super.checkSecurityAccess(target);
+        }
+    }
+
     /**
      * Perform an action with permission checking enabled.  If permission checking is already enabled, the action is
      * simply run.
@@ -242,11 +403,11 @@ public final class WildFlySecurityManager extends SecurityManager {
         if (checking.get() != TRUE) {
             return action.run();
         }
-        final SecurityManager sm = System.getSecurityManager();
+        final SecurityManager sm = getSecurityManager();
         if (sm != null) {
-            assert Reflection.getCallerClass(0) == Reflection.class;
-            assert Reflection.getCallerClass(1) == WildFlySecurityManager.class;
-            if (! Reflection.getCallerClass(2).getProtectionDomain().implies(UNCHECKED_PERMISSION)) {
+            assert getCallerClass(0) == Reflection.class;
+            assert getCallerClass(1) == WildFlySecurityManager.class;
+            if (! getCallerClass(2).getProtectionDomain().implies(UNCHECKED_PERMISSION)) {
                 throw SecurityMessages.access.accessControlException(UNCHECKED_PERMISSION, UNCHECKED_PERMISSION);
             }
         }
@@ -276,11 +437,11 @@ public final class WildFlySecurityManager extends SecurityManager {
                 throw new PrivilegedActionException(e);
             }
         }
-        final SecurityManager sm = System.getSecurityManager();
+        final SecurityManager sm = getSecurityManager();
         if (sm != null) {
-            assert Reflection.getCallerClass(0) == Reflection.class;
-            assert Reflection.getCallerClass(1) == WildFlySecurityManager.class;
-            if (! Reflection.getCallerClass(2).getProtectionDomain().implies(UNCHECKED_PERMISSION)) {
+            assert getCallerClass(0) == Reflection.class;
+            assert getCallerClass(1) == WildFlySecurityManager.class;
+            if (! getCallerClass(2).getProtectionDomain().implies(UNCHECKED_PERMISSION)) {
                 throw SecurityMessages.access.accessControlException(UNCHECKED_PERMISSION, UNCHECKED_PERMISSION);
             }
         }
