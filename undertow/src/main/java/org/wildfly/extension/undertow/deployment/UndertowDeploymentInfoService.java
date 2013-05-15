@@ -83,7 +83,6 @@ import org.apache.jasper.deploy.TagLibraryValidatorInfo;
 import org.apache.jasper.deploy.TagVariableInfo;
 import org.apache.jasper.servlet.JspServlet;
 import org.jboss.annotation.javaee.Icon;
-import org.jboss.as.clustering.ClassLoaderAwareClassResolver;
 import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.ee.component.ComponentRegistry;
@@ -212,13 +211,13 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 private final Handle handle = new Handle() {
                     @Override
                     public void tearDown() {
-                        action.teardown(Collections.EMPTY_MAP);
+                        action.teardown(Collections.<String, Object>emptyMap());
                     }
                 };
 
                 @Override
                 public Handle setup(final HttpServerExchange exchange) {
-                    action.setup(Collections.EMPTY_MAP);
+                    action.setup(Collections.<String, Object>emptyMap());
                     return handle;
                 }
             });
@@ -265,7 +264,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         if (mergedMetaData.getDistributable() != null) {
             String instanceId = undertowService.getValue().getInstanceId();
             ClassResolver resolver = ModularClassResolver.getInstance(module.getModuleLoader());
-            final DistributableSessionManager<OutgoingDistributableSessionData> sessionManager = new DistributableSessionManager<>(this.distributedCacheManagerFactoryInjectedValue.getValue(), mergedMetaData, new ClassLoaderAwareClassResolver(resolver, module.getClassLoader()), deploymentInfo.getContextPath(), module.getClassLoader(), instanceId);
+            final DistributableSessionManager<OutgoingDistributableSessionData> sessionManager = new DistributableSessionManager<>(this.distributedCacheManagerFactoryInjectedValue.getValue(), mergedMetaData, resolver, deploymentInfo.getContextPath(), module.getClassLoader(), instanceId);
             deploymentInfo.setSessionManagerFactory(new ImmediateSessionManagerFactory(sessionManager));
             deploymentInfo.addOuterHandlerChainWrapper(new HandlerWrapper() {
                 @Override

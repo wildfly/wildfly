@@ -22,7 +22,6 @@
 
 package org.jboss.as.ejb3.component.stateful;
 
-import org.jboss.as.clustering.ClassLoaderAwareClassResolver;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.EjbMessages;
@@ -105,7 +104,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         MarshallingConfiguration marshallingConfiguration = new MarshallingConfiguration();
         marshallingConfiguration.setSerializedCreator(new SunReflectiveCreator());
         marshallingConfiguration.setExternalizerCreator(new ReflectiveCreator());
-        marshallingConfiguration.setClassResolver(new ClassLoaderAwareClassResolver(ModularClassResolver.getInstance(componentConfiguration.getModuleLoader()), componentConfiguration.getModuleClassLoader()));
+        marshallingConfiguration.setClassResolver(ModularClassResolver.getInstance(componentConfiguration.getModuleLoader()));
         marshallingConfiguration.setSerializabilityChecker(new StatefulSessionBeanSerializabilityChecker(componentConfiguration.getComponentClass()));
         marshallingConfiguration.setClassTable(new StatefulSessionBeanClassTable());
         // ObjectTable which handles serialization of EJB proxies
@@ -207,6 +206,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
      * An {@link Injector} and a {@link Value} which is used to check if the stateful bean component is disabled for passivation
      * and if it is then the cache factory being injected doesn't have a passivation store associated with it.
      */
+    @SuppressWarnings("rawtypes")
     private class PassivationCheckInjectedValue implements Injector<CacheFactory>, Value<CacheFactory> {
 
         private final InjectedValue<CacheFactory> delegate;

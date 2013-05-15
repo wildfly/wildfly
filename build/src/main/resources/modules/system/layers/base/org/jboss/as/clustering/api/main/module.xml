@@ -32,7 +32,6 @@
     </resources>
 
     <dependencies>
-        <module name="org.wildfly.security.manager"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.logging"/>
     </dependencies>

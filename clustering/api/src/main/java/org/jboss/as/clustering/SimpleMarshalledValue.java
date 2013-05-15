@@ -35,7 +35,6 @@ import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.SimpleDataInput;
 import org.jboss.marshalling.SimpleDataOutput;
 import org.jboss.marshalling.Unmarshaller;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A non-hashable marshalled value, that is lazily serialized, but only deserialized on demand.
@@ -72,21 +71,7 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
         Marshaller marshaller = this.context.createMarshaller(version);
         try {
             marshaller.start(data);
-
-            // Workaround for AS7-2496
-            ClassLoader currentLoader = null;
-            ClassLoader contextLoader = context.getContextClassLoader(version);
-            if (contextLoader != null) {
-                currentLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(contextLoader);
-            }
-            try {
-                marshaller.writeObject(this.object);
-            } finally {
-                if (contextLoader != null) {
-                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(currentLoader);
-                }
-            }
+            marshaller.writeObject(this.object);
             marshaller.finish();
             return output.toByteArray();
         } finally {
@@ -110,20 +95,7 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
                 Unmarshaller unmarshaller = context.createUnmarshaller(version);
                 try {
                     unmarshaller.start(data);
-                    // Workaround for AS7-2496
-                    ClassLoader currentLoader = null;
-                    ClassLoader contextLoader = context.getContextClassLoader(version);
-                    if (contextLoader != null) {
-                        currentLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-                        WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(contextLoader);
-                    }
-                    try {
-                        this.object = (T) unmarshaller.readObject();
-                    } finally {
-                        if (contextLoader != null) {
-                            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(currentLoader);
-                        }
-                    }
+                    this.object = (T) unmarshaller.readObject();
                     unmarshaller.finish();
                     this.bytes = null; // Free up memory
                 } finally {

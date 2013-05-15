@@ -24,7 +24,6 @@ package org.jboss.as.clustering;
 
 import java.io.IOException;
 
-import org.jboss.marshalling.ClassResolver;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.MarshallingConfiguration;
@@ -52,12 +51,6 @@ public class MarshallingContext {
 
     public Marshaller createMarshaller(int version) throws IOException {
         return this.factory.createMarshaller(this.getMarshallingConfiguration(version));
-    }
-
-    // AS7-2496 Workaround
-    public ClassLoader getContextClassLoader(int version) {
-        final ClassResolver resolver = this.getMarshallingConfiguration(version).getClassResolver();
-        return (resolver instanceof ClassLoaderProvider) ? ((ClassLoaderProvider) resolver).getClassLoader() : null;
     }
 
     private MarshallingConfiguration getMarshallingConfiguration(int version) {
