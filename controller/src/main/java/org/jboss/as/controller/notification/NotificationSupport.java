@@ -70,7 +70,10 @@ public interface NotificationSupport {
      * Emit a {@link org.jboss.as.controller.client.Notification}.
      *
      * @param notification the notification to emit
+     *
+     * @deprecated will be removed before the final release of WildFly 8
      */
+    @Deprecated
     void emit(final Notification notification);
 
     class Factory {
