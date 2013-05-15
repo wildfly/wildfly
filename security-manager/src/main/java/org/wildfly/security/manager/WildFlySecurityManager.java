@@ -35,15 +35,22 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.security.ProtectionDomain;
 import java.util.Arrays;
-import org.wildfly.security.manager._private.SecurityMessages;
+import java.util.Map;
+import java.util.Properties;
+import java.util.PropertyPermission;
 import sun.reflect.Reflection;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.lang.System.clearProperty;
+import static java.lang.System.getProperties;
+import static java.lang.System.getProperty;
 import static java.lang.System.getSecurityManager;
+import static java.lang.System.getenv;
+import static java.lang.System.setProperty;
+import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 import static org.wildfly.security.manager._private.SecurityMessages.access;
-import static sun.reflect.Reflection.getCallerClass;
 
 /**
  * The security manager.  This security manager implementation can be switched on and off on a per-thread basis,
@@ -55,14 +62,52 @@ public final class WildFlySecurityManager extends SecurityManager {
 
     private static final Permission SECURITY_MANAGER_PERMISSION = new RuntimePermission("setSecurityManager");
     private static final Permission UNCHECKED_PERMISSION = new RuntimePermission("doUnchecked");
+    private static final Permission PROPERTIES_PERMISSION = new PropertyPermission("*", "read,write");
+    private static final Permission ENVIRONMENT_PERMISSION = new RuntimePermission("getenv.*");
+    private static final Permission GET_CLASS_LOADER_PERMISSION = new RuntimePermission("getClassLoader");
+    private static final Permission SET_CLASS_LOADER_PERMISSION = new RuntimePermission("setClassLoader");
 
     private static final InheritableThreadLocal<Boolean> CHECKING = new InheritableThreadLocal<>();
     private static final ThreadLocal<Boolean> ENTERED = new ThreadLocal<Boolean>();
 
     private static final Field PD_STACK;
+    private static final WildFlySecurityManager INSTANCE;
+    private static final boolean hasGetCallerClass;
 
     static {
         PD_STACK = doPrivileged(new GetAccessibleDeclaredFieldAction(AccessControlContext.class, "context"));
+        INSTANCE = doPrivileged(new PrivilegedAction<WildFlySecurityManager>() {
+            public WildFlySecurityManager run() {
+                return new WildFlySecurityManager();
+            }
+        });
+        boolean result = false;
+        try {
+            result = Reflection.getCallerClass(1) == WildFlySecurityManager.class;
+        } catch (Throwable ignored) {}
+        hasGetCallerClass = result;
+    }
+
+    private WildFlySecurityManager() {
+    }
+
+    /**
+     * Attempt to install this security manager.  If a security manager is installed already, then the caller
+     * (and this class) must have sufficient permissions to replace it.
+     */
+    public static void install() {
+        final SecurityManager sm = System.getSecurityManager();
+        if (sm != INSTANCE) {
+            System.setSecurityManager(INSTANCE);
+        }
+    }
+
+    private static Class<?> getCallerClass(int n) {
+        if (hasGetCallerClass) {
+            return Reflection.getCallerClass(n + 1);
+        } else {
+            return INSTANCE.getClassContext()[n];
+        }
     }
 
     /**
@@ -403,16 +448,12 @@ public final class WildFlySecurityManager extends SecurityManager {
         if (checking.get() != TRUE) {
             return action.run();
         }
-        final SecurityManager sm = getSecurityManager();
-        if (sm != null) {
-            assert getCallerClass(0) == Reflection.class;
-            assert getCallerClass(1) == WildFlySecurityManager.class;
-            if (! getCallerClass(2).getProtectionDomain().implies(UNCHECKED_PERMISSION)) {
-                throw SecurityMessages.access.accessControlException(UNCHECKED_PERMISSION, UNCHECKED_PERMISSION);
-            }
-        }
         checking.set(FALSE);
         try {
+            final SecurityManager sm = getSecurityManager();
+            if (sm != null) {
+                checkPDPermission(getCallerClass(2).getProtectionDomain(), UNCHECKED_PERMISSION);
+            }
             return action.run();
         } finally {
             checking.set(TRUE);
@@ -437,21 +478,381 @@ public final class WildFlySecurityManager extends SecurityManager {
                 throw new PrivilegedActionException(e);
             }
         }
-        final SecurityManager sm = getSecurityManager();
-        if (sm != null) {
-            assert getCallerClass(0) == Reflection.class;
-            assert getCallerClass(1) == WildFlySecurityManager.class;
-            if (! getCallerClass(2).getProtectionDomain().implies(UNCHECKED_PERMISSION)) {
-                throw SecurityMessages.access.accessControlException(UNCHECKED_PERMISSION, UNCHECKED_PERMISSION);
-            }
-        }
         checking.set(FALSE);
         try {
+            final SecurityManager sm = getSecurityManager();
+            if (sm != null) {
+                checkPDPermission(getCallerClass(2).getProtectionDomain(), UNCHECKED_PERMISSION);
+            }
             return action.run();
         } catch (Exception e) {
             throw new PrivilegedActionException(e);
         } finally {
             checking.set(TRUE);
+        }
+    }
+
+    private static void checkPropertyReadPermission(ProtectionDomain protectionDomain, String propertyName) {
+        if (protectionDomain.implies(PROPERTIES_PERMISSION)) {
+            return;
+        }
+        final PropertyPermission permission = new PropertyPermission(propertyName, "read");
+        if (protectionDomain.implies(permission)) {
+            return;
+        }
+        throw access.accessControlException(permission, permission);
+    }
+
+    private static void checkEnvPropertyReadPermission(ProtectionDomain protectionDomain, String propertyName) {
+        if (protectionDomain.implies(ENVIRONMENT_PERMISSION)) {
+            return;
+        }
+        final RuntimePermission permission = new RuntimePermission("getenv." + propertyName);
+        if (protectionDomain.implies(permission)) {
+            return;
+        }
+        throw access.accessControlException(permission, permission);
+    }
+
+    private static void checkPropertyWritePermission(ProtectionDomain protectionDomain, String propertyName) {
+        if (protectionDomain.implies(PROPERTIES_PERMISSION)) {
+            return;
+        }
+        final PropertyPermission permission = new PropertyPermission(propertyName, "write");
+        if (protectionDomain.implies(permission)) {
+            return;
+        }
+        throw access.accessControlException(permission, permission);
+    }
+
+    private static void checkPDPermission(ProtectionDomain protectionDomain, Permission permission) {
+        if (protectionDomain.implies(permission)) {
+            return;
+        }
+        throw access.accessControlException(permission, permission);
+    }
+
+    /**
+     * Get a property, doing a faster permission check that skips having to execute a privileged action frame.
+     *
+     * @param name the property name
+     * @param def the default value if the property is not found
+     * @return the property value, or the default value
+     */
+    public static String getPropertyPrivileged(String name, String def) {
+        final SecurityManager sm = getSecurityManager();
+        if (sm == null) {
+            return getProperty(name, def);
+        }
+        if (sm instanceof WildFlySecurityManager) {
+            final ThreadLocal<Boolean> checking = WildFlySecurityManager.CHECKING;
+            if (checking.get() != TRUE) {
+                return getProperty(name, def);
+            }
+            checkPropertyReadPermission(getCallerClass(2).getProtectionDomain(), name);
+            checking.set(FALSE);
+            try {
+                return getProperty(name, def);
+            } finally {
+                checking.set(TRUE);
+            }
+        } else {
+            checkPropertyReadPermission(doPrivileged(new GetProtectionDomainAction(getCallerClass(2))), name);
+            return doPrivileged(new ReadPropertyAction(name, def));
+        }
+    }
+
+    private static <T> T def(T test, T def) {
+        return test == null ? def : test;
+    }
+
+    /**
+     * Get an environmental property, doing a faster permission check that skips having to execute a privileged action frame.
+     *
+     * @param name the property name
+     * @param def the default value if the property is not found
+     * @return the property value, or the default value
+     */
+    public static String getEnvPropertyPrivileged(String name, String def) {
+        final SecurityManager sm = getSecurityManager();
+        if (sm == null) {
+            return getenv(name);
+        }
+        if (sm instanceof WildFlySecurityManager) {
+            final ThreadLocal<Boolean> checking = WildFlySecurityManager.CHECKING;
+            if (checking.get() != TRUE) {
+                return def(getenv(name), def);
+            }
+            checkEnvPropertyReadPermission(getCallerClass(2).getProtectionDomain(), name);
+            checking.set(FALSE);
+            try {
+                return def(getenv(name), def);
+            } finally {
+                checking.set(TRUE);
+            }
+        } else {
+            checkEnvPropertyReadPermission(doPrivileged(new GetProtectionDomainAction(getCallerClass(2))), name);
+            return doPrivileged(new ReadEnvironmentPropertyAction(name, def));
+        }
+    }
+
+    /**
+     * Set a property, doing a faster permission check that skips having to execute a privileged action frame.
+     *
+     * @param name the property name
+     * @param value the value ot set
+     * @return the previous property value, or {@code null} if there was none
+     */
+    public static String setPropertyPrivileged(String name, String value) {
+        final SecurityManager sm = getSecurityManager();
+        if (sm == null) {
+            return setProperty(name, value);
+        }
+        if (sm instanceof WildFlySecurityManager) {
+            final ThreadLocal<Boolean> checking = WildFlySecurityManager.CHECKING;
+            if (checking.get() != TRUE) {
+                return setProperty(name, value);
+            }
+            checkPropertyWritePermission(getCallerClass(2).getProtectionDomain(), name);
+            checking.set(FALSE);
+            try {
+                return setProperty(name, value);
+            } finally {
+                checking.set(TRUE);
+            }
+        } else {
+            checkPropertyWritePermission(doPrivileged(new GetProtectionDomainAction(getCallerClass(2))), name);
+            return doPrivileged(new WritePropertyAction(name, value));
+        }
+    }
+
+    /**
+     * Clear a property, doing a faster permission check that skips having to execute a privileged action frame.
+     *
+     * @param name the property name
+     * @return the previous property value, or {@code null} if there was none
+     */
+    public static String clearPropertyPrivileged(String name) {
+        final SecurityManager sm = getSecurityManager();
+        if (sm == null) {
+            return clearProperty(name);
+        }
+        if (sm instanceof WildFlySecurityManager) {
+            final ThreadLocal<Boolean> checking = WildFlySecurityManager.CHECKING;
+            if (checking.get() != TRUE) {
+                return clearProperty(name);
+            }
+            checkPropertyWritePermission(getCallerClass(2).getProtectionDomain(), name);
+            checking.set(FALSE);
+            try {
+                return clearProperty(name);
+            } finally {
+                checking.set(TRUE);
+            }
+        } else {
+            checkPropertyWritePermission(doPrivileged(new GetProtectionDomainAction(getCallerClass(2))), name);
+            return doPrivileged(new ClearPropertyAction(name));
+        }
+    }
+
+    /**
+     * Get the current thread's context class loader, doing a faster permission check that skips having to execute a
+     * privileged action frame.
+     *
+     * @return the context class loader
+     */
+    public static ClassLoader getCurrentContextClassLoaderPrivileged() {
+        final SecurityManager sm = System.getSecurityManager();
+        if (sm == null) {
+            return currentThread().getContextClassLoader();
+        }
+        if (sm instanceof WildFlySecurityManager) {
+            final ThreadLocal<Boolean> checking = WildFlySecurityManager.CHECKING;
+            if (checking.get() != TRUE) {
+                return currentThread().getContextClassLoader();
+            }
+            checking.set(FALSE);
+            try {
+                checkPDPermission(getCallerClass(2).getProtectionDomain(), GET_CLASS_LOADER_PERMISSION);
+                return currentThread().getContextClassLoader();
+            } finally {
+                checking.set(TRUE);
+            }
+        } else {
+            checkPDPermission(doPrivileged(new GetProtectionDomainAction(getCallerClass(2))), GET_CLASS_LOADER_PERMISSION);
+            return doPrivileged(GetContextClassLoaderAction.getInstance());
+        }
+    }
+
+    /**
+     * Set the current thread's context class loader, doing a faster permission check that skips having to execute a
+     * privileged action frame.
+     *
+     * @param newClassLoader the new class loader to set
+     * @return the previously set context class loader
+     */
+    public static ClassLoader setCurrentContextClassLoaderPrivileged(ClassLoader newClassLoader) {
+        final SecurityManager sm = System.getSecurityManager();
+        final Thread thread = currentThread();
+        if (sm == null) try {
+            return thread.getContextClassLoader();
+        } finally {
+            thread.setContextClassLoader(newClassLoader);
+        }
+        if (sm instanceof WildFlySecurityManager) {
+            final ThreadLocal<Boolean> checking = WildFlySecurityManager.CHECKING;
+            if (checking.get() != TRUE) try {
+                return thread.getContextClassLoader();
+            } finally {
+                thread.setContextClassLoader(newClassLoader);
+            }
+            checking.set(FALSE);
+            // separate try/finally to guarantee proper exception flow
+            try {
+                checkPDPermission(getCallerClass(2).getProtectionDomain(), SET_CLASS_LOADER_PERMISSION);
+                try {
+                    return thread.getContextClassLoader();
+                } finally {
+                    thread.setContextClassLoader(newClassLoader);
+                }
+            } finally {
+                checking.set(TRUE);
+            }
+        } else {
+            checkPDPermission(doPrivileged(new GetProtectionDomainAction(getCallerClass(2))), SET_CLASS_LOADER_PERMISSION);
+            return doPrivileged(new SetContextClassLoaderAction(newClassLoader));
+        }
+    }
+
+    /**
+     * Set the current thread's context class loader, doing a faster permission check that skips having to execute a
+     * privileged action frame.
+     *
+     * @param clazz the class whose class loader is the new class loader to set
+     * @return the previously set context class loader
+     */
+    public static ClassLoader setCurrentContextClassLoaderPrivileged(final Class<?> clazz) {
+        final SecurityManager sm = System.getSecurityManager();
+        final Thread thread = currentThread();
+        if (sm == null) try {
+            return thread.getContextClassLoader();
+        } finally {
+            thread.setContextClassLoader(clazz.getClassLoader());
+        }
+        if (sm instanceof WildFlySecurityManager) {
+            final ThreadLocal<Boolean> checking = WildFlySecurityManager.CHECKING;
+            if (checking.get() != TRUE) try {
+                return thread.getContextClassLoader();
+            } finally {
+                thread.setContextClassLoader(clazz.getClassLoader());
+            }
+            checking.set(FALSE);
+            // separate try/finally to guarantee proper exception flow
+            try {
+                final ProtectionDomain protectionDomain = getCallerClass(2).getProtectionDomain();
+                checkPDPermission(protectionDomain, SET_CLASS_LOADER_PERMISSION);
+                checkPDPermission(protectionDomain, GET_CLASS_LOADER_PERMISSION);
+                try {
+                    return thread.getContextClassLoader();
+                } finally {
+                    thread.setContextClassLoader(clazz.getClassLoader());
+                }
+            } finally {
+                checking.set(TRUE);
+            }
+        } else {
+            final ProtectionDomain protectionDomain = doPrivileged(new GetProtectionDomainAction(getCallerClass(2)));
+            checkPDPermission(protectionDomain, SET_CLASS_LOADER_PERMISSION);
+            checkPDPermission(protectionDomain, GET_CLASS_LOADER_PERMISSION);
+            return doPrivileged(new SetContextClassLoaderAction(clazz.getClassLoader()));
+        }
+    }
+
+    /**
+     * Get the system properties map, doing a faster permission check that skips having to execute a privileged action
+     * frame.
+     *
+     * @return the system property map
+     */
+    public static Properties getSystemPropertiesPrivileged() {
+        final SecurityManager sm = System.getSecurityManager();
+        if (sm == null) {
+            return getProperties();
+        }
+        if (sm instanceof WildFlySecurityManager) {
+            final ThreadLocal<Boolean> checking = WildFlySecurityManager.CHECKING;
+            if (checking.get() != TRUE) {
+                return getProperties();
+            }
+            checking.set(FALSE);
+            try {
+                checkPDPermission(getCallerClass(2).getProtectionDomain(), PROPERTIES_PERMISSION);
+                return getProperties();
+            } finally {
+                checking.set(TRUE);
+            }
+        } else {
+            checkPDPermission(doPrivileged(new GetProtectionDomainAction(getCallerClass(2))), PROPERTIES_PERMISSION);
+            return doPrivileged(GetSystemPropertiesAction.getInstance());
+        }
+    }
+
+    /**
+     * Get the system environment map, doing a faster permission check that skips having to execute a privileged action
+     * frame.
+     *
+     * @return the system environment map
+     */
+    public static Map<String, String> getSystemEnvironmentPrivileged() {
+        final SecurityManager sm = System.getSecurityManager();
+        if (sm == null) {
+            return getenv();
+        }
+        if (sm instanceof WildFlySecurityManager) {
+            final ThreadLocal<Boolean> checking = WildFlySecurityManager.CHECKING;
+            if (checking.get() != TRUE) {
+                return getenv();
+            }
+            checking.set(FALSE);
+            try {
+                checkPDPermission(getCallerClass(2).getProtectionDomain(), ENVIRONMENT_PERMISSION);
+                return getenv();
+            } finally {
+                checking.set(TRUE);
+            }
+        } else {
+            checkPDPermission(doPrivileged(new GetProtectionDomainAction(getCallerClass(2))), ENVIRONMENT_PERMISSION);
+            return doPrivileged(GetEnvironmentAction.getInstance());
+        }
+    }
+
+    /**
+     * Get the class loader for a class, doing a faster permission check that skips having to execute a privileged action
+     * frame.
+     *
+     * @param clazz the class to check
+     * @return the class loader
+     */
+    public static ClassLoader getClassLoaderPrivileged(Class<?> clazz) {
+        final SecurityManager sm = System.getSecurityManager();
+        if (sm == null) {
+            return clazz.getClassLoader();
+        }
+        if (sm instanceof WildFlySecurityManager) {
+            final ThreadLocal<Boolean> checking = WildFlySecurityManager.CHECKING;
+            if (checking.get() != TRUE) {
+                return clazz.getClassLoader();
+            }
+            checking.set(FALSE);
+            try {
+                checkPDPermission(getCallerClass(2).getProtectionDomain(), GET_CLASS_LOADER_PERMISSION);
+                return clazz.getClassLoader();
+            } finally {
+                checking.set(TRUE);
+            }
+        } else {
+            checkPDPermission(doPrivileged(new GetProtectionDomainAction(getCallerClass(2))), GET_CLASS_LOADER_PERMISSION);
+            return doPrivileged(new GetClassLoaderAction(clazz));
         }
     }
 }
