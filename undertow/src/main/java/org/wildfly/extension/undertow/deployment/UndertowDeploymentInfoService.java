@@ -560,7 +560,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             if (mergedMetaData.getSecurityDomain() != null) {
 
                 d.addOuterHandlerChainWrapper(SecurityContextCreationHandler.wrapper(mergedMetaData.getSecurityDomain()));
-                d.addDispatchedHandlerChainWrapper(SecurityContextAssociationHandler.wrapper(mergedMetaData.getPrincipalVersusRolesMap(), securityContextId));
+                d.addDispatchedHandlerChainWrapper(SecurityContextAssociationHandler.wrapper(mergedMetaData.getPrincipalVersusRolesMap(), mergedMetaData.getRunAsIdentity(), securityContextId));
 
             }
 

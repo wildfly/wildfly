@@ -26,7 +26,6 @@ package org.wildfly.extension.undertow.security;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,6 +36,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.handlers.ServletChain;
 import io.undertow.servlet.handlers.ServletRequestContext;
+import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
 import org.wildfly.extension.undertow.UndertowLogger;
 import org.jboss.security.RunAsIdentity;
 import org.jboss.security.SecurityContext;
@@ -45,11 +45,13 @@ import org.jboss.security.SecurityRolesAssociation;
 public class SecurityContextAssociationHandler implements HttpHandler {
 
     private final Map<String, Set<String>> principleVsRoleMap;
+    private final Map<String, RunAsIdentityMetaData> runAsIdentityMetaDataMap;
     private final String contextId;
     private final HttpHandler next;
 
-    public SecurityContextAssociationHandler(final Map<String, Set<String>> principleVsRoleMap, final String contextId, final HttpHandler next) {
+    public SecurityContextAssociationHandler(final Map<String, Set<String>> principleVsRoleMap, final Map<String, RunAsIdentityMetaData> runAsIdentityMetaDataMap, final String contextId, final HttpHandler next) {
         this.principleVsRoleMap = principleVsRoleMap;
+        this.runAsIdentityMetaDataMap = runAsIdentityMetaDataMap;
         this.contextId = contextId;
         this.next = next;
     }
@@ -58,16 +60,16 @@ public class SecurityContextAssociationHandler implements HttpHandler {
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
         SecurityContext sc = exchange.getAttachment(UndertowSecurityAttachments.SECURITY_CONTEXT_ATTACHMENT);
         String previousContextID = null;
-        String identity = null;
+        RunAsIdentityMetaData identity = null;
         try {
             SecurityActions.setSecurityContextOnAssociation(sc);
             ServletChain servlet = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY).getCurrentServlet();
-            identity = servlet.getManagedServlet().getServletInfo().getRunAs();
+            identity = runAsIdentityMetaDataMap.get(servlet.getManagedServlet().getServletInfo().getName());
             RunAsIdentity runAsIdentity = null;
             if (identity != null) {
                 UndertowLogger.ROOT_LOGGER.tracef("%s, runAs: %s", servlet.getManagedServlet().getServletInfo().getName(), identity);
                 final Set<String> roles = principleVsRoleMap.get(identity);
-                runAsIdentity = new RunAsIdentity(identity, identity, roles == null ? Collections.<String>emptySet() : roles);
+                runAsIdentity = new RunAsIdentity(identity.getRoleName(), identity.getPrincipalName(), identity.getRunAsRoles());
             }
             SecurityActions.pushRunAsIdentity(runAsIdentity);
 
@@ -108,11 +110,11 @@ public class SecurityContextAssociationHandler implements HttpHandler {
     }
 
 
-    public static HandlerWrapper wrapper(final Map<String, Set<String>> principleVsRoleMap, final String contextId) {
+    public static HandlerWrapper wrapper(final Map<String, Set<String>> principleVsRoleMap, final Map<String, RunAsIdentityMetaData> runAsIdentityMetaDataMap, final String contextId) {
         return new HandlerWrapper() {
             @Override
             public HttpHandler wrap(final HttpHandler handler) {
-                return new SecurityContextAssociationHandler(principleVsRoleMap, contextId, handler);
+                return new SecurityContextAssociationHandler(principleVsRoleMap, runAsIdentityMetaDataMap, contextId, handler);
             }
         };
     }

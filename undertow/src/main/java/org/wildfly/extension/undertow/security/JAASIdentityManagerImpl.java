@@ -129,9 +129,15 @@ public class JAASIdentityManagerImpl implements IdentityManager {
                     }
                 }
                 RoleGroup roles = authorizationManager.getSubjectRoles(subject, scb);
-                Set<String> roleSet = new HashSet<String>();
+                Set<String> roleSet = new HashSet<>();
                 for (Role role : roles.getRoles()) {
                     roleSet.add(role.getRoleName());
+
+                }
+                //TODO: is this correct? How should we actually be mapping these
+                Set<String> extra = principalVersusRolesMap.get(incomingPrincipal.getName());
+                if (extra != null) {
+                    roleSet.addAll(extra);
                 }
                 return new AccountImpl(userPrincipal, roleSet, credential);
             }
@@ -172,14 +178,5 @@ public class JAASIdentityManagerImpl implements IdentityManager {
         return callerPrincipal == null ? principal : callerPrincipal;
     }
 
-    @Override
-    public char[] getPassword(final Account account) {
-        return null;
-    }
-
-    @Override
-    public byte[] getHash(Account account) {
-        return null;
-    }
 
 }

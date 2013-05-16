@@ -33,6 +33,7 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -120,24 +121,6 @@ public class RealmIdentityManager implements IdentityManager {
         }
 
         return plainTextDigest;
-    }
-
-    @Override
-    public char[] getPassword(Account account) {
-        if (account instanceof PlainDigestAccount) {
-            return ((PlainDigestAccount) account).getPassword();
-        }
-        //This is impossible, only here for testing if someone messed up a change
-        throw new IllegalArgumentException("Account not instanceof 'PlainDigestAccount'.");
-    }
-
-    @Override
-    public byte[] getHash(Account account) {
-        if (account instanceof HashedDigestAccount) {
-            return ((HashedDigestAccount) account).getHash();
-        }
-        //This is impossible, only here for testing if someone messed up a change
-        throw new IllegalArgumentException("Account not instanceof 'HashedDigestAccount'.");
     }
 
     private class SimplePrincipal implements Principal {
@@ -248,6 +231,16 @@ public class RealmIdentityManager implements IdentityManager {
             return false;
         }
 
+        @Override
+        public Set<String> getRoles() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public Object getAttribute(final String attributeName) {
+            return null;
+        }
+
         public Subject getSubject() {
             // TODO may need to map this method to a domain management API to ensure it can be used.
             return subject;
@@ -268,6 +261,13 @@ public class RealmIdentityManager implements IdentityManager {
             return password;
         }
 
+        @Override
+        public Object getAttribute(final String attributeName) {
+            if(attributeName.equals(Account.PLAINTEXT_PASSWORD_ATTRIBUTE)) {
+                return password;
+            }
+            return null;
+        }
     }
 
     private class HashedDigestAccount extends RealmIdentityAccount {
@@ -281,6 +281,14 @@ public class RealmIdentityManager implements IdentityManager {
 
         private byte[] getHash() {
             return hash;
+        }
+
+        @Override
+        public Object getAttribute(final String attributeName) {
+            if(attributeName.startsWith(Account.DIGEST_HA1_HASH_ATTRIBUTE_PREFIX)) {
+                return hash;
+            }
+            return null;
         }
     }
 }
