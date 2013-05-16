@@ -166,6 +166,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final ScisMetaData scisMetaData;
     private final VirtualFile deploymentRoot;
     private final String securityContextId;
+    private final String securityDomain;
     private final List<ServletContextAttribute> attributes;
     private final String contextPath;
     private final List<SetupAction> setupActions;
@@ -176,7 +177,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<ServletContainerService> container = new InjectedValue<>();
     private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
 
-    public UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final DeploymentClassIndex classReflectionIndex, final WebInjectionContainer injectionContainer, final ComponentRegistry componentRegistry, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions) {
+    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final DeploymentClassIndex classReflectionIndex, final WebInjectionContainer injectionContainer, final ComponentRegistry componentRegistry, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions) {
         this.mergedMetaData = mergedMetaData;
         this.deploymentName = deploymentName;
         this.tldsMetaData = tldsMetaData;
@@ -188,6 +189,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         this.scisMetaData = scisMetaData;
         this.deploymentRoot = deploymentRoot;
         this.securityContextId = securityContextId;
+        this.securityDomain = securityDomain;
         this.attributes = attributes;
         this.contextPath = contextPath;
         this.setupActions = setupActions;
@@ -557,12 +559,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             d.addSecurityRoles(mergedMetaData.getSecurityRoleNames());
 
-            if (mergedMetaData.getSecurityDomain() != null) {
-
-                d.addOuterHandlerChainWrapper(SecurityContextCreationHandler.wrapper(mergedMetaData.getSecurityDomain()));
-                d.addDispatchedHandlerChainWrapper(SecurityContextAssociationHandler.wrapper(mergedMetaData.getPrincipalVersusRolesMap(), mergedMetaData.getRunAsIdentity(), securityContextId));
-
-            }
+            d.addOuterHandlerChainWrapper(SecurityContextCreationHandler.wrapper(securityDomain));
+            d.addDispatchedHandlerChainWrapper(SecurityContextAssociationHandler.wrapper(mergedMetaData.getPrincipalVersusRolesMap(), mergedMetaData.getRunAsIdentity(), securityContextId));
 
             // Setup an deployer configured ServletContext attributes
             for (ServletContextAttribute attribute : attributes) {
@@ -950,6 +948,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         private String securityContextId;
         private List<ServletContextAttribute> attributes;
         private String contextPath;
+        private String securityDomain;
         private List<SetupAction> setupActions;
 
         Builder setMergedMetaData(final JBossWebMetaData mergedMetaData) {
@@ -1023,7 +1022,12 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         }
 
         public UndertowDeploymentInfoService createUndertowDeploymentInfoService() {
-            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, classReflectionIndex, injectionContainer, componentRegistry, scisMetaData, deploymentRoot, securityContextId, attributes, contextPath, setupActions);
+            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, classReflectionIndex, injectionContainer, componentRegistry, scisMetaData, deploymentRoot, securityContextId, securityDomain, attributes, contextPath, setupActions);
+        }
+
+        public Builder setSecurityDomain(final String securityDomain) {
+            this.securityDomain = securityDomain;
+            return this;
         }
     }
 

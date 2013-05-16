@@ -193,6 +193,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .setModule(module)
                 .setScisMetaData(scisMetaData)
                 .setSecurityContextId(securityContextId)
+                .setSecurityDomain(securityDomain)
                 .setSharedTlds(deploymentUnit.getAttachment(SharedTldsMetaDataBuilder.ATTACHMENT_KEY))
                 .setTldsMetaData(deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY))
                 .setSetupActions(setupActions)
