@@ -33,6 +33,7 @@
 
     <dependencies>
         <module name="javax.api"/>
+        <module name="javax.enterprise.api"/>
         <module name="javax.jms.api"/>
         <module name="javax.transaction.api"/>
         <module name="org.hornetq"/>
@@ -49,6 +50,7 @@
         <module name="org.jboss.as.server"/>
         <!-- web-common is required only if servlet-connector are used -->
         <module name="org.jboss.as.web-common" optional="true"/>
+        <module name="org.jboss.as.weld"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.metadata"/>
         <module name="org.jboss.modules"/>
@@ -67,5 +69,8 @@
         <!--  JGroups is required only as an option to cluster HornetQ nodes -->
         <module name="org.jboss.as.clustering.jgroups" optional="true"/>
         <module name="org.jgroups" optional="true"/>
+        <module name="org.jboss.weld.api" />
+        <module name="org.jboss.weld.core"/>
+        <module name="org.jboss.weld.spi" />
     </dependencies>
 </module>
