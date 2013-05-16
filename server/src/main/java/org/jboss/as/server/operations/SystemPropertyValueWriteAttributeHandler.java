@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.ProcessEnvironmentSystemPropertyUpdater;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Handles changes to the value of a system property.
@@ -61,11 +62,11 @@ public class SystemPropertyValueWriteAttributeHandler extends AbstractWriteAttri
         final boolean applyToRuntime = systemPropertyUpdater.isRuntimeSystemPropertyUpdateAllowed(name, setValue, context.isBooting());
 
         if (applyToRuntime) {
-            final String oldValue = SecurityActions.getSystemProperty(name);
+            final String oldValue = WildFlySecurityManager.getPropertyPrivileged(name, null);
             if (setValue != null) {
-                SecurityActions.setSystemProperty(name, setValue);
+                WildFlySecurityManager.setPropertyPrivileged(name, setValue);
             } else {
-                SecurityActions.clearSystemProperty(name);
+                WildFlySecurityManager.clearPropertyPrivileged(name);
             }
             systemPropertyUpdater.systemPropertyUpdated(name, setValue);
 
@@ -80,9 +81,9 @@ public class SystemPropertyValueWriteAttributeHandler extends AbstractWriteAttri
                                          ModelNode valueToRestore, ModelNode valueToRevert, SysPropValue handback) throws OperationFailedException {
         if (handback != null) {
             if (handback.value != null) {
-                SecurityActions.setSystemProperty(handback.name, handback.value);
+                WildFlySecurityManager.setPropertyPrivileged(handback.name, handback.value);
             } else {
-                SecurityActions.clearSystemProperty(handback.name);
+                WildFlySecurityManager.clearPropertyPrivileged(handback.name);
             }
 
             systemPropertyUpdater.systemPropertyUpdated(handback.name, handback.value);

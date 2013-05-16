@@ -42,6 +42,7 @@ import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
 import org.jboss.stdio.StdioContext;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * The main-class entry point for standalone server instances.
@@ -84,7 +85,7 @@ public final class Main {
             }
 
             Module.registerURLStreamHandlerFactoryModule(Module.getBootModuleLoader().loadModule(ModuleIdentifier.create("org.jboss.vfs")));
-            ServerEnvironment serverEnvironment = determineEnvironment(args, SecurityActions.getSystemProperties(), SecurityActions.getSystemEnvironment(), ServerEnvironment.LaunchType.STANDALONE);
+            ServerEnvironment serverEnvironment = determineEnvironment(args, WildFlySecurityManager.getSystemPropertiesPrivileged(), WildFlySecurityManager.getSystemEnvironmentPrivileged(), ServerEnvironment.LaunchType.STANDALONE);
             if (serverEnvironment == null) {
                 abort(null);
             } else {
@@ -120,7 +121,7 @@ public final class Main {
             try {
                 if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg)
                         || CommandLineConstants.OLD_VERSION.equals(arg) || CommandLineConstants.OLD_SHORT_VERSION.equals(arg)) {
-                    productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(ServerEnvironment.HOME_DIR), null);
+                    productConfig = new ProductConfig(Module.getBootModuleLoader(), WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.HOME_DIR, null), null);
                     System.out.println(productConfig.getPrettyVersionString());
                     return null;
                 } else if (CommandLineConstants.HELP.equals(arg) || CommandLineConstants.SHORT_HELP.equals(arg) || CommandLineConstants.OLD_HELP.equals(arg)) {
@@ -252,7 +253,7 @@ public final class Main {
             throw ServerMessages.MESSAGES.cannotHaveBothInitialServerConfigAndServerConfig();
         }
         String hostControllerName = null; // No host controller unless in domain mode.
-        productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(ServerEnvironment.HOME_DIR), systemProperties);
+        productConfig = new ProductConfig(Module.getBootModuleLoader(), WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.HOME_DIR, null), systemProperties);
         return new ServerEnvironment(hostControllerName, systemProperties, systemEnvironment, serverConfig, initialServerConfig, launchType, runningMode, productConfig);
     }
 

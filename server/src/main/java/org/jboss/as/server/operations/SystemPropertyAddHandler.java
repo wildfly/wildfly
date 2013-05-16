@@ -31,6 +31,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.ProcessEnvironmentSystemPropertyUpdater;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Operation handler for adding domain/host and server system properties.
@@ -92,9 +93,9 @@ public class SystemPropertyAddHandler implements OperationStepHandler{
         if (applyToRuntime) {
             final String setValue = value != null ? VALUE.resolveModelAttribute(context, model).asString() : null;
             if (setValue != null) {
-                SecurityActions.setSystemProperty(name, setValue);
+                WildFlySecurityManager.setPropertyPrivileged(name, setValue);
             } else {
-                SecurityActions.clearSystemProperty(name);
+                WildFlySecurityManager.clearPropertyPrivileged(name);
             }
             if (systemPropertyUpdater != null) {
                 systemPropertyUpdater.systemPropertyUpdated(name, setValue);
@@ -110,7 +111,7 @@ public class SystemPropertyAddHandler implements OperationStepHandler{
                     context.revertReloadRequired();
                 }
                 if (systemPropertyUpdater != null) {
-                    SecurityActions.clearSystemProperty(name);
+                    WildFlySecurityManager.clearPropertyPrivileged(name);
                     if (systemPropertyUpdater != null) {
                         systemPropertyUpdater.systemPropertyUpdated(name, null);
                     }

@@ -27,10 +27,7 @@ import java.security.PrivilegedAction;
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.security.SecurityContext;
-import org.wildfly.security.manager.ReadPropertyAction;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static java.lang.System.getProperty;
 import static java.security.AccessController.doPrivileged;
 
 /**
@@ -41,10 +38,6 @@ import static java.security.AccessController.doPrivileged;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 class SecurityActions {
-
-    static String getSystemProperty(final String key, final String defaultValue) {
-        return ! WildFlySecurityManager.isChecking() ? getProperty(key, defaultValue) : doPrivileged(new ReadPropertyAction(key, defaultValue));
-    }
 
     static void setSecurityContextSubject(final Subject subject) {
         doPrivileged(new PrivilegedAction<Void>() {

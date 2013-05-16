@@ -23,6 +23,7 @@ package org.jboss.as.cli;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  *
@@ -35,7 +36,7 @@ public abstract class CommandContextFactory {
     public static CommandContextFactory getInstance() throws CliInitializationException {
         Class<?> factoryCls;
         try {
-            factoryCls = SecurityActions.getContextClassLoader().loadClass(DEFAULT_FACTORY_CLASS);
+            factoryCls = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged().loadClass(DEFAULT_FACTORY_CLASS);
         } catch (ClassNotFoundException e) {
             throw new CliInitializationException("Failed to load " + DEFAULT_FACTORY_CLASS, e);
         }

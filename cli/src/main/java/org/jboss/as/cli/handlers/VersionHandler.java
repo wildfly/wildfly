@@ -33,7 +33,7 @@ import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.Util;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
-
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  *
@@ -66,7 +66,7 @@ public class VersionHandler implements CommandHandler {
     public void handle(CommandContext ctx) throws CommandFormatException {
         final StringBuilder buf = new StringBuilder();
         buf.append("JBoss Admin Command-line Interface\n");
-        buf.append("JBOSS_HOME: ").append(SecurityActions.getEnvironmentVariable("JBOSS_HOME")).append('\n');
+        buf.append("JBOSS_HOME: ").append(WildFlySecurityManager.getEnvPropertyPrivileged("JBOSS_HOME", null)).append('\n');
         buf.append("JBoss AS release: ");
         final ModelControllerClient client = ctx.getModelControllerClient();
         if(client == null) {
@@ -110,12 +110,12 @@ public class VersionHandler implements CommandHandler {
                 throw new CommandFormatException("Failed to get the AS release info: " + e.getLocalizedMessage());
             }
         }
-        buf.append("JAVA_HOME: ").append(SecurityActions.getEnvironmentVariable("JAVA_HOME")).append('\n');
-        buf.append("java.version: ").append(SecurityActions.getSystemProperty("java.version")).append('\n');
-        buf.append("java.vm.vendor: ").append(SecurityActions.getSystemProperty("java.vm.vendor")).append('\n');
-        buf.append("java.vm.version: ").append(SecurityActions.getSystemProperty("java.vm.version")).append('\n');
-        buf.append("os.name: ").append(SecurityActions.getSystemProperty("os.name")).append('\n');
-        buf.append("os.version: ").append(SecurityActions.getSystemProperty("os.version"));
+        buf.append("JAVA_HOME: ").append(WildFlySecurityManager.getEnvPropertyPrivileged("JAVA_HOME", null)).append('\n');
+        buf.append("java.version: ").append(WildFlySecurityManager.getPropertyPrivileged("java.version", null)).append('\n');
+        buf.append("java.vm.vendor: ").append(WildFlySecurityManager.getPropertyPrivileged("java.vm.vendor", null)).append('\n');
+        buf.append("java.vm.version: ").append(WildFlySecurityManager.getPropertyPrivileged("java.vm.version", null)).append('\n');
+        buf.append("os.name: ").append(WildFlySecurityManager.getPropertyPrivileged("os.name", null)).append('\n');
+        buf.append("os.version: ").append(WildFlySecurityManager.getPropertyPrivileged("os.version", null));
         ctx.printLine(buf.toString());
     }
 

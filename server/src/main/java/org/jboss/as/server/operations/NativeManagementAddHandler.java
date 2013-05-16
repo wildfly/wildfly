@@ -49,6 +49,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xnio.OptionMap;
 
 /**
@@ -81,7 +82,7 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
         final ServiceName endpointName = ManagementRemotingServices.MANAGEMENT_ENDPOINT;
-        final String hostName = SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME);
+        final String hostName = WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.NODE_NAME, null);
         NativeManagementServices.installRemotingServicesIfNotInstalled(serviceTarget, hostName, verificationHandler, newControllers, context.getServiceRegistry(false));
         installNativeManagementConnector(context, model, endpointName, serviceTarget, verificationHandler, newControllers);
 

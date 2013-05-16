@@ -56,6 +56,7 @@ import org.omg.CORBA.ORB;
 import org.omg.PortableServer.IdAssignmentPolicyValue;
 import org.omg.PortableServer.LifespanPolicyValue;
 import org.omg.PortableServer.POA;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * <p>
@@ -110,7 +111,7 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
         JacORBLogger.ROOT_LOGGER.activatingSubsystem();
 
         // set the ORBUseDynamicStub system property.
-        SecurityActions.setSystemProperty("org.jboss.com.sun.CORBA.ORBUseDynamicStub", "true");
+        WildFlySecurityManager.setPropertyPrivileged("org.jboss.com.sun.CORBA.ORBUseDynamicStub", "true");
         //we set the same stub factory to both the static and dynamic stub factory. As there is no way to dynamically change
         //the userDynamicStubs's property at runtime it is possible for the ORB class's <clinit> method to be
         //called before this property is set.

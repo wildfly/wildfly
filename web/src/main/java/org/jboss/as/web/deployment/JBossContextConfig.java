@@ -118,6 +118,7 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.as.web.common.WarMetaData;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Remy Maucherat
@@ -128,7 +129,7 @@ public class JBossContextConfig extends ContextConfig {
     private Set<String> overlays = new HashSet<String>();
     private final InjectedValue<DistributedCacheManagerFactory> factory = new InjectedValue<DistributedCacheManagerFactory>();
     private Map<String, AuthenticatorValve> authenValves = null;
-    private boolean DELETE_WORK_DIR_ONCONTEXTDESTROY = Boolean.parseBoolean(SecurityActions.getSystemProperty("org.jboss.as.web.deployment.DELETE_WORK_DIR_ONCONTEXTDESTROY", "false"));
+    private boolean DELETE_WORK_DIR_ONCONTEXTDESTROY = Boolean.parseBoolean(WildFlySecurityManager.getPropertyPrivileged("org.jboss.as.web.deployment.DELETE_WORK_DIR_ONCONTEXTDESTROY", "false"));
 
     /**
      * <p>

@@ -25,15 +25,11 @@ package org.jboss.as.security.service;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.security.Security;
 
 import org.jboss.as.security.SecurityMessages;
 import org.jboss.as.security.remoting.RemotingContext;
-import org.wildfly.security.manager.GetContextClassLoaderAction;
 import org.wildfly.security.manager.GetModuleClassLoaderAction;
-import org.wildfly.security.manager.ReadPropertyAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
-import org.wildfly.security.manager.WriteSecurityPropertyAction;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
@@ -41,7 +37,6 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.remoting3.Connection;
 
-import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 
 /**
@@ -59,29 +54,13 @@ class SecurityActions {
         return WildFlySecurityManager.isChecking() ? doPrivileged(new GetModuleClassLoaderAction(module)) : module.getClassLoader();
     }
 
-    static void setSecurityProperty(final String key, final String value) {
-        if (WildFlySecurityManager.isChecking()) {
-            doPrivileged(new WriteSecurityPropertyAction(key, value));
-        } else {
-            Security.setProperty(key, value);
-        }
-    }
-
-    static String getSystemProperty(final String name, final String defaultValue) {
-        return WildFlySecurityManager.isChecking() ? System.getProperty(name, defaultValue) : doPrivileged(new ReadPropertyAction(name, defaultValue));
-    }
-
-    static ClassLoader getContextClassLoader() {
-        return WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
-    }
-
     static Class<?> loadClass(final String name) throws ClassNotFoundException {
         if (WildFlySecurityManager.isChecking()) {
             try {
                 return doPrivileged(new PrivilegedExceptionAction<Class<?>>() {
                     public Class<?> run() throws ClassNotFoundException {
                         ClassLoader[] cls = new ClassLoader[] { SecurityActions.class.getClassLoader(), // PB classes (not always on TCCL [modular env])
-                                getContextClassLoader(), // User defined classes
+                                WildFlySecurityManager.getCurrentContextClassLoaderPrivileged(), // User defined classes
                                 ClassLoader.getSystemClassLoader() // System loader, usually has app class path
                         };
                         ClassNotFoundException e = null;
@@ -102,7 +81,7 @@ class SecurityActions {
             }
         } else {
             ClassLoader[] cls = new ClassLoader[] { SecurityActions.class.getClassLoader(), // PB classes (not always on TCCL [modular env])
-                    getContextClassLoader(), // User defined classes
+                    WildFlySecurityManager.getCurrentContextClassLoaderPrivileged(), // User defined classes
                     ClassLoader.getSystemClassLoader() // System loader, usually has app class path
             };
             ClassNotFoundException e = null;

@@ -118,6 +118,7 @@ import org.jboss.remoting3.RemotingOptions;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
 import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 
@@ -622,7 +623,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     }
 
     private static int getSystemProperty(final String name, final int defaultValue) {
-        final String value = SecurityActions.getSystemProperty(name);
+        final String value = WildFlySecurityManager.getPropertyPrivileged(name, null);
         try {
             return value == null ? defaultValue : Integer.parseInt(value);
         } catch (NumberFormatException ignored) {

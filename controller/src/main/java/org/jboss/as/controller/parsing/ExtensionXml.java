@@ -57,6 +57,7 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Parsing and marshalling logic related to the {@code extension} element in standalone.xml and domain.xml.
@@ -177,11 +178,11 @@ public class ExtensionXml {
             final Module module = moduleLoader.loadModule(ModuleIdentifier.fromString(moduleName));
             boolean initialized = false;
             for (final Extension extension : module.loadService(Extension.class)) {
-                ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(extension.getClass());
+                ClassLoader oldTccl = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(extension.getClass());
                 try {
                     extension.initializeParsers(extensionRegistry.getExtensionParsingContext(moduleName, xmlMapper));
                 } finally {
-                    SecurityActions.setThreadContextClassLoader(oldTccl);
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
                 }
                 if (!initialized) {
                     initialized = true;

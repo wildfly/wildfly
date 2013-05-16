@@ -22,14 +22,11 @@
 
 package org.jboss.as.connector.services.workmanager;
 
-import static java.lang.System.getProperty;
-import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
 import java.util.concurrent.Executor;
 
 import org.jboss.as.connector.util.ConnectorServices;
-import org.wildfly.security.manager.ReadPropertyAction;
 import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.jca.core.security.DefaultCallback;
 import org.jboss.jca.core.spi.security.Callback;
@@ -90,7 +87,7 @@ public final class WorkManagerService implements Service<WorkManager> {
         this.value.setXATerminator(new XATerminatorImpl(xaTerminator.getValue()));
 
         // TODO - Remove and do proper integration (IronJacamar 1.1)
-        String callbackProperties = ! WildFlySecurityManager.isChecking() ? getProperty("callback.properties") : doPrivileged(new ReadPropertyAction("callback.properties"));
+        String callbackProperties = WildFlySecurityManager.getPropertyPrivileged("callback.properties", null);
         if (callbackProperties != null) {
             try {
                 DefaultCallback defaultCallback = new DefaultCallback(callbackProperties);

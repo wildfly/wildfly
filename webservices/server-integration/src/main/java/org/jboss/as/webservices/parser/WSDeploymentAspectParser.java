@@ -21,8 +21,6 @@
  */
 package org.jboss.as.webservices.parser;
 
-import static java.lang.Thread.currentThread;
-import static java.security.AccessController.doPrivileged;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
@@ -39,8 +37,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.ws.WebServiceException;
 
-import org.wildfly.security.manager.GetContextClassLoaderAction;
-import org.wildfly.security.manager.SetContextClassLoaderAction;
 import org.jboss.ws.common.JavaUtils;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.jboss.wsf.spi.util.StAXUtils;
@@ -138,12 +134,12 @@ public class WSDeploymentAspectParser {
         try {
             @SuppressWarnings("unchecked")
             Class<? extends DeploymentAspect> clazz = (Class<? extends DeploymentAspect>) Class.forName(deploymentAspectClass, true, loader);
-            ClassLoader orig = getContextClassLoader();
+            ClassLoader orig = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
             try {
-                setContextClassLoader(loader);
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(loader);
                 deploymentAspect = clazz.newInstance();
             } finally {
-                setContextClassLoader(orig);
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(orig);
             }
         } catch (Exception e) {
             throw MESSAGES.cannotInstantiateDeploymentAspect(e, deploymentAspectClass);
@@ -353,27 +349,5 @@ public class WSDeploymentAspectParser {
             }
         }
         throw MESSAGES.unexpectedEndOfDocument();
-    }
-
-    /**
-     * Get context classloader.
-     *
-     * @return the current context classloader
-     */
-    private static ClassLoader getContextClassLoader() {
-        return ! WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
-    }
-
-    /**
-     * Set context classloader.
-     *
-     * @param classLoader the classloader
-     */
-    private static void setContextClassLoader(final ClassLoader classLoader) {
-        if (! WildFlySecurityManager.isChecking()) {
-            currentThread().setContextClassLoader(classLoader);
-        } else {
-            doPrivileged(new SetContextClassLoaderAction(classLoader));
-        }
     }
 }

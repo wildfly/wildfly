@@ -54,6 +54,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A ResourceAdapterDeploymentService.
@@ -104,17 +105,17 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
             new AS7RaDeployer(context.getChildTarget(), url, deploymentName, root, classLoader, cmd, ijmd, deploymentServiceName);
         raDeployer.setConfiguration(config.getValue());
 
-        ClassLoader old = SecurityActions.getThreadContextClassLoader();
+        ClassLoader old = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             WritableServiceBasedNamingStore.pushOwner(duServiceName);
-            SecurityActions.setThreadContextClassLoader(classLoader);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
             raDeployment = raDeployer.doDeploy();
             deploymentName = raDeployment.getDeploymentName();
         } catch (Throwable t) {
             unregisterAll(deploymentName);
             throw MESSAGES.failedToStartRaDeployment(t, deploymentName);
         } finally {
-            SecurityActions.setThreadContextClassLoader(old);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
             WritableServiceBasedNamingStore.popOwner();
         }
 

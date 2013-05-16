@@ -60,6 +60,7 @@ import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Unmarshaller;
 import org.jboss.remoting3.MessageOutputStream;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xnio.IoUtils;
 
 
@@ -126,11 +127,11 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
             this.writeNoSuchEJBFailureMessage(channelAssociation, invocationId, appName, moduleName, distinctName, beanName, null);
             return;
         }
-        final ClassLoader tccl = SecurityActions.getContextClassLoader();
+        final ClassLoader tccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         Runnable runnable = null;
         try {
             //set the correct TCCL for unmarshalling
-            SecurityActions.setContextClassLoader(ejbDeploymentInformation.getDeploymentClassLoader());
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(ejbDeploymentInformation.getDeploymentClassLoader());
             // now switch the CL to the EJB deployment's CL so that the unmarshaller can use the
             // correct CL for the rest of the unmarshalling of the stream
             classResolver.switchClassLoader(ejbDeploymentInformation.getDeploymentClassLoader());
@@ -256,7 +257,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                 }
             };
         } finally {
-            SecurityActions.setContextClassLoader(tccl);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(tccl);
         }
         // invoke the method and write out the response on a separate thread
         executorService.submit(runnable);

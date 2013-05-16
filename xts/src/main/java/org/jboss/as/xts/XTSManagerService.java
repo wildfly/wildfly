@@ -31,6 +31,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.wsf.spi.management.ServerConfig;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Main XTS service
@@ -58,7 +59,7 @@ public class XTSManagerService extends AbstractService<XTSService> {
     public synchronized void start(final StartContext context) throws StartException {
         // XTS expects the TCCL to be set to something that will locate the XTS service implementation classes.
         final ClassLoader loader = XTSService.class.getClassLoader();
-        SecurityActions.setContextLoader(loader);
+        WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(loader);
         try {
             ServerConfig serverConfigValue =  wsServerConfig.getValue();
             WSCEnvironmentBean wscEnVBean = XTSPropertyManager.getWSCEnvironmentBean();
@@ -89,7 +90,7 @@ public class XTSManagerService extends AbstractService<XTSService> {
             XTSHandlersManager xtsHandlerManager = new XTSHandlersManager(serverConfigValue);
             xtsHandlerManager.registerClientHandlers(isDefaultContextPropagation);
         } finally {
-            SecurityActions.setContextLoader(null);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged((ClassLoader) null);
         }
     }
 

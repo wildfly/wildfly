@@ -59,6 +59,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.AsyncFuture;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * This is the task used by the Host Controller and passed to a Server instance
@@ -94,14 +95,14 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         this.initialOperationID = initialOperationID;
         this.hostControllerName = hostControllerName;
 
-        this.home = SecurityActions.getSystemProperty("jboss.home.dir");
-        String serverBaseDir = SecurityActions.getSystemProperty("jboss.domain.servers.dir") + File.separatorChar + serverName;
+        this.home = WildFlySecurityManager.getPropertyPrivileged("jboss.home.dir", null);
+        String serverBaseDir = WildFlySecurityManager.getPropertyPrivileged("jboss.domain.servers.dir", null) + File.separatorChar + serverName;
         properties.setProperty(ServerEnvironment.SERVER_NAME, serverName);
         properties.setProperty(ServerEnvironment.HOME_DIR, home);
         properties.setProperty(ServerEnvironment.SERVER_BASE_DIR, serverBaseDir);
-        properties.setProperty(ServerEnvironment.CONTROLLER_TEMP_DIR, SecurityActions.getSystemProperty("jboss.domain.temp.dir"));
-        properties.setProperty(ServerEnvironment.DOMAIN_BASE_DIR, SecurityActions.getSystemProperty(ServerEnvironment.DOMAIN_BASE_DIR));
-        properties.setProperty(ServerEnvironment.DOMAIN_CONFIG_DIR, SecurityActions.getSystemProperty(ServerEnvironment.DOMAIN_CONFIG_DIR));
+        properties.setProperty(ServerEnvironment.CONTROLLER_TEMP_DIR, WildFlySecurityManager.getPropertyPrivileged("jboss.domain.temp.dir", null));
+        properties.setProperty(ServerEnvironment.DOMAIN_BASE_DIR, WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.DOMAIN_BASE_DIR, null));
+        properties.setProperty(ServerEnvironment.DOMAIN_CONFIG_DIR, WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.DOMAIN_CONFIG_DIR, null));
 
         // Provide any other properties that standalone Main.determineEnvironment() would read
         // from system properties and pass in to ServerEnvironment
@@ -126,7 +127,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         // Create server environment on the server, so that the system properties are getting initialized on the right side
         final ServerEnvironment providedEnvironment = new ServerEnvironment(hostControllerName, properties,
 
-        SecurityActions.getSystemEnvironment(), null, null, ServerEnvironment.LaunchType.DOMAIN, RunningMode.NORMAL, productConfig);
+                WildFlySecurityManager.getSystemEnvironmentPrivileged(), null, null, ServerEnvironment.LaunchType.DOMAIN, RunningMode.NORMAL, productConfig);
         DomainServerCommunicationServices.updateOperationID(initialOperationID);
 
         // TODO perhaps have ConfigurationPersisterFactory as a Service

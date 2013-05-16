@@ -44,6 +44,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A base class for controller services.
@@ -69,7 +70,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
     public static final int DEFAULT_BOOT_STACK_SIZE = 2 * 1024 * 1024;
 
     private static int getBootStackSize() {
-        String prop = SecurityActions.getSystemProperty(BOOT_STACK_SIZE_PROPERTY);
+        String prop = WildFlySecurityManager.getPropertyPrivileged(BOOT_STACK_SIZE_PROPERTY, null);
         if (prop == null) {
             return  DEFAULT_BOOT_STACK_SIZE;
         } else {

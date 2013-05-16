@@ -45,6 +45,7 @@ import org.jboss.as.version.ProductConfig;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Encapsulates the runtime environment for a server.
@@ -384,14 +385,14 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
             throw MESSAGES.configDirectoryDoesNotExist(serverConfigurationDir);
         }
 
-        String defaultServerConfig = SecurityActions.getSystemProperty(JBOSS_SERVER_DEFAULT_CONFIG, "standalone.xml");
+        String defaultServerConfig = WildFlySecurityManager.getPropertyPrivileged(JBOSS_SERVER_DEFAULT_CONFIG, "standalone.xml");
         String config = initialServerConfig == null ? serverConfig : initialServerConfig;
         boolean persist = initialServerConfig == null;
         serverConfigurationFile = standalone ? new ConfigurationFile(serverConfigurationDir, defaultServerConfig, config, persist) : null;
         // Adds a system property to indicate whether or not the server configuration should be persisted
         @SuppressWarnings("deprecation")
         final String propertyKey = JBOSS_PERSIST_SERVER_CONFIG;
-        SecurityActions.setSystemProperty(propertyKey, Boolean.toString(persist));
+        WildFlySecurityManager.setPropertyPrivileged(propertyKey, Boolean.toString(persist));
 
         tmp = getFileFromProperty(SERVER_DATA_DIR, props);
         if (tmp == null) {
@@ -483,7 +484,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         }
 
         boolean allowExecutor = true;
-        String maxThreads = SecurityActions.getSystemProperty(BOOTSTRAP_MAX_THREADS);
+        String maxThreads = WildFlySecurityManager.getPropertyPrivileged(BOOTSTRAP_MAX_THREADS, null);
         if (maxThreads != null && maxThreads.length() > 0) {
             try {
                 Integer.decode(maxThreads);
@@ -505,25 +506,25 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         copyProperties(primordialProperties, providedProperties);
 
         // Provide standard system properties for environment items
-        SecurityActions.setSystemProperty(QUALIFIED_HOST_NAME, qualifiedHostName);
-        SecurityActions.setSystemProperty(HOST_NAME, hostName);
-        SecurityActions.setSystemProperty(SERVER_NAME, serverName);
-        SecurityActions.setSystemProperty(NODE_NAME, nodeName);
-        SecurityActions.setSystemProperty(HOME_DIR, homeDir.getAbsolutePath());
-        SecurityActions.setSystemProperty(MODULES_DIR, modulesDir.getAbsolutePath());
-        SecurityActions.setSystemProperty(SERVER_BASE_DIR, serverBaseDir.getAbsolutePath());
-        SecurityActions.setSystemProperty(SERVER_CONFIG_DIR, serverConfigurationDir.getAbsolutePath());
-        SecurityActions.setSystemProperty(SERVER_DATA_DIR, serverDataDir.getAbsolutePath());
-        SecurityActions.setSystemProperty(SERVER_DEPLOY_DIR, serverContentDir.getAbsolutePath());
-        SecurityActions.setSystemProperty(SERVER_LOG_DIR, serverLogDir.getAbsolutePath());
-        SecurityActions.setSystemProperty(SERVER_TEMP_DIR, serverTempDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(QUALIFIED_HOST_NAME, qualifiedHostName);
+        WildFlySecurityManager.setPropertyPrivileged(HOST_NAME, hostName);
+        WildFlySecurityManager.setPropertyPrivileged(SERVER_NAME, serverName);
+        WildFlySecurityManager.setPropertyPrivileged(NODE_NAME, nodeName);
+        WildFlySecurityManager.setPropertyPrivileged(HOME_DIR, homeDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(MODULES_DIR, modulesDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(SERVER_BASE_DIR, serverBaseDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(SERVER_CONFIG_DIR, serverConfigurationDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(SERVER_DATA_DIR, serverDataDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(SERVER_DEPLOY_DIR, serverContentDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(SERVER_LOG_DIR, serverLogDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(SERVER_TEMP_DIR, serverTempDir.getAbsolutePath());
 
         if(launchType.getProcessType() == ProcessType.DOMAIN_SERVER) {
             if(domainBaseDir != null) {
-                SecurityActions.setSystemProperty(DOMAIN_BASE_DIR, domainBaseDir.getAbsolutePath());
+                WildFlySecurityManager.setPropertyPrivileged(DOMAIN_BASE_DIR, domainBaseDir.getAbsolutePath());
             }
             if(domainConfigurationDir != null) {
-                SecurityActions.setSystemProperty(DOMAIN_CONFIG_DIR, domainConfigurationDir.getAbsolutePath());
+                WildFlySecurityManager.setPropertyPrivileged(DOMAIN_CONFIG_DIR, domainConfigurationDir.getAbsolutePath());
             }
         }
 
@@ -929,7 +930,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         // Base the bootstrap thread on proc count if not specified
         int cpuCount = Runtime.getRuntime().availableProcessors();
         int defaultThreads = cpuCount * 2;
-        String maxThreads = SecurityActions.getSystemProperty(BOOTSTRAP_MAX_THREADS);
+        String maxThreads = WildFlySecurityManager.getPropertyPrivileged(BOOTSTRAP_MAX_THREADS, null);
         if (maxThreads != null && maxThreads.length() > 0) {
             try {
                 int max = Integer.decode(maxThreads);
@@ -952,15 +953,15 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
             if (primordialProperties.contains(SERVER_NAME)) {
                 // User specified both -Djboss.server.name and a standalone.xml <server name="xxx"/> value.
                 // Log a WARN
-                String rawServerProp = SecurityActions.getSystemProperty(SERVER_NAME, serverName);
+                String rawServerProp = WildFlySecurityManager.getPropertyPrivileged(SERVER_NAME, serverName);
                 ServerLogger.AS_ROOT_LOGGER.duplicateServerNameConfiguration(SERVER_NAME, rawServerProp, processName);
             }
             serverName = processName;
-            SecurityActions.setSystemProperty(SERVER_NAME, serverName);
+            WildFlySecurityManager.setPropertyPrivileged(SERVER_NAME, serverName);
             processNameSet = true;
             if (!primordialProperties.contains(NODE_NAME)) {
                 nodeName = serverName;
-                SecurityActions.setSystemProperty(NODE_NAME, nodeName);
+                WildFlySecurityManager.setPropertyPrivileged(NODE_NAME, nodeName);
             }
         }
     }
@@ -985,7 +986,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
                 configureServerTempDir(propertyValue, providedProperties);
             } else if (QUALIFIED_HOST_NAME.equals(propertyName)) {
                 configureQualifiedHostName(propertyValue, providedProperties.getProperty(HOST_NAME),
-                        providedProperties, SecurityActions.getSystemEnvironment());
+                        providedProperties, WildFlySecurityManager.getSystemEnvironmentPrivileged());
             } else if (HOST_NAME.equals(propertyName)) {
                 configureHostName(propertyValue, providedProperties);
             } else if (SERVER_NAME.equals(propertyName)) {
@@ -1038,7 +1039,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
      * @return the CanonicalFile form for the given name.
      */
     private File[] getFilesFromProperty(final String name, final Properties props) {
-        String sep = SecurityActions.getSystemProperty("path.separator");
+        String sep = WildFlySecurityManager.getPropertyPrivileged("path.separator", null);
         String value = props.getProperty(name, null);
         if (value != null) {
             final String[] paths = value.split(Pattern.quote(sep));

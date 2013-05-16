@@ -37,10 +37,8 @@ import javax.transaction.xa.XAResource;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.wildfly.security.manager.SetContextClassLoaderAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
@@ -88,11 +86,7 @@ public class MessageEndpointInvocationHandler extends AbstractInvocationHandler 
         } catch (RollbackException e) {
             throw new LocalTransactionException(e);
         } finally {
-            if (! WildFlySecurityManager.isChecking()) {
-                Thread.currentThread().setContextClassLoader(previousClassLoader);
-            } else {
-                doPrivileged(new SetContextClassLoaderAction(previousClassLoader));
-            }
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(previousClassLoader);
             previousClassLoader = null;
         }
     }
@@ -102,13 +96,7 @@ public class MessageEndpointInvocationHandler extends AbstractInvocationHandler 
         // JCA 1.6 FR 13.5.6
         // The application server must set the thread context class loader to the endpoint
         // application class loader during the beforeDelivery call.
-        final Thread thread = Thread.currentThread();
-        if (! WildFlySecurityManager.isChecking()) {
-            previousClassLoader = thread.getContextClassLoader();
-            thread.setContextClassLoader(getApplicationClassLoader());
-        } else {
-            previousClassLoader = doPrivileged(new SetContextClassLoaderAction(getApplicationClassLoader()));
-        }
+        previousClassLoader = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(getApplicationClassLoader());
         try {
             final TransactionManager tm = getTransactionManager();
             // TODO: in violation of JCA 1.6 FR 13.5.9?
@@ -120,14 +108,10 @@ public class MessageEndpointInvocationHandler extends AbstractInvocationHandler 
                 if (xaRes != null)
                     currentTx.enlistResource(xaRes);
             }
-        }
-        catch(Throwable t) {
-            if (! WildFlySecurityManager.isChecking()) {
-                thread.setContextClassLoader(previousClassLoader);
-            } else {
-                doPrivileged(new SetContextClassLoaderAction(previousClassLoader));
-            }
+        } catch (Throwable t) {
             throw new ApplicationServerInternalException(t);
+        } finally {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(previousClassLoader);
         }
     }
 

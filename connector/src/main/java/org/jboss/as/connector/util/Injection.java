@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Injection utility which can inject values into objects. This file is a copy
@@ -355,10 +356,10 @@ public class Injection {
                 } else if (":".equals(s)) {
                     systemProperty = File.pathSeparator;
                 } else {
-                    systemProperty = SecurityActions.getSystemProperty(s);
+                    systemProperty = WildFlySecurityManager.getPropertyPrivileged(s, null);
                 }
             } else {
-                systemProperty = SecurityActions.getSystemProperty(input.substring(from + 2, dv));
+                systemProperty = WildFlySecurityManager.getPropertyPrivileged(input.substring(from + 2, dv), null);
                 defaultValue = input.substring(dv + 1, to);
             }
             String prefix = "";

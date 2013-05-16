@@ -41,6 +41,7 @@ import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.modules.Module;
 import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.metadata.MetadataImpl;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Deployment processor that loads CDI portable extensions.
@@ -81,12 +82,12 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
         final ServicesAttachment services = deploymentUnit.getAttachment(Attachments.SERVICES);
 
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-        ClassLoader oldCl = SecurityActions.getContextClassLoader();
+        ClassLoader oldCl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
-            SecurityActions.setContextClassLoader(module.getClassLoader());
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
             loadAttachments(services, module, deploymentUnit, topLevelDeployment);
         } finally {
-            SecurityActions.setContextClassLoader(oldCl);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldCl);
         }
     }
 

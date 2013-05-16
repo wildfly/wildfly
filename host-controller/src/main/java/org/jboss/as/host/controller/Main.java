@@ -55,6 +55,7 @@ import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
 import org.jboss.stdio.StdioContext;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * The main-class entry point for the host controller process.
@@ -349,8 +350,7 @@ public final class Main {
                     }
 
                     hostSystemProperties.put(HostControllerEnvironment.JBOSS_DOMAIN_MASTER_ADDRESS, value);
-                    SecurityActions.setSystemProperty(HostControllerEnvironment.JBOSS_DOMAIN_MASTER_ADDRESS, value);
-
+                    WildFlySecurityManager.setPropertyPrivileged(HostControllerEnvironment.JBOSS_DOMAIN_MASTER_ADDRESS, value);
                 } else if (arg.startsWith(CommandLineConstants.MASTER_PORT)) {
 
                     int idx = arg.indexOf('=');
@@ -365,8 +365,7 @@ public final class Main {
                     }
 
                     hostSystemProperties.put(HostControllerEnvironment.JBOSS_DOMAIN_MASTER_PORT, value);
-                    SecurityActions.setSystemProperty(HostControllerEnvironment.JBOSS_DOMAIN_MASTER_PORT, value);
-
+                    WildFlySecurityManager.setPropertyPrivileged(HostControllerEnvironment.JBOSS_DOMAIN_MASTER_PORT, value);
                 } else if (CommandLineConstants.ADMIN_ONLY.equals(arg)) {
                     initialRunningMode = RunningMode.ADMIN_ONLY;
                 } else if (arg.startsWith(CommandLineConstants.SYS_PROP)) {
@@ -381,7 +380,7 @@ public final class Main {
                         name = arg.substring(2, idx);
                         value = arg.substring(idx + 1, arg.length());
                     }
-                    SecurityActions.setSystemProperty(name, value);
+                    WildFlySecurityManager.setPropertyPrivileged(name, value);
                     hostSystemProperties.put(name, value);
                 } else if (arg.startsWith(CommandLineConstants.PUBLIC_BIND_ADDRESS)) {
 
@@ -406,7 +405,7 @@ public final class Main {
                         propertyName =  HostControllerEnvironment.JBOSS_BIND_ADDRESS_PREFIX + arg.substring(2, idx);
                     }
                     hostSystemProperties.put(propertyName, value);
-                    SecurityActions.setSystemProperty(propertyName, value);
+                    WildFlySecurityManager.setPropertyPrivileged(propertyName, value);
                 } else if (arg.startsWith(CommandLineConstants.DEFAULT_MULTICAST_ADDRESS)) {
 
                     int idx = arg.indexOf('=');
@@ -420,7 +419,7 @@ public final class Main {
                     }
 
                     hostSystemProperties.put(HostControllerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
-                    SecurityActions.setSystemProperty(HostControllerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
+                    WildFlySecurityManager.setPropertyPrivileged(HostControllerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
                 } else if (arg.equals(CommandLineConstants.MODULE_PATH)) {
                     modulePath = checkValueIsNotAnArg(arg, args[++i]);
                     if (modulePath == null) {
@@ -435,7 +434,7 @@ public final class Main {
                 return null;
             }
         }
-        productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(HostControllerEnvironment.HOME_DIR), hostSystemProperties);
+        productConfig = new ProductConfig(Module.getBootModuleLoader(), WildFlySecurityManager.getPropertyPrivileged(HostControllerEnvironment.HOME_DIR, null), hostSystemProperties);
         return new HostControllerEnvironment(hostSystemProperties, isRestart, modulePath, pmAddress, pmPort,
                 pcSocketConfig.getBindAddress(), pcSocketConfig.getBindPort(), defaultJVM,
                 domainConfig, initialDomainConfig, hostConfig, initialHostConfig, initialRunningMode, backupDomainFiles, cachedDc, productConfig);
@@ -475,7 +474,7 @@ public final class Main {
              Properties props = new Properties();
              props.load(url.openConnection().getInputStream());
 
-             SecurityActions.getSystemProperties().putAll(props);
+             WildFlySecurityManager.getSystemPropertiesPrivileged().putAll(props);
              for (Map.Entry<Object, Object> entry : props.entrySet()) {
                  hostSystemProperties.put((String)entry.getKey(), (String)entry.getValue());
              }
@@ -553,7 +552,7 @@ public final class Main {
     }
 
     private static String usageNote() {
-        boolean isWindows = (SecurityActions.getSystemProperty("os.name")).toLowerCase(Locale.ENGLISH).contains("windows");
+        boolean isWindows = (WildFlySecurityManager.getPropertyPrivileged("os.name", null)).toLowerCase(Locale.ENGLISH).contains("windows");
         String command = isWindows ? "domain" : "domain.sh";
         return MESSAGES.usageNote(command);
     }
@@ -567,7 +566,7 @@ public final class Main {
         private final UnknownHostException uhe;
 
         private PCSocketConfig() {
-            boolean preferIPv6 = Boolean.valueOf(SecurityActions.getSystemProperty("java.net.preferIPv6Addresses", "false"));
+            boolean preferIPv6 = Boolean.valueOf(WildFlySecurityManager.getPropertyPrivileged("java.net.preferIPv6Addresses", "false"));
             this.defaultBindAddress = preferIPv6 ? "::1" : "127.0.0.1";
             UnknownHostException toCache = null;
             try {

@@ -24,40 +24,14 @@ package org.jboss.as.weld.injection;
 
 import java.lang.reflect.AccessibleObject;
 import java.security.PrivilegedAction;
-import org.wildfly.security.manager.GetContextClassLoaderAction;
-import org.wildfly.security.manager.SetContextClassLoaderAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 
 final class SecurityActions {
 
     private SecurityActions() {
         // forbidden inheritance
-    }
-
-    /**
-     * Gets context classloader.
-     *
-     * @return the current context classloader
-     */
-    static ClassLoader getContextClassLoader() {
-        return ! WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
-    }
-
-    /**
-     * Sets context classloader.
-     *
-     * @param classLoader
-     *            the classloader
-     */
-    static void setContextClassLoader(final ClassLoader classLoader) {
-        if (! WildFlySecurityManager.isChecking()) {
-            currentThread().setContextClassLoader(classLoader);
-        } else {
-            doPrivileged(new SetContextClassLoaderAction(classLoader));
-        }
     }
 
     static void setAccessible(final AccessibleObject object) {

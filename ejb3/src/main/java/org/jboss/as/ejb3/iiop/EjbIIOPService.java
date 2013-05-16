@@ -85,6 +85,7 @@ import org.omg.CosNaming.NamingContextPackage.NotFound;
 import org.omg.PortableServer.Current;
 import org.omg.PortableServer.CurrentHelper;
 import org.omg.PortableServer.POA;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
@@ -373,9 +374,9 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             EjbLogger.ROOT_LOGGER.debug("Home IOR for " + component.getComponentName() + " bound to " + this.name + " in CORBA naming service");
 
             //now eagerly force stub creation, so de-serialization of stubs will work correctly
-            final ClassLoader cl = SecurityActions.getContextClassLoader();
+            final ClassLoader cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
             try {
-                SecurityActions.setContextClassLoader(module.getClassLoader());
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
                 try {
                     DynamicStubFactoryFactory.makeStubClass(homeView.getValue().getViewClass());
                 } catch (Exception e) {
@@ -387,7 +388,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                     EjbLogger.EJB3_LOGGER.dynamicStubCreationFailed(remoteView.getValue().getViewClass().getName(), e);
                 }
             } finally {
-                SecurityActions.setContextClassLoader(cl);
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
             }
 
 

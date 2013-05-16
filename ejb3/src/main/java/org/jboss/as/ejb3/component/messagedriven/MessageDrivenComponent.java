@@ -46,6 +46,7 @@ import org.wildfly.security.manager.GetClassLoaderAction;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.jca.core.spi.rar.Endpoint;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static java.security.AccessController.doPrivileged;
 import static java.util.Collections.emptyMap;
@@ -175,14 +176,14 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         getShutDownInterceptorFactory().start();
         super.start();
 
-        ClassLoader oldTccl = SecurityActions.getContextClassLoader();
+        ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
-            SecurityActions.setContextClassLoader(classLoader);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
             this.endpoint.activate(endpointFactory, activationSpec);
         } catch (ResourceException e) {
             throw new RuntimeException(e);
         } finally {
-            SecurityActions.setContextClassLoader(oldTccl);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
         }
 
         if (this.pool != null) {
@@ -193,14 +194,14 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     @Override
     public void stop() {
 
-        ClassLoader oldTccl = SecurityActions.getContextClassLoader();
+        ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
-            SecurityActions.setContextClassLoader(classLoader);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
             endpoint.deactivate(endpointFactory, activationSpec);
         } catch (ResourceException re) {
             throw MESSAGES.failureDuringEndpointDeactivation(this.getComponentName(), re);
         } finally {
-            SecurityActions.setContextClassLoader(oldTccl);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
         }
 
         getShutDownInterceptorFactory().shutdown();

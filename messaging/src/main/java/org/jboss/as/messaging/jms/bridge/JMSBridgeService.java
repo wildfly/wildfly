@@ -31,7 +31,6 @@ import javax.transaction.TransactionManager;
 
 import org.hornetq.jms.bridge.JMSBridge;
 import org.jboss.as.messaging.MessagingLogger;
-import org.jboss.as.messaging.jms.SecurityActions;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -41,6 +40,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Service responsible for JMS Bridges.
@@ -91,14 +91,14 @@ class JMSBridgeService implements Service<JMSBridge> {
         if (moduleName == null) {
             bridge.start();
         } else {
-            ClassLoader oldTccl= SecurityActions.getContextClassLoader();
+            ClassLoader oldTccl= WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
             try {
                 ModuleIdentifier moduleID = ModuleIdentifier.create(moduleName);
                 Module module = Module.getCallerModuleLoader().loadModule(moduleID);
-                SecurityActions.setThreadContextClassLoader(module.getClassLoader());
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
                 bridge.start();
             } finally {
-                SecurityActions.setThreadContextClassLoader(oldTccl);
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
             }
         }
         MessagingLogger.MESSAGING_LOGGER.startedService("JMS Bridge", bridgeName);

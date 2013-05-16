@@ -50,6 +50,7 @@ import static org.jboss.msc.service.ServiceController.State.REMOVED;
 import static org.jboss.msc.service.ServiceController.State.STOPPING;
 
 import java.util.concurrent.ExecutorService;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * The {@code JMSServerManager} service.
@@ -113,7 +114,7 @@ public class JMSService implements Service<JMSServerManager> {
     }
 
     private synchronized void doStart(final StartContext context) throws StartException {
-        ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(getClass());
+        ClassLoader oldTccl = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(getClass());
         try {
             jmsServer = new JMSServerManagerImpl(hornetQServer.getValue(), new AS7BindingRegistry(context.getController().getServiceContainer()));
             final ServiceBuilder<Void> hornetqActivationService = context.getChildTarget().addService(HornetQActivationService.getHornetQActivationServiceName(hqServiceName), new HornetQActivationService())
@@ -154,7 +155,7 @@ public class JMSService implements Service<JMSServerManager> {
         } catch (Exception e) {
             throw MESSAGES.failedToStartService(e);
         } finally {
-            SecurityActions.setThreadContextClassLoader(oldTccl);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
         }
     }
 

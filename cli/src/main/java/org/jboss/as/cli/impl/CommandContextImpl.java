@@ -146,6 +146,7 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.Logger.Level;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.util.HexConverter;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  *
@@ -442,8 +443,8 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
      */
     private void initSSLContext() throws CliInitializationException {
         // If the standard properties have been set don't enable and CLI specific stores.
-        if (SecurityActions.getSystemProperty("javax.net.ssl.keyStore") != null
-                || SecurityActions.getSystemProperty("javax.net.ssl.trustStore") != null) {
+        if (WildFlySecurityManager.getPropertyPrivileged("javax.net.ssl.keyStore", null) != null
+                || WildFlySecurityManager.getPropertyPrivileged("javax.net.ssl.trustStore", null) != null) {
             return;
         }
 
@@ -499,7 +500,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         }
 
         if (trustStore == null) {
-            final String userHome = SecurityActions.getSystemProperty("user.home");
+            final String userHome = WildFlySecurityManager.getPropertyPrivileged("user.home", null);
             File trustStoreFile = new File(userHome, ".jboss-cli.truststore");
             trustStore = trustStoreFile.getAbsolutePath();
             trustStorePassword = "cli_truststore"; // Risk of modification but no private keys to be stored in the truststore.

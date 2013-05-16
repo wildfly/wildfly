@@ -62,6 +62,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
 import org.jboss.threads.AsyncFuture;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A connection to a remote domain controller. Once successfully connected this {@code ManagementClientChannelStrategy}
@@ -78,7 +79,7 @@ class RemoteDomainConnection extends FutureManagementChannel {
     static {
         long interval = -1;
         try {
-            interval = Long.parseLong(SecurityActions.getSystemProperty("jboss.as.domain.ping.interval", "15000"));
+            interval = Long.parseLong(WildFlySecurityManager.getPropertyPrivileged("jboss.as.domain.ping.interval", "15000"));
         } catch (Exception e) {
             // TODO log
         } finally {
@@ -86,7 +87,7 @@ class RemoteDomainConnection extends FutureManagementChannel {
         }
         long timeout = -1;
         try {
-            timeout = Long.parseLong(SecurityActions.getSystemProperty("jboss.as.domain.ping.timeout", "30000"));
+            timeout = Long.parseLong(WildFlySecurityManager.getPropertyPrivileged("jboss.as.domain.ping.timeout", "30000"));
         } catch (Exception e) {
             // TODO log
         } finally {

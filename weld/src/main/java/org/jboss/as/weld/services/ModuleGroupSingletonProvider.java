@@ -27,15 +27,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.wildfly.security.manager.GetContextClassLoaderAction;
 import org.jboss.as.weld.WeldMessages;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.weld.bootstrap.api.Singleton;
 import org.jboss.weld.bootstrap.api.SingletonProvider;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static java.lang.Thread.currentThread;
-import static java.security.AccessController.doPrivileged;
 
 /**
  * Singleton Provider that uses the TCCL to figure out the current application.
@@ -74,16 +70,16 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
         private volatile Map<ClassLoader, T> store = Collections.emptyMap();
 
         public T get() {
-            T instance = store.get(findParentModuleCl(getClassLoader()));
+            T instance = store.get(findParentModuleCl(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged()));
             if (instance == null) {
-                throw WeldMessages.MESSAGES.singletonNotSet(getClassLoader());
+                throw WeldMessages.MESSAGES.singletonNotSet(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
             }
             return instance;
         }
 
         public synchronized void set(T object) {
             final Map<ClassLoader, T> store = new IdentityHashMap<ClassLoader, T>(this.store);
-            ClassLoader classLoader = getClassLoader();
+            ClassLoader classLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
             store.put(classLoader, object);
             if (deploymentClassLoaders.containsKey(classLoader)) {
                 for (ClassLoader cl : deploymentClassLoaders.get(classLoader)) {
@@ -94,7 +90,7 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
         }
 
         public synchronized void clear() {
-            ClassLoader classLoader = getClassLoader();
+            ClassLoader classLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
             final Map<ClassLoader, T> store = new IdentityHashMap<ClassLoader, T>(this.store);
             store.remove(classLoader);
             if (deploymentClassLoaders.containsKey(classLoader)) {
@@ -106,7 +102,7 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
         }
 
         public boolean isSet() {
-            return store.containsKey(findParentModuleCl(getClassLoader()));
+            return store.containsKey(findParentModuleCl(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged()));
         }
 
         /**
@@ -120,10 +116,6 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
                 c = c.getParent();
             }
             return c;
-        }
-
-        private ClassLoader getClassLoader() {
-            return ! WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
         }
 
         /*

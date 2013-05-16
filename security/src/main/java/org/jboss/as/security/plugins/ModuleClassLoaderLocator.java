@@ -29,6 +29,7 @@ import org.jboss.as.security.SecurityMessages;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.security.plugins.ClassLoaderLocator;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * An implementation of {@code ClassLoaderLocator} that is based on JBoss Modules
@@ -45,7 +46,7 @@ public class ModuleClassLoaderLocator implements ClassLoaderLocator {
     public ClassLoader get(String key) {
         try {
             ClassLoader moduleClassLoader = SecurityActions.getModuleClassLoader(moduleLoader, key);
-            ClassLoader tccl = SecurityActions.getContextClassLoader();
+            ClassLoader tccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
             /**
              * A Login Module can be in a custom user module.
              * The local resources (such as users.properties) can be present in a web deployment,

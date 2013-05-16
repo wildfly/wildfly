@@ -35,6 +35,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xnio.OptionMap;
 
 /**
@@ -72,7 +73,7 @@ class RemotingSubsystemAdd extends AbstractAddStepHandler {
 
     void launchServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         // create endpoint
-        final String nodeName = SecurityActions.getSystemProperty(RemotingExtension.NODE_NAME_PROPERTY);
+        final String nodeName = WildFlySecurityManager.getPropertyPrivileged(RemotingExtension.NODE_NAME_PROPERTY, null);
         final EndpointService endpointService = new EndpointService(nodeName, EndpointService.EndpointType.SUBSYSTEM);
         // todo configure option map
         final OptionMap map = EndpointConfigFactory.create(context, model);

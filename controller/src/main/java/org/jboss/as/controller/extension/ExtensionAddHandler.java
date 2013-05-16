@@ -32,6 +32,7 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleNotFoundException;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Base handler for the extension resource add operation.
@@ -84,7 +85,7 @@ public class ExtensionAddHandler implements OperationStepHandler {
         try {
             boolean unknownModule = false;
             for (Extension extension : Module.loadServiceFromCallerModuleLoader(ModuleIdentifier.fromString(module), Extension.class)) {
-                ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(extension.getClass());
+                ClassLoader oldTccl = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(extension.getClass());
                 try {
                     if (unknownModule || !extensionRegistry.getExtensionModuleNames().contains(module)) {
                         // This extension wasn't handled by the standalone.xml or domain.xml parsing logic, so we
@@ -96,7 +97,7 @@ public class ExtensionAddHandler implements OperationStepHandler {
                     }
                     extension.initialize(extensionRegistry.getExtensionContext(module, !standalone && !slaveHC));
                 } finally {
-                    SecurityActions.setThreadContextClassLoader(oldTccl);
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
                 }
             }
         } catch (ModuleNotFoundException e) {

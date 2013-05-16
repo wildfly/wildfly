@@ -21,7 +21,6 @@
  */
 package org.jboss.as.embedded.ejb3;
 
-import org.wildfly.security.manager.ReadPropertyAction;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
@@ -52,8 +51,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static java.lang.System.getProperty;
-import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.embedded.EmbeddedLogger.ROOT_LOGGER;
 import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
 
@@ -128,7 +125,7 @@ class ClassPathEjbJarScanner {
     private static final ScheduledExecutorService ses = Executors.newScheduledThreadPool(Runtime.getRuntime()
             .availableProcessors());
 
-    private static final String JAVA_HOME = getSystemProperty("java.home");
+    private static final String JAVA_HOME = WildFlySecurityManager.getPropertyPrivileged("java.home", null);
 
     /**
      * Configured exclusion filters
@@ -173,9 +170,8 @@ class ClassPathEjbJarScanner {
         final Collection<String> returnValue = new ArrayList<String>();
 
         // Get the full ClassPath
-        String classPath = getSystemProperty("surefire.test.class.path");
-        if (classPath == null || classPath.isEmpty())
-            classPath = getSystemProperty(SYS_PROP_KEY_CLASS_PATH);
+        String classPath = WildFlySecurityManager.getPropertyPrivileged("surefire.test.class.path", null);
+        if (classPath == null || classPath.isEmpty()) classPath = WildFlySecurityManager.getPropertyPrivileged(SYS_PROP_KEY_CLASS_PATH, null);
         if (ROOT_LOGGER.isTraceEnabled()) {
             ROOT_LOGGER.tracef("Class Path: %s", classPath);
         }
@@ -229,10 +225,6 @@ class ClassPathEjbJarScanner {
             ROOT_LOGGER.debugf("EJB Modules discovered on ClassPath: %s", returnValue);
         }
         return returnValue.toArray(DUMMY);
-    }
-
-    private static String getSystemProperty(final String property) {
-        return ! WildFlySecurityManager.isChecking() ? getProperty(property) : doPrivileged(new ReadPropertyAction(property));
     }
 
     //-------------------------------------------------------------------------------------||

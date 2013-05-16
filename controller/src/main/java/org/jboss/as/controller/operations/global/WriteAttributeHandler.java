@@ -38,6 +38,7 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * {@link org.jboss.as.controller.OperationStepHandler} writing a single attribute. The required request parameter "name" represents the attribute name.
@@ -70,11 +71,11 @@ public class WriteAttributeHandler implements OperationStepHandler {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.attributeNotWritable(attributeName)));
         } else {
             OperationStepHandler handler = attributeAccess.getWriteHandler();
-            ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(handler.getClass());
+            ClassLoader oldTccl = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(handler.getClass());
             try {
                 handler.execute(context, operation);
             } finally {
-                SecurityActions.setThreadContextClassLoader(oldTccl);
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
             }
         }
     }

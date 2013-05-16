@@ -35,6 +35,7 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static io.undertow.predicate.Predicates.not;
 import static io.undertow.predicate.Predicates.path;
@@ -221,7 +222,7 @@ public enum ConsoleMode {
     static SortedSet<ConsoleVersion> findConsoleVersions(String moduleName) {
         String path = moduleName.replace('.', '/');
 
-        final String modulePath = SecurityActions.getProperty("module.path");
+        final String modulePath = WildFlySecurityManager.getPropertyPrivileged("module.path", null);
         File[] moduleRoots = getFiles(modulePath, 0, 0);
         SortedSet<ConsoleVersion> consoleVersions = new TreeSet<ConsoleVersion>();
         for (File root : moduleRoots) {

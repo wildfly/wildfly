@@ -37,8 +37,6 @@ import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.SetupAction;
-import org.wildfly.security.manager.GetContextClassLoaderAction;
-import org.wildfly.security.manager.SetContextClassLoaderAction;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -56,8 +54,6 @@ import org.jboss.osgi.resolver.XBundleRevision;
 import org.osgi.framework.BundleContext;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static java.lang.Thread.currentThread;
-import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
 
 /**
@@ -279,28 +275,14 @@ public class ArquillianService implements Service<ArquillianService> {
 
         @Override
         public void setup(Map<String, Object> properties) {
-            oldClassLoader.set(getTccl());
-            setTccl(classLoader);
+            oldClassLoader.set(WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader));
         }
 
         @Override
         public void teardown(Map<String, Object> properties) {
             ClassLoader old = oldClassLoader.get();
             oldClassLoader.remove();
-            setTccl(old);
-        }
-    }
-
-    private static ClassLoader getTccl() {
-        return ! WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
-    }
-
-    private static void setTccl(final ClassLoader cl) {
-        assert cl != null : "ClassLoader must be specified";
-        if (! WildFlySecurityManager.isChecking()) {
-            currentThread().setContextClassLoader(cl);
-        } else {
-            doPrivileged(new SetContextClassLoaderAction(cl));
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
         }
     }
 }

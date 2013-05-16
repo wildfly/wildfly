@@ -23,14 +23,8 @@
 package org.jboss.as.jacorb.service;
 
 import org.wildfly.security.manager.CreateThreadAction;
-import org.wildfly.security.manager.GetClassLoaderAction;
-import org.wildfly.security.manager.GetContextClassLoaderAction;
-import org.wildfly.security.manager.SetContextClassLoaderAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
-import org.wildfly.security.manager.WritePropertyAction;
 
-import static java.lang.System.setProperty;
-import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 
 /**
@@ -41,56 +35,6 @@ import static java.security.AccessController.doPrivileged;
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
 class SecurityActions {
-
-    /**
-     * <p>
-     * Sets a system property with the specified key and value.
-     * </p>
-     *
-     * @param key   the system property key.
-     * @param value the system property value.
-     */
-    static String setSystemProperty(final String key, final String value) {
-        return ! WildFlySecurityManager.isChecking() ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
-    }
-
-    /**
-     * <p>
-     * Obtains the current thread context class loader.
-     * </p>
-     *
-     * @return a reference to the current thread context {@code ClassLoader}.
-     */
-    static ClassLoader getThreadContextClassLoader() {
-        return ! WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
-    }
-
-    /**
-     * <p>
-     * Sets the specified {@code ClassLoader} as the current thread context class loader.
-     * </p>
-     *
-     * @param loader the {@code ClassLoader} to be set.
-     */
-    static void setThreadContextClassLoader(final ClassLoader loader) {
-        if (! WildFlySecurityManager.isChecking()) {
-            currentThread().setContextClassLoader(loader);
-        } else {
-            doPrivileged(new SetContextClassLoaderAction(loader));
-        }
-    }
-
-    /**
-     * <p>
-     * Gets the {@code ClassLoader} of the specified {@code Class}.
-     * </p>
-     *
-     * @param clazz the {@code Class} whose {@code ClassLoader} is to be returned.
-     * @return the {@code ClassLoader} of the specified {@code Class} object.
-     */
-    static ClassLoader getClassLoader(final Class<?> clazz) {
-        return ! WildFlySecurityManager.isChecking() ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
-    }
 
     /**
      * <p>

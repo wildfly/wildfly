@@ -52,6 +52,7 @@ import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  *
@@ -357,7 +358,7 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
         if(modulesDir != null) {
             return modulesDir;
         }
-        final String modulesDirStr = SecurityActions.getEnvironmentVariable(JBOSS_HOME);
+        final String modulesDirStr = WildFlySecurityManager.getEnvPropertyPrivileged(JBOSS_HOME, null);
         if(modulesDirStr == null) {
             throw new CommandLineException(JBOSS_HOME + " environment variable is not set.");
         }

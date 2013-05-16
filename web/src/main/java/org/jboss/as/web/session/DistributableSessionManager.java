@@ -23,7 +23,6 @@ package org.jboss.as.web.session;
 
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
-import java.security.AccessController;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,7 +62,6 @@ import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.as.clustering.web.OutgoingAttributeGranularitySessionData;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.clustering.web.OutgoingSessionGranularitySessionData;
-import org.wildfly.security.manager.ReadPropertyAction;
 import org.jboss.as.web.WebLogger;
 import org.jboss.as.web.session.notification.ClusteredSessionNotificationCapability;
 import org.jboss.as.web.session.notification.ClusteredSessionNotificationCause;
@@ -77,6 +75,7 @@ import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
 import org.jboss.metadata.web.jboss.ReplicationTrigger;
 import org.jboss.metadata.web.jboss.SnapshotMode;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
@@ -358,7 +357,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     protected ClusteredSessionNotificationPolicy createClusteredSessionNotificationPolicy() {
         String policyClass = this.replicationConfig.getSessionNotificationPolicy();
         if (policyClass == null || policyClass.isEmpty()) {
-            policyClass = AccessController.doPrivileged(new ReadPropertyAction("jboss.web.clustered.session.notification.policy", IgnoreUndeployLegacyClusteredSessionNotificationPolicy.class.getName()));
+            policyClass = WildFlySecurityManager.getPropertyPrivileged("jboss.web.clustered.session.notification.policy", IgnoreUndeployLegacyClusteredSessionNotificationPolicy.class.getName());
         }
 
         try {

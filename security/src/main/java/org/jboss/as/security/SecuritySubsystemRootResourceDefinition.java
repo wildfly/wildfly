@@ -67,6 +67,7 @@ import org.jboss.security.plugins.JBossSecuritySubjectFactory;
 import org.jboss.security.plugins.audit.JBossAuditManager;
 import org.jboss.security.plugins.identitytrust.JBossIdentityTrustManager;
 import org.jboss.security.plugins.mapping.JBossMappingManager;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Jason T. Greene
@@ -124,7 +125,7 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
 
             if(context.getProcessType() != ProcessType.APPLICATION_CLIENT) {
                 //remove once AS7-4687 is resolved
-                SecurityActions.setSystemProperty(SecurityContextAssociation.SECURITYCONTEXT_THREADLOCAL, "true");
+                WildFlySecurityManager.setPropertyPrivileged(SecurityContextAssociation.SECURITYCONTEXT_THREADLOCAL, "true");
             }
             final ServiceTarget target = context.getServiceTarget();
 

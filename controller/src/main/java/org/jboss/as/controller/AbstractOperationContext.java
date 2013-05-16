@@ -51,6 +51,7 @@ import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Operation context implementation.
@@ -434,7 +435,7 @@ abstract class AbstractOperationContext implements OperationContext {
 
         try {
             try {
-                ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(step.handler.getClass());
+                ClassLoader oldTccl = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(step.handler.getClass());
                 try {
                     step.handler.execute(this, step.operation);
                     // AS7-6046
@@ -443,7 +444,7 @@ abstract class AbstractOperationContext implements OperationContext {
                                 step.response.get(FAILURE_DESCRIPTION));
                     }
                 } finally {
-                    SecurityActions.setThreadContextClassLoader(oldTccl);
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
                 }
 
             } catch (Throwable t) {
@@ -799,11 +800,11 @@ abstract class AbstractOperationContext implements OperationContext {
         private void handleRollback() {
             if (resultHandler != null) {
                 try {
-                    ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(handler.getClass());
+                    ClassLoader oldTccl = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(handler.getClass());
                     try {
                         resultHandler.handleResult(resultAction, AbstractOperationContext.this, operation);
                     } finally {
-                        SecurityActions.setThreadContextClassLoader(oldTccl);
+                        WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
                         waitForRemovals();
                     }
                 } catch (Exception e) {

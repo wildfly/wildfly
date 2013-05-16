@@ -44,6 +44,7 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
 import org.jboss.weld.bootstrap.spi.Metadata;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
@@ -142,9 +143,9 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
     // recognized if the jar containing the service resides in the deployment.  Since Weld subsystem doesn't handle this yet,
     // we do it here.
     private void addCDIExtensions(DeploymentUnit topLevelDeployment) {
-        final ClassLoader classLoader = SecurityActions.getContextClassLoader();
+        final ClassLoader classLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
-            SecurityActions.setContextClassLoader(FlowCDIExtension.class.getClassLoader());
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(FlowCDIExtension.class.getClassLoader());
 
             Metadata<Extension> metadata = new CDIExtensionMetadataImpl(new FlowCDIExtension());
             topLevelDeployment.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
@@ -155,7 +156,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
             metadata = new CDIExtensionMetadataImpl(new FlowDiscoveryCDIExtension());
             topLevelDeployment.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
         } finally {
-            SecurityActions.setContextClassLoader(classLoader);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
         }
     }
 

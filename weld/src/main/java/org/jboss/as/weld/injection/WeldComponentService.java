@@ -48,6 +48,7 @@ import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.injection.producer.InjectionTargetService;
 import org.jboss.weld.literal.AnyLiteral;
 import org.jboss.weld.manager.BeanManagerImpl;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Interceptor that attaches all the nessesary information for weld injection to the interceptor context
@@ -94,9 +95,9 @@ public class WeldComponentService implements Service<WeldComponentService> {
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
-        final ClassLoader cl = SecurityActions.getContextClassLoader();
+        final ClassLoader cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
-            SecurityActions.setContextClassLoader(classLoader);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
             beanManager = weldContainer.getValue().getBeanManager(beanDeploymentArchiveId);
 
             for (final Class<?> interceptor : interceptorClasses) {
@@ -135,7 +136,7 @@ public class WeldComponentService implements Service<WeldComponentService> {
             beanManager.getServices().get(InjectionTargetService.class).validateProducer(injectionTarget);
 
         } finally {
-            SecurityActions.setContextClassLoader(cl);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
         }
     }
 

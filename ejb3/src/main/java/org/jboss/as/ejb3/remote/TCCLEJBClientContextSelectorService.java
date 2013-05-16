@@ -37,6 +37,7 @@ import org.jboss.msc.service.StopContext;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A EJB client context selector which returns a {@link EJBClientContext} based on the thread context classloader
@@ -59,7 +60,7 @@ public class TCCLEJBClientContextSelectorService implements Service<TCCLEJBClien
 
     @Override
     public EJBClientContext getCurrent() {
-        final ClassLoader tccl = SecurityActions.getContextClassLoader();
+        final ClassLoader tccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         // TODO: Do we fall back on some other CL?
         if (tccl == null) {
             throw EjbMessages.MESSAGES.tcclNotAvailable();

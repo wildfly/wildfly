@@ -22,12 +22,9 @@
 
 package org.jboss.as.naming;
 
-import static java.lang.Thread.currentThread;
-import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 import java.util.Hashtable;
-import org.wildfly.security.manager.GetContextClassLoaderAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import javax.naming.Context;
@@ -58,7 +55,7 @@ public class InitialContextFactoryBuilder implements javax.naming.spi.InitialCon
         if(factoryClassName == null || InitialContextFactory.class.getName().equals(factoryClassName)) {
             return DEFAULT_FACTORY;
         }
-        final ClassLoader classLoader = getContextClassLoader();
+        final ClassLoader classLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             final Class<?> factoryClass = Class.forName(factoryClassName, true, classLoader);
             return (javax.naming.spi.InitialContextFactory)factoryClass.newInstance();
@@ -66,9 +63,4 @@ public class InitialContextFactoryBuilder implements javax.naming.spi.InitialCon
             throw MESSAGES.failedToInstantiate("InitialContextFactory", factoryClassName, classLoader);
         }
     }
-
-    private ClassLoader getContextClassLoader() {
-        return ! WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
-    }
-
 }

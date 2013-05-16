@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.modules.Module;
-
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Store of class information for classes that are visible to a deployment
@@ -48,13 +48,13 @@ public class DeploymentClassIndex {
     public ClassIndex classIndex(final String className) throws ClassNotFoundException {
         ClassIndex classIndex = index.get(className);
         if (classIndex == null) {
-            final ClassLoader oldTccl = SecurityActions.getContextClassLoader();
+            final ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
             try {
-                SecurityActions.setContextClassLoader(module.getClassLoader());
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
                 final Class<?> clazz = Class.forName(className, false, module.getClassLoader());
                 index.put(className, classIndex = new ClassIndex(clazz, deploymentReflectionIndex));
             } finally {
-                SecurityActions.setContextClassLoader(oldTccl);
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
             }
         }
         return classIndex;

@@ -45,6 +45,7 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Utility class to create a interface criteria based on a {@link ModelNode} description
@@ -118,7 +119,7 @@ public final class ParsedInterfaceCriteria {
             parsed = ParsedInterfaceCriteria.V4;
         } else if(subModel.hasDefined(ANY_IPV6_ADDRESS) && subModel.get(ANY_IPV6_ADDRESS).asBoolean(false)) {
             // AS7-5360 Reject this setting if java.net.preferIPv4Stack=true
-            if (SecurityActions.getBoolean("java.net.preferIPv4Stack")) {
+            if (Boolean.parseBoolean(WildFlySecurityManager.getEnvPropertyPrivileged("java.net.preferIPv4Stack", "false"))) {
                 parsed = new ParsedInterfaceCriteria(MESSAGES.invalidAnyIPv6());
             } else {
                 parsed = ParsedInterfaceCriteria.V6;

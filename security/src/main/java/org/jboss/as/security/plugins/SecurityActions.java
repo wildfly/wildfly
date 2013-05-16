@@ -25,7 +25,6 @@ package org.jboss.as.security.plugins;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 
-import org.wildfly.security.manager.GetContextClassLoaderAction;
 import org.wildfly.security.manager.GetModuleClassLoaderAction;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
@@ -36,7 +35,6 @@ import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 
 /**
@@ -105,9 +103,5 @@ class SecurityActions {
             }
             return credential;
         }
-    }
-
-    static ClassLoader getContextClassLoader() {
-        return ! WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
     }
 }

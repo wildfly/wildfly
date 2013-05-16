@@ -36,6 +36,7 @@ import javax.persistence.spi.PersistenceProviderResolver;
 
 import org.jboss.as.jpa.JpaMessages;
 import org.jboss.modules.ModuleClassLoader;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Implementation of PersistenceProviderResolver
@@ -73,7 +74,7 @@ public class PersistenceProviderResolverImpl implements PersistenceProviderResol
         synchronized(persistenceProviderPerClassLoader) {
             if (persistenceProviderPerClassLoader.size() > 0) {
                 // get the deployment or subdeployment classloader
-                ClassLoader deploymentClassLoader = findParentModuleCl(SecurityActions.getContextClassLoader());
+                ClassLoader deploymentClassLoader = findParentModuleCl(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
                 ROOT_LOGGER.tracef("get application level Persistence Provider for classloader %s" , deploymentClassLoader);
                 // collect persistence providers associated with deployment/each sub-deployment
                 List<Class> deploymentSpecificPersistenceProviders = persistenceProviderPerClassLoader.get(deploymentClassLoader);

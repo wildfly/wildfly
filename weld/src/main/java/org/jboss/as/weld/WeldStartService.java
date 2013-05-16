@@ -30,6 +30,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Service that actually finishes starting the weld container, after it has been bootstrapped by
@@ -53,12 +54,12 @@ public class WeldStartService implements Service<WeldStartService> {
 
     @Override
     public void start(final StartContext context) throws StartException {
-        ClassLoader oldTccl = SecurityActions.getContextClassLoader();
+        ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             for (SetupAction action : setupActions) {
                 action.setup(null);
             }
-            SecurityActions.setContextClassLoader(classLoader);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
             bootstrap.getValue().getBootstrap().startInitialization();
             bootstrap.getValue().getBootstrap().deployBeans();
             bootstrap.getValue().getBootstrap().validateBeans();
@@ -72,7 +73,7 @@ public class WeldStartService implements Service<WeldStartService> {
                     WeldLogger.DEPLOYMENT_LOGGER.exceptionClearingThreadState(e);
                 }
             }
-            SecurityActions.setContextClassLoader(oldTccl);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
         }
     }
 

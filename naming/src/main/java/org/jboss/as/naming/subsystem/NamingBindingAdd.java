@@ -56,6 +56,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
@@ -155,9 +156,9 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
 
         final ObjectFactory objectFactoryClassInstance;
 
-        final ClassLoader cl = SecurityActions.getContextClassLoader();
+        final ClassLoader cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
-            SecurityActions.setContextClassLoader(module.getClassLoader());
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
             final Class<?> clazz = module.getClassLoader().loadClass(className);
             objectFactoryClassInstance = (ObjectFactory) clazz.newInstance();
         } catch (ClassNotFoundException e) {
@@ -169,7 +170,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         } catch (ClassCastException e) {
             throw NamingMessages.MESSAGES.notAnInstanceOfObjectFactory(className, moduleID);
         } finally {
-            SecurityActions.setContextClassLoader(cl);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
         }
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
@@ -191,24 +192,24 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
 
             @Override
             public String getInstanceClassName() {
-                final ClassLoader cl = SecurityActions.getContextClassLoader();
+                final ClassLoader cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                 try {
-                    SecurityActions.setContextClassLoader(objectFactoryClassInstance.getClass().getClassLoader());
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(objectFactoryClassInstance.getClass().getClassLoader());
                     final Object value = getReference().getInstance();
                     return value != null ? value.getClass().getName() : ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
                 } finally {
-                    SecurityActions.setContextClassLoader(cl);
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
                 }
             }
 
             @Override
             public String getJndiViewInstanceValue() {
-                final ClassLoader cl = SecurityActions.getContextClassLoader();
+                final ClassLoader cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                 try {
-                    SecurityActions.setContextClassLoader(objectFactoryClassInstance.getClass().getClassLoader());
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(objectFactoryClassInstance.getClass().getClassLoader());
                     return String.valueOf(getReference().getInstance());
                 } finally {
-                    SecurityActions.setContextClassLoader(cl);
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
                 }
             }
         });
@@ -265,12 +266,12 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
 
             @Override
             public String getJndiViewInstanceValue() {
-                final ClassLoader cl = SecurityActions.getContextClassLoader();
+                final ClassLoader cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                 try {
-                    SecurityActions.setContextClassLoader(objectFactoryClassInstance.getClass().getClassLoader());
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(objectFactoryClassInstance.getClass().getClassLoader());
                     return String.valueOf(getReference().getInstance());
                 } finally {
-                    SecurityActions.setContextClassLoader(cl);
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
                 }
             }
         });

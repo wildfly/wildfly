@@ -50,6 +50,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.Value;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Abstract pojo phase; it handles install/uninstall
@@ -71,12 +72,12 @@ public abstract class AbstractPojoPhase implements Service<Object> {
 
     public void start(StartContext context) throws StartException {
         if (module != null) {
-            final ClassLoader previous = SecurityActions.getContextClassLoader();
-            SecurityActions.setContextClassLoader(module.getClassLoader());
+            final ClassLoader previous = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
             try {
                 startInternal(context);
             } finally {
-                SecurityActions.setContextClassLoader(previous);
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(previous);
             }
         } else {
             startInternal(context);
@@ -136,12 +137,12 @@ public abstract class AbstractPojoPhase implements Service<Object> {
 
     public void stop(StopContext context) {
         if (module != null) {
-            final ClassLoader previous = SecurityActions.getContextClassLoader();
-            SecurityActions.setContextClassLoader(module.getClassLoader());
+            final ClassLoader previous = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
             try {
                 stopInternal(context);
             } finally {
-                SecurityActions.setContextClassLoader(previous);
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(previous);
             }
         } else {
             stopInternal(context);

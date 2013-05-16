@@ -38,6 +38,7 @@ import org.jboss.as.cli.Util;
 import org.jboss.as.cli.gui.GuiMain;
 import org.jboss.as.cli.handlers.VersionHandler;
 import org.jboss.as.protocol.StreamUtils;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  *
@@ -218,7 +219,7 @@ public class CliLauncher {
                         }
                     }
                     for(Object prop : props.keySet()) {
-                        SecurityActions.setSystemProperty((String)prop, (String)props.get(prop));
+                        WildFlySecurityManager.setPropertyPrivileged((String) prop, (String) props.get(prop));
                     }
                 } else if(!(arg.startsWith("-D") || arg.equals("-XX:"))) {// skip system properties and jvm options
                     // assume it's commands

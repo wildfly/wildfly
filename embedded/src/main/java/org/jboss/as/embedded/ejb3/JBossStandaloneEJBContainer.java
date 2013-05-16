@@ -21,8 +21,6 @@
  */
 package org.jboss.as.embedded.ejb3;
 
-import static java.lang.System.getProperty;
-import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.embedded.EmbeddedLogger.ROOT_LOGGER;
 
 import org.jboss.as.embedded.StandaloneServer;
@@ -40,7 +38,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import org.wildfly.security.manager.ReadPropertyAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -95,7 +92,7 @@ public class JBossStandaloneEJBContainer extends EJBContainer {
 
             File tempEar;
             if (properties.containsKey(EJBContainer.APP_NAME)) {
-                String tmpDir = ! WildFlySecurityManager.isChecking() ? getProperty("java.io.tmpdir") : doPrivileged(new ReadPropertyAction("java.io.tmpdir"));
+                String tmpDir = WildFlySecurityManager.getPropertyPrivileged("java.io.tmpdir", null);
                 tempEar = new File(tmpDir + "/" + properties.get(EJBContainer.APP_NAME) + ".ear");
             } else {
                 tempEar = File.createTempFile("ejb-embedded", ".ear");

@@ -22,9 +22,6 @@
 
 package org.jboss.as.webservices.webserviceref;
 
-import static org.jboss.as.webservices.webserviceref.SecurityActions.getContextClassLoader;
-import static org.jboss.as.webservices.webserviceref.SecurityActions.setContextClassLoader;
-
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
@@ -40,6 +37,7 @@ import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
 import org.jboss.wsf.spi.serviceref.ServiceRefFactory;
 import org.jboss.wsf.spi.serviceref.ServiceRefFactoryFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * WebServiceRef injection source.
@@ -61,14 +59,14 @@ final class WSRefValueSource extends InjectionSource implements Value<Object> {
     }
 
     public Object getValue() {
-        final ClassLoader oldCL = getContextClassLoader();
+        final ClassLoader oldCL = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             final ClassLoader integrationCL = new DelegateClassLoader(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader(), classLoader);
-            setContextClassLoader(integrationCL);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(integrationCL);
             final ServiceRefFactory serviceRefFactory = getServiceRefFactory();
             return serviceRefFactory.newServiceRef(serviceRef);
         } finally {
-            setContextClassLoader(oldCL);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldCL);
         }
     }
 

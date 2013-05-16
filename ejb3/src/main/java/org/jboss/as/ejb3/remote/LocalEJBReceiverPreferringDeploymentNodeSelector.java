@@ -27,6 +27,7 @@ import org.jboss.ejb.client.DeploymentNodeSelector;
 import org.jboss.logging.Logger;
 
 import java.util.Random;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A {@link DeploymentNodeSelector} which selects a local node, if available, from among the
@@ -41,7 +42,7 @@ public class LocalEJBReceiverPreferringDeploymentNodeSelector implements Deploym
     private final String localNodeName;
 
     public LocalEJBReceiverPreferringDeploymentNodeSelector() {
-        this.localNodeName = SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME);
+        this.localNodeName = WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.NODE_NAME, null);
     }
 
     @Override
