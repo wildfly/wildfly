@@ -135,9 +135,11 @@ public class JAASIdentityManagerImpl implements IdentityManager {
 
                 }
                 //TODO: is this correct? How should we actually be mapping these
-                Set<String> extra = principalVersusRolesMap.get(incomingPrincipal.getName());
-                if (extra != null) {
-                    roleSet.addAll(extra);
+                if(principalVersusRolesMap != null) {
+                    Set<String> extra = principalVersusRolesMap.get(incomingPrincipal.getName());
+                    if (extra != null) {
+                        roleSet.addAll(extra);
+                    }
                 }
                 return new AccountImpl(userPrincipal, roleSet, credential);
             }
