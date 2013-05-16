@@ -24,12 +24,13 @@ package org.jboss.as.test.integration.beanvalidation.hibernate.validator;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.validator.spi.group.DefaultGroupSequenceProvider;
+import org.hibernate.validator.group.DefaultGroupSequenceProvider;
 
 /**
  * 
  * @author Madhumita Sadhukhan
  */
+
 public class CarGroupSequenceProvider implements DefaultGroupSequenceProvider<Car> {
 
     List<Class<?>> defaultGroupSequence = new ArrayList<Class<?>>();
@@ -40,11 +41,14 @@ public class CarGroupSequenceProvider implements DefaultGroupSequenceProvider<Ca
         defaultGroupSequence.add(Car.class);
         defaultGroupSequence.add(CarChecks.class);
 
+        System.out.println("car.inspectionCompleted()::--" + car.inspectionCompleted());
+
         if (car != null && car.inspectionCompleted()) {
             defaultGroupSequence.add(FinalInspection.class);
 
         }
 
         return defaultGroupSequence;
+
     }
 }

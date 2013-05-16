@@ -246,11 +246,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>com.fasterxml</groupId>
-                    <artifactId>classmate</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>com.h2database</groupId>
                     <artifactId>h2</artifactId>
                 </dependency>
@@ -380,7 +375,7 @@
                         </exclusion>
                     </exclusions>
                 </dependency>
-
+                
                 <dependency>
                     <groupId>javax.inject</groupId>
                     <artifactId>javax.inject</artifactId>

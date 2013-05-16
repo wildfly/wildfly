@@ -21,20 +21,30 @@
  */
 package org.jboss.as.ee.beanvalidation;
 
+import java.util.Collections;
+import java.util.List;
 
 import javax.validation.Configuration;
 import javax.validation.ConstraintValidatorFactory;
 import javax.validation.MessageInterpolator;
-import javax.validation.ParameterNameProvider;
 import javax.validation.TraversableResolver;
 import javax.validation.Validation;
+import javax.validation.ValidationProviderResolver;
 import javax.validation.Validator;
 import javax.validation.ValidatorContext;
 import javax.validation.ValidatorFactory;
+import javax.validation.spi.ValidationProvider;
+
+import org.hibernate.validator.HibernateValidator;
+import org.hibernate.validator.HibernateValidatorConfiguration;
+import org.hibernate.validator.cfg.ConstraintMapping;
 
 /**
- * This class lazily initialize the ValidatorFactory on the first usage One benefit is that no domain class is loaded until the
- * ValidatorFactory is really needed. Useful to avoid loading classes before JPA is initialized and has enhanced its classes.
+ * This class lazily initialize the ValidatorFactory on the first usage
+ * One benefit is that no domain class is loaded until the
+ * ValidatorFactory is really needed.
+ * Useful to avoid loading classes before JPA is initialized
+ * and has enhanced its classes.
  *
  * @author Emmanuel Bernard
  * @author Stuart Douglas
@@ -44,7 +54,7 @@ public class LazyValidatorFactory implements ValidatorFactory {
     private final Configuration<?> configuration;
     private final ClassLoader classLoader;
 
-    private volatile ValidatorFactory delegate; // use as a barrier
+    private volatile ValidatorFactory delegate; //use as a barrier
 
     /**
      * Use the default ValidatorFactory creation routine
@@ -71,7 +81,6 @@ public class LazyValidatorFactory implements ValidatorFactory {
         return result;
     }
 
-    @Override
     public Validator getValidator() {
         return getDelegate().getValidator();
     }
@@ -81,8 +90,11 @@ public class LazyValidatorFactory implements ValidatorFactory {
         try {
             SecurityActions.setContextClassLoader(classLoader);
             if (configuration == null) {
-                return Validation.byDefaultProvider().providerResolver(new WildFlyProviderResolver()).configure()
-                        .buildValidatorFactory();
+                ConstraintMapping mapping = new ConstraintMapping();
+                HibernateValidatorConfiguration config = Validation.byProvider(HibernateValidator.class).providerResolver(new JbossProviderResolver()).configure();
+                config.addMapping(mapping);
+                ValidatorFactory factory = config.buildValidatorFactory();
+                return factory;
 
             } else {
                 return configuration.buildValidatorFactory();
@@ -92,38 +104,31 @@ public class LazyValidatorFactory implements ValidatorFactory {
         }
     }
 
-    @Override
     public ValidatorContext usingContext() {
         return getDelegate().usingContext();
     }
 
-    @Override
     public MessageInterpolator getMessageInterpolator() {
         return getDelegate().getMessageInterpolator();
     }
 
-    @Override
     public TraversableResolver getTraversableResolver() {
         return getDelegate().getTraversableResolver();
     }
 
-    @Override
     public ConstraintValidatorFactory getConstraintValidatorFactory() {
         return getDelegate().getConstraintValidatorFactory();
     }
 
-    @Override
-    public ParameterNameProvider getParameterNameProvider() {
-        return getDelegate().getParameterNameProvider();
-    }
-
-    @Override
     public <T> T unwrap(Class<T> clazz) {
         return getDelegate().unwrap(clazz);
     }
 
-    @Override
-    public void close() {
-        getDelegate().close();
+    private static final class JbossProviderResolver implements ValidationProviderResolver {
+
+        @Override
+        public List<ValidationProvider<?>> getValidationProviders() {
+            return Collections.<ValidationProvider<?>>singletonList(new HibernateValidator());
+        }
     }
 }

@@ -21,8 +21,7 @@
  */
 package org.jboss.as.test.integration.beanvalidation.hibernate.validator;
 
-import static org.junit.Assert.assertEquals;
-
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -37,11 +36,14 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests GroupSequenceProvider feature in Hibernate Validator.
+ * 
+ * Tests GroupSequenceProvider feature in  hibernate validator
+ * 
  * 
  * @author Madhumita Sadhukhan
  */
@@ -57,7 +59,7 @@ public class GroupandGroupSequenceValidationTestCase {
     }
 
     @Test
-    public void testGroupValidation() throws NamingException {
+    public void testGroupValidation() throws NamingException, SQLException {
         Validator validator = (Validator) new InitialContext().lookup("java:comp/Validator");
 
         // create first passenger
@@ -80,35 +82,35 @@ public class GroupandGroupSequenceValidationTestCase {
 
         // validate Car with default group as per GroupSequenceProvider
         Set<ConstraintViolation<Car>> result = validator.validate(car);
-        assertEquals(1, result.size());
-        assertEquals("The Car has to pass the fuel test and inspection test before being driven", result.iterator().next()
-                .getMessage());
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals("The Car has to pass the fuel test and inspection test before being driven", result.iterator()
+                .next().getMessage());
 
         Driver driver = new Driver("Sebastian", "Vettel");
         driver.setAge(25);
         driver.setAddress("ABC");
 
         result = validator.validate(car);
-        assertEquals(1, result.size());
-        assertEquals("The Car has to pass the fuel test and inspection test before being driven", result.iterator().next()
-                .getMessage());
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals("The Car has to pass the fuel test and inspection test before being driven", result.iterator()
+                .next().getMessage());
         car.setPassedVehicleInspection(true);
 
         result = validator.validate(car);
         // New group set in defaultsequence for Car as per CarGroupSequenceProvider should be implemented now
-        assertEquals(2, result.size());
+        Assert.assertEquals(2, result.size());
 
         car.setDriver(driver);
         // implementing validation for group associated with associated objects of Car(in this case Driver)
         Set<ConstraintViolation<Car>> driverResult = validator.validate(car, DriverChecks.class);
-        assertEquals(1, driverResult.size());
+        Assert.assertEquals(1, driverResult.size());
         driver.setHasValidDrivingLicense(true);
-        assertEquals(0, validator.validate(car, DriverChecks.class).size());
+        Assert.assertEquals(0, validator.validate(car, DriverChecks.class).size());
 
         car.setSeats(5);
         car.setHasBeenPaid(true);
 
-        assertEquals(0, validator.validate(car).size());
+        Assert.assertEquals(0, validator.validate(car).size());
 
     }
 }

@@ -1,9 +1,7 @@
 package org.jboss.as.test.integration.beanvalidation.hibernate.validator;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static java.lang.annotation.ElementType.FIELD;
 
-import java.util.Locale;
 import java.util.Set;
 
 import javax.validation.ConstraintViolation;
@@ -12,8 +10,13 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
+import org.junit.Assert;
+
 import org.hibernate.validator.HibernateValidator;
 import org.hibernate.validator.HibernateValidatorConfiguration;
+import org.hibernate.validator.cfg.ConstraintMapping;
+import org.hibernate.validator.cfg.defs.EmailDef;
+import org.hibernate.validator.messageinterpolation.ValueFormatterMessageInterpolator;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -23,8 +26,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that message interpolation works correctly for Hibernate Validator.
- *
+ * 
+ * Tests that message interpolation works correctly for hibernate validator
+ * 
+ * 
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)
@@ -35,42 +40,36 @@ public class MessageInterpolationValidationTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "testmessageinterpolationvalidation.war");
         war.addPackage(MessageInterpolationValidationTestCase.class.getPackage());
         return war;
+
     }
 
     @Test
     public void testCustomMessageInterpolation() {
 
         HibernateValidatorConfiguration configuration = Validation.byProvider(HibernateValidator.class).configure();
-        assertNotNull(configuration);
+        Assert.assertNotNull(configuration);
+        ConstraintMapping mapping = new ConstraintMapping();
+        mapping.type(Employee.class).property("firstName", FIELD)
+                .constraint(new EmailDef().message("Invalid Email!You have entered:--\\{${validatedValue}\\}"));
 
-        final MessageInterpolator messageInterpolator = new CustomMessageInterpolator();
+        final MessageInterpolator messageInterpolator = new ValueFormatterMessageInterpolator();
         configuration.messageInterpolator(messageInterpolator);
+        configuration.addMapping(mapping);
 
         ValidatorFactory factory = configuration.buildValidatorFactory();
         Validator validator = factory.getValidator();
 
-        // create employee
         Employee emp = new Employee();
-        emp.setEmail("MADHUMITA");
+        // create employee
+        emp.setEmpId("M1234");
+        emp.setFirstName("MADHUMITA");
+        String email = "MADHUMITA";
 
         Set<ConstraintViolation<Employee>> constraintViolations = validator.validate(emp);
 
-        assertEquals("Wrong number of constraints", constraintViolations.size(), 1);
-        assertEquals(CustomMessageInterpolator.MESSAGE, constraintViolations.iterator().next().getMessage());
-    }
+        Assert.assertEquals("Wrong number of constraints", constraintViolations.size(), 1);
+        Assert.assertEquals("Invalid Email!You have entered:--{" + email + "}", constraintViolations.iterator().next()
+                .getMessage());
 
-    private static class CustomMessageInterpolator implements MessageInterpolator {
-
-        public static final String MESSAGE = "Message created by custom interpolator";
-
-        @Override
-        public String interpolate(String messageTemplate, Context context) {
-            return MESSAGE;
-        }
-
-        @Override
-        public String interpolate(String messageTemplate, Context context, Locale locale) {
-            return MESSAGE;
-        }
     }
 }

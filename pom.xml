@@ -80,7 +80,6 @@
         <version.antlr>2.7.7</version.antlr>
         <version.asm>3.3.1</version.asm>
         <version.ch.qos.cal10n>0.7.3</version.ch.qos.cal10n>
-        <version.com.fasterxml.classmate>0.8.0</version.com.fasterxml.classmate>
         <version.com.github.relaxng>2011.1</version.com.github.relaxng>
         <version.com.google.guava>13.0.1</version.com.google.guava>
         <version.com.h2database>1.3.168</version.com.h2database>
@@ -108,7 +107,7 @@
         <version.javax.json-api>1.0-b04</version.javax.json-api>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail>1.5.0-b01</version.javax.mail>
-        <version.javax.validation>1.1.0.Final</version.javax.validation>
+        <version.javax.validation>1.0.0.GA</version.javax.validation>
         <version.org.jboss.spec.javax.websockets>1.0.0.Beta1</version.org.jboss.spec.javax.websockets>
         <version.jaxen>1.1.3</version.jaxen>
         <version.jboss.jaxbintros>1.0.2.GA</version.jboss.jaxbintros>
@@ -148,7 +147,7 @@
         <version.org.hibernate>4.2.0.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>4.0.1.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
-        <version.org.hibernate.validator>5.0.1.Final</version.org.hibernate.validator>
+        <version.org.hibernate.validator>4.3.1.Final</version.org.hibernate.validator>
         <version.org.hibernate3>3.6.6.Final</version.org.hibernate3>
         <version.org.hibernate3.commons.annotations>3.2.0.Final</version.org.hibernate3.commons.annotations>
         <version.org.hornetq>2.3.1.Final</version.org.hornetq>
@@ -415,6 +414,7 @@
                                         <excludes>
                                             <exclude>args4j:args4j</exclude>
                                             <exclude>biz.aQute:bnd</exclude>
+                                            <exclude>com.fasterxml:classmate</exclude>
                                             <exclude>com.google.gwt.inject:gin</exclude>
                                             <exclude>com.google.inject:guice</exclude>
                                             <exclude>com.gwtplatform:gwtp-all</exclude>
@@ -1391,12 +1391,6 @@
                 <groupId>ch.qos.cal10n</groupId>
                 <artifactId>cal10n-api</artifactId>
                 <version>${version.ch.qos.cal10n}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml</groupId>
-                <artifactId>classmate</artifactId>
-                <version>${version.com.fasterxml.classmate}</version>
             </dependency>
 
             <dependency>

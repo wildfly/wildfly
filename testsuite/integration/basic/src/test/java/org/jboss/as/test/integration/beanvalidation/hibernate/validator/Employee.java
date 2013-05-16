@@ -21,6 +21,10 @@
  */
 package org.jboss.as.test.integration.beanvalidation.hibernate.validator;
 
+import java.lang.String;
+
+import javax.validation.constraints.NotNull;
+
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.SafeHtml;
 
@@ -30,7 +34,7 @@ import org.hibernate.validator.constraints.SafeHtml;
  */
 public class Employee {
 
-    @CustomConstraint
+    @NotNull
     private String empId;
 
     private String firstName;
@@ -46,6 +50,7 @@ public class Employee {
     public String getEmpId() {
         return empId;
     }
+
 
     public void setEmpId(String empId) {
         this.empId = empId;
