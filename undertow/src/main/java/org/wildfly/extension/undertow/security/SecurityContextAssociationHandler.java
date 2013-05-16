@@ -68,7 +68,6 @@ public class SecurityContextAssociationHandler implements HttpHandler {
             RunAsIdentity runAsIdentity = null;
             if (identity != null) {
                 UndertowLogger.ROOT_LOGGER.tracef("%s, runAs: %s", servlet.getManagedServlet().getServletInfo().getName(), identity);
-                final Set<String> roles = principleVsRoleMap.get(identity);
                 runAsIdentity = new RunAsIdentity(identity.getRoleName(), identity.getPrincipalName(), identity.getRunAsRoles());
             }
             SecurityActions.pushRunAsIdentity(runAsIdentity);
