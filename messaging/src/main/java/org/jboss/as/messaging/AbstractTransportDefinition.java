@@ -26,6 +26,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.NotificationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -84,6 +85,17 @@ public abstract class AbstractTransportDefinition extends SimpleResourceDefiniti
         }
 
         super.registerOperations(registry);
+    }
+
+    @Override
+    public void registerNotifications(ManagementResourceRegistration registry) {
+        super.registerNotifications(registry);
+
+        NotificationDefinition started = NotificationDefinition.Builder.create("started", getResourceDescriptionResolver()).build();
+        NotificationDefinition stopped = NotificationDefinition.Builder.create("stopped", getResourceDescriptionResolver()).build();
+
+        registry.registerNotification(started);
+        registry.registerNotification(stopped);
     }
 
     @Override

@@ -48,6 +48,9 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NotificationFilter;
+import org.jboss.as.controller.client.NotificationHandler;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.registry.Resource;
@@ -655,6 +658,11 @@ public class ServerGroupAffectedResourceServerConfigOperationsTestCase extends A
 
                                     @Override
                                     public ModelNode execute(ModelNode operation) throws IOException {
+                                        return null;
+                                    }
+
+                                    @Override
+                                    public NotificationRegistration registerNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter) {
                                         return null;
                                     }
 

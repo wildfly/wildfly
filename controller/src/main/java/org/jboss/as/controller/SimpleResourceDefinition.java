@@ -171,6 +171,11 @@ public class SimpleResourceDefinition implements ResourceDefinition {
     }
 
     @Override
+    public void registerNotifications(ManagementResourceRegistration resourceRegistration) {
+        // no-op
+    }
+
+    @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         // no-op
     }

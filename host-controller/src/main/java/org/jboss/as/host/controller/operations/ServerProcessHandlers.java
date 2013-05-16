@@ -29,6 +29,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.client.Notification;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.host.controller.descriptions.HostResolver;
@@ -36,6 +37,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
+import static org.jboss.as.host.controller.resources.ServerConfigResourceDefinition.SERVER_DESTROYED_NOTIFICATION;
+import static org.jboss.as.host.controller.resources.ServerConfigResourceDefinition.SERVER_KILLED_NOTIFICATION;
 
 /**
  * @author Emanuel Muckenhuber
@@ -63,11 +67,11 @@ public abstract class ServerProcessHandlers implements OperationStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final PathElement element = address.getLastElement();
         final String serverName = element.getValue();
-        doExecute(serverName);
+        doExecute(context, address, serverName);
         context.stepCompleted();
     }
 
-    abstract void doExecute(String serverName);
+    abstract void doExecute(OperationContext context, PathAddress address, String serverName);
 
     public static class ServerDestroyHandler extends ServerProcessHandlers {
 
@@ -76,8 +80,9 @@ public abstract class ServerProcessHandlers implements OperationStepHandler {
         }
 
         @Override
-        void doExecute(String serverName) {
+        void doExecute(OperationContext context, PathAddress address, String serverName) {
             serverInventory.destroyServer(serverName);
+            context.emit(new Notification(SERVER_DESTROYED_NOTIFICATION, address.toModelNode(), MESSAGES.serverHasBeenDestroyed()));
         }
 
     }
@@ -89,8 +94,9 @@ public abstract class ServerProcessHandlers implements OperationStepHandler {
         }
 
         @Override
-        void doExecute(String serverName) {
+        void doExecute(OperationContext context, PathAddress address, String serverName) {
             serverInventory.killServer(serverName);
+            context.emit(new Notification(SERVER_KILLED_NOTIFICATION, address.toModelNode(), MESSAGES.serverHasBeenKilled()));
         }
 
     }

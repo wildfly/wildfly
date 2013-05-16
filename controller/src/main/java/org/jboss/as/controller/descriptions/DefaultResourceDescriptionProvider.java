@@ -76,6 +76,8 @@ public class DefaultResourceDescriptionProvider implements DescriptionProvider {
 
         result.get(OPERATIONS); // placeholder
 
+        result.get(NOTIFICATIONS); // placeholder
+
         final ModelNode children = result.get(CHILDREN).setEmptyObject();
 
         Set<PathElement> childAddresses = registration.getChildAddresses(PathAddress.EMPTY_ADDRESS);

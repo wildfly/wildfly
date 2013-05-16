@@ -65,6 +65,8 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NotificationFilter;
+import org.jboss.as.controller.client.NotificationHandler;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -346,6 +348,11 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         ApplyMissingDomainModelResourcesHandler applyMissingDomainModelResourcesHandler = new ApplyMissingDomainModelResourcesHandler(domainController, hostControllerEnvironment, localHostInfo, ignoredDomainResourceRegistry);
         ModelNode applyMissingResourcesOp = ApplyMissingDomainModelResourcesHandler.createPulledMissingDataOperation(result.get(RESULT));
         context.addStep(applyMissingResourcesOp, applyMissingDomainModelResourcesHandler, OperationContext.Stage.MODEL, true);
+    }
+
+    @Override
+    public NotificationRegistration registerNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter) {
+        return masterProxy.registerNotificationHandler(address, handler, filter);
     }
 
     @Override

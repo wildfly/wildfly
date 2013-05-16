@@ -110,6 +110,26 @@ public interface ModelControllerClient extends Closeable {
      */
     AsyncFuture<ModelNode> executeAsync(Operation operation, OperationMessageHandler messageHandler);
 
+    /**
+     * Register the given NotificationHandler to receive notifications emitted by the resource at the given source address.
+     * The {@link NotificationHandler#handleNotification(Notification)} method will only be called on the registered handler if the filter's {@link NotificationFilter#isNotificationEnabled(org.jboss.as.controller.client.Notification)}
+     * returns @{code true} for the given notification.
+     * <br />
+     * The source address can be a pattern if at least one of its element value is a wildcard (*).
+     *
+     * @param address the address of the resource(s) that emit notifications.
+     * @param handler the notification handler
+     * @param filter the notification filter. Use {@link NotificationFilter#ALL} to let the handler always handle notifications
+     */
+     NotificationRegistration registerNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter);
+
+    /**
+     * Unregister a previously registered NotificationHandler.
+     */
+    interface NotificationRegistration {
+        void unregister();
+    }
+
     class Factory {
 
         /**
