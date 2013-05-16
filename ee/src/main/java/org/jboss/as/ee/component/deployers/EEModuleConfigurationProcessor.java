@@ -40,6 +40,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
 import static org.jboss.as.ee.EeMessages.MESSAGES;
@@ -65,9 +66,9 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
 
         final EEModuleConfiguration moduleConfiguration = new EEModuleConfiguration(moduleDescription);
         deploymentUnit.putAttachment(Attachments.EE_MODULE_CONFIGURATION, moduleConfiguration);
-        final ClassLoader oldCl = SecurityActions.getContextClassLoader();
+        final ClassLoader oldCl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
-            SecurityActions.setContextClassLoader(module.getClassLoader());
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
             final Iterator<ComponentDescription> iterator = moduleDescription.getComponentDescriptions().iterator();
             while (iterator.hasNext()) {
                 final ComponentDescription componentDescription = iterator.next();
@@ -95,7 +96,7 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
             deploymentUnit.putAttachment(Attachments.FAILED_COMPONENTS, Collections.synchronizedSet(failed));
 
         } finally {
-            SecurityActions.setContextClassLoader(oldCl);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldCl);
         }
     }
 

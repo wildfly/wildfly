@@ -28,6 +28,7 @@ import org.jboss.classfilewriter.ClassFile;
 import org.jboss.com.sun.corba.se.impl.presentation.rmi.StubFactoryBase;
 import org.jboss.com.sun.corba.se.impl.presentation.rmi.StubFactoryFactoryDynamicBase;
 import org.jboss.com.sun.corba.se.spi.presentation.rmi.PresentationManager;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Stuart Douglas
@@ -48,7 +49,7 @@ public class DynamicStubFactoryFactory extends StubFactoryFactoryDynamicBase {
      */
     public static Class<?> makeStubClass(final Class<?> myClass) {
         final String stubClassName = myClass + "_Stub";
-        ClassLoader cl = SecurityActions.getContextClassLoader();
+        ClassLoader cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         if (cl == null) {
             cl = myClass.getClassLoader();
         }

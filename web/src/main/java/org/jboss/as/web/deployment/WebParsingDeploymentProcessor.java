@@ -44,6 +44,7 @@ import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.parser.util.XMLSchemaValidator;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xml.sax.SAXException;
 
 import static org.jboss.as.web.WebMessages.MESSAGES;
@@ -58,7 +59,7 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
     private final boolean schemaValidation;
 
     public WebParsingDeploymentProcessor() {
-        String property = SecurityActions.getSystemProperty(XMLSchemaValidator.PROPERTY_SCHEMA_VALIDATION, "false");
+        String property = WildFlySecurityManager.getPropertyPrivileged(XMLSchemaValidator.PROPERTY_SCHEMA_VALIDATION, "false");
         this.schemaValidation = Boolean.parseBoolean(property);
     }
 

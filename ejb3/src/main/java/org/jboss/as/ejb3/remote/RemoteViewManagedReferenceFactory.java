@@ -37,7 +37,7 @@ import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.Value;
-
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Managed reference factory for remote EJB views that are bound to java: JNDI locations
@@ -80,7 +80,7 @@ public class RemoteViewManagedReferenceFactory implements ContextListAndJndiView
     public ManagedReference getReference() {
         Class<?> viewClass;
         try {
-            viewClass = Class.forName(this.viewClass, false, SecurityActions.getContextClassLoader());
+            viewClass = Class.forName(this.viewClass, false, WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
         } catch (ClassNotFoundException e) {
             if(viewClassLoader == null || viewClassLoader.getValue() == null) {
                 throw MESSAGES.failToLoadViewClassEjb(beanName, e);

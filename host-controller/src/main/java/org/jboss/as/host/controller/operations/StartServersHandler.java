@@ -43,6 +43,7 @@ import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Starts or reconnect all auto-start servers (at boot).
@@ -51,7 +52,7 @@ import org.jboss.dmr.Property;
  */
 public class StartServersHandler implements OperationStepHandler {
 
-    public static final boolean START_BLOCKING = Boolean.parseBoolean(SecurityActions.getSystemProperty("org.jboss.as.host.start.servers.sequential", "false"));
+    public static final boolean START_BLOCKING = Boolean.parseBoolean(WildFlySecurityManager.getPropertyPrivileged("org.jboss.as.host.start.servers.sequential", "false"));
     public static final String OPERATION_NAME = "start-servers";
 
   //Private method does not need resources for description

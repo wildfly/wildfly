@@ -134,6 +134,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 import java.util.List;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING;
@@ -387,7 +388,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         if (!appclient) {
             // get the node name
-            final String nodeName = SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME);
+            final String nodeName = WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.NODE_NAME, null);
 
             final ServiceLookupValue<Endpoint> endpointValue = new ServiceLookupValue<Endpoint>(context.getServiceRegistry(false), RemotingServices.SUBSYSTEM_ENDPOINT);
             final ServiceLookupValue<EJBRemoteConnectorService> ejbRemoteConnectorServiceValue = new ServiceLookupValue<EJBRemoteConnectorService>(context.getServiceRegistry(false), EJBRemoteConnectorService.SERVICE_NAME);

@@ -32,6 +32,7 @@ import org.jboss.as.controller.operations.common.ProcessEnvironmentSystemPropert
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Handler for system property remove operations.
@@ -77,14 +78,14 @@ public class SystemPropertyRemoveHandler implements OperationStepHandler {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-                    SecurityActions.clearSystemProperty(name);
+                    WildFlySecurityManager.clearPropertyPrivileged(name);
                     if (systemPropertyUpdater != null) {
                         systemPropertyUpdater.systemPropertyUpdated(name, null);
                     }
                     context.completeStep(new OperationContext.RollbackHandler() {
                         @Override
                         public void handleRollback(OperationContext context, ModelNode operation) {
-                            SecurityActions.setSystemProperty(name, oldValue);
+                            WildFlySecurityManager.setPropertyPrivileged(name, oldValue);
                             if (systemPropertyUpdater != null) {
                                 systemPropertyUpdater.systemPropertyUpdated(name, oldValue);
                             }

@@ -30,17 +30,12 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Arrays;
 
-import org.wildfly.security.manager.GetContextClassLoaderAction;
-import org.wildfly.security.manager.SetContextClassLoaderAction;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.SimpleDataInput;
 import org.jboss.marshalling.SimpleDataOutput;
 import org.jboss.marshalling.Unmarshaller;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static java.lang.Thread.currentThread;
-import static java.security.AccessController.doPrivileged;
 
 /**
  * A non-hashable marshalled value, that is lazily serialized, but only deserialized on demand.
@@ -82,14 +77,14 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
             ClassLoader currentLoader = null;
             ClassLoader contextLoader = context.getContextClassLoader(version);
             if (contextLoader != null) {
-                currentLoader = getCurrentThreadContextClassLoader();
-                setCurrentThreadContextClassLoader(contextLoader);
+                currentLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(contextLoader);
             }
             try {
                 marshaller.writeObject(this.object);
             } finally {
                 if (contextLoader != null) {
-                    setCurrentThreadContextClassLoader(currentLoader);
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(currentLoader);
                 }
             }
             marshaller.finish();
@@ -119,14 +114,14 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
                     ClassLoader currentLoader = null;
                     ClassLoader contextLoader = context.getContextClassLoader(version);
                     if (contextLoader != null) {
-                        currentLoader = getCurrentThreadContextClassLoader();
-                        setCurrentThreadContextClassLoader(contextLoader);
+                        currentLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+                        WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(contextLoader);
                     }
                     try {
                         this.object = (T) unmarshaller.readObject();
                     } finally {
                         if (contextLoader != null) {
-                            setCurrentThreadContextClassLoader(currentLoader);
+                            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(currentLoader);
                         }
                     }
                     unmarshaller.finish();
@@ -194,17 +189,5 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
             in.read(bytes);
         }
         this.bytes = bytes;
-    }
-
-    static ClassLoader getCurrentThreadContextClassLoader() {
-        return ! WildFlySecurityManager.isChecking() ? currentThread().getContextClassLoader() : doPrivileged(GetContextClassLoaderAction.getInstance());
-    }
-
-    static void setCurrentThreadContextClassLoader(final ClassLoader loader) {
-        if (! WildFlySecurityManager.isChecking()) {
-            currentThread().setContextClassLoader(loader);
-        } else {
-            doPrivileged(new SetContextClassLoaderAction(loader));
-        }
     }
 }

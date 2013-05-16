@@ -41,6 +41,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
 import org.jboss.threads.JBossExecutors;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * The bootstrap implementation.
@@ -64,9 +65,9 @@ final class BootstrapImpl implements Bootstrap {
         assert configuration != null : "configuration is null";
 
         // AS7-6381 set this property so we can get it out of the launch scripts
-        String resolverWarning = SecurityActions.getSystemProperty("org.jboss.resolver.warning");
+        String resolverWarning = WildFlySecurityManager.getPropertyPrivileged("org.jboss.resolver.warning", null);
         if (resolverWarning == null) {
-            SecurityActions.setSystemProperty("org.jboss.resolver.warning", "true");
+            WildFlySecurityManager.setPropertyPrivileged("org.jboss.resolver.warning", "true");
         }
 
         final ModuleLoader moduleLoader = configuration.getModuleLoader();

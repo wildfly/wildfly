@@ -63,6 +63,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jgroups.JChannel;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Service configuring and starting the {@code HornetQService}.
@@ -135,7 +136,7 @@ class HornetQService implements Service<HornetQServer> {
     }
 
     public synchronized void start(final StartContext context) throws StartException {
-        ClassLoader origTCCL = SecurityActions.getContextClassLoader();
+        ClassLoader origTCCL = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         // Validate whether the AIO native layer can be used
         JournalType jtype = configuration.getJournalType();
         if (jtype == JournalType.ASYNCIO) {
@@ -282,7 +283,7 @@ class HornetQService implements Service<HornetQServer> {
         } catch (Exception e) {
             throw MESSAGES.failedToStartService(e);
         } finally {
-            SecurityActions.setContextClassLoader(origTCCL);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(origTCCL);
         }
     }
 

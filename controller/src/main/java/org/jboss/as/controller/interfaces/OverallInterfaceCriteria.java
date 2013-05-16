@@ -35,11 +35,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.ControllerLogger;
-import org.wildfly.security.manager.ReadPropertyAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static java.lang.System.getProperty;
-import static java.security.AccessController.doPrivileged;
 
 /**
  * Overall interface criteria. Encapsulates a set of individual criteria and selects interfaces and addresses
@@ -159,7 +155,7 @@ public final class OverallInterfaceCriteria implements InterfaceCriteria {
     }
 
     private static Boolean getBoolean(final String property) {
-        final String value = ! WildFlySecurityManager.isChecking() ? getProperty(property) : doPrivileged(new ReadPropertyAction(property));
+        final String value = WildFlySecurityManager.getPropertyPrivileged(property, null);
         return value == null ? null : value.equalsIgnoreCase("true");
     }
 

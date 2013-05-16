@@ -69,7 +69,7 @@ import org.omg.PortableServer.Current;
 import org.omg.PortableServer.CurrentPackage.NoContext;
 import org.omg.PortableServer.POA;
 import org.omg.PortableServer.Servant;
-
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * CORBA servant class for the <code>EJBObject</code>s of a given bean. An
@@ -235,10 +235,10 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
             throw new BAD_OPERATION(opName);
         }
         final NamespaceContextSelector selector = componentView.getComponent().getNamespaceContextSelector();
-        final ClassLoader oldCl = SecurityActions.getContextClassLoader();
+        final ClassLoader oldCl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         NamespaceContextSelector.pushCurrentSelector(selector);
         try {
-            SecurityActions.setContextClassLoader(classLoader);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
             SecurityContext sc = null;
             org.omg.CORBA_2_3.portable.OutputStream out;
             try {
@@ -355,7 +355,7 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
             return out;
         } finally {
             NamespaceContextSelector.popCurrentSelector();
-            SecurityActions.setContextClassLoader(oldCl);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldCl);
         }
     }
 

@@ -48,6 +48,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A ResourceAdapterXmlDeploymentService.
@@ -106,12 +107,12 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
             try {
                 WritableServiceBasedNamingStore.pushOwner(duServiceName);
-                ClassLoader old = SecurityActions.getThreadContextClassLoader();
+                ClassLoader old = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                 try {
-                    SecurityActions.setThreadContextClassLoader(module.getClassLoader());
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
                     raxmlDeployment = raDeployer.doDeploy();
                 } finally {
-                    SecurityActions.setThreadContextClassLoader(old);
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
                     WritableServiceBasedNamingStore.popOwner();
                 }
             } catch (Throwable t) {

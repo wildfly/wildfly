@@ -19,7 +19,6 @@ package org.jboss.as.weld.services.bootstrap;
 import static org.jboss.weld.logging.messages.BeanMessage.INVALID_RESOURCE_PRODUCER_TYPE;
 
 import java.lang.reflect.Type;
-import java.security.AccessController;
 
 import javax.enterprise.inject.spi.InjectionPoint;
 
@@ -28,7 +27,6 @@ import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.wildfly.security.manager.GetContextClassLoaderAction;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.weld.exceptions.DefinitionException;
@@ -36,6 +34,7 @@ import org.jboss.weld.injection.spi.ResourceReference;
 import org.jboss.weld.injection.spi.ResourceReferenceFactory;
 import org.jboss.weld.util.reflection.HierarchyDiscovery;
 import org.jboss.weld.util.reflection.Reflections;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 public abstract class AbstractResourceInjectionServices {
 
@@ -82,7 +81,7 @@ public abstract class AbstractResourceInjectionServices {
         Class<?> resourceClass = org.jboss.as.weld.util.Reflections.loadClass(factory.getInstanceClassName(), factory.getClass().getClassLoader());
         // or it may come from deployment
         if (resourceClass == null) {
-            resourceClass = org.jboss.as.weld.util.Reflections.loadClass(factory.getInstanceClassName(), AccessController.doPrivileged(GetContextClassLoaderAction.getInstance()));
+            resourceClass = org.jboss.as.weld.util.Reflections.loadClass(factory.getInstanceClassName(), WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
         }
 
         if (resourceClass != null) {

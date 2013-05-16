@@ -27,6 +27,7 @@ import static org.jboss.as.process.ProcessMessages.MESSAGES;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 public abstract class CommandLineArgumentUsage {
 
@@ -137,7 +138,7 @@ public abstract class CommandLineArgumentUsage {
     }
 
     protected static String usage(String executableBaseName) {
-        boolean isWindows = (SecurityActions.getSystemProperty("os.name")).toLowerCase(Locale.ENGLISH).contains("windows");
+        boolean isWindows = (WildFlySecurityManager.getPropertyPrivileged("os.name", null)).toLowerCase(Locale.ENGLISH).contains("windows");
         String executableName = isWindows ? executableBaseName : executableBaseName + ".sh";
 
         if (USAGE == null) {

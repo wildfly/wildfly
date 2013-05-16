@@ -21,8 +21,6 @@
  */
 package org.jboss.as.embedded.ejb3;
 
-import static java.lang.System.setProperty;
-import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
 import static org.jboss.as.controller.client.helpers.ClientConstants.EXTENSION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
@@ -42,7 +40,6 @@ import javax.ejb.spi.EJBContainerProvider;
 import org.jboss.as.embedded.EmbeddedServerFactory;
 import org.jboss.as.embedded.StandaloneServer;
 import org.wildfly.security.manager.WildFlySecurityManager;
-import org.wildfly.security.manager.WritePropertyAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 
@@ -68,7 +65,7 @@ public class JBossStandaloneEJBContainerProvider implements EJBContainerProvider
         //setSystemProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
 
         // see EjbDependencyDeploymentUnitProcessor
-        setSystemProperty("org.jboss.as.ejb3.EMBEDDED", "true");
+        WildFlySecurityManager.setPropertyPrivileged("org.jboss.as.ejb3.EMBEDDED", "true");
 
         String jbossHomeKey = "jboss.home";
         String jbossHomeProp = System.getProperty(jbossHomeKey);
@@ -109,9 +106,5 @@ public class JBossStandaloneEJBContainerProvider implements EJBContainerProvider
         catch (Exception e) {
             throw new EJBException(e);
         }
-    }
-
-    private static String setSystemProperty(final String key, final String value) {
-        return ! WildFlySecurityManager.isChecking() ? setProperty(key, value) : doPrivileged(new WritePropertyAction(key, value));
     }
 }

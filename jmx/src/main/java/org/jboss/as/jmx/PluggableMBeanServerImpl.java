@@ -52,6 +52,7 @@ import javax.management.loading.ClassLoaderRepository;
 
 import org.jboss.as.server.jmx.MBeanServerPlugin;
 import org.jboss.as.server.jmx.PluggableMBeanServer;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * An MBeanServer supporting {@link MBeanServerPlugin}s. At it's core is the original platform mbean server wrapped in TCCL behaviour.
@@ -615,16 +616,16 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
 
         private ClassLoader pushClassLoader(ObjectName name) throws InstanceNotFoundException {
             ClassLoader mbeanCl = delegate.getClassLoaderFor(name);
-            return SecurityActions.setThreadContextClassLoader(mbeanCl);
+            return WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(mbeanCl);
         }
 
         private ClassLoader pushClassLoaderByName(ObjectName loaderName) throws InstanceNotFoundException {
             ClassLoader mbeanCl = delegate.getClassLoader(loaderName);
-            return SecurityActions.setThreadContextClassLoader(mbeanCl);
+            return WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(mbeanCl);
         }
 
         private void resetClassLoader(ClassLoader cl) {
-            SecurityActions.resetThreadContextClassLoader(cl);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
         }
     }
 

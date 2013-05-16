@@ -40,6 +40,7 @@ import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xnio.OptionMap;
 
 import java.io.Serializable;
@@ -89,8 +90,7 @@ public class DomainServerCommunicationServices  implements ServiceActivator, Ser
             // TODO see if we can figure out a way to work in the vault resolver instead of having to use ExpressionResolver.DEFAULT
             @SuppressWarnings("deprecation")
             final OptionMap options = EndpointConfigFactory.create(ExpressionResolver.DEFAULT, endpointConfig, DEFAULTS);
-            ManagementRemotingServices.installRemotingEndpoint(serviceTarget, endpointName,
-                    SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME), endpointType, options, null, null);
+            ManagementRemotingServices.installRemotingEndpoint(serviceTarget, endpointName, WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.NODE_NAME, null), endpointType, options, null, null);
 
             // Install the communication services
             final int port = managementSocket.getPort();

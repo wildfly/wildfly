@@ -36,6 +36,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Properties;
+import org.wildfly.security.manager.WildFlySecurityManager;
+
 import java.util.logging.LogManager;
 
 /**
@@ -108,7 +110,7 @@ public class EmbeddedServerFactory {
         setupLoggingSystem(moduleLoader);
 
         // Embedded Server wants this, too. Seems redundant, but supply it.
-        SecurityActions.setSystemProperty(SYSPROP_KEY_JBOSS_HOME_DIR, jbossHomeDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(SYSPROP_KEY_JBOSS_HOME_DIR, jbossHomeDir.getAbsolutePath());
 
         // Load the Embedded Server Module
         final Module embeddedModule;
@@ -140,8 +142,8 @@ public class EmbeddedServerFactory {
         // Create the server
         Object standaloneServerImpl;
         try {
-            Properties sysprops = SecurityActions.getSystemProperties();
-            Map<String, String> sysenv = SecurityActions.getSystemEnvironment();
+            Properties sysprops = WildFlySecurityManager.getSystemPropertiesPrivileged();
+            Map<String, String> sysenv = WildFlySecurityManager.getSystemEnvironmentPrivileged();
             String[] args = cmdargs != null ? cmdargs : new String[0];
             standaloneServerImpl = createServerMethod.invoke(null, jbossHomeDir, moduleLoader, sysprops, sysenv, args);
         } catch (final InvocationTargetException ite) {
@@ -160,27 +162,27 @@ public class EmbeddedServerFactory {
     private static ModuleLoader setupModuleLoader(String modulePath, String... systemPackages) {
         assert modulePath != null : "modulePath not null";
 
-        SecurityActions.setSystemProperty(SYSPROP_KEY_JBOSS_MODULES_DIR, trimPathToModulesDir(modulePath));
+        WildFlySecurityManager.setPropertyPrivileged(SYSPROP_KEY_JBOSS_MODULES_DIR, trimPathToModulesDir(modulePath));
 
-        final String classPath = SecurityActions.getSystemProperty(SYSPROP_KEY_CLASS_PATH);
+        final String classPath = WildFlySecurityManager.getPropertyPrivileged(SYSPROP_KEY_CLASS_PATH, null);
         try {
             // Set up sysprop env
-            SecurityActions.clearSystemProperty(SYSPROP_KEY_CLASS_PATH);
-            SecurityActions.setSystemProperty(SYSPROP_KEY_MODULE_PATH, modulePath);
+            WildFlySecurityManager.clearPropertyPrivileged(SYSPROP_KEY_CLASS_PATH);
+            WildFlySecurityManager.setPropertyPrivileged(SYSPROP_KEY_MODULE_PATH, modulePath);
 
             StringBuffer packages = new StringBuffer("org.jboss.modules,org.jboss.msc,org.jboss.dmr,org.jboss.threads,org.jboss.as.controller.client");
             if (systemPackages != null) {
                 for (String packageName : systemPackages)
                     packages.append("," + packageName);
             }
-            SecurityActions.setSystemProperty("jboss.modules.system.pkgs", packages.toString());
+            WildFlySecurityManager.setPropertyPrivileged("jboss.modules.system.pkgs", packages.toString());
 
             // Get the module loader
             final ModuleLoader moduleLoader = Module.getBootModuleLoader();
             return moduleLoader;
         } finally {
             // Return to previous state for classpath prop
-            SecurityActions.setSystemProperty(SYSPROP_KEY_CLASS_PATH, classPath);
+            WildFlySecurityManager.setPropertyPrivileged(SYSPROP_KEY_CLASS_PATH, classPath);
         }
     }
 
@@ -190,7 +192,7 @@ public class EmbeddedServerFactory {
         final File bundlesDir = new File(bundlePath);
         assert bundlesDir.isDirectory() : "bundlesDir not a directory";
 
-        SecurityActions.setSystemProperty(SYSPROP_KEY_JBOSS_BUNDLES_DIR, bundlesDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(SYSPROP_KEY_JBOSS_BUNDLES_DIR, bundlesDir.getAbsolutePath());
     }
 
     private static void setupVfsModule(final ModuleLoader moduleLoader) {
@@ -214,10 +216,10 @@ public class EmbeddedServerFactory {
         }
 
         final ModuleClassLoader logModuleClassLoader = logModule.getClassLoader();
-        final ClassLoader tccl = SecurityActions.getContextClassLoader();
+        final ClassLoader tccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
-            SecurityActions.setContextClassLoader(logModuleClassLoader);
-            SecurityActions.setSystemProperty(SYSPROP_KEY_LOGMANAGER, SYSPROP_VALUE_JBOSS_LOGMANAGER);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(logModuleClassLoader);
+            WildFlySecurityManager.setPropertyPrivileged(SYSPROP_KEY_LOGMANAGER, SYSPROP_VALUE_JBOSS_LOGMANAGER);
 
             final Class<?> actualLogManagerClass = LogManager.getLogManager().getClass();
             if (actualLogManagerClass == LogManager.class) {
@@ -227,7 +229,7 @@ public class EmbeddedServerFactory {
             }
         } finally {
             // Reset TCCL
-            SecurityActions.setContextClassLoader(tccl);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(tccl);
         }
     }
 }

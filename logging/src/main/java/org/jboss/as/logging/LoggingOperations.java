@@ -41,6 +41,7 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.LogContext;
 import org.jboss.logmanager.config.LogContextConfiguration;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -88,7 +89,7 @@ final class LoggingOperations {
         @SuppressWarnings("deprecation")
         CommitOperationStepHandler(final ConfigurationPersistence configurationPersistence) {
             this.configurationPersistence = configurationPersistence;
-            persistConfig = Boolean.parseBoolean(SecurityActions.getSystemProperty(ServerEnvironment.JBOSS_PERSIST_SERVER_CONFIG, Boolean.toString(true)));
+            persistConfig = Boolean.parseBoolean(WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.JBOSS_PERSIST_SERVER_CONFIG, Boolean.toString(true)));
         }
 
         @Override

@@ -38,6 +38,7 @@ import org.jboss.as.controller.operations.common.ProcessEnvironment;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.process.DefaultJvmUtils;
 import org.jboss.as.version.ProductConfig;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Encapsulates the runtime environment for a host controller.
@@ -275,7 +276,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
             // if host name is specified, don't pick a qualified host name that isn't related to it
             qualifiedHostName = hostName;
             if (qualifiedHostName == null) {
-                env = SecurityActions.getSystemEnvironment();
+                env = WildFlySecurityManager.getSystemEnvironmentPrivileged();
                 // POSIX-like OSes including Mac should have this set
                 qualifiedHostName = env.get("HOSTNAME");
             }
@@ -320,7 +321,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         if (!homeDir.exists() || !homeDir.isDirectory()) {
             throw MESSAGES.homeDirectoryDoesNotExist(homeDir);
         }
-        SecurityActions.setSystemProperty(HOME_DIR, this.homeDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(HOME_DIR, this.homeDir.getAbsolutePath());
 
         @SuppressWarnings("deprecation")
         File tmp = getFileFromProperty(MODULES_DIR);
@@ -332,7 +333,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         this.modulesDir = tmp;
         @SuppressWarnings("deprecation")
         String deprecatedModDir = MODULES_DIR;
-        SecurityActions.setSystemProperty(deprecatedModDir, this.modulesDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(deprecatedModDir, this.modulesDir.getAbsolutePath());
 
         tmp = getFileFromProperty(DOMAIN_BASE_DIR);
         if (tmp == null) {
@@ -344,7 +345,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
             throw MESSAGES.domainBaseDirectoryIsNotADirectory(tmp);
         }
         this.domainBaseDir = tmp;
-        SecurityActions.setSystemProperty(DOMAIN_BASE_DIR, this.domainBaseDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(DOMAIN_BASE_DIR, this.domainBaseDir.getAbsolutePath());
 
         tmp = getFileFromProperty(DOMAIN_CONFIG_DIR);
         if (tmp == null) {
@@ -354,12 +355,12 @@ public class HostControllerEnvironment extends ProcessEnvironment {
             throw MESSAGES.configDirectoryDoesNotExist(tmp);
         }
         this.domainConfigurationDir = tmp;
-        SecurityActions.setSystemProperty(DOMAIN_CONFIG_DIR, this.domainConfigurationDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(DOMAIN_CONFIG_DIR, this.domainConfigurationDir.getAbsolutePath());
 
-        final String defaultHostConfig = SecurityActions.getSystemProperty(JBOSS_HOST_DEFAULT_CONFIG, "host.xml");
+        final String defaultHostConfig = WildFlySecurityManager.getPropertyPrivileged(JBOSS_HOST_DEFAULT_CONFIG, "host.xml");
         hostConfigurationFile = new ConfigurationFile(domainConfigurationDir, defaultHostConfig, initialHostConfig == null ? hostConfig : initialHostConfig, initialHostConfig == null);
 
-        final String defaultDomainConfig = SecurityActions.getSystemProperty(JBOSS_DOMAIN_DEFAULT_CONFIG, "domain.xml");
+        final String defaultDomainConfig = WildFlySecurityManager.getPropertyPrivileged(JBOSS_DOMAIN_DEFAULT_CONFIG, "domain.xml");
         domainConfigurationFile = new ConfigurationFile(domainConfigurationDir, defaultDomainConfig, initialDomainConfig == null ? domainConfig : initialDomainConfig, initialDomainConfig == null);
 
         tmp = getFileFromProperty(DOMAIN_DATA_DIR);
@@ -376,7 +377,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
                 throw MESSAGES.couldNotCreateDomainDataDirectory(domainDataDir);
             }
         }
-        SecurityActions.setSystemProperty(DOMAIN_DATA_DIR, this.domainDataDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(DOMAIN_DATA_DIR, this.domainDataDir.getAbsolutePath());
 
         @SuppressWarnings("deprecation")
         String deprecatedDepDir = DOMAIN_DEPLOYMENT_DIR;
@@ -396,8 +397,8 @@ public class HostControllerEnvironment extends ProcessEnvironment {
             throw MESSAGES.couldNotCreateDomainContentDirectory(domainContentDir);
         }
 
-        SecurityActions.setSystemProperty(DOMAIN_CONTENT_DIR, this.domainContentDir.getAbsolutePath());
-        SecurityActions.setSystemProperty(deprecatedDepDir, this.domainContentDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(DOMAIN_CONTENT_DIR, this.domainContentDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(deprecatedDepDir, this.domainContentDir.getAbsolutePath());
 
         tmp = getFileFromProperty(DOMAIN_LOG_DIR);
         if (tmp == null) {
@@ -411,7 +412,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
             throw MESSAGES.couldNotCreateLogDirectory(tmp);
         }
         this.domainLogDir = tmp;
-        SecurityActions.setSystemProperty(DOMAIN_LOG_DIR, this.domainLogDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(DOMAIN_LOG_DIR, this.domainLogDir.getAbsolutePath());
 
         tmp = getFileFromProperty(DOMAIN_SERVERS_DIR);
         if (tmp == null) {
@@ -425,7 +426,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
             throw MESSAGES.couldNotCreateServersDirectory(tmp);
         }
         this.domainServersDir = tmp;
-        SecurityActions.setSystemProperty(DOMAIN_SERVERS_DIR, this.domainServersDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(DOMAIN_SERVERS_DIR, this.domainServersDir.getAbsolutePath());
 
         tmp = getFileFromProperty(DOMAIN_TEMP_DIR);
         if (tmp == null) {
@@ -439,7 +440,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
             throw MESSAGES.couldNotCreateDomainTempDirectory(tmp);
         }
         this.domainTempDir = tmp;
-        SecurityActions.setSystemProperty(DOMAIN_TEMP_DIR, this.domainTempDir.getAbsolutePath());
+        WildFlySecurityManager.setPropertyPrivileged(DOMAIN_TEMP_DIR, this.domainTempDir.getAbsolutePath());
 
         if(defaultJVM != null) {
             if (defaultJVM.equals("java")) {

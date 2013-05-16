@@ -53,6 +53,7 @@ import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
 import org.jboss.stdio.StdioContext;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * The application client entry point
@@ -95,7 +96,7 @@ public final class Main {
         try {
             Module.registerURLStreamHandlerFactoryModule(Module.getBootModuleLoader().loadModule(ModuleIdentifier.create("org.jboss.vfs")));
 
-            final ParsedOptions options = determineEnvironment(args, new Properties(SecurityActions.getSystemProperties()), SecurityActions.getSystemEnvironment(), ServerEnvironment.LaunchType.APPCLIENT);
+            final ParsedOptions options = determineEnvironment(args, new Properties(WildFlySecurityManager.getSystemPropertiesPrivileged()), WildFlySecurityManager.getSystemEnvironmentPrivileged(), ServerEnvironment.LaunchType.APPCLIENT);
             if(options == null) {
                 //this happens if --version was specified
                 return;
@@ -185,7 +186,7 @@ public final class Main {
                     clientArguments.add(arg);
                 } else if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg)
                         || CommandLineConstants.OLD_VERSION.equals(arg) || CommandLineConstants.OLD_SHORT_VERSION.equals(arg)) {
-                    productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(ServerEnvironment.HOME_DIR), null);
+                    productConfig = new ProductConfig(Module.getBootModuleLoader(), WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.HOME_DIR, null), null);
                     System.out.println(productConfig.getPrettyVersionString());
                     return null;
                 } else if (CommandLineConstants.HELP.equals(arg) || CommandLineConstants.SHORT_HELP.equals(arg) || CommandLineConstants.OLD_HELP.equals(arg)) {
@@ -252,7 +253,7 @@ public final class Main {
                         value = arg.substring(idx + 1, arg.length());
                     }
                     systemProperties.setProperty(name, value);
-                    SecurityActions.setSystemProperty(name, value);
+                    WildFlySecurityManager.setPropertyPrivileged(name, value);
                 } else if (arg.startsWith(CommandLineConstants.APPCLIENT_CONFIG)) {
                     appClientConfig = parseValue(arg, CommandLineConstants.APPCLIENT_CONFIG);
                 } else {
@@ -273,7 +274,7 @@ public final class Main {
         }
 
         String hostControllerName = null; // No host controller unless in domain mode.
-        productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(ServerEnvironment.HOME_DIR), systemProperties);
+        productConfig = new ProductConfig(Module.getBootModuleLoader(), WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.HOME_DIR, null), systemProperties);
         ret.environment = new ServerEnvironment(hostControllerName, systemProperties, systemEnvironment, appClientConfig, null, launchType, null, productConfig);
         return ret;
     }

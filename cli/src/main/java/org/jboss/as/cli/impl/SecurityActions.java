@@ -22,16 +22,9 @@
 package org.jboss.as.cli.impl;
 
 import org.wildfly.security.manager.AddShutdownHookAction;
-import org.wildfly.security.manager.GetClassLoaderAction;
-import org.wildfly.security.manager.ReadEnvironmentPropertyAction;
-import org.wildfly.security.manager.ReadPropertyAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
-import org.wildfly.security.manager.WritePropertyAction;
 
 import static java.lang.Runtime.getRuntime;
-import static java.lang.System.getProperty;
-import static java.lang.System.getenv;
-import static java.lang.System.setProperty;
 import static java.security.AccessController.doPrivileged;
 
 /**
@@ -48,25 +41,5 @@ class SecurityActions {
         } else {
             doPrivileged(new AddShutdownHookAction(hook));
         }
-    }
-
-    static String getSystemProperty(String name) {
-        return ! WildFlySecurityManager.isChecking() ? getProperty(name) : doPrivileged(new ReadPropertyAction(name));
-    }
-
-    static void setSystemProperty(String name, String value) {
-        if (! WildFlySecurityManager.isChecking()) {
-            setProperty(name, value);
-        } else {
-            doPrivileged(new WritePropertyAction(name, value));
-        }
-    }
-
-    static ClassLoader getClassLoader(Class<?> cls) {
-        return ! WildFlySecurityManager.isChecking() ? cls.getClassLoader() : doPrivileged(new GetClassLoaderAction(cls));
-    }
-
-    static String getEnvironmentVariable(String name) {
-        return ! WildFlySecurityManager.isChecking() ? getenv(name) : doPrivileged(new ReadEnvironmentPropertyAction(name));
     }
 }

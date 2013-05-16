@@ -176,12 +176,12 @@ public abstract class AbstractResourceAdapterDeploymentService {
             }
 
             if (value.getDeployment() != null && value.getDeployment().getResourceAdapter() != null) {
-                ClassLoader old = SecurityActions.getThreadContextClassLoader();
+                ClassLoader old = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                 try {
-                    SecurityActions.setThreadContextClassLoader(value.getDeployment().getResourceAdapter().getClass().getClassLoader());
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(value.getDeployment().getResourceAdapter().getClass().getClassLoader());
                     value.getDeployment().getResourceAdapter().stop();
                 } finally {
-                    SecurityActions.setThreadContextClassLoader(old);
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
                 }
             }
             if (value.getRaName() != null && value.getRaServiceName() != null) {

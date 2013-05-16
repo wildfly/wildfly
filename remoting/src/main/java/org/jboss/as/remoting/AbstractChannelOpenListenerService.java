@@ -44,6 +44,7 @@ import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.OpenListener;
 import org.jboss.remoting3.Registration;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xnio.OptionMap;
 
 
@@ -62,7 +63,7 @@ public abstract class AbstractChannelOpenListenerService implements Service<Void
         String prop = null;
         int timeout;
         try {
-            prop = SecurityActions.getSystemProperty("jboss.as.management.channel.close.timeout", "15000");
+            prop = WildFlySecurityManager.getPropertyPrivileged("jboss.as.management.channel.close.timeout", "15000");
             timeout = Integer.parseInt(prop);
         } catch (NumberFormatException e) {
             ControllerLogger.ROOT_LOGGER.invalidChannelCloseTimeout(e, "jboss.as.management.channel.close.timeout", prop);

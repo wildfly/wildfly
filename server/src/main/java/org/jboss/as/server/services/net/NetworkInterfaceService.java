@@ -40,14 +40,12 @@ import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
-import org.wildfly.security.manager.ReadPropertyAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import static java.security.AccessController.doPrivileged;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Service resolving the {@code NetworkInterfaceBinding} based on the configured interfaces in the domain model.
@@ -173,6 +171,6 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
     }
 
     private static boolean isPreferIPv4Stack() {
-        return Boolean.parseBoolean(doPrivileged(new ReadPropertyAction("java.net.preferIPv4Stack")));
+        return Boolean.parseBoolean(WildFlySecurityManager.getPropertyPrivileged("java.net.preferIPv4Stack", "false"));
     }
 }

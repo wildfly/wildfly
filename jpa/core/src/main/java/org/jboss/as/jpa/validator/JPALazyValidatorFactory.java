@@ -23,6 +23,7 @@ package org.jboss.as.jpa.validator;
 
 import java.util.Collections;
 import java.util.List;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import javax.validation.ConstraintValidatorFactory;
 import javax.validation.MessageInterpolator;
@@ -74,16 +75,16 @@ public class JPALazyValidatorFactory implements ValidatorFactory {
     }
 
     private ValidatorFactory initFactory() {
-        final ClassLoader oldTCCL = SecurityActions.getContextClassLoader();
+        final ClassLoader oldTCCL = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
-            SecurityActions.setContextClassLoader(oldTCCL);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTCCL);
             ConstraintMapping mapping = new ConstraintMapping();
             HibernateValidatorConfiguration config = Validation.byProvider(HibernateValidator.class).providerResolver(new JbossProviderResolver()).configure();
             config.addMapping(mapping);
             ValidatorFactory factory = config.buildValidatorFactory();
             return factory;
         } finally {
-            SecurityActions.setContextClassLoader(oldTCCL);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTCCL);
         }
     }
 

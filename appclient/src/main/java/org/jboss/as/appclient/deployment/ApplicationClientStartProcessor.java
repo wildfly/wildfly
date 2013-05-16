@@ -52,6 +52,7 @@ import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
 import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
 import org.jboss.modules.Module;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
@@ -140,9 +141,9 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
                         }
                     }
                 }
-                final ClassLoader oldTccl = SecurityActions.getContextClassLoader();
+                final ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                 try {
-                    SecurityActions.setContextClassLoader(module.getClassLoader());
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
                     configuration = new PropertiesBasedEJBClientConfiguration(properties);
 
                     //if there is no username or callback handler specified in the ejb-client properties file
@@ -159,7 +160,7 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
 
                     startService = new ApplicationClientStartService(method, parameters, moduleDescription.getNamespaceContextSelector(), module.getClassLoader(), setupActions, configuration);
                 } finally {
-                    SecurityActions.setContextClassLoader(oldTccl);
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
                 }
             } catch (Exception e) {
                 throw AppClientMessages.MESSAGES.exceptionLoadingEjbClientPropertiesURL(connectionPropertiesUrl, e);

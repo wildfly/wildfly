@@ -49,6 +49,7 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Combines the relevant parts of the domain-level and host-level models to
@@ -221,7 +222,7 @@ public class ManagedServerBootCmdFactory implements ManagedServerBootConfigurati
         } else {
             // Sets the initial log file to use
             command.add("-Dorg.jboss.boot.log.file=" + getAbsolutePath(new File(logDir), "server.log"));
-            final String fileName = SecurityActions.getSystemProperty("logging.configuration");
+            final String fileName = WildFlySecurityManager.getPropertyPrivileged("logging.configuration", null);
             if (fileName == null) {
                 // If nothing else is defined use a default logging configuration that matches the default from the
                 // standalone server. This allows a single log file to be used.

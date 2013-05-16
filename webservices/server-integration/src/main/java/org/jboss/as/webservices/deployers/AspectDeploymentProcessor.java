@@ -33,6 +33,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Adaptor of DeploymentAspect to DeploymentUnitProcessor
@@ -67,14 +68,14 @@ public final class AspectDeploymentProcessor implements DeploymentUnitProcessor 
             final Deployment dep = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY);
             if (aspect.canHandle(dep)) {
                 ROOT_LOGGER.aspectStart(aspect, unit.getName());
-                ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
+                ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                 try {
-                    SecurityActions.setContextClassLoader(aspect.getLoader());
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(aspect.getLoader());
                     dep.addAttachment(ServiceTarget.class, phaseContext.getServiceTarget());
                     aspect.start(dep);
                     dep.removeAttachment(ServiceTarget.class);
                 } finally {
-                    SecurityActions.setContextClassLoader(origClassLoader);
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(origClassLoader);
                 }
             }
         }
@@ -86,12 +87,12 @@ public final class AspectDeploymentProcessor implements DeploymentUnitProcessor 
             final Deployment dep = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY);
             if (aspect.canHandle(dep)) {
                 ROOT_LOGGER.aspectStop(aspect, unit.getName());
-                ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
+                ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                 try {
-                    SecurityActions.setContextClassLoader(aspect.getLoader());
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(aspect.getLoader());
                     aspect.stop(dep);
                 } finally {
-                    SecurityActions.setContextClassLoader(origClassLoader);
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(origClassLoader);
                 }
             }
         }

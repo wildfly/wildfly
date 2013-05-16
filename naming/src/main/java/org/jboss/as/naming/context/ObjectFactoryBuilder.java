@@ -41,6 +41,7 @@ import org.jboss.as.naming.ServiceAwareObjectFactory;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceContainer;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
@@ -88,7 +89,7 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
      * @throws Exception If any error occur
      */
     public Object getObjectInstance(final Object ref, final Name name, final Context nameCtx, final Hashtable<?, ?> environment) throws Exception {
-        final ClassLoader classLoader = SecurityActions.getContextClassLoader();
+        final ClassLoader classLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         if (classLoader == null) {
             return ref;
         }
@@ -122,7 +123,7 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
      * @throws Exception If any error occur
      */
     public Object getObjectInstance(final Object ref, final Name name, final Context nameCtx, final Hashtable<?, ?> environment, final Attributes attributes) throws Exception {
-        final ClassLoader classLoader = SecurityActions.getContextClassLoader();
+        final ClassLoader classLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         if (classLoader == null) {
             return ref;
         }
@@ -156,7 +157,7 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
         if (reference instanceof ModularReference) {
             return factoryFromModularReference(ModularReference.class.cast(reference), environment);
         }
-        return factoryFromReference(reference, SecurityActions.getContextClassLoader(), environment);
+        return factoryFromReference(reference, WildFlySecurityManager.getCurrentContextClassLoaderPrivileged(), environment);
     }
 
     private ObjectFactory factoryFromModularReference(ModularReference modularReference, final Hashtable<?, ?> environment) throws Exception {
@@ -233,7 +234,7 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
             facProp = "com.sun.jndi.url";
         }
 
-        ClassLoader loader = SecurityActions.getContextClassLoader();
+        ClassLoader loader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
 
         String suffix = "." + scheme + "." + scheme + "URLContextFactory";
 

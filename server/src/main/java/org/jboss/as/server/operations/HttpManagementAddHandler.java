@@ -69,6 +69,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.JBossThreadFactory;
 import org.xnio.OptionMap;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A handler that activates the HTTP management API on a Server.
@@ -95,7 +96,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
         //The core model testing currently uses RunningMode.ADMIN_ONLY, but in the real world
         //the http interface needs to be enabled even when that happens.
         //I don't want to wire up all the services unless I can avoid it, so for now the tests set this system property
-        if (SecurityActions.getSystemProperty("jboss.as.test.disable.runtime") != null) {
+        if (WildFlySecurityManager.getPropertyPrivileged("jboss.as.test.disable.runtime", null) != null) {
             return false;
         }
         return true;
@@ -262,7 +263,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
 
 
         if(httpUpgrade) {
-            final String hostName = SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME);
+            final String hostName = WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.NODE_NAME, null);
 
 
             ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.server.temp.dir");

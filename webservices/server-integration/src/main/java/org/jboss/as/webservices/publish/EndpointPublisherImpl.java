@@ -57,6 +57,7 @@ import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 import org.jboss.wsf.spi.publish.Context;
 import org.jboss.wsf.spi.publish.EndpointPublisher;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * WS endpoint publisher, allows for publishing a WS endpoint on AS 7
@@ -111,10 +112,10 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
      */
     public List<Endpoint> publish(ServiceTarget target, WSEndpointDeploymentUnit unit) throws Exception {
         List<DeploymentAspect> aspects = getDeploymentAspects();
-        ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
+        ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         Deployment dep = null;
         try {
-            SecurityActions.setContextClassLoader(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
             WSDeploymentBuilder.getInstance().build(unit);
             dep = unit.getAttachment(WSAttachmentKeys.DEPLOYMENT_KEY);
             dep.addAttachment(ServiceTarget.class, target);
@@ -131,7 +132,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             if (dep != null) {
                 dep.removeAttachment(ServiceTarget.class);
             }
-            SecurityActions.setContextClassLoader(origClassLoader);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(origClassLoader);
         }
         Deployment deployment = unit.getAttachment(WSAttachmentKeys.DEPLOYMENT_KEY);
         deployment.addAttachment(WebDeploymentController.class, startWebApp(host, unit)); //TODO simplify and use findChild later in destroy()/stopWebApp()
@@ -207,14 +208,14 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         try {
             stopWebApp(deployment.getAttachment(WebDeploymentController.class));
         } finally {
-            ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
+            ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
             try {
-                SecurityActions.setContextClassLoader(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
                 DeploymentAspectManager dam = new DeploymentAspectManagerImpl();
                 dam.setDeploymentAspects(aspects);
                 dam.undeploy(deployment);
             } finally {
-                SecurityActions.setContextClassLoader(origClassLoader);
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(origClassLoader);
             }
         }
     }

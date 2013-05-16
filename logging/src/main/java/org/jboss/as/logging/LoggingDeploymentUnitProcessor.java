@@ -48,6 +48,7 @@ import org.jboss.logmanager.PropertyConfigurator;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A processor to search for logging configuration files for the deployment.
@@ -89,16 +90,16 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
         if (context.hasAttachment(Attachments.MODULE)) {
             // Remove any log context selector references
             final Module module = context.getAttachment(Attachments.MODULE);
-            final ClassLoader current = SecurityActions.getThreadContextClassLoader();
+            final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
             try {
                 // Unregister the log context
-                SecurityActions.setThreadContextClassLoader(module.getClassLoader());
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
                 final LogContext logContext = LogContext.getLogContext();
                 LoggingExtension.CONTEXT_SELECTOR.unregisterLogContext(module.getClassLoader(), logContext);
                 LoggingLogger.ROOT_LOGGER.tracef("Removing LogContext '%s' from '%s'", logContext, module);
                 context.removeAttachment(LOG_CONTEXT_KEY);
             } finally {
-                SecurityActions.setThreadContextClassLoader(current);
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
             }
         }
     }
@@ -150,7 +151,7 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
     private boolean processDeploymentLogging(final DeploymentUnit deploymentUnit, final ResourceRoot root) throws DeploymentUnitProcessingException {
         boolean result = false;
-        if (Boolean.valueOf(SecurityActions.getSystemProperty(PER_DEPLOYMENT_LOGGING, Boolean.toString(true)))) {
+        if (Boolean.valueOf(WildFlySecurityManager.getPropertyPrivileged(PER_DEPLOYMENT_LOGGING, Boolean.toString(true)))) {
             // check if we already setup LogContext
             if (deploymentUnit.hasAttachment(LOG_CONTEXT_KEY)) {
                 return true;
@@ -286,10 +287,10 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
             // Check the type of the configuration file
             if (isLog4jConfiguration(fileName)) {
-                final ClassLoader current = SecurityActions.getThreadContextClassLoader();
+                final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                 final LogContext old = LoggingExtension.THREAD_LOCAL_CONTEXT_SELECTOR.getAndSet(CONTEXT_LOCK, logContext);
                 try {
-                    SecurityActions.setThreadContextClassLoader(classLoader);
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
                     if (LOG4J_XML.equals(fileName) || JBOSS_LOG4J_XML.equals(fileName)) {
                         new DOMConfigurator().doConfigure(configStream, org.apache.log4j.JBossLogManagerFacade.getLoggerRepository(logContext));
                     } else {
@@ -299,7 +300,7 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
                     }
                 } finally {
                     LoggingExtension.THREAD_LOCAL_CONTEXT_SELECTOR.getAndSet(CONTEXT_LOCK, old);
-                    SecurityActions.setThreadContextClassLoader(current);
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
                 }
             } else {
                 // Create a properties file

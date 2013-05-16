@@ -27,6 +27,7 @@ import org.jboss.logging.Logger;
 import org.osgi.framework.Constants;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * An implementation of the {@link FrameworkFactory} over an embedded server.
@@ -56,7 +57,7 @@ public final class EmbeddedFrameworkFactory implements FrameworkFactory {
         // Put all properties on the System
         // [TODO] remove this hack and configure the osgi subsystem properly
         for (Map.Entry<String, String> entry : props.entrySet()) {
-            SecurityActions.setSystemProperty(entry.getKey(), entry.getValue());
+            WildFlySecurityManager.setPropertyPrivileged(entry.getKey(), entry.getValue());
         }
 
         log.debugf("Config: " + props);
@@ -97,7 +98,7 @@ public final class EmbeddedFrameworkFactory implements FrameworkFactory {
     private String getProperty(Map<String, String> props, String key, String defaultValue) {
         String value = props.get(key);
         if (value == null) {
-            value = SecurityActions.getSystemProperty(key);
+            value = WildFlySecurityManager.getPropertyPrivileged(key, null);
         }
         if (value == null) {
             value = defaultValue;

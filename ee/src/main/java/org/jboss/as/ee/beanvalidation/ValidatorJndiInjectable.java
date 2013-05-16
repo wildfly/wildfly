@@ -28,6 +28,7 @@ import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.msc.value.ImmediateValue;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
 * @author Stuart Douglas
@@ -46,12 +47,12 @@ final class ValidatorJndiInjectable implements ContextListAndJndiViewManagedRefe
     }
 
     private Object getInstanceSafely() {
-        final ClassLoader cl = SecurityActions.getContextClassLoader();
+        final ClassLoader cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
-            SecurityActions.setContextClassLoader(factory.getClass().getClassLoader());
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(factory.getClass().getClassLoader());
             return factory.getValidator();
         } finally {
-            SecurityActions.setContextClassLoader(cl);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
         }
     }
 
@@ -70,12 +71,12 @@ final class ValidatorJndiInjectable implements ContextListAndJndiViewManagedRefe
         if (instance == null) {
             return "null";
         }
-        final ClassLoader cl = SecurityActions.getContextClassLoader();
+        final ClassLoader cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
-            SecurityActions.setContextClassLoader(instance.getClass().getClassLoader());
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(instance.getClass().getClassLoader());
             return instance.toString();
         } finally {
-            SecurityActions.setContextClassLoader(cl);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
         }
     }
 }

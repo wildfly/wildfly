@@ -23,6 +23,7 @@ package org.jboss.as.cli;
 
 import java.util.Properties;
 import java.io.File;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A utility class for replacing properties in strings.
@@ -147,8 +148,7 @@ final class StringPropertyReplacer {
                         // check from the properties
                         if (props != null)
                             value = props.getProperty(key);
-                        else
-                            value = SecurityActions.getSystemProperty(key);
+                        else value = WildFlySecurityManager.getPropertyPrivileged(key, null);
 
                         if (value == null) {
                             // Check for a default value ${key:default}
@@ -157,9 +157,7 @@ final class StringPropertyReplacer {
                                 String realKey = key.substring(0, colon);
                                 if (props != null)
                                     value = props.getProperty(realKey);
-                                else
-                                    value = SecurityActions
-                                            .getSystemProperty(realKey);
+                                else value = WildFlySecurityManager.getPropertyPrivileged(realKey, null);
 
                                 if (value == null) {
                                     // Check for a composite key, "key1,key2"
@@ -230,16 +228,14 @@ final class StringPropertyReplacer {
                 String key1 = key.substring(0, comma);
                 if (props != null)
                     value = props.getProperty(key1);
-                else
-                    value = SecurityActions.getSystemProperty(key1);
+                else value = WildFlySecurityManager.getPropertyPrivileged(key1, null);
             }
             // Check the second part, if there is one and first lookup failed
             if (value == null && comma < key.length() - 1) {
                 String key2 = key.substring(comma + 1);
                 if (props != null)
                     value = props.getProperty(key2);
-                else
-                    value = SecurityActions.getSystemProperty(key2);
+                else value = WildFlySecurityManager.getPropertyPrivileged(key2, null);
             }
         }
         // Return whatever we've found or null

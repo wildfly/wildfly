@@ -35,6 +35,7 @@ import javax.management.ReflectionException;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Utilities for working with platform mbeans.
@@ -48,7 +49,7 @@ public class PlatformMBeanUtil {
     static {
         int vmVersion;
         try {
-            String vmVersionStr = SecurityActions.getSystemProperty("java.specification.version");
+            String vmVersionStr = WildFlySecurityManager.getPropertyPrivileged("java.specification.version", null);
             vmVersion = Integer.valueOf(vmVersionStr.substring(2));
         } catch (Exception e) {
             vmVersion = 6;

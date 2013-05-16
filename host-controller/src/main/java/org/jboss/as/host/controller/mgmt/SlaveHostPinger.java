@@ -35,6 +35,7 @@ import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementPingRequest;
 import org.jboss.remoting3.Channel;
 import org.jboss.threads.AsyncFuture;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Coordinates periodic pinging of a slave Host Controller to validate its connection
@@ -50,7 +51,7 @@ public class SlaveHostPinger {
     static {
         long interval = -1;
         try {
-            interval = Long.parseLong(SecurityActions.getSystemProperty("jboss.as.domain.ping.interval", "15000"));
+            interval = Long.parseLong(WildFlySecurityManager.getPropertyPrivileged("jboss.as.domain.ping.interval", "15000"));
         } catch (Exception e) {
             // TODO log
         } finally {
@@ -59,7 +60,7 @@ public class SlaveHostPinger {
         }
         long timeout = -1;
         try {
-            timeout = Long.parseLong(SecurityActions.getSystemProperty("jboss.as.domain.ping.timeout", "30000"));
+            timeout = Long.parseLong(WildFlySecurityManager.getPropertyPrivileged("jboss.as.domain.ping.timeout", "30000"));
         } catch (Exception e) {
             // TODO log
         } finally {

@@ -23,6 +23,7 @@ package org.jboss.as.osgi.parser;
 
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
@@ -34,7 +35,7 @@ public class OSGiResolvers {
     static final String RESOURCE_NAME = OSGiResolvers.class.getPackage().getName() + ".LocalDescriptions";
 
     static ResourceDescriptionResolver getResolver(String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, SecurityActions.getClassLoader(OSGiResolvers.class), true, true);
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, WildFlySecurityManager.getClassLoaderPrivileged(OSGiResolvers.class), true, true);
     }
 
 }

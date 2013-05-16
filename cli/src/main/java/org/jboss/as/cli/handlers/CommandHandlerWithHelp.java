@@ -32,6 +32,7 @@ import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.util.HelpFormatter;
 import org.jboss.as.protocol.StreamUtils;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Abstract handler that checks whether the argument is '--help', in which case it
@@ -88,7 +89,7 @@ public abstract class CommandHandlerWithHelp extends CommandHandlerWithArguments
     }
 
     protected void printHelp(CommandContext ctx) throws CommandLineException {
-        InputStream helpInput = SecurityActions.getClassLoader(CommandHandlerWithHelp.class).getResourceAsStream(filename);
+        InputStream helpInput = WildFlySecurityManager.getClassLoaderPrivileged(CommandHandlerWithHelp.class).getResourceAsStream(filename);
         if(helpInput != null) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(helpInput));
             try {

@@ -26,6 +26,7 @@ import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.service.StartException;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * JTA / WS-AT transaction bridge - inbound recovery handling.
@@ -50,7 +51,7 @@ public class TxBridgeInboundRecoveryService extends AbstractService<InboundBridg
 
         // XTS expects the TCCL to be set to something that will locate the XTS service implementation classes.
         final ClassLoader loader = TxBridgeInboundRecoveryService.class.getClassLoader();
-        SecurityActions.setContextLoader(loader);
+        WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(loader);
         try {
 
             InboundBridgeRecoveryManager service = new InboundBridgeRecoveryManager();
@@ -62,7 +63,7 @@ public class TxBridgeInboundRecoveryService extends AbstractService<InboundBridg
             }
             inboundBridgeRecoveryManager = service;
         } finally {
-            SecurityActions.setContextLoader(null);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged((ClassLoader) null);
         }
     }
 

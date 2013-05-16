@@ -42,6 +42,7 @@ import org.jboss.weld.bootstrap.spi.Metadata;
 import javax.enterprise.inject.spi.Extension;
 import java.util.ArrayList;
 import java.util.List;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Stuart Douglas
@@ -86,11 +87,11 @@ public class JaxrsCdiIntegrationProcessor implements DeploymentUnitProcessor {
                     }
                     if (!found) {
 
-                        final ClassLoader classLoader = SecurityActions.getContextClassLoader();
+                        final ClassLoader classLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                         try {
                             //MASSIVE HACK
                             //the resteasy Logger throws a NPE if the TCCL is null
-                            SecurityActions.setContextClassLoader(ResteasyCdiExtension.class.getClassLoader());
+                            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(ResteasyCdiExtension.class.getClassLoader());
                             final ResteasyCdiExtension ext = new ResteasyCdiExtension();
                             Metadata<Extension> metadata = new Metadata<Extension>() {
                                 @Override
@@ -105,7 +106,7 @@ public class JaxrsCdiIntegrationProcessor implements DeploymentUnitProcessor {
                             };
                             parent.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
                         } finally {
-                            SecurityActions.setContextClassLoader(classLoader);
+                            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
                         }
                     }
                 }

@@ -47,6 +47,7 @@ import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * {@link org.jboss.as.controller.OperationStepHandler} reading a single attribute at the given operation address.
@@ -133,11 +134,11 @@ public class ReadAttributeHandler extends GlobalOperationHandlers.AbstractMultiT
             context.stepCompleted();
         } else {
             OperationStepHandler handler = attributeAccess.getReadHandler();
-            ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(handler.getClass());
+            ClassLoader oldTccl = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(handler.getClass());
             try {
                 handler.execute(context, operation);
             } finally {
-                SecurityActions.setThreadContextClassLoader(oldTccl);
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
             }
             // no context.completeStep() here as that's the read handler's job
         }

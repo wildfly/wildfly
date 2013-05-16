@@ -25,6 +25,7 @@ package org.jboss.as.naming;
 import java.io.Serializable;
 
 import org.jboss.msc.value.Value;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A JNDI injectable which simply uses an MSC {@link Value}
@@ -65,12 +66,12 @@ public final class ValueManagedReferenceFactory implements ContextListAndJndiVie
         if (instance == null) {
             return "null";
         }
-        final ClassLoader cl = SecurityActions.getContextClassLoader();
+        final ClassLoader cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
-            SecurityActions.setContextClassLoader(instance.getClass().getClassLoader());
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(instance.getClass().getClassLoader());
             return instance.toString();
         } finally {
-            SecurityActions.setContextClassLoader(cl);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
         }
     }
 

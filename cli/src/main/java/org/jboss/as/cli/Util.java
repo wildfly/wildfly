@@ -41,6 +41,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  *
@@ -48,7 +49,7 @@ import org.jboss.dmr.Property;
  */
 public class Util {
 
-    public static final String LINE_SEPARATOR = SecurityActions.getSystemProperty("line.separator");
+    public static final String LINE_SEPARATOR = WildFlySecurityManager.getPropertyPrivileged("line.separator", null);
 
     public static final String ACCESS_TYPE = "access-type";
     public static final String ADD = "add";
@@ -155,7 +156,7 @@ public class Util {
     public static final String WRITE_ATTRIBUTE = "write-attribute";
 
     public static boolean isWindows() {
-        return SecurityActions.getSystemProperty("os.name").toLowerCase(Locale.ENGLISH).indexOf("windows") >= 0;
+        return WildFlySecurityManager.getPropertyPrivileged("os.name", null).toLowerCase(Locale.ENGLISH).indexOf("windows") >= 0;
     }
 
     public static boolean isSuccess(ModelNode operationResponse) {

@@ -60,6 +60,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xnio.Option;
 import org.xnio.OptionMap;
 import org.xnio.Options;
@@ -175,7 +176,7 @@ public class ConnectorResource extends SimpleResourceDefinition {
     }
 
     private static void addOptions(OperationContext context, ModelNode properties, OptionMap.Builder builder) throws OperationFailedException {
-        final ClassLoader loader = SecurityActions.getClassLoader(ConnectorResource.class);
+        final ClassLoader loader = WildFlySecurityManager.getClassLoaderPrivileged(ConnectorResource.class);
         for (Property property : properties.asPropertyList()) {
             String name = property.getName();
             if (!name.contains(".")) {

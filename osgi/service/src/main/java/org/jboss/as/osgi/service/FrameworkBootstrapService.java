@@ -62,6 +62,7 @@ import org.jboss.osgi.framework.spi.FrameworkBuilder;
 import org.jboss.osgi.framework.spi.SystemPaths;
 import org.jboss.osgi.framework.spi.FrameworkBuilder.FrameworkPhase;
 import org.osgi.framework.Constants;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Service responsible for creating and managing the life-cycle of the OSGi Framework.
@@ -216,7 +217,7 @@ public class FrameworkBootstrapService implements Service<Void> {
     Object getPropertyWithSystemFallback(Map<String, String> props, String key) {
         Object value = props.get(key);
         if (value == null) {
-            value = SecurityActions.getSystemProperty(key);
+            value = WildFlySecurityManager.getPropertyPrivileged(key, null);
         }
         return value;
     }

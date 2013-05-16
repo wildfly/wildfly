@@ -24,7 +24,6 @@
 
 package org.wildfly.extension.undertow.session;
 
-import java.security.AccessController;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,7 +66,6 @@ import org.wildfly.extension.undertow.session.notification.ClusteredSessionNotif
 import org.wildfly.extension.undertow.session.notification.ClusteredSessionNotificationCause;
 import org.wildfly.extension.undertow.session.notification.ClusteredSessionNotificationPolicy;
 import org.wildfly.extension.undertow.session.notification.IgnoreUndeployLegacyClusteredSessionNotificationPolicy;
-import org.wildfly.security.manager.ReadPropertyAction;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.ClassResolver;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -76,6 +74,7 @@ import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
 import org.jboss.metadata.web.jboss.ReplicationTrigger;
 import org.jboss.metadata.web.jboss.SnapshotMode;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
 
@@ -352,7 +351,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     protected ClusteredSessionNotificationPolicy createClusteredSessionNotificationPolicy() {
         String policyClass = this.replicationConfig.getSessionNotificationPolicy();
         if (policyClass == null || policyClass.isEmpty()) {
-            policyClass = AccessController.doPrivileged(new ReadPropertyAction("jboss.web.clustered.session.notification.policy", IgnoreUndeployLegacyClusteredSessionNotificationPolicy.class.getName()));
+            policyClass = WildFlySecurityManager.getPropertyPrivileged("jboss.web.clustered.session.notification.policy", IgnoreUndeployLegacyClusteredSessionNotificationPolicy.class.getName());
         }
 
         try {

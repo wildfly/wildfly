@@ -45,6 +45,7 @@ import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.transaction.spi.TransactionServices;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Provides the initial bootstrap of the Weld container. This does not actually finish starting the container, merely gets it to
@@ -108,12 +109,12 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
         ModuleGroupSingletonProvider.addClassLoaders(deployment.getModule().getClassLoader(),
                 deployment.getSubDeploymentClassLoaders());
 
-        ClassLoader oldTccl = SecurityActions.getContextClassLoader();
+        ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
-            SecurityActions.setContextClassLoader(deployment.getModule().getClassLoader());
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(deployment.getModule().getClassLoader());
             bootstrap.startContainer(environment, deployment);
         } finally {
-            SecurityActions.setContextClassLoader(oldTccl);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
         }
 
     }
@@ -128,12 +129,12 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
             throw WeldMessages.MESSAGES.notStarted("WeldContainer");
         }
         WeldLogger.DEPLOYMENT_LOGGER.stoppingWeldService(deploymentName);
-        ClassLoader oldTccl = SecurityActions.getContextClassLoader();
+        ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
-            SecurityActions.setContextClassLoader(deployment.getModule().getClassLoader());
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(deployment.getModule().getClassLoader());
             bootstrap.shutdown();
         } finally {
-            SecurityActions.setContextClassLoader(oldTccl);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
             ModuleGroupSingletonProvider.removeClassLoader(deployment.getModule().getClassLoader());
         }
         started = false;

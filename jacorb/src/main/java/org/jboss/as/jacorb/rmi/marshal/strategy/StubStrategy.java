@@ -33,7 +33,6 @@ import java.rmi.UnexpectedException;
 import javax.rmi.PortableRemoteObject;
 
 import org.jboss.as.jacorb.JacORBMessages;
-import org.wildfly.security.manager.GetContextClassLoaderAction;
 import org.jboss.com.sun.corba.se.impl.javax.rmi.RemoteObjectSubstitutionManager;
 import org.omg.CORBA.UserException;
 import org.omg.CORBA.portable.IDLEntity;
@@ -43,8 +42,7 @@ import org.omg.CORBA_2_3.portable.OutputStream;
 import org.jboss.as.jacorb.rmi.marshal.CDRStream;
 import org.jboss.as.jacorb.rmi.marshal.CDRStreamReader;
 import org.jboss.as.jacorb.rmi.marshal.CDRStreamWriter;
-
-import static java.security.AccessController.doPrivileged;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * An <code>StubStrategy</code> for a given method knows how to marshal
@@ -144,7 +142,7 @@ public class StubStrategy {
                          String[] excepTypes, String retvalType,
                          ClassLoader cl) {
         if (cl == null) {
-            cl = doPrivileged(GetContextClassLoaderAction.getInstance());
+            cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         }
 
         // Initialize paramWriters

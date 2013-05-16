@@ -130,6 +130,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Creates the service that acts as the {@link org.jboss.as.controller.ModelController} for a Host Controller process.
@@ -144,7 +145,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     static {
         int poolSize = -1;
         try {
-            poolSize = Integer.parseInt(SecurityActions.getSystemProperty("jboss.as.domain.ping.pool.size", "5"));
+            poolSize = Integer.parseInt(WildFlySecurityManager.getPropertyPrivileged("jboss.as.domain.ping.pool.size", "5"));
         } catch (Exception e) {
             // TODO log
         } finally {

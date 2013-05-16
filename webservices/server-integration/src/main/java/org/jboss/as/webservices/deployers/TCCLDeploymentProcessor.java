@@ -26,6 +26,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A DUP that sets the context classloader
@@ -36,22 +37,22 @@ import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 public abstract class TCCLDeploymentProcessor implements DeploymentUnitProcessor {
 
     public final void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
+        ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
-            SecurityActions.setContextClassLoader(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
             internalDeploy(phaseContext);
         } finally {
-            SecurityActions.setContextClassLoader(origClassLoader);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(origClassLoader);
         }
     }
 
     public final void undeploy(final DeploymentUnit context) {
-        ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
+        ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
-            SecurityActions.setContextClassLoader(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
             internalUndeploy(context);
         } finally {
-            SecurityActions.setContextClassLoader(origClassLoader);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(origClassLoader);
         }
     }
 

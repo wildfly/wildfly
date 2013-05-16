@@ -41,6 +41,7 @@ import org.jboss.as.protocol.StreamUtils;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLMapper;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Represents the JBoss CLI configuration.
@@ -88,14 +89,14 @@ class CliConfigImpl implements CliConfig {
     }
 
     private static File findCLIFileFromSystemProperty() {
-        final String jbossCliConfig = SecurityActions.getSystemProperty(JBOSS_XML_CONFIG);
+        final String jbossCliConfig = WildFlySecurityManager.getPropertyPrivileged(JBOSS_XML_CONFIG, null);
         if (jbossCliConfig == null) return null;
 
         return new File(jbossCliConfig);
     }
 
     private static File findCLIFileInCurrentDirectory() {
-        final String currentDir = SecurityActions.getSystemProperty(CURRENT_WORKING_DIRECTORY);
+        final String currentDir = WildFlySecurityManager.getPropertyPrivileged(CURRENT_WORKING_DIRECTORY, null);
         if (currentDir == null) return null;
 
         File jbossCliFile = new File(currentDir, JBOSS_CLI_FILE);
@@ -106,7 +107,7 @@ class CliConfigImpl implements CliConfig {
     }
 
     private static File findCLIFileInJBossHome() {
-        final String jbossHome = SecurityActions.getEnvironmentVariable("JBOSS_HOME");
+        final String jbossHome = WildFlySecurityManager.getEnvPropertyPrivileged("JBOSS_HOME", null);
         if (jbossHome == null) return null;
 
         File jbossCliFile = new File(jbossHome + File.separatorChar + "bin", JBOSS_CLI_FILE);
@@ -153,7 +154,7 @@ class CliConfigImpl implements CliConfig {
         }
         if(str.startsWith("${") && str.endsWith("}")) {
             str = str.substring(2, str.length() - 1);
-            final String resolved = SecurityActions.getSystemProperty(str);
+            final String resolved = WildFlySecurityManager.getPropertyPrivileged(str, null);
             if(resolved == null) {
                 throw new XMLStreamException("Failed to resolve '" + str + "' to a non-null value.");
             }
@@ -173,7 +174,7 @@ class CliConfigImpl implements CliConfig {
 
         historyEnabled = true;
         historyFileName = ".jboss-cli-history";
-        historyFileDir = SecurityActions.getSystemProperty("user.home");
+        historyFileDir = WildFlySecurityManager.getPropertyPrivileged("user.home", null);
         historyMaxSize = 500;
 
         connectionTimeout = 5000;

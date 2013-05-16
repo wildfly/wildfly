@@ -48,6 +48,7 @@ import org.jboss.weld.ejb.spi.helpers.ForwardingEjbServices;
 import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.serialization.spi.ContextualStore;
 import org.jboss.weld.serialization.spi.helpers.SerializableContextualInstance;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Interceptor for applying the JSR-299 specific interceptor bindings.
@@ -68,11 +69,11 @@ public class Jsr299BindingsInterceptor implements org.jboss.invocation.Intercept
 
 
     protected Jsr299BindingsInterceptor(final BeanManagerImpl beanManager, final String ejbName, final InterceptorFactoryContext context, final InterceptionType interceptionType, final ClassLoader classLoader) {
-        final ClassLoader tccl = SecurityActions.getContextClassLoader();
+        final ClassLoader tccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             //this is not always called with the deployments TCCL set
             //which causes weld to blow up
-            SecurityActions.setContextClassLoader(classLoader);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
             this.beanManager = beanManager;
             this.ejbName = ejbName;
             this.interceptionType = interceptionType;
@@ -98,7 +99,7 @@ public class Jsr299BindingsInterceptor implements org.jboss.invocation.Intercept
                 interceptorInstances = instances.getInterceptorInstances();
             }
         } finally {
-            SecurityActions.setContextClassLoader(tccl);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(tccl);
         }
 
     }

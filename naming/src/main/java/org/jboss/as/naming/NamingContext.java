@@ -92,11 +92,11 @@ public class NamingContext implements EventContext {
      */
     public static void initializeNamingManager() {
         // Setup naming environment
-        final String property = SecurityActions.getSystemProperty(Context.URL_PKG_PREFIXES);
+        final String property = WildFlySecurityManager.getPropertyPrivileged(Context.URL_PKG_PREFIXES, null);
         if(property == null || property.isEmpty()) {
-            SecurityActions.setSystemProperty(Context.URL_PKG_PREFIXES, PACKAGE_PREFIXES);
+            WildFlySecurityManager.setPropertyPrivileged(Context.URL_PKG_PREFIXES, PACKAGE_PREFIXES);
         } else if(!Arrays.asList(property.split(":")).contains(PACKAGE_PREFIXES)) {
-            SecurityActions.setSystemProperty(Context.URL_PKG_PREFIXES, PACKAGE_PREFIXES + ":" + property);
+            WildFlySecurityManager.setPropertyPrivileged(Context.URL_PKG_PREFIXES, PACKAGE_PREFIXES + ":" + property);
         }
         try {
             //If we are reusing the JVM. e.g. in tests we should not set this again

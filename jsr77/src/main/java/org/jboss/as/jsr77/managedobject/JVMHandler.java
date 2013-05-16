@@ -33,7 +33,7 @@ import javax.management.ObjectName;
 import javax.management.QueryExp;
 
 import org.jboss.as.controller.interfaces.InetAddressUtil;
-
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  *
@@ -67,9 +67,9 @@ class JVMHandler extends BaseHandler {
 
     protected Object getAttribute(ModelReader reader, ObjectName name, String attribute) throws AttributeNotFoundException {
         if (attribute.equals(ATTR_JVM_NAME)) {
-            return SecurityActions.getSystemProperty("java.version");
+            return WildFlySecurityManager.getPropertyPrivileged("java.version", null);
         } else if (attribute.equals(ATTR_JAVA_VENDOR)) {
-            return SecurityActions.getSystemProperty("java.vendor");
+            return WildFlySecurityManager.getPropertyPrivileged("java.vendor", null);
         } else if (attribute.equals(ATTR_NODE)) {
             try {
                 return InetAddressUtil.getLocalHost().getHostName();

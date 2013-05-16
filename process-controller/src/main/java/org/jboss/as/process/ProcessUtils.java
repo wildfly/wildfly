@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Process utilities to kill a process.
@@ -55,7 +56,7 @@ abstract class ProcessUtils {
      * @return the java home
      */
     protected String getJavaHome() {
-        return SecurityActions.getSystemProperty("java.home", ".");
+        return WildFlySecurityManager.getPropertyPrivileged("java.home", ".");
     }
 
     /**
