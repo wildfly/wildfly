@@ -35,11 +35,11 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
-import javax.inject.Inject;
 import javax.resource.spi.ActivationSpec;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
@@ -73,9 +73,9 @@ import static org.junit.Assert.*;
 
 /**
  * Activation of annotated RA, overridden by descriptor
- * 
+ *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
- * 
+ *
  */
 @RunWith(Arquillian.class)
 @ServerSetup(RaAnnoTestCase.NoRaAnnoTestCaseSetup.class)
@@ -109,7 +109,7 @@ public class RaAnnoTestCase extends ContainerResourceMgmtTestBase {
 
 	/**
 	 * Define the deployment
-	 * 
+	 *
 	 * @return The deployment archive
 	 * @throws Exception
 	 *             in case of error
@@ -140,12 +140,12 @@ public class RaAnnoTestCase extends ContainerResourceMgmtTestBase {
 	@Resource(mappedName = "java:/eis/ao/ra16anno")
 	private AnnoAdminObject adminObject;
 
-	@Inject
-	public ServiceContainer serviceContainer;
+    @ArquillianResource
+    ServiceContainer serviceContainer;
 
 	/**
 	 * Test getConnection
-	 * 
+	 *
 	 * @exception Throwable
 	 *                Thrown if case of an error
 	 */
@@ -166,7 +166,7 @@ public class RaAnnoTestCase extends ContainerResourceMgmtTestBase {
 
 	/**
 	 * Test admin objects
-	 * 
+	 *
 	 * @exception Throwable
 	 *                Thrown if case of an error
 	 */
@@ -181,7 +181,7 @@ public class RaAnnoTestCase extends ContainerResourceMgmtTestBase {
 
 	/**
 	 * test activation 1
-	 * 
+	 *
 	 * @exception Throwable
 	 *                Thrown if case of an error
 	 */
@@ -192,7 +192,7 @@ public class RaAnnoTestCase extends ContainerResourceMgmtTestBase {
 
 	/**
 	 * test activation 2
-	 * 
+	 *
 	 * @exception Throwable
 	 *                Thrown if case of an error
 	 */
@@ -203,10 +203,10 @@ public class RaAnnoTestCase extends ContainerResourceMgmtTestBase {
 
 	/**
 	 * Test activation
-	 * 
+	 *
 	 * @param clazz
 	 *            class name
-	 * 
+	 *
 	 * @exception Throwable
 	 *                Thrown if case of an error
 	 */
@@ -254,7 +254,7 @@ public class RaAnnoTestCase extends ContainerResourceMgmtTestBase {
 
 	/**
 	 * Test metadata
-	 * 
+	 *
 	 * @exception Throwable
 	 *                Thrown if case of an error
 	 */
@@ -277,7 +277,7 @@ public class RaAnnoTestCase extends ContainerResourceMgmtTestBase {
 	/**
 	 * Checks Set if there is a String element, containing some substring and
 	 * returns it
-	 * 
+	 *
 	 * @param ids
 	 *            - Set
 	 * @param contain

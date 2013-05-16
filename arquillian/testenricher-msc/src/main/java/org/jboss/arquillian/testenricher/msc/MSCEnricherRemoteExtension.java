@@ -18,7 +18,7 @@
 package org.jboss.arquillian.testenricher.msc;
 
 import org.jboss.arquillian.container.test.spi.RemoteLoadableExtension;
-import org.jboss.arquillian.test.spi.TestEnricher;
+import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 
 /**
  * MSCEnricherExtension
@@ -31,7 +31,8 @@ public class MSCEnricherRemoteExtension implements RemoteLoadableExtension {
     public void register(ExtensionBuilder builder) {
         // Don't load the MSCTestEnricher unless the MSC classes can be found at runtime
         if(Validate.classExists("org.jboss.msc.service.ServiceContainer")) {
-            builder.service(TestEnricher.class, MSCTestEnricher.class);
+            builder.service(ResourceProvider.class, ServiceContainerProvider.class);
+            builder.service(ResourceProvider.class, ServiceTargetProvider.class);
         }
     }
 

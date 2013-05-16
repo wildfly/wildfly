@@ -31,10 +31,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.inject.Inject;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.configadmin.ConfigAdmin;
 import org.jboss.as.configadmin.ConfigAdminListener;
 import org.jboss.as.test.integration.osgi.configadmin.bundle.ConfiguredMSCService;
@@ -64,11 +63,11 @@ public class ConfigAdminTestCase {
     static final String PID_A = ConfigAdminTestCase.class.getSimpleName() + "-pid-a";
     static final String PID_B = ConfigAdminTestCase.class.getSimpleName() + "-pid-b";
 
-    @Inject
-    public ServiceContainer serviceContainer;
+    @ArquillianResource
+    ServiceContainer serviceContainer;
 
-    @Inject
-    public ServiceTarget serviceTarget;
+    @ArquillianResource
+    ServiceTarget serviceTarget;
 
     @Deployment
     public static Archive<?> deployment() {

@@ -127,25 +127,27 @@ public class ManagementClient implements AutoCloseable, Closeable {
     public URI getWebUri() {
         if (webUri == null) {
             try {
+                webUri = new URI("http://localhost:8080");
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+            try {
                 if (rootNode == null) {
                     readRootNode();
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            List<Property> vhosts = rootNode.get("subsystem", UNDERTOW).get("server").asPropertyList();
-            ModelNode socketBinding = new ModelNode();
-            if (!vhosts.isEmpty()) {//if empty no virtual hosts defined
-                socketBinding = vhosts.get(0).getValue().get("http-listener", "default").get("socket-binding");
-            }
-            if (!socketBinding.isDefined()) {
-                try {
-                    webUri = new URI("http://localhost:8080");
-                } catch (URISyntaxException e) {
-                    throw new RuntimeException(e);
+            ModelNode undertowNode = rootNode.get("subsystem", UNDERTOW);
+            if (undertowNode.isDefined()) {
+                List<Property> vhosts = undertowNode.get("server").asPropertyList();
+                ModelNode socketBinding = new ModelNode();
+                if (!vhosts.isEmpty()) {//if empty no virtual hosts defined
+                    socketBinding = vhosts.get(0).getValue().get("http-listener", "default").get("socket-binding");
                 }
-            } else {
-                webUri = getBinding("http", socketBinding.asString());
+                if (socketBinding.isDefined()) {
+                    webUri = getBinding("http", socketBinding.asString());
+                }
             }
         }
         return webUri;
