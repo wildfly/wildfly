@@ -21,6 +21,11 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+        <!-- additional properties for xsite tests -->
+        <node2>127.0.0.1</node2>
+        <node3>127.0.0.1</node3>
+        <siteA>siteA</siteA>
+        <siteB>siteB</siteB>
     </properties>
 
     <dependencies>
@@ -50,8 +55,8 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions combine.children="append">
                             <execution>
-                                <id>ts.config-as.clust</id> 
-                                <phase>process-test-resources</phase> 
+                                <id>ts.config-as.clust</id>
+                                <phase>process-test-resources</phase>
                                 <goals><goal>run</goal></goals>
                                 <configuration>
                                     <target>
@@ -81,7 +86,7 @@
 
                             <!-- Disable default-test execution. -->
                             <execution>
-                                <id>default-test</id> 
+                                <id>default-test</id>
                                 <goals><goal>test</goal></goals>
                                 <phase>none</phase>
                             </execution>
@@ -89,7 +94,7 @@
                             <!-- TCP clustering tests with custom containers with manual deployments. -->
                             <execution>
                                 <id>ts.surefire.clust.custom-manual-tcp-sync</id>
-                                <phase>test</phase> 
+                                <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
                                     <!-- Force the order of tests -->
@@ -250,7 +255,7 @@
                             <!-- Tests which are placed in clust module but they're not run by default -->
                             <execution>
                                 <id>ts.surefire.clust.multinode-manual-udp-extended</id>
-                                <phase>test</phase> 
+                                <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
                                     <!-- Tests to execute. -->
@@ -328,8 +333,8 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions combine.children="append">
                             <execution>
-                                <id>ts.config-as.clust.enable-jdbc-store</id> 
-                                <phase>process-test-resources</phase> 
+                                <id>ts.config-as.clust.enable-jdbc-store</id>
+                                <phase>process-test-resources</phase>
                                 <goals><goal>run</goal></goals>
                                 <configuration>
                                     <target>
@@ -363,8 +368,8 @@
 
                             <!-- Single node clustering tests. -->
                             <execution>
-                                <id>ts.surefire.clust.jdbc-store</id> 
-                                <phase>test</phase> 
+                                <id>ts.surefire.clust.jdbc-store</id>
+                                <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
                                     <!-- Tests to execute. -->
@@ -408,8 +413,6 @@
                                         <echo>In Maven: node0: ${node0}</echo>
                                         <!-- Build the UDP server configs in target/ . -->
                                         <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
-                                            <property name="siteA" value="siteA"/>
-                                            <property name="siteB" value="siteB"/>
                                             <property name="node0" value="127.0.0.1"/>
                                             <property name="node1" value="127.0.0.1"/>
                                             <property name="node2" value="127.0.0.1"/>
@@ -442,17 +445,21 @@
                             <!-- Single node clustering tests. -->
                             <execution>
                                 <id>ts.surefire.clust.xsite</id>
-                                <phase>none</phase>
+                                <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
+                                        <include>org/jboss/as/test/clustering/xsite/XSiteSimpleTestCase.java</include>
                                     </includes>
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <arquillian.launch>clustering-xsite</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                        <node2>127.0.0.1</node2>
+                                        <node3>127.0.0.1</node3>
+                                        <stack>udp</stack>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
