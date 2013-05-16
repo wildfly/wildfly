@@ -1,0 +1,462 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2013, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.messaging.deployment;
+
+import static javax.jms.JMSContext.AUTO_ACKNOWLEDGE;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+
+import java.io.Serializable;
+
+import javax.enterprise.inject.Disposes;
+import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.spi.InjectionPoint;
+import javax.jms.BytesMessage;
+import javax.jms.ConnectionFactory;
+import javax.jms.ConnectionMetaData;
+import javax.jms.Destination;
+import javax.jms.ExceptionListener;
+import javax.jms.JMSConnectionFactory;
+import javax.jms.JMSConsumer;
+import javax.jms.JMSContext;
+import javax.jms.JMSPasswordCredential;
+import javax.jms.JMSProducer;
+import javax.jms.JMSSessionMode;
+import javax.jms.MapMessage;
+import javax.jms.Message;
+import javax.jms.ObjectMessage;
+import javax.jms.Queue;
+import javax.jms.QueueBrowser;
+import javax.jms.StreamMessage;
+import javax.jms.TemporaryQueue;
+import javax.jms.TemporaryTopic;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.XAConnectionFactory;
+import javax.jms.XAJMSContext;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+import javax.transaction.xa.XAResource;
+
+import org.jboss.as.messaging.jms.TransactionManagerLocator;
+
+/**
+ * Producer factory for JMSContext resources.
+ *
+ * => Within the same scope, different injected JMSContext objects which are injected using identical annotations will all refer to the same JMSContext object.
+ *
+ * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
+ */
+public class JMSContextProducer {
+
+    public static final String DEFAULT_JMS_CONNECTION_FACTORY_LOCATION = "java:comp/DefaultJMSConnectionFactory";
+
+    /**
+     * CDI Producer method for injected {@link JMSContext}.
+     */
+    @Produces
+    public JMSContext getJMSContext(InjectionPoint injectionPoint) throws NamingException {
+        String connectionFactoryLookup = DEFAULT_JMS_CONNECTION_FACTORY_LOCATION;
+        String userName = null;
+        String password = null;
+        int ackMode = AUTO_ACKNOWLEDGE;
+
+        if (injectionPoint != null) {
+            // Check for @JMSConnectionFactory annotation
+            if (injectionPoint.getAnnotated().isAnnotationPresent(JMSConnectionFactory.class)) {
+                JMSConnectionFactory cf = injectionPoint.getAnnotated().getAnnotation(JMSConnectionFactory.class);
+                connectionFactoryLookup = cf.value();
+            }
+
+            // Check for JMSPasswordCredential annotation
+            if (injectionPoint.getAnnotated().isAnnotationPresent(JMSPasswordCredential.class)) {
+                JMSPasswordCredential credential = injectionPoint.getAnnotated().getAnnotation(JMSPasswordCredential.class);
+                userName = credential.userName();
+                password = credential.password();
+            }
+
+            // Check for JMSSessionMode annotation
+            if (injectionPoint.getAnnotated().isAnnotationPresent(JMSSessionMode.class)) {
+                JMSSessionMode sessionMode = injectionPoint.getAnnotated().getAnnotation(JMSSessionMode.class);
+                ackMode = sessionMode.value();
+            }
+        }
+
+        JMSInfo info = new JMSInfo(connectionFactoryLookup, userName, password, ackMode);
+
+        return new JMSContextWrapper(info);
+    }
+
+    /**
+     * CDI disposable method for injected {@link JMSContext}.
+     */
+    public void closeJMSContext(@Disposes JMSContext context) {
+        if (context instanceof JMSContextWrapper) {
+            // close on the delegate context, the wrapper throwing an exception in its close() method.
+            ((JMSContextWrapper)context).internalClose();
+        }
+    }
+
+    private final class JMSInfo {
+        private final String connectionFactoryLookup;
+        private final String userName;
+        private final String password;
+        private final int ackMode;
+
+        JMSInfo(String connectionFactoryLookup, String userName, String password, int ackMode) {
+            this.connectionFactoryLookup = connectionFactoryLookup;
+            this.userName = userName;
+            this.password = password;
+            this.ackMode = ackMode;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            JMSInfo jmsInfo = (JMSInfo) o;
+
+            if (ackMode != jmsInfo.ackMode) return false;
+            if (connectionFactoryLookup != null ? !connectionFactoryLookup.equals(jmsInfo.connectionFactoryLookup) : jmsInfo.connectionFactoryLookup != null)
+                return false;
+            if (password != null ? !password.equals(jmsInfo.password) : jmsInfo.password != null) return false;
+            if (userName != null ? !userName.equals(jmsInfo.userName) : jmsInfo.userName != null) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = connectionFactoryLookup != null ? connectionFactoryLookup.hashCode() : 0;
+            result = 31 * result + (userName != null ? userName.hashCode() : 0);
+            result = 31 * result + (password != null ? password.hashCode() : 0);
+            result = 31 * result + ackMode;
+            return result;
+        }
+    }
+
+    /**
+     * Wrapper to restrict use of methods for injected JMSContext (JMS 2.0 spec, §12.4.5)
+     * and lazily create the real JMSContext depending on the transaction status.
+     */
+    private class JMSContextWrapper implements JMSContext {
+
+        private final JMSInfo info;
+        private JMSContext delegate;
+        private XAResource xares;
+
+        JMSContextWrapper(JMSInfo info) {
+            this.info = info;
+        }
+
+        private JMSContext create(JMSInfo info, Transaction tx) throws Exception {
+            Context ctx = null;
+            try {
+                ctx = new InitialContext();
+                ConnectionFactory cf = (ConnectionFactory) ctx.lookup(info.connectionFactoryLookup);
+                if (tx != null) {
+                    XAJMSContext xaContext = ((XAConnectionFactory) cf).createXAContext(info.userName, info.password);
+                    xares = xaContext.getXAResource();
+                    tx.enlistResource(xares);
+                    return xaContext.getContext();
+                } else {
+                    return cf.createContext(info.userName, info.password, info.ackMode);
+                }
+            } finally {
+                if (ctx != null) {
+                    try {
+                        ctx.close();
+                    } catch (NamingException e) {
+                    }
+                }
+            }
+        }
+
+        /**
+         * Return the current transaction or {@code null} if there is none.
+         */
+        private Transaction getCurrentTransaction() {
+            TransactionManager transactionManager = TransactionManagerLocator.getTransactionManager();
+            try {
+                return (transactionManager == null) ? null : transactionManager.getTransaction();
+            } catch (SystemException e) {
+                return null;
+            }
+        }
+
+        private void internalClose() {
+            if (delegate != null) {
+                if (xares == null) {
+                    delegate.close();
+                    delegate = null;
+                }
+            }
+        }
+
+        /**
+         * create the underlying JMSContext or return it if there is already one create.
+         */
+        private synchronized JMSContext getDelegate() {
+            try {
+                final Transaction transaction = getCurrentTransaction();
+                if (delegate == null) {
+                    delegate = create(info, transaction);
+                    if (transaction != null) {
+                        transaction.registerSynchronization(new Synchronization() {
+                            @Override
+                            public void beforeCompletion() {
+                            }
+
+                            @Override
+                            public synchronized void afterCompletion(int status) {
+                                delegate.close();
+                                delegate = null;
+                            }
+                        });
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            return delegate;
+        }
+
+        // JMSContext interface implementation
+
+        @Override
+        public JMSContext createContext(int sessionMode) {
+            return getDelegate().createContext(sessionMode);
+        }
+
+        @Override
+        public JMSProducer createProducer() {
+            return getDelegate().createProducer();
+        }
+
+        @Override
+        public String getClientID() {
+            return getDelegate().getClientID();
+        }
+
+        @Override
+        public void setClientID(String clientID) {
+            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+        }
+
+        @Override
+        public ConnectionMetaData getMetaData() {
+            return getDelegate().getMetaData();
+        }
+
+        @Override
+        public ExceptionListener getExceptionListener() {
+            return getDelegate().getExceptionListener();
+        }
+
+        @Override
+        public void setExceptionListener(ExceptionListener listener) {
+            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+        }
+
+        @Override
+        public void start() {
+            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+        }
+
+        @Override
+
+        public void stop() {
+            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+        }
+
+        @Override
+        public void setAutoStart(boolean autoStart) {
+            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+        }
+
+        @Override
+        public boolean getAutoStart() {
+            return getDelegate().getAutoStart();
+        }
+
+        @Override
+        public void close() {
+            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+        }
+
+        @Override
+        public BytesMessage createBytesMessage() {
+            return getDelegate().createBytesMessage();
+        }
+
+        @Override
+        public MapMessage createMapMessage() {
+            return getDelegate().createMapMessage();
+        }
+
+        @Override
+        public Message createMessage() {
+            return getDelegate().createMessage();
+        }
+
+        @Override
+        public ObjectMessage createObjectMessage() {
+            return getDelegate().createObjectMessage();
+        }
+
+        @Override
+        public ObjectMessage createObjectMessage(Serializable object) {
+            return getDelegate().createObjectMessage(object);
+        }
+
+        @Override
+        public StreamMessage createStreamMessage() {
+            return getDelegate().createStreamMessage();
+        }
+
+        @Override
+        public TextMessage createTextMessage() {
+            return getDelegate().createTextMessage();
+        }
+
+        @Override
+        public TextMessage createTextMessage(String text) {
+            return getDelegate().createTextMessage(text);
+        }
+
+        @Override
+        public boolean getTransacted() {
+            return getDelegate().getTransacted();
+        }
+
+        @Override
+        public int getSessionMode() {
+            return getDelegate().getSessionMode();
+        }
+
+        @Override
+        public void commit() {
+            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+        }
+
+        @Override
+        public void rollback() {
+            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+        }
+
+        @Override
+        public void recover() {
+            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+        }
+
+        @Override
+        public JMSConsumer createConsumer(Destination destination) {
+            return getDelegate().createConsumer(destination);
+        }
+
+        @Override
+        public JMSConsumer createConsumer(Destination destination, String messageSelector) {
+            return getDelegate().createConsumer(destination, messageSelector);
+        }
+
+        @Override
+        public JMSConsumer createConsumer(Destination destination, String messageSelector, boolean noLocal) {
+            return getDelegate().createConsumer(destination, messageSelector, noLocal);
+        }
+
+        @Override
+        public Queue createQueue(String queueName) {
+            return getDelegate().createQueue(queueName);
+        }
+
+        @Override
+        public Topic createTopic(String topicName) {
+            return getDelegate().createTopic(topicName);
+        }
+
+        @Override
+        public JMSConsumer createDurableConsumer(Topic topic, String name) {
+            return getDelegate().createDurableConsumer(topic, name);
+        }
+
+        @Override
+        public JMSConsumer createDurableConsumer(Topic topic, String name, String messageSelector, boolean noLocal) {
+            return getDelegate().createDurableConsumer(topic, name, messageSelector, noLocal);
+        }
+
+        @Override
+        public JMSConsumer createSharedDurableConsumer(Topic topic, String name) {
+            return getDelegate().createSharedDurableConsumer(topic, name);
+        }
+
+        @Override
+        public JMSConsumer createSharedDurableConsumer(Topic topic, String name, String messageSelector) {
+            return getDelegate().createSharedDurableConsumer(topic, name, messageSelector);
+        }
+
+        @Override
+        public JMSConsumer createSharedConsumer(Topic topic, String sharedSubscriptionName) {
+            return getDelegate().createSharedConsumer(topic, sharedSubscriptionName);
+        }
+
+        @Override
+        public JMSConsumer createSharedConsumer(Topic topic, String sharedSubscriptionName, String messageSelector) {
+            return getDelegate().createSharedConsumer(topic, sharedSubscriptionName, messageSelector);
+        }
+
+        @Override
+        public QueueBrowser createBrowser(Queue queue) {
+            return getDelegate().createBrowser(queue);
+        }
+
+        @Override
+        public QueueBrowser createBrowser(Queue queue, String messageSelector) {
+            return getDelegate().createBrowser(queue, messageSelector);
+        }
+
+        @Override
+        public TemporaryQueue createTemporaryQueue() {
+            return getDelegate().createTemporaryQueue();
+        }
+
+        @Override
+        public TemporaryTopic createTemporaryTopic() {
+            return getDelegate().createTemporaryTopic();
+        }
+
+        @Override
+        public void unsubscribe(String name) {
+            getDelegate().unsubscribe(name);
+        }
+
+        @Override
+        public void acknowledge() {
+            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+        }
+    }
+}
