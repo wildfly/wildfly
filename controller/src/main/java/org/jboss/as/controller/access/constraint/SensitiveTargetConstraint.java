@@ -1,0 +1,166 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2013, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.controller.access.constraint;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.TargetAttribute;
+import org.jboss.as.controller.access.TargetResource;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.access.rbac.StandardRole;
+
+/**
+ * {@link Constraint} related to whether a resource, attribute or operation is considered security sensitive.
+ *
+ * @author Brian Stansberry (c) 2013 Red Hat Inc.
+ */
+public class SensitiveTargetConstraint extends AbstractConstraint {
+
+    public static final SensitiveTargetConstraint.Factory FACTORY = new Factory();
+
+    private static final SensitiveTargetConstraint SENSITIVE = new SensitiveTargetConstraint(true);
+    private static final SensitiveTargetConstraint NOT_SENSITIVE = new SensitiveTargetConstraint(false);
+    private static final SensitiveTargetConstraint ALLOWS = new SensitiveTargetConstraint(true, true);
+    private static final SensitiveTargetConstraint DISALLOWS = new SensitiveTargetConstraint(false, true);
+
+    private final boolean isSensitive;
+    private final boolean allowsSensitive;
+    private final boolean allowsNonSensitive;
+
+
+    private SensitiveTargetConstraint(boolean isSensitive) {
+        super(ControlFlag.REQUIRED);
+        this.isSensitive = isSensitive;
+        allowsSensitive = allowsNonSensitive = false;
+    }
+
+    private SensitiveTargetConstraint(boolean allowsSensitive, boolean allowsNonSensitive) {
+        super(ControlFlag.REQUIRED);
+        this.isSensitive = false;
+        this.allowsSensitive = allowsSensitive;
+        this.allowsNonSensitive = allowsNonSensitive;
+    }
+
+    @Override
+    public boolean violates(Constraint other) {
+        if (other instanceof SensitiveTargetConstraint) {
+            SensitiveTargetConstraint atc = (SensitiveTargetConstraint) other;
+            return isSensitive ? atc.allowsSensitive : atc.allowsNonSensitive;
+        }
+        return false;
+    }
+
+    @Override
+    protected int internalCompare(AbstractConstraint other) {
+        // We have no preference
+        return 0;
+    }
+
+    public static class Factory implements ConstraintFactory {
+
+        private final Map<SensitivityClassification.Key, SensitivityClassification> sensitivities =
+                Collections.synchronizedMap(new HashMap<SensitivityClassification.Key, SensitivityClassification>());
+
+        /** Singleton */
+        private Factory() {}
+
+        @Override
+        public Constraint getStandardUserConstraint(StandardRole role, Action.ActionEffect actionEffect) {
+            if (role == StandardRole.ADMINISTRATOR
+                    || role == StandardRole.SUPERUSER
+                    || (role == StandardRole.AUDITOR
+                            && actionEffect != Action.ActionEffect.WRITE_CONFIG
+                            && actionEffect != Action.ActionEffect.WRITE_RUNTIME)) {
+                return ALLOWS;
+            }
+            return DISALLOWS;
+        }
+
+        @Override
+        public Constraint getRequiredConstraint(Action.ActionEffect actionEffect, Action action, TargetAttribute target) {
+            return (isSensitiveAction(action, actionEffect) || isSensitiveAttribute(target, actionEffect)) ? SENSITIVE : NOT_SENSITIVE;
+        }
+
+        @Override
+        public Constraint getRequiredConstraint(Action.ActionEffect actionEffect, Action action, TargetResource target) {
+            return (isSensitiveAction(action, actionEffect) || isSensitiveResource(target, actionEffect)) ? SENSITIVE : NOT_SENSITIVE;
+        }
+
+        private boolean isSensitiveAction(Action action, Action.ActionEffect effect) {
+            for (AccessConstraintDefinition constraintDefinition : action.getAccessConstraints()) {
+                if (constraintDefinition instanceof SensitiveTargetAccessConstraintDefinition) {
+                    SensitiveTargetAccessConstraintDefinition stcd = (SensitiveTargetAccessConstraintDefinition) constraintDefinition;
+                    SensitivityClassification sensitivity = stcd.getSensitivity();
+                    if (sensitivity.isSensitive(effect)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private boolean isSensitiveAttribute(TargetAttribute target, Action.ActionEffect effect) {
+            for (AccessConstraintDefinition constraintDefinition : target.getAccessConstraints()) {
+                if (constraintDefinition instanceof SensitiveTargetAccessConstraintDefinition) {
+                    SensitiveTargetAccessConstraintDefinition stcd = (SensitiveTargetAccessConstraintDefinition) constraintDefinition;
+                    SensitivityClassification sensitivity = stcd.getSensitivity();
+                    if (sensitivity.isSensitive(effect)) {
+                        return true;
+                    }
+                }
+            }
+            // Check the resource
+            return isSensitiveResource(target.getTargetResource(), effect);
+        }
+
+        private boolean isSensitiveResource(TargetResource target, Action.ActionEffect effect) {
+            for (AccessConstraintDefinition constraintDefinition : target.getAccessConstraints()) {
+                if (constraintDefinition instanceof SensitiveTargetAccessConstraintDefinition) {
+                    SensitiveTargetAccessConstraintDefinition stcd = (SensitiveTargetAccessConstraintDefinition) constraintDefinition;
+                    SensitivityClassification sensitivity = stcd.getSensitivity();
+                    if (sensitivity.isSensitive(effect)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public void addSensitivity(SensitivityClassification sensitivity) {
+            SensitivityClassification.Key key = sensitivity.getKey();
+            SensitivityClassification existing = sensitivities.get(key);
+            if (existing == null) {
+                sensitivities.put(key, sensitivity);
+            } else if (!existing.isCompatibleWith(sensitivity)) {
+                // Programming error -- sensitivities with same key have been created with
+                // differing default settings
+                throw new IllegalStateException("incompatible Sensitivity");
+            }
+
+        }
+    }
+}

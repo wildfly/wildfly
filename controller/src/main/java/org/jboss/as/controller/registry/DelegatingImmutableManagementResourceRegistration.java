@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.registry;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,6 +30,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
@@ -130,6 +132,11 @@ public class DelegatingImmutableManagementResourceRegistration implements Immuta
     public ImmutableManagementResourceRegistration getSubModel(PathAddress address) {
         ImmutableManagementResourceRegistration sub = delegate.getSubModel(address);
         return sub == null ? null : new DelegatingImmutableManagementResourceRegistration(sub);
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return delegate.getAccessConstraints();
     }
 
     @Override

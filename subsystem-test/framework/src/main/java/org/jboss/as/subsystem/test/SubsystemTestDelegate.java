@@ -63,6 +63,7 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
@@ -887,6 +888,11 @@ final class SubsystemTestDelegate {
         @Override
         public ManagementResourceRegistration getSubModel(PathAddress address) {
             return null;
+        }
+
+        @Override
+        public List<AccessConstraintDefinition> getAccessConstraints() {
+            return Collections.emptyList();
         }
 
         @Override

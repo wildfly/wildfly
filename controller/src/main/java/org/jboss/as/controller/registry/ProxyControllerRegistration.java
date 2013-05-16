@@ -26,6 +26,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
@@ -38,6 +39,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyStepHandler;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
@@ -86,6 +88,12 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     public boolean isRemote() {
         checkPermission();
         return true;
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        checkPermission();
+        return Collections.emptyList();
     }
 
     @Override
