@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.util.ConnectorServices;
@@ -49,7 +50,6 @@ import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.inject.Inject;
 import javax.resource.spi.ActivationSpec;
 
 /**
@@ -59,13 +59,13 @@ import javax.resource.spi.ActivationSpec;
  *
  *         Tests for module deployment of resource adapter archive in
  *         uncompressed form with classes in flat form (under package structure)
- * 
- *         Structure of module is: 
- *         modulename 
+ *
+ *         Structure of module is:
+ *         modulename
  *         modulename/main
- *         modulename/main/module.xml 
+ *         modulename/main/module.xml
  *         modulename/main/META-INF
- *         modulename/main/META-INF/ra.xml 
+ *         modulename/main/META-INF/ra.xml
  *         modulename/main/module.jar
  */
 @RunWith(Arquillian.class)
@@ -109,8 +109,8 @@ public class InflowJarTestCase extends AbstractModuleDeploymentTestCase {
 		return raa;
 	}
 
-	@Inject
-	public ServiceContainer serviceContainer;
+    @ArquillianResource
+    ServiceContainer serviceContainer;
 
 	/**
 	 * Test configuration

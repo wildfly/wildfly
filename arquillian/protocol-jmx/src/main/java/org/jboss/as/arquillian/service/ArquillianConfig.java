@@ -119,6 +119,7 @@ class ArquillianConfig implements Service<ArquillianConfig> {
             testClass = module.getClassLoader().loadClass(className);
         }
 
+        ServiceTargetAssociation.setServiceTarget(serviceTarget);
         return testClass;
     }
 
@@ -126,18 +127,12 @@ class ArquillianConfig implements Service<ArquillianConfig> {
     public synchronized void start(StartContext context) throws StartException {
         serviceTarget = context.getChildTarget();
         arqService.registerArquillianConfig(this);
-        for(String testClass : testClasses) {
-            ServiceTargetAssociation.setServiceTarget(testClass, serviceTarget);
-        }
     }
 
     @Override
     public synchronized void stop(StopContext context) {
         context.getController().setMode(Mode.REMOVE);
         arqService.unregisterArquillianConfig(this);
-        for(String testClass : testClasses) {
-            ServiceTargetAssociation.clearServiceTarget(testClass);
-        }
     }
 
     @Override

@@ -36,7 +36,7 @@ public class MSCAuxiliaryArchiveAppender implements AuxiliaryArchiveAppender {
     public Archive<?> createAuxiliaryArchive() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arquillian-testenricher-msc.jar");
         archive.addAsServiceProvider(RemoteLoadableExtension.class, MSCEnricherRemoteExtension.class);
-        archive.addPackage(MSCTestEnricher.class.getPackage());
+        archive.addPackage(MSCEnricherExtension.class.getPackage());
         return archive;
     }
 }

@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.util.ConnectorServices;
@@ -49,7 +50,6 @@ import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.inject.Inject;
 import javax.resource.spi.ActivationSpec;
 
 /**
@@ -113,8 +113,8 @@ public class InflowFlatTestCase extends AbstractModuleDeploymentTestCase {
 		return raa;
 	}
 
-	@Inject
-	public ServiceContainer serviceContainer;
+    @ArquillianResource
+    ServiceContainer serviceContainer;
 
 	/**
 	 * Test configuration

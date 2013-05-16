@@ -24,11 +24,11 @@ package org.jboss.as.test.smoke.deployment.rar.tests.inflow;
 import java.util.List;
 import java.util.Set;
 
-import javax.inject.Inject;
 import javax.resource.spi.ActivationSpec;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
@@ -85,8 +85,8 @@ public class InflowTestCase extends ContainerResourceMgmtTestBase {
         return raa;
     }
 
-    @Inject
-    public ServiceContainer serviceContainer;
+    @ArquillianResource
+    ServiceContainer serviceContainer;
 
 
     /**

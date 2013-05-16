@@ -35,10 +35,10 @@ import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidMessageEndpoint;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidMessageEndpointFactory;
 
 import javax.annotation.Resource;
-import javax.inject.Inject;
 import javax.resource.spi.ActivationSpec;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.rar.Endpoint;
 import org.jboss.jca.core.spi.rar.MessageListener;
@@ -58,8 +58,8 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 @RunWith(Arquillian.class)
 public class PositiveValidationTestCase {
 
-    @Inject
-    public ServiceContainer serviceContainer;
+    @ArquillianResource
+    ServiceContainer serviceContainer;
 
     /**
      * Define the deployment
