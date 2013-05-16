@@ -156,7 +156,6 @@ public class HornetQBackupActivationTestCase {
     }
 
     // https://issues.jboss.org/browse/AS7-6840
-    @Ignore
     @Test
     public void testBackupFailoverAfterFailback() throws Exception {
         checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
