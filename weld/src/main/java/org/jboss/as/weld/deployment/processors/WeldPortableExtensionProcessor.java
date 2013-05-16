@@ -25,7 +25,9 @@ import java.lang.reflect.Constructor;
 import java.util.List;
 
 import javax.enterprise.inject.spi.Extension;
+import javax.validation.ValidatorFactory;
 
+import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -38,6 +40,7 @@ import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.WeldLogger;
 import org.jboss.as.weld.WeldMessages;
 import org.jboss.as.weld.deployment.WeldAttachments;
+import org.jboss.as.weld.services.bootstrap.HackValidationExtension;
 import org.jboss.modules.Module;
 import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.metadata.MetadataImpl;
@@ -85,6 +88,15 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
         try {
             SecurityActions.setContextClassLoader(module.getClassLoader());
             loadAttachments(services, module, deploymentUnit, topLevelDeployment);
+
+            if(deploymentUnit.getParent() == null) {
+                //TEMP HACK
+                //Remove once we have Hibernate Validator 5 support
+                ValidatorFactory validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
+                Metadata<Extension> metadata = new MetadataImpl<Extension>(new HackValidationExtension(validatorFactory), deploymentUnit.getName());
+                topLevelDeployment.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
+            }
+
         } finally {
             SecurityActions.setContextClassLoader(oldCl);
         }

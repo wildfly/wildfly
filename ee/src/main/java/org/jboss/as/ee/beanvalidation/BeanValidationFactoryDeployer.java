@@ -59,7 +59,7 @@ public class BeanValidationFactoryDeployer implements DeploymentUnitProcessor {
             return;
         }
         final LazyValidatorFactory factory  = new LazyValidatorFactory(module.getClassLoader());
-        deploymentUnit.putAttachment(BeanValidationAttachments.VALIDATOR_FACTORY,factory);
+        deploymentUnit.putAttachment(BeanValidationAttachments.VALIDATOR_FACTORY, factory);
 
         bindFactoryToJndi(factory,deploymentUnit,phaseContext,moduleDescription);
 
