@@ -63,7 +63,7 @@ class DomainApiCheckHandler implements HttpHandler {
             return;
         }
 
-        boolean isUpload = UPLOAD_REQUEST.equals(exchange.getCanonicalPath());
+        boolean isUpload = UPLOAD_REQUEST.equals(exchange.getRequestPath());
         if (Methods.POST.equals(exchange.getRequestMethod())) {
             if (isUpload) {
                 uploadHandler.handleRequest(exchange);

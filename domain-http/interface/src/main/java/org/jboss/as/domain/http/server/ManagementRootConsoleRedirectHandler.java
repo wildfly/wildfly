@@ -49,7 +49,7 @@ class ManagementRootConsoleRedirectHandler implements HttpHandler {
         }
 
         String requestUrl = exchange.getRequestURL();
-        if (consoleHandler != null && "/".equals(exchange.getCanonicalPath())) {
+        if (consoleHandler != null && "/".equals(exchange.getRequestPath())) {
             StringBuilder redirect = new StringBuilder(requestUrl);
             redirect.append(consoleHandler.getContext()).append(consoleHandler.getDefaultPath());
             exchange.getResponseHeaders().add(Headers.LOCATION, redirect.toString());
