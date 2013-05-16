@@ -64,6 +64,7 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.NotificationEntry;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -86,8 +87,13 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             .setDefaultValue(new ModelNode(false))
             .build();
 
+    private static final SimpleAttributeDefinition NOTIFICATIONS = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NOTIFICATIONS, ModelType.BOOLEAN)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
+
     static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(READ_RESOURCE_DESCRIPTION_OPERATION, ControllerResolver.getResolver("global"))
-            .setParameters(OPERATIONS, INHERITED, RECURSIVE, RECURSIVE_DEPTH, PROXIES, INCLUDE_ALIASES, LOCALE)
+            .setParameters(OPERATIONS, NOTIFICATIONS, INHERITED, RECURSIVE, RECURSIVE_DEPTH, PROXIES, INCLUDE_ALIASES, LOCALE)
             .setReadOnly()
             .setRuntimeOnly()
             .setReplyType(ModelType.OBJECT)
@@ -102,6 +108,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         validator.registerValidator(RECURSIVE_DEPTH.getName(), new ModelTypeValidator(ModelType.INT, true));
         validator.registerValidator(PROXIES.getName(), new ModelTypeValidator(ModelType.BOOLEAN, true));
         validator.registerValidator(OPERATIONS.getName(), new ModelTypeValidator(ModelType.BOOLEAN, true));
+        validator.registerValidator(NOTIFICATIONS.getName(), new ModelTypeValidator(ModelType.BOOLEAN, true));
         validator.registerValidator(INHERITED.getName(), new ModelTypeValidator(ModelType.BOOLEAN, true));
         validator.registerValidator(INCLUDE_ALIASES.getName(), new ModelTypeValidator(ModelType.BOOLEAN, true));
     }
@@ -127,8 +134,9 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         final boolean recursive = recursiveDepth > 0 || RECURSIVE.resolveModelAttribute(context, operation).asBoolean();
         final boolean proxies = PROXIES.resolveModelAttribute(context, operation).asBoolean();
         final boolean ops = OPERATIONS.resolveModelAttribute(context, operation).asBoolean();
+        final boolean nots = NOTIFICATIONS.resolveModelAttribute(context, operation).asBoolean();
         final boolean aliases = INCLUDE_ALIASES.resolveModelAttribute(context, operation).asBoolean();
-        final boolean inheritedOps = INHERITED.resolveModelAttribute(context, operation).asBoolean();
+        final boolean inherited = INHERITED.resolveModelAttribute(context, operation).asBoolean();
 
         //Get hold of the real registry if it was an alias
         final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
@@ -141,23 +149,30 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
 
         final ModelNode nodeDescription = descriptionProvider.getModelDescription(locale);
         final Map<String, ModelNode> operations = new HashMap<String, ModelNode>();
+        final Map<String, ModelNode> notifications = new HashMap<String, ModelNode>();
         final Map<PathElement, ModelNode> childResources = recursive ? new HashMap<PathElement, ModelNode>() : Collections.<PathElement, ModelNode>emptyMap();
 
         // We're going to add a bunch of steps that should immediately follow this one. We are going to add them
         // in reverse order of how they should execute, as that is the way adding a Stage.IMMEDIATE step works
 
         // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
-        final ReadResourceDescriptionAssemblyHandler assemblyHandler = new ReadResourceDescriptionAssemblyHandler(nodeDescription, operations, childResources);
+        final ReadResourceDescriptionAssemblyHandler assemblyHandler = new ReadResourceDescriptionAssemblyHandler(nodeDescription, operations, notifications, childResources);
         context.addStep(assemblyHandler, OperationContext.Stage.MODEL, true);
 
         if (ops) {
-            for (final Map.Entry<String, OperationEntry> entry : realRegistry.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, inheritedOps).entrySet()) {
+            for (final Map.Entry<String, OperationEntry> entry : realRegistry.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, inherited).entrySet()) {
                 if (entry.getValue().getType() == OperationEntry.EntryType.PUBLIC) {
                     if (context.getProcessType() != ProcessType.DOMAIN_SERVER || entry.getValue().getFlags().contains(OperationEntry.Flag.RUNTIME_ONLY)) {
                         final DescriptionProvider provider = entry.getValue().getDescriptionProvider();
                         operations.put(entry.getKey(), provider.getModelDescription(locale));
                     }
                 }
+            }
+        }
+        if (nots) {
+            for (final Map.Entry<String, NotificationEntry> entry : realRegistry.getNotificationDescriptions(PathAddress.EMPTY_ADDRESS, inherited).entrySet()) {
+                final DescriptionProvider provider = entry.getValue().getDescriptionProvider();
+                notifications.put(entry.getKey(), provider.getModelDescription(locale));
             }
         }
         if (nodeDescription.hasDefined(ATTRIBUTES)) {
@@ -219,7 +234,8 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                     rrOp.get(RECURSIVE_DEPTH.getName()).set(newDepth);
                     rrOp.get(PROXIES.getName()).set(proxies);
                     rrOp.get(OPERATIONS.getName()).set(ops);
-                    rrOp.get(INHERITED.getName()).set(inheritedOps);
+                    rrOp.get(NOTIFICATIONS.getName()).set(nots);
+                    rrOp.get(INHERITED.getName()).set(inherited);
                     rrOp.get(LOCALE.getName()).set(operation.get(LOCALE.getName()));
                     rrOp.get(INCLUDE_ALIASES.getName()).set(aliases);
                     ModelNode rrRsp = new ModelNode();
@@ -304,6 +320,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
 
         private final ModelNode nodeDescription;
         private final Map<String, ModelNode> operations;
+        private final Map<String, ModelNode> notifications;
         private final Map<PathElement, ModelNode> childResources;
 
         /**
@@ -312,13 +329,15 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
          *
          * @param nodeDescription basic description of the node, of its attributes and of its child types
          * @param operations      descriptions of the resource's operations
+         * @param notifications   descriptions of the resource's notifications
          * @param childResources  read-resource-description response from child resources, where the key is the PathAddress
          *                        relative to the address of the operation this handler is handling and the
          *                        value is the full read-resource response. Will not be {@code null}
          */
-        private ReadResourceDescriptionAssemblyHandler(final ModelNode nodeDescription, final Map<String, ModelNode> operations, final Map<PathElement, ModelNode> childResources) {
+        private ReadResourceDescriptionAssemblyHandler(final ModelNode nodeDescription, final Map<String, ModelNode> operations, Map<String, ModelNode> notifications, final Map<PathElement, ModelNode> childResources) {
             this.nodeDescription = nodeDescription;
             this.operations = operations;
+            this.notifications = notifications;
             this.childResources = childResources;
         }
 
@@ -338,6 +357,9 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
 
             for (Map.Entry<String, ModelNode> entry : operations.entrySet()) {
                 nodeDescription.get(OPERATIONS.getName(), entry.getKey()).set(entry.getValue());
+            }
+            for (Map.Entry<String, ModelNode> entry : notifications.entrySet()) {
+                nodeDescription.get(NOTIFICATIONS.getName(), entry.getKey()).set(entry.getValue());
             }
 
             context.getResult().set(nodeDescription);

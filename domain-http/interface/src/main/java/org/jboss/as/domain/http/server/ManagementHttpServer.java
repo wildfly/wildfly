@@ -48,6 +48,7 @@ import io.undertow.security.impl.DigestQop;
 import io.undertow.security.impl.SimpleNonceManager;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpOpenListener;
+import io.undertow.server.handlers.BlockingHandler;
 import io.undertow.server.handlers.CanonicalPathHandler;
 import io.undertow.server.handlers.ChannelUpgradeHandler;
 import io.undertow.server.handlers.PathHandler;
@@ -62,6 +63,7 @@ import org.jboss.as.domain.http.server.security.DmrFailureReadinessHandler;
 import org.jboss.as.domain.http.server.security.LogoutHandler;
 import org.jboss.as.domain.http.server.security.RealmIdentityManager;
 import org.jboss.as.domain.http.server.security.RedirectReadinessHandler;
+import org.jboss.as.domain.http.server.security.SubjectAssociationHandler;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.modules.Module;
@@ -175,13 +177,13 @@ public class ManagementHttpServer {
 
         HttpOpenListener openListener = new HttpOpenListener(new ByteBufferSlicePool(BufferAllocator.DIRECT_BYTE_BUFFER_ALLOCATOR, 4096, 10 * 4096), 4096);
         int securePort = secureBindAddress != null ? secureBindAddress.getPort() : -1;
-        setupOpenListener(openListener, modelControllerClient, consoleMode, consoleSlot, controlledProcessStateService, securePort, securityRealm, upgradeHandler);
+        setupOpenListener(openListener, modelControllerClient, executorService, consoleMode, consoleSlot, controlledProcessStateService, securePort, securityRealm, upgradeHandler);
         ManagementHttpServer server = new ManagementHttpServer(openListener, bindAddress, secureBindAddress, securityRealm);
 
         return server;
     }
 
-    private static void setupOpenListener(HttpOpenListener listener, ModelControllerClient modelControllerClient, ConsoleMode consoleMode, String consoleSlot, ControlledProcessStateService controlledProcessStateService, int securePort, SecurityRealm securityRealm, final ChannelUpgradeHandler upgradeHandler) {
+    private static void setupOpenListener(HttpOpenListener listener, ModelControllerClient modelControllerClient, ExecutorService executorService, ConsoleMode consoleMode, String consoleSlot, ControlledProcessStateService controlledProcessStateService, int securePort, SecurityRealm securityRealm, final ChannelUpgradeHandler upgradeHandler) {
         CanonicalPathHandler canonicalPathHandler = new CanonicalPathHandler();
         listener.setRootHandler(canonicalPathHandler);
 
@@ -224,6 +226,10 @@ public class ManagementHttpServer {
 
         HttpHandler readinessHandler = new DmrFailureReadinessHandler(securityRealm, secureDomainAccess(domainApiHandler, securityRealm), ErrorContextHandler.ERROR_CONTEXT);
         pathHandler.addPath(DomainApiCheckHandler.PATH, readinessHandler);
+
+        HttpHandler notificationApiHandler = new BlockingHandler(new SubjectAssociationHandler(new NotificationApiHandler(modelControllerClient)));
+        HttpHandler readinessNotificationApiHandler = new DmrFailureReadinessHandler(securityRealm, secureDomainAccess(notificationApiHandler, securityRealm), ErrorContextHandler.ERROR_CONTEXT);
+        pathHandler.addPath(NotificationApiHandler.PATH, readinessNotificationApiHandler);
 
         if (securityRealm != null) {
             pathHandler.addPath(LogoutHandler.PATH, new LogoutHandler(securityRealm.getName()));

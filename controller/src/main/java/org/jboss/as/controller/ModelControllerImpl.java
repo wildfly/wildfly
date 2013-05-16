@@ -25,6 +25,7 @@ package org.jboss.as.controller;
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
@@ -52,11 +53,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NotificationFilter;
+import org.jboss.as.controller.client.NotificationHandler;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.extension.ExtensionAddHandler;
 import org.jboss.as.controller.extension.ParallelExtensionAddHandler;
+import org.jboss.as.controller.notification.NotificationSupport;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -90,6 +94,7 @@ class ModelControllerImpl implements ModelController {
     private final ControlledProcessState processState;
     private final ExecutorService executorService;
     private final ExpressionResolver expressionResolver;
+    private final NotificationSupport notificationSupport;
 
     private final ConcurrentMap<Integer, OperationContext> activeOperations = new ConcurrentHashMap<>();
 
@@ -97,7 +102,7 @@ class ModelControllerImpl implements ModelController {
                         final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister,
                         final ProcessType processType, final RunningModeControl runningModeControl,
                         final OperationStepHandler prepareStep, final ControlledProcessState processState, final ExecutorService executorService,
-                        final ExpressionResolver expressionResolver) {
+                        final ExpressionResolver expressionResolver, final NotificationSupport notificationSupport) {
         this.serviceRegistry = serviceRegistry;
         this.serviceTarget = serviceTarget;
         this.rootRegistration = rootRegistration;
@@ -105,6 +110,7 @@ class ModelControllerImpl implements ModelController {
         this.persister = persister;
         this.processType = processType;
         this.runningModeControl = runningModeControl;
+        this.notificationSupport = notificationSupport;
         this.prepareStep = prepareStep == null ? new DefaultPrepareStepHandler() : prepareStep;
         this.processState = processState;
         this.serviceTarget.addListener(stateMonitor);
@@ -453,6 +459,18 @@ class ModelControllerImpl implements ModelController {
                 return executeAsync(operation.getOperation(), messageHandler, operation);
             }
 
+            @Override
+            public NotificationRegistration registerNotificationHandler(final ModelNode address, final NotificationHandler handler,final NotificationFilter filter) {
+                final PathAddress resourceAddress = pathAddress(address);
+                ModelControllerImpl.this.getNotificationSupport().registerNotificationHandler(resourceAddress, handler, filter);
+                return new NotificationRegistration() {
+                    @Override
+                    public void unregister() {
+                        ModelControllerImpl.this.getNotificationSupport().unregisterNotificationHandler(resourceAddress, handler, filter);
+                    }
+                };
+            }
+
             private AsyncFuture<ModelNode> executeAsync(final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
                 if (executor == null) {
                     throw MESSAGES.nullAsynchronousExecutor();
@@ -577,6 +595,10 @@ class ModelControllerImpl implements ModelController {
         return serviceTarget;
     }
 
+    @Override
+    public NotificationSupport getNotificationSupport() {
+        return notificationSupport;
+    }
 
     ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
         return expressionResolver.resolveExpressions(node);
@@ -599,7 +621,7 @@ class ModelControllerImpl implements ModelController {
             if (MGMT_OP_LOGGER.isTraceEnabled()) {
                 MGMT_OP_LOGGER.trace("Executing " + operation.get(OP) + " " + operation.get(OP_ADDR));
             }
-            final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+            final PathAddress address = pathAddress(operation.get(OP_ADDR));
             final String operationName =  operation.require(OP).asString();
             final OperationStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
             if(stepHandler != null) {
