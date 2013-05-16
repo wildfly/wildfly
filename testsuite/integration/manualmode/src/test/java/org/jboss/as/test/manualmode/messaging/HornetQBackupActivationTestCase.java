@@ -53,6 +53,7 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -109,6 +110,7 @@ public class HornetQBackupActivationTestCase {
                 Authentication.getCallbackHandler());
     }
 
+    @Ignore
     @Test
     public void testBackupActivation() throws Exception {
         checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
@@ -155,6 +157,7 @@ public class HornetQBackupActivationTestCase {
     }
 
     // https://issues.jboss.org/browse/AS7-6840
+    @Ignore
     @Test
     public void testBackupFailoverAfterFailback() throws Exception {
         checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
@@ -194,6 +197,7 @@ public class HornetQBackupActivationTestCase {
     }
 
     // https://issues.jboss.org/browse/AS7-6881
+    @Ignore
     @Test
     public void testPassiveBackupReload() throws Exception {
         checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
@@ -208,6 +212,7 @@ public class HornetQBackupActivationTestCase {
         checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
     }
 
+    @Ignore
     @Test
     public void testActiveBackupReload() throws Exception {
         checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
@@ -229,6 +234,7 @@ public class HornetQBackupActivationTestCase {
     }
 
     // https://issues.jboss.org/browse/AS7-6881
+    @Ignore
     @Test
     public void testLiveReload() throws Exception {
         checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
