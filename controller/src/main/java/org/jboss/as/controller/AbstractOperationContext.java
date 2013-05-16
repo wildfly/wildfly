@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_REQUIRES_RELOAD;
@@ -42,12 +43,20 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.client.Notification;
+import org.jboss.as.controller.client.NotificationFilter;
+import org.jboss.as.controller.client.NotificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.notification.NotificationSupport;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.dmr.ModelNode;
@@ -66,9 +75,14 @@ abstract class AbstractOperationContext implements OperationContext {
     private final EnumMap<Stage, Deque<Step>> steps;
     private final ModelController.OperationTransactionControl transactionControl;
     private final ControlledProcessState processState;
+    private final NotificationSupport notificationSupport;
     private final boolean booting;
     private final ProcessType processType;
     private final RunningMode runningMode;
+
+    /** List of notifications that will be emitted at the end of the operation execution if it is successful */
+    private final List<Notification> notifications = new ArrayList<>();
+
 
     // We only respect interruption on the way in; once we complete all steps
     // and begin
@@ -91,11 +105,12 @@ abstract class AbstractOperationContext implements OperationContext {
 
     AbstractOperationContext(final ProcessType processType, final RunningMode runningMode,
             final ModelController.OperationTransactionControl transactionControl, final ControlledProcessState processState,
-            boolean booting) {
+            final NotificationSupport notificationSupport, boolean booting) {
         this.processType = processType;
         this.runningMode = runningMode;
         this.transactionControl = transactionControl;
         this.processState = processState;
+        this.notificationSupport = notificationSupport;
         this.booting = booting;
         steps = new EnumMap<Stage, Deque<Step>>(Stage.class);
         for (Stage stage : Stage.values()) {
@@ -352,6 +367,13 @@ abstract class AbstractOperationContext implements OperationContext {
         // All steps are completed without triggering rollback; time for final
         // processing
 
+        if (resultAction != ResultAction.ROLLBACK) {
+            for (Notification notification : notifications) {
+                notificationSupport.emit(notification);
+            }
+            notifications.clear();
+        }
+
         // Prepare persistence of any configuration changes
         ConfigurationPersister.PersistenceResource persistenceResource = null;
         if (isModelAffected() && resultAction != ResultAction.ROLLBACK) {
@@ -395,6 +417,22 @@ abstract class AbstractOperationContext implements OperationContext {
                 persistenceResource.commit();
             }
         }
+    }
+
+    @Override
+    public void registerNotificationHandler(PathAddress source, NotificationHandler handler, NotificationFilter filter) {
+        notificationSupport.registerNotificationHandler(source, handler, filter);
+    }
+
+    @Override
+    public void unregisterNotificationHandler(PathAddress source, NotificationHandler handler, NotificationFilter filter) {
+        notificationSupport.unregisterNotificationHandler(source, handler, filter);
+    }
+
+    @Override
+    public void emit(Notification notification) {
+        // buffer the notifications but emit them only when a step is completed
+        notifications.add(notification);
     }
 
     abstract void awaitModelControllerContainerMonitor() throws InterruptedException;
@@ -515,6 +553,8 @@ abstract class AbstractOperationContext implements OperationContext {
     }
 
     private void finishStep(Step step) {
+        fireAttributeValueWrittenNotification(step);
+
         boolean finalize = true;
         Throwable toThrow = null;
         try {
@@ -559,6 +599,29 @@ abstract class AbstractOperationContext implements OperationContext {
                 throw (RuntimeException) toThrow;
             } else {
                 throw (Error) toThrow;
+            }
+        }
+    }
+
+    /**
+     * Fire a {@code ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION} notification if the resource was updated during the step execution.
+     */
+    private void fireAttributeValueWrittenNotification(Step step) {
+        if (step.resourceForUpdate != null) {
+            // if the operation is a write-attribute or undefine-attribute, we have the name of the attribute in the NAME parameter
+            if (step.operation.hasDefined(NAME)) {
+                String attributeName = step.operation.get(NAME).asString();
+                ModelNode oldValue = step.resourceForUpdate.get(attributeName);
+                ModelNode newValue = readResourceFromRoot(step.address, false).getModel().get(attributeName);
+                // only emit a notification if the value has changed
+                if (oldValue != null && !oldValue.equals(newValue)) {
+                    ModelNode data = new ModelNode();
+                    data.get(NAME).set(attributeName);
+                    data.get(GlobalNotifications.OLD_VALUE).set(oldValue);
+                    data.get(GlobalNotifications.NEW_VALUE).set(newValue);
+                    Notification notification = new Notification(ModelDescriptionConstants.ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION, step.address.toModelNode(), MESSAGES.attributeValueWritten(attributeName, oldValue, newValue), data);
+                    emit(notification);
+                }
             }
         }
     }
@@ -694,6 +757,7 @@ abstract class AbstractOperationContext implements OperationContext {
         final ModelNode response;
         final ModelNode operation;
         final PathAddress address;
+        ModelNode resourceForUpdate;
         private Object restartStamp;
         private ResultHandler resultHandler;
         Step predecessor;

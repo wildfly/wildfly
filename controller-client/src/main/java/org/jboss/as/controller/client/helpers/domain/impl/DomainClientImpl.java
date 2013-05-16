@@ -37,6 +37,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NotificationFilter;
+import org.jboss.as.controller.client.NotificationHandler;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -104,6 +106,11 @@ public class DomainClientImpl implements DomainClient {
     @Override
     public AsyncFuture<ModelNode> executeAsync(Operation operation, OperationMessageHandler messageHandler) {
         return delegate.executeAsync(operation, messageHandler);
+    }
+
+    @Override
+    public NotificationRegistration registerNotificationHandler(ModelNode address, NotificationHandler handler, NotificationFilter filter) {
+        return delegate.registerNotificationHandler(address, handler, filter);
     }
 
     @Override

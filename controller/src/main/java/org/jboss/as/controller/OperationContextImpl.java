@@ -28,6 +28,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_ADDED_NOTIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 
 import java.io.InputStream;
@@ -45,6 +47,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.client.Notification;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -121,7 +124,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                             final OperationMessageHandler messageHandler, final OperationAttachments attachments,
                             final Resource model, final ModelController.OperationTransactionControl transactionControl,
                             final ControlledProcessState processState, final boolean booting, final Integer operationId) {
-        super(processType, runningMode, transactionControl, processState, booting);
+        super(processType, runningMode, transactionControl, processState, modelController.getNotificationSupport(), booting);
         this.model = model;
         this.originalModel = model;
         this.modelController = modelController;
@@ -187,7 +190,6 @@ final class OperationContextImpl extends AbstractOperationContext {
     public boolean isResourceServiceRestartAllowed() {
         return contextFlags.contains(ContextFlag.ALLOW_RESOURCE_SERVICE_RESTART);
     }
-
 
     public ManagementResourceRegistration getResourceRegistrationForUpdate() {
         final PathAddress address = activeStep.address;
@@ -540,6 +542,9 @@ final class OperationContextImpl extends AbstractOperationContext {
             }
             resource = requireChild(resource, element, address);
         }
+
+        // keep a copy of the resource's model to compare it after the execution and emit a attribute-value-written notification
+        activeStep.resourceForUpdate = resource.getModel().clone();
         return resource;
     }
 
@@ -607,6 +612,9 @@ final class OperationContextImpl extends AbstractOperationContext {
                 }
             }
         }
+
+        Notification notification = new Notification(RESOURCE_ADDED_NOTIFICATION, absoluteAddress.toModelNode(), MESSAGES.resourceWasAdded(absoluteAddress));
+        emit(notification);
     }
 
     public Resource removeResource(final PathAddress requestAddress) {
@@ -638,6 +646,9 @@ final class OperationContextImpl extends AbstractOperationContext {
                 model = requireChild(model, element, address);
             }
         }
+
+        Notification notification = new Notification(RESOURCE_REMOVED_NOTIFICATION, address.toModelNode(), MESSAGES.resourceWasRemoved(address));
+        emit(notification);
         return model;
     }
 

@@ -21,7 +21,14 @@
 */
 package org.jboss.as.controller;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.jboss.as.controller.client.NotificationFilter.ALL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataOutput;
@@ -33,17 +40,24 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.Notification;
+import org.jboss.as.controller.client.NotificationFilter;
+import org.jboss.as.controller.client.NotificationHandler;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.impl.ExistingChannelModelControllerClient;
 import org.jboss.as.controller.client.impl.InputStreamEntry;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.notification.NotificationSupport;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
@@ -308,6 +322,7 @@ public class ModelControllerClientTestCase {
 
     }
 
+
     @Test
     public void testCloseInputStreamEntry() throws Exception {
         final MockModelController controller = new MockModelController() {
@@ -336,6 +351,229 @@ public class ModelControllerClientTestCase {
         }
     }
 
+    @Ignore
+    @Test
+    public void testRegisterNotificationHandlerWithServerError() throws Exception {
+        MockModelController controller = new MockModelController() {
+            @Override
+            public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
+                return new ModelNode();
+            }
+        };
+
+        // Set the handler
+        final ModelControllerClient client = setupTestClient(controller);
+        try {
+            ModelNode operation = new ModelNode();
+            operation.get("test").set("123");
+            operation.get(OP_ADDR).add("not a valid address", 1);
+
+            try {
+                client.registerNotificationHandler(operation.get(OP_ADDR), new NotificationHandler() {
+                    @Override
+                    public void handleNotification(Notification notification) {
+                        // no-op
+                    }
+                }, ALL);
+                fail("should throw an exception if the registration of the notification handler does not occur on the server side");
+            } catch (Exception e) {
+
+            }
+        } finally {
+            IoUtils.safeClose(client);
+        }
+
+    }
+
+    @Test
+    public void testRegisterNotificationHandler() throws Exception {
+        MockModelController controller = new MockModelController() {
+            @Override
+            public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
+                this.operation = operation;
+                ModelNode result = new ModelNode();
+                result.get("testing").set(operation.get("test"));
+                getNotificationSupport().emit(new Notification("foo", operation.get(OP_ADDR), "notification is emitted"));
+                getNotificationSupport().emit(new Notification("foo", operation.get(OP_ADDR), "notification is emitted 2"));
+                return result;
+            }
+        };
+
+        // Set the handler
+        final ModelControllerClient client = setupTestClient(controller);
+        try {
+            ModelNode operation = new ModelNode();
+            operation.get("test").set("123");
+            operation.get(OP_ADDR).add("host", "foo");
+
+            final CountDownLatch notificationLatch = new CountDownLatch(2); // 2 notifications are emitted by 1 operation execution
+            client.registerNotificationHandler(operation.get(OP_ADDR), new NotificationHandler() {
+                @Override
+                public void handleNotification(Notification notification) {
+                    System.out.println("notification = " + notification);
+                    notificationLatch.countDown();
+                }
+            }, ALL);
+
+            ModelNode result = client.execute(operation);
+            assertNotNull(result);
+            assertEquals("123", result.get("testing").asString());
+
+            assertTrue("did not receive the notification", notificationLatch.await(500, MILLISECONDS));
+        } finally {
+            IoUtils.safeClose(client);
+        }
+
+    }
+
+    @Test
+    public void testUnregisterNotificationHandler() throws Exception {
+        MockModelController controller = new MockModelController() {
+            @Override
+            public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
+                this.operation = operation;
+                ModelNode result = new ModelNode();
+                result.get("testing").set(operation.get("test"));
+                getNotificationSupport().emit(new Notification("foo", operation.get(OP_ADDR), "notification is emitted"));
+                return result;
+            }
+        };
+
+        // Set the handler
+        final ModelControllerClient client = setupTestClient(controller);
+        try {
+            ModelNode operation = new ModelNode();
+            operation.get("test").set("123");
+            operation.get(OP_ADDR).add("host", "foo");
+
+            final AtomicBoolean gotNotification = new AtomicBoolean(false);
+            ModelControllerClient.NotificationRegistration registration = client.registerNotificationHandler(operation.get(OP_ADDR), new NotificationHandler() {
+                @Override
+                public void handleNotification(Notification notification) {
+                    gotNotification.set(true);
+                }
+            }, ALL);
+            registration.unregister();
+
+            ModelNode result = client.execute(operation);
+            assertNotNull(result);
+            assertEquals("123", result.get("testing").asString());
+
+            assertFalse(gotNotification.get());
+        } finally {
+            IoUtils.safeClose(client);
+        }
+
+    }
+
+    @Test
+    public void testNotificationFilter() throws Exception {
+        MockModelController controller = new MockModelController() {
+            @Override
+            public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
+                this.operation = operation;
+                ModelNode result = new ModelNode();
+                result.get("testing").set(operation.get("test"));
+                getNotificationSupport().emit(new Notification("foo", operation.get(OP_ADDR), "notification is emitted"));
+                return result;
+            }
+        };
+
+        // Set the handler
+        final ModelControllerClient client = setupTestClient(controller);
+        try {
+            ModelNode operation = new ModelNode();
+            operation.get("test").set("123");
+            operation.get(OP_ADDR).add("host", "foo");
+
+            final CountDownLatch notificationLatch = new CountDownLatch(1);
+            final AtomicBoolean gotBarNotification = new AtomicBoolean(false);
+            client.registerNotificationHandler(operation.get(OP_ADDR),
+                    new NotificationHandler() {
+                        @Override
+                        public void handleNotification(Notification notification) {
+                            gotBarNotification.set(true);
+                        }
+                    },
+                    new NotificationFilter() {
+                        @Override
+                        public boolean isNotificationEnabled(Notification notification) {
+                            return "bar".equals(notification.getType());
+                        }
+                    }
+            );
+            client.registerNotificationHandler(operation.get(OP_ADDR),
+                    new NotificationHandler() {
+                        @Override
+                        public void handleNotification(Notification notification) {
+                            notificationLatch.countDown();
+                        }
+                    },
+                    new NotificationFilter() {
+                        @Override
+                        public boolean isNotificationEnabled(Notification notification) {
+                            return "foo".equals(notification.getType());
+                        }
+                    }
+            );
+
+
+            ModelNode result = client.execute(operation);
+            assertNotNull(result);
+            assertEquals("123", result.get("testing").asString());
+
+            assertTrue("did not receive the notification with ALL filter", notificationLatch.await(500, MILLISECONDS));
+            assertFalse("did receive unexpected notification with type='bar' filter", gotBarNotification.get());
+        } finally {
+            IoUtils.safeClose(client);
+        }
+    }
+
+    @Test
+    public void testCloseClientWithRegisteredNotificationHandler() throws Exception {
+        MockModelController controller = new MockModelController() {
+            @Override
+            public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
+                this.operation = operation;
+                ModelNode result = new ModelNode();
+                result.get("testing").set(operation.get("test"));
+                getNotificationSupport().emit(new Notification("foo", operation.get(OP_ADDR), "notification is emitted"));
+                return result;
+            }
+        };
+
+        // Set the handler
+        ModelControllerClient client = setupTestClient(controller);
+        try {
+            ModelNode operation = new ModelNode();
+            operation.get("test").set("123");
+            operation.get(OP_ADDR).add("host", "foo");
+
+            final CountDownLatch notificationLatch = new CountDownLatch(1);
+            client.registerNotificationHandler(operation.get(OP_ADDR),
+                    new NotificationHandler() {
+                        @Override
+                        public void handleNotification(Notification notification) {
+                            notificationLatch.countDown();
+                        }
+                    },
+                    NotificationFilter.ALL);
+            // closing the client must discard the registered notification handler
+            client.close();
+            stop();
+
+            start();
+            client = setupTestClient(controller);
+            ModelNode result = client.execute(operation);
+            assertNotNull(result);
+            assertEquals("123", result.get("testing").asString());
+
+            assertFalse("receive unexpected notification", notificationLatch.await(500, MILLISECONDS));
+        } finally {
+            IoUtils.safeClose(client);
+        }
+    }
+
     private void assertArrays(byte[] expected, byte[] actual) {
         assertEquals(expected.length, actual.length);
         for (int i = 0 ; i < expected.length ; i++) {
@@ -345,6 +583,7 @@ public class ModelControllerClientTestCase {
 
     private static abstract class MockModelController implements ModelController {
         protected volatile ModelNode operation;
+        private final NotificationSupport notificationSupport = NotificationSupport.Factory.create(null);
 
         ModelNode getOperation() {
             return operation;
@@ -355,6 +594,10 @@ public class ModelControllerClientTestCase {
             return null;
         }
 
+        @Override
+        public NotificationSupport getNotificationSupport() {
+            return notificationSupport;
+        }
     }
 
     static class TestEntry extends FilterInputStream implements InputStreamEntry {

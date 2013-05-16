@@ -2656,4 +2656,13 @@ public interface ControllerMessages {
 
     @Message(id = 13454, value = "Failed to load Extension module %s")
     RuntimeException extensionModuleLoadingFailure(@Cause ModuleLoadException cause, String module);
+
+    @Message(id = 13455, value = "The resource was added at the address %s.")
+    String resourceWasAdded(PathAddress address);
+
+    @Message(id = 13456, value = "The resource was removed at the address %s.")
+    String resourceWasRemoved(PathAddress address);
+
+    @Message(id = 13457, value = "The attribute %s value has been changed from %s to %s.")
+    String attributeValueWritten(String attributeName, ModelNode currentValue, ModelNode newVal);
 }

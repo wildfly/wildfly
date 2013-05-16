@@ -25,6 +25,7 @@ package org.jboss.as.controller;
 import java.io.InputStream;
 
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.notification.NotificationSupport;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -39,7 +40,7 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface OperationContext extends ExpressionResolver {
+public interface OperationContext extends ExpressionResolver, NotificationSupport {
 
     /**
      * Add an execution step to this operation process.  Runtime operation steps are automatically added after

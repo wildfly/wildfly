@@ -18,15 +18,21 @@
  */
 package org.jboss.as.controller.client.impl;
 
+import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
+
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Notification;
+import org.jboss.as.controller.client.NotificationFilter;
+import org.jboss.as.controller.client.NotificationHandler;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -42,7 +48,6 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
-import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFuture;
 
@@ -54,7 +59,9 @@ import org.jboss.threads.AsyncFuture;
 public abstract class AbstractModelControllerClient implements ModelControllerClient, ManagementRequestHandlerFactory {
 
     private static ManagementRequestHandler<ModelNode, OperationExecutionContext> MESSAGE_HANDLER = new HandleReportRequestHandler();
+
     private static ManagementRequestHandler<ModelNode, OperationExecutionContext> GET_INPUT_STREAM = new ReadAttachmentInputStreamRequestHandler();
+    private static ManagementRequestHandler<ModelNode, NotificationExecutionContext> NOTIFICATION_HANDLER = new HandleNotificationRequestHandler();
 
     private static final OperationMessageHandler NO_OP_HANDLER = OperationMessageHandler.DISCARD;
 
@@ -111,8 +118,43 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             return MESSAGE_HANDLER;
         } else if (operationType == ModelControllerProtocol.GET_INPUTSTREAM_REQUEST) {
             return GET_INPUT_STREAM;
+        } else if (operationType == ModelControllerProtocol.HANDLE_NOTIFICATION_REQUEST) {
+            return NOTIFICATION_HANDLER;
         }
         return handlers.resolveNext();
+    }
+
+    @Override
+    public NotificationRegistration registerNotificationHandler(final ModelNode address, final NotificationHandler handler, final NotificationFilter filter) {
+        try {
+            // Send the registration request
+            final CountDownLatch latch = new CountDownLatch(1);
+            final NotificationExecutionContext context = new NotificationExecutionContext(handler, filter);
+            final ActiveOperation<Void, NotificationExecutionContext> conversation = getChannelAssociation().executeRequest(new RegisterNotificationHandlerRequest(address, latch), context);
+            final int operationID = conversation.getOperationId();
+            latch.await();
+            // Check for failures
+            if (conversation.getResult().isDone()) {
+                // In case the operation is done already, it means it failed or got cancelled
+                conversation.getResult().get();
+            }
+            return new NotificationRegistration() {
+                @Override
+                public void unregister() {
+                    try {
+                        // Reuse the operation-id for unregistration
+                        getChannelAssociation().executeRequest(operationID, UnregisterNotificationHandlerRequest.INSTANCE);
+                        // Use the active operation to wait until the handler is unregistered
+                        conversation.getResult().await();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            };
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     /**
@@ -366,4 +408,140 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         return entries;
     }
 
+
+    private static class HandleNotificationRequestHandler implements ManagementRequestHandler<ModelNode, NotificationExecutionContext> {
+        @Override
+        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<ModelNode> resultHandler, ManagementRequestContext<NotificationExecutionContext> context) throws IOException {
+            ModelNode notif = new ModelNode();
+            notif.readExternal(input);
+            Notification notification = Notification.fromModelNode(notif);
+            NotificationFilter filter = context.getAttachment().getFilter();
+            if (filter.isNotificationEnabled(notification)) {
+                NotificationHandler notificationHandler = context.getAttachment().getHandler();
+                notificationHandler.handleNotification(notification);
+            }
+        }
+
+    }
+
+    private static class RegisterNotificationHandlerRequest implements ManagementRequest<Void, NotificationExecutionContext>, ActiveOperation.CompletedCallback<Void> {
+
+        private final ModelNode address;
+        private final CountDownLatch latch;
+        private RegisterNotificationHandlerRequest(final ModelNode address, final CountDownLatch latch) {
+            this.address = address;
+            this.latch = latch;
+        }
+
+        @Override
+        public void completed(Void result) {
+            latch.countDown();
+        }
+
+        @Override
+        public void failed(Exception e) {
+            latch.countDown();
+        }
+
+        @Override
+        public void cancelled() {
+            latch.countDown();
+        }
+
+        @Override
+        public byte getOperationType() {
+            return ModelControllerProtocol.REGISTER_NOTIFICATION_HANDLER_REQUEST;
+        }
+
+        @Override
+        public void sendRequest(ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<NotificationExecutionContext> context) throws IOException {
+            final FlushableDataOutput output = context.writeMessage(context.getRequestHeader());
+            try {
+                address.writeExternal(output);
+                output.close();
+            } finally {
+                StreamUtils.safeClose(output);
+            }
+        }
+
+        @Override
+        public void handleFailed(ManagementResponseHeader header, ActiveOperation.ResultHandler<Void> resultHandler) {
+            resultHandler.failed(new IOException(header.getError()));
+        }
+
+        @Override
+        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<NotificationExecutionContext> context) throws IOException {
+            // don't end the conversation and keep the operation-id locked
+            latch.countDown();
+        }
+    }
+
+    private static class UnregisterNotificationHandlerRequest implements ManagementRequest<Void, NotificationExecutionContext> {
+
+        private static final UnregisterNotificationHandlerRequest INSTANCE = new UnregisterNotificationHandlerRequest();
+
+        @Override
+        public byte getOperationType() {
+            return ModelControllerProtocol.UNREGISTER_NOTIFICATION_HANDLER_REQUEST;
+        }
+
+        @Override
+        public void sendRequest(ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<NotificationExecutionContext> context) throws IOException {
+            final FlushableDataOutput output = context.writeMessage(context.getRequestHeader());
+            try {
+                // The remote side only needs the operation-id to unregister
+                output.close();
+            } finally {
+                StreamUtils.safeClose(output);
+            }
+        }
+
+        @Override
+        public void handleFailed(ManagementResponseHeader header, ActiveOperation.ResultHandler<Void> resultHandler) {
+            resultHandler.failed(new IOException(header.getError()));
+        }
+
+        @Override
+        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<NotificationExecutionContext> context) throws IOException {
+            resultHandler.done(null); // end the conversation
+        }
+    }
+
+    private class NotificationExecutionContext {
+        private final NotificationHandler handler;
+        private final NotificationFilter filter;
+
+        private NotificationExecutionContext(NotificationHandler handler, NotificationFilter filter) {
+            this.handler = handler;
+            this.filter = filter;
+        }
+
+        public NotificationHandler getHandler() {
+            return handler;
+        }
+
+        public NotificationFilter getFilter() {
+            return filter;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            NotificationExecutionContext that = (NotificationExecutionContext) o;
+
+            if (filter != null ? !filter.equals(that.filter) : that.filter != null) return false;
+            if (handler != null ? !handler.equals(that.handler) : that.handler != null) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = handler != null ? handler.hashCode() : 0;
+            result = 31 * result + (filter != null ? filter.hashCode() : 0);
+            return result;
+        }
+    }
 }

@@ -45,6 +45,7 @@ import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.validation.OperationValidator;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -121,6 +122,7 @@ public abstract class ModelTestModelControllerService extends AbstractController
 
     protected void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         GlobalOperationHandlers.registerGlobalOperations(rootRegistration, ProcessType.STANDALONE_SERVER);
+        GlobalNotifications.registerGlobalNotifications(rootRegistration, ProcessType.STANDALONE_SERVER);
 
         rootRegistration.registerOperationHandler(CompositeOperationHandler.DEFINITION, CompositeOperationHandler.INSTANCE);
     }
@@ -263,6 +265,11 @@ public abstract class ModelTestModelControllerService extends AbstractController
         @Override
         public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
             delegate.registerAttributes(resourceRegistration);
+        }
+
+        @Override
+        public void registerNotifications(ManagementResourceRegistration resourceRegistration) {
+            delegate.registerNotifications(resourceRegistration);
         }
 
         @Override

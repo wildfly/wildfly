@@ -48,6 +48,7 @@ import io.undertow.security.impl.DigestQop;
 import io.undertow.security.impl.SimpleNonceManager;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpOpenListener;
+import io.undertow.server.handlers.BlockingHandler;
 import io.undertow.server.handlers.CanonicalPathHandler;
 import io.undertow.server.handlers.ChannelUpgradeHandler;
 import io.undertow.server.handlers.PathHandler;
@@ -62,6 +63,7 @@ import org.jboss.as.domain.http.server.security.DmrFailureReadinessHandler;
 import org.jboss.as.domain.http.server.security.LogoutHandler;
 import org.jboss.as.domain.http.server.security.RealmIdentityManager;
 import org.jboss.as.domain.http.server.security.RedirectReadinessHandler;
+import org.jboss.as.domain.http.server.security.SubjectAssociationHandler;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.modules.Module;
@@ -224,6 +226,10 @@ public class ManagementHttpServer {
 
         HttpHandler readinessHandler = new DmrFailureReadinessHandler(securityRealm, secureDomainAccess(domainApiHandler, securityRealm), ErrorContextHandler.ERROR_CONTEXT);
         pathHandler.addPath(DomainApiCheckHandler.PATH, readinessHandler);
+
+        HttpHandler notificationApiHandler = new BlockingHandler(new SubjectAssociationHandler(new NotificationApiHandler(modelControllerClient)));
+        HttpHandler readinessNotificationApiHandler = new DmrFailureReadinessHandler(securityRealm, secureDomainAccess(notificationApiHandler, securityRealm), ErrorContextHandler.ERROR_CONTEXT);
+        pathHandler.addPath(NotificationApiHandler.PATH, readinessNotificationApiHandler);
 
         if (securityRealm != null) {
             pathHandler.addPath(LogoutHandler.PATH, new LogoutHandler(securityRealm.getName()));
