@@ -34,7 +34,6 @@ import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -57,11 +56,7 @@ public class JaxrsTestCase {
         return war;
     }
 
-    //TODO WFLY-278: Disabled this test due to the upgrade of Hibernate Validator
-    //to version 5.x with WFLY-471. RESTEasy uses a HV API which was removed with 5.x,
-    //causing this test to fail.
     @Test
-    @Ignore
     public void testJaxrs() throws Exception {
         String s = performCall();
         Assert.assertEquals("Hello World!", s);

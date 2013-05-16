@@ -27,7 +27,6 @@ import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -61,21 +60,13 @@ public class ExceptionHandlingTestCase {
                                 + "        <url-pattern>/myjaxrs/*</url-pattern>\n" + "</servlet-mapping>\n"));
     }
 
-    //TODO WFLY-278: Disabled this test due to the upgrade of Hibernate Validator
-    //to version 5.x with WFLY-471. RESTEasy uses a HV API which was removed with 5.x,
-    //causing this test to fail.
     @Test
-    @Ignore
     public void testResource(@ArquillianResource URL url) throws Exception {
         String result = HttpRequest.get(url.toExternalForm() + "myjaxrs/helloworld", 10, TimeUnit.SECONDS);
         assertEquals("Hello World!", result);
     }
 
-    //TODO WFLY-278: Disabled this test due to the upgrade of Hibernate Validator
-    //to version 5.x with WFLY-471. RESTEasy uses a HV API which was removed with 5.x,
-    //causing this test to fail.
     @Test
-    @Ignore
     public void testNullPointerException(@ArquillianResource URL url) throws Exception {
         try {
             @SuppressWarnings("unused")

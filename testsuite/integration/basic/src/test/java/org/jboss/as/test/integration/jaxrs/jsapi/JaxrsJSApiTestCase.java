@@ -36,7 +36,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -82,22 +81,14 @@ public class JaxrsJSApiTestCase {
         return HttpRequest.get(url.toString() + urlPattern, 5, TimeUnit.SECONDS);
     }
 
-    //TODO WFLY-278: Disabled this test due to the upgrade of Hibernate Validator
-    //to version 5.x with WFLY-471. RESTEasy uses a HV API which was removed with 5.x,
-    //causing this test to fail.
     @Test
-    @Ignore
     @InSequence(1)
     public void testJaxRsWithNoApplication() throws Exception {
         String result = performCall("myjaxrs/jsapi");
         Assert.assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><customer><first>John</first><last>Citizen</last></customer>", result);
     }
 
-    //TODO WFLY-278: Disabled this test due to the upgrade of Hibernate Validator
-    //to version 5.x with WFLY-471. RESTEasy uses a HV API which was removed with 5.x,
-    //causing this test to fail.
     @Test
-    @Ignore
     @InSequence(2)
     public void testJaxRsJSApis() throws Exception {
         String result = performCall("/rest-JS");

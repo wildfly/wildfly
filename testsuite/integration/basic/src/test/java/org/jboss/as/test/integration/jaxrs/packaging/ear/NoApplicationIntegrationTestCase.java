@@ -34,7 +34,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -84,11 +83,7 @@ public class NoApplicationIntegrationTestCase {
         return HttpRequest.get(url + urlPattern, 10, TimeUnit.SECONDS);
     }
 
-    //TODO WFLY-278: Disabled this test due to the upgrade of Hibernate Validator
-    //to version 5.x with WFLY-471. RESTEasy uses a HV API which was removed with 5.x,
-    //causing this test to fail.
     @Test
-    @Ignore
     public void testJaxRsWithNoApplication() throws Exception {
         String result = performCall("myjaxrs/helloworld");
         assertEquals("Hello World!", result);

@@ -33,7 +33,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -95,11 +94,7 @@ public class BasicGZIPTestCase {
         return result;
     }
 
-    //TODO WFLY-278: Disabled this test due to the upgrade of Hibernate Validator
-    //to version 5.x with WFLY-471. RESTEasy uses a HV API which was removed with 5.x,
-    //causing this test to fail.
     @Test
-    @Ignore
     public void testPlainString(@ArquillianResource URL url) throws Exception {
         final String res_string = "Hello World!";
 
@@ -110,11 +105,7 @@ public class BasicGZIPTestCase {
         assertEquals(res_string, result);
     }
 
-    //TODO WFLY-278: Disabled this test due to the upgrade of Hibernate Validator
-    //to version 5.x with WFLY-471. RESTEasy uses a HV API which was removed with 5.x,
-    //causing this test to fail.
     @Test
-    @Ignore
     public void testXml(@ArquillianResource URL url) throws Exception {
         final String res_string = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><jaxbModel><first>John</first><last>Citizen</last></jaxbModel>";
 
