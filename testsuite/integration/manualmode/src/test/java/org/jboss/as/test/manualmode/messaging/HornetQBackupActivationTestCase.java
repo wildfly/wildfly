@@ -110,7 +110,6 @@ public class HornetQBackupActivationTestCase {
                 Authentication.getCallbackHandler());
     }
 
-    @Ignore
     @Test
     public void testBackupActivation() throws Exception {
         checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
