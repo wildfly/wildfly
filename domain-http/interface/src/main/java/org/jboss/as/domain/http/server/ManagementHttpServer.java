@@ -177,13 +177,13 @@ public class ManagementHttpServer {
 
         HttpOpenListener openListener = new HttpOpenListener(new ByteBufferSlicePool(BufferAllocator.DIRECT_BYTE_BUFFER_ALLOCATOR, 4096, 10 * 4096), 4096);
         int securePort = secureBindAddress != null ? secureBindAddress.getPort() : -1;
-        setupOpenListener(openListener, modelControllerClient, executorService, consoleMode, consoleSlot, controlledProcessStateService, securePort, securityRealm);
+        setupOpenListener(openListener, modelControllerClient, executorService, consoleMode, consoleSlot, controlledProcessStateService, securePort, securityRealm, upgradeHandler);
         ManagementHttpServer server = new ManagementHttpServer(openListener, bindAddress, secureBindAddress, securityRealm);
 
         return server;
     }
 
-    private static void setupOpenListener(HttpOpenListener listener, ModelControllerClient modelControllerClient, ExecutorService executorService, ConsoleMode consoleMode, String consoleSlot, ControlledProcessStateService controlledProcessStateService, int securePort, SecurityRealm securityRealm, final ChannelUpgradeHandler upgradeHandler) { {
+    private static void setupOpenListener(HttpOpenListener listener, ModelControllerClient modelControllerClient, ExecutorService executorService, ConsoleMode consoleMode, String consoleSlot, ControlledProcessStateService controlledProcessStateService, int securePort, SecurityRealm securityRealm, final ChannelUpgradeHandler upgradeHandler) {
         CanonicalPathHandler canonicalPathHandler = new CanonicalPathHandler();
         listener.setRootHandler(canonicalPathHandler);
 
