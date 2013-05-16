@@ -16,9 +16,6 @@
  */
 package org.jboss.arquillian.testenricher.msc;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -30,17 +27,17 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public final class ServiceTargetAssociation {
 
-    private static ConcurrentMap<String, ServiceTarget> association = new ConcurrentHashMap<String, ServiceTarget>();
+    private static ThreadLocal<ServiceTarget> association = new ThreadLocal<ServiceTarget>();
 
-    public static ServiceTarget getServiceTarget(final String className) {
-        return association.get(className);
+    public static ServiceTarget getServiceTarget() {
+        return association.get();
     }
 
-    public static void setServiceTarget(final String className, ServiceTarget type) {
-        association.put(className, type);
+    public static void setServiceTarget(ServiceTarget target) {
+        association.set(target);
     }
 
-    public static void clearServiceTarget(final String className) {
-        association.remove(className);
+    public static void removeServiceTarget() {
+        association.remove();
     }
 }

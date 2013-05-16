@@ -24,10 +24,9 @@ package org.jboss.as.test.smoke.deployment.rar.tests.pure;
 import java.util.List;
 import java.util.Set;
 
-import javax.inject.Inject;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.util.ConnectorServices;
@@ -109,9 +108,8 @@ public class PureTestCase extends ContainerResourceMgmtTestBase {
         return raa;
     }
 
-    @Inject
-    public ServiceContainer serviceContainer;
-
+    @ArquillianResource
+    ServiceContainer serviceContainer;
 
     /**
      * Test configuration

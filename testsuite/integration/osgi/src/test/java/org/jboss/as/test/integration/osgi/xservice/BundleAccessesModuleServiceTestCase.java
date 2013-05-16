@@ -26,8 +26,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.InputStream;
 
-import javax.inject.Inject;
-
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -66,8 +64,8 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
     private static final String TARGET_MODULE_NAME = "example-xservice-bam-target-module";
     private static final String CLIENT_BUNDLE_NAME = "example-xservice-bam-client-bundle";
 
-    @Inject
-    public ServiceContainer serviceContainer;
+    @ArquillianResource
+    ServiceContainer serviceContainer;
 
     @ArquillianResource
     public Deployer deployer;

@@ -25,8 +25,6 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -37,12 +35,12 @@ import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.osgi.resolver.XBundleRevision;
+import org.jboss.osgi.resolver.XBundleRevisionBuilder;
 import org.jboss.osgi.resolver.XBundleRevisionBuilderFactory;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XIdentityCapability;
 import org.jboss.osgi.resolver.XRequirement;
 import org.jboss.osgi.resolver.XResource;
-import org.jboss.osgi.resolver.XResourceBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -66,8 +64,8 @@ public class ModuleRegistrationTestCase {
 
     static final String BUNDLE_A = "bundle-a";
 
-    @Inject
-    public ServiceContainer container;
+    @ArquillianResource
+    ServiceContainer serviceContainer;
 
     @ArquillianResource
     Deployer deployer;
@@ -94,7 +92,7 @@ public class ModuleRegistrationTestCase {
     public void testFindPackageCapability() throws Exception {
 
         // Build a package requirement
-        XResourceBuilder builder = XBundleRevisionBuilderFactory.create();
+        XBundleRevisionBuilder builder = XBundleRevisionBuilderFactory.create();
         builder.addCapability(IDENTITY_NAMESPACE, "somename");
         XRequirement req = builder.addRequirement(PACKAGE_NAMESPACE, SimpleService.class.getPackage().getName());
         builder.getResource();
@@ -134,7 +132,7 @@ public class ModuleRegistrationTestCase {
     }
 
     private XEnvironment getEnvironment() {
-        return (XEnvironment) container.getRequiredService(Services.ENVIRONMENT).getValue();
+        return (XEnvironment) serviceContainer.getRequiredService(Services.ENVIRONMENT).getValue();
     }
 
     @Deployment(name = BUNDLE_A, managed = false, testable = false)
