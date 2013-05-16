@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:ispn="urn:jboss:domain:infinispan:1.4">
+                xmlns:ispn="urn:jboss:domain:infinispan:2.0">
 
     <!--
       XSLT stylesheet to add an x-site backup element to a cache in a cache container.
@@ -31,12 +31,12 @@
 
     <xsl:output method="xml" indent="yes"/>
 
-    <xsl:variable name="ispnns">urn:jboss:domain:infinispan:1.4</xsl:variable>
+    <xsl:variable name="ispnns">urn:jboss:domain:infinispan:2.0</xsl:variable>
 
     <!-- populate the <backup/> element by input parameters -->
     <xsl:variable name="new-backup-element">
-        <backup site-name="{$backup.site}" failure-policy="{$backup.failure-policy}" strategy="{$backup.strategy}"
-                replication-timeout="{$backup.replication-timeout}" enabled="{$backup.enabled}"/>
+        <backup site="{$backup.site}" failure-policy="{$backup.failure-policy}" strategy="{$backup.strategy}"
+                timeout="{$backup.replication-timeout}" enabled="{$backup.enabled}"/>
     </xsl:variable>
 
     <xsl:template name="copy-attributes">
