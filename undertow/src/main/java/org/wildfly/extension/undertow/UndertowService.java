@@ -147,26 +147,26 @@ public class UndertowService implements Service<UndertowService> {
         this.listeners.add(listener);
     }
 
-    protected void fireEvent(EventType type, Object eventData) {
+    protected void fireEvent(EventType type, Object... eventData) {
         for (UndertowEventListener listener : listeners) {
             switch (type) {
                 case HOST_START:
-                    listener.onHostStart((Host) eventData);
+                    listener.onHostStart((Host) eventData[0]);
                     break;
                 case HOST_STOP:
-                    listener.onHostStop((Host) eventData);
+                    listener.onHostStop((Host) eventData[0]);
                     break;
                 case DEPLOYMENT_START:
-                    listener.onDeploymentStart((DeploymentInfo) eventData);
+                    listener.onDeploymentStart((DeploymentInfo) eventData[0], (Host) eventData[1]);
                     break;
                 case DEPLOYMENT_STOP:
-                    listener.onDeploymentStop((DeploymentInfo) eventData);
+                    listener.onDeploymentStop((DeploymentInfo) eventData[0], (Host) eventData[1]);
                     break;
                 case SERVER_START:
-                    listener.onServerStart((Server) eventData);
+                    listener.onServerStart((Server) eventData[0]);
                     break;
                 case SERVER_STOP:
-                    listener.onServerStop((Server) eventData);
+                    listener.onServerStop((Server) eventData[0]);
                     break;
                 case SHUTDOWN:
                     listener.onShutdown();

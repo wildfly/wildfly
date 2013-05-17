@@ -28,17 +28,18 @@ import io.undertow.servlet.api.DeploymentInfo;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
+ * @author Radoslav Husar
  */
 public interface UndertowEventListener {
     void onShutdown();
 
-    void onDeploymentAdd(DeploymentInfo deploymentInfo);
+    void onDeploymentAdd(DeploymentInfo deploymentInfo, Host host);
 
-    void onDeploymentStart(DeploymentInfo deploymentInfo);
+    void onDeploymentStart(DeploymentInfo deploymentInfo, Host host);
 
-    void onDeploymentStop(DeploymentInfo deploymentInfo);
+    void onDeploymentStop(DeploymentInfo deploymentInfo, Host host);
 
-    void onDeploymentRemove(DeploymentInfo deploymentInfo);
+    void onDeploymentRemove(DeploymentInfo deploymentInfo, Host host);
 
     void onHostAdd(Host host);
 
