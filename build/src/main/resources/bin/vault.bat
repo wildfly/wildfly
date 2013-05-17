@@ -14,7 +14,7 @@ set JBOSS_HOME=%DIRNAME%\..
 rem Setup the JVM
 IF NOT DEFINED JAVA (
     IF DEFINED JAVA_HOME (
-        set JAVA="%JAVA_HOME%\bin\java"
+        set "JAVA=%JAVA_HOME%\bin\java"
     ) ELSE (
         set JAVA=java
     )
@@ -22,8 +22,8 @@ IF NOT DEFINED JAVA (
 )
 
 IF NOT DEFINED MODULEPATH (
-    set MODULEPATH="%JBOSS_HOME%\modules"
-	call :DeQuote MODULEPATH
+    set "MODULEPATH=%JBOSS_HOME%\modules"
+    call :DeQuote MODULEPATH
 )
 
 
@@ -40,7 +40,7 @@ echo.
 echo =========================================================================
 echo.
 
-%JAVA% -jar %JBOSS_HOME%\jboss-modules.jar -mp %MODULEPATH% org.jboss.as.vault-tool %*
+"%JAVA%" -jar "%JBOSS_HOME%\jboss-modules.jar" -mp "%MODULEPATH%" org.jboss.as.vault-tool %*
 
 ENDLOCAL
 
