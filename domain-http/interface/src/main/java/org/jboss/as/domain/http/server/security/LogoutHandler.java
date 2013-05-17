@@ -27,22 +27,21 @@ import static io.undertow.util.Headers.HOST;
 import static io.undertow.util.Headers.LOCATION;
 import static io.undertow.util.Headers.REFERER;
 import static io.undertow.util.Headers.USER_AGENT;
-import io.undertow.security.impl.DigestAlgorithm;
-import io.undertow.security.impl.DigestAuthenticationMechanism;
-import io.undertow.security.impl.DigestQop;
-import io.undertow.security.impl.SimpleNonceManager;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpHandlers;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.util.HeaderMap;
 
-import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 
-import org.jboss.as.domain.http.server.Common;
+import io.undertow.io.IoCallback;
+import io.undertow.security.impl.DigestAlgorithm;
+import io.undertow.security.impl.DigestAuthenticationMechanism;
+import io.undertow.security.impl.DigestQop;
+import io.undertow.security.impl.SimpleNonceManager;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.util.HeaderMap;
+import io.undertow.util.StatusCodes;
 
 /**
  *
@@ -96,7 +95,7 @@ public class LogoutHandler implements HttpHandler {
         if (host == null) {
             host = requestHeaders.getFirst(HOST);
             if (host == null) {
-                Common.INTERNAL_SERVER_ERROR.handleRequest(exchange);
+                exchange.setResponseCode(StatusCodes.INTERNAL_SERVER_ERROR);
 
                 return;
             }
@@ -118,24 +117,23 @@ public class LogoutHandler implements HttpHandler {
         if (!win && (authorization == null || !authorization.contains("enter-login-here"))) {
             if (!query) {
                 responseHeaders.add(LOCATION, protocol + "://enter-login-here:blah@" + host + "/logout?logout");
-                HttpHandlers.executeHandler(Common.TEMPORARY_REDIRECT, exchange);
+                exchange.setResponseCode(StatusCodes.TEMPORARY_REDIRECT);
+
                 return;
             }
 
             DigestAuthenticationMechanism mech = opera ? fakeRealmdigestMechanism : digestMechanism;
             mech.sendChallenge(exchange, null);
-            PrintStream print = new PrintStream(exchange.getOutputStream());
-            print.println("<html><script type='text/javascript'>window.location=\"" + protocol + "://" + host
-                    + "/\";</script></html>");
-            print.flush();
-            print.close();
-            HttpHandlers.executeHandler(Common.UNAUTHORIZED, exchange);
+            String reply = "<html><script type='text/javascript'>window.location=\"" + protocol + "://" + host
+                    + "/\";</script></html>";
+            exchange.setResponseCode(StatusCodes.UNAUTHORIZED);
+            exchange.getResponseSender().send(reply, IoCallback.END_EXCHANGE);
 
             return;
         }
 
         // Success, now back to the login screen
         responseHeaders.add(LOCATION, protocol + "://" + host + "/");
-        HttpHandlers.executeHandler(Common.TEMPORARY_REDIRECT, exchange);
+        exchange.setResponseCode(StatusCodes.TEMPORARY_REDIRECT);
     }
 }
