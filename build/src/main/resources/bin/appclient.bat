@@ -29,16 +29,25 @@ pushd %DIRNAME%..
 set "RESOLVED_JBOSS_HOME=%CD%"
 popd
 
-if "x%JBOSS_HOME%" == "x" (
-  set "JBOSS_HOME=%RESOLVED_JBOSS_HOME%"
+set UNQUOTED_JBOSS_HOME=%JBOSS_HOME:"=%
+rem attempt to unquote again to remove quote if envvar was not set
+set UNQUOTED_JBOSS_HOME=%UNQUOTED_JBOSS_HOME:"=%
+set QUOTED_JBOSS_HOME="%UNQUOTED_JBOSS_HOME%"
+rem should only a = if envvar was not set
+if "%UNQUOTED_JBOSS_HOME%" == "=" (
+  set "UNQUOTED_JBOSS_HOME=%RESOLVED_JBOSS_HOME%"
+  set QUOTED_JBOSS_HOME="%RESOLVED_JBOSS_HOME%"
 )
-
-pushd "%JBOSS_HOME%"
+pushd %QUOTED_JBOSS_HOME%
 set "SANITIZED_JBOSS_HOME=%CD%"
 popd
 
-if "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
-    echo WARNING JBOSS_HOME may be pointing to a different installation - unpredictable results may occur.
+if /i "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
+   echo.
+   echo   WARNING:  JBOSS_HOME may be pointing to a different installation - unpredictable results may occur.
+   echo.
+   echo       JBOSS_HOME: %QUOTED_JBOSS_HOME%
+   echo.
 )
 
 set DIRNAME=
@@ -67,10 +76,10 @@ if not errorlevel == 1 (
 )
 
 rem Find run.jar, or we can't continue
-if exist "%JBOSS_HOME%\jboss-modules.jar" (
-    set "RUNJAR=%JBOSS_HOME%\jboss-modules.jar"
+if exist "%UNQUOTED_JBOSS_HOME%\jboss-modules.jar" (
+    set "RUNJAR=%UNQUOTED_JBOSS_HOME%\jboss-modules.jar"
 ) else (
-  echo Could not locate "%JBOSS_HOME%\jboss-modules.jar".
+  echo Could not locate "%UNQUOTED_JBOSS_HOME%\jboss-modules.jar".
   echo Please check that you are in the bin directory when running this script.
   goto END
 )
@@ -79,16 +88,16 @@ rem Setup JBoss specific properties
 
 rem Set default module root paths
 if "x%JBOSS_MODULEPATH%" == "x" (
-  set  "JBOSS_MODULEPATH=%JBOSS_HOME%\modules"
+  set  "JBOSS_MODULEPATH=%UNQUOTED_JBOSS_HOME%\modules"
 )
 
 "%JAVA%" %JAVA_OPTS% ^
- "-Dorg.jboss.boot.log.file=%JBOSS_HOME%\appclient\log\appclient.log" ^
- "-Dlogging.configuration=file:%JBOSS_HOME%/appclient/configuration/logging.properties" ^
-    -jar "%JBOSS_HOME%\jboss-modules.jar" ^
+ "-Dorg.jboss.boot.log.file=%UNQUOTED_JBOSS_HOME%\appclient\log\appclient.log" ^
+ "-Dlogging.configuration=file:%UNQUOTED_JBOSS_HOME%/appclient/configuration/logging.properties" ^
+    -jar "%UNQUOTED_JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_MODULEPATH%" ^
     -jaxpmodule "javax.xml.jaxp-provider" ^
      org.jboss.as.appclient ^
-    -Djboss.home.dir="%JBOSS_HOME%" ^
-    -Djboss.server.base.dir="%JBOSS_HOME%\appclient" ^
+    -Djboss.home.dir="%UNQUOTED_JBOSS_HOME%" ^
+    -Djboss.server.base.dir="%UNQUOTED_JBOSS_HOME%\appclient" ^
      %*
