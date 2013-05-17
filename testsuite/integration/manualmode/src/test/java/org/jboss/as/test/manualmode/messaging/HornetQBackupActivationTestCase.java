@@ -195,7 +195,6 @@ public class HornetQBackupActivationTestCase {
     }
 
     // https://issues.jboss.org/browse/AS7-6881
-    @Ignore
     @Test
     public void testPassiveBackupReload() throws Exception {
         checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
