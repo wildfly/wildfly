@@ -91,8 +91,12 @@ public class Host implements Service<Host>, WebHost {
         return this;
     }
 
-    protected InjectedValue<Server> getServer() {
+    protected InjectedValue<Server> getServerInjection() {
         return server;
+    }
+
+    public Server getServer() {
+        return server.getValue();
     }
 
     protected InjectedValue<UndertowService> getUndertowService() {
@@ -115,14 +119,14 @@ public class Host implements Service<Host>, WebHost {
         String path = ServletContainerService.getDeployedContextPath(deploymentInfo);
         registerHandler(path, handler);
         UndertowLogger.ROOT_LOGGER.registerWebapp(path);
-        undertowService.getValue().fireEvent(EventType.DEPLOYMENT_START, deploymentInfo);
+        undertowService.getValue().fireEvent(EventType.DEPLOYMENT_START, deploymentInfo, this);
     }
 
     public void unregisterDeployment(DeploymentInfo deploymentInfo) {
         String path = ServletContainerService.getDeployedContextPath(deploymentInfo);
         unregisterHandler(path);
         UndertowLogger.ROOT_LOGGER.unregisterWebapp(path);
-        undertowService.getValue().fireEvent(EventType.DEPLOYMENT_STOP, deploymentInfo);
+        undertowService.getValue().fireEvent(EventType.DEPLOYMENT_STOP, deploymentInfo, this);
     }
 
     public void registerHandler(String path, HttpHandler handler) {
@@ -179,7 +183,7 @@ public class Host implements Service<Host>, WebHost {
 
         @Override
         public void create() throws Exception {
-            ServletContainer container = getServer().getValue().getServletContainer().getValue().getServletContainer();
+            ServletContainer container = getServerInjection().getValue().getServletContainer().getValue().getServletContainer();
             manager = container.addDeployment(deploymentInfo);
             manager.deploy();
         }
@@ -199,7 +203,7 @@ public class Host implements Service<Host>, WebHost {
         @Override
         public void destroy() throws Exception {
             manager.undeploy();
-            ServletContainer container = getServer().getValue().getServletContainer().getValue().getServletContainer();
+            ServletContainer container = getServerInjection().getValue().getServletContainer().getValue().getServletContainer();
             container.removeDeployment(deploymentInfo.getDeploymentName());
         }
     }
