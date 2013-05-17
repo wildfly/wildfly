@@ -209,7 +209,6 @@ public class HornetQBackupActivationTestCase {
         checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
     }
 
-    @Ignore
     @Test
     public void testActiveBackupReload() throws Exception {
         checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
