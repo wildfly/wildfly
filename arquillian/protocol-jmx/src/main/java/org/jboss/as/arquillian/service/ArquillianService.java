@@ -32,7 +32,6 @@ import javax.management.MBeanServer;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
 import org.jboss.as.jmx.MBeanServerService;
-import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Phase;
@@ -50,7 +49,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.resolver.XBundleRevision;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -219,9 +218,9 @@ public class ArquillianService implements Service<ArquillianService> {
         private ContextManager initializeContextManager(final ArquillianConfig config, final Map<String, Object> properties) {
             final ContextManagerBuilder builder = new ContextManagerBuilder();
             final DeploymentUnit depUnit = config.getDeploymentUnit();
-            final XBundleRevision brev = depUnit.getAttachment(OSGiConstants.BUNDLE_REVISION_KEY);
             final Module module = depUnit.getAttachment(Attachments.MODULE);
-            if (brev == null && module != null) {
+            final Bundle bundle = ArquillianConfig.getAssociatedBundle(module);
+            if (bundle == null && module != null) {
                 builder.add(new TCCLSetupAction(module.getClassLoader()));
             }
             builder.addAll(depUnit);

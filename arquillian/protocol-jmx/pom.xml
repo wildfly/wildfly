@@ -31,9 +31,7 @@
 		<version>8.0.0.Alpha2-SNAPSHOT</version>
 	</parent>
 
-	<groupId>org.wildfly</groupId>
 	<artifactId>wildfly-arquillian-protocol-jmx</artifactId>
-	<version>8.0.0.Alpha2-SNAPSHOT</version>
 
 	<name>WildFly: Arquillian Protocol JMX</name>
 
@@ -43,10 +41,6 @@
         <dependency>
           <groupId>org.wildfly</groupId>
           <artifactId>wildfly-arquillian-common</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.wildfly</groupId>
-          <artifactId>wildfly-osgi-service</artifactId>
         </dependency>
         <dependency>
           <groupId>org.wildfly</groupId>

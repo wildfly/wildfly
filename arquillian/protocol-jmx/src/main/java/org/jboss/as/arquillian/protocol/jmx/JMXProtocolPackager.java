@@ -149,13 +149,11 @@ public class JMXProtocolPackager implements DeploymentPackager {
                 dependencies.append("org.jboss.as.jmx,");
                 dependencies.append("org.jboss.as.server,");
                 dependencies.append("org.jboss.as.controller-client,");
-                dependencies.append("org.jboss.as.osgi,");
                 dependencies.append("org.jboss.jandex,");
                 dependencies.append("org.jboss.logging,");
                 dependencies.append("org.jboss.modules,");
                 dependencies.append("org.jboss.dmr,");
                 dependencies.append("org.jboss.msc,");
-                dependencies.append("org.jboss.osgi.framework,");
                 dependencies.append("org.osgi.core,");
                 dependencies.append("org.wildfly.security.manager");
                 builder.addManifestHeader("Dependencies", dependencies.toString());
