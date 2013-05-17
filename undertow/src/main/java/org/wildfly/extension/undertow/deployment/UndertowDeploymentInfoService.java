@@ -494,7 +494,14 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             if (mergedMetaData.getWelcomeFileList() != null &&
                     mergedMetaData.getWelcomeFileList().getWelcomeFiles() != null) {
-                d.addWelcomePages(mergedMetaData.getWelcomeFileList().getWelcomeFiles());
+                List<String> welcomeFiles = mergedMetaData.getWelcomeFileList().getWelcomeFiles();
+                for(String file : welcomeFiles) {
+                    if(file.startsWith("/")) {
+                        d.addWelcomePages(file.substring(1));
+                    } else {
+                        d.addWelcomePages(welcomeFiles);
+                    }
+                }
             } else {
                 d.addWelcomePages("index.html", "index.htm", "index.jsp");
             }
