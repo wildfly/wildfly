@@ -499,7 +499,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     if(file.startsWith("/")) {
                         d.addWelcomePages(file.substring(1));
                     } else {
-                        d.addWelcomePages(welcomeFiles);
+                        d.addWelcomePages(file);
                     }
                 }
             } else {
