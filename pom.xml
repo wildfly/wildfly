@@ -31,7 +31,7 @@
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-parent</artifactId>
-    <version>8.0.0.Alpha1-SNAPSHOT</version>
+    <version>8.0.0.Alpha1</version>
 
     <name>WildFly: Parent Aggregator</name>
     <description>WildFly: Parent Aggregator</description>
@@ -55,7 +55,7 @@
     <properties>
          <!-- Release Info -->
         <jboss.as.release.version>${project.version}</jboss.as.release.version>
-        <jboss.as.release.codename>TBD</jboss.as.release.codename>
+        <jboss.as.release.codename>WildFly</jboss.as.release.codename>
         <jboss.as.scm.url>https://github.com/jbossas/jboss-as</jboss.as.scm.url>
         <jboss.as.scm.connection>git@github.com:jbossas/jboss-as.git</jboss.as.scm.connection>
 

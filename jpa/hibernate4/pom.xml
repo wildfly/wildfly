@@ -30,7 +30,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-jpa-parent</artifactId>
-        <version>8.0.0.Alpha1-SNAPSHOT</version>
+        <version>8.0.0.Alpha1</version>
     </parent>
 
     <artifactId>wildfly-jpa-hibernate4</artifactId>
