@@ -28,6 +28,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -47,9 +49,11 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.arquillian.container.NetworkUtils;
 import org.jboss.as.arquillian.protocol.jmx.JMXProtocolAS7.ServiceArchiveHolder;
 import org.jboss.as.arquillian.service.ArquillianService;
+import org.jboss.as.arquillian.service.DependenciesProvider;
 import org.jboss.as.arquillian.service.InContainerManagementClientExtension;
 import org.jboss.as.arquillian.service.JMXProtocolEndpointExtension;
 import org.jboss.logging.Logger;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
@@ -118,6 +122,18 @@ public class JMXProtocolPackager implements DeploymentPackager {
         //add the classes required for server setup
         archive.addClasses(ServerSetup.class, ServerSetupTask.class, ManagementClient.class, Authentication.class, NetworkUtils.class);
 
+        final Set<ModuleIdentifier> archiveDependencies = new LinkedHashSet<ModuleIdentifier>();
+        archiveDependencies.add(ModuleIdentifier.create("org.jboss.as.jmx"));
+        archiveDependencies.add(ModuleIdentifier.create("org.jboss.as.server"));
+        archiveDependencies.add(ModuleIdentifier.create("org.jboss.as.controller-client"));
+        archiveDependencies.add(ModuleIdentifier.create("org.jboss.jandex"));
+        archiveDependencies.add(ModuleIdentifier.create("org.jboss.logging"));
+        archiveDependencies.add(ModuleIdentifier.create("org.jboss.modules"));
+        archiveDependencies.add(ModuleIdentifier.create("org.jboss.dmr"));
+        archiveDependencies.add(ModuleIdentifier.create("org.jboss.msc"));
+        archiveDependencies.add(ModuleIdentifier.create("org.osgi.core"));
+        archiveDependencies.add(ModuleIdentifier.create("org.wildfly.security.manager"));
+
         // Merge the auxiliary archives and collect the loadable extensions
         final Set<String> loadableExtensions = new HashSet<String>();
         final String loadableExtensionsPath = "META-INF/services/" + RemoteLoadableExtension.class.getName();
@@ -129,9 +145,15 @@ public class JMXProtocolPackager implements DeploymentPackager {
                     String line = br.readLine();
                     while (line != null) {
                         loadableExtensions.add(line);
+                        ClassLoader classLoader = getClass().getClassLoader();
+                        Object extension = classLoader.loadClass(line).newInstance();
+                        if (extension instanceof DependenciesProvider) {
+                            DependenciesProvider provider = (DependenciesProvider) extension;
+                            archiveDependencies.addAll(provider.getDependencies());
+                        }
                         line = br.readLine();
                     }
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                     // ignore
                 }
             }
@@ -145,18 +167,12 @@ public class JMXProtocolPackager implements DeploymentPackager {
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
-                StringBuffer dependencies = new StringBuffer();
-                dependencies.append("org.jboss.as.jmx,");
-                dependencies.append("org.jboss.as.server,");
-                dependencies.append("org.jboss.as.controller-client,");
-                dependencies.append("org.jboss.jandex,");
-                dependencies.append("org.jboss.logging,");
-                dependencies.append("org.jboss.modules,");
-                dependencies.append("org.jboss.dmr,");
-                dependencies.append("org.jboss.msc,");
-                dependencies.append("org.osgi.core,");
-                dependencies.append("org.wildfly.security.manager");
-                builder.addManifestHeader("Dependencies", dependencies.toString());
+                Iterator<ModuleIdentifier> itdep = archiveDependencies.iterator();
+                StringBuffer depspec = new StringBuffer("" + itdep.next());
+                while (itdep.hasNext()) {
+                    depspec.append("," + itdep.next());
+                }
+                builder.addManifestHeader("Dependencies", depspec.toString());
                 return builder.openStream();
             }
         });
