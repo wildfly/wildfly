@@ -22,13 +22,12 @@
 
 package org.jboss.as.connector.deployers.datasource;
 
-import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
-
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
 import javax.sql.XADataSource;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
@@ -71,6 +70,8 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
+
+import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
 
 /**
  * A binding description for DataSourceDefinition annotations.
@@ -198,7 +199,7 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
                 final Class<?> paramType = value.getClass();
                 final MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName, paramType);
                 final Method setterMethod = ClassReflectionIndexUtil.findMethod(reflectionIndex, dataSourceClass, methodIdentifier);
-                if(setterMethod == null) {
+                if (setterMethod == null) {
                     it.remove();
                     ConnectorLogger.DS_DEPLOYER_LOGGER.methodNotFoundOnDataSource(methodName, dataSourceClass);
                 }
@@ -322,11 +323,23 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
         builder.setCharAt(3, Character.toUpperCase(name.charAt(0)));
         final String methodName = builder.toString();
         final Class<?> paramType = value.getClass();
-        final MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName, paramType);
-        final Method setterMethod = ClassReflectionIndexUtil.findMethod(deploymentReflectionIndex, dataSourceClass, methodIdentifier);
-
+        MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName, paramType);
+        Method setterMethod = ClassReflectionIndexUtil.findMethod(deploymentReflectionIndex, dataSourceClass, methodIdentifier);
         if (setterMethod != null) {
             properties.put(name, value.toString());
+        } else if (paramType == Integer.class) {
+            //if this is an Integer also look for int setters (WFLY-1364)
+            methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName, int.class);
+            setterMethod = ClassReflectionIndexUtil.findMethod(deploymentReflectionIndex, dataSourceClass, methodIdentifier);
+            if (setterMethod != null) {
+                properties.put(name, value.toString());
+            }
+        } else if (paramType == Boolean.class) {
+            methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName, boolean.class);
+            setterMethod = ClassReflectionIndexUtil.findMethod(deploymentReflectionIndex, dataSourceClass, methodIdentifier);
+            if (setterMethod != null) {
+                properties.put(name, value.toString());
+            }
         }
     }
 
