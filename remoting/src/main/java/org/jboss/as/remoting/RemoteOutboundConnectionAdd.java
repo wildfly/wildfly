@@ -58,6 +58,7 @@ class RemoteOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler {
         RemoteOutboundConnectionResourceDefinition.OUTBOUND_SOCKET_BINDING_REF.validateAndSet(operation, model);
         RemoteOutboundConnectionResourceDefinition.USERNAME.validateAndSet(operation, model);
         RemoteOutboundConnectionResourceDefinition.SECURITY_REALM.validateAndSet(operation, model);
+        RemoteOutboundConnectionResourceDefinition.PROTOCOL.validateAndSet(operation, model);
     }
 
     @Override
@@ -73,14 +74,15 @@ class RemoteOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler {
         final String connectionName = address.getLastElement().getValue();
 
         final String outboundSocketBindingRef = RemoteOutboundConnectionResourceDefinition.OUTBOUND_SOCKET_BINDING_REF.resolveModelAttribute(context, operation).asString();
+        final String protocol = RemoteOutboundConnectionResourceDefinition.PROTOCOL.resolveModelAttribute(context, operation).asString();
         final ServiceName outboundSocketBindingDependency = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketBindingRef);
         // fetch the connection creation options from the model
-        final OptionMap connectionCreationOptions = ConnectorResource.getOptions(context, fullModel.get(CommonAttributes.PROPERTY));
+        final OptionMap connectionCreationOptions = ConnectorUtils.getOptions(context, fullModel.get(CommonAttributes.PROPERTY));
         final String username = fullModel.hasDefined(CommonAttributes.USERNAME) ? fullModel.require(CommonAttributes.USERNAME).asString() : null;
         final String securityRealm = fullModel.hasDefined(CommonAttributes.SECURITY_REALM) ? fullModel.require(CommonAttributes.SECURITY_REALM).asString() : null;
 
         // create the service
-        final RemoteOutboundConnectionService outboundConnectionService = new RemoteOutboundConnectionService(connectionName, connectionCreationOptions, username);
+        final RemoteOutboundConnectionService outboundConnectionService = new RemoteOutboundConnectionService(connectionName, connectionCreationOptions, username, protocol);
         final ServiceName serviceName = AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
         // also add a alias service name to easily distinguish between a generic, remote and local type of connection services
         final ServiceName aliasServiceName = RemoteOutboundConnectionService.REMOTE_OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);

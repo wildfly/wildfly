@@ -71,7 +71,7 @@ class EJBUtil {
      * remote.connections=default
      *
      * remote.connection.default.host=localhost
-     * remote.connection.default.port = 4447
+     * remote.connection.default.port = 8080
      * remote.connection.default.username=guest
      * remote.connection.default.password=guest
      *
@@ -88,7 +88,7 @@ class EJBUtil {
         pr.put("remote.connection.default.connect.options.org.xnio.Options.SASL_DISALLOWED_MECHANISMS", "JBOSS_LOCAL_USER");
         pr.put("remote.connections", "default");
         pr.put("remote.connection.default.host", hostName);
-        pr.put("remote.connection.default.port", "4447");
+        pr.put("remote.connection.default.port", "8080");
         pr.put("remote.connection.default.username", CONNECTION_USERNAME);
         pr.put("remote.connection.default.password", CONNECTION_PASSWORD);
         return pr;

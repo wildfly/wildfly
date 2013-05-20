@@ -34,6 +34,7 @@ import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.remote.HttpUpgradeConnectionProviderFactory;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.xnio.OptionMap;
+import org.xnio.Options;
 
 import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 
@@ -72,9 +73,9 @@ public final class EndpointService implements Service<Endpoint> {
             endpoint = Remoting.createEndpoint(endpointName, optionMap);
             try {
                 // Reuse the options for the remote connection factory for now
-                endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), optionMap);
-                endpoint.addConnectionProvider("http-remoting", new HttpUpgradeConnectionProviderFactory(), optionMap);
-                endpoint.addConnectionProvider("https-remoting", new HttpUpgradeConnectionProviderFactory(), optionMap);
+                endpoint.addConnectionProvider(Protocols.REMOTE, new RemoteConnectionProviderFactory(), optionMap);
+                endpoint.addConnectionProvider(Protocols.HTTP_REMOTING, new HttpUpgradeConnectionProviderFactory(), optionMap);
+                endpoint.addConnectionProvider(Protocols.HTTPS_REMOTING, new HttpUpgradeConnectionProviderFactory(), OptionMap.builder().addAll(optionMap).set(Options.SSL_ENABLED, true).getMap());
                 ok = true;
             } finally {
                 if (! ok) {

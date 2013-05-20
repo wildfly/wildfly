@@ -22,6 +22,7 @@
 package org.jboss.as.remoting;
 
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
+import static org.jboss.as.remoting.CommonAttributes.HTTP_CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.PROPERTY;
 
 import org.jboss.as.controller.OperationContext;
@@ -49,6 +50,7 @@ public class PropertyResource extends SimpleResourceDefinition {
     static final PathElement PATH = PathElement.pathElement(PROPERTY);
 
     static final PropertyResource INSTANCE_CONNECTOR = new PropertyResource(CONNECTOR);
+    static final PropertyResource INSTANCE_HTTP_CONNECTOR = new PropertyResource(HTTP_CONNECTOR);
 
     static final SimpleAttributeDefinition VALUE = SimpleAttributeDefinitionBuilder.create(CommonAttributes.VALUE, ModelType.STRING)
             .setDefaultValue(null)

@@ -70,7 +70,7 @@ abstract class AbstractListenerAdd extends AbstractAddStepHandler {
         boolean enabled = AbstractListenerResourceDefinition.ENABLED.resolveModelAttribute(context, model).asBoolean();
         String serverName = parent.getLastElement().getValue();
         if (enabled) {
-            final AbstractListenerService<? extends AbstractListenerService> service = createService(name, context, model);
+            final AbstractListenerService<? extends AbstractListenerService> service = createService(name, serverName, context, model);
             final ServiceBuilder<? extends AbstractListenerService> serviceBuilder = context.getServiceTarget().addService(constructServiceName(name), service);
             serviceBuilder.addDependency(IOServices.WORKER.append(workerName), XnioWorker.class, service.getWorker())
                     .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
@@ -88,7 +88,7 @@ abstract class AbstractListenerAdd extends AbstractAddStepHandler {
 
     abstract ServiceName constructServiceName(final String name);
 
-    abstract AbstractListenerService<? extends AbstractListenerService> createService(final String name, final OperationContext context, ModelNode model) throws OperationFailedException;
+    abstract AbstractListenerService<? extends AbstractListenerService> createService(final String name, String serverName, final OperationContext context, ModelNode model) throws OperationFailedException;
 
     abstract void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends AbstractListenerService> serviceBuilder, ModelNode model, AbstractListenerService service) throws OperationFailedException;
 
