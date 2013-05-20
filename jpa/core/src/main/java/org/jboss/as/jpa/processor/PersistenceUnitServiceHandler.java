@@ -280,7 +280,16 @@ public class PersistenceUnitServiceHandler {
         }
     }
 
-    private static void deployPersistenceUnit(DeploymentPhaseContext phaseContext, DeploymentUnit deploymentUnit, EEModuleDescription eeModuleDescription, Collection<ComponentDescription> components, ServiceTarget serviceTarget, ModuleClassLoader classLoader, PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder, final PersistenceUnitMetadata pu, boolean startEarly) throws DeploymentUnitProcessingException {
+    private static void deployPersistenceUnit(
+            DeploymentPhaseContext phaseContext,
+            DeploymentUnit deploymentUnit,
+            EEModuleDescription eeModuleDescription,
+            Collection<ComponentDescription> components,
+            ServiceTarget serviceTarget,
+            ModuleClassLoader classLoader,
+            PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder,
+            final PersistenceUnitMetadata pu,
+            boolean startEarly) throws DeploymentUnitProcessingException {
         pu.setClassLoader(classLoader);
         try {
             SerializableValidatorFactory validatorFactory = null;
@@ -289,8 +298,6 @@ public class PersistenceUnitServiceHandler {
                 validatorFactory = SerializableValidatorFactory.validatorFactory();
                 properties.put("javax.persistence.validation.factory", validatorFactory);
             }
-            final PersistenceProviderAdaptor adaptor = getPersistenceProviderAdaptor(pu, persistenceProviderDeploymentHolder, deploymentUnit);
-
 
             PersistenceProvider provider = null;
             if (persistenceProviderDeploymentHolder != null &&
@@ -309,6 +316,8 @@ public class PersistenceUnitServiceHandler {
             if (provider == null) {
                 provider = lookupProvider(pu);
             }
+
+            final PersistenceProviderAdaptor adaptor = getPersistenceProviderAdaptor(pu, persistenceProviderDeploymentHolder, deploymentUnit, provider);
 
             final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName());
 
@@ -512,18 +521,20 @@ public class PersistenceUnitServiceHandler {
     /**
      * Get the persistence provider adaptor.  Will load the adapter module if needed.
      *
+     *
      * @param pu
      * @param persistenceProviderDeploymentHolder
      *
+     * @param provider
      * @return
      * @throws DeploymentUnitProcessingException
      *
      */
     private static PersistenceProviderAdaptor getPersistenceProviderAdaptor(
-        final PersistenceUnitMetadata pu,
-        final PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder,
-        final DeploymentUnit deploymentUnit
-    ) throws
+            final PersistenceUnitMetadata pu,
+            final PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder,
+            final DeploymentUnit deploymentUnit,
+            PersistenceProvider provider) throws
         DeploymentUnitProcessingException {
         String adaptorModule = pu.getProperties().getProperty(Configuration.ADAPTER_MODULE);
         PersistenceProviderAdaptor adaptor = null;
@@ -531,26 +542,23 @@ public class PersistenceUnitServiceHandler {
             adaptor = persistenceProviderDeploymentHolder.getAdapter();
         }
         if (adaptor == null) {
-
-            if (adaptorModule == null &&
-                (pu.getPersistenceProviderClassName() == null ||
-                    pu.getPersistenceProviderClassName().equals(Configuration.PROVIDER_CLASS_DEFAULT))) {
-                // if using default provider, load default adapter module
-                adaptorModule = Configuration.ADAPTER_MODULE_DEFAULT;
-            }
-
-            adaptor = getPerDeploymentSharedPersistenceProviderAdaptor(deploymentUnit, adaptorModule);
+            adaptor = getPerDeploymentSharedPersistenceProviderAdaptor(deploymentUnit, adaptorModule, provider);
             if (adaptor == null) {
                 try {
                     // will load the persistence provider adaptor (integration classes).  if adaptorModule is null
                     // the noop adaptor is returned (can be used against any provider but the integration classes
                     // are handled externally via properties or code in the persistence provider).
-                    adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapterModule(adaptorModule);
+                    if (adaptorModule != null) { // legacy way of loading adapter module
+                        adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapterModule(adaptorModule);
+                    }
+                    else {
+                        adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapter(provider);
+                    }
                 } catch (ModuleLoadException e) {
                     throw new DeploymentUnitProcessingException("persistence provider adapter module load error "
                         + adaptorModule, e);
                 }
-                adaptor = savePerDeploymentSharedPersistenceProviderAdaptor(deploymentUnit, adaptorModule, adaptor);
+                adaptor = savePerDeploymentSharedPersistenceProviderAdaptor(deploymentUnit, adaptorModule, adaptor, provider);
             }
 
         }
@@ -562,28 +570,39 @@ public class PersistenceUnitServiceHandler {
 
     /**
      * Will save the PersistenceProviderAdaptor at the top level application deployment unit level for sharing with other persistence units
+     *
      * @param deploymentUnit
      * @param adaptorModule
      * @param adaptor
+     * @param provider
      * @return the application level shared PersistenceProviderAdaptor (which may of been set by a different thread)
      */
-    private static PersistenceProviderAdaptor savePerDeploymentSharedPersistenceProviderAdaptor(DeploymentUnit deploymentUnit, String adaptorModule, PersistenceProviderAdaptor adaptor) {
+    private static PersistenceProviderAdaptor savePerDeploymentSharedPersistenceProviderAdaptor(DeploymentUnit deploymentUnit, String adaptorModule, PersistenceProviderAdaptor adaptor, PersistenceProvider provider) {
         if (deploymentUnit.getParent() != null) {
             deploymentUnit = deploymentUnit.getParent();
         }
         synchronized (deploymentUnit) {
             Map<String,PersistenceProviderAdaptor> map = deploymentUnit.getAttachment(providerAdaptorMapKey);
-            PersistenceProviderAdaptor current = map.get(adaptorModule);
+            String key;
+
+            if (adaptorModule != null) {
+                key = adaptorModule;  // handle legacy adapter module
+            }
+            else {
+                key = provider.getClass().getName();
+            }
+            PersistenceProviderAdaptor current = map.get(key);
+
             // saved if not already set by another thread
             if (current == null) {
-                map.put(adaptorModule, adaptor);
+                map.put(key, adaptor);
                 current = adaptor;
             }
             return current;
         }
     }
 
-    private static PersistenceProviderAdaptor getPerDeploymentSharedPersistenceProviderAdaptor(DeploymentUnit deploymentUnit, String adaptorModule) {
+    private static PersistenceProviderAdaptor getPerDeploymentSharedPersistenceProviderAdaptor(DeploymentUnit deploymentUnit, String adaptorModule, PersistenceProvider provider) {
         if (deploymentUnit.getParent() != null) {
             deploymentUnit = deploymentUnit.getParent();
         }
@@ -593,7 +612,15 @@ public class PersistenceUnitServiceHandler {
                 map = new HashMap<String,PersistenceProviderAdaptor>();
                 deploymentUnit.putAttachment(providerAdaptorMapKey, map);
             }
-            return map.get(adaptorModule);
+            String key;
+
+            if (adaptorModule != null) {
+                key = adaptorModule;  // handle legacy adapter module
+            }
+            else {
+                key = provider.getClass().getName();
+            }
+            return map.get(key);
         }
     }
 

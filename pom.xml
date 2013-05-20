@@ -249,7 +249,7 @@
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
         <version.org.jgroups>3.3.0.Final</version.org.jgroups>
-        <version.org.jipijapa>1.0.0.Alpha1</version.org.jipijapa>
+        <version.org.jipijapa>1.0.0.Alpha2</version.org.jipijapa>
         <version.org.kohsuke.rngom>201103.jboss-1</version.org.kohsuke.rngom>
         <version.org.mockito>1.9.5</version.org.mockito>
         <version.org.opensaml.opensaml>2.5.3</version.org.opensaml.opensaml>
@@ -4280,7 +4280,7 @@
 
             <dependency>
                 <groupId>org.jipijapa</groupId>
-                <artifactId>spi</artifactId>
+                <artifactId>jipijapa-spi</artifactId>
                 <version>${version.org.jipijapa}</version>
                 <exclusions>
                     <!-- TODO remove this exclusion once this supports JTA 1.2 -->
@@ -4292,11 +4292,6 @@
                 </exclusions>
             </dependency>
 
-            <dependency>
-                <groupId>org.jipijapa</groupId>
-                <artifactId>core</artifactId>
-                <version>${version.org.jipijapa}</version>
-            </dependency>
 
             <dependency>
                 <groupId>org.wildfly</groupId>
@@ -4306,7 +4301,7 @@
 
             <dependency>
                 <groupId>org.jipijapa</groupId>
-                <artifactId>hibernate3</artifactId>
+                <artifactId>jipijapa-hibernate3</artifactId>
                 <version>${version.org.jipijapa}</version>
                 <exclusions>
                     <exclusion>
@@ -4326,7 +4321,7 @@
 
             <dependency>
                 <groupId>org.jipijapa</groupId>
-                <artifactId>hibernate4-3</artifactId>
+                <artifactId>jipijapa-hibernate4-3</artifactId>
                 <version>${version.org.jipijapa}</version>
                 <exclusions>
                     <exclusion>
@@ -4345,7 +4340,7 @@
             </dependency>
             <dependency>
                 <groupId>org.jipijapa</groupId>
-                <artifactId>openjpa</artifactId>
+                <artifactId>jipijapa-openjpa</artifactId>
                 <version>${version.org.jipijapa}</version>
             </dependency>
 
