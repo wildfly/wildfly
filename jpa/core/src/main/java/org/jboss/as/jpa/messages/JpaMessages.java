@@ -586,6 +586,15 @@ public interface JpaMessages {
     UnsupportedOperationException resourcesOfTypeCannotBeRemoved(String key);
 
     /**
+     * Only one persistence provider adapter per (persistence provider or application) classloader is allowed
+     *
+     * @param classloader
+     * @return a {@link RuntimeException} for the error.
+     */
+    @Message(id = 11476, value = "Classloader '%s' has more than one Persistence provider adapter")
+    RuntimeException classloaderHasMultipleAdapters(String classloader);
+
+    /**
      * Don't add any message ids higher than 11499 (will need a new chunk).
      */
 
