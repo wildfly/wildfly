@@ -53,6 +53,7 @@ import javax.resource.spi.UnavailableException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.transaction.RollbackException;
 import javax.transaction.Transaction;
 import javax.transaction.xa.Xid;
 import javax.xml.stream.Location;
@@ -2406,6 +2407,12 @@ public interface EjbMessages {
 
     @Message(id = 14581, value = "EJB 3.1 FR 13.3.3: BMT bean %s should complete transaction before returning.")
     String transactionNotComplete(String componentName);
+
+    @Message(id = 14585, value = "Transaction '%s' was already rolled back")
+    RollbackException transactionAlreadyRolledBack(Transaction tx);
+
+    @Message(id = 14586, value = "Transaction '%s' is in unexpected state (%s)")
+    EJBException transactionInUnexpectedState(Transaction tx, String txStatus);
 
     // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is

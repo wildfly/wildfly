@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.tx;
 
+import static org.jboss.as.ejb3.tx.util.StatusHelper.statusAsString;
+
 import java.rmi.RemoteException;
 import java.util.Random;
 
@@ -58,6 +60,7 @@ import org.jboss.util.deadlock.ApplicationDeadlockException;
  *
  * @author <a href="mailto:andrew.rubinger@redhat.com">ALR</a>
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author Scott Marlow
  */
 public class CMTTxInterceptor implements Interceptor {
 
@@ -75,20 +78,41 @@ public class CMTTxInterceptor implements Interceptor {
      * @param tm a <code>TransactionManager</code> value
      * @param tx a <code>Transaction</code> value
      */
-    protected void endTransaction(TransactionManager tm, Transaction tx) {
+    protected void endTransaction(final TransactionManager tm, final Transaction tx) {
         try {
             if (tx != tm.getTransaction()) {
                 throw EjbMessages.MESSAGES.wrongTxOnThread(tx, tm.getTransaction());
             }
-
-            if (tx.getStatus() == Status.STATUS_MARKED_ROLLBACK) {
-                tm.rollback();
-            } else {
+            final int txStatus = tx.getStatus();
+            if (txStatus == Status.STATUS_ACTIVE) {
                 // Commit tx
                 // This will happen if
                 // a) everything goes well
                 // b) app. exception was thrown
                 tm.commit();
+            } else if (txStatus == Status.STATUS_MARKED_ROLLBACK) {
+                tm.rollback();
+            } else if (txStatus == Status.STATUS_ROLLEDBACK) {
+                // handle reaper canceled (rolled back) tx case (see WFLY-1346)
+                // clear current tx state and throw RollbackException (EJBTransactionRolledbackException)
+                tm.suspend();
+                throw EjbMessages.MESSAGES.transactionAlreadyRolledBack(tx);
+            } else if (txStatus == Status.STATUS_UNKNOWN) {
+                // STATUS_UNKNOWN isn't expected to be reached here but if it does, we need to clear current thread tx.
+                // It is possible that calling tm.commit() could succeed but we call tm.rollback, since this is an unexpected
+                // tx state that are are handling.
+                tm.rollback();
+                // if the tm.rollback doesn't fail, we throw an EJBException to reflect the unexpected tx state.
+                throw EjbMessages.MESSAGES.transactionInUnexpectedState(tx, statusAsString(txStatus));
+            } else {
+                // logically, all of the following (unexpected) tx states are handled here:
+                //  Status.STATUS_PREPARED
+                //  Status.STATUS_PREPARING
+                //  Status.STATUS_ROLLING_BACK
+                //  Status.STATUS_NO_TRANSACTION
+                //  Status.STATUS_COMMITTED
+                tm.suspend();                       // clear current tx state and throw EJBException
+                throw EjbMessages.MESSAGES.transactionInUnexpectedState(tx, statusAsString(txStatus));
             }
         } catch (RollbackException e) {
             handleEndTransactionException(e);
