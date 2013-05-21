@@ -21,31 +21,23 @@
  */
 package org.jboss.as.connector.util;
 
-import java.util.Collections;
-import java.util.List;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import javax.validation.Configuration;
 import javax.validation.ConstraintValidatorFactory;
 import javax.validation.MessageInterpolator;
+import javax.validation.ParameterNameProvider;
 import javax.validation.TraversableResolver;
 import javax.validation.Validation;
-import javax.validation.ValidationProviderResolver;
 import javax.validation.Validator;
 import javax.validation.ValidatorContext;
 import javax.validation.ValidatorFactory;
-import javax.validation.spi.ValidationProvider;
-
-import org.hibernate.validator.HibernateValidator;
-import org.hibernate.validator.HibernateValidatorConfiguration;
-import org.hibernate.validator.cfg.ConstraintMapping;
 
 /**
- * This class lazily initialize the ValidatorFactory on the first usage
- * One benefit is that no domain class is loaded until the
- * ValidatorFactory is really needed.
- *
- * We need this as the resource adapter can contain validation groups.
+ * This class lazily initialize the ValidatorFactory on the first usage One benefit is that no domain class is loaded until the
+ * ValidatorFactory is really needed. Useful to avoid loading classes before JPA is initialized and has enhanced its classes.
+ * <p/>
+ * Note: This class is a copy of {@code org.jboss.as.ee.beanvalidation.LazyValidatorFactory}.
  *
  * @author Emmanuel Bernard
  * @author Stuart Douglas
@@ -55,7 +47,7 @@ public class JCAValidatorFactory implements ValidatorFactory {
     private final Configuration<?> configuration;
     private final ClassLoader classLoader;
 
-    private volatile ValidatorFactory delegate; //use as a barrier
+    private volatile ValidatorFactory delegate; // use as a barrier
 
     /**
      * Use the default ValidatorFactory creation routine
@@ -82,6 +74,7 @@ public class JCAValidatorFactory implements ValidatorFactory {
         return result;
     }
 
+    @Override
     public Validator getValidator() {
         return getDelegate().getValidator();
     }
@@ -91,12 +84,8 @@ public class JCAValidatorFactory implements ValidatorFactory {
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
             if (configuration == null) {
-                ConstraintMapping mapping = new ConstraintMapping();
-                HibernateValidatorConfiguration config =
-                    Validation.byProvider(HibernateValidator.class).providerResolver(new JBossProviderResolver()).configure();
-                config.addMapping(mapping);
-                ValidatorFactory factory = config.buildValidatorFactory();
-                return factory;
+                return Validation.byDefaultProvider().providerResolver(new WildFlyProviderResolver()).configure()
+                        .buildValidatorFactory();
 
             } else {
                 return configuration.buildValidatorFactory();
@@ -106,31 +95,38 @@ public class JCAValidatorFactory implements ValidatorFactory {
         }
     }
 
+    @Override
     public ValidatorContext usingContext() {
         return getDelegate().usingContext();
     }
 
+    @Override
     public MessageInterpolator getMessageInterpolator() {
         return getDelegate().getMessageInterpolator();
     }
 
+    @Override
     public TraversableResolver getTraversableResolver() {
         return getDelegate().getTraversableResolver();
     }
 
+    @Override
     public ConstraintValidatorFactory getConstraintValidatorFactory() {
         return getDelegate().getConstraintValidatorFactory();
     }
 
+    @Override
+    public ParameterNameProvider getParameterNameProvider() {
+        return getDelegate().getParameterNameProvider();
+    }
+
+    @Override
     public <T> T unwrap(Class<T> clazz) {
         return getDelegate().unwrap(clazz);
     }
 
-    private static final class JBossProviderResolver implements ValidationProviderResolver {
-
-        @Override
-        public List<ValidationProvider<?>> getValidationProviders() {
-            return Collections.<ValidationProvider<?>>singletonList(new HibernateValidator());
-        }
+    @Override
+    public void close() {
+        getDelegate().close();
     }
 }
