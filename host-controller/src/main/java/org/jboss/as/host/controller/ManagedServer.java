@@ -23,9 +23,9 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 
 import java.io.IOException;
@@ -53,6 +53,7 @@ import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.server.DomainServerCommunicationServices;
 import org.jboss.as.server.ServerStartTask;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
@@ -70,6 +71,7 @@ import org.jboss.msc.service.ServiceActivator;
  */
 class ManagedServer {
 
+    private static final Logger.Level DEBUG_LEVEL = Logger.Level.TRACE;
     private static final MarshallerFactory MARSHALLER_FACTORY;
     private static final MarshallingConfiguration CONFIG;
 
@@ -107,7 +109,6 @@ class ManagedServer {
 
     private final InetSocketAddress managementSocket;
     private final ProcessControllerClient processControllerClient;
-    private final ManagedServerBootConfiguration bootConfiguration;
 
     private final ManagedServerProxy protocolClient;
     private final TransformingProxyController proxyController;
@@ -117,13 +118,12 @@ class ManagedServer {
     private volatile InternalState requiredState = InternalState.STOPPED;
     private volatile InternalState internalState = InternalState.STOPPED;
 
-    // Get the current operation id when the server is created
-    // This is only used when starting a server, reconnection might not be triggered using a mgmt operation
-    private final int operationID = CurrentOperationIdHolder.getCurrentOperationID();
+    private volatile int operationID = CurrentOperationIdHolder.getCurrentOperationID();
+    private volatile ManagedServerBootConfiguration bootConfiguration;
 
     ManagedServer(final String hostControllerName, final String serverName, final byte[] authKey,
                   final ProcessControllerClient processControllerClient, final InetSocketAddress managementSocket,
-                  final ManagedServerBootConfiguration bootConfiguration, final TransformationTarget transformationTarget) {
+                  final TransformationTarget transformationTarget) {
 
         assert hostControllerName  != null : "hostControllerName is null";
         assert serverName  != null : "serverName is null";
@@ -135,7 +135,6 @@ class ManagedServer {
         this.serverProcessName = getServerProcessName(serverName);
         this.processControllerClient = processControllerClient;
         this.managementSocket = managementSocket;
-        this.bootConfiguration = bootConfiguration;
 
         this.authKey = authKey;
 
@@ -223,8 +222,10 @@ class ManagedServer {
 
     /**
      * Start a managed server.
+     *
+     * @param factory the boot command factory
      */
-    protected synchronized void start() {
+    protected synchronized void start(final ManagedServerBootCmdFactory factory) {
         final InternalState required = this.requiredState;
         // Ignore if the server is already started
         if(required == InternalState.SERVER_STARTED) {
@@ -238,7 +239,9 @@ class ManagedServer {
                 throw new IllegalStateException();
             }
         }
-        this.requiredState = InternalState.SERVER_STARTED;
+        operationID = CurrentOperationIdHolder.getCurrentOperationID();
+        bootConfiguration = factory.createConfiguration();
+        requiredState = InternalState.SERVER_STARTED;
         ROOT_LOGGER.startingServer(serverName);
         transition();
     }
@@ -263,7 +266,7 @@ class ManagedServer {
                 try {
                     processControllerClient.destroyProcess(serverProcessName);
                 } catch (IOException e) {
-                    ROOT_LOGGER.debugf(e, "failed to send destroy_process message to %s", serverName);
+                    ROOT_LOGGER.logf(DEBUG_LEVEL, e, "failed to send destroy_process message to %s", serverName);
                 }
             }
         } else {
@@ -278,7 +281,7 @@ class ManagedServer {
                 try {
                     processControllerClient.killProcess(serverProcessName);
                 } catch (IOException e) {
-                    ROOT_LOGGER.debugf(e, "failed to send kill_process message to %s", serverName);
+                    ROOT_LOGGER.logf(DEBUG_LEVEL, e, "failed to send kill_process message to %s", serverName);
                 }
             }
         } else {
@@ -289,10 +292,11 @@ class ManagedServer {
     /**
      * Try to reconnect to a started server.
      */
-    protected synchronized void reconnectServerProcess() {
+    protected synchronized void reconnectServerProcess(final ManagedServerBootCmdFactory factory) {
         if(this.requiredState != InternalState.SERVER_STARTED) {
-            ROOT_LOGGER.reconnectingServer(serverName);
+            this.bootConfiguration = factory;
             this.requiredState = InternalState.SERVER_STARTED;
+            ROOT_LOGGER.reconnectingServer(serverName);
             internalSetState(new ReconnectTask(), InternalState.STOPPED, InternalState.SEND_STDIN);
         }
     }
@@ -421,10 +425,10 @@ class ManagedServer {
                 return true;
             }
             try {
-                HostControllerLogger.ROOT_LOGGER.tracef("trying to reconnect to %s current-state (%s) required-state (%s)", serverName, state, requiredState);
+                ROOT_LOGGER.logf(DEBUG_LEVEL, "trying to reconnect to %s current-state (%s) required-state (%s)", serverName, state, requiredState);
                 internalSetState(new ReconnectTask(), state, InternalState.SEND_STDIN);
             } catch (Exception e) {
-                HostControllerLogger.ROOT_LOGGER.debugf(e, "failed to send reconnect task");
+                ROOT_LOGGER.logf(DEBUG_LEVEL, e, "failed to send reconnect task");
             }
             return false;
         } else {
@@ -515,6 +519,7 @@ class ManagedServer {
     private boolean internalSetState(final TransitionTask task, final InternalState current, final InternalState next) {
         assert Thread.holdsLock(this); // Call under lock
         final InternalState internalState = this.internalState;
+        ROOT_LOGGER.logf(DEBUG_LEVEL, "changing server state (%s) from %s to %s", serverName, current, next);
         if(internalState == current) {
             try {
                 if(task != null) {
@@ -525,7 +530,7 @@ class ManagedServer {
                 this.internalState = next;
                 return true;
             } catch (final Exception e) {
-                ROOT_LOGGER.debugf(e, "transition (%s > %s) failed for server \"%s\"", current, next, serverName);
+                ROOT_LOGGER.logf(DEBUG_LEVEL, e, "transition (%s > %s) failed for server \"%s\"", current, next, serverName);
                 transitionFailed(current);
             } finally {
                 notifyAll();
