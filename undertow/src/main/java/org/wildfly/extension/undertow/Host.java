@@ -62,6 +62,7 @@ public class Host implements Service<Host>, WebHost {
     private final InjectedValue<Server> server = new InjectedValue<>();
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
     private volatile MultiPartHandler rootHandler;
+    private final Set<DeploymentInfo> deploymentInfoSet = Collections.synchronizedSet(new HashSet<DeploymentInfo>());
 
     protected Host(String name, List<String> aliases) {
         this.name = name;
@@ -118,6 +119,7 @@ public class Host implements Service<Host>, WebHost {
     public void registerDeployment(final DeploymentInfo deploymentInfo, HttpHandler handler) {
         String path = ServletContainerService.getDeployedContextPath(deploymentInfo);
         registerHandler(path, handler);
+        deploymentInfoSet.add(deploymentInfo);
         UndertowLogger.ROOT_LOGGER.registerWebapp(path);
         undertowService.getValue().fireEvent(new EventInvoker() {
             @Override
@@ -130,6 +132,7 @@ public class Host implements Service<Host>, WebHost {
     public void unregisterDeployment(final DeploymentInfo deploymentInfo) {
         String path = ServletContainerService.getDeployedContextPath(deploymentInfo);
         unregisterHandler(path);
+        deploymentInfoSet.remove(deploymentInfo);
         UndertowLogger.ROOT_LOGGER.unregisterWebapp(path);
         undertowService.getValue().fireEvent(new EventInvoker() {
             @Override
@@ -152,6 +155,13 @@ public class Host implements Service<Host>, WebHost {
      */
     public Set<String> getContexts() {
         return pathHandler.getPaths().keySet();
+    }
+
+    /**
+     * @return set of registered deployments as {@link DeploymentInfo}
+     */
+    public Set<DeploymentInfo> getDeploymentInfo() {
+        return Collections.unmodifiableSet(deploymentInfoSet);
     }
 
     @Override
