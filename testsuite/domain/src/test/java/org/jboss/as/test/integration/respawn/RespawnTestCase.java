@@ -293,6 +293,23 @@ public class RespawnTestCase {
     }
 
     @Test
+    public void testStartKilledServer() throws Exception {
+
+        List<RunningProcess> original = waitForAllProcessesFullyStarted();
+        RunningProcess serverOne = processUtil.getProcess(original, SERVER_ONE);
+        Assert.assertNotNull(serverOne);
+
+        System.out.println("killing respawn-one: " + serverOne);
+        processUtil.killProcess(serverOne);
+        manageServer("start", SERVER_ONE);
+        readHostControllerServer(SERVER_ONE);
+
+        //Check all processes are the same
+        List<RunningProcess> reloaded = waitForAllProcesses();
+        Assert.assertEquals(original.size(), reloaded.size());
+    }
+
+    @Test
     public void testHCReloadAbortPreservesServers() throws Exception {
 
         System.out.println("testHCReloadAbortPreservesServers()");
@@ -389,6 +406,7 @@ public class RespawnTestCase {
         ModelNode operation = new ModelNode();
         operation.get(OP).set(operationName);
         operation.get(OP_ADDR).set(getHostControllerServerConfigAddress(MASTER, serverName));
+        operation.get("blocking").set(true);
 
         final ModelControllerClient client = ModelControllerClient.Factory.create(DomainTestSupport.masterAddress, HC_PORT, getCallbackHandler());
         try {

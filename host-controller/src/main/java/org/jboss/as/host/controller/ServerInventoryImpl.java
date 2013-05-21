@@ -181,13 +181,14 @@ public class ServerInventoryImpl implements ServerInventory {
             new Random(new SecureRandom().nextLong()).nextBytes(authKey);
             removeNullChar(authKey);
             // Create the managed server
-            final ManagedServer newServer = createManagedServer(serverName, domainModel, authKey);
+            final ManagedServer newServer = createManagedServer(serverName, authKey);
             server = servers.putIfAbsent(serverName, newServer);
             if(server == null) {
                 server = newServer;
             }
         }
-        server.start();
+        // Start the server
+        server.start(createBootFactory(serverName, domainModel));
         synchronized (shutdownCondition) {
             shutdownCondition.notifyAll();
         }
@@ -257,14 +258,14 @@ public class ServerInventoryImpl implements ServerInventory {
             ROOT_LOGGER.existingServerWithState(serverName, existing.getState());
             return;
         }
-        final ManagedServer server = createManagedServer(serverName, domainModel, authKey);
+        final ManagedServer server = createManagedServer(serverName, authKey);
         if ((existing = servers.putIfAbsent(serverName, server)) != null) {
             ROOT_LOGGER.existingServerWithState(serverName, existing.getState());
             return;
         }
         if(running) {
             if(!stopping) {
-                 server.reconnectServerProcess();
+                 server.reconnectServerProcess(createBootFactory(serverName, domainModel));
                  // Register the server proxy at the domain controller
                  domainController.registerRunningServer(server.getProxyController());
             } else {
@@ -508,16 +509,20 @@ public class ServerInventoryImpl implements ServerInventory {
         }
     }
 
-    private ManagedServer createManagedServer(final String serverName, final ModelNode domainModel, final byte[] authKey) {
+    private ManagedServer createManagedServer(final String serverName, final byte[] authKey) {
         final String hostControllerName = domainController.getLocalHostInfo().getLocalHostName();
-        final ModelNode hostModel = domainModel.require(HOST).require(hostControllerName);
-        final ManagedServerBootCmdFactory combiner = new ManagedServerBootCmdFactory(serverName, domainModel, hostModel, environment, domainController.getExpressionResolver());
-        final ManagedServer.ManagedServerBootConfiguration configuration = combiner.createConfiguration();
+        // final ManagedServerBootConfiguration configuration = combiner.createConfiguration();
         final Map<PathAddress, ModelVersion> subsystems = TransformerRegistry.resolveVersions(extensionRegistry);
         final ModelVersion modelVersion = ModelVersion.create(Version.MANAGEMENT_MAJOR_VERSION, Version.MANAGEMENT_MINOR_VERSION, Version.MANAGEMENT_MICRO_VERSION);
         final TransformationTarget target = TransformationTargetImpl.create(extensionRegistry.getTransformerRegistry(),
                 modelVersion, subsystems, null, TransformationTarget.TransformationTargetType.SERVER);
-        return new ManagedServer(hostControllerName, serverName, authKey, processControllerClient, managementAddress, configuration, target);
+        return new ManagedServer(hostControllerName, serverName, authKey, processControllerClient, managementAddress, target);
+    }
+
+    private ManagedServerBootCmdFactory createBootFactory(final String serverName, final ModelNode domainModel) {
+        final String hostControllerName = domainController.getLocalHostInfo().getLocalHostName();
+        final ModelNode hostModel = domainModel.require(HOST).require(hostControllerName);
+        return new ManagedServerBootCmdFactory(serverName, domainModel, hostModel, environment, domainController.getExpressionResolver());
     }
 
     @Override
