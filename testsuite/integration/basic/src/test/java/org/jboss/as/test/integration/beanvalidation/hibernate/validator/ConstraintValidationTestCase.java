@@ -21,7 +21,9 @@
  */
 package org.jboss.as.test.integration.beanvalidation.hibernate.validator;
 
-import java.sql.SQLException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -37,14 +39,12 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * 
  * Tests that hibernate validator works correctly for WAR(Web Applications)
- * 
  * 
  * @author Madhumita Sadhukhan
  */
@@ -56,36 +56,33 @@ public class ConstraintValidationTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "testconstraintvalidation.war");
         war.addPackage(ConstraintValidationTestCase.class.getPackage());
         return war;
-
     }
 
     @Test
-    public void testConstraintValidation() throws NamingException, SQLException {
+    public void testConstraintValidation() throws NamingException {
         Validator validator = (Validator) new InitialContext().lookup("java:comp/Validator");
         UserBean user1 = new UserBean("MADHUMITA", "");
         user1.setEmail("madhumita_gmail");
         user1.setAddress("");
         final Set<ConstraintViolation<UserBean>> result = validator.validate(user1);
 
-        Object[] resultArray = result.toArray();
-        Iterator it = result.iterator();
+        Iterator<ConstraintViolation<UserBean>> it = result.iterator();
         String message = "";
 
         while (it.hasNext()) {
-            ConstraintViolation<UserBean> cts = (ConstraintViolation<UserBean>) it.next();
+            ConstraintViolation<UserBean> cts = it.next();
             String mess = cts.getMessage();
 
             if (mess.contains("Please get a valid address"))
                 message = mess;
-
         }
 
-        Assert.assertEquals(3, result.size());
-        Assert.assertTrue(message.contains("Please get a valid address"));
+        assertEquals(3, result.size());
+        assertTrue(message.contains("Please get a valid address"));
     }
 
     @Test
-    public void testObjectGraphValidation() throws NamingException, SQLException {
+    public void testObjectGraphValidation() throws NamingException {
         Validator validator = (Validator) new InitialContext().lookup("java:comp/Validator");
 
         // create first passenger
@@ -107,20 +104,18 @@ public class ConstraintValidationTestCase {
 
         final Set<ConstraintViolation<Car>> errorresult = validator.validate(car);
 
-        Object[] resultArray = errorresult.toArray();
-        Iterator it1 = errorresult.iterator();
+        Iterator<ConstraintViolation<Car>> it1 = errorresult.iterator();
         String message = "";
 
         while (it1.hasNext()) {
-            ConstraintViolation<Car> cts = (ConstraintViolation<Car>) it1.next();
+            ConstraintViolation<Car> cts = it1.next();
             String mess = cts.getMessage();
 
             if (mess.contains("Please get a valid address"))
                 message = mess;
-
         }
 
-        Assert.assertEquals(2, errorresult.size());
-        Assert.assertTrue(message.contains("Please get a valid address"));
+        assertEquals(2, errorresult.size());
+        assertTrue(message.contains("Please get a valid address"));
     }
 }
