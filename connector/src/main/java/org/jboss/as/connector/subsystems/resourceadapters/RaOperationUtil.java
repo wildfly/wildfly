@@ -67,7 +67,6 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
@@ -241,7 +240,7 @@ public class RaOperationUtil {
             final org.jboss.msc.service.ServiceController.Mode originalMode = raServiceController.getMode();
             if (raServiceController != null) {
                 if (svh != null) {
-                    raServiceController.addListener(ServiceListener.Inheritance.ALL, svh);
+                    raServiceController.addListener(svh);
                 }
                 raServiceController.addListener(new AbstractServiceListener() {
                     @Override

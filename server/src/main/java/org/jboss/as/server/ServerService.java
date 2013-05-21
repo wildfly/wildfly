@@ -241,7 +241,6 @@ public final class ServerService extends AbstractControllerService {
         try {
             final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
             final ServiceTarget serviceTarget = context.getServiceTarget();
-            serviceTarget.addListener(bootstrapListener);
             final File[] extDirs = serverEnvironment.getJavaExtDirs();
             final File[] newExtDirs = Arrays.copyOf(extDirs, extDirs.length + 1);
             newExtDirs[extDirs.length] = new File(serverEnvironment.getServerBaseDir(), "lib/ext");
