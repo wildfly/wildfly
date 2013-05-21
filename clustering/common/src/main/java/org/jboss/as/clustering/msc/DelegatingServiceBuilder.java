@@ -30,7 +30,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceListener.Inheritance;
 import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.value.Value;
 
@@ -163,24 +162,6 @@ public class DelegatingServiceBuilder<T> implements ServiceBuilder<T> {
     @Override
     public ServiceBuilder<T> addListener(Collection<? extends ServiceListener<? super T>> listeners) {
         this.builder.addListener(listeners);
-        return this;
-    }
-
-    @Override
-    public ServiceBuilder<T> addListener(Inheritance inheritance, ServiceListener<? super T> listener) {
-        this.builder.addListener(inheritance, listener);
-        return this;
-    }
-
-    @Override
-    public ServiceBuilder<T> addListener(Inheritance inheritance, ServiceListener<? super T>... listeners) {
-        this.builder.addListener(inheritance, listeners);
-        return this;
-    }
-
-    @Override
-    public ServiceBuilder<T> addListener(Inheritance inheritance, Collection<? extends ServiceListener<? super T>> listeners) {
-        this.builder.addListener(inheritance, listeners);
         return this;
     }
 

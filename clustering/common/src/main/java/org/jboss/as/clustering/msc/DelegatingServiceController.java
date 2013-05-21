@@ -32,7 +32,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.ServiceListener.Inheritance;
 
 /**
  * @author Paul Ferraro
@@ -106,11 +105,6 @@ public class DelegatingServiceController<T> implements ServiceController<T> {
     @Override
     public void addListener(ServiceListener<? super T> serviceListener) {
         this.controller.addListener(serviceListener);
-    }
-
-    @Override
-    public void addListener(Inheritance inheritance, ServiceListener<Object> serviceListener) {
-        this.controller.addListener(inheritance, serviceListener);
     }
 
     @Override

@@ -31,7 +31,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ServiceListener.Inheritance;
+import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.value.Value;
 
 /**
@@ -75,24 +75,6 @@ public class DelegatingServiceTarget implements ServiceTarget {
     @Override
     public ServiceTarget addListener(Collection<ServiceListener<Object>> listeners) {
         this.target.addListener(listeners);
-        return this;
-    }
-
-    @Override
-    public ServiceTarget addListener(Inheritance inheritance, ServiceListener<Object> listener) {
-        this.target.addListener(inheritance, listener);
-        return this;
-    }
-
-    @Override
-    public ServiceTarget addListener(Inheritance inheritance, ServiceListener<Object>... listeners) {
-        this.target.addListener(inheritance, listeners);
-        return this;
-    }
-
-    @Override
-    public ServiceTarget addListener(Inheritance inheritance, Collection<ServiceListener<Object>> listeners) {
-        this.target.addListener(inheritance, listeners);
         return this;
     }
 
@@ -144,5 +126,28 @@ public class DelegatingServiceTarget implements ServiceTarget {
     @Override
     public BatchServiceTarget batchTarget() {
         return this.batchFactory.createBatchServiceTarget(this.target.batchTarget());
+    }
+
+    @Override
+    public ServiceTarget addMonitor(StabilityMonitor monitor) {
+        target.addMonitor(monitor);
+        return this;
+    }
+
+    @Override
+    public ServiceTarget addMonitors(StabilityMonitor... monitors) {
+        target.addMonitors(monitors);
+        return this;
+    }
+
+    @Override
+    public ServiceTarget removeMonitor(StabilityMonitor monitor) {
+        target.removeMonitor(monitor);
+        return this;
+    }
+
+    @Override
+    public Set<StabilityMonitor> getMonitors() {
+        return target.getMonitors();
     }
 }

@@ -64,7 +64,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
-import org.jboss.msc.service.ServiceListener.Inheritance;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.ServiceRegistry;
@@ -80,7 +79,6 @@ import org.jboss.msc.value.Value;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@SuppressWarnings("deprecation")
 final class OperationContextImpl extends AbstractOperationContext {
 
     private static final Object NULL = new Object();
@@ -792,6 +790,22 @@ final class OperationContextImpl extends AbstractOperationContext {
             return addServiceValue(name, new ImmediateValue<Service<T>>(service));
         }
 
+        public ServiceTarget addMonitor(final StabilityMonitor monitor) {
+            throw new UnsupportedOperationException();
+        }
+
+        public ServiceTarget addMonitors(final StabilityMonitor... monitors) {
+            throw new UnsupportedOperationException();
+        }
+
+        public ServiceTarget removeMonitor(final StabilityMonitor monitor) {
+            throw new UnsupportedOperationException();
+        }
+
+        public Set<StabilityMonitor> getMonitors() {
+            throw new UnsupportedOperationException();
+        }
+
         public ServiceTarget addListener(final ServiceListener<Object> listener) {
             throw new UnsupportedOperationException();
         }
@@ -801,18 +815,6 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
 
         public ServiceTarget addListener(final Collection<ServiceListener<Object>> listeners) {
-            throw new UnsupportedOperationException();
-        }
-
-        public ServiceTarget addListener(final ServiceListener.Inheritance inheritance, final ServiceListener<Object> listener) {
-            throw new UnsupportedOperationException();
-        }
-
-        public ServiceTarget addListener(final ServiceListener.Inheritance inheritance, final ServiceListener<Object>... listeners) {
-            throw new UnsupportedOperationException();
-        }
-
-        public ServiceTarget addListener(final ServiceListener.Inheritance inheritance, final Collection<ServiceListener<Object>> listeners) {
             throw new UnsupportedOperationException();
         }
 
@@ -960,21 +962,6 @@ final class OperationContextImpl extends AbstractOperationContext {
 
         public ServiceBuilder<T> addListener(final Collection<? extends ServiceListener<? super T>> listeners) {
             realBuilder.addListener(listeners);
-            return this;
-        }
-
-        public ServiceBuilder<T> addListener(final ServiceListener.Inheritance inheritance, final ServiceListener<? super T> listener) {
-            realBuilder.addListener(inheritance, listener);
-            return this;
-        }
-
-        public ServiceBuilder<T> addListener(final ServiceListener.Inheritance inheritance, final ServiceListener<? super T>... listeners) {
-            realBuilder.addListener(inheritance, listeners);
-            return this;
-        }
-
-        public ServiceBuilder<T> addListener(final ServiceListener.Inheritance inheritance, final Collection<? extends ServiceListener<? super T>> listeners) {
-            realBuilder.addListener(inheritance, listeners);
             return this;
         }
 
@@ -1159,10 +1146,6 @@ final class OperationContextImpl extends AbstractOperationContext {
 
         public void addListener(ServiceListener<? super S> serviceListener) {
             controller.addListener(serviceListener);
-        }
-
-        public void addListener(Inheritance inheritance, ServiceListener<Object> serviceListener) {
-            controller.addListener(inheritance, serviceListener);
         }
 
         public void removeListener(ServiceListener<? super S> serviceListener) {
