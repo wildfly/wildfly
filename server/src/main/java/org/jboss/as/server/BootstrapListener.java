@@ -24,7 +24,6 @@ package org.jboss.as.server;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.server.mgmt.UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
-import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -35,7 +34,7 @@ import org.jboss.msc.service.StabilityStatistics;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class BootstrapListener extends AbstractServiceListener<Object> {
+public final class BootstrapListener {
 
     private final StabilityMonitor monitor = new StabilityMonitor();
     private final ServiceContainer serviceContainer;
@@ -50,12 +49,11 @@ public class BootstrapListener extends AbstractServiceListener<Object> {
         this.serviceTarget = serviceTarget;
         this.prettyVersion = prettyVersion;
         this.futureContainer = futureContainer;
+        serviceTarget.addMonitor(monitor);
     }
 
-    @Override
-    public void listenerAdded(final ServiceController<?> controller) {
-        monitor.addController(controller);
-        controller.removeListener(this);
+    public StabilityMonitor getStabilityMonitor() {
+        return monitor;
     }
 
     public void printBootStatistics() {
@@ -66,7 +64,7 @@ public class BootstrapListener extends AbstractServiceListener<Object> {
             Thread.currentThread().interrupt();
             return;
         } finally {
-            serviceTarget.removeListener(BootstrapListener.this);
+            serviceTarget.removeMonitor(monitor);
             final long bootstrapTime = System.currentTimeMillis() - startTime;
             done(bootstrapTime, statistics);
             monitor.clear();
