@@ -97,7 +97,7 @@
         <version.commons-lang>2.6-redhat-2</version.commons-lang>
         <version.commons-pool>1.6-redhat-4</version.commons-pool>
         <version.dom4j>1.6.1-redhat-5</version.dom4j>
-        <version.gnu.getopt>1.0.13-redhat-2</version.gnu.getopt>
+        <version.gnu.getopt>1.0.13.redhat-4</version.gnu.getopt>
         <version.io.netty>3.6.6.Final-redhat-1</version.io.netty>
         <version.javax.activation>1.1.1-redhat-2</version.javax.activation>
         <version.javax.enterprise>1.0-SP4-redhat-2</version.javax.enterprise>
@@ -1557,8 +1557,8 @@
             </dependency>
 
             <dependency>
-                <groupId>gnu-getopt</groupId>
-                <artifactId>getopt</artifactId>
+                <groupId>gnu.getopt</groupId>
+                <artifactId>java-getopt</artifactId>
                 <version>${version.gnu.getopt}</version>
             </dependency>
 
@@ -5842,6 +5842,10 @@
                 <artifactId>jbossws-common-tools</artifactId>
                 <version>${version.org.jboss.ws.common.tools}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>gnu.getopt</groupId>
+                        <artifactId>java-getopt</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>gnu.getopt</groupId>
                         <artifactId>java-getopt</artifactId>
