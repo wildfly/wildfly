@@ -28,6 +28,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.xts.jandex.BridgeType;
 import org.jboss.as.xts.jandex.CompensatableAnnotation;
+import org.jboss.as.xts.jandex.OldCompensatableAnnotation;
 import org.jboss.as.xts.jandex.EndpointMetaData;
 import org.jboss.as.xts.jandex.TransactionalAnnotation;
 import org.jboss.as.webservices.injection.WSEndpointHandlersMapping;
@@ -36,6 +37,7 @@ import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.jboss.jandex.MethodInfo;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainsMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
@@ -185,6 +187,7 @@ public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
     private Set<String> getDeploymentClasses(DeploymentUnit unit) {
 
         final Set<String> endpoints = new HashSet<String>();
+        addEndpointsToList(endpoints, ASHelper.getAnnotations(unit, DotName.createSimple(OldCompensatableAnnotation.COMPENSATABLE_ANNOTATION)));
         addEndpointsToList(endpoints, ASHelper.getAnnotations(unit, DotName.createSimple(CompensatableAnnotation.COMPENSATABLE_ANNOTATION)));
         addEndpointsToList(endpoints, ASHelper.getAnnotations(unit, DotName.createSimple(TransactionalAnnotation.TRANSACTIONAL_ANNOTATION)));
         return endpoints;
@@ -192,9 +195,20 @@ public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
 
     private void addEndpointsToList(Set<String> endpoints, List<AnnotationInstance> annotations) {
         for (AnnotationInstance annotationInstance : annotations) {
-            final ClassInfo classInfo = (ClassInfo) annotationInstance.target();
-            final String endpointClass = classInfo.name().toString();
-            endpoints.add(endpointClass);
+
+            Object target = annotationInstance.target();
+            if (target instanceof ClassInfo) {
+
+                final ClassInfo classInfo = (ClassInfo) annotationInstance.target();
+                final String endpointClass = classInfo.name().toString();
+                endpoints.add(endpointClass);
+
+            } else if (target instanceof MethodInfo) {
+
+                final MethodInfo methodInfo = (MethodInfo) target;
+                final String endpointClass = methodInfo.declaringClass().name().toString();
+                endpoints.add(endpointClass);
+            }
         }
     }
 
