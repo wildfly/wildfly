@@ -28,10 +28,8 @@ import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -154,17 +152,6 @@ public class PooledConnectionFactoryService implements Service<Void> {
     public static final String JGROUPS_CHANNEL_LOCATOR_CLASS = "jgroupsChannelLocatorClass";
     public static final String JGROUPS_CHANNEL_NAME = "jgroupsChannelName";
     public static final String JGROUPS_CHANNEL_REF_NAME = "jgroupsChannelRefName";
-    private static final Collection<String> JMS_ACTIVATION_CONFIG_PROPERTIES = new HashSet<String>();
-
-   {
-        // All the activation-config-properties that are mandated to be supported by the RA, as per EJB3.1 spec,
-        // section 5.4.15 through 5.4.17
-
-        JMS_ACTIVATION_CONFIG_PROPERTIES.add("acknowledgeMode");
-        JMS_ACTIVATION_CONFIG_PROPERTIES.add("destinationType");
-        JMS_ACTIVATION_CONFIG_PROPERTIES.add("messageSelector");
-        JMS_ACTIVATION_CONFIG_PROPERTIES.add("subscriptionDurability");
-    }
 
     private Injector<Object> transactionManager = new InjectedValue<Object>();
     private List<String> connectors;
@@ -399,12 +386,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
     private InboundResourceAdapter createInbound() {
         List<RequiredConfigProperty> destination = Collections.singletonList(new RequiredConfigProperty(EMPTY_LOCL, str("destination"), null));
-        // setup the JMS activation config properties
-        final List<ConfigProperty> jmsActivationConfigProps = new ArrayList<ConfigProperty>(JMS_ACTIVATION_CONFIG_PROPERTIES.size());
-        for (final String activationConfigProp : JMS_ACTIVATION_CONFIG_PROPERTIES) {
-            final ConfigProperty configProp = new ConfigPropertyImpl(EMPTY_LOCL, str(activationConfigProp), str(STRING_TYPE), null, null);
-            jmsActivationConfigProps.add(configProp);
-        }
+
         Activationspec15Impl activation15 = new Activationspec15Impl(str(HQ_ACTIVATION), destination, null);
         List<MessageListener> messageListeners = Collections.<MessageListener>singletonList(new MessageListenerImpl(str(JMS_MESSAGE_LISTENER), activation15, null));
         Messageadapter message = new MessageAdapterImpl(messageListeners, null);
