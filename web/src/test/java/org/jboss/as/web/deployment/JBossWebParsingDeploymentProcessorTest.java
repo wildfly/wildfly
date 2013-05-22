@@ -21,6 +21,9 @@
  */
 package org.jboss.as.web.deployment;
 
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
+
 import org.apache.catalina.core.StandardContext;
 import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.ee.structure.DeploymentType;
@@ -41,9 +44,6 @@ import org.mockito.Mock;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
-
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
 
 /**
  * Unit tests for replacing {@link StandardContext} in web deployment processors

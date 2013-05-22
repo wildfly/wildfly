@@ -22,6 +22,9 @@
 
 package org.jboss.as.test.integration.ejb.packaging.multimodule;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
@@ -31,9 +34,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
 
 /**
  * Tests that a deployment containing EJB interfaces in a separate jar, than the bean implementation, is deployed correctly

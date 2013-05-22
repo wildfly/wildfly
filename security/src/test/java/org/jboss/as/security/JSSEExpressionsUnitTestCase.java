@@ -25,8 +25,6 @@ package org.jboss.as.security;
 import java.io.IOException;
 import java.util.List;
 
-import org.jboss.as.security.Constants;
-import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;

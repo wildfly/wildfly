@@ -21,6 +21,8 @@
  */
 package org.jboss.as.server.moduleservice;
 
+import java.io.File;
+
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.Services;
 import org.jboss.modules.ModuleIdentifier;
@@ -34,8 +36,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import java.io.File;
 
 /**
  * Service that manages external modules.

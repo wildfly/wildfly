@@ -22,13 +22,13 @@
 
 package org.jboss.as.domain.management.security.state;
 
-import org.jboss.as.domain.management.security.AddPropertiesUser;
-import org.jboss.as.domain.management.security.AddPropertiesUser.Interactiveness;
-
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.as.domain.management.security.AddPropertiesUser;
+import org.jboss.as.domain.management.security.AddPropertiesUser.Interactiveness;
 
 /**
 * Place holder object to pass between the state

@@ -25,8 +25,8 @@ package org.jboss.as.web.deployment;
 import org.jboss.as.security.deployment.AbstractSecurityDeployer;
 import org.jboss.as.security.service.JaccService;
 import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.web.security.WarJaccService;
 import org.jboss.as.web.common.WarMetaData;
+import org.jboss.as.web.security.WarJaccService;
 
 /**
  * Handles war deployments

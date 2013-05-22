@@ -22,15 +22,16 @@
 
 package org.jboss.as.threads;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.util.concurrent.ThreadFactory;
-import org.wildfly.security.manager.GetAccessControlContextAction;
+
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.threads.JBossThreadFactory;
-
-import static java.security.AccessController.doPrivileged;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

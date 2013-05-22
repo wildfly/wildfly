@@ -21,8 +21,9 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import javax.ejb.StatefulTimeout;
 import java.util.concurrent.TimeUnit;
+
+import javax.ejb.StatefulTimeout;
 
 /**
  * @author Stuart Douglas

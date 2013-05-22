@@ -24,6 +24,7 @@ package org.jboss.as.process.protocol;
 
 import java.io.IOException;
 import java.io.OutputStream;
+
 import org.jboss.marshalling.ByteOutput;
 
 /**

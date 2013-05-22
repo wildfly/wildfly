@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.integration.beanvalidation.hibernate.validator;
 
-import java.lang.String;
-
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Email;

@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.ejb.home.localhome.annotation;
 
 import javax.annotation.Resource;
-import javax.ejb.Local;
 import javax.ejb.LocalHome;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateful;

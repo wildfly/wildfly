@@ -24,6 +24,7 @@
 package org.jboss.as.connector.subsystems.jca;
 
 import java.util.List;
+
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 

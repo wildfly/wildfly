@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.transaction;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -33,8 +35,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * Tests that java:comp/UserTransaction is bound to JNDI for web requests

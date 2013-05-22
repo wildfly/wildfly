@@ -22,6 +22,11 @@
 
 package org.jboss.as.ejb3.remote;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.List;
+
 import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.SocketBinding;
@@ -37,11 +42,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Jaikiran Pai

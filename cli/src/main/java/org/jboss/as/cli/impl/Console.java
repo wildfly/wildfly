@@ -28,16 +28,15 @@ import java.io.OutputStream;
 import java.util.Collection;
 import java.util.List;
 
-import org.jboss.as.cli.CliInitializationException;
-import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandHistory;
-import org.jboss.as.cli.CommandLineCompleter;
-
 import org.jboss.aesh.complete.CompleteOperation;
 import org.jboss.aesh.complete.Completion;
 import org.jboss.aesh.console.Config;
 import org.jboss.aesh.console.Prompt;
 import org.jboss.aesh.console.settings.Settings;
+import org.jboss.as.cli.CliInitializationException;
+import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandHistory;
+import org.jboss.as.cli.CommandLineCompleter;
 
 /**
  *

@@ -38,6 +38,10 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
+import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
+import org.jboss.as.web.host.CommonWebServer;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.undertow.deployment.ELExpressionFactoryProcessor;
 import org.wildfly.extension.undertow.deployment.EarContextRootProcessor;
 import org.wildfly.extension.undertow.deployment.JBossWebParsingDeploymentProcessor;
@@ -54,10 +58,6 @@ import org.wildfly.extension.undertow.deployment.WebFragmentParsingDeploymentPro
 import org.wildfly.extension.undertow.deployment.WebJBossAllParser;
 import org.wildfly.extension.undertow.deployment.WebParsingDeploymentProcessor;
 import org.wildfly.extension.undertow.session.JvmRouteRegistryEntryProviderService;
-import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
-import org.jboss.as.web.host.CommonWebServer;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
 
 /**

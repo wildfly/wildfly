@@ -22,15 +22,15 @@
 
 package org.jboss.as.pojo.descriptor;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Set;
+
 import org.jboss.as.pojo.BeanState;
 import org.jboss.as.pojo.PojoMessages;
 import org.jboss.as.pojo.service.BeanInfo;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Set;
 
 /**
  * Injected value.

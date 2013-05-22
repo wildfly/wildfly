@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.web.sso.interfaces;
 
 import java.rmi.RemoteException;
+
 import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
 

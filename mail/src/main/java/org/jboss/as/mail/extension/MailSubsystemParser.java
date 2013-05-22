@@ -28,6 +28,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.mail.extension.MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF;
+import static org.jboss.as.mail.extension.MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF_OPTIONAL;
+import static org.jboss.as.mail.extension.MailServerDefinition.PASSWORD;
+import static org.jboss.as.mail.extension.MailServerDefinition.SSL;
+import static org.jboss.as.mail.extension.MailServerDefinition.TLS;
+import static org.jboss.as.mail.extension.MailServerDefinition.USERNAME;
+import static org.jboss.as.mail.extension.MailSessionDefinition.DEBUG;
+import static org.jboss.as.mail.extension.MailSessionDefinition.FROM;
+import static org.jboss.as.mail.extension.MailSessionDefinition.JNDI_NAME;
 import static org.jboss.as.mail.extension.MailSubsystemModel.CUSTOM;
 import static org.jboss.as.mail.extension.MailSubsystemModel.CUSTOM_SERVER;
 import static org.jboss.as.mail.extension.MailSubsystemModel.IMAP;
@@ -40,18 +49,10 @@ import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
 import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP;
 import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP_SERVER;
 import static org.jboss.as.mail.extension.MailSubsystemModel.USER_NAME;
-import static org.jboss.as.mail.extension.MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF;
-import static org.jboss.as.mail.extension.MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF_OPTIONAL;
-import static org.jboss.as.mail.extension.MailServerDefinition.PASSWORD;
-import static org.jboss.as.mail.extension.MailServerDefinition.SSL;
-import static org.jboss.as.mail.extension.MailServerDefinition.TLS;
-import static org.jboss.as.mail.extension.MailServerDefinition.USERNAME;
-import static org.jboss.as.mail.extension.MailSessionDefinition.DEBUG;
-import static org.jboss.as.mail.extension.MailSessionDefinition.FROM;
-import static org.jboss.as.mail.extension.MailSessionDefinition.JNDI_NAME;
 
 import java.util.EnumSet;
 import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 

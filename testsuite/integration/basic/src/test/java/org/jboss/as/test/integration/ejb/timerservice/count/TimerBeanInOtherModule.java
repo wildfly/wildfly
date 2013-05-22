@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.ejb.timerservice.count;
 
-import org.jboss.logging.Logger;
+import java.util.Date;
 
 import javax.annotation.Resource;
 import javax.ejb.LocalBean;
@@ -9,7 +9,8 @@ import javax.ejb.Stateless;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
-import java.util.Date;
+
+import org.jboss.logging.Logger;
 
 /**
  * @author: Jaikiran Pai

@@ -1,10 +1,10 @@
 package org.jboss.as.jdr.util;
 
+import java.io.InputStream;
+
 import org.jboss.as.jdr.vfs.Filters;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
-
-import java.io.InputStream;
 
 /**
  * Provides a default implementation of {@link Sanitizer} that uses default

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.attribute;
 
-import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -29,7 +29,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
+import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 /**
  * Month
  *

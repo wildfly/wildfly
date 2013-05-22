@@ -21,16 +21,16 @@
 */
 package org.jboss.as.domain.http.server;
 
+import static io.undertow.server.handlers.ResponseCodeHandler.HANDLE_404;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 import io.undertow.io.IoCallback;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.util.Headers;
 import org.jboss.dmr.ModelNode;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
-import static io.undertow.server.handlers.ResponseCodeHandler.HANDLE_404;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>

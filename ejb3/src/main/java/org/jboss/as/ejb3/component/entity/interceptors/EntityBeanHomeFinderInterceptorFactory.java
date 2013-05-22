@@ -21,13 +21,15 @@
  */
 package org.jboss.as.ejb3.component.entity.interceptors;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.jboss.as.ee.component.Component;
@@ -41,8 +43,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.value.InjectedValue;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Interceptor that hooks up finder methods for BMP entity beans

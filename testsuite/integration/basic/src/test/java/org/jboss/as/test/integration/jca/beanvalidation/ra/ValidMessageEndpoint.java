@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
 import java.lang.reflect.Method;
+
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.resource.spi.endpoint.MessageEndpoint;

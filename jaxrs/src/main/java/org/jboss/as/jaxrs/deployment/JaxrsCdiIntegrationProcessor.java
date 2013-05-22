@@ -23,6 +23,11 @@ package org.jboss.as.jaxrs.deployment;
 
 import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.enterprise.inject.spi.Extension;
+
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -38,10 +43,6 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.resteasy.cdi.ResteasyCdiExtension;
 import org.jboss.weld.bootstrap.spi.Metadata;
-
-import javax.enterprise.inject.spi.Extension;
-import java.util.ArrayList;
-import java.util.List;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

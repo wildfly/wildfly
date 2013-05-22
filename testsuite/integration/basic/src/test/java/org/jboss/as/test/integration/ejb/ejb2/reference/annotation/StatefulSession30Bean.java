@@ -30,6 +30,7 @@ import javax.ejb.Remote;
 import javax.ejb.RemoteHome;
 import javax.ejb.Stateful;
 import javax.naming.InitialContext;
+
 import org.jboss.logging.Logger;
 
 /**

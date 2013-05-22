@@ -26,8 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-import javax.ws.rs.HEAD;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;

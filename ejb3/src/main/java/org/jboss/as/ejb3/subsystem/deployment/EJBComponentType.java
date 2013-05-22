@@ -22,8 +22,11 @@
 
 package org.jboss.as.ejb3.subsystem.deployment;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ejb3.component.EJBComponent;
@@ -40,7 +43,6 @@ import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
 import org.jboss.as.ejb3.pool.Pool;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Enumeration of types of manageable EJB components.
  *

@@ -22,12 +22,12 @@
 
 package org.jboss.as.controller.client.impl;
 
-import org.jboss.threads.AsyncFuture;
-
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import org.jboss.threads.AsyncFuture;
 
 /**
  * @author Emanuel Muckenhuber

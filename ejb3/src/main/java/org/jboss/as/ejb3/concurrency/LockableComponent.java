@@ -22,8 +22,9 @@
 
 package org.jboss.as.ejb3.concurrency;
 
-import javax.ejb.LockType;
 import java.lang.reflect.Method;
+
+import javax.ejb.LockType;
 
 /**
  * A {@link LockableComponent} represents the runtime component of a EJB. It is meant to provide access to EJB

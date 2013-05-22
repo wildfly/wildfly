@@ -22,6 +22,8 @@
 
 package org.jboss.as.pojo.descriptor;
 
+import java.util.Deque;
+
 import org.jboss.as.pojo.BeanState;
 import org.jboss.as.pojo.service.BeanInfo;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -29,8 +31,6 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.Deque;
 
 /**
  * Config visitor.

@@ -22,20 +22,20 @@
 
 package org.jboss.as.host.controller;
 
+import java.io.IOException;
+
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.host.controller.model.jvm.JvmType;
 import org.jboss.as.server.ServerState;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.annotations.Cause;
-import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Logger.Level;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.remoting3.Channel;
-
-import java.io.IOException;
 
 /**
  * This module is using message IDs in the range 10800-10999. This file is using the subset 10900-10939 for host

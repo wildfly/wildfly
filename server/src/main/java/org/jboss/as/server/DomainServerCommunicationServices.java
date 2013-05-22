@@ -22,6 +22,9 @@
 
 package org.jboss.as.server;
 
+import java.io.Serializable;
+import java.net.InetSocketAddress;
+
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationFailedException;
@@ -42,9 +45,6 @@ import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xnio.OptionMap;
-
-import java.io.Serializable;
-import java.net.InetSocketAddress;
 
 /**
  * Service activator for the communication services of a managed server in a domain.

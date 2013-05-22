@@ -22,21 +22,11 @@
 
 package org.jboss.as.txn.service;
 
+import static org.jboss.as.txn.TransactionMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import org.jboss.as.network.ManagedBinding;
-import org.jboss.as.network.SocketBinding;
-import org.jboss.as.network.SocketBindingManager;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
-import org.omg.CORBA.ORB;
 
 import com.arjuna.ats.arjuna.common.RecoveryEnvironmentBean;
 import com.arjuna.ats.arjuna.common.recoveryPropertyManager;
@@ -50,8 +40,17 @@ import com.arjuna.ats.internal.jts.recovery.transactions.TopLevelTransactionReco
 import com.arjuna.ats.internal.txoj.recovery.TORecoveryModule;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import com.arjuna.orbportability.internal.utils.PostInitLoader;
-
-import static org.jboss.as.txn.TransactionMessages.MESSAGES;
+import org.jboss.as.network.ManagedBinding;
+import org.jboss.as.network.SocketBinding;
+import org.jboss.as.network.SocketBindingManager;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
+import org.omg.CORBA.ORB;
 
 /**
  * A service responsible for exposing the proprietary Arjuna {@link RecoveryManagerService}.

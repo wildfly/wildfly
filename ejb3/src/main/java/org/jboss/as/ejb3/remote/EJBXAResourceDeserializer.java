@@ -22,13 +22,14 @@
 
 package org.jboss.as.ejb3.remote;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+
+import javax.transaction.xa.XAResource;
+
 import com.arjuna.ats.jta.recovery.SerializableXAResourceDeserializer;
 import org.jboss.ejb.client.EJBClientManagedTransactionContext;
 import org.jboss.logging.Logger;
-
-import javax.transaction.xa.XAResource;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 
 /**
  * A {@link SerializableXAResourceDeserializer} responsible for deserializing EJB XAResource(s)

@@ -21,6 +21,11 @@
  */
 package org.jboss.as.server.moduleservice;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.jar.JarFile;
+
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.ModuleIdentifier;
@@ -32,11 +37,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.VFSUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.jar.JarFile;
 
 /**
  * Service that manages the module spec for external modules (i.e. modules that reside outside of the application server).

@@ -22,14 +22,14 @@
 
 package org.jboss.as.ee.structure;
 
+import static org.jboss.as.server.deployment.Attachments.NEXT_PHASE_DEPS;
+import static org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS;
+
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Services;
-
-import static org.jboss.as.server.deployment.Attachments.NEXT_PHASE_DEPS;
-import static org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS;
 
 /**
  * Processor which ensures that subdeployments of an EAR all synchronize before the next phase.

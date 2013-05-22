@@ -16,9 +16,8 @@
  */
 package org.jboss.as.weld.util;
 
-import org.jboss.jandex.ClassInfo;
-
 import com.google.common.base.Function;
+import org.jboss.jandex.ClassInfo;
 
 /**
  * Utilities for working with Jandex indices.

@@ -23,6 +23,8 @@
 package org.jboss.as.test.integration.ejb.mdb.resourceadapter;
 
 
+import java.io.Serializable;
+
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.resource.Referenceable;
@@ -33,7 +35,6 @@ import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterInternalException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.xa.XAResource;
-import java.io.Serializable;
 
 import org.jboss.logging.Logger;
 

@@ -22,6 +22,9 @@
 
 package org.jboss.as.jdr.plugins;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.jboss.as.jdr.commands.CallAS7;
 import org.jboss.as.jdr.commands.CollectFiles;
 import org.jboss.as.jdr.commands.JarCheck;
@@ -30,9 +33,6 @@ import org.jboss.as.jdr.commands.TreeCommand;
 import org.jboss.as.jdr.util.Sanitizer;
 import org.jboss.as.jdr.util.Sanitizers;
 import org.jboss.as.jdr.util.Utils;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class AS7Plugin implements JdrPlugin {
 

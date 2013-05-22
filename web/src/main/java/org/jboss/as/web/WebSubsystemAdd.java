@@ -23,6 +23,7 @@
 package org.jboss.as.web;
 
 import java.util.List;
+
 import javax.management.MBeanServer;
 
 import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
@@ -42,8 +43,8 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
-import org.jboss.as.web.deployment.EarContextRootProcessor;
 import org.jboss.as.web.deployment.ELExpressionFactoryProcessor;
+import org.jboss.as.web.deployment.EarContextRootProcessor;
 import org.jboss.as.web.deployment.JBossWebParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.ServletContainerInitializerDeploymentProcessor;
 import org.jboss.as.web.deployment.TldParsingDeploymentProcessor;

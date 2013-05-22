@@ -22,13 +22,13 @@
 
 package org.jboss.as.pojo;
 
-import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.StartException;
+import static org.junit.Assert.fail;
 
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
-import static org.junit.Assert.fail;
+import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.StartException;
 
 /**
  * @author John E. Bailey

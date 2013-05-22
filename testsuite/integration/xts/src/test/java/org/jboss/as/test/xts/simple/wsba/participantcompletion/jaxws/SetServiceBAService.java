@@ -20,13 +20,14 @@
  */
 package org.jboss.as.test.xts.simple.wsba.participantcompletion.jaxws;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 import javax.xml.ws.WebEndpoint;
 import javax.xml.ws.WebServiceClient;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import org.jboss.logging.Logger;
 
 /**

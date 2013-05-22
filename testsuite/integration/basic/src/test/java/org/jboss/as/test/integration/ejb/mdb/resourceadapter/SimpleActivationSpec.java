@@ -22,11 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.mdb.resourceadapter;
 
+import java.io.Serializable;
+
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.InvalidPropertyException;
 import javax.resource.spi.ResourceAdapter;
-import java.io.Serializable;
 
 /**
  * @author Jaikiran Pai

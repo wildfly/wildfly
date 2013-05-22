@@ -22,6 +22,8 @@
 
 package org.jboss.as.appclient.service;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.util.Set;
@@ -37,8 +39,6 @@ import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.identity.Identity;
 import org.jboss.security.identity.extensions.CredentialIdentity;
-
-import static java.security.AccessController.doPrivileged;
 
 /**
  * The default callback handler used by the

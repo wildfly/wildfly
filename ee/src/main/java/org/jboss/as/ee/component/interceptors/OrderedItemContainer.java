@@ -21,15 +21,15 @@
  */
 package org.jboss.as.ee.component.interceptors;
 
+import static java.lang.Integer.toHexString;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
-import static java.lang.Integer.toHexString;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * Container for an ordered list of object. Objects are added to the container, and can be sorted and

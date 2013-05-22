@@ -35,8 +35,8 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimplePersistentResourceDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.wildfly.extension.undertow.filters.FilterRefDefinition;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.undertow.filters.FilterRefDefinition;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.

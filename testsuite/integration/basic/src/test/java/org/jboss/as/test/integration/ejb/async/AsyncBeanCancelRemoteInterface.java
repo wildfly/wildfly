@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.ejb.async;
 
 import java.util.concurrent.Future;
+
 import javax.ejb.Remote;
 
 /**

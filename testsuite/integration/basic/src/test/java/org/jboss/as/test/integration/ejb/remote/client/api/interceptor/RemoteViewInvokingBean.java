@@ -22,16 +22,15 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api.interceptor;
 
-import org.jboss.ejb.client.EJBClientContext;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.ejb.LocalBean;
 import javax.ejb.Remote;
 import javax.ejb.Stateful;
-import javax.ejb.Stateless;
-import java.util.HashMap;
-import java.util.Map;
+
+import org.jboss.ejb.client.EJBClientContext;
 
 /**
  * @author Jaikiran Pai

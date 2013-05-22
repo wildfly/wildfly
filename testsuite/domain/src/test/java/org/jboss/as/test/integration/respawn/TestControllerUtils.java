@@ -1,13 +1,7 @@
 package org.jboss.as.test.integration.respawn;
 
-import org.jboss.as.protocol.ProtocolConnectionConfiguration;
-import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.Remoting;
-import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
-import org.jboss.threads.JBossThreadFactory;
-import org.xnio.OptionMap;
+import static org.jboss.as.network.NetworkUtils.formatPossibleIpv6Address;
 
-import javax.security.auth.callback.CallbackHandler;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
@@ -20,7 +14,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.jboss.as.network.NetworkUtils.formatPossibleIpv6Address;
+import javax.security.auth.callback.CallbackHandler;
+
+import org.jboss.as.protocol.ProtocolConnectionConfiguration;
+import org.jboss.remoting3.Endpoint;
+import org.jboss.remoting3.Remoting;
+import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
+import org.jboss.threads.JBossThreadFactory;
+import org.xnio.OptionMap;
 
 /**
  * @author Emanuel Muckenhuber

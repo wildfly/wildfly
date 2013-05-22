@@ -28,10 +28,10 @@ import java.util.Properties;
 import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.network.OutboundSocketBinding;
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.service.StartException;
 

@@ -20,7 +20,9 @@ package org.jboss.as.cli.gui.metacommand;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+
 import javax.swing.JFileChooser;
+
 import org.jboss.as.cli.gui.CliGuiContext;
 import org.jboss.as.cli.gui.component.ScriptMenu;
 

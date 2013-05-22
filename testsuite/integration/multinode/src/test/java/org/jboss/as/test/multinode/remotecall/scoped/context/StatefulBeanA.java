@@ -22,7 +22,8 @@
 
 package org.jboss.as.test.multinode.remotecall.scoped.context;
 
-import org.jboss.ejb3.annotation.Cache;
+import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -34,8 +35,8 @@ import javax.ejb.Remote;
 import javax.ejb.Stateful;
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
+
+import org.jboss.ejb3.annotation.Cache;
 
 /**
  * @author Jaikiran Pai

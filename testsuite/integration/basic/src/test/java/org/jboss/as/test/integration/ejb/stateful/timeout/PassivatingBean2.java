@@ -22,13 +22,13 @@
 
 package org.jboss.as.test.integration.ejb.stateful.timeout;
 
+import java.util.concurrent.TimeUnit;
+
 import javax.annotation.PreDestroy;
 import javax.ejb.Stateful;
 import javax.ejb.StatefulTimeout;
 
 import org.jboss.ejb3.annotation.Cache;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * stateful session bean

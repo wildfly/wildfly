@@ -24,6 +24,8 @@
 
 package org.wildfly.extension.undertow.deployment;
 
+import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -46,12 +48,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
-import org.wildfly.extension.undertow.BufferCacheService;
-import org.wildfly.extension.undertow.DeploymentDefinition;
-import org.wildfly.extension.undertow.Host;
-import org.wildfly.extension.undertow.ServletContainerService;
-import org.wildfly.extension.undertow.UndertowExtension;
-import org.wildfly.extension.undertow.UndertowService;
 import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
 import org.jboss.as.web.common.WarMetaData;
@@ -71,8 +67,12 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
-
-import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
+import org.wildfly.extension.undertow.BufferCacheService;
+import org.wildfly.extension.undertow.DeploymentDefinition;
+import org.wildfly.extension.undertow.Host;
+import org.wildfly.extension.undertow.ServletContainerService;
+import org.wildfly.extension.undertow.UndertowExtension;
+import org.wildfly.extension.undertow.UndertowService;
 
 public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 

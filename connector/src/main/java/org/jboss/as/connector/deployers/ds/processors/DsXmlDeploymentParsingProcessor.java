@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.deployers.ds.processors;
 
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Collections;
@@ -43,8 +45,6 @@ import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.metadata.property.PropertyResolver;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
-
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 /**
  * Picks up -ds.xml deployments

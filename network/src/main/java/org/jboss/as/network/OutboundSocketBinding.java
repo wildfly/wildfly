@@ -22,14 +22,14 @@
 
 package org.jboss.as.network;
 
-import org.jboss.msc.service.ServiceName;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
+
+import org.jboss.msc.service.ServiceName;
 
 /**
  * A outbound socket binding represents the client end of a socket. It represents binding from a local "host"

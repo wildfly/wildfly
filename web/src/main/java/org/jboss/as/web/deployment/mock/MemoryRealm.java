@@ -19,9 +19,9 @@
 package org.jboss.as.web.deployment.mock;
 
 
-import java.security.Principal;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;

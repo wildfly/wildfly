@@ -21,12 +21,12 @@
  */
 package org.jboss.as.ejb3.deployment.processors.annotation;
 
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
-
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 /**
  * Processes the {@link javax.ejb.TransactionAttribute} annotation on a session bean

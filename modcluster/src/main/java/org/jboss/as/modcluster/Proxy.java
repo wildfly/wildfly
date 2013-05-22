@@ -22,14 +22,14 @@
 
 package org.jboss.as.modcluster;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
+import static org.jboss.as.modcluster.ModClusterMessages.MESSAGES;
 
 import java.util.Iterator;
 import java.util.List;
 
-import static org.jboss.as.modcluster.ModClusterMessages.MESSAGES;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 public class Proxy {
     String host;

@@ -16,9 +16,6 @@
  */
 package org.jboss.as.test.integration.ejb.mdb.dynamic.impl;
 
-import org.jboss.as.test.integration.ejb.mdb.dynamic.adapter.TelnetActivationSpec;
-import org.jboss.as.test.integration.ejb.mdb.dynamic.api.TelnetListener;
-
 import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -35,6 +32,9 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
+
+import org.jboss.as.test.integration.ejb.mdb.dynamic.adapter.TelnetActivationSpec;
+import org.jboss.as.test.integration.ejb.mdb.dynamic.api.TelnetListener;
 
 public class TelnetServer implements TtyCodes {
     private static final Logger logger = Logger.getLogger(TelnetServer.class.getName());

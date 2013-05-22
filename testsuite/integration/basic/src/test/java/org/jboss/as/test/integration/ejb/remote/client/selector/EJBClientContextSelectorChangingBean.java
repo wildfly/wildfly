@@ -22,12 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.selector;
 
+import javax.ejb.LocalBean;
+import javax.ejb.Stateless;
+
 import org.jboss.ejb.client.ConstantContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
-
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
 
 /**
  * @author Jaikiran Pai

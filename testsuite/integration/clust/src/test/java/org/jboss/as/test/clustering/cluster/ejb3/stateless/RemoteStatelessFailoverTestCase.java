@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;

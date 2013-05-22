@@ -22,6 +22,11 @@
 
 package org.jboss.as.test.integration.security.passwordmasking;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.net.URL;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -35,11 +40,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.IOException;
-import java.net.URL;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.

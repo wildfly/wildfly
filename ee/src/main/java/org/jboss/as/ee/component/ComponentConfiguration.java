@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -38,8 +40,6 @@ import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * The construction parameter set passed in to an abstract component.

@@ -22,13 +22,13 @@
 
 package org.jboss.as.test.integration.ws.injection.ejb.as1675;
 
-import org.jboss.as.test.integration.ws.injection.ejb.as1675.shared.BeanIface;
-import org.jboss.logging.Logger;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.xml.ws.WebServiceException;
+
+import org.jboss.as.test.integration.ws.injection.ejb.as1675.shared.BeanIface;
+import org.jboss.logging.Logger;
 
 /**
  * Abstract endpoint implementation.

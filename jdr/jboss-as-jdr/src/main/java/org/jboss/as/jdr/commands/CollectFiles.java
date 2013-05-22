@@ -21,13 +21,6 @@
  */
 package org.jboss.as.jdr.commands;
 
-import org.jboss.as.jdr.util.Utils;
-import org.jboss.as.jdr.util.Sanitizer;
-import org.jboss.as.jdr.vfs.Filters;
-import org.jboss.vfs.VFS;
-import org.jboss.vfs.VirtualFile;
-import org.jboss.vfs.VirtualFileFilter;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -35,6 +28,13 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.jboss.as.jdr.util.Sanitizer;
+import org.jboss.as.jdr.util.Utils;
+import org.jboss.as.jdr.vfs.Filters;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VirtualFile;
+import org.jboss.vfs.VirtualFileFilter;
 
 public class CollectFiles extends JdrCommand {
 

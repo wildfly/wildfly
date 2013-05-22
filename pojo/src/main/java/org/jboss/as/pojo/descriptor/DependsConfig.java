@@ -22,10 +22,10 @@
 
 package org.jboss.as.pojo.descriptor;
 
+import java.io.Serializable;
+
 import org.jboss.as.pojo.BeanState;
 import org.jboss.msc.service.ServiceName;
-
-import java.io.Serializable;
 
 /**
  * The legacy depends meta data.

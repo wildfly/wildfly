@@ -22,10 +22,10 @@
 package org.jboss.as.jacorb.rmi.ir;
 
 import org.jboss.as.jacorb.JacORBMessages;
+import org.omg.CORBA.DefinitionKind;
+import org.omg.CORBA.TCKind;
 import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.TypeCodePackage.BadKind;
-import org.omg.CORBA.TCKind;
-import org.omg.CORBA.DefinitionKind;
 
 /**
  * IDLType IR object.

@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.xpc.bean;
 
+import java.util.HashMap;
+
 import javax.ejb.Remove;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -29,15 +31,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
-import javax.sql.DataSource;
 
 import org.hibernate.Session;
 import org.hibernate.stat.SecondLevelCacheStatistics;
 import org.jboss.ejb3.annotation.Clustered;
 import org.jboss.logging.Logger;
-
-import java.sql.Connection;
-import java.util.HashMap;
 
 /**
  * @author Paul Ferraro

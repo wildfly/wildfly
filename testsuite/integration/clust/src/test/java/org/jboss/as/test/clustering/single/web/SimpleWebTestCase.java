@@ -22,8 +22,8 @@
 package org.jboss.as.test.clustering.single.web;
 
 import java.io.IOException;
-
 import java.net.URL;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;

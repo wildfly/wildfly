@@ -23,10 +23,10 @@ package org.jboss.as.embedded;
 
 import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
 
+import java.io.File;
+
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
-
-import java.io.File;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

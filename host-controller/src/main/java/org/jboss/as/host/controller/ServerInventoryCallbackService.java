@@ -22,19 +22,20 @@
 package org.jboss.as.host.controller;
 
 
+import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
+
+import java.io.IOException;
+
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.jboss.msc.service.Service;
-import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import java.io.IOException;
 
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>

@@ -47,12 +47,11 @@ import javax.naming.Referenceable;
 import javax.naming.StringRefAddr;
 import javax.naming.spi.ObjectFactory;
 
+import org.jboss.as.naming.JndiPermission.Action;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import org.jboss.as.naming.JndiPermission.Action;
 
 /**
  * @author John E. Bailey

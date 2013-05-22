@@ -21,9 +21,9 @@
  */
 package org.jboss.as.jdr.commands;
 
-import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import org.jboss.dmr.ModelNode;
 

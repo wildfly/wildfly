@@ -22,9 +22,9 @@
 
 package org.jboss.as.controller.registry;
 
-import org.jboss.dmr.ModelNode;
-
 import java.util.ConcurrentModificationException;
+
+import org.jboss.dmr.ModelNode;
 
 /**
  * Standard {@link Resource} implementation.

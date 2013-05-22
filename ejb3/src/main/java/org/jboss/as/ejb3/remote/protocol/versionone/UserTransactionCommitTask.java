@@ -22,12 +22,12 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import javax.transaction.Transaction;
+
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.UserTransactionID;
 import org.jboss.marshalling.MarshallerFactory;
-
-import javax.transaction.Transaction;
 
 /**
  * @author Jaikiran Pai

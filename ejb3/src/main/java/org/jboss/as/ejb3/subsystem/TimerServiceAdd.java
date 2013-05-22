@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+
 import java.util.List;
 import java.util.Timer;
 
@@ -44,8 +46,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
 /**
  * Adds the timer service

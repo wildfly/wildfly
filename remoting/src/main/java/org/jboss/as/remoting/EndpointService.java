@@ -22,6 +22,8 @@
 
 package org.jboss.as.remoting;
 
+import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
+
 import java.io.IOException;
 
 import org.jboss.msc.service.Service;
@@ -34,8 +36,6 @@ import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.remote.HttpUpgradeConnectionProviderFactory;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.xnio.OptionMap;
-
-import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 
 /**
  * An MSC service for Remoting endpoints.

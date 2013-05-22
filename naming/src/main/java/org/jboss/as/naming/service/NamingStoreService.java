@@ -22,6 +22,8 @@
 
 package org.jboss.as.naming.service;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 import javax.naming.NamingException;
 
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -30,8 +32,6 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * Service responsible for managing the creation and life-cycle of a naming store.

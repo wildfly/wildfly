@@ -22,9 +22,10 @@
 
 package org.jboss.as.naming;
 
+import java.util.Hashtable;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
-import java.util.Hashtable;
 
 /**
  * Initial context factory which returns {@code NamingContext} instances.

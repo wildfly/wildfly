@@ -20,7 +20,9 @@ package org.jboss.as.cli.gui;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.swing.tree.DefaultMutableTreeNode;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;

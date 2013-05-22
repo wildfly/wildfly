@@ -22,15 +22,15 @@
 
 package org.jboss.as.modcluster;
 
+import java.util.Iterator;
+import java.util.List;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
-
-import java.util.Iterator;
-import java.util.List;
 
 public class ModClusterStop implements OperationStepHandler {
 

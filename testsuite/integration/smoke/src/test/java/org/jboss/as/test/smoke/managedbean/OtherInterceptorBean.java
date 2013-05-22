@@ -24,6 +24,7 @@ package org.jboss.as.test.smoke.managedbean;
 
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
+
 import org.jboss.logging.Logger;
 
 /**

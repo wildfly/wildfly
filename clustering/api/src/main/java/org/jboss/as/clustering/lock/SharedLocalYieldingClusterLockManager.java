@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.lock;
 
+import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
+
 import java.io.Serializable;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,8 +35,6 @@ import java.util.concurrent.locks.LockSupport;
 import org.jboss.as.clustering.ClusterNode;
 import org.jboss.as.clustering.GroupMembershipNotifier;
 import org.jboss.as.clustering.GroupRpcDispatcher;
-
-import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
 
 /**
  * Distributed lock manager intended for use cases where multiple local threads can share the lock, but only one node in the

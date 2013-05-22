@@ -22,6 +22,9 @@
 
 package org.jboss.as.controller.persistence;
 
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,9 +35,6 @@ import javax.xml.stream.XMLStreamWriter;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLMapper;
-
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * Abstract superclass for {@link ExtensibleConfigurationPersister} implementations.

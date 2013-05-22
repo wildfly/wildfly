@@ -25,6 +25,7 @@ package org.jboss.as.ee.metadata.property;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+
 import org.jboss.as.ee.EeMessages;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;

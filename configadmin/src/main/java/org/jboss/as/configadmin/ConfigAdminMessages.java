@@ -22,8 +22,8 @@
 
 package org.jboss.as.configadmin;
 
-import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
+import org.jboss.logging.annotations.MessageBundle;
 
 /**
  * This module is using message IDs in the range 16200-16299.

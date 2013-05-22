@@ -22,15 +22,15 @@
 
 package org.jboss.as.ejb3.remote;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Keeps track of cancellation status of remote asynchronous method invocations on EJBs.

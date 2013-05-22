@@ -21,8 +21,7 @@
  */
 package org.jboss.as.jdr.util;
 
-import org.jboss.as.jdr.commands.JdrEnvironment;
-import org.jboss.vfs.VirtualFile;
+import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
@@ -33,7 +32,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
 
-import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
+import org.jboss.as.jdr.commands.JdrEnvironment;
+import org.jboss.vfs.VirtualFile;
 
 /**
  * Abstracts the zipfile used for packaging the JDR Report.

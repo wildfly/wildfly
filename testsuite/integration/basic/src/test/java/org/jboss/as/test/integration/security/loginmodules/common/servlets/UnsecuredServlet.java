@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.integration.security.loginmodules.common.servlets;
 
-import org.jboss.as.test.integration.security.loginmodules.common.UnsecuredEJB;
-
 import java.io.IOException;
 import java.io.Writer;
 
@@ -32,6 +30,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.jboss.as.test.integration.security.loginmodules.common.UnsecuredEJB;
 
 /**
  * A simple servlet that just writes back a string

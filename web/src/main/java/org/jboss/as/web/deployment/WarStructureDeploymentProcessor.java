@@ -22,12 +22,13 @@
 
 package org.jboss.as.web.deployment;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -43,6 +44,7 @@ import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
+import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.modules.filter.PathFilters;
 import org.jboss.vfs.VFS;
@@ -50,8 +52,6 @@ import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
-
-import static org.jboss.as.web.WebMessages.MESSAGES;
 
 /**
  * Create and mount classpath entries in the .war deployment.

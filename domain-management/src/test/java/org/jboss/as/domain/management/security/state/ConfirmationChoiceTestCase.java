@@ -22,17 +22,6 @@
 
 package org.jboss.as.domain.management.security.state;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jboss.as.domain.management.security.AssertConsoleBuilder;
-import org.jboss.msc.service.StartException;
-import org.junit.Test;
-
 /**
  * Test the confirmation state
  *

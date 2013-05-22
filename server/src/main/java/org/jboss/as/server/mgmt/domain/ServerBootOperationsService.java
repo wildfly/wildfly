@@ -22,6 +22,12 @@
 
 package org.jboss.as.server.mgmt.domain;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.dmr.ModelNode;
@@ -31,12 +37,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.AsyncFutureTask;
-
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Service triggering the registration at the local host-controller and resolving the boot operations.

@@ -27,6 +27,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -44,6 +45,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+
 import org.jboss.as.cli.gui.ManagementModelNode.AttributeDescription;
 import org.jboss.as.cli.gui.ManagementModelNode.UserObject;
 

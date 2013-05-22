@@ -21,10 +21,11 @@
 */
 package org.jboss.as.jmx.model;
 
-import javax.management.ObjectName;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import javax.management.ObjectName;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;

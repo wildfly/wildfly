@@ -24,7 +24,6 @@ package org.jboss.as.controller.parsing;
 
 import java.util.List;
 
-
 import org.jboss.as.controller.ProcessType;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;

@@ -22,6 +22,9 @@
 
 package org.jboss.as.process.protocol;
 
+import static org.jboss.as.process.protocol.ProtocolLogger.CLIENT_LOGGER;
+import static org.jboss.as.process.protocol.ProtocolMessages.MESSAGES;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -33,9 +36,6 @@ import java.util.concurrent.ThreadFactory;
 import javax.net.ServerSocketFactory;
 
 import org.jboss.as.process.protocol.Connection.ClosedCallback;
-
-import static org.jboss.as.process.protocol.ProtocolLogger.CLIENT_LOGGER;
-import static org.jboss.as.process.protocol.ProtocolMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

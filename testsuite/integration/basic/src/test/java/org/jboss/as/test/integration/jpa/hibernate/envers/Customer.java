@@ -22,10 +22,19 @@
 
 package org.jboss.as.test.integration.jpa.hibernate.envers;
 
-import java.util.*;
-import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.hibernate.envers.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.OneToMany;
+
+import org.hibernate.envers.AuditJoinTable;
+import org.hibernate.envers.Audited;
 
 /**
  * @author Madhumita Sadhukhan

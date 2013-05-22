@@ -23,6 +23,7 @@
 package org.jboss.as.web.deployment;
 
 import java.util.Locale;
+
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;

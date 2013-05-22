@@ -29,9 +29,9 @@ import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.messaging.Attribute.HOST;
 import static org.jboss.as.messaging.Attribute.SOCKET_BINDING;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.CommonAttributes.SERVLET_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.SERVLET_CONNECTOR;
 
 import java.util.Collections;
 import java.util.List;

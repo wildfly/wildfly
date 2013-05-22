@@ -24,6 +24,8 @@
 
 package org.wildfly.extension.undertow.deployment;
 
+import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -84,8 +86,6 @@ import org.jboss.metadata.web.spec.ServletsMetaData;
 import org.jboss.metadata.web.spec.TransportGuaranteeType;
 import org.jboss.metadata.web.spec.Web30MetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
-
-import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
 
 /**
  * Web annotation deployment processor.

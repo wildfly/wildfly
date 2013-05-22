@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import java.util.LinkedList;
 import java.util.List;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 

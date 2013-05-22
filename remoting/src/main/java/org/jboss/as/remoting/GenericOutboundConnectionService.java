@@ -22,6 +22,8 @@
 
 package org.jboss.as.remoting;
 
+import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
+
 import java.io.IOException;
 import java.net.URI;
 
@@ -30,8 +32,6 @@ import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
-
-import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 
 /**
  * A {@link GenericOutboundConnectionService} manages a remote outbound connection which is configured via

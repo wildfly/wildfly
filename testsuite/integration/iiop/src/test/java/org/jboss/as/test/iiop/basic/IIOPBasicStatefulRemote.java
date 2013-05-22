@@ -1,7 +1,8 @@
 package org.jboss.as.test.iiop.basic;
 
-import javax.ejb.EJBObject;
 import java.rmi.RemoteException;
+
+import javax.ejb.EJBObject;
 
 /**
  * @author Stuart Douglas

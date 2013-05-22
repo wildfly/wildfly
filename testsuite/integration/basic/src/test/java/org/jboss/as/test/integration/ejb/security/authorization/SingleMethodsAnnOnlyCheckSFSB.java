@@ -21,12 +21,12 @@
  */
 package org.jboss.as.test.integration.ejb.security.authorization;
 
-import org.jboss.ejb3.annotation.SecurityDomain;
-
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateful;
+
+import org.jboss.ejb3.annotation.SecurityDomain;
 
 /**
  * @author <a href="mailto:pskopek@redhat.com">Peter Skopek</a>

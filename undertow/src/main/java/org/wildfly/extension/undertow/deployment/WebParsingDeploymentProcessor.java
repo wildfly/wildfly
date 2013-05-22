@@ -24,6 +24,8 @@
 
 package org.wildfly.extension.undertow.deployment;
 
+import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -49,8 +51,6 @@ import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xml.sax.SAXException;
-
-import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
 
 /**
  * @author Jean-Frederic Clere

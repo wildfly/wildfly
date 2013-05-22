@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.web.rootcontext;
 
+import static org.junit.Assert.assertTrue;
+
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -37,8 +39,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * This class tests a root context deployed as an EAR or a WAR.

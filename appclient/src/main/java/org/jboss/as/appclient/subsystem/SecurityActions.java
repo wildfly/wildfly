@@ -22,12 +22,13 @@
 
 package org.jboss.as.appclient.subsystem;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.security.Provider;
 import java.security.Security;
+
 import org.wildfly.security.manager.AddGlobalSecurityProviderAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static java.security.AccessController.doPrivileged;
 
 /**
  * Security actions to access system environment information.  No methods in

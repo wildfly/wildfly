@@ -22,11 +22,11 @@
 
 package org.jboss.as.pojo.descriptor;
 
-import org.jboss.as.pojo.PojoMessages;
-
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+
+import org.jboss.as.pojo.PojoMessages;
 
 /**
  * Value meta data.

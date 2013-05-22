@@ -22,10 +22,17 @@
 
 package org.jboss.as.test.clustering.extended.ejb2.stateful.passivation;
 
+import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.arquillian.container.test.api.*;
+import org.jboss.arquillian.container.test.api.ContainerController;
+import org.jboss.arquillian.container.test.api.Deployer;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -41,8 +48,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 
 /**
  * Clustering ejb passivation of EJB2 beans defined by annotation.

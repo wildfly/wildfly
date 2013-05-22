@@ -21,8 +21,12 @@
  */
 package org.jboss.as.clustering.web.impl;
 
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import javax.transaction.Status;
 import javax.transaction.Transaction;

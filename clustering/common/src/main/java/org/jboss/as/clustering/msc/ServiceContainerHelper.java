@@ -30,9 +30,9 @@ import java.util.Map;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
+import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.service.StartException;
 
 /**

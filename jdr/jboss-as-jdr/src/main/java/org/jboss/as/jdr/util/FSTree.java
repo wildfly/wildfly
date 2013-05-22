@@ -21,10 +21,10 @@
  */
 package org.jboss.as.jdr.util;
 
+import java.util.List;
+
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
-
-import java.util.List;
 
 public class FSTree {
     int directoryCount = 0;

@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component.deployers;
 
+import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
+
 import java.util.Set;
 
 import org.jboss.as.ee.EeMessages;
@@ -36,8 +38,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
-
-import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
 
 /**
  * Implementation of {@link org.jboss.as.ee.component.InjectionSource} responsible for finding a message destination

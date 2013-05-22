@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import java.util.Map;
+
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ViewInstanceFactory;
 import org.jboss.as.naming.ManagedReference;
@@ -29,8 +31,6 @@ import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.msc.value.ImmediateValue;
-
-import java.util.Map;
 
 /**
  * @author Stuart Douglas

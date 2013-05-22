@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.multinode.remotecall;
 
-import javax.ejb.*;
+import javax.ejb.EJBHome;
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>

@@ -22,6 +22,8 @@
 package org.jboss.as.ejb3.remote;
 
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.security.AccessController;
@@ -88,8 +90,6 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * {@link EJBReceiver} for local same-VM invocations. This handles all invocations on remote interfaces

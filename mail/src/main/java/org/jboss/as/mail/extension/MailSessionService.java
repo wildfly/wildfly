@@ -25,6 +25,7 @@ package org.jboss.as.mail.extension;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.mail.Session;
 
 import org.jboss.as.network.OutboundSocketBinding;

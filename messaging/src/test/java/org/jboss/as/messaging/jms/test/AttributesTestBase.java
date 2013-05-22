@@ -1,7 +1,6 @@
 package org.jboss.as.messaging.jms.test;
 
 import static java.beans.Introspector.getBeanInfo;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 

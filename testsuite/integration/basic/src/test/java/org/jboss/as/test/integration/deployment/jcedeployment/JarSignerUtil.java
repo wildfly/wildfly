@@ -21,13 +21,13 @@
  */
 package org.jboss.as.test.integration.deployment.jcedeployment;
 
-import org.xnio.IoUtils;
-import sun.security.tools.JarSigner;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import org.xnio.IoUtils;
+import sun.security.tools.JarSigner;
 
 /**
  * Utility for signing jars.

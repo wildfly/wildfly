@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.naming.Reference;
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.sql.DataSource;
@@ -41,9 +42,6 @@ import javax.sql.DataSource;
 import org.jboss.as.connector.services.driver.InstalledDriver;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.util.Injection;
-import org.wildfly.security.manager.ClearContextClassLoaderAction;
-import org.wildfly.security.manager.GetClassLoaderAction;
-import org.wildfly.security.manager.SetContextClassLoaderFromClassAction;
 import org.jboss.jca.adapters.jdbc.BaseWrapperManagedConnectionFactory;
 import org.jboss.jca.adapters.jdbc.local.LocalManagedConnectionFactory;
 import org.jboss.jca.adapters.jdbc.spi.ClassLoaderPlugin;
@@ -80,6 +78,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
+import org.wildfly.security.manager.ClearContextClassLoaderAction;
+import org.wildfly.security.manager.GetClassLoaderAction;
+import org.wildfly.security.manager.SetContextClassLoaderFromClassAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

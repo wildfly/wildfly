@@ -21,13 +21,13 @@
  */
 package org.jboss.as.test.integration.ejb.security.base;
 
+import static org.jboss.as.test.shared.integration.ejb.security.Util.getCLMLoginContext;
+
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.SessionContext;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
-
-import static org.jboss.as.test.shared.integration.ejb.security.Util.getCLMLoginContext;
 
 import org.jboss.as.test.integration.ejb.security.WhoAmI;
 

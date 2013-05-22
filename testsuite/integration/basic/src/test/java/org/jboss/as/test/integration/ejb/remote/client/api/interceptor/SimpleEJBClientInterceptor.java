@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api.interceptor;
 
+import java.util.Map;
+
 import org.jboss.ejb.client.EJBClientInterceptor;
 import org.jboss.ejb.client.EJBClientInvocationContext;
-
-import java.util.Map;
 
 /**
  * An EJB client side interceptor

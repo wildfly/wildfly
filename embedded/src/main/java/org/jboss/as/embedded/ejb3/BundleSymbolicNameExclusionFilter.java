@@ -24,14 +24,14 @@ package org.jboss.as.embedded.ejb3;
 import static org.jboss.as.embedded.EmbeddedLogger.ROOT_LOGGER;
 import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
 
-import org.jboss.vfs.VirtualFile;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.jboss.vfs.VirtualFile;
 
 /**
  * {@link ExclusionFilter} implementation which

@@ -22,6 +22,8 @@
 
 package org.jboss.as.jpa.puparser;
 
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -37,8 +39,6 @@ import org.jboss.as.jpa.config.PersistenceUnitMetadataImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.metadata.parser.util.MetaDataElementParser;
 import org.jboss.metadata.property.PropertyReplacer;
-
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
 
 /**
  * Parse a persistence.xml into a list of persistence unit definitions.

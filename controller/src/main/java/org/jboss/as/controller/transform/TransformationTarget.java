@@ -22,11 +22,11 @@
 
 package org.jboss.as.controller.transform;
 
+import java.util.List;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.extension.ExtensionRegistry;
-
-import java.util.List;
 
 /**
  * A potentially remote target requiring transformation.

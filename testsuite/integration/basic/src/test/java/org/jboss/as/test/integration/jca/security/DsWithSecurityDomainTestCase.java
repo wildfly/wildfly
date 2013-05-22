@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.jca.security;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,8 +42,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Data source with security domain test JBQA-5952

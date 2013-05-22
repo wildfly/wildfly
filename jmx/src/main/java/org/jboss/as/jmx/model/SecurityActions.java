@@ -21,10 +21,10 @@
 */
 package org.jboss.as.jmx.model;
 
+import static java.security.AccessController.doPrivileged;
+
 import org.wildfly.security.manager.GetClassLoaderAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static java.security.AccessController.doPrivileged;
 
 /**
  *

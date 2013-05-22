@@ -22,16 +22,11 @@
 
 package org.jboss.as.test.integration.ejb.client.descriptor;
 
-import javax.annotation.Resource;
+import java.util.Hashtable;
+
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.naming.Context;
-
-import java.util.Hashtable;
-
-import org.jboss.as.naming.InitialContext;
-import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.EJBClientContext;
 
 /**
  * @author Jaikiran Pai

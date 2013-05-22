@@ -22,9 +22,8 @@
 
 package org.jboss.as.web.security.jaspi.modules;
 
-import org.apache.catalina.connector.Request;
-import org.apache.catalina.connector.Response;
-import org.jboss.as.web.security.jaspi.WebJASPICallbackHandler;
+import java.security.Principal;
+import java.util.Map;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -38,8 +37,10 @@ import javax.security.auth.message.callback.PasswordValidationCallback;
 import javax.security.auth.message.module.ServerAuthModule;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.security.Principal;
-import java.util.Map;
+
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
+import org.jboss.as.web.security.jaspi.WebJASPICallbackHandler;
 
 /**
  * <p>

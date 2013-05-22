@@ -21,13 +21,14 @@
  */
 package org.jboss.as.ejb3.deployment.processors.annotation;
 
+import java.util.concurrent.TimeUnit;
+
+import javax.ejb.StatefulTimeout;
+
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
-
-import javax.ejb.StatefulTimeout;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Stuart Douglas

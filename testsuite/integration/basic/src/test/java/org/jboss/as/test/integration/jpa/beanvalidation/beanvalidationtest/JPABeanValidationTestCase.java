@@ -36,7 +36,6 @@ import org.jboss.as.test.integration.jpa.beanvalidation.Employee;
 import org.jboss.as.test.integration.jpa.beanvalidation.SFSB1;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;

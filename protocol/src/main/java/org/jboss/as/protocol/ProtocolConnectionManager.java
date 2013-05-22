@@ -22,10 +22,10 @@
 
 package org.jboss.as.protocol;
 
+import java.io.IOException;
+
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.Connection;
-
-import java.io.IOException;
 
 /**
  * A basic connection manager, notifying clients when the connection is closed or shutdown. The

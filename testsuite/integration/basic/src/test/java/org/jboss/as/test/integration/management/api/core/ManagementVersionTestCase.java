@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.management.api.core;
 
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
@@ -32,8 +34,6 @@ import org.jboss.dmr.Property;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 /**
  * Test for functionality added with AS7-2234.

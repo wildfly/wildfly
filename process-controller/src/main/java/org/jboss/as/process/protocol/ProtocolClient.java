@@ -22,18 +22,18 @@
 
 package org.jboss.as.process.protocol;
 
+import static org.jboss.as.process.protocol.ProtocolLogger.CLIENT_LOGGER;
+import static org.jboss.as.process.protocol.ProtocolMessages.MESSAGES;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 
-import org.jboss.as.process.protocol.Connection.ClosedCallback;
-
 import javax.net.SocketFactory;
 
-import static org.jboss.as.process.protocol.ProtocolLogger.CLIENT_LOGGER;
-import static org.jboss.as.process.protocol.ProtocolMessages.MESSAGES;
+import org.jboss.as.process.protocol.Connection.ClosedCallback;
 
 /**
  * A protocol client for management commands, which can also asynchronously receive protocol messages.

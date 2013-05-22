@@ -25,8 +25,8 @@ package org.jboss.as.logging;
 import java.io.IOException;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
+import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.SubsystemOperations;

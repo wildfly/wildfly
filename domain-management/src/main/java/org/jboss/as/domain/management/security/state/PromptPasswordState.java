@@ -22,11 +22,11 @@
 
 package org.jboss.as.domain.management.security.state;
 
-import org.jboss.as.domain.management.security.ConsoleWrapper;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.util.Arrays;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.as.domain.management.security.ConsoleWrapper;
 
 /**
  * State to prompt the user for a password

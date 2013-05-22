@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.ejb.ejb2.reference.eararchive;
 
 import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;

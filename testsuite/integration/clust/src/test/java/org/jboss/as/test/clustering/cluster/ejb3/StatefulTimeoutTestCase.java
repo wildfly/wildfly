@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.clustering.cluster.ejb3;
 
+import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+
 import javax.ejb.NoSuchEJBException;
 import javax.inject.Inject;
 import javax.naming.InitialContext;
@@ -43,8 +45,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 
 /**
  * Tests that the stateful timeout annotation works

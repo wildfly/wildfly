@@ -23,7 +23,6 @@ package org.jboss.as.jpa.validator;
 
 import java.util.Collections;
 import java.util.List;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 import javax.validation.ConstraintValidatorFactory;
 import javax.validation.MessageInterpolator;
@@ -38,6 +37,7 @@ import javax.validation.spi.ValidationProvider;
 import org.hibernate.validator.HibernateValidator;
 import org.hibernate.validator.HibernateValidatorConfiguration;
 import org.hibernate.validator.cfg.ConstraintMapping;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * This class lazily initialize the ValidatorFactory on the first usage

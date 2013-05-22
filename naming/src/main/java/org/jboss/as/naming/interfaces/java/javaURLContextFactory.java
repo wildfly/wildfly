@@ -22,13 +22,14 @@
 
 package org.jboss.as.naming.interfaces.java;
 
-import org.jboss.as.naming.NamingContext;
+import java.util.Hashtable;
 
 import javax.naming.CompositeName;
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.spi.ObjectFactory;
-import java.util.Hashtable;
+
+import org.jboss.as.naming.NamingContext;
 
 /**
  * Implementation of {@code ObjectFactory} used to create a {@code NamingContext} instances to support the java: namespace.

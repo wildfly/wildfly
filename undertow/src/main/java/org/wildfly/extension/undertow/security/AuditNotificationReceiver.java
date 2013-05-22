@@ -24,14 +24,13 @@
 
 package org.wildfly.extension.undertow.security;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import io.undertow.security.api.NotificationReceiver;
 import io.undertow.security.api.SecurityNotification;
 import io.undertow.security.api.SecurityNotification.EventType;
 import io.undertow.security.idm.Account;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jboss.security.audit.AuditEvent;
 import org.jboss.security.audit.AuditLevel;
 import org.jboss.security.audit.AuditManager;

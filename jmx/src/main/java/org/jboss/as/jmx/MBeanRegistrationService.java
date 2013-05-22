@@ -26,6 +26,7 @@ import static org.jboss.as.jmx.JmxLogger.ROOT_LOGGER;
 import static org.jboss.as.jmx.JmxMessages.MESSAGES;
 
 import java.lang.management.ManagementFactory;
+
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;

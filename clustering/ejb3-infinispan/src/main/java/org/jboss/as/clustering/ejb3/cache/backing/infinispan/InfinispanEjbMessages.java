@@ -22,10 +22,10 @@
 
 package org.jboss.as.clustering.ejb3.cache.backing.infinispan;
 
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 
 /**
  * InfinispanEjbMessages

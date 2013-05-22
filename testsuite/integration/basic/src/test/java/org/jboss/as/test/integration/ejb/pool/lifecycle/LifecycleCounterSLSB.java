@@ -27,7 +27,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.SessionContext;
-import javax.ejb.Singleton;
 import javax.ejb.Stateless;
 import javax.jms.JMSException;
 import javax.naming.InitialContext;

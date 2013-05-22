@@ -22,21 +22,21 @@
 
 package org.jboss.as.web.security.jaspi;
 
+import java.io.IOException;
+
+import javax.security.auth.Subject;
+import javax.servlet.ServletException;
+
 import org.apache.catalina.Context;
 import org.apache.catalina.Realm;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
+import org.jboss.as.web.WebLogger;
 import org.jboss.logging.Logger;
 import org.jboss.security.ServerAuthenticationManager;
 import org.jboss.security.auth.message.GenericMessageInfo;
 import org.jboss.security.plugins.auth.JASPIServerAuthenticationManager;
-
-import org.jboss.as.web.WebLogger;
-
-import javax.security.auth.Subject;
-import javax.servlet.ServletException;
-import java.io.IOException;
 
 /**
  * <p>

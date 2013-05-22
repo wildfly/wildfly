@@ -21,8 +21,9 @@
  */
 package org.jboss.as.ejb3.inflow;
 
-import javax.resource.spi.ActivationSpec;
 import java.util.Properties;
+
+import javax.resource.spi.ActivationSpec;
 
 /**
  * Connector 1.6 13.4.3 Endpoint Deployer

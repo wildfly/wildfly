@@ -21,9 +21,9 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.attribute;
 
-import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
-
 import java.util.Calendar;
+
+import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 
 /**
  * Represents the value of a hour constructed out of a {@link javax.ejb.ScheduleExpression#getHour()}

@@ -22,10 +22,10 @@
 
 package org.jboss.as.jacorb.service;
 
+import static java.security.AccessController.doPrivileged;
+
 import org.wildfly.security.manager.CreateThreadAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static java.security.AccessController.doPrivileged;
 
 /**
  * <p>

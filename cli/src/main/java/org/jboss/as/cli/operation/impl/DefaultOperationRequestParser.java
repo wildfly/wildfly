@@ -22,8 +22,8 @@
 package org.jboss.as.cli.operation.impl;
 
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.CommandLineParser;
+import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.parsing.ParserUtil;
 
 /**

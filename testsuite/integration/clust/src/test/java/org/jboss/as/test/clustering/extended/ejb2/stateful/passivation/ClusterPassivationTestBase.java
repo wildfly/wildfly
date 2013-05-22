@@ -33,8 +33,6 @@ import java.util.Map;
 
 import javax.naming.NamingException;
 
-import org.junit.Assert;
-
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -48,6 +46,7 @@ import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 
 /**

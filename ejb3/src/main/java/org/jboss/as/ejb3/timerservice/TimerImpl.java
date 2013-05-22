@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.concurrent.locks.ReentrantLock;
@@ -34,8 +36,6 @@ import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.ejb3.timerservice.task.TimerTask;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Implementation of EJB3.1 {@link Timer}

@@ -23,10 +23,6 @@ package org.jboss.as.embedded.ejb3;
 
 import static org.jboss.as.embedded.EmbeddedLogger.ROOT_LOGGER;
 
-import org.jboss.as.embedded.StandaloneServer;
-
-import javax.ejb.embeddable.EJBContainer;
-import javax.naming.Context;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -38,6 +34,11 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import javax.ejb.embeddable.EJBContainer;
+import javax.naming.Context;
+
+import org.jboss.as.embedded.StandaloneServer;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

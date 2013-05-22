@@ -22,12 +22,12 @@
 
 package org.jboss.as.ejb3.component.stateful;
 
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBClientContextIdentifier;
 import org.jboss.ejb.client.EJBLocator;
-
-import java.io.ObjectStreamException;
-import java.io.Serializable;
 
 /**
  * A serializable EJB proxy which serializes the {@link EJBLocator} and the {@link EJBClientContextIdentifier}

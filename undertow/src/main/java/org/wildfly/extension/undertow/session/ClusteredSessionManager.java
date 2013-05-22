@@ -26,8 +26,8 @@ package org.wildfly.extension.undertow.session;
 
 import org.jboss.as.clustering.web.DistributedCacheManager;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
-import org.wildfly.extension.undertow.session.notification.ClusteredSessionNotificationPolicy;
 import org.jboss.metadata.web.jboss.ReplicationTrigger;
+import org.wildfly.extension.undertow.session.notification.ClusteredSessionNotificationPolicy;
 
 /**
  * View of a Manager from a ClusteredSession.

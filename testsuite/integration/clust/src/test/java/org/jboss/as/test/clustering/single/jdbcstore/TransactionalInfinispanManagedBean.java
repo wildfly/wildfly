@@ -25,6 +25,7 @@ package org.jboss.as.test.clustering.single.jdbcstore;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+
 import javax.annotation.ManagedBean;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;

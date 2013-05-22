@@ -1,5 +1,14 @@
 package org.jboss.as.test.integration.ejb.iiop.naming;
 
+import java.rmi.NoSuchObjectException;
+import java.rmi.RemoteException;
+import java.util.Properties;
+
+import javax.ejb.RemoveException;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.rmi.PortableRemoteObject;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -11,14 +20,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.RemoveException;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.rmi.PortableRemoteObject;
-import java.rmi.NoSuchObjectException;
-import java.rmi.RemoteException;
-import java.util.Properties;
 
 /**
  * Tests that corba name lookups work from inside the AS itself

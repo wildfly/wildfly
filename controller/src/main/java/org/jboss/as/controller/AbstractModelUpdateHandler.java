@@ -22,12 +22,12 @@
 
 package org.jboss.as.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Base class for {@link OperationStepHandler} implementations for updating an existing managed resource.

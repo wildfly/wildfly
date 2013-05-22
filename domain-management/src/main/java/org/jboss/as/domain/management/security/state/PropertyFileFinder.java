@@ -22,9 +22,16 @@
 
 package org.jboss.as.domain.management.security.state;
 
-import org.jboss.as.domain.management.security.ConsoleWrapper;
-import org.jboss.as.domain.management.security.PropertiesFileLoader;
-import org.jboss.msc.service.StartException;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.APPLICATION_ROLES_PROPERTIES;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.APPLICATION_USERS_PROPERTIES;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.DOMAIN_BASE_DIR;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.DOMAIN_CONFIG_DIR;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.DOMAIN_CONFIG_USER_DIR;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.MGMT_USERS_PROPERTIES;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.SERVER_BASE_DIR;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.SERVER_CONFIG_DIR;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.SERVER_CONFIG_USER_DIR;
 
 import java.io.Closeable;
 import java.io.File;
@@ -40,8 +47,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-import static org.jboss.as.domain.management.security.AddPropertiesUser.*;
+import org.jboss.as.domain.management.security.ConsoleWrapper;
+import org.jboss.as.domain.management.security.PropertiesFileLoader;
+import org.jboss.msc.service.StartException;
 
 /**
  * The first state executed, responsible for searching for the relevant properties files.

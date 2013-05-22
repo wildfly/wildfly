@@ -22,15 +22,15 @@
 
 package org.jboss.as.pojo.descriptor;
 
-import org.jboss.as.pojo.service.BeanInfo;
-import org.jboss.as.pojo.service.DefaultBeanInfo;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+
+import org.jboss.as.pojo.service.BeanInfo;
+import org.jboss.as.pojo.service.DefaultBeanInfo;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 
 /**
  * Abstract config visitor node.

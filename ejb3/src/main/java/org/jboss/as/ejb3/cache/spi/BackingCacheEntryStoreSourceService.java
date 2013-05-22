@@ -24,8 +24,8 @@ package org.jboss.as.ejb3.cache.spi;
 
 import java.io.Serializable;
 
-import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.CacheFactoryService;
+import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;

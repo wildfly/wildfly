@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.jaxrs.async;
 
+import static org.junit.Assert.assertEquals;
+
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
@@ -35,8 +37,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Tests the JAX-RS async response functionality

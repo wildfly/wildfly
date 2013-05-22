@@ -22,6 +22,11 @@
 
 package org.jboss.as.ee.structure;
 
+import static org.jboss.as.ee.component.Attachments.COMPONENT_REGISTRY;
+import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+import static org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS;
+
 import java.util.List;
 import java.util.Map;
 
@@ -36,11 +41,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Logger;
-
-import static org.jboss.as.ee.component.Attachments.COMPONENT_REGISTRY;
-import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
-import static org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

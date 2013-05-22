@@ -21,9 +21,10 @@
  */
 package org.jboss.as.ejb3.timerservice.spi;
 
+import java.lang.reflect.Method;
+
 import javax.ejb.ScheduleExpression;
 import javax.ejb.TimerConfig;
-import java.lang.reflect.Method;
 
 /**
  * Holds data about an automatic timer

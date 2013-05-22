@@ -22,19 +22,22 @@
 
 package org.jboss.as.appclient.subsystem;
 
+import static org.jboss.as.appclient.subsystem.Constants.CONNECTION_PROPERTIES_URL;
+import static org.jboss.as.appclient.subsystem.Constants.HOST_URL;
+
 import java.io.File;
 import java.util.List;
 
 import org.jboss.as.appclient.deployment.ActiveApplicationClientProcessor;
 import org.jboss.as.appclient.deployment.AppClientJBossAllParser;
 import org.jboss.as.appclient.deployment.ApplicationClientDependencyProcessor;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.appclient.deployment.ApplicationClientManifestProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientParsingDeploymentProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientStartProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientStructureProcessor;
 import org.jboss.as.appclient.service.ApplicationClientDeploymentService;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -47,9 +50,6 @@ import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringPr
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.appclient.jboss.JBossClientMetaData;
 import org.jboss.msc.service.ServiceController;
-
-import static org.jboss.as.appclient.subsystem.Constants.CONNECTION_PROPERTIES_URL;
-import static org.jboss.as.appclient.subsystem.Constants.HOST_URL;
 
 /**
  * Add operation handler for the application client subsystem.

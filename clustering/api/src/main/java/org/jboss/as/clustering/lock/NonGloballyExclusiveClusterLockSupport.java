@@ -22,13 +22,13 @@
 
 package org.jboss.as.clustering.lock;
 
+import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
+
 import java.io.Serializable;
 
 import org.jboss.as.clustering.ClusterNode;
 import org.jboss.as.clustering.GroupMembershipNotifier;
 import org.jboss.as.clustering.GroupRpcDispatcher;
-
-import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
 
 /**
  * Support class for cluster locking scenarios where threads can hold a local lock on a category but not a cluster-wide lock.

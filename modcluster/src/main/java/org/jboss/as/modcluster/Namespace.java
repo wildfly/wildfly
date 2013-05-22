@@ -21,10 +21,10 @@
  */
 package org.jboss.as.modcluster;
 
+import java.util.List;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
-
-import java.util.List;
 
 /**
  * @author Jean-Frederic Clere

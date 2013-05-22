@@ -22,9 +22,9 @@
 
 package org.jboss.as.process;
 
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 
 /**
  * This module is using message IDs in the range 12000-12099.

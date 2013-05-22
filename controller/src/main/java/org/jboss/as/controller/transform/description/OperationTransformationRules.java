@@ -22,6 +22,10 @@
 
 package org.jboss.as.controller.transform.description;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+
+import java.util.Map;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -31,10 +35,6 @@ import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Map;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 
 /**
  * Custom operation transformation rules.

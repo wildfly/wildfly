@@ -22,6 +22,8 @@
 
 package org.jboss.as.xts;
 
+import java.lang.reflect.Method;
+
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
@@ -31,8 +33,6 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.narayana.txframework.impl.ServiceInvocationMeta;
 import org.jboss.narayana.txframework.impl.handlers.HandlerFactory;
 import org.jboss.narayana.txframework.impl.handlers.ProtocolHandler;
-
-import java.lang.reflect.Method;
 
 /**
  * @author paul.robinson@redhat.com 01/02/2013

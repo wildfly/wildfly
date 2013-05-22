@@ -24,11 +24,12 @@ package org.jboss.as.test.smoke.messaging.client.messaging;
 
 import static org.junit.Assert.assertNotNull;
 
-import javax.resource.spi.IllegalStateException;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.resource.spi.IllegalStateException;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;

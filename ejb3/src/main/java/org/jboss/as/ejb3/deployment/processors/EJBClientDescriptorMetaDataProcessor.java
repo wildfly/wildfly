@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import java.util.Properties;
+
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
 import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.ejb3.EjbLogger;
@@ -48,8 +50,6 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.xnio.Option;
 import org.xnio.OptionMap;
-
-import java.util.Properties;
 
 /**
  * A deployment unit processor which processing only top level deployment units and checks for the presence

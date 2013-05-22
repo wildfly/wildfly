@@ -21,6 +21,10 @@
  */
 package org.jboss.as.test.integration.weld.ejb;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.beans.XMLDecoder;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -44,10 +48,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.stdio.WriterOutputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Test two things:

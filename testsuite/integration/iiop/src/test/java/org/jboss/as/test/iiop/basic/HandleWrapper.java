@@ -1,7 +1,5 @@
 package org.jboss.as.test.iiop.basic;
 
-import org.jboss.ejb.client.EJBHandle;
-
 import javax.ejb.Handle;
 
 /**

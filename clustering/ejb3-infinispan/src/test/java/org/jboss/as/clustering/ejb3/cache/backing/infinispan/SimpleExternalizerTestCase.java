@@ -1,11 +1,11 @@
 package org.jboss.as.clustering.ejb3.cache.backing.infinispan;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.HashSet;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.UUID;
-
-import static org.junit.Assert.*;
 
 import org.jboss.as.clustering.SimpleMarshalledValue;
 import org.jboss.as.clustering.infinispan.io.SimpleExternalizer;

@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,8 +45,6 @@ import org.jboss.metadata.javaee.spec.EJBReferenceMetaData;
 import org.jboss.metadata.javaee.spec.EJBReferencesMetaData;
 import org.jboss.metadata.javaee.spec.Environment;
 import org.jboss.metadata.javaee.spec.RemoteEnvironment;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Deployment processor responsible for processing ejb references from deployment descriptors

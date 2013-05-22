@@ -21,6 +21,14 @@
  */
 package org.jboss.as.weld.deployment;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArraySet;
+
 import org.jboss.as.weld.WeldModuleResourceLoader;
 import org.jboss.modules.Module;
 import org.jboss.weld.bootstrap.api.ServiceRegistry;
@@ -30,14 +38,6 @@ import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jboss.weld.util.reflection.Reflections;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Implementation of {@link BeanDeploymentArchive}.

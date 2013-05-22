@@ -39,6 +39,7 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
 
 import java.util.EnumSet;
 import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 

@@ -22,12 +22,12 @@
 
 package org.jboss.as.ejb3.component.stateful;
 
+import java.io.IOException;
+
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.ObjectTable;
 import org.jboss.marshalling.Unmarshaller;
-
-import java.io.IOException;
 
 /**
  * By default, EJB proxies don't serialize the {@link org.jboss.ejb.client.EJBClientContextIdentifier} associated with them,

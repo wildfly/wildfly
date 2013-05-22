@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.deployment.processors.dd;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
@@ -32,8 +34,6 @@ import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefsMetaData;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Sets up the {@link EJBComponentDescription} with the &lt;security-role-ref&gt;s declared for a EJB
  *

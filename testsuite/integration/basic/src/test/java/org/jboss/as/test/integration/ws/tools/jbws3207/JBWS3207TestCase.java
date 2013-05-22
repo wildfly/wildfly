@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.integration.ws.tools.jbws3207;
 
+import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.junit.Assert.assertTrue;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -44,9 +47,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.protocol.StreamUtils.safeClose;
-import static org.junit.Assert.assertTrue;
 
 /**
  * [JBWS-3207] JBossWS remote deployer support.

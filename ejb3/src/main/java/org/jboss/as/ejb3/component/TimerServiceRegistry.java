@@ -22,12 +22,13 @@
 
 package org.jboss.as.ejb3.component;
 
-import javax.ejb.Timer;
-import javax.ejb.TimerService;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.ejb.Timer;
+import javax.ejb.TimerService;
 
 /**
  * A registry to which individual {@link javax.ejb.TimerService timer services} can register to (and un-register from). The main purpose

@@ -22,7 +22,9 @@
 package org.jboss.as.test.integration.ejb.transaction.cmt.timeout;
 
 import java.util.concurrent.TimeUnit;
+
 import javax.ejb.Local;
+
 import org.jboss.ejb3.annotation.TransactionTimeout;
 
 @Local

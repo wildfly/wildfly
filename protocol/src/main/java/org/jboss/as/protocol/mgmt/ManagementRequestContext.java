@@ -22,10 +22,10 @@
 
 package org.jboss.as.protocol.mgmt;
 
-import org.jboss.remoting3.Channel;
-
 import java.io.IOException;
 import java.util.concurrent.Executor;
+
+import org.jboss.remoting3.Channel;
 
 /**
  * The context for handling request.

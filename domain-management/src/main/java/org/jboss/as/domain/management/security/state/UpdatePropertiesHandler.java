@@ -23,14 +23,14 @@
 
 package org.jboss.as.domain.management.security.state;
 
-import org.jboss.as.domain.management.security.ConsoleWrapper;
-import org.jboss.sasl.util.UsernamePasswordHashUtil;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.NEW_LINE;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.jboss.as.domain.management.security.AddPropertiesUser.NEW_LINE;
+import org.jboss.as.domain.management.security.ConsoleWrapper;
+import org.jboss.sasl.util.UsernamePasswordHashUtil;
 
 public abstract class UpdatePropertiesHandler {
 

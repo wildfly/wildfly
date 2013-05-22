@@ -22,9 +22,9 @@
 
 package org.jboss.as.pojo.descriptor;
 
-import org.jboss.as.pojo.BeanState;
-
 import java.io.Serializable;
+
+import org.jboss.as.pojo.BeanState;
 
 /**
  * Callback meta data.

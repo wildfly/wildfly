@@ -28,6 +28,7 @@ import javax.ejb.Remote;
 import javax.ejb.RemoteHome;
 import javax.ejb.Stateless;
 import javax.naming.InitialContext;
+
 import org.jboss.logging.Logger;
 
 /**

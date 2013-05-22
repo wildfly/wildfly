@@ -21,6 +21,8 @@
  */
 package org.jboss.as.jpa.puparser;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.StringReader;
 
 import javax.xml.stream.XMLInputFactory;
@@ -30,8 +32,6 @@ import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.metadata.property.PropertyReplacers;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

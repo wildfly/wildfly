@@ -22,6 +22,8 @@
 
 package org.jboss.as.protocol.mgmt;
 
+import java.io.IOException;
+
 import org.jboss.as.protocol.ProtocolConnectionConfiguration;
 import org.jboss.as.protocol.ProtocolConnectionManager;
 import org.jboss.as.protocol.ProtocolMessages;
@@ -31,8 +33,6 @@ import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.Connection;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
-
-import java.io.IOException;
 
 /**
  * Base class for a connecting {@code ManagementClientChannelStrategy}.

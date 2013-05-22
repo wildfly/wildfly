@@ -22,9 +22,9 @@
 
 package org.jboss.as.network;
 
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 
 /**
  * Date: 24.06.2011

@@ -22,14 +22,14 @@
 
 package org.jboss.as.domain.management.security.state;
 
-import org.jboss.as.domain.management.security.ConsoleWrapper;
-import org.jboss.msc.service.StartException;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.as.domain.management.security.ConsoleWrapper;
+import org.jboss.msc.service.StartException;
 
 /**
  * Describe the purpose

@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.jca.annorar;
 import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.Set;
-
 import java.util.logging.Logger;
 
 import javax.resource.ResourceException;
@@ -36,7 +35,6 @@ import javax.resource.spi.ManagedConnection;
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterAssociation;
-
 import javax.security.auth.Subject;
 
 /**

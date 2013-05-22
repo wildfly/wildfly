@@ -22,9 +22,9 @@
 
 package org.jboss.as.naming.deployment;
 
-import org.jboss.msc.service.ServiceName;
-
 import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author John Bailey

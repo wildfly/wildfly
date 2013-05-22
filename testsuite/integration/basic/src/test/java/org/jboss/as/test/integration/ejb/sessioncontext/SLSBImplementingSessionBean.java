@@ -22,12 +22,13 @@
 
 package org.jboss.as.test.integration.ejb.sessioncontext;
 
+import java.rmi.RemoteException;
+
 import javax.annotation.Resource;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
-import java.rmi.RemoteException;
 
 /**
  * User: jpai

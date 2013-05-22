@@ -24,14 +24,14 @@ package org.jboss.as.web.security;
 
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 import org.jboss.security.RunAs;
 import org.jboss.security.RunAsIdentity;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
-
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

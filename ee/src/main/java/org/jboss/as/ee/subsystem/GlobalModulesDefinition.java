@@ -22,10 +22,10 @@
 
 package org.jboss.as.ee.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;

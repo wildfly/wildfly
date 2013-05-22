@@ -21,6 +21,9 @@
  */
 package org.jboss.as.clustering.web.infinispan;
 
+import static org.jboss.as.clustering.web.infinispan.InfinispanWebLogger.ROOT_LOGGER;
+import static org.jboss.as.clustering.web.infinispan.InfinispanWebMessages.MESSAGES;
+
 import java.io.IOException;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -54,9 +57,6 @@ import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.clustering.web.SessionOwnershipSupport;
 import org.jboss.as.clustering.web.impl.IncomingDistributableSessionDataImpl;
-
-import static org.jboss.as.clustering.web.infinispan.InfinispanWebLogger.ROOT_LOGGER;
-import static org.jboss.as.clustering.web.infinispan.InfinispanWebMessages.MESSAGES;
 
 /**
  * Distributed cache manager implementation using Infinispan.

@@ -21,17 +21,18 @@
  */
 package org.jboss.as.ejb3.inflow;
 
-import org.jboss.invocation.proxy.ProxyConfiguration;
-import org.jboss.invocation.proxy.ProxyFactory;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
+import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.resource.spi.UnavailableException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.xa.XAResource;
-import java.lang.reflect.Method;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import org.jboss.invocation.proxy.ProxyConfiguration;
+import org.jboss.invocation.proxy.ProxyFactory;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

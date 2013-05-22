@@ -22,12 +22,13 @@
 
 package org.jboss.as.naming;
 
-import org.jboss.msc.service.ServiceName;
+import java.util.Hashtable;
 
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.Reference;
-import java.util.Hashtable;
+
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author John Bailey

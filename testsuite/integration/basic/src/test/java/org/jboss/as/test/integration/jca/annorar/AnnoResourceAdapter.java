@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.jca.annorar;
 
 import java.util.concurrent.ConcurrentHashMap;
-
 import java.util.logging.Logger;
 
 import javax.resource.ResourceException;
@@ -39,7 +38,6 @@ import javax.resource.spi.TransactionSupport;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.HintsContext;
 import javax.resource.spi.work.TransactionContext;
-
 import javax.transaction.xa.XAResource;
 
 /**

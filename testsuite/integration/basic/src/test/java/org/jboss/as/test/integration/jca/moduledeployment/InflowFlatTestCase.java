@@ -27,6 +27,9 @@ import static org.junit.Assert.assertNotNull;
 import java.util.List;
 import java.util.Set;
 
+import javax.inject.Inject;
+import javax.resource.spi.ActivationSpec;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -48,9 +51,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.inject.Inject;
-import javax.resource.spi.ActivationSpec;
 
 /**
  * AS7-5768 -Support for RA module deployment

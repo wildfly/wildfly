@@ -22,11 +22,11 @@
 
 package org.jboss.as.jaxr.extension;
 
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.dmr.ModelType;
 
 /**

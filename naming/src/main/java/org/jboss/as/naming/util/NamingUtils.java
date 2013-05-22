@@ -22,6 +22,11 @@
 
 package org.jboss.as.naming.util;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
+import java.util.Collection;
+import java.util.Iterator;
+
 import javax.naming.CannotProceedException;
 import javax.naming.Context;
 import javax.naming.InvalidNameException;
@@ -31,11 +36,6 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.NotContextException;
-
-import java.util.Collection;
-import java.util.Iterator;
-
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * Common utility functions used by the naming implementation.

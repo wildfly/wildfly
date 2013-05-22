@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.context;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.SessionContext;
@@ -37,8 +39,6 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.invocation.InterceptorContext;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Implementation of the SessionContext interface.

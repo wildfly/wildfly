@@ -15,8 +15,9 @@
  */
 package org.jboss.as.test.integration.ejb.mdb.dynamic.adapter;
 
-import org.jboss.as.test.integration.ejb.mdb.dynamic.api.TelnetListener;
-import org.jboss.as.test.integration.ejb.mdb.dynamic.impl.TelnetServer;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
@@ -27,9 +28,9 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+
+import org.jboss.as.test.integration.ejb.mdb.dynamic.api.TelnetListener;
+import org.jboss.as.test.integration.ejb.mdb.dynamic.impl.TelnetServer;
 
 /**
  * @version $Revision$ $Date$

@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.remote;
 
+import java.io.IOException;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -29,8 +31,6 @@ import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.dmr.ModelNode;
-
-import java.io.IOException;
 
 /**
  * @author Emanuel Muckenhuber

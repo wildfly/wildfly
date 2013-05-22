@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.json;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
+
 import javax.json.Json;
 import javax.json.stream.JsonParser;
 import javax.json.stream.JsonParser.Event;

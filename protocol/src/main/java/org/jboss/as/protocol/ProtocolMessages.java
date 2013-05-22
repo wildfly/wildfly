@@ -26,10 +26,10 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
 
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 
 /**
  * This module is using message IDs in the range 12100-12199.

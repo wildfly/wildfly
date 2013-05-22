@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.integration.common.jms;
 
-import org.jboss.as.arquillian.container.ManagementClient;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+
+import org.jboss.as.arquillian.container.ManagementClient;
 
 /**
  * Utility class for getting implementations of JMSOperations interface

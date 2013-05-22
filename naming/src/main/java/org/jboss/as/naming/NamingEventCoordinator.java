@@ -22,16 +22,8 @@
 
 package org.jboss.as.naming;
 
-import java.util.concurrent.ThreadFactory;
-import org.jboss.as.naming.util.FastCopyHashMap;
+import static java.security.AccessController.doPrivileged;
 
-import javax.naming.Binding;
-import javax.naming.Name;
-import javax.naming.event.EventContext;
-import javax.naming.event.NamespaceChangeListener;
-import javax.naming.event.NamingEvent;
-import javax.naming.event.NamingListener;
-import javax.naming.event.ObjectChangeListener;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -41,10 +33,19 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import org.wildfly.security.manager.GetAccessControlContextAction;
-import org.jboss.threads.JBossThreadFactory;
+import java.util.concurrent.ThreadFactory;
 
-import static java.security.AccessController.doPrivileged;
+import javax.naming.Binding;
+import javax.naming.Name;
+import javax.naming.event.EventContext;
+import javax.naming.event.NamespaceChangeListener;
+import javax.naming.event.NamingEvent;
+import javax.naming.event.NamingListener;
+import javax.naming.event.ObjectChangeListener;
+
+import org.jboss.as.naming.util.FastCopyHashMap;
+import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 
 /**
  * Coordinator responsible for passing @(code NamingEvent} instances to registered @{code NamingListener} instances.  Two

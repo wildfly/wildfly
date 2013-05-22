@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import java.util.List;
+
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
@@ -31,8 +33,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
-
-import java.util.List;
 
 /**
  * A {@link org.jboss.as.server.deployment.DeploymentUnitProcessor} which processes EJB deployments and configures the

@@ -21,9 +21,9 @@
  */
 package org.jboss.as.jdr.util;
 
-import org.jboss.vfs.VirtualFile;
-
 import java.io.InputStream;
+
+import org.jboss.vfs.VirtualFile;
 
 public interface Sanitizer {
     InputStream sanitize(InputStream in) throws Exception;

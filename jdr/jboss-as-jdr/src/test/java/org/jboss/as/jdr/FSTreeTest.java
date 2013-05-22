@@ -1,14 +1,14 @@
 package org.jboss.as.jdr;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+
 import org.apache.commons.io.FileUtils;
 import org.jboss.as.jdr.util.FSTree;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.File;
-
-import static org.junit.Assert.assertEquals;
 
 public class FSTreeTest {
 

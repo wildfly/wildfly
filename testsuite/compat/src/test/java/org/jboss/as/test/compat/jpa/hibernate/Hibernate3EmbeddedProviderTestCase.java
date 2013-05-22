@@ -22,6 +22,9 @@
 
 package org.jboss.as.test.compat.jpa.hibernate;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 
 import javax.naming.InitialContext;
@@ -41,9 +44,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Scott Marlow

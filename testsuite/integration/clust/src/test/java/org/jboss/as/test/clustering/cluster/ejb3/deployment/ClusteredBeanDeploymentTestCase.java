@@ -21,9 +21,12 @@
  */
 package org.jboss.as.test.clustering.cluster.ejb3.deployment;
 
+import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.ClusteringTestConstants;
@@ -34,16 +37,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-
-import org.jboss.arquillian.junit.InSequence;
-import org.jboss.arquillian.test.api.ArquillianResource;
-
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
-
-import org.jboss.as.test.clustering.NodeUtil;
 
 /**
  * The purpose of this testcase is to ensure that a EJB marked as clustered, either via annotation or deployment descriptor,

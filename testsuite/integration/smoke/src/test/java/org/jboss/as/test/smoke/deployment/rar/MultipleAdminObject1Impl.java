@@ -25,7 +25,6 @@ import java.io.Serializable;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
-
 import javax.resource.Referenceable;
 import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterAssociation;

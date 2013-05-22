@@ -1,11 +1,11 @@
 package org.jboss.as.arquillian.container.managed;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * @author ggrossetie

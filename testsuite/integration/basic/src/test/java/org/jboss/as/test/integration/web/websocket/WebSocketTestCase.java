@@ -2,7 +2,6 @@ package org.jboss.as.test.integration.web.websocket;
 
 import java.net.URI;
 
-import javax.annotation.Resource;
 import javax.naming.InitialContext;
 import javax.websocket.Session;
 import javax.websocket.server.ServerContainer;

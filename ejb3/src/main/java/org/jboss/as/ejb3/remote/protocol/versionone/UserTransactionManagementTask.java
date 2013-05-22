@@ -22,15 +22,16 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import java.io.IOException;
+
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.UserTransactionID;
 import org.jboss.marshalling.MarshallerFactory;
 import org.xnio.IoUtils;
-
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import java.io.IOException;
 
 /**
  * @author Jaikiran Pai

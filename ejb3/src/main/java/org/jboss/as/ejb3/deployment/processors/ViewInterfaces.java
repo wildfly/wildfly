@@ -21,14 +21,14 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
-import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.DotName;
-
 import java.io.Externalizable;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

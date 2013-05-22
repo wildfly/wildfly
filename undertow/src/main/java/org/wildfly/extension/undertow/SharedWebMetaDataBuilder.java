@@ -24,22 +24,6 @@
 
 package org.wildfly.extension.undertow;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.metadata.javaee.spec.ParamValueMetaData;
-import org.jboss.metadata.web.spec.MimeMappingMetaData;
-import org.jboss.metadata.web.spec.ServletMappingMetaData;
-import org.jboss.metadata.web.spec.ServletMetaData;
-import org.jboss.metadata.web.spec.ServletsMetaData;
-import org.jboss.metadata.web.spec.SessionConfigMetaData;
-import org.jboss.metadata.web.spec.WebMetaData;
-import org.jboss.metadata.web.spec.WelcomeFileListMetaData;
-
 import static org.wildfly.extension.undertow.Constants.CHECK_INTERVAL;
 import static org.wildfly.extension.undertow.Constants.DEVELOPMENT;
 import static org.wildfly.extension.undertow.Constants.DISABLED;
@@ -68,6 +52,22 @@ import static org.wildfly.extension.undertow.Constants.TARGET_VM;
 import static org.wildfly.extension.undertow.Constants.TRIM_SPACES;
 import static org.wildfly.extension.undertow.Constants.WEBDAV;
 import static org.wildfly.extension.undertow.Constants.X_POWERED_BY;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.metadata.javaee.spec.ParamValueMetaData;
+import org.jboss.metadata.web.spec.MimeMappingMetaData;
+import org.jboss.metadata.web.spec.ServletMappingMetaData;
+import org.jboss.metadata.web.spec.ServletMetaData;
+import org.jboss.metadata.web.spec.ServletsMetaData;
+import org.jboss.metadata.web.spec.SessionConfigMetaData;
+import org.jboss.metadata.web.spec.WebMetaData;
+import org.jboss.metadata.web.spec.WelcomeFileListMetaData;
 
 /**
  * Internal helper creating a shared web.xml based on the domain configuration.

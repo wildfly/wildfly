@@ -22,12 +22,12 @@
 
 package org.jboss.as.clustering.web.impl;
 
+import static org.jboss.as.clustering.web.impl.ClusteringWebMessages.MESSAGES;
+
 import java.util.Map;
 
 import org.jboss.as.clustering.web.DistributableSessionMetadata;
 import org.jboss.as.clustering.web.IncomingDistributableSessionData;
-
-import static org.jboss.as.clustering.web.impl.ClusteringWebMessages.MESSAGES;
 
 /**
  * Base implementation of {@link IncomingDistributableSessionData}.

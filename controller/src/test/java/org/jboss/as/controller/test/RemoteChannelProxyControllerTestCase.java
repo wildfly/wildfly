@@ -21,6 +21,8 @@
 */
 package org.jboss.as.controller.test;
 
+import java.io.IOException;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
@@ -33,8 +35,6 @@ import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.junit.After;
-
-import java.io.IOException;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>

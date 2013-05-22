@@ -16,9 +16,8 @@
  */
 package org.jboss.as.weld.discovery;
 
-import org.jboss.jandex.DotName;
-
 import com.google.common.base.Function;
+import org.jboss.jandex.DotName;
 
 class AnnotationType {
 

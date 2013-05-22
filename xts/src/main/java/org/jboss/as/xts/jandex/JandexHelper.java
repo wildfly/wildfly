@@ -22,13 +22,13 @@
 
 package org.jboss.as.xts.jandex;
 
+import java.util.List;
+
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-
-import java.util.List;
 
 
 /**

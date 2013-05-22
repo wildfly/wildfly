@@ -23,6 +23,8 @@ package org.jboss.as.test.integration.ws.ejb;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import java.net.URL;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -32,8 +34,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.net.URL;
 
 /**
  * EJB 3.1 FR 3.2.4 Stateless session beans and Singleton session beans may have web service clients.

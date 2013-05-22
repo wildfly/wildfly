@@ -21,9 +21,10 @@
 */
 package org.jboss.as.core.model.test;
 
-import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.util.List;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.model.test.ModelTestControllerVersion;

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.appclient.deployment;
 
+import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -49,8 +51,6 @@ import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.vfs.VirtualFile;
-
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * @author Stuart Douglas

@@ -27,10 +27,11 @@
  */
 package org.jboss.as.test.xts.simple.wsat.jaxws;
 
-import org.jboss.as.test.xts.simple.wsat.RestaurantException;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
+
+import org.jboss.as.test.xts.simple.wsat.RestaurantException;
 
 /**
  * Interface to a simple Restaurant. Provides simple methods to manipulate bookings.

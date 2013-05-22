@@ -21,6 +21,8 @@
  */
 package org.jboss.as.clustering.impl;
 
+import static org.jboss.as.clustering.impl.ClusteringImplMessages.MESSAGES;
+
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -98,8 +100,6 @@ import org.jgroups.stack.IpAddress;
 import org.jgroups.util.Buffer;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
-
-import static org.jboss.as.clustering.impl.ClusteringImplMessages.MESSAGES;
 
 /**
  * Implementation of the {@link GroupCommunicationService} interface and its direct subinterfaces based on a <a

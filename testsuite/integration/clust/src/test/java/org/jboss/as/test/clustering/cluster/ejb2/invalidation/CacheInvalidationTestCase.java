@@ -22,6 +22,13 @@
 
 package org.jboss.as.test.clustering.cluster.ejb2.invalidation;
 
+import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+
+import java.io.IOException;
+
+import javax.ejb.CreateException;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -52,13 +59,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.CreateException;
-import javax.naming.NamingException;
-
-import java.io.IOException;
-
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 
 /**
  * Port of CacheInvalidationUnitTestCase from AS5 testsuite

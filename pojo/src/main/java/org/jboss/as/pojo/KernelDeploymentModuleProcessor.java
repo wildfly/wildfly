@@ -22,6 +22,8 @@
 
 package org.jboss.as.pojo;
 
+import java.util.List;
+
 import org.jboss.as.pojo.descriptor.BaseBeanFactory;
 import org.jboss.as.pojo.descriptor.KernelDeploymentXmlDescriptor;
 import org.jboss.as.server.deployment.Attachments;
@@ -36,8 +38,6 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilter;
 import org.jboss.modules.filter.PathFilters;
-
-import java.util.List;
 
 /**
  * Check if we have any bean factories, as we need the POJO module api.

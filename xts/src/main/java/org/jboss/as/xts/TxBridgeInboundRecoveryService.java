@@ -24,8 +24,8 @@ package org.jboss.as.xts;
 import org.jboss.jbossts.txbridge.inbound.InboundBridgeRecoveryManager;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StopContext;
 import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

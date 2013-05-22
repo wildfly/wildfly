@@ -21,9 +21,9 @@
  */
 package org.jboss.as.ee.beanvalidation;
 
-import org.jboss.as.server.deployment.AttachmentKey;
-
 import javax.validation.ValidatorFactory;
+
+import org.jboss.as.server.deployment.AttachmentKey;
 
 /**
  * @author Stuart Douglas

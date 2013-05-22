@@ -21,9 +21,11 @@ package org.jboss.as.cli.gui.component;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+
 import javax.swing.ButtonGroup;
 import javax.swing.JRadioButton;
 import javax.swing.table.AbstractTableModel;
+
 import org.jboss.as.cli.gui.CliGuiContext;
 import org.jboss.dmr.ModelNode;
 

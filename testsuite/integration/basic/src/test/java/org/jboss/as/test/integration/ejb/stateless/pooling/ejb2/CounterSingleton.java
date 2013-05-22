@@ -1,6 +1,7 @@
 package org.jboss.as.test.integration.ejb.stateless.pooling.ejb2;
 
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 

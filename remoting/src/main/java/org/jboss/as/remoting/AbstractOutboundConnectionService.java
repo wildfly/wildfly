@@ -26,11 +26,12 @@ import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 import static org.xnio.Options.SSL_ENABLED;
 import static org.xnio.Options.SSL_STARTTLS;
 
+import java.io.IOException;
+
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
-import java.io.IOException;
 
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;

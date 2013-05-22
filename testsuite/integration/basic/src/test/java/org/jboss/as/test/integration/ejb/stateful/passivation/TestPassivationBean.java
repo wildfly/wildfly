@@ -37,6 +37,7 @@ import javax.interceptor.Interceptors;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
+
 import org.jboss.ejb3.annotation.Cache;
 import org.jboss.logging.Logger;
 

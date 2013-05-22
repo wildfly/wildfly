@@ -22,12 +22,13 @@
  */
 package org.jboss.as.web.deployment;
 
-import org.apache.jasper.runtime.JspApplicationContextImpl;
-import org.jboss.as.web.common.ExpressionFactoryWrapper;
+import java.util.List;
 
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
-import java.util.List;
+
+import org.apache.jasper.runtime.JspApplicationContextImpl;
+import org.jboss.as.web.common.ExpressionFactoryWrapper;
 
 /**
  * Listener that allows the expression factory to be wrapped

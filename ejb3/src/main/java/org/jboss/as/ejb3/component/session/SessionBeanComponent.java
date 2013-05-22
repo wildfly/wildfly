@@ -22,6 +22,9 @@
 package org.jboss.as.ejb3.component.session;
 
 
+import static java.util.Collections.emptyMap;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -33,9 +36,6 @@ import javax.ejb.TransactionAttributeType;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.invocation.InterceptorContext;
-
-import static java.util.Collections.emptyMap;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */

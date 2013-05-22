@@ -21,8 +21,9 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.value;
 
-import java.util.StringTokenizer;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
+import java.util.StringTokenizer;
 
 /**
  * Represents a value for a {@link ScheduleExpression} which is expressed as an increment type. An

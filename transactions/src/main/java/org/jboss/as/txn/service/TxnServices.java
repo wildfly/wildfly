@@ -22,9 +22,9 @@
 
 package org.jboss.as.txn.service;
 
-import org.jboss.msc.service.ServiceName;
-
 import static org.jboss.as.txn.TransactionMessages.MESSAGES;
+
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

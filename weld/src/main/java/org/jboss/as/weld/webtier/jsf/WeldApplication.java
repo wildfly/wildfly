@@ -16,14 +16,14 @@
  */
 package org.jboss.as.weld.webtier.jsf;
 
-import org.jboss.weld.el.WeldELContextListener;
-
 import javax.el.ELResolver;
 import javax.el.ExpressionFactory;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.faces.application.Application;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
+import org.jboss.weld.el.WeldELContextListener;
 
 /**
  * @author pmuir

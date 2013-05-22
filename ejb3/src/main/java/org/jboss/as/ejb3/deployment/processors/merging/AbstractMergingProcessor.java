@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.util.Collection;
 
 import org.jboss.as.ee.component.Attachments;
@@ -38,7 +40,6 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.modules.Module;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Superclass for the EJB metadata merging processors
  *

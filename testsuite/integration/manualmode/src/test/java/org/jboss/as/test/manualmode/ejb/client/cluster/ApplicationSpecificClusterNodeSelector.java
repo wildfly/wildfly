@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.manualmode.ejb.client.cluster;
 
-import org.jboss.ejb.client.ClusterNodeSelector;
-
 import java.util.Random;
+
+import org.jboss.ejb.client.ClusterNodeSelector;
 
 /**
  * @author Jaikiran Pai

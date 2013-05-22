@@ -21,14 +21,14 @@
  */
 package org.jboss.as.jdr.util;
 
-import org.jboss.vfs.VirtualFileFilter;
-
-import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.jboss.vfs.VirtualFileFilter;
 
 /**
  * {@link Sanitizer} subclass that replaces all instance of {@code pattern} with

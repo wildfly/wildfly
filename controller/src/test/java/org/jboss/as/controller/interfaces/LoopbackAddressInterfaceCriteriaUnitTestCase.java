@@ -22,8 +22,11 @@
 
 package org.jboss.as.controller.interfaces;
 
-import static org.jboss.as.controller.interfaces.InterfaceCriteriaTestUtil.*;
-import static org.junit.Assert.*;
+import static org.jboss.as.controller.interfaces.InterfaceCriteriaTestUtil.allCandidates;
+import static org.jboss.as.controller.interfaces.InterfaceCriteriaTestUtil.loopbackInterfaces;
+import static org.jboss.as.controller.interfaces.InterfaceCriteriaTestUtil.nonLoopBackInterfaces;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;

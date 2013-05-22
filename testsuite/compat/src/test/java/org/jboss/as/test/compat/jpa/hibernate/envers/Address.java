@@ -24,6 +24,7 @@ package org.jboss.as.test.compat.jpa.hibernate.envers;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;

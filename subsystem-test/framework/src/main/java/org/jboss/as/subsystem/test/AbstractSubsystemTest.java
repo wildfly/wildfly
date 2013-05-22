@@ -1,10 +1,11 @@
 package org.jboss.as.subsystem.test;
 
-import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ModelVersion;

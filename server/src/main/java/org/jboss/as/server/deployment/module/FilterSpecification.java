@@ -23,6 +23,7 @@
 package org.jboss.as.server.deployment.module;
 
 import java.io.Serializable;
+
 import org.jboss.modules.filter.PathFilter;
 
 /**

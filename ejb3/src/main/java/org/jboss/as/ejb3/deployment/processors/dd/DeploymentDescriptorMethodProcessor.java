@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.deployment.processors.dd;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 
 import javax.interceptor.InvocationContext;
@@ -48,8 +50,6 @@ import org.jboss.metadata.ejb.spec.MessageDrivenBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbacksMetaData;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Deployment descriptor that resolves interceptor methods defined in ejb-jar.xml that could not be resolved at

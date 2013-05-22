@@ -22,6 +22,8 @@
 
 package org.jboss.as.naming.context;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Hashtable;
@@ -42,8 +44,6 @@ import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceContainer;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * ObjectFactoryBuilder implementation used to support custom object factories being loaded from modules. This class

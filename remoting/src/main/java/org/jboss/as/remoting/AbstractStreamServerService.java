@@ -21,6 +21,9 @@
 */
 package org.jboss.as.remoting;
 
+import static org.jboss.as.remoting.RemotingLogger.ROOT_LOGGER;
+import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
+
 import java.net.BindException;
 import java.net.InetSocketAddress;
 
@@ -40,9 +43,6 @@ import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 import org.xnio.channels.AcceptingChannel;
 import org.xnio.channels.ConnectedStreamChannel;
-
-import static org.jboss.as.remoting.RemotingLogger.*;
-import static org.jboss.as.remoting.RemotingMessages.*;
 
 /**
  * Contains the remoting stream server

@@ -30,8 +30,8 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 
 /**

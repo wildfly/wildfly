@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ee.component.deployers;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.ee.utils.InjectionUtils.getInjectionTarget;
+
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -50,9 +53,6 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.javaee.spec.ResourceInjectionMetaData;
 import org.jboss.metadata.javaee.spec.ResourceInjectionTargetMetaData;
 import org.jboss.modules.Module;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-import static org.jboss.as.ee.utils.InjectionUtils.getInjectionTarget;
 
 /**
  * Class that provides common functionality required by processors that process environment information from deployment descriptors.

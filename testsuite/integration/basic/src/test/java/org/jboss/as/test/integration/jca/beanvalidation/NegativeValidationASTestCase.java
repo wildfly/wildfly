@@ -22,18 +22,20 @@
 package org.jboss.as.test.integration.jca.beanvalidation;
 
 import static org.junit.Assert.*;
+
 import java.util.List;
 import java.util.Set;
+
+import javax.inject.Inject;
+import javax.resource.spi.ActivationSpec;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidActivationSpec;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactory;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidMessageEndpoint;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidMessageEndpointFactory;
-
-import javax.inject.Inject;
-import javax.resource.spi.ActivationSpec;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.rar.Endpoint;
 import org.jboss.jca.core.spi.rar.MessageListener;
@@ -41,11 +43,10 @@ import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.*;
 import org.junit.runner.RunWith;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a> JBQA-5906

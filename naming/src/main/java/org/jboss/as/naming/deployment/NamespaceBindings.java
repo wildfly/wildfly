@@ -22,13 +22,13 @@
 
 package org.jboss.as.naming.deployment;
 
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.DeploymentUnit;
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
+import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.DeploymentUnit;
 
 /**
  * Configuration object used to managed a collection a JNDI namespace bindings for a deployment.  This is primarily used

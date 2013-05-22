@@ -21,6 +21,10 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.weld.ejb.EjbDescriptorImpl;
 import org.jboss.as.weld.ejb.SessionObjectReferenceImpl;
 import org.jboss.as.weld.ejb.StatefulSessionObjectReferenceImpl;
@@ -29,10 +33,6 @@ import org.jboss.weld.ejb.api.SessionObjectReference;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.ejb.spi.InterceptorBindings;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * EjbServices implementation

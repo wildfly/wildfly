@@ -21,6 +21,13 @@
  */
 package org.jboss.as.ejb3.component.messagedriven;
 
+import static java.security.AccessController.doPrivileged;
+import static java.util.Collections.emptyMap;
+import static javax.ejb.TransactionAttributeType.REQUIRED;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.component.MethodIntf.BEAN;
+
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -42,19 +49,11 @@ import org.jboss.as.ejb3.inflow.MessageEndpointService;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
 import org.jboss.as.naming.ManagedReference;
-import org.wildfly.security.manager.GetClassLoaderAction;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.jca.core.spi.rar.Endpoint;
+import org.wildfly.security.manager.GetClassLoaderAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static java.security.AccessController.doPrivileged;
-import static java.util.Collections.emptyMap;
-import static javax.ejb.TransactionAttributeType.REQUIRED;
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.component.MethodIntf.BEAN;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

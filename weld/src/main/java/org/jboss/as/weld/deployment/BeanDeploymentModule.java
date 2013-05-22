@@ -21,12 +21,12 @@
  */
 package org.jboss.as.weld.deployment;
 
-import org.jboss.weld.bootstrap.api.Service;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.jboss.weld.bootstrap.api.Service;
 
 /**
  * A collection of Bean Deployment archives that share similar bean visibility.

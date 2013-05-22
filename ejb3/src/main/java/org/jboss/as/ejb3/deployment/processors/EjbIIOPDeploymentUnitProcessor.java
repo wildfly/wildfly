@@ -22,6 +22,8 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
@@ -75,8 +77,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.omg.CORBA.ORB;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.PortableServer.POA;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * This is the DUP that sets up IIOP for EJB's

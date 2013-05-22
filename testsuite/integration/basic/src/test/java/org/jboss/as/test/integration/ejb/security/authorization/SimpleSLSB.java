@@ -22,12 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.security.authorization;
 
-import org.jboss.ejb3.annotation.SecurityDomain;
-
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
+
+import org.jboss.ejb3.annotation.SecurityDomain;
 
 /**
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.

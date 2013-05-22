@@ -37,10 +37,10 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.handlers.ServletChain;
 import io.undertow.servlet.handlers.ServletRequestContext;
 import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
-import org.wildfly.extension.undertow.UndertowLogger;
 import org.jboss.security.RunAsIdentity;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityRolesAssociation;
+import org.wildfly.extension.undertow.UndertowLogger;
 
 public class SecurityContextAssociationHandler implements HttpHandler {
 

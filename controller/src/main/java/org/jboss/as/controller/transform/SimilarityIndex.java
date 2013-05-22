@@ -22,13 +22,13 @@
 
 package org.jboss.as.controller.transform;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-
-import java.util.ArrayList;
-import java.util.Collections;
 
 /**
  * original code taken from http://www.catalysoft.com/articles/StrikeAMatch.html

@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api.tx;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import java.io.Serializable;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
 /**
  * User: jpai

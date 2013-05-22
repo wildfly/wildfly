@@ -26,17 +26,16 @@ import java.util.Map;
 
 import javax.ejb.EJB;
 
-import org.junit.Assert;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.jpa.basic.SLSBPersistenceContexts;
 import org.jboss.as.test.integration.jpa.basic.SLSBPU1;
 import org.jboss.as.test.integration.jpa.basic.SLSBPU2;
+import org.jboss.as.test.integration.jpa.basic.SLSBPersistenceContexts;
 import org.jboss.as.test.integration.jpa.basic.SLSBPersistenceUnits;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

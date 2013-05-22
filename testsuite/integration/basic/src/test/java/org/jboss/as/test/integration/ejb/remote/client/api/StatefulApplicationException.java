@@ -22,8 +22,9 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api;
 
-import javax.ejb.ApplicationException;
 import java.io.Serializable;
+
+import javax.ejb.ApplicationException;
 
 /**
  * User: jpai

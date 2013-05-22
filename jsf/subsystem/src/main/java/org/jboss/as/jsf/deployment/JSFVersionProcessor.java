@@ -21,19 +21,19 @@
  */
 package org.jboss.as.jsf.deployment;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 import org.jboss.as.jsf.subsystem.JSFResourceDefinition;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.dmr.ModelNode;
 import org.jboss.as.web.common.WarMetaData;
+import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * Determines the JSF version that will be used by a deployment.

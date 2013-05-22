@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.enventry;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.concurrent.TimeUnit;
 
 import javax.naming.InitialContext;
@@ -37,8 +39,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * A test for injection via env-entry in web.xml

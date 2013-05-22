@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.security;
 
+import static org.junit.Assert.fail;
+
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -43,8 +45,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.fail;
 
 /**
  * EJB 3.1 Section 17.2.5 - This test case is to test the programmatic access to the callers's security context for the various

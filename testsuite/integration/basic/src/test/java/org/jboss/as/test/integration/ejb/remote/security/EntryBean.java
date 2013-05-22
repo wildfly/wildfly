@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.integration.ejb.remote.security;
 
-import org.jboss.as.test.shared.integration.ejb.security.Util;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBContext;
@@ -29,6 +28,8 @@ import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
+
+import org.jboss.as.test.shared.integration.ejb.security.Util;
 
 /**
  * An unsecured EJB used to test switching the identity before calling a secured EJB.

@@ -22,12 +22,13 @@
 
 package org.jboss.as.jsf.injection;
 
-import com.sun.faces.spi.AnnotationProvider;
 import java.lang.annotation.Annotation;
-
-import javax.servlet.ServletContext;
 import java.util.Map;
 import java.util.Set;
+
+import javax.servlet.ServletContext;
+
+import com.sun.faces.spi.AnnotationProvider;
 
 /**
  * {@link }AnnotationProvider} implementation which provides the JSF annotations which we parsed from from a

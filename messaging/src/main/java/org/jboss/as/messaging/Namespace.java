@@ -22,9 +22,10 @@
 
 package org.jboss.as.messaging;
 
-import javax.xml.namespace.QName;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.xml.namespace.QName;
 
 /**
  * An enumeration of the supported Messaging subsystem namespaces.

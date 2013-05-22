@@ -21,6 +21,10 @@
  */
 package org.jboss.as.test.smoke.deployment.rar.tests.earmultirar;
 
+import static org.junit.Assert.assertNotNull;
+
+import javax.annotation.Resource;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
@@ -39,10 +43,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.annotation.Resource;
-
-import static org.junit.Assert.assertNotNull;
 
 
 /**

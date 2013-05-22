@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ejb3.component;
 
+import static org.jboss.as.ejb3.EjbLogger.EJB3_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.beans.IntrospectionException;
 import java.util.Enumeration;
 import java.util.List;
@@ -50,9 +53,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.util.propertyeditor.PropertyEditors;
-
-import static org.jboss.as.ejb3.EjbLogger.EJB3_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * The gas, water & energy for the EJB subsystem.

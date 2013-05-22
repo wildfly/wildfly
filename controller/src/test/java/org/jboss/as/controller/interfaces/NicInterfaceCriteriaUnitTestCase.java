@@ -22,7 +22,8 @@
 
 package org.jboss.as.controller.interfaces;
 
-import static org.jboss.as.controller.interfaces.InterfaceCriteriaTestUtil.*;
+import static org.jboss.as.controller.interfaces.InterfaceCriteriaTestUtil.allCandidates;
+import static org.jboss.as.controller.interfaces.InterfaceCriteriaTestUtil.getRightTypeAddresses;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

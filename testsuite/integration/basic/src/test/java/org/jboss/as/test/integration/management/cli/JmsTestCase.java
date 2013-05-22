@@ -21,10 +21,10 @@
  */
 package org.jboss.as.test.integration.management.cli;
 
-import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import static org.junit.Assert.assertTrue;
 
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;

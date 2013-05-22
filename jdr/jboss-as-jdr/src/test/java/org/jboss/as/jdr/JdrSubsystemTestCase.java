@@ -23,6 +23,7 @@
 package org.jboss.as.jdr;
 
 import java.io.IOException;
+
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.RunningMode;

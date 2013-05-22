@@ -22,12 +22,12 @@
 
 package org.jboss.as.security.context;
 
-import org.wildfly.security.manager.GetClassLoaderAction;
+import static java.security.AccessController.doPrivileged;
+
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoadException;
+import org.wildfly.security.manager.GetClassLoaderAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static java.security.AccessController.doPrivileged;
 
 /**
  * Privileged blocks for this package

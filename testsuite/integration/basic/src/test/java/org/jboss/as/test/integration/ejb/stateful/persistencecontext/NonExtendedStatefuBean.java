@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.ejb.stateful.persistencecontext;
 
 import java.io.Serializable;
+
 import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

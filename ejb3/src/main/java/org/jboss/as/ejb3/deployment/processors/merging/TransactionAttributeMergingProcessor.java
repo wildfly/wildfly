@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -51,8 +53,6 @@ import org.jboss.metadata.ejb.spec.MethodMetaData;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.metadata.ejb.spec.MethodsMetaData;
 import org.jboss.modules.Module;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Because trans-attr and trans-timeout are both contained in container-transaction

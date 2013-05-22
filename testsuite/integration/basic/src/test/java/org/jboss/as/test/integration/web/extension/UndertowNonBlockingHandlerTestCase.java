@@ -1,5 +1,7 @@
 package org.jboss.as.test.integration.web.extension;
 
+import static org.junit.Assert.assertEquals;
+
 import java.net.URL;
 
 import io.undertow.servlet.ServletExtension;
@@ -18,8 +20,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Tests the use of Undertow extensions to register a non-blocking handler

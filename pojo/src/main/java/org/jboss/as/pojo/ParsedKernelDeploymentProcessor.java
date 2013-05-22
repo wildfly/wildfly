@@ -22,6 +22,8 @@
 
 package org.jboss.as.pojo;
 
+import java.util.List;
+
 import org.jboss.as.pojo.descriptor.BeanMetaDataConfig;
 import org.jboss.as.pojo.descriptor.ConfigVisitor;
 import org.jboss.as.pojo.descriptor.DefaultConfigVisitor;
@@ -37,8 +39,6 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.util.List;
 
 /**
  * DeploymentUnit processor responsible for taking KernelDeploymentXmlDescriptor

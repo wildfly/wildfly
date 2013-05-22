@@ -19,6 +19,7 @@
 package org.jboss.as.cli.gui;
 
 import java.awt.event.ActionEvent;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;

@@ -25,10 +25,11 @@ package org.jboss.as.naming;
 import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 import java.util.Hashtable;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
+
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Initial context factory builder which ensures the proper naming context factory is used if the environment

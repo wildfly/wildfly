@@ -23,6 +23,7 @@
 package org.wildfly.security.manager;
 
 import java.security.PrivilegedActionException;
+
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;

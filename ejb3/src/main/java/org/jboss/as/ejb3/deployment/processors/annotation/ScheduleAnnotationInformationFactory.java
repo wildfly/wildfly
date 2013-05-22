@@ -21,14 +21,15 @@
  */
 package org.jboss.as.ejb3.deployment.processors.annotation;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
+import javax.ejb.Schedule;
+import javax.ejb.Schedules;
+
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.as.ejb3.timerservice.AutoTimer;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
-
-import javax.ejb.Schedule;
-import javax.ejb.Schedules;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * {@link org.jboss.as.ee.metadata.ClassAnnotationInformation} for Schedule annotation
  *

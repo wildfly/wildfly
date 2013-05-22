@@ -24,6 +24,7 @@ package org.jboss.as.process.protocol;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.SimpleDataInput;
 

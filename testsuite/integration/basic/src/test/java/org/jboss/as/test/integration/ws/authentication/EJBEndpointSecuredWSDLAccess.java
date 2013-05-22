@@ -24,9 +24,10 @@ package org.jboss.as.test.integration.ws.authentication;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
 import javax.jws.WebService;
+
 import org.jboss.ejb3.annotation.SecurityDomain;
-import org.jboss.ws.api.annotation.TransportGuarantee;
 import org.jboss.ws.api.annotation.AuthMethod;
+import org.jboss.ws.api.annotation.TransportGuarantee;
 import org.jboss.ws.api.annotation.WebContext;
 
 /**

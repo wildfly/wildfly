@@ -21,12 +21,13 @@
  */
 package org.jboss.as.ejb3.component.interceptors;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * runnable used to invoke local ejb async methods

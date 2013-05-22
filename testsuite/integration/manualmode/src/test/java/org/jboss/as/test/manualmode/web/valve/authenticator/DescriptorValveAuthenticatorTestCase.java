@@ -21,12 +21,14 @@
  */
 package org.jboss.as.test.manualmode.web.valve.authenticator;
 
-import org.jboss.as.test.manualmode.web.valve.HelloServlet;
-import org.jboss.as.test.manualmode.web.valve.ValveUtil;
+import static org.jboss.as.test.manualmode.web.valve.authenticator.AuthValveConstants.*;
+import static org.junit.Assert.*;
+
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.apache.http.Header;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -37,16 +39,14 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.manualmode.web.valve.HelloServlet;
+import org.jboss.as.test.manualmode.web.valve.ValveUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import static org.junit.Assert.*;
-
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.test.manualmode.web.valve.authenticator.AuthValveConstants.*;
 
 /**
  * This class tests a global valve.

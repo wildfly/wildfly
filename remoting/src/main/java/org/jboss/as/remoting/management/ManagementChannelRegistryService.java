@@ -22,6 +22,8 @@
 
 package org.jboss.as.remoting.management;
 
+import java.util.ArrayList;
+
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
@@ -31,8 +33,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.remoting3.Registration;
-
-import java.util.ArrayList;
 
 /**
  * A basic registry for opened management channels. Other services like the {@code ServerInventory}

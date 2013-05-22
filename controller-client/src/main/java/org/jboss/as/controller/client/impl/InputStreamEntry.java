@@ -22,9 +22,6 @@
 
 package org.jboss.as.controller.client.impl;
 
-import org.jboss.as.controller.client.ControllerClientLogger;
-import org.jboss.as.protocol.StreamUtils;
-
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataOutput;
@@ -33,6 +30,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import org.jboss.as.controller.client.ControllerClientLogger;
+import org.jboss.as.protocol.StreamUtils;
 
 /**
  * @author Emanuel Muckenhuber

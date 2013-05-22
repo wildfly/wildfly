@@ -21,10 +21,6 @@
  */
 package org.jboss.as.test.integration.ws.injection.ejb.basic.shared.handlers;
 
-import org.jboss.as.test.integration.ws.injection.ejb.basic.shared.BeanIface;
-import org.jboss.logging.Logger;
-import org.jboss.ws.api.handler.GenericSOAPHandler;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -34,6 +30,10 @@ import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
+
+import org.jboss.as.test.integration.ws.injection.ejb.basic.shared.BeanIface;
+import org.jboss.logging.Logger;
+import org.jboss.ws.api.handler.GenericSOAPHandler;
 
 /**
  * This handler is initialized via injections.

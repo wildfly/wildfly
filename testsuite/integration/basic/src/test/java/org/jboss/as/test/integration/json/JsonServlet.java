@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.json;
 
 import java.io.IOException;
+
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
 import javax.servlet.ServletException;

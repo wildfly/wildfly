@@ -22,8 +22,10 @@
 
 package org.jboss.as.clustering.lock;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.verify;
 
 import java.util.List;
 import java.util.Vector;

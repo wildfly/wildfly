@@ -21,7 +21,9 @@
  */
 package org.jboss.as.test.integration.jpa.hibernate.envers;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
 

@@ -21,17 +21,17 @@
  */
 package org.jboss.as.appclient.deployment;
 
+import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * Processor that determines which application client should be started. This may be specified on the command line,

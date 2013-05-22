@@ -22,12 +22,12 @@
 
 package org.jboss.as.pojo.descriptor;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.pojo.ParseResult;
 import org.jboss.as.pojo.PojoLogger;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-
-import javax.xml.stream.XMLStreamException;
 
 /**
  * Parse legacy (1.0 and 2.0 schema) Microcontainer jboss-beans.xml.

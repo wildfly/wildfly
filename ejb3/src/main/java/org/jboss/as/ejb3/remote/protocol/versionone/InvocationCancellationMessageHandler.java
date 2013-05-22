@@ -22,14 +22,14 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.remote.RemoteAsyncInvocationCancelStatusService;
 import org.jboss.as.ejb3.remote.protocol.AbstractMessageHandler;
 import org.jboss.logging.Logger;
-
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * Handles a message corresponding to a invocation cancellation request

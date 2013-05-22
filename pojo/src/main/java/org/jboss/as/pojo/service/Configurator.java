@@ -22,13 +22,6 @@
 
 package org.jboss.as.pojo.service;
 
-import org.jboss.as.pojo.PojoMessages;
-import org.jboss.as.pojo.descriptor.ValueConfig;
-import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.common.beans.property.PropertiesValueResolver;
-import org.jboss.logging.Logger;
-
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.lang.reflect.Constructor;
@@ -38,6 +31,13 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
+
+import org.jboss.as.pojo.PojoMessages;
+import org.jboss.as.pojo.descriptor.ValueConfig;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.common.beans.property.PropertiesValueResolver;
+import org.jboss.logging.Logger;
 
 /**
  * Configuration util.

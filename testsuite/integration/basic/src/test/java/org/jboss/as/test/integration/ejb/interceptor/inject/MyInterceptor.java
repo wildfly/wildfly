@@ -35,7 +35,6 @@ import javax.transaction.TransactionManager;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.jboss.resteasy.spi.touri.MappedBy;
 
 /**
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>

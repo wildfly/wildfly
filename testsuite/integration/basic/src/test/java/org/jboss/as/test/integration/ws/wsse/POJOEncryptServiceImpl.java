@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.ws.wsse;
 
 import javax.jws.WebService;
+
 import org.jboss.ws.api.annotation.EndpointConfig;
 
 @WebService

@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.clustering.single.ejb.remotecall;
 
+import javax.ejb.Local;
 import javax.ejb.Remote;
 import javax.ejb.Stateful;
-import javax.ejb.Local;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.org">Kabir Khan</a>

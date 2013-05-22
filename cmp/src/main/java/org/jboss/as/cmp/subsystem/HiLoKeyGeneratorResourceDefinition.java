@@ -27,9 +27,9 @@ package org.jboss.as.cmp.subsystem;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelType;
 

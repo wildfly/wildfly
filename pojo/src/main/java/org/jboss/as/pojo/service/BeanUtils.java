@@ -22,6 +22,12 @@
 
 package org.jboss.as.pojo.service;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import org.jboss.as.pojo.PojoMessages;
 import org.jboss.as.pojo.descriptor.BeanMetaDataConfig;
 import org.jboss.as.pojo.descriptor.ConstructorConfig;
@@ -34,12 +40,6 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.ImmediateValue;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Bean utils.

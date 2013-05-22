@@ -22,6 +22,11 @@
 
 package org.jboss.as.ejb3.remote;
 
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import javax.security.auth.callback.CallbackHandler;
+
 import org.jboss.ejb.client.ClusterContext;
 import org.jboss.ejb.client.ClusterNodeManager;
 import org.jboss.ejb.client.EJBClientConfiguration;
@@ -35,10 +40,6 @@ import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
-
-import javax.security.auth.callback.CallbackHandler;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Jaikiran Pai

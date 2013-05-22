@@ -22,6 +22,9 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -36,9 +39,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Adds a strict-max-pool to the EJB3 subsystem's bean-instance-pools. The {#performRuntime runtime action}

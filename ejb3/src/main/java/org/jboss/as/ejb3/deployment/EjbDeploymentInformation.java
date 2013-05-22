@@ -22,16 +22,16 @@
 
 package org.jboss.as.ejb3.deployment;
 
-import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.iiop.EjbIIOPService;
-import org.jboss.msc.value.InjectedValue;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.iiop.EjbIIOPService;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * Runtime information about an EJB in a module

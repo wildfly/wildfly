@@ -22,12 +22,12 @@
 
 package org.jboss.as.clustering.lock;
 
+import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
+
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.clustering.ClusterNode;
-
-import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
 
 /**
  *

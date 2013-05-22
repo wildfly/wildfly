@@ -22,15 +22,14 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api.tx;
 
-import org.jboss.logging.Logger;
-
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagement;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+
+import org.jboss.logging.Logger;
 
 /**
  * User: jpai

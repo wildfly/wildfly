@@ -22,12 +22,12 @@
 
 package org.jboss.as.domain.management.security.state;
 
+import java.io.IOException;
+
 import org.jboss.as.domain.management.security.AddPropertiesUser;
 import org.jboss.as.domain.management.security.AssertConsoleBuilder;
 import org.jboss.msc.service.StartException;
 import org.junit.Test;
-
-import java.io.IOException;
 
 /**
  * Test update user

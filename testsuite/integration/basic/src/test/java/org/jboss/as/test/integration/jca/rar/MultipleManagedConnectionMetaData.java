@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.jca.rar;
 import java.util.logging.Logger;
 
 import javax.resource.ResourceException;
-
 import javax.resource.spi.ManagedConnectionMetaData;
 
 /**

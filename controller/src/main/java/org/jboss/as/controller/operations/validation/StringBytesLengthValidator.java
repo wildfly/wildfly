@@ -18,11 +18,11 @@
  */
 package org.jboss.as.controller.operations.validation;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * Validates that the given parameter is a string of an allowed length in bytes.

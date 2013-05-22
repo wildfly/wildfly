@@ -22,6 +22,10 @@
 
 package org.jboss.as.test.integration.domain.extension;
 
+import java.util.List;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ExtensionContext;
@@ -44,9 +48,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
-import java.util.List;
 
 /**
  * Test util.

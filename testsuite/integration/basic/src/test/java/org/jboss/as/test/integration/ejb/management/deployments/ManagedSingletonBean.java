@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.management.deployments;
 
+import static javax.ejb.LockType.WRITE;
+
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
 import javax.ejb.Lock;
@@ -31,8 +33,6 @@ import javax.ejb.Timeout;
 import javax.ejb.Timer;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
-
-import static javax.ejb.LockType.WRITE;
 
 /**
  * TBean to use in tests of management resources for EJB Singletons.

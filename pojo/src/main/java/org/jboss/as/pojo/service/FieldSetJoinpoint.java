@@ -22,11 +22,11 @@
 
 package org.jboss.as.pojo.service;
 
-import org.jboss.as.pojo.PojoMessages;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.Arrays;
+
+import org.jboss.as.pojo.PojoMessages;
 
 /**
  * Field set joinpoint.

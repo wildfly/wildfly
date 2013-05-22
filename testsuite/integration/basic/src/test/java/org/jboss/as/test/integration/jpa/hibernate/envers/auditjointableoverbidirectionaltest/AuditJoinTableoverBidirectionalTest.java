@@ -32,7 +32,6 @@ import org.jboss.as.test.integration.jpa.hibernate.envers.PhoneMO;
 import org.jboss.as.test.integration.jpa.hibernate.envers.SLSBAuditMO;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;

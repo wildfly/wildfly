@@ -22,10 +22,10 @@
 
 package org.jboss.as.ejb3.clustering;
 
-import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaDataParser;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+
+import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaDataParser;
 import org.jboss.metadata.property.PropertyReplacer;
 
 /**

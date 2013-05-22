@@ -22,8 +22,9 @@
 
 package org.jboss.as.domain.management.security.password.simple;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  * @author baranowb

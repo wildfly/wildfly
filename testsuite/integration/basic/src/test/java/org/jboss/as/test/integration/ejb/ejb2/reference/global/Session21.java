@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.ejb2.reference.global;
 
-import java.rmi.*;
+import java.rmi.RemoteException;
 
 /**
  * @author $Author: wolfc

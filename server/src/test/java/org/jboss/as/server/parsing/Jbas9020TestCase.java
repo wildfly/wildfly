@@ -21,20 +21,21 @@
  */
 package org.jboss.as.server.parsing;
 
-import org.jboss.as.controller.parsing.Namespace;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLMapper;
-import org.junit.Test;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+
+import org.jboss.as.controller.parsing.Namespace;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLMapper;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

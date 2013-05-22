@@ -22,9 +22,9 @@
 
 package org.jboss.as.clustering.infinispan;
 
-import org.infinispan.transaction.lookup.TransactionSynchronizationRegistryLookup;
-
 import javax.transaction.TransactionSynchronizationRegistry;
+
+import org.infinispan.transaction.lookup.TransactionSynchronizationRegistryLookup;
 
 /**
  * Passes the TransactionSynchronizationRegistry to Infinispan.

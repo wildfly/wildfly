@@ -22,11 +22,8 @@
 
 package org.jboss.as.domain.management.security.state;
 
-import org.jboss.as.domain.management.security.AddPropertiesUser;
-import org.jboss.as.domain.management.security.AssertConsoleBuilder;
-import org.jboss.msc.service.StartException;
-import org.junit.Before;
-import org.junit.Test;
+import static java.lang.System.getProperty;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -35,8 +32,11 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Properties;
 
-import static java.lang.System.getProperty;
-import static org.junit.Assert.assertTrue;
+import org.jboss.as.domain.management.security.AddPropertiesUser;
+import org.jboss.as.domain.management.security.AssertConsoleBuilder;
+import org.jboss.msc.service.StartException;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test the property file finder.

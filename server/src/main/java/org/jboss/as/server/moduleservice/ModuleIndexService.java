@@ -21,6 +21,9 @@
  */
 package org.jboss.as.server.moduleservice;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.modules.Module;
@@ -32,9 +35,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Service that caches the jandex index for system modules.

@@ -19,7 +19,9 @@
 package org.jboss.as.cli.gui.metacommand;
 
 import java.awt.event.ActionEvent;
+
 import javax.swing.AbstractAction;
+
 import org.jboss.as.cli.gui.CliGuiContext;
 
 /**

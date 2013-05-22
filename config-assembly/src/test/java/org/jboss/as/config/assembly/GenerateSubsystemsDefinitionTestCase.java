@@ -22,6 +22,7 @@
 package org.jboss.as.config.assembly;
 
 import java.io.File;
+
 import org.junit.Assert;
 import org.junit.Test;
 

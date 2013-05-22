@@ -37,7 +37,6 @@ import org.jboss.as.test.integration.jpa.hibernate.entity.Customer;
 import org.jboss.as.test.integration.jpa.hibernate.entity.Flight;
 import org.jboss.as.test.integration.jpa.hibernate.entity.Ticket;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;

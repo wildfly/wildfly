@@ -22,10 +22,11 @@
 
 package org.jboss.as.ejb3.component;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 
 /**

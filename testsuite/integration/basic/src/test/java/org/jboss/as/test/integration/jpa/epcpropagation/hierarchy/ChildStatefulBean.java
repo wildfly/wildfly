@@ -21,11 +21,11 @@
  */
 package org.jboss.as.test.integration.jpa.epcpropagation.hierarchy;
 
-import org.junit.Assert;
-
 import javax.ejb.EJB;
 import javax.ejb.Stateful;
 import javax.naming.InitialContext;
+
+import org.junit.Assert;
 
 /**
  * @author Stuart Douglas

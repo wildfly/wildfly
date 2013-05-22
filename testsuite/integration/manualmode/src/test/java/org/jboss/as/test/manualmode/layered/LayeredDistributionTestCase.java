@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+
 import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;

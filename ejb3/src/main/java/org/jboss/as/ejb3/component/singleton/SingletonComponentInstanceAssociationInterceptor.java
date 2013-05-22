@@ -22,12 +22,13 @@
 
 package org.jboss.as.ejb3.component.singleton;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Responsible for associating the single component instance for a singleton bean during invocation.
  *

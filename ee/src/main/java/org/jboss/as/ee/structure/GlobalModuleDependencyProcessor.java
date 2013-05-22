@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ee.structure;
 
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.GlobalModule;
+
 import java.util.List;
 
 import org.jboss.as.server.deployment.Attachments;
@@ -32,8 +34,6 @@ import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.filter.PathFilters;
-
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.GlobalModule;
 
 /**
  * Dependency processor that adds modules defined in the global-modules section of

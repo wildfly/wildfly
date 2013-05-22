@@ -22,10 +22,10 @@
 
 package org.jboss.as.pojo.descriptor;
 
-import org.jboss.as.pojo.service.ReflectionJoinpoint;
-
 import java.util.Arrays;
 import java.util.List;
+
+import org.jboss.as.pojo.service.ReflectionJoinpoint;
 
 /**
  * Value factory value.

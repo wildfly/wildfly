@@ -23,14 +23,14 @@ package org.jboss.as.domain.http.server;
 
 import static io.undertow.util.Headers.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.util.HeaderMap;
-import io.undertow.util.Headers;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
+import io.undertow.server.HttpServerExchange;
+import io.undertow.util.HeaderMap;
+import io.undertow.util.Headers;
 import org.jboss.dmr.ModelNode;
 import org.xnio.IoUtils;
 import org.xnio.streams.ChannelOutputStream;

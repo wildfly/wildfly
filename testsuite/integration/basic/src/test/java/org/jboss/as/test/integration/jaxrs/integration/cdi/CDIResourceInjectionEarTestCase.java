@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.jaxrs.integration.cdi;
 
+import static org.junit.Assert.assertEquals;
+
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
@@ -37,8 +39,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Tests injections of CDI beans into JAX-RS resources with an EAR based deployment structure

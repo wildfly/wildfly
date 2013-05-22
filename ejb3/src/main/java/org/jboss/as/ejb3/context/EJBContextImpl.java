@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.context;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.io.Serializable;
 import java.security.Identity;
 import java.security.Principal;
@@ -37,7 +39,6 @@ import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.invocation.InterceptorContext;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */

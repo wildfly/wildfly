@@ -22,16 +22,16 @@
 
 package org.jboss.as.test.integration.ejb.singleton.startup.postconstruct;
 
-import org.junit.Assert;
+import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
 
 /**
  * Test for AS7-[3855|2785]: Do not call @PostConstruct multiple times on @Startup @Singleton bean.

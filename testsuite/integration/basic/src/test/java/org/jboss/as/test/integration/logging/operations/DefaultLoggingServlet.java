@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.logging.operations;
 
 import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;

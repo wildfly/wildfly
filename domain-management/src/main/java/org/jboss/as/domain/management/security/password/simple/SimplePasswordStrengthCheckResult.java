@@ -25,9 +25,9 @@ package org.jboss.as.domain.management.security.password.simple;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.domain.management.security.password.PasswordStrengthCheckResult;
 import org.jboss.as.domain.management.security.password.PasswordRestriction;
 import org.jboss.as.domain.management.security.password.PasswordStrength;
+import org.jboss.as.domain.management.security.password.PasswordStrengthCheckResult;
 
 /**
  * @author baranowb

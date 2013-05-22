@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 
-import org.junit.Assert;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -66,6 +65,7 @@ import org.jboss.security.auth.spi.RunAsLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.util.Base64;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;

@@ -1,4 +1,9 @@
-<?xml version='1.0' encoding='UTF-8'?><wsdl:definitions name="ReliableService" targetNamespace="http://www.jboss.org/jbossws/ws-extensions/wsrm" xmlns:ns1="http://schemas.xmlsoap.org/soap/http" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://www.jboss.org/jbossws/ws-extensions/wsrm" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsp="http://www.w3.org/2006/07/ws-policy">
+<?xml version='1.0' encoding='UTF-8'?>
+<wsdl:definitions name="ReliableService" targetNamespace="http://www.jboss.org/jbossws/ws-extensions/wsrm"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:tns="http://www.jboss.org/jbossws/ws-extensions/wsrm"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:wsp="http://www.w3.org/2006/07/ws-policy">
   <wsdl:types>
 <xs:schema elementFormDefault="unqualified" targetNamespace="http://www.jboss.org/jbossws/ws-extensions/wsrm" version="1.0" xmlns:tns="http://www.jboss.org/jbossws/ws-extensions/wsrm" xmlns:xs="http://www.w3.org/2001/XMLSchema">
 <xs:element name="sayHello" type="tns:sayHello"/>

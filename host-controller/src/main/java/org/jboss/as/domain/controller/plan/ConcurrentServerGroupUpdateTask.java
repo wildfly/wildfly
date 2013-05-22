@@ -22,12 +22,12 @@
 
 package org.jboss.as.domain.controller.plan;
 
-import org.jboss.as.controller.remote.TransactionalProtocolClient;
-import org.jboss.as.domain.controller.ServerIdentity;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.jboss.as.controller.remote.TransactionalProtocolClient;
+import org.jboss.as.domain.controller.ServerIdentity;
 
 /**
  * @author Emanuel Muckenhuber

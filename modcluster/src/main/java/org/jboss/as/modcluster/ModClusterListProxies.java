@@ -22,16 +22,16 @@
 
 package org.jboss.as.modcluster;
 
+import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
+
+import java.net.InetSocketAddress;
+import java.util.Map;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-
-import java.net.InetSocketAddress;
-import java.util.Map;
-
-import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 
 public class ModClusterListProxies implements OperationStepHandler {
 

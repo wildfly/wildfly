@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.component.stateful;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 
 import org.jboss.as.ee.component.Component;
@@ -33,8 +35,6 @@ import org.jboss.as.ejb3.component.Ejb2xViewType;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * An interceptor which handles a invocation on a {@link javax.ejb.Remove} method of a stateful session bean. This interceptor

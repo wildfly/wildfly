@@ -23,14 +23,14 @@
 
 package org.jboss.as.domain.management.security.state;
 
-import org.jboss.as.domain.management.security.AddPropertiesUser;
-import org.jboss.as.domain.management.security.AssertConsoleBuilder;
-import org.junit.Test;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertTrue;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.as.domain.management.security.AddPropertiesUser;
+import org.jboss.as.domain.management.security.AssertConsoleBuilder;
+import org.junit.Test;
 
 /**
  * Test the duplicated user check state

@@ -21,11 +21,12 @@
  */
 package org.jboss.as.ejb3.component.session;
 
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorContext;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 import java.lang.reflect.Method;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
 /**
  * @author Stuart Douglas
  */

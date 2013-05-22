@@ -21,6 +21,12 @@
  */
 package org.jboss.as.ejb3.inflow;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import javax.resource.ResourceException;
 import javax.resource.spi.ApplicationServerInternalException;
 import javax.resource.spi.LocalTransactionException;
@@ -34,12 +40,8 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

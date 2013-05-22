@@ -23,15 +23,16 @@
 package org.jboss.as.controller.registry;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.dmr.ModelNode;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Abstract {@code Resource} implementation.

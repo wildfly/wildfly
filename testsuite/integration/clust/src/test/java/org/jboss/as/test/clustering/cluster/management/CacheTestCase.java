@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.clustering.cluster.management;
 
+import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
@@ -34,11 +37,10 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.integration.common.JndiServlet;
+import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.ModelUtil;
-
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -46,11 +48,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
-
-import org.jboss.as.test.clustering.NodeUtil;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 
 /**
  * @author <a href="mailto:dpospisi@redhat.com>Dominik Pospisil</a>

@@ -22,6 +22,8 @@
 
 package org.jboss.as.naming.util;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.AbstractCollection;
@@ -33,8 +35,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * A HashMap that is optimized for fast shallow copies. If the copy-ctor is

@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.clustering.cluster.ejb2;
 
-import org.jboss.ejb3.annotation.Clustered;
-
 import javax.ejb.RemoteHome;
 import javax.ejb.SessionBean;
 import javax.ejb.Stateful;
+
+import org.jboss.ejb3.annotation.Clustered;
 
 /**
  * @author Ondrej Chaloupka

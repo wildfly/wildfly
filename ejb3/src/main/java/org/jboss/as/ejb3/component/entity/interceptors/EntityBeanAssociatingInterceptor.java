@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ejb3.component.entity.interceptors;
 
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.rmi.RemoteException;
 
 import javax.ejb.ConcurrentAccessException;
@@ -35,9 +38,6 @@ import org.jboss.as.ejb3.timerservice.spi.BeanRemovedException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
-
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Interceptor factory for entity beans that associates an invocation with a primary key

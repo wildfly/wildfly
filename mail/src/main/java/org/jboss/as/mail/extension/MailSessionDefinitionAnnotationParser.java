@@ -29,6 +29,7 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 import javax.mail.MailSessionDefinition;
 import javax.mail.MailSessionDefinitions;
 

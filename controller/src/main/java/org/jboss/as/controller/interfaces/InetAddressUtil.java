@@ -22,10 +22,10 @@
 
 package org.jboss.as.controller.interfaces;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * @author Tomaz Cerar

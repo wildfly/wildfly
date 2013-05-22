@@ -21,8 +21,9 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
-import javax.annotation.security.RunAs;
 import java.util.List;
+
+import javax.annotation.security.RunAs;
 
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;

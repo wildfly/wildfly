@@ -24,14 +24,15 @@
 
 package org.wildfly.extension.undertow.deployment;
 
-import org.apache.jasper.deploy.JspPropertyGroup;
-import org.apache.jasper.deploy.TagLibraryInfo;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import javax.servlet.descriptor.JspConfigDescriptor;
 import javax.servlet.descriptor.JspPropertyGroupDescriptor;
 import javax.servlet.descriptor.TaglibDescriptor;
-import java.util.ArrayList;
-import java.util.Collection;
+
+import org.apache.jasper.deploy.JspPropertyGroup;
+import org.apache.jasper.deploy.TagLibraryInfo;
 
 /**
  * @author Stuart Douglas

@@ -21,6 +21,9 @@
  */
 package org.jboss.as.web.deployment;
 
+import static org.jboss.as.web.WebLogger.WEB_LOGGER;
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -34,11 +37,11 @@ import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.ThreadSetupBindingListener;
+import org.jboss.as.web.common.ServletContextAttribute;
+import org.jboss.as.web.common.StartupContext;
 import org.jboss.as.web.common.WebInjectionContainer;
 import org.jboss.as.web.host.ContextActivator;
 import org.jboss.msc.inject.Injector;
-import org.jboss.as.web.common.ServletContextAttribute;
-import org.jboss.as.web.common.StartupContext;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -47,9 +50,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import static org.jboss.as.web.WebLogger.WEB_LOGGER;
-import static org.jboss.as.web.WebMessages.MESSAGES;
 
 /**
  * A service starting a web deployment.

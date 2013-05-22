@@ -22,6 +22,9 @@
 
 package org.jboss.as.txn.service;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 import com.arjuna.ats.internal.jta.recovery.arjunacore.JTANodeNameXAResourceOrphanFilter;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.JTATransactionLogXAResourceOrphanFilter;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.SubordinateJTAXAResourceOrphanFilter;
@@ -32,9 +35,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.tm.LastResource;
-
-import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * Sets up the {@link JTAEnvironmentBean}

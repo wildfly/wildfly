@@ -23,15 +23,16 @@
 package org.jboss.as.test.integration.ejb.security.runas.ejb2mdb;
 
 import javax.annotation.Resource;
+import javax.annotation.security.RolesAllowed;
 import javax.ejb.Remote;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-// Security related imports
-import javax.annotation.security.RolesAllowed;
 
 import org.jboss.logging.Logger;
+
+// Security related imports
 
 /**
  * Returns hola greeting for INTERNAL_ROLE.

@@ -21,10 +21,6 @@
  */
 package org.jboss.as.controller.client;
 
-import org.jboss.as.controller.client.impl.InputStreamEntry;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.dmr.ModelNode;
-
 import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
 import java.io.DataOutput;
@@ -35,6 +31,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jboss.as.controller.client.impl.InputStreamEntry;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Builder for a {@link Operation}.

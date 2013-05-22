@@ -22,12 +22,12 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import java.io.IOException;
+import java.util.concurrent.Semaphore;
+
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageOutputStream;
 import org.jboss.remoting3.RemotingOptions;
-
-import java.io.IOException;
-import java.util.concurrent.Semaphore;
 
 /**
  * @author Jaikiran Pai

@@ -25,6 +25,7 @@
 package org.wildfly.extension.undertow;
 
 import java.util.concurrent.TimeoutException;
+
 import javax.servlet.ServletException;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;

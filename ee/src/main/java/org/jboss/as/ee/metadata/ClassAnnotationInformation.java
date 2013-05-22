@@ -21,12 +21,12 @@
  */
 package org.jboss.as.ee.metadata;
 
-import org.jboss.invocation.proxy.MethodIdentifier;
-
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.invocation.proxy.MethodIdentifier;
 
 /**
  * Class level information about the annotations present on a particular class.

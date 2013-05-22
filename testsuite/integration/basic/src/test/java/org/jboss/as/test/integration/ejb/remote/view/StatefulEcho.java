@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.ejb.remote.view;
 
 import javax.ejb.Local;
-import javax.ejb.LocalBean;
 import javax.ejb.Stateful;
 
 /**

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+
 import java.util.List;
 
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -38,8 +40,6 @@ import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
-
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
 /**
  * @author Stuart Douglas

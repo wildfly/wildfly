@@ -1,5 +1,7 @@
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
+
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -23,8 +25,6 @@ import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.PrivilegedInterceptor;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.modules.Module;
-
-import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
  * @author Stuart Douglas

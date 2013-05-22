@@ -1,16 +1,16 @@
 package org.jboss.as.jdr.util;
 
-import org.jboss.vfs.VirtualFile;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.JarFile;
+
+import org.jboss.vfs.VirtualFile;
 
 /**
  * User: csams
