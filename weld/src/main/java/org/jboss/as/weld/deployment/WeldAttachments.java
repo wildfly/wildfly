@@ -21,11 +21,9 @@
  */
 package org.jboss.as.weld.deployment;
 
-import javax.enterprise.inject.spi.Extension;
 
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
-import org.jboss.weld.bootstrap.spi.Metadata;
 
 /**
  * {@link AttachmentKey}s for weld attachments
@@ -56,9 +54,4 @@ public class WeldAttachments {
      */
     public static final AttachmentKey<BeanDeploymentArchiveImpl> DEPLOYMENT_ROOT_BEAN_DEPLOYMENT_ARCHIVE = AttachmentKey.create(BeanDeploymentArchiveImpl.class);
 
-    /**
-     * Portable extensions discovered in sub deployments. All sub deployments may contain portable extensions, even ones without
-     * beans.xml files
-     */
-    public static final AttachmentKey<AttachmentList<Metadata<Extension>>> PORTABLE_EXTENSIONS = AttachmentKey.createList(Metadata.class);
 }
