@@ -29,21 +29,21 @@ import org.jboss.jandex.AnnotationInstance;
 /**
  * @author paul.robinson@redhat.com, 2012-02-06
  */
-public class CompensatableAnnotation {
+public class OldCompensatableAnnotation {
 
-    public static final String COMPENSATABLE_ANNOTATION = "org.jboss.narayana.compensations.api.Compensatable";
+    public static final String COMPENSATABLE_ANNOTATION = "org.jboss.narayana.txframework.api.annotation.transaction.Compensatable";
 
-    private CompensatableAnnotation() {
+    private OldCompensatableAnnotation() {
     }
 
 
-    public static CompensatableAnnotation build(DeploymentUnit unit, String endpoint) throws XTSException {
+    public static OldCompensatableAnnotation build(DeploymentUnit unit, String endpoint) throws XTSException {
 
         final AnnotationInstance annotationInstance = JandexHelper.getAnnotation(unit, endpoint, COMPENSATABLE_ANNOTATION);
         if (annotationInstance == null) {
             return null;
         }
 
-        return new CompensatableAnnotation();
+        return new OldCompensatableAnnotation();
     }
 }
