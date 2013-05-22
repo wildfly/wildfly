@@ -1557,8 +1557,8 @@
             </dependency>
 
             <dependency>
-                <groupId>gnu-getopt</groupId>
-                <artifactId>getopt</artifactId>
+                <groupId>gnu.getopt</groupId>
+                <artifactId>java-getopt</artifactId>
                 <version>${version.gnu.getopt}</version>
             </dependency>
 
@@ -5842,6 +5842,10 @@
                 <artifactId>jbossws-common-tools</artifactId>
                 <version>${version.org.jboss.ws.common.tools}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>gnu.getopt</groupId>
+                        <artifactId>java-getopt</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>gnu.getopt</groupId>
                         <artifactId>java-getopt</artifactId>
