@@ -58,12 +58,11 @@ public interface WeldMessages {
     @Message(id= 16051, value = "Could get beans.xml file as URL when processing file: %s")
     DeploymentUnitProcessingException couldNotGetBeansXmlAsURL(String beansXml, @Cause Throwable cause);
 
-
-    @Message(id= 16052, value = "Could not load interceptor class : %s")
+    @Message(id = 16052, value = "Could not load interceptor class : %s")
     DeploymentUnitProcessingException couldNotLoadInterceptorClass(String interceptorClass, @Cause Throwable cause);
 
-    @Message(id=16053, value = "Service class %s didn't implement the javax.enterprise.inject.spi.Extension interface")
-    DeploymentUnitProcessingException extensionDoesNotImplementExtension(String className, @Cause Throwable throwable);
+    @Message(id = 16053, value = "Service %s didn't implement the javax.enterprise.inject.spi.Extension interface")
+    DeploymentUnitProcessingException extensionDoesNotImplementExtension(Class<?> clazz);
 
     @Message(id = 16054, value = "View of type %s not found on EJB %s")
     IllegalArgumentException viewNotFoundOnEJB(String viewType, String ejb);

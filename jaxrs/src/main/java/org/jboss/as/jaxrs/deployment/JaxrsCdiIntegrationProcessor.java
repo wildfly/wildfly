@@ -32,14 +32,10 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.as.weld.WeldDeploymentMarker;
-import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
-import org.jboss.resteasy.cdi.ResteasyCdiExtension;
-import org.jboss.weld.bootstrap.spi.Metadata;
 
-import javax.enterprise.inject.spi.Extension;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,42 +69,6 @@ public class JaxrsCdiIntegrationProcessor implements DeploymentUnitProcessor {
             if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
                 JAXRS_LOGGER.debug("Found CDI, adding injector factory class");
                 setContextParameter(webdata, "resteasy.injector.factory", CDI_INJECTOR_FACTORY_CLASS);
-                //now we need to add the CDI extension, if it has not
-                //already been added
-                synchronized (parent) {
-                    boolean found = false;
-                    final List<Metadata<Extension>> extensions = parent.getAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS);
-                    for (Metadata<Extension> extension : extensions) {
-                        if (extension.getValue() instanceof ResteasyCdiExtension) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-
-                        final ClassLoader classLoader = SecurityActions.getContextClassLoader();
-                        try {
-                            //MASSIVE HACK
-                            //the resteasy Logger throws a NPE if the TCCL is null
-                            SecurityActions.setContextClassLoader(ResteasyCdiExtension.class.getClassLoader());
-                            final ResteasyCdiExtension ext = new ResteasyCdiExtension();
-                            Metadata<Extension> metadata = new Metadata<Extension>() {
-                                @Override
-                                public Extension getValue() {
-                                    return ext;
-                                }
-
-                                @Override
-                                public String getLocation() {
-                                    return "org.jboss.as.jaxrs.JaxrsExtension";
-                                }
-                            };
-                            parent.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
-                        } finally {
-                            SecurityActions.setContextClassLoader(classLoader);
-                        }
-                    }
-                }
             }
         } catch (ClassNotFoundException ignored) {
         }

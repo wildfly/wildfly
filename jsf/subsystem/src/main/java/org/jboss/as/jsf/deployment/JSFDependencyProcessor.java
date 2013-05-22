@@ -32,7 +32,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.modules.LocalModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -102,9 +101,9 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
     private void addJSFImpl(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
         ModuleIdentifier jsfModule = moduleIdFactory.getImplModId(jsfVersion);
-        ModuleDependency jsf = new ModuleDependency(moduleLoader, jsfModule, false, false, false, false);
-        jsf.addImportFilter(PathFilters.getMetaInfFilter(), true);
-        moduleSpecification.addSystemDependency(jsf);
+        ModuleDependency jsfImpl = new ModuleDependency(moduleLoader, jsfModule, false, false, true, false);
+        jsfImpl.addImportFilter(PathFilters.getMetaInfFilter(), true);
+        moduleSpecification.addSystemDependency(jsfImpl);
     }
 
     private void addJSFInjection(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {

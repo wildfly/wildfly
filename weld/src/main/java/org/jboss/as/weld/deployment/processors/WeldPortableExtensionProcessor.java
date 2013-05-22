@@ -21,7 +21,13 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
-import java.lang.reflect.Constructor;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 import javax.enterprise.inject.spi.Extension;
@@ -32,15 +38,11 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.PrivateSubDeploymentMarker;
-import org.jboss.as.server.deployment.ServicesAttachment;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.WeldLogger;
-import org.jboss.as.weld.WeldMessages;
-import org.jboss.as.weld.deployment.WeldAttachments;
+import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.modules.Module;
-import org.jboss.weld.bootstrap.spi.Metadata;
-import org.jboss.weld.metadata.MetadataImpl;
+import org.jboss.vfs.VFSUtils;
 
 /**
  * Deployment processor that loads CDI portable extensions.
@@ -60,65 +62,71 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
             if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
                 return;
             }
-        } else if (deploymentUnit.getParent() == null) {
-            // if any sub deployments have beans.xml then the top level deployment is
-            // marked as a weld deployment
-            if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-                return;
-            }
         } else {
             // if any deployments have a beans.xml we need to load portable extensions
             // even if this one does not.
-            if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit.getParent())) {
+            if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
                 return;
             }
         }
 
-        // we attach extensions directly to the top level deployment
-        final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit
-                .getParent();
-
-        final ServicesAttachment services = deploymentUnit.getAttachment(Attachments.SERVICES);
+        WeldPortableExtensions extensions = WeldPortableExtensions.getPortableExtensions(deploymentUnit);
 
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         ClassLoader oldCl = SecurityActions.getContextClassLoader();
         try {
             SecurityActions.setContextClassLoader(module.getClassLoader());
-            loadAttachments(services, module, deploymentUnit, topLevelDeployment);
+            loadAttachments(module, deploymentUnit, extensions);
+
         } finally {
             SecurityActions.setContextClassLoader(oldCl);
         }
     }
 
-    private void loadAttachments(final ServicesAttachment servicesAttachment, Module module, DeploymentUnit deploymentUnit, DeploymentUnit topLevelDeployment) throws DeploymentUnitProcessingException {
+    private void loadAttachments(Module module, DeploymentUnit deploymentUnit, WeldPortableExtensions extensions) throws DeploymentUnitProcessingException {
         // now load extensions
-        final DeploymentReflectionIndex index = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
-        final List<String> services = servicesAttachment.getServiceImplementations(Extension.class.getName());
-        if (services == null) {
-            return;
-        }
-        for (String service : services) {
-            final Extension extension = loadExtension(service, index,  module.getClassLoader());
-            if(extension == null) {
-                continue;
+        try {
+            Enumeration<URL> resources = module.getClassLoader().getResources("META-INF/services/" + Extension.class.getName());
+            final List<String> services = new ArrayList<String>();
+            while (resources.hasMoreElements()) {
+                URL resource = resources.nextElement();
+                final InputStream stream = resource.openStream();
+                try {
+                    final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        final int commentIdx = line.indexOf('#');
+                        final String className;
+                        if (commentIdx == -1) {
+                            className = line.trim();
+                        } else {
+                            className = line.substring(0, commentIdx).trim();
+                        }
+                        if (className.length() == 0) {
+                            continue;
+                        }
+                        services.add(className);
+                    }
+                } finally {
+                    VFSUtils.safeClose(stream);
+                }
             }
-            Metadata<Extension> metadata = new MetadataImpl<Extension>(extension, deploymentUnit.getName());
-            WeldLogger.DEPLOYMENT_LOGGER.debug("Loaded portable extension " + extension);
-            topLevelDeployment.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
+            for (String service : services) {
+                final Class<Extension> extensionClass = loadExtension(service, module.getClassLoader());
+                if (extensionClass == null) {
+                    continue;
+                }
+                extensions.tryRegisterExtension(extensionClass, deploymentUnit);
+            }
+        } catch (IOException e) {
+            throw new DeploymentUnitProcessingException(e);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private Extension loadExtension(String serviceClassName, final DeploymentReflectionIndex index, final ClassLoader loader) throws DeploymentUnitProcessingException {
-        Class<?> clazz;
-        Class<Extension> serviceClass;
+    private Class<Extension> loadExtension(String serviceClassName, final ClassLoader loader) throws DeploymentUnitProcessingException {
         try {
-            clazz = loader.loadClass(serviceClassName);
-            serviceClass = (Class<Extension>) clazz;
-            final Constructor<Extension> ctor = index.getClassIndex(serviceClass).getConstructor(EMPTY_STRING_ARRAY);
-            return ctor.newInstance();
-        }  catch (ClassCastException e) {
-            throw WeldMessages.MESSAGES.extensionDoesNotImplementExtension(serviceClassName, e);
+            return (Class<Extension>) loader.loadClass(serviceClassName);
         } catch (Exception e) {
             WeldLogger.DEPLOYMENT_LOGGER.couldNotLoadPortableExceptionClass(serviceClassName, e);
         }
