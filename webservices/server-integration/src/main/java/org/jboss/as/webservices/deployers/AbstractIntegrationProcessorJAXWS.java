@@ -48,6 +48,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.webservices.injection.WSComponentDescription;
 import org.jboss.as.webservices.service.EndpointService;
+import org.jboss.invocation.PrivilegedInterceptor;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -122,6 +123,7 @@ public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUni
         pojoView.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.addViewInterceptor(PrivilegedInterceptor.getFactory(), InterceptorOrder.View.PRIVILEGED_INTERCEPTOR);
                 // add WS POJO component instance associating interceptor
                 configuration.addViewInterceptor(WSComponentInstanceAssociationInterceptor.FACTORY, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
             }
