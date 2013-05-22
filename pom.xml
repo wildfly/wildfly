@@ -1618,8 +1618,8 @@
             </dependency>
 
             <dependency>
-                <groupId>gnu-getopt</groupId>
-                <artifactId>getopt</artifactId>
+                <groupId>gnu.getopt</groupId>
+                <artifactId>java-getopt</artifactId>
                 <version>${version.gnu.getopt}</version>
             </dependency>
 
@@ -5489,6 +5489,10 @@
                     <exclusion>
                         <groupId>gnu-getopt</groupId>
                         <artifactId>getopt</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>gnu.getopt</groupId>
+                        <artifactId>java-getopt</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>log4j</groupId>

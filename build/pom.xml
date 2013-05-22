@@ -351,8 +351,8 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>gnu-getopt</groupId>
-                    <artifactId>getopt</artifactId>
+                    <groupId>gnu.getopt</groupId>
+                    <artifactId>java-getopt</artifactId>
                 </dependency>
 
                 <dependency>
@@ -2146,7 +2146,7 @@
                                         <exclude>com.sun.xml.messaging.saaj:saaj-impl</exclude>
                                         <exclude>com.sun.xml.txw2:txw2</exclude>
                                         <exclude>com.sun.xsom:xsom</exclude>
-                                        <exclude>gnu-getopt:getopt</exclude>
+                                        <exclude>gnu.getopt:java-getopt</exclude>
                                         <exclude>io.netty:netty</exclude>
                                         <exclude>javax.faces:jsf-impl</exclude>
                                         <exclude>jaxen:jaxen</exclude>
