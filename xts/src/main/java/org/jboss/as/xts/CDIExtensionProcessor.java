@@ -22,6 +22,10 @@
 
 package org.jboss.as.xts;
 
+import java.lang.reflect.Constructor;
+
+import javax.enterprise.inject.spi.Extension;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -31,9 +35,6 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.metadata.MetadataImpl;
-
-import javax.enterprise.inject.spi.Extension;
-import java.lang.reflect.Constructor;
 
 /**
  * @author paul.robinson@redhat.com, 2012-02-09

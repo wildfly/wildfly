@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.interceptor.classinherit;
 
-import javax.interceptor.Interceptors;
 import javax.ejb.Stateless;
+import javax.interceptor.Interceptors;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>

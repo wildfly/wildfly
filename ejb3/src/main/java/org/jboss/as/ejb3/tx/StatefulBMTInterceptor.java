@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.tx;
 
+import static org.jboss.as.ejb3.tx.util.StatusHelper.statusAsString;
+
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
@@ -29,8 +31,6 @@ import javax.transaction.TransactionManager;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.invocation.InterceptorContext;
-
-import static org.jboss.as.ejb3.tx.util.StatusHelper.statusAsString;
 
 /**
  * A per instance interceptor that keeps an association with the outcoming transaction.

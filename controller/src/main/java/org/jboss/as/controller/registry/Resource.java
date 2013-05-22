@@ -22,14 +22,14 @@
 
 package org.jboss.as.controller.registry;
 
+import java.util.NoSuchElementException;
+import java.util.Set;
+
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationClientException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
-
-import java.util.NoSuchElementException;
-import java.util.Set;
 
 /**
  * A addressable resource in the management model, representing a local model and child resources.

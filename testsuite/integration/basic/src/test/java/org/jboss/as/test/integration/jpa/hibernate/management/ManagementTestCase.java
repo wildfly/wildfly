@@ -22,21 +22,12 @@
 
 package org.jboss.as.test.integration.jpa.hibernate.management;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;

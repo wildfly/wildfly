@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.integration.ejb.security;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
@@ -43,9 +46,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 /**
  * Test case to test the general authorization requirements for annotated beans, more specific requirements such as RunAs

@@ -22,14 +22,14 @@
 
 package org.jboss.as.domain.management.security.state;
 
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
+import java.io.IOException;
+
 import org.jboss.as.domain.management.security.AddPropertiesUser;
 import org.jboss.as.domain.management.security.AssertConsoleBuilder;
 import org.jboss.msc.service.StartException;
 import org.junit.Test;
-
-import java.io.IOException;
-
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 /**
  * Test the AddUser state

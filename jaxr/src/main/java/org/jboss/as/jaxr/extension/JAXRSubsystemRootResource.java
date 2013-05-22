@@ -21,11 +21,11 @@
  */
 package org.jboss.as.jaxr.extension;
 
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;

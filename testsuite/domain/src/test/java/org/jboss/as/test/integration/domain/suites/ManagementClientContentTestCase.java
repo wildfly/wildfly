@@ -48,10 +48,10 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.List;
 
-import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
-import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
+import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.Assert;

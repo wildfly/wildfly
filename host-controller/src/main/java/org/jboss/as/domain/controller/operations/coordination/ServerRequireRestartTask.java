@@ -22,6 +22,9 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -31,9 +34,6 @@ import org.jboss.as.domain.controller.DomainControllerLogger;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.dmr.ModelNode;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Task setting the remote server in a 'restart-required' state.

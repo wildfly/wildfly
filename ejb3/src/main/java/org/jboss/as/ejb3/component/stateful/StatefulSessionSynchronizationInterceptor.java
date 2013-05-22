@@ -21,6 +21,10 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.component.stateful.StatefulComponentInstanceInterceptor.getComponentInstance;
+
 import javax.ejb.EJBException;
 import javax.ejb.TransactionManagementType;
 import javax.transaction.Status;
@@ -36,10 +40,6 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-import static org.jboss.as.ejb3.component.stateful.StatefulComponentInstanceInterceptor.getComponentInstance;
 
 /**
  * {@link org.jboss.invocation.Interceptor} which manages {@link Synchronization} semantics on a stateful session bean.

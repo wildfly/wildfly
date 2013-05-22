@@ -21,6 +21,11 @@
  */
 package org.jboss.as.test.integration.ws.injection.ejb.basic;
 
+import java.net.URL;
+
+import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -42,10 +47,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.xml.namespace.QName;
-import javax.xml.ws.Service;
-import java.net.URL;
 
 /**
  * Migrated testcase from AS6, injection + handlers are tested with POJO and EJB3 endpoint

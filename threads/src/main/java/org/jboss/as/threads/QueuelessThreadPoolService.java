@@ -22,6 +22,10 @@
 
 package org.jboss.as.threads;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -31,10 +35,6 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.EventListener;
 import org.jboss.threads.JBossExecutors;
 import org.jboss.threads.QueuelessExecutor;
-
-import java.util.concurrent.Executor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Service responsible for creating, starting and stopping a thread pool executor with no queue.

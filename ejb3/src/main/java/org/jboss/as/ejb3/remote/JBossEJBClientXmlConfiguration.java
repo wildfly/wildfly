@@ -22,15 +22,16 @@
 
 package org.jboss.as.ejb3.remote;
 
-import org.jboss.ejb.client.DeploymentNodeSelector;
-import org.jboss.ejb.client.EJBClientConfiguration;
-import org.xnio.OptionMap;
-
-import javax.security.auth.callback.CallbackHandler;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import javax.security.auth.callback.CallbackHandler;
+
+import org.jboss.ejb.client.DeploymentNodeSelector;
+import org.jboss.ejb.client.EJBClientConfiguration;
+import org.xnio.OptionMap;
 
 /**
  * @author Jaikiran Pai

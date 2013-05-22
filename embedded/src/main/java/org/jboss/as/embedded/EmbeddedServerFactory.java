@@ -24,21 +24,20 @@ package org.jboss.as.embedded;
 
 import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
 
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.Properties;
+import java.util.logging.LogManager;
+
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.log.JDKModuleLogger;
-
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.Properties;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import java.util.logging.LogManager;
 
 /**
  * <p>

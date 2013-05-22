@@ -22,6 +22,8 @@
 
 package org.jboss.as.server;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -100,7 +102,6 @@ import org.jboss.as.server.moduleservice.ExtensionIndexService;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.server.services.security.AbstractVaultReader;
-import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -111,9 +112,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static java.security.AccessController.doPrivileged;
 
 /**
  * Service for the {@link org.jboss.as.controller.ModelController} for an AS server instance.

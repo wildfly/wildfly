@@ -22,18 +22,19 @@
 
 package org.jboss.as.naming;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Hashtable;
+
 import javax.naming.CompositeName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.Name;
 import javax.naming.Reference;
-import javax.naming.spi.NamingManager;
 import javax.naming.spi.ObjectFactory;
-import org.jboss.as.naming.context.ObjectFactoryBuilder;
+
 import org.junit.After;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;

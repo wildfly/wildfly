@@ -24,10 +24,7 @@ package org.jboss.as.process.protocol;
 
 import static org.jboss.as.process.protocol.ProtocolLogger.ROOT_LOGGER;
 import static org.jboss.as.process.protocol.ProtocolMessages.MESSAGES;
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.Unmarshaller;
 
-import javax.xml.stream.XMLStreamWriter;
 import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
@@ -35,6 +32,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+
+import javax.xml.stream.XMLStreamWriter;
+
+import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.Unmarshaller;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

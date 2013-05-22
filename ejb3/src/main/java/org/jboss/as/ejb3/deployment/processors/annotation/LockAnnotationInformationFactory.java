@@ -21,12 +21,12 @@
  */
 package org.jboss.as.ejb3.deployment.processors.annotation;
 
+import javax.ejb.Lock;
+import javax.ejb.LockType;
+
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
-
-import javax.ejb.Lock;
-import javax.ejb.LockType;
 
 /**
  * Processes the {@link javax.ejb.Lock} annotation on a session bean, which allows concurrent access (like @Singleton and @Stateful beans),

@@ -25,11 +25,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import org.junit.Assert;
+
 import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

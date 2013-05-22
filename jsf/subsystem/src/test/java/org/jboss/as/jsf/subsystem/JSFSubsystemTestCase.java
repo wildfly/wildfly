@@ -21,9 +21,9 @@
 */
 package org.jboss.as.jsf.subsystem;
 
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-
 import java.io.IOException;
+
+import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 
 /**
  *

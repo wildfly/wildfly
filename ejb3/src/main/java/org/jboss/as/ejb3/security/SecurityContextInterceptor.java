@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.security;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.security.PrivilegedAction;
 
 import javax.ejb.EJBAccessException;
@@ -28,8 +30,6 @@ import javax.ejb.EJBAccessException;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.security.SecurityRolesAssociation;
-
-import static java.security.AccessController.doPrivileged;
 
 /**
  * Establish the security context.

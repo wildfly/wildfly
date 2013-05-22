@@ -21,9 +21,10 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.value;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Represents a value for a {@link javax.ejb.ScheduleExpression} which is expressed as a range type. An
  * {@link RangeValue} comprises of a start and an end value for the range, separated by a "-"

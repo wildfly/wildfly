@@ -22,6 +22,13 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import java.io.IOException;
+
+import javax.resource.spi.XATerminator;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+import javax.transaction.xa.XAResource;
+
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManager;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.XATerminatorImple;
@@ -30,12 +37,6 @@ import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.marshalling.MarshallerFactory;
 import org.xnio.IoUtils;
-
-import javax.resource.spi.XATerminator;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.xa.XAResource;
-import java.io.IOException;
 
 
 /**

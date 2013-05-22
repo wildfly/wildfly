@@ -21,22 +21,23 @@
  */
 package org.jboss.as.test.integration.jca.statistics;
 
-import java.util.regex.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.junit.Assert.*;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.junit.*;
-import org.junit.runner.RunWith;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.junit.Assert.*;
+import org.junit.runner.RunWith;
 
 /**
  * Resource adapter statistics testCase

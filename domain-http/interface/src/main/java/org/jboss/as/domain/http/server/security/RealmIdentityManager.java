@@ -22,11 +22,6 @@
 package org.jboss.as.domain.http.server.security;
 
 import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
-import io.undertow.security.idm.Account;
-import io.undertow.security.idm.Credential;
-import io.undertow.security.idm.IdentityManager;
-import io.undertow.security.idm.PasswordCredential;
-import io.undertow.security.idm.X509CertificateCredential;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -41,6 +36,11 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.sasl.RealmCallback;
 
+import io.undertow.security.idm.Account;
+import io.undertow.security.idm.Credential;
+import io.undertow.security.idm.IdentityManager;
+import io.undertow.security.idm.PasswordCredential;
+import io.undertow.security.idm.X509CertificateCredential;
 import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;

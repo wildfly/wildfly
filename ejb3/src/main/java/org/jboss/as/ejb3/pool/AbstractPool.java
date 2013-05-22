@@ -21,9 +21,9 @@
  */
 package org.jboss.as.ejb3.pool;
 
-import org.jboss.logging.Logger;
-
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.jboss.logging.Logger;
 
 /**
  * The base of all pool implementations.

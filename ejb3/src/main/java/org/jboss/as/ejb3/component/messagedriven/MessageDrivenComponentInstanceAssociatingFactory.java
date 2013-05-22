@@ -22,13 +22,14 @@
 
 package org.jboss.as.ejb3.component.messagedriven;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ejb3.component.interceptors.NonPooledEJBComponentInstanceAssociatingInterceptor;
 import org.jboss.as.ejb3.component.pool.PooledInstanceInterceptor;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * User: jpai

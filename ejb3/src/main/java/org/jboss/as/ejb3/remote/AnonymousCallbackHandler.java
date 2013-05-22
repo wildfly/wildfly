@@ -22,14 +22,15 @@
 
 package org.jboss.as.ejb3.remote;
 
-import org.jboss.as.ejb3.EjbMessages;
+import java.io.IOException;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.RealmCallback;
-import java.io.IOException;
+
+import org.jboss.as.ejb3.EjbMessages;
 
 /**
 * @author Jaikiran Pai

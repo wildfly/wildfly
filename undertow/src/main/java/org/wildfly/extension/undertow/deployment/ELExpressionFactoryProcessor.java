@@ -39,9 +39,9 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.ServicesAttachment;
-import org.wildfly.extension.undertow.UndertowLogger;
 import org.jboss.el.cache.FactoryFinderCache;
 import org.jboss.modules.Module;
+import org.wildfly.extension.undertow.UndertowLogger;
 
 /**
  * Processor that handles {@link javax.el.ExpressionFactory} instances that are found in the deployment.

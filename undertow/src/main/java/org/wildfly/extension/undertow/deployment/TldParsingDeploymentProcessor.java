@@ -24,6 +24,8 @@
 
 package org.wildfly.extension.undertow.deployment;
 
+import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -44,7 +46,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.wildfly.extension.undertow.UndertowLogger;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.parser.jsp.TldMetaDataParser;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
@@ -54,8 +55,7 @@ import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.metadata.web.spec.TaglibMetaData;
 import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.vfs.VirtualFile;
-
-import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
+import org.wildfly.extension.undertow.UndertowLogger;
 
 /**
  * @author Remy Maucherat

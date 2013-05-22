@@ -30,6 +30,7 @@ import static org.jboss.as.domain.management.ModelDescriptionConstants.USERNAME;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.WHOAMI;
 
 import java.util.Set;
+
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.OperationContext;

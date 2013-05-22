@@ -21,14 +21,8 @@
  */
 package org.jboss.as.jdr;
 
-import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandContextFactory;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.jdr.commands.JdrCommand;
-import org.jboss.as.jdr.commands.JdrEnvironment;
-import org.jboss.as.jdr.plugins.JdrPlugin;
-import org.jboss.as.jdr.util.JdrZipFile;
+import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
+import static org.jboss.as.jdr.JdrMessages.MESSAGES;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -40,8 +34,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
-import static org.jboss.as.jdr.JdrMessages.MESSAGES;
+import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandContextFactory;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.jdr.commands.JdrCommand;
+import org.jboss.as.jdr.commands.JdrEnvironment;
+import org.jboss.as.jdr.plugins.JdrPlugin;
+import org.jboss.as.jdr.util.JdrZipFile;
 
 public class JdrRunner implements JdrReportCollector {
 

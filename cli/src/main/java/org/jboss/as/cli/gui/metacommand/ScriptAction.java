@@ -26,9 +26,11 @@ import java.io.FileReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
+
 import org.jboss.as.cli.gui.CliGuiContext;
 import org.jboss.as.cli.gui.component.CLIOutput;
 import org.jboss.as.cli.gui.component.ScriptMenu;

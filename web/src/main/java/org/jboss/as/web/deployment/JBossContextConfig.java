@@ -63,6 +63,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.AuthenticatorValve;
 import org.jboss.as.web.WebLogger;
 import org.jboss.as.web.WebServerService;
+import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.web.deployment.helpers.VFSDirContext;
 import org.jboss.as.web.session.DistributableSessionManager;
 import org.jboss.marshalling.ClassResolver;
@@ -116,7 +117,6 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.vfs.VirtualFile;
-import org.jboss.as.web.common.WarMetaData;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

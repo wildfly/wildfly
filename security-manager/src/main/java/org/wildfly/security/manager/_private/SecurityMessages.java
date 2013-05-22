@@ -22,16 +22,17 @@
 
 package org.wildfly.security.manager._private;
 
+import static org.jboss.logging.Logger.Level.DEBUG;
+
 import java.security.AccessControlException;
 import java.security.CodeSource;
 import java.security.Permission;
+
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
-
-import static org.jboss.logging.Logger.Level.DEBUG;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

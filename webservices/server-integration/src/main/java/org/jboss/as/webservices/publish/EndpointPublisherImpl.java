@@ -28,10 +28,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-
 import org.jboss.as.web.host.ServletBuilder;
-import org.jboss.as.web.host.WebDeploymentController;
 import org.jboss.as.web.host.WebDeploymentBuilder;
+import org.jboss.as.web.host.WebDeploymentController;
 import org.jboss.as.web.host.WebHost;
 import org.jboss.as.webservices.deployers.EndpointServiceDeploymentAspect;
 import org.jboss.as.webservices.deployers.deployment.DeploymentAspectsProvider;

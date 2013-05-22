@@ -21,11 +21,11 @@
  */
 package org.jboss.as.cli.impl;
 
-import org.wildfly.security.manager.AddShutdownHookAction;
-import org.wildfly.security.manager.WildFlySecurityManager;
-
 import static java.lang.Runtime.getRuntime;
 import static java.security.AccessController.doPrivileged;
+
+import org.wildfly.security.manager.AddShutdownHookAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Package privileged actions

@@ -21,8 +21,8 @@
  */
 package org.jboss.as.webservices.util;
 
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+import static org.jboss.as.webservices.WSMessages.MESSAGES;
 
 import java.io.IOException;
 import java.net.URL;

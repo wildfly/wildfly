@@ -24,21 +24,22 @@ package org.jboss.as.web.security.jaspi.modules;
 
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
-import org.apache.catalina.Context;
-import org.apache.catalina.connector.Request;
-import org.apache.catalina.connector.Response;
-import org.apache.coyote.ActionCode;
-import org.jboss.as.web.WebLogger;
-import org.jboss.web.CatalinaMessages;
+import java.io.IOException;
+import java.security.Principal;
+import java.security.cert.X509Certificate;
 
 import javax.security.auth.Subject;
 import javax.security.auth.message.AuthException;
 import javax.security.auth.message.AuthStatus;
 import javax.security.auth.message.MessageInfo;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.security.Principal;
-import java.security.cert.X509Certificate;
+
+import org.apache.catalina.Context;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
+import org.apache.coyote.ActionCode;
+import org.jboss.as.web.WebLogger;
+import org.jboss.web.CatalinaMessages;
 
 /**
  * <p>

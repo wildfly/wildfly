@@ -29,6 +29,7 @@ import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
 
 import java.io.IOException;
 import java.util.Properties;
+
 import javax.mail.Session;
 
 import org.jboss.as.controller.ModelVersion;

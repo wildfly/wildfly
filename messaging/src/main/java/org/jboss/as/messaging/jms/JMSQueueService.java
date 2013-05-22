@@ -22,6 +22,11 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+
+import java.util.concurrent.ExecutorService;
+
 import org.hornetq.jms.server.JMSServerManager;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -29,11 +34,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
-
-import java.util.concurrent.ExecutorService;
 
 /**
  * Service responsible for creating and destroying a {@code javax.jms.Queue}.

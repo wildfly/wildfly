@@ -22,14 +22,6 @@
 
 package org.jboss.as.naming.subsystem;
 
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.EXTERNAL_CONTEXT;
@@ -38,6 +30,14 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.REMOTE_NAMING;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SERVICE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
+
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author Eduardo Martins

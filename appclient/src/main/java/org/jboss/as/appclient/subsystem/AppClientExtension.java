@@ -21,6 +21,8 @@
  */
 package org.jboss.as.appclient.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import java.util.List;
 
 import javax.xml.stream.XMLStreamConstants;
@@ -42,8 +44,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 /**
  * Extension that hooks the application client work into the deployment

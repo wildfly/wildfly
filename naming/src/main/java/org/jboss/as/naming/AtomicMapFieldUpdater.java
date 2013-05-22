@@ -22,13 +22,14 @@
 
 package org.jboss.as.naming;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
-import org.jboss.as.naming.util.FastCopyHashMap;
 
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
+import org.jboss.as.naming.util.FastCopyHashMap;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

@@ -24,6 +24,7 @@ package org.jboss.as.arquillian.container.embedded;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

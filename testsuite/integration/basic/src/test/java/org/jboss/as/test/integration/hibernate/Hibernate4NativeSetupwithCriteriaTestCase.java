@@ -22,6 +22,9 @@
 
 package org.jboss.as.test.integration.hibernate;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -46,9 +49,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Test Criteria API with native Hibernate and also test that Hibernate statistics is able to fetch all kinds of queries

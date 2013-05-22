@@ -22,6 +22,15 @@
 
 package org.jboss.as.ee.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+import javax.naming.NamingException;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -48,14 +57,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import javax.naming.NamingException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * @author John Bailey

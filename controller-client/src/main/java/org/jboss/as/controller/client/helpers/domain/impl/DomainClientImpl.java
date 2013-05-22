@@ -24,7 +24,6 @@ package org.jboss.as.controller.client.helpers.domain.impl;
 
 import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
-import javax.security.auth.callback.CallbackHandler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -35,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;

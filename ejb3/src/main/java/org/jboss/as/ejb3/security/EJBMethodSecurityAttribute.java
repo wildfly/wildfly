@@ -22,10 +22,10 @@
 
 package org.jboss.as.ejb3.security;
 
-import org.jboss.as.ejb3.EjbMessages;
-
 import java.util.Collections;
 import java.util.Set;
+
+import org.jboss.as.ejb3.EjbMessages;
 
 /**
  * Holds security metadata of a method corresponding to a EJB's view.

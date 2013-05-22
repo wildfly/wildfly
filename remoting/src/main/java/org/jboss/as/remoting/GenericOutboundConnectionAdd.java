@@ -22,6 +22,13 @@
 
 package org.jboss.as.remoting;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -34,13 +41,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.remoting3.Endpoint;
 import org.xnio.OptionMap;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 
 /**
  * @author Jaikiran Pai

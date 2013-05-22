@@ -24,6 +24,8 @@
 
 package org.jboss.as.naming.subsystem;
 
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.EXTERNAL_CONTEXT;
+
 import java.util.Map;
 
 import org.jboss.as.controller.PathAddress;
@@ -31,8 +33,6 @@ import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.naming.NamingMessages;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.EXTERNAL_CONTEXT;
 
 /**
  * @author Stuart Douglas

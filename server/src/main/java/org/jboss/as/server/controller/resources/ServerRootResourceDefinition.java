@@ -21,10 +21,6 @@
 */
 package org.jboss.as.server.controller.resources;
 
-import org.jboss.as.controller.NoopOperationStepHandler;
-import org.jboss.as.controller.OperationDefinition;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
@@ -35,6 +31,9 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
+import org.jboss.as.controller.NoopOperationStepHandler;
+import org.jboss.as.controller.OperationDefinition;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
@@ -43,6 +42,7 @@ import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CoreManagementDefinition;

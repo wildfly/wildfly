@@ -28,10 +28,15 @@
  */
 package org.jboss.as.test.xts.simple.wsat;
 
-import com.arjuna.wst.*;
-import org.jboss.logging.Logger;
-
 import java.io.Serializable;
+
+import com.arjuna.wst.Aborted;
+import com.arjuna.wst.Durable2PCParticipant;
+import com.arjuna.wst.Prepared;
+import com.arjuna.wst.SystemException;
+import com.arjuna.wst.Vote;
+import com.arjuna.wst.WrongStateException;
+import org.jboss.logging.Logger;
 
 /**
  * An adapter class that exposes the RestaurantManager as a WS-T Atomic Transaction participant.

@@ -29,12 +29,12 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 
 import org.jboss.as.deployment.Phase;
+import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.server.deployment.module.DeploymentModuleLoaderImpl;
 import org.jboss.as.server.deployment.module.ManifestAttachmentProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.server.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;

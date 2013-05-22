@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.domain.management.util;
 
-import org.jboss.as.process.protocol.StreamUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +30,8 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.as.process.protocol.StreamUtils;
 
 /**
  * Basic process test wrapper.

@@ -22,13 +22,14 @@
 
 package org.jboss.as.ejb3.component.interceptors;
 
-import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.invocation.InterceptorContext;
+import java.rmi.RemoteException;
 
 import javax.ejb.ConcurrentAccessException;
 import javax.ejb.ConcurrentAccessTimeoutException;
-import java.rmi.RemoteException;
+
+import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.invocation.InterceptorContext;
 
 /**
  * A {@link ComponentInstance} associating interceptor for EJB components (SLSB and message driven) which

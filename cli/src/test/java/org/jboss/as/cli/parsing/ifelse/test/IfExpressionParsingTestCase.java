@@ -21,18 +21,17 @@
  */
 package org.jboss.as.cli.parsing.ifelse.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import static org.jboss.as.cli.handlers.ifelse.ExpressionParser.AND;
-import static org.jboss.as.cli.handlers.ifelse.ExpressionParser.OR;
 import static org.jboss.as.cli.handlers.ifelse.ExpressionParser.EQ;
-import static org.jboss.as.cli.handlers.ifelse.ExpressionParser.NOT_EQ;
 import static org.jboss.as.cli.handlers.ifelse.ExpressionParser.GT;
 import static org.jboss.as.cli.handlers.ifelse.ExpressionParser.LT;
 import static org.jboss.as.cli.handlers.ifelse.ExpressionParser.NGT;
 import static org.jboss.as.cli.handlers.ifelse.ExpressionParser.NLT;
+import static org.jboss.as.cli.handlers.ifelse.ExpressionParser.NOT_EQ;
+import static org.jboss.as.cli.handlers.ifelse.ExpressionParser.OR;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 

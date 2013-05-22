@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.security.AccessController;
@@ -62,8 +64,6 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Stateful Session Bean

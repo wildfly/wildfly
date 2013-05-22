@@ -21,11 +21,12 @@
  */
 package org.jboss.as.ejb3.context;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.util.ThreadLocalStack;
 import org.jboss.invocation.InterceptorContext;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>

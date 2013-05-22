@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.jaxrs.packaging.war;
 
+import static org.junit.Assert.assertEquals;
+
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
@@ -34,8 +36,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Tests a JAX-RS deployment without an application bundled and resteasy.scan specified will

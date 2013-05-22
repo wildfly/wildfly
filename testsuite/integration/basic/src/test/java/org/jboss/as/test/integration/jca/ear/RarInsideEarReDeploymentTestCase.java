@@ -21,6 +21,10 @@
  */
 package org.jboss.as.test.integration.jca.ear;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.junit.Assert.assertNotNull;
+
 import javax.naming.Context;
 
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -43,10 +47,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a> JBQA-5968 test

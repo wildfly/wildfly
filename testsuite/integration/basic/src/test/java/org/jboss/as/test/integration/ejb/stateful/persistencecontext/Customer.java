@@ -23,10 +23,11 @@
 package org.jboss.as.test.integration.ejb.stateful.persistencecontext;
 
 import java.io.Serializable;
+
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 /**
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>

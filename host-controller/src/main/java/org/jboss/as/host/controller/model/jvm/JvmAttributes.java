@@ -22,6 +22,7 @@
 package org.jboss.as.host.controller.model.jvm;
 
 import java.util.List;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 

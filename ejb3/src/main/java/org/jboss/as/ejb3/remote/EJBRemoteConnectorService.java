@@ -21,6 +21,16 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.jboss.as.clustering.registry.RegistryCollector;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
@@ -57,15 +67,6 @@ import org.jboss.remoting3.Registration;
 import org.jboss.remoting3.ServiceRegistrationException;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
-
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

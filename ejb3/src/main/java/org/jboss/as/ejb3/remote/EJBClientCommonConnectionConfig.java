@@ -22,6 +22,10 @@
 
 package org.jboss.as.ejb3.remote;
 
+import java.util.Properties;
+
+import javax.security.auth.callback.CallbackHandler;
+
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.SecurityRealmService;
@@ -33,9 +37,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.xnio.Option;
 import org.xnio.OptionMap;
-
-import javax.security.auth.callback.CallbackHandler;
-import java.util.Properties;
 
 
 /**

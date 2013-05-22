@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.integration.ee.appclient.basic;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -39,9 +42,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests that an application client can launch and conntect to a remote EJB

@@ -24,8 +24,8 @@ package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADVANCED_FILTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_ATTRIBUTE;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
 import java.io.IOException;

@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.manualmode.ejb.ssl.beans;
 
-import javax.ejb.Remote;
 import java.util.concurrent.Future;
-import javax.ejb.Asynchronous;
+
+import javax.ejb.Remote;
 
 /**
  * @author Ondrej Chaloupka

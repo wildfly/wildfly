@@ -21,6 +21,12 @@
 */
 package org.jboss.as.test.integration.management.base;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createCompositeNode;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -60,12 +66,6 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Assert;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.test.integration.management.util.ModelUtil.createCompositeNode;
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 /**
  * @author Dominik Pospisil <dpospisi@redhat.com>

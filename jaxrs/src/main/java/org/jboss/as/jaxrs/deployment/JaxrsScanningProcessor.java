@@ -21,6 +21,12 @@
  */
 package org.jboss.as.jaxrs.deployment;
 
+import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
+import static org.jboss.as.jaxrs.JaxrsMessages.MESSAGES;
+import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN;
+import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_PROVIDERS;
+import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_RESOURCES;
+
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,12 +62,6 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrapClasses;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
-
-import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
-import static org.jboss.as.jaxrs.JaxrsMessages.MESSAGES;
-import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN;
-import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_PROVIDERS;
-import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_RESOURCES;
 
 /**
  * Processor that finds jax-rs classes in the deployment

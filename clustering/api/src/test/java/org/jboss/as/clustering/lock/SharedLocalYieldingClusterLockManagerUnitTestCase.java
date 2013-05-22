@@ -21,25 +21,6 @@
  */
 package org.jboss.as.clustering.lock;
 
-import org.jboss.as.clustering.ClusterNode;
-import org.jboss.as.clustering.GroupMembershipNotifier;
-import org.jboss.as.clustering.GroupRpcDispatcher;
-import org.jboss.as.clustering.MockClusterNode;
-import org.jboss.as.clustering.ResponseFilter;
-import org.jboss.as.clustering.lock.AbstractClusterLockSupport.RpcTarget;
-import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager.LockResult;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
 import static org.jboss.as.clustering.lock.LockParamsMatcher.eqLockParams;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -52,6 +33,25 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import org.jboss.as.clustering.ClusterNode;
+import org.jboss.as.clustering.GroupMembershipNotifier;
+import org.jboss.as.clustering.GroupRpcDispatcher;
+import org.jboss.as.clustering.MockClusterNode;
+import org.jboss.as.clustering.ResponseFilter;
+import org.jboss.as.clustering.lock.AbstractClusterLockSupport.RpcTarget;
+import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager.LockResult;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 /**
  * Unit tests of SharedLocalYieldingClusterLockManager.

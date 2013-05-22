@@ -22,6 +22,9 @@
 
 package org.jboss.as.test.manualmode.web.valve;
 
+import static org.jboss.as.test.manualmode.web.valve.ValveConstants.*;
+import static org.junit.Assert.*;
+
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,9 +47,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.*;
-import static org.jboss.as.test.manualmode.web.valve.ValveConstants.*;
 
 /**
  * This class tests a global valve.

@@ -22,6 +22,10 @@
 
 package org.jboss.as.ejb3.component.singleton;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
+import java.util.List;
+
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.DependencyConfigurator;
@@ -30,8 +34,6 @@ import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-import java.util.List;
 
 /**
  * User: jpai

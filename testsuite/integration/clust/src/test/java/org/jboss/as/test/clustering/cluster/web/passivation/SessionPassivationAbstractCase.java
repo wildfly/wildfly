@@ -22,7 +22,7 @@
 package org.jboss.as.test.clustering.cluster.web.passivation;
 
 import java.net.URL;
-import org.junit.Assert;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -34,6 +34,7 @@ import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.http.util.HttpClientUtils;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;

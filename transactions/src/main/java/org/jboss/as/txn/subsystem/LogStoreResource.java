@@ -22,14 +22,15 @@
 
 package org.jboss.as.txn.subsystem;
 
+import java.util.Set;
+
+import javax.management.ObjectName;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.AbstractModelResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-
-import javax.management.ObjectName;
-import java.util.Set;
 
 /**
  * Resource maintaining the sub-tree for the log-store.

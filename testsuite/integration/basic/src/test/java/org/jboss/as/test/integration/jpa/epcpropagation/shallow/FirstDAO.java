@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.jpa.epcpropagation.shallow;
 
 import javax.annotation.Resource;
-import javax.ejb.EJB;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
 import javax.persistence.EntityManager;

@@ -22,14 +22,14 @@
 
 package org.jboss.as.clustering.lock;
 
+import static org.jboss.as.clustering.ClusteringApiLogger.ROOT_LOGGER;
+import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
+
 import java.io.Serializable;
 
 import org.jboss.as.clustering.ClusterNode;
 import org.jboss.as.clustering.GroupMembershipNotifier;
 import org.jboss.as.clustering.GroupRpcDispatcher;
-
-import static org.jboss.as.clustering.ClusteringApiLogger.ROOT_LOGGER;
-import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
 
 /**
  * Support class for cluster locking scenarios where threads cannot acquire a local lock unless the node owns a cluster-wide

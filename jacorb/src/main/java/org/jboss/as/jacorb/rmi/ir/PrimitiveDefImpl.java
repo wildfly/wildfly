@@ -21,17 +21,17 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import org.omg.CORBA.TypeCode;
-import org.omg.CORBA.TCKind;
-import org.omg.CORBA.IRObject;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.omg.CORBA.DefinitionKind;
-import org.omg.CORBA.PrimitiveKind;
+import org.omg.CORBA.IRObject;
 import org.omg.CORBA.PrimitiveDef;
 import org.omg.CORBA.PrimitiveDefOperations;
 import org.omg.CORBA.PrimitiveDefPOATie;
-
-import java.util.Map;
-import java.util.HashMap;
+import org.omg.CORBA.PrimitiveKind;
+import org.omg.CORBA.TCKind;
+import org.omg.CORBA.TypeCode;
 
 /**
  * PrimitiveDef IR object.

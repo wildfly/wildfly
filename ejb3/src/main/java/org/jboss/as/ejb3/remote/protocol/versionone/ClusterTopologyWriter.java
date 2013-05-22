@@ -22,11 +22,6 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import org.jboss.as.clustering.registry.Registry;
-import org.jboss.as.ejb3.EjbMessages;
-import org.jboss.as.network.ClientMapping;
-import org.jboss.ejb.client.remoting.PackedInteger;
-
 import java.io.DataOutput;
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -35,6 +30,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.as.clustering.registry.Registry;
+import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.network.ClientMapping;
+import org.jboss.ejb.client.remoting.PackedInteger;
 
 /**
  * A {@link ClusterTopologyWriter} is responsible for writing out cluster topology related EJB remoting protocol

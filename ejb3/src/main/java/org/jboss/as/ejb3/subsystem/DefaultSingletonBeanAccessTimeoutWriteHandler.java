@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.List;
+
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -31,8 +33,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-
-import java.util.List;
 
 /**
  * User: jpai

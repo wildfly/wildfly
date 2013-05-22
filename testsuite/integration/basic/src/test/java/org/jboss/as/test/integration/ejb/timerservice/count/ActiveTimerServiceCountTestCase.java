@@ -1,5 +1,11 @@
 package org.jboss.as.test.integration.ejb.timerservice.count;
 
+import java.io.Serializable;
+import java.util.Collection;
+
+import javax.ejb.Timer;
+import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -9,11 +15,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.Timer;
-import javax.naming.InitialContext;
-import java.io.Serializable;
-import java.util.Collection;
 
 /**
  * Testcase for the {@link javax.ejb.TimerService#getAllTimers()} API introduced in EJB 3.2 spec

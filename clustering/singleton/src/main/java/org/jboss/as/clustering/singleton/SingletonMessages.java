@@ -21,9 +21,9 @@
  */
 package org.jboss.as.clustering.singleton;
 
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 
 /**
  * SingletonMessages

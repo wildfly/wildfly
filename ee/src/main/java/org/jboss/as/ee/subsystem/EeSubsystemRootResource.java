@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ee.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
 import java.util.EnumSet;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -40,9 +43,6 @@ import org.jboss.as.ee.structure.DescriptorPropertyReplacementProcessor;
 import org.jboss.as.ee.structure.GlobalModuleDependencyProcessor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the EE subsystem's root management resource.

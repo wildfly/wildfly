@@ -31,8 +31,6 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
-import org.junit.Assert;
-
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -54,6 +52,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

@@ -22,6 +22,9 @@
 
 package org.jboss.as.test.integration.naming.local.simple;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.assertNotNull;
+
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -36,9 +39,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * @author John Bailey

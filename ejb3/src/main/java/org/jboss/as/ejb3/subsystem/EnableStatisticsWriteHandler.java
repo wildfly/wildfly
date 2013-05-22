@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS;
+
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -28,8 +30,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceRegistry;
-
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

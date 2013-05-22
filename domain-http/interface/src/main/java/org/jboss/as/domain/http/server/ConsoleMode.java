@@ -21,6 +21,10 @@
 */
 package org.jboss.as.domain.http.server;
 
+import static io.undertow.predicate.Predicates.not;
+import static io.undertow.predicate.Predicates.path;
+import static io.undertow.predicate.Predicates.suffixs;
+
 import java.io.File;
 import java.util.Set;
 import java.util.SortedSet;
@@ -36,10 +40,6 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static io.undertow.predicate.Predicates.not;
-import static io.undertow.predicate.Predicates.path;
-import static io.undertow.predicate.Predicates.suffixs;
 
 
 /**

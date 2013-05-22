@@ -23,6 +23,7 @@
 package org.jboss.as.process.protocol;
 
 import java.io.DataOutput;
+
 import org.jboss.marshalling.ByteOutput;
 
 /**

@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.List;
+
 import javax.naming.Reference;
 import javax.resource.spi.ResourceAdapter;
 import javax.transaction.TransactionManager;
@@ -50,8 +51,6 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
-import org.wildfly.security.manager.ClearContextClassLoaderAction;
-import org.wildfly.security.manager.SetContextClassLoaderFromClassAction;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
 import org.jboss.jca.common.api.metadata.ra.Connector;
@@ -76,6 +75,8 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
+import org.wildfly.security.manager.ClearContextClassLoaderAction;
+import org.wildfly.security.manager.SetContextClassLoaderFromClassAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

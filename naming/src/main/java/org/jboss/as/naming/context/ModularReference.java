@@ -24,6 +24,7 @@ package org.jboss.as.naming.context;
 
 import javax.naming.RefAddr;
 import javax.naming.Reference;
+
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 

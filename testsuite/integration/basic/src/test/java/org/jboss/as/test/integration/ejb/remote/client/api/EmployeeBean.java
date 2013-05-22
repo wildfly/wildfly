@@ -22,9 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api;
 
-import javax.annotation.Resource;
 import javax.ejb.Remote;
-import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 
 /**

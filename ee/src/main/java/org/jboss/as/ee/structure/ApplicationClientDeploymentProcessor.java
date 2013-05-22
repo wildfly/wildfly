@@ -21,6 +21,11 @@
  */
 package org.jboss.as.ee.structure;
 
+import java.util.List;
+import java.util.Locale;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -31,11 +36,6 @@ import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.metadata.ear.spec.ModuleMetaData;
 import org.jboss.vfs.VirtualFile;
-
-import java.util.List;
-import java.util.Locale;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
 
 /**
  * Processor that sets up application clients. If this is an ear deployment it will mark the client as

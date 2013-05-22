@@ -21,8 +21,9 @@
  */
 package org.jboss.as.cli;
 
-import java.util.Properties;
 import java.io.File;
+import java.util.Properties;
+
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

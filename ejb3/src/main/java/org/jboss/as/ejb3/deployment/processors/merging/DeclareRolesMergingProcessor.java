@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import javax.annotation.security.DeclareRoles;
+
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
@@ -30,8 +32,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefsMetaData;
-
-import javax.annotation.security.DeclareRoles;
 
 /**
  * Merging process for @DeclareRoles

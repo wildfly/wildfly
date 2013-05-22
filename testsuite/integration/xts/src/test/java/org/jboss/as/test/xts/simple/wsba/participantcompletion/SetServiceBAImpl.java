@@ -20,6 +20,12 @@
  */
 package org.jboss.as.test.xts.simple.wsba.participantcompletion;
 
+import javax.jws.HandlerChain;
+import javax.jws.WebMethod;
+import javax.jws.WebService;
+import javax.jws.soap.SOAPBinding;
+import javax.servlet.annotation.WebServlet;
+
 import com.arjuna.ats.arjuna.common.Uid;
 import com.arjuna.mw.wst11.BusinessActivityManager;
 import com.arjuna.mw.wst11.BusinessActivityManagerFactory;
@@ -29,12 +35,6 @@ import org.jboss.as.test.xts.simple.wsba.MockSetManager;
 import org.jboss.as.test.xts.simple.wsba.SetServiceException;
 import org.jboss.as.test.xts.simple.wsba.participantcompletion.jaxws.SetServiceBA;
 import org.jboss.logging.Logger;
-
-import javax.jws.HandlerChain;
-import javax.jws.WebMethod;
-import javax.jws.WebService;
-import javax.jws.soap.SOAPBinding;
-import javax.servlet.annotation.WebServlet;
 
 /**
  * An adapter class that exposes a set as a transactional Web Service.

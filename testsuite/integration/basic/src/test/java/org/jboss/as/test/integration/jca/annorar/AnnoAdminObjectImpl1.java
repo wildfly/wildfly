@@ -23,7 +23,6 @@ package org.jboss.as.test.integration.jca.annorar;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
-
 import javax.resource.spi.AdministeredObject;
 import javax.resource.spi.ConfigProperty;
 import javax.resource.spi.ResourceAdapter;

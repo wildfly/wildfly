@@ -21,14 +21,14 @@
  */
 package org.jboss.as.ee.naming;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Sets and restores the <code>java:</code> contexts

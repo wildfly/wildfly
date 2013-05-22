@@ -22,6 +22,9 @@
 
 package org.jboss.as.jaxrs.deployment;
 
+import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
+import static org.jboss.as.jaxrs.JaxrsMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -51,9 +54,6 @@ import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
-
-import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
-import static org.jboss.as.jaxrs.JaxrsMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

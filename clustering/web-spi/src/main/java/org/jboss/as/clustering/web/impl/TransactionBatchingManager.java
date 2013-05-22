@@ -21,14 +21,14 @@
  */
 package org.jboss.as.clustering.web.impl;
 
+import static org.jboss.as.clustering.web.impl.ClusteringWebLogger.ROOT_LOGGER;
+import static org.jboss.as.clustering.web.impl.ClusteringWebMessages.MESSAGES;
+
 import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.TransactionManager;
 
 import org.jboss.as.clustering.web.BatchingManager;
-
-import static org.jboss.as.clustering.web.impl.ClusteringWebLogger.ROOT_LOGGER;
-import static org.jboss.as.clustering.web.impl.ClusteringWebMessages.MESSAGES;
 
 /**
  * @author Paul Ferraro

@@ -22,6 +22,14 @@
 
 package org.jboss.as.test.integration.domain.management.util;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.security.auth.callback.CallbackHandler;
+
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
@@ -31,13 +39,6 @@ import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.Connection;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
-
-import javax.security.auth.callback.CallbackHandler;
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Connection utility allowing the {@linkplain DomainLifecycleUtil} to share a remoting connection between potentially

@@ -25,9 +25,9 @@ package org.jboss.as.clustering.jgroups;
 import java.net.URL;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 
 /**
  * JGroupsMessages

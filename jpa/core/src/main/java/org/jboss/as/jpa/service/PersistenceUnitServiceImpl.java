@@ -22,6 +22,8 @@
 
 package org.jboss.as.jpa.service;
 
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
@@ -43,8 +45,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
 
 /**
  * Persistence Unit service that is created for each deployed persistence unit that will be referenced by the

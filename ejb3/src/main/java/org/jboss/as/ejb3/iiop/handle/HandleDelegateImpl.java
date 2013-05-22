@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.iiop.handle;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -37,8 +39,6 @@ import org.jboss.util.NestedRuntimeException;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.portable.ObjectImpl;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * <P>Implementation of the javax.ejb.spi.HandleDelegate interface</P>

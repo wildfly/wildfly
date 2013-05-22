@@ -22,14 +22,14 @@
 
 package org.jboss.as.pojo.descriptor;
 
+import java.io.Serializable;
+
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
-
-import java.io.Serializable;
 
 /**
  * The module meta data.

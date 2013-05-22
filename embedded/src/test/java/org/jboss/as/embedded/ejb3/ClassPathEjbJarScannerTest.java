@@ -21,10 +21,10 @@
  */
 package org.jboss.as.embedded.ejb3;
 
-import org.junit.Test;
-
 import java.io.File;
 import java.util.Collections;
+
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

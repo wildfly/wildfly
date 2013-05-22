@@ -22,6 +22,8 @@
 
 package org.jboss.as.protocol;
 
+import static org.jboss.as.protocol.ProtocolLogger.ROOT_LOGGER;
+
 import java.io.Closeable;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -31,8 +33,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import javax.xml.stream.XMLStreamWriter;
-
-import static org.jboss.as.protocol.ProtocolLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

@@ -22,11 +22,17 @@
 
 package org.jboss.as.naming;
 
+import static org.jboss.as.naming.SecurityHelper.testActionWithPermission;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
 import javax.naming.CompositeName;
 import javax.naming.Name;
 import javax.naming.NameNotFoundException;
@@ -40,12 +46,6 @@ import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.naming.SecurityHelper.testActionWithPermission;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

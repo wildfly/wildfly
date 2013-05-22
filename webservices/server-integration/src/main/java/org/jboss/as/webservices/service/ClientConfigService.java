@@ -21,6 +21,8 @@
  */
 package org.jboss.as.webservices.service;
 
+import java.util.List;
+
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -28,8 +30,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.metadata.config.ClientConfig;
-
-import java.util.List;
 
 /**
  * WS server config service.

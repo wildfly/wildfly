@@ -57,10 +57,10 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.spi.FrameworkBuilderFactory;
 import org.jboss.osgi.framework.spi.FrameworkBuilder;
-import org.jboss.osgi.framework.spi.SystemPaths;
 import org.jboss.osgi.framework.spi.FrameworkBuilder.FrameworkPhase;
+import org.jboss.osgi.framework.spi.FrameworkBuilderFactory;
+import org.jboss.osgi.framework.spi.SystemPaths;
 import org.osgi.framework.Constants;
 import org.wildfly.security.manager.WildFlySecurityManager;
 

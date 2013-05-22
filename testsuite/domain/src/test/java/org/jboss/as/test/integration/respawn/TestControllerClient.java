@@ -1,5 +1,8 @@
 package org.jboss.as.test.integration.respawn;
 
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.controller.client.impl.AbstractModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.protocol.ProtocolConnectionConfiguration;
@@ -12,9 +15,6 @@ import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
-
-import java.io.IOException;
-import java.util.concurrent.ExecutorService;
 
 /**
  * @author Emanuel Muckenhuber

@@ -28,6 +28,7 @@ import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 

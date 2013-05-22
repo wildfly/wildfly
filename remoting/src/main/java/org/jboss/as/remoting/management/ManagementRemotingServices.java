@@ -23,8 +23,6 @@
 package org.jboss.as.remoting.management;
 
 
-import org.jboss.as.protocol.ProtocolChannelClient;
-import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import static org.jboss.msc.service.ServiceController.Mode.ACTIVE;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
@@ -36,6 +34,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.remote.AbstractModelControllerOperationHandlerFactoryService;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
+import org.jboss.as.protocol.ProtocolChannelClient;
+import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;

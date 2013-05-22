@@ -23,6 +23,7 @@
 package org.jboss.as.ee.metadata.property;
 
 import java.util.Properties;
+
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.metadata.property.PropertyResolver;

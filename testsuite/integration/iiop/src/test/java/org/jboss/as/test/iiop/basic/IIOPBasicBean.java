@@ -1,10 +1,11 @@
 package org.jboss.as.test.iiop.basic;
 
+import java.rmi.RemoteException;
+
 import javax.annotation.Resource;
 import javax.ejb.RemoteHome;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
-import java.rmi.RemoteException;
 
 /**
  * @author Stuart Douglas

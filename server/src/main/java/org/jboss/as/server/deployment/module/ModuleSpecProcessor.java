@@ -27,11 +27,11 @@ import java.security.Permission;
 import java.security.Permissions;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
-
 import java.util.PropertyPermission;
+
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.Attachments;

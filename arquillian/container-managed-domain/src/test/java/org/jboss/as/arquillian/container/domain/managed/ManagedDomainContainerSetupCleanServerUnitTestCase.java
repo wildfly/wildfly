@@ -1,10 +1,10 @@
 package org.jboss.as.arquillian.container.domain.managed;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.io.File;
 import java.io.IOException;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author ggrossetie

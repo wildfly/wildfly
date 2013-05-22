@@ -21,11 +21,11 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.aroundtimeout;
 
-import org.junit.Assert;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.junit.Assert;
 
 /**
  * @author Stuart Douglas

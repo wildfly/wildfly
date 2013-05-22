@@ -42,7 +42,6 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.BootstrapListener;
 import org.jboss.as.server.FutureServiceContainer;
-import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
@@ -54,6 +53,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 
 /**
  * The root service for a HostController process.

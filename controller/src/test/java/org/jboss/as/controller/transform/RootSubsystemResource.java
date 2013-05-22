@@ -1,10 +1,11 @@
 package org.jboss.as.controller.transform;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
+import java.util.EnumSet;
+
 import org.jboss.as.controller.NoopOperationStepHandler;
-import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -12,15 +13,10 @@ import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvide
 import org.jboss.as.controller.descriptions.DefaultResourceRemoveDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.dmr.ModelNode;
-
-import java.util.EnumSet;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 /**
  * @author Tomaz Cerar

@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.component.stateless;
 
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -37,8 +39,6 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
-
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
 /**
  * {@link org.jboss.as.ee.component.Component} responsible for managing EJB3 stateless session beans

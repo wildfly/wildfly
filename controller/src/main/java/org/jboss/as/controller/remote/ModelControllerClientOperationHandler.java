@@ -35,9 +35,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 
-import javax.security.auth.Subject;
 import java.io.DataInput;
 import java.io.IOException;
+
+import javax.security.auth.Subject;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;

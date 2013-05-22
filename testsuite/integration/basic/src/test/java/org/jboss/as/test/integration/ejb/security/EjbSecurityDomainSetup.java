@@ -34,13 +34,10 @@ import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;

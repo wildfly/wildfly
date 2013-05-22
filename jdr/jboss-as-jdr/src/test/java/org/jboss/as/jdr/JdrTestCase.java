@@ -21,6 +21,14 @@
  */
 package org.jboss.as.jdr;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.InputStream;
+
 import org.jboss.as.jdr.commands.JdrEnvironment;
 import org.jboss.as.jdr.util.JdrZipFile;
 import org.jboss.as.jdr.util.PatternSanitizer;
@@ -30,12 +38,6 @@ import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 import org.junit.Test;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
-
-import static org.junit.Assert.*;
 
 public class JdrTestCase {
 

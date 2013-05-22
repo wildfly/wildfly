@@ -44,7 +44,6 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
-import org.jboss.as.test.integration.domain.suites.DomainTestSuite;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.dmr.ModelNode;

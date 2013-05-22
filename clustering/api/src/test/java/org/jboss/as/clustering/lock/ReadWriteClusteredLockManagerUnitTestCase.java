@@ -22,10 +22,22 @@
 
 package org.jboss.as.clustering.lock;
 
-import static org.mockito.Mockito.*;
-import static org.mockito.AdditionalMatchers.*;
-import static org.junit.Assert.*;
-import static org.jboss.as.clustering.lock.LockParamsMatcher.*;
+import static org.jboss.as.clustering.lock.LockParamsMatcher.eqLockParams;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.AdditionalMatchers.aryEq;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;

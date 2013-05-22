@@ -21,12 +21,12 @@
  */
 package org.jboss.as.embedded.ejb3.simple.unit;
 
-import org.jboss.as.embedded.ejb3.simple.GreeterBean;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import javax.ejb.embeddable.EJBContainer;
 
-import static org.junit.Assert.assertEquals;
+import org.jboss.as.embedded.ejb3.simple.GreeterBean;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

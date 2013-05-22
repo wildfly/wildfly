@@ -22,9 +22,7 @@
 
 package org.jboss.as.connector.annotations.repository.jandex;
 
-import org.jboss.jca.common.annotations.Annotations;
-import org.jboss.jca.common.api.validator.ValidateException;
-import org.jboss.jca.common.spi.annotations.repository.AnnotationRepository;
+import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -32,19 +30,19 @@ import java.util.List;
 
 import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
+import org.jboss.jca.common.annotations.Annotations;
+import org.jboss.jca.common.api.validator.ValidateException;
+import org.jboss.jca.common.spi.annotations.repository.AnnotationRepository;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.junit.Assert.fail;
 
 /**
  * Test cases for the annotations handling

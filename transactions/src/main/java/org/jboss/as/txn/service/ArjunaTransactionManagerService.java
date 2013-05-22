@@ -22,6 +22,11 @@
 
 package org.jboss.as.txn.service;
 
+import static org.jboss.as.txn.TransactionMessages.MESSAGES;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean;
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import com.arjuna.ats.arjuna.tools.osb.mbean.ObjStoreBrowser;
@@ -38,11 +43,6 @@ import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.jboss.tm.usertx.client.ServerVMClientUserTransaction;
 import org.omg.CORBA.ORB;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.jboss.as.txn.TransactionMessages.MESSAGES;
 
 /**
  * A service for the proprietary Arjuna {@link com.arjuna.ats.jbossatx.jta.TransactionManagerService}

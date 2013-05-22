@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
@@ -31,8 +33,6 @@ import javax.ejb.TimerHandle;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

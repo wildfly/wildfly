@@ -21,6 +21,20 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+
+import javax.ejb.EJBException;
+import javax.ejb.ScheduleExpression;
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
@@ -35,19 +49,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import javax.ejb.EJBException;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.TimerService;
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Non-functional timer service that is bound when the timer service is disabled.

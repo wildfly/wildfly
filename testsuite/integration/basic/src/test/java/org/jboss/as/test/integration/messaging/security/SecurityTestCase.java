@@ -31,9 +31,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-
-import org.eclipse.jdt.internal.compiler.ast.AssertStatement;
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -42,11 +39,8 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.config.HornetQDefaultConfiguration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.security.CheckType;
-import org.hornetq.core.security.Role;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;

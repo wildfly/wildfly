@@ -22,14 +22,13 @@
 
 package org.jboss.as.controller.client.impl;
 
-import java.security.AccessControlContext;
-import org.jboss.as.controller.client.ModelControllerClientConfiguration;
-import org.jboss.threads.JBossThreadFactory;
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
+import static java.security.AccessController.doPrivileged;
 
-import javax.net.ssl.SSLContext;
-import javax.security.auth.callback.CallbackHandler;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
@@ -40,9 +39,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static java.lang.System.getProperty;
-import static java.lang.System.getSecurityManager;
-import static java.security.AccessController.doPrivileged;
+import javax.net.ssl.SSLContext;
+import javax.security.auth.callback.CallbackHandler;
+
+import org.jboss.as.controller.client.ModelControllerClientConfiguration;
+import org.jboss.threads.JBossThreadFactory;
 
 /**
  * @author Emanuel Muckenhuber

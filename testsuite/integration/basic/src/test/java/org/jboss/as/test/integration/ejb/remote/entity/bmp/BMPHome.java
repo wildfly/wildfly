@@ -23,6 +23,7 @@ package org.jboss.as.test.integration.ejb.remote.entity.bmp;
 
 import java.rmi.RemoteException;
 import java.util.Collection;
+
 import javax.ejb.EJBHome;
 
 /**

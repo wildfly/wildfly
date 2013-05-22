@@ -22,12 +22,12 @@
 
 package org.jboss.as.controller.registry;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

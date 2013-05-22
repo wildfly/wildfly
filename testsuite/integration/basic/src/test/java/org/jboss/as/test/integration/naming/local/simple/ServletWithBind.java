@@ -21,7 +21,10 @@
  */
 package org.jboss.as.test.integration.naming.local.simple;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.io.IOException;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -30,7 +33,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import static org.junit.Assert.assertNotNull;
 
 @WebServlet(name = "ServletWithBind", urlPatterns = {"/simple"})
 public class ServletWithBind extends HttpServlet {

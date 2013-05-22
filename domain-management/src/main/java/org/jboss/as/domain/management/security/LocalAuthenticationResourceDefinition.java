@@ -22,18 +22,17 @@
 
 package org.jboss.as.domain.management.security;
 
-import org.jboss.as.controller.descriptions.common.ControllerResolver;
-import org.jboss.as.domain.management.ModelDescriptionConstants;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.domain.management.ModelDescriptionConstants;
 import org.jboss.dmr.ModelType;
 
 /**

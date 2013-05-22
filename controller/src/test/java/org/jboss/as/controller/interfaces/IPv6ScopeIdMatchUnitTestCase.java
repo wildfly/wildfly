@@ -35,7 +35,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.dmr.ModelNode;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

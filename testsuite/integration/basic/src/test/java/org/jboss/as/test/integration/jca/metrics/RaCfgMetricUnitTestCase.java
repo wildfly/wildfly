@@ -23,23 +23,21 @@
 package org.jboss.as.test.integration.jca.metrics;
 
 
-import java.util.List;
-
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-
-import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
-import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
-import org.jboss.as.test.shared.FileUtils;
-import org.jboss.dmr.ModelNode;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.util.List;
+
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
+import org.jboss.as.test.shared.FileUtils;
+import org.jboss.dmr.ModelNode;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Resource adapters configuration and metrics unit test.

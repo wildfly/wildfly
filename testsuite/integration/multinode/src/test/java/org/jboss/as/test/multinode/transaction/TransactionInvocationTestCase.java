@@ -22,6 +22,16 @@
 
 package org.jboss.as.test.multinode.transaction;
 
+import java.io.IOException;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -31,11 +41,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.transaction.*;
-import java.io.IOException;
 
 /**
  * A simple EJB Remoting transaction context propagation in JTS style from one AS7 server to another.

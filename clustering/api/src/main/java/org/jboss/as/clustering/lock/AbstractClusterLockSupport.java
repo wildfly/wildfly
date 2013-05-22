@@ -22,6 +22,9 @@
 
 package org.jboss.as.clustering.lock;
 
+import static org.jboss.as.clustering.ClusteringApiLogger.ROOT_LOGGER;
+import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -36,9 +39,6 @@ import org.jboss.as.clustering.GroupMembershipListener;
 import org.jboss.as.clustering.GroupMembershipNotifier;
 import org.jboss.as.clustering.GroupRpcDispatcher;
 import org.jboss.as.clustering.lock.ClusterLockState.State;
-
-import static org.jboss.as.clustering.ClusteringApiLogger.ROOT_LOGGER;
-import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
 
 /**
  * Base class for cluster-wide lock implementations.

@@ -21,6 +21,10 @@
  */
 package org.jboss.as.test.smoke.deployment.rar.tests.afterresourcecreation;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.junit.Assert.assertNotNull;
+
 import java.util.List;
 
 import javax.naming.Context;
@@ -44,10 +48,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.junit.Assert.assertNotNull;
 
 
 /**

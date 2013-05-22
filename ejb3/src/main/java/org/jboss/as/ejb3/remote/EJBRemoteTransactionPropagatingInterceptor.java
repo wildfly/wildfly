@@ -22,15 +22,15 @@
 
 package org.jboss.as.ejb3.remote;
 
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+
 import org.jboss.ejb.client.AttachmentKeys;
 import org.jboss.ejb.client.TransactionID;
 import org.jboss.ejb.client.UserTransactionID;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 
 /**
  * An interceptor which is responsible for identifying any remote transaction associated with the invocation

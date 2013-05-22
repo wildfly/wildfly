@@ -22,7 +22,9 @@
 package org.jboss.as.test.shared.staxmapper;
 
 import java.lang.reflect.Constructor;
+
 import javax.xml.stream.XMLStreamWriter;
+
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**

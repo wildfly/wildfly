@@ -29,7 +29,7 @@ import javax.resource.Referenceable;
 import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterAssociation;
 
-import org.hibernate.validator.constraints.*;
+import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * Admin object implementation

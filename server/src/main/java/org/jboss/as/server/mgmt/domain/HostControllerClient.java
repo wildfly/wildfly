@@ -22,6 +22,13 @@
 
 package org.jboss.as.server.mgmt.domain;
 
+import java.io.Closeable;
+import java.io.DataInput;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -37,13 +44,6 @@ import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.dmr.ModelNode;
-
-import java.io.Closeable;
-import java.io.DataInput;
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 /**
  * Client used to interact with the local host controller.

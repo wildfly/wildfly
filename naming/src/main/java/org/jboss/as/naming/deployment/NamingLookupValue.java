@@ -22,14 +22,14 @@
 
 package org.jboss.as.naming.deployment;
 
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
 
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 
 /**
  * Value that is looked up from a naming context.

@@ -22,12 +22,13 @@
 
 package org.jboss.as.process.protocol;
 
+import static org.jboss.as.process.protocol.ProtocolMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.InputStream;
+
 import org.jboss.marshalling.ByteInput;
 import org.jboss.marshalling.Marshalling;
-
-import static org.jboss.as.process.protocol.ProtocolMessages.MESSAGES;
 
 /**
  * Byte input implementation that reads bytes in chunks.  Each chunk is started with a {@code CHUNK_START} header followed

@@ -22,6 +22,15 @@
 
 package org.jboss.as.ejb3.deployment.processors.dd;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -42,15 +51,6 @@ import org.jboss.metadata.ejb.spec.InterceptorBindingMetaData;
 import org.jboss.metadata.ejb.spec.InterceptorBindingsMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.modules.Module;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * A {@link DeploymentUnitProcessor} which processes the container interceptor bindings that are configured the jboss-ejb3.xml

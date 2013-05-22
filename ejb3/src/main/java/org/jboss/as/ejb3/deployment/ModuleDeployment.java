@@ -22,15 +22,15 @@
 
 package org.jboss.as.ejb3.deployment;
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * Represents a deployed module on AS7

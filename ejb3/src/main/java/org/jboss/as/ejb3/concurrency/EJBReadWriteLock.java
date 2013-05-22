@@ -21,13 +21,14 @@
  */
 package org.jboss.as.ejb3.concurrency;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * An implementation of {@link java.util.concurrent.locks.ReadWriteLock} which throws an {@link javax.ejb.IllegalLoopbackException}
  * when a thread holding a read lock tries to obtain a write lock.

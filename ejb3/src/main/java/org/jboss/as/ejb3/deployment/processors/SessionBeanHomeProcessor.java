@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
@@ -54,8 +56,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.msc.service.ServiceBuilder;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Processor that hooks up home interfaces for session beans

@@ -23,16 +23,17 @@
 package org.jboss.as.protocol.mgmt;
 
 import static org.jboss.as.protocol.ProtocolLogger.ROOT_LOGGER;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.MessageInputStream;
-import org.jboss.remoting3.MessageOutputStream;
 
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
+
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.MessageInputStream;
+import org.jboss.remoting3.MessageOutputStream;
 
 /**
  * Base receiver class for the management protocol support.

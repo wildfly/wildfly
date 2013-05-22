@@ -23,10 +23,7 @@ package org.jboss.as.pojo;
 
 import java.io.IOException;
 
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 
 /**
  *

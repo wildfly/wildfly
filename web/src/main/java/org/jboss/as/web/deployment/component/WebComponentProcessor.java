@@ -24,6 +24,13 @@ package org.jboss.as.web.deployment.component;
 
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.AsyncListener;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -35,9 +42,9 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.web.common.WebComponentDescription;
 import org.jboss.as.web.deployment.TldsMetaData;
-import org.jboss.as.web.common.WarMetaData;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.metadata.web.spec.FilterMetaData;
@@ -48,13 +55,6 @@ import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.metadata.web.spec.WebCommonMetaData;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.AsyncListener;
 
 /**
  * Processor that figures out what type of component a servlet/listener is, and registers the appropriate metadata.

@@ -22,6 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.security.missingmethodpermission;
 
+import javax.ejb.EJBAccessException;
+import javax.naming.InitialContext;
+import javax.security.auth.login.LoginContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
@@ -35,10 +39,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.EJBAccessException;
-import javax.naming.InitialContext;
-import javax.security.auth.login.LoginContext;
 
 /**
  * Tests the <code>missing-method-permissions-deny-access</code> configuration which lets users decide whether secured beans whose

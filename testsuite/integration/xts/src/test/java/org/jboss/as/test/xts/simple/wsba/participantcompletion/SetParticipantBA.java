@@ -20,6 +20,8 @@
  */
 package org.jboss.as.test.xts.simple.wsba.participantcompletion;
 
+import java.io.Serializable;
+
 import com.arjuna.wst.BusinessAgreementWithParticipantCompletionParticipant;
 import com.arjuna.wst.FaultedException;
 import com.arjuna.wst.SystemException;
@@ -27,8 +29,6 @@ import com.arjuna.wst.WrongStateException;
 import com.arjuna.wst11.ConfirmCompletedParticipant;
 import org.jboss.as.test.xts.simple.wsba.MockSetManager;
 import org.jboss.logging.Logger;
-
-import java.io.Serializable;
 
 /**
  * An adapter class that exposes the SetManager as a WS-BA participant using the 'Participant Completion' protocol.

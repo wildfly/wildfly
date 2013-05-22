@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.component.singleton;
 
+import java.util.List;
+
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
@@ -30,8 +32,6 @@ import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
-
-import java.util.List;
 
 /**
  * @author Stuart Douglas

@@ -24,12 +24,13 @@ package org.jboss.as.domain.controller.plan;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+
+import java.util.List;
+
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.domain.controller.DomainControllerLogger;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
-
-import java.util.List;
 
 /**
  * Task responsible for updating a single server-group.

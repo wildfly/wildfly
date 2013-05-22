@@ -21,12 +21,11 @@
  */
 package org.jboss.as.test.integration.jca.statistics;
 
+import static org.junit.Assert.*;
+
 import org.jboss.as.test.integration.jca.JcaMgmtBase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.junit.Assert.*;
 
 /**
  * Base class for JCA statistics tests

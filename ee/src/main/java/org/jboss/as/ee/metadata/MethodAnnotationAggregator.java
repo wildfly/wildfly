@@ -23,12 +23,6 @@ package org.jboss.as.ee.metadata;
 
 import static org.jboss.as.ee.EeMessages.MESSAGES;
 
-import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEModuleClassDescription;
-import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.invocation.proxy.MethodIdentifier;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -37,6 +31,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.as.ee.component.EEApplicationClasses;
+import org.jboss.as.ee.component.EEModuleClassDescription;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.invocation.proxy.MethodIdentifier;
 
 /**
  * Class which can turn a pre-runtime description of annotations into a runtime description.

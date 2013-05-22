@@ -22,12 +22,12 @@
 
 package org.jboss.as.ejb3.deployment;
 
-import org.jboss.as.ejb3.EjbMessages;
-
 import java.rmi.RemoteException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.jboss.as.ejb3.EjbMessages;
 
 /**
  * User: jpai

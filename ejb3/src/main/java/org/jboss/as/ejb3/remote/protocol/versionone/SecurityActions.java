@@ -22,13 +22,13 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.security.PrivilegedAction;
 
 import org.jboss.as.security.remoting.RemotingContext;
 import org.jboss.remoting3.Connection;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static java.security.AccessController.doPrivileged;
 
 final class SecurityActions {
 

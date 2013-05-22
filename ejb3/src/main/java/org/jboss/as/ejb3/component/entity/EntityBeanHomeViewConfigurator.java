@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.component.entity;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
@@ -55,8 +57,6 @@ import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.PersistenceType;
 import org.jboss.msc.service.ServiceBuilder;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * View configurator for the home interface of an entity bean

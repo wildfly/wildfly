@@ -37,12 +37,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.client.helpers.standalone.AddDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentAction.Type;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.InitialDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.ReplaceDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.UndeployDeploymentPlanBuilder;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentAction.Type;
 import org.jboss.as.protocol.StreamUtils;
 
 /**

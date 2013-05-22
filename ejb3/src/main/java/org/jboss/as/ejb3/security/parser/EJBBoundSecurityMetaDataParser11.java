@@ -22,12 +22,12 @@
 
 package org.jboss.as.ejb3.security.parser;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
 import org.jboss.as.ejb3.security.metadata.EJBBoundSecurityMetaData;
 import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaDataParser;
 import org.jboss.metadata.property.PropertyReplacer;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 
 /**
  * Parses 1.1 version of urn:security namespace

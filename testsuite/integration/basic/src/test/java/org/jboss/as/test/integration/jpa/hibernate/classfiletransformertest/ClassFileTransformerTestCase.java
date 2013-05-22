@@ -36,7 +36,6 @@ import org.jboss.as.test.integration.jpa.hibernate.SFSBHibernateSession;
 import org.jboss.as.test.integration.jpa.hibernate.SFSBHibernateSessionFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;

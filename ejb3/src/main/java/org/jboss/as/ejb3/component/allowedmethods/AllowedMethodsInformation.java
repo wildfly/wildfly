@@ -22,6 +22,10 @@
 
 package org.jboss.as.ejb3.component.allowedmethods;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.EjbMessages;
@@ -29,10 +33,6 @@ import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.invocation.InterceptorContext;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * This class and its subclasses can be used to determine if a given method

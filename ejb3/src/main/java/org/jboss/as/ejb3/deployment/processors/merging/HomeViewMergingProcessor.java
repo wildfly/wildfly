@@ -21,6 +21,14 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
+import java.lang.reflect.Method;
+import java.util.Collection;
+
+import javax.ejb.LocalHome;
+import javax.ejb.RemoteHome;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -37,12 +45,6 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.modules.Module;
-
-import javax.ejb.LocalHome;
-import javax.ejb.RemoteHome;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Merging processor for home and local home views
  *

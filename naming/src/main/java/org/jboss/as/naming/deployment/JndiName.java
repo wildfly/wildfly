@@ -22,9 +22,9 @@
 
 package org.jboss.as.naming.deployment;
 
-import java.io.Serializable;
-
 import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
+import java.io.Serializable;
 
 /**
  * Utility object used to easily manged the construction and management of JNDI names.

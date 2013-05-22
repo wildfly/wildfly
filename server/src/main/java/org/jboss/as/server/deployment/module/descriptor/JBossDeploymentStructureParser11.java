@@ -22,6 +22,9 @@
 
 package org.jboss.as.server.deployment.module.descriptor;
 
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -58,9 +61,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
-
-import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
 /**
  * @author Stuart Douglas

@@ -20,7 +20,9 @@ package org.jboss.as.cli.gui.component;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.swing.JRadioButton;
+
 import org.jboss.as.cli.gui.CliGuiContext;
 import org.jboss.dmr.ModelNode;
 

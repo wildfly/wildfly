@@ -1,8 +1,12 @@
 package org.jboss.as.test.clustering;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-
-import org.junit.Assert;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import org.apache.log4j.Logger;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -10,6 +14,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 
 /**
  * @author Ondrej Chaloupka

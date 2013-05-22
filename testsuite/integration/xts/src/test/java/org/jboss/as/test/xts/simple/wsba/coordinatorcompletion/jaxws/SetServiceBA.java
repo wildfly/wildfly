@@ -20,12 +20,12 @@
  */
 package org.jboss.as.test.xts.simple.wsba.coordinatorcompletion.jaxws;
 
-import org.jboss.as.test.xts.simple.wsba.AlreadyInSetException;
-import org.jboss.as.test.xts.simple.wsba.SetServiceException;
-
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
+
+import org.jboss.as.test.xts.simple.wsba.AlreadyInSetException;
+import org.jboss.as.test.xts.simple.wsba.SetServiceException;
 
 /**
  * Interface implemented by SetServiceBA Web service and Client stub.

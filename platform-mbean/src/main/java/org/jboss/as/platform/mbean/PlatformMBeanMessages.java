@@ -23,9 +23,9 @@
 package org.jboss.as.platform.mbean;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 
 /**
  * This module is using message IDs in the range 12300-12399. This file is using the subset 12350-12399 for

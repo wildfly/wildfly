@@ -23,6 +23,7 @@
 package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
 import java.security.Principal;
 
 /**

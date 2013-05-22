@@ -24,6 +24,8 @@
 
 package org.wildfly.extension.undertow.session;
 
+import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
+
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 import java.security.Principal;
@@ -52,13 +54,11 @@ import org.jboss.as.clustering.web.DistributedCacheManager;
 import org.jboss.as.clustering.web.IncomingDistributableSessionData;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.clustering.web.SessionOwnershipSupport;
+import org.jboss.logging.Logger;
+import org.jboss.metadata.web.jboss.ReplicationTrigger;
 import org.wildfly.extension.undertow.session.notification.ClusteredSessionManagementStatus;
 import org.wildfly.extension.undertow.session.notification.ClusteredSessionNotificationCause;
 import org.wildfly.extension.undertow.session.notification.ClusteredSessionNotificationPolicy;
-import org.jboss.logging.Logger;
-import org.jboss.metadata.web.jboss.ReplicationTrigger;
-
-import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
 
 /**
  * Abstract base class for session clustering based on StandardSession. Different session replication strategies can be

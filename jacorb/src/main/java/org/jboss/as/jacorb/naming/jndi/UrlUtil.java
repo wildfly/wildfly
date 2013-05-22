@@ -25,8 +25,8 @@
 
 package org.jboss.as.jacorb.naming.jndi;
 
-import java.net.MalformedURLException;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 
 import org.jboss.as.jacorb.JacORBMessages;
 

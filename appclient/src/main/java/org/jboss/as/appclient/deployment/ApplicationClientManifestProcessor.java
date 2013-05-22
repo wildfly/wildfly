@@ -21,6 +21,8 @@
  */
 package org.jboss.as.appclient.deployment;
 
+import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
+
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -38,8 +40,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.modules.Module;
-
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * DUP that processes the manifest to get the main class

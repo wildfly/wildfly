@@ -22,11 +22,11 @@
 
 package org.jboss.as.protocol.mgmt;
 
+import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
-import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
 
 /**
  * ManagementProtocol header used for management operation responses. Provides the default header fields from

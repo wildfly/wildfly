@@ -21,10 +21,10 @@
 */
 package org.jboss.as.jsr77.subsystem;
 
+import static java.security.AccessController.doPrivileged;
+
 import org.wildfly.security.manager.GetClassLoaderAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static java.security.AccessController.doPrivileged;
 
 /**
  *

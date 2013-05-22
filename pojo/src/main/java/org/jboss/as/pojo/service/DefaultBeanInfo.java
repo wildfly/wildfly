@@ -22,10 +22,6 @@
 
 package org.jboss.as.pojo.service;
 
-import org.jboss.as.pojo.PojoMessages;
-import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -33,6 +29,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+
+import org.jboss.as.pojo.PojoMessages;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 
 /**
  * Default bean info.

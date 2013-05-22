@@ -21,10 +21,11 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.enventry;
 
+import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.ee.component.EnvEntryInjectionSource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -32,8 +33,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
 
 /**
  * A test that two deployments can declare the same global en-entry

@@ -25,8 +25,8 @@ import java.io.Serializable;
 
 import javax.resource.Referenceable;
 import javax.resource.ResourceException;
-import javax.resource.cci.ConnectionFactory;
 import javax.resource.cci.Connection;
+import javax.resource.cci.ConnectionFactory;
 /**
  * MultipleConnectionFactory1
  *

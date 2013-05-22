@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.util.List;
 import java.util.Map;
 
@@ -40,9 +43,6 @@ import org.jboss.metadata.ejb.spec.ApplicationExceptionMetaData;
 import org.jboss.metadata.ejb.spec.ApplicationExceptionsMetaData;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
-
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author Stuart Douglas
  */

@@ -22,17 +22,17 @@
 
 package org.jboss.as.test.integration.domain.extension;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Map;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.StreamExporter;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * @author Emanuel Muckenhuber

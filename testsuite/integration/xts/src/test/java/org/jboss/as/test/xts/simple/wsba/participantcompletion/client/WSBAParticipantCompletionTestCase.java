@@ -24,7 +24,6 @@ import javax.inject.Inject;
 
 import com.arjuna.mw.wst11.UserBusinessActivity;
 import com.arjuna.mw.wst11.UserBusinessActivityFactory;
-import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
@@ -37,6 +36,7 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;

@@ -18,8 +18,8 @@
  */
 package org.jboss.as.cli.gui;
 
-import com.sun.tools.jconsole.JConsoleContext;
-import com.sun.tools.jconsole.JConsolePlugin;
+import static java.security.AccessController.doPrivileged;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.io.IOException;
@@ -31,27 +31,29 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.management.MBeanServerConnection;
 import javax.swing.ImageIcon;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
+
+import com.sun.tools.jconsole.JConsoleContext;
+import com.sun.tools.jconsole.JConsolePlugin;
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.impl.ExistingChannelModelControllerClient;
-import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
 import org.jboss.remotingjmx.RemotingMBeanServerConnection;
 import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
-
-import static java.security.AccessController.doPrivileged;
 
 /**
  *

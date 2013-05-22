@@ -22,10 +22,10 @@
 
 package org.jboss.as.controller.transform;
 
+import java.util.Iterator;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-
-import java.util.Iterator;
 
 /**
  * A path address transformation step. This specific type of transformer get registered alongside a resource transformer

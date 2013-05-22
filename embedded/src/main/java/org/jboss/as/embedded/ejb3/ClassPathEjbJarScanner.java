@@ -21,20 +21,9 @@
  */
 package org.jboss.as.embedded.ejb3;
 
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.Index;
-import org.jboss.jandex.Indexer;
-import org.jboss.vfs.TempFileProvider;
-import org.jboss.vfs.VFS;
-import org.jboss.vfs.VFSUtils;
-import org.jboss.vfs.VirtualFile;
+import static org.jboss.as.embedded.EmbeddedLogger.ROOT_LOGGER;
+import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
 
-import javax.ejb.MessageDriven;
-import javax.ejb.Singleton;
-import javax.ejb.Stateful;
-import javax.ejb.Stateless;
-import javax.ejb.embeddable.EJBContainer;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -49,10 +38,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static org.jboss.as.embedded.EmbeddedLogger.ROOT_LOGGER;
-import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
+import javax.ejb.MessageDriven;
+import javax.ejb.Singleton;
+import javax.ejb.Stateful;
+import javax.ejb.Stateless;
+import javax.ejb.embeddable.EJBContainer;
+
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.Index;
+import org.jboss.jandex.Indexer;
+import org.jboss.vfs.TempFileProvider;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VFSUtils;
+import org.jboss.vfs.VirtualFile;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Implements JVM ClassPath scanning for EJB JARs as defined

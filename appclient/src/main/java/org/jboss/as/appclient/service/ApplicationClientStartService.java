@@ -21,6 +21,8 @@
  */
 package org.jboss.as.appclient.service;
 
+import static org.jboss.as.appclient.logging.AppClientLogger.ROOT_LOGGER;
+
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -48,8 +50,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.appclient.logging.AppClientLogger.ROOT_LOGGER;
 
 
 /**

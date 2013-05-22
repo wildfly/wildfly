@@ -22,9 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.stateful.locking.reentrant;
 
+import java.util.concurrent.TimeUnit;
+
 import javax.ejb.AccessTimeout;
 import javax.ejb.Stateful;
-import java.util.concurrent.TimeUnit;
 
 /**
  * stateful session bean

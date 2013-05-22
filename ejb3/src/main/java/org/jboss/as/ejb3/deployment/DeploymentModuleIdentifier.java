@@ -22,9 +22,9 @@
 
 package org.jboss.as.ejb3.deployment;
 
-import org.jboss.as.ejb3.EjbMessages;
-
 import java.io.Serializable;
+
+import org.jboss.as.ejb3.EjbMessages;
 
 /**
  * Identifier for a deployed module, consisting of application + distinct + module name.

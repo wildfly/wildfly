@@ -22,9 +22,14 @@
 
 package org.jboss.as.ee.component.deployers;
 
+import static org.jboss.as.naming.JndiPermission.Action.LIST;
+import static org.jboss.as.naming.JndiPermission.Action.LIST_BINDINGS;
+import static org.jboss.as.naming.JndiPermission.Action.LOOKUP;
+
 import java.security.Permission;
 import java.security.Permissions;
 import java.util.Enumeration;
+
 import org.jboss.as.naming.JndiPermission;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -32,10 +37,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
-
-import static org.jboss.as.naming.JndiPermission.Action.LIST;
-import static org.jboss.as.naming.JndiPermission.Action.LIST_BINDINGS;
-import static org.jboss.as.naming.JndiPermission.Action.LOOKUP;
 
 /**
  * A processor which sets up the default Java EE permission set.

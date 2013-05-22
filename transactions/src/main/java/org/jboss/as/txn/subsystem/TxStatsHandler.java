@@ -22,6 +22,8 @@
 
 package org.jboss.as.txn.subsystem;
 
+import static org.jboss.as.txn.TransactionMessages.MESSAGES;
+
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,8 +38,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.txn.TransactionMessages.MESSAGES;
 
 /**
  * Handler for transaction manager metrics

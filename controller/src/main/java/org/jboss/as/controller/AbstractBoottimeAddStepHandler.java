@@ -22,10 +22,10 @@
 
 package org.jboss.as.controller;
 
+import java.util.List;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-
-import java.util.List;
 
 /**
  * Base class for {@link OperationStepHandler} implementations that add managed resource and also perform runtime

@@ -21,12 +21,11 @@
  */
 package org.jboss.as.jsf.deployment;
 
-import com.sun.faces.flow.FlowCDIExtension;
-import com.sun.faces.flow.FlowDiscoveryCDIExtension;
-import com.sun.faces.application.view.ViewScopeExtension;
-
 import javax.enterprise.inject.spi.Extension;
 
+import com.sun.faces.application.view.ViewScopeExtension;
+import com.sun.faces.flow.FlowCDIExtension;
+import com.sun.faces.flow.FlowDiscoveryCDIExtension;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.jsf.JSFLogger;

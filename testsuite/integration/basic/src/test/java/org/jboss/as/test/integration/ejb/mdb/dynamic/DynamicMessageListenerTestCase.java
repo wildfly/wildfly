@@ -21,6 +21,17 @@
  */
 package org.jboss.as.test.integration.ejb.mdb.dynamic;
 
+import static org.jboss.as.test.integration.ejb.mdb.dynamic.impl.TtyCodes.TTY_Bright;
+import static org.jboss.as.test.integration.ejb.mdb.dynamic.impl.TtyCodes.TTY_Reset;
+import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
+import static org.junit.Assert.assertEquals;
+
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.Socket;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -36,17 +47,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.net.Socket;
-
-import static org.jboss.as.test.integration.ejb.mdb.dynamic.impl.TtyCodes.TTY_Bright;
-import static org.jboss.as.test.integration.ejb.mdb.dynamic.impl.TtyCodes.TTY_Reset;
-import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

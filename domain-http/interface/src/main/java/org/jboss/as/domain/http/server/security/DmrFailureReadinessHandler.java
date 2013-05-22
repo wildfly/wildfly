@@ -29,11 +29,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.domain.http.server.DomainUtil.constructUrl;
 import static org.jboss.as.domain.http.server.DomainUtil.writeResponse;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
 
 import java.io.IOException;
 
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.dmr.ModelNode;
 

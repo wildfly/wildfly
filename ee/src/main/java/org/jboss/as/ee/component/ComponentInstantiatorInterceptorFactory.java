@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.naming.ManagedReference;
@@ -29,8 +31,6 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * An interceptor factory which gets an object instance from a managed resource.  A reference to the resource will be

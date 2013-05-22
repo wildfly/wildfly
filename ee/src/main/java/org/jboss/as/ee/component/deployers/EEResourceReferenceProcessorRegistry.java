@@ -22,10 +22,10 @@
 
 package org.jboss.as.ee.component.deployers;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * User: jpai

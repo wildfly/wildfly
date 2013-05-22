@@ -23,6 +23,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableSet;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.weld.WeldMessages;
 import org.jboss.as.weld.util.Indices;
@@ -33,12 +38,6 @@ import org.jboss.jandex.DotName;
 import org.jboss.weld.bootstrap.api.BootstrapService;
 import org.jboss.weld.resources.spi.AnnotationDiscovery;
 import org.jboss.weld.resources.spi.ExtendedAnnotationDiscovery;
-
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Implementation of {@link ExtendedAnnotationDiscovery} that uses composite Jandex index.

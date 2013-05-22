@@ -22,6 +22,11 @@
 
 package org.jboss.as.ejb3.component.stateful;
 
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.EjbMessages;
@@ -46,11 +51,6 @@ import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
-
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Stuart Douglas

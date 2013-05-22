@@ -21,10 +21,10 @@
  */
 package org.jboss.as.ejb3.deployment.processors.annotation;
 
+import javax.ejb.DependsOn;
+
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.jandex.AnnotationInstance;
-
-import javax.ejb.DependsOn;
 
 /**
  * @author Stuart Douglas

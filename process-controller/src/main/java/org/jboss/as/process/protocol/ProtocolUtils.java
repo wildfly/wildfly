@@ -22,17 +22,17 @@
 
 package org.jboss.as.process.protocol;
 
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.marshalling.Marshalling;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.Unmarshaller;
+import static org.jboss.as.process.protocol.ProtocolMessages.MESSAGES;
 
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.jboss.as.process.protocol.ProtocolMessages.MESSAGES;
+import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.MarshallerFactory;
+import org.jboss.marshalling.Marshalling;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.Unmarshaller;
 
 /**
  * Utility class providing methods for common management tasks.

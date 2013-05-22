@@ -22,13 +22,13 @@
 
 package org.jboss.as.pojo.service;
 
+import java.lang.reflect.Method;
+
 import org.jboss.as.pojo.BeanState;
 import org.jboss.as.pojo.PojoMessages;
 import org.jboss.as.pojo.descriptor.CallbackConfig;
 import org.jboss.as.pojo.descriptor.ValueConfig;
 import org.jboss.msc.value.ImmediateValue;
-
-import java.lang.reflect.Method;
 
 /**
  * Simple callback.

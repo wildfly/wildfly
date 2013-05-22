@@ -22,6 +22,10 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+
+import java.util.Collection;
+
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
@@ -29,10 +33,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-
-import java.util.Collection;
-
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 
 /**
  * A {@link DeploymentUnitProcessor} which looks for {@link EJBComponentDescription}s in the deployment

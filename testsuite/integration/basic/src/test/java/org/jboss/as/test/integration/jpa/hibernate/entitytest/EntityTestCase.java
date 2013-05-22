@@ -22,6 +22,10 @@
 
 package org.jboss.as.test.integration.jpa.hibernate.entitytest;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Set;
 
 import javax.naming.InitialContext;
@@ -38,14 +42,9 @@ import org.jboss.as.test.integration.jpa.hibernate.entity.Flight;
 import org.jboss.as.test.integration.jpa.hibernate.entity.Ticket;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Hibernate entity tests (based on the EAP 5 test), using {@link EntityTest} bean. Tests relations between entities,

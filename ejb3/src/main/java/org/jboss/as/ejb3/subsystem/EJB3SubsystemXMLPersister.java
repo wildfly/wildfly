@@ -22,17 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.remoting.Attribute;
-import org.jboss.as.threads.ThreadsParser;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
-import java.util.List;
-
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ASYNC;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE;
@@ -49,6 +38,18 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
+
+import java.util.List;
+
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.remoting.Attribute;
+import org.jboss.as.threads.ThreadsParser;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * The {@link XMLElementWriter} that handles the EJB subsystem. As we only write out the most recent version of

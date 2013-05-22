@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.smoke.ejb3.jndi;
 
+import static org.junit.Assert.assertNotNull;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
@@ -32,8 +34,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Tests that the session beans are bound to all the jndi binding names mandated by the EJB3.1 spec, when the EJBs are

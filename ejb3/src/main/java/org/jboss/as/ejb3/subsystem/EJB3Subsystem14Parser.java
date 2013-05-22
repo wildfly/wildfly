@@ -22,6 +22,11 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+
 import java.util.EnumSet;
 import java.util.List;
 
@@ -29,11 +34,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 
 
 /**

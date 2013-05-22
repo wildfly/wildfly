@@ -28,20 +28,18 @@
  */
 package org.jboss.as.test.xts.simple.wsat;
 
-import org.jboss.as.test.xts.simple.wsat.jaxws.RestaurantServiceAT;
-
-import com.arjuna.ats.arjuna.common.Uid;
-import com.arjuna.mw.wst11.TransactionManager;
-import com.arjuna.mw.wst11.TransactionManagerFactory;
-import com.arjuna.mw.wst11.UserTransactionFactory;
-
-import org.jboss.logging.Logger;
-
 import javax.jws.HandlerChain;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 import javax.servlet.annotation.WebServlet;
+
+import com.arjuna.ats.arjuna.common.Uid;
+import com.arjuna.mw.wst11.TransactionManager;
+import com.arjuna.mw.wst11.TransactionManagerFactory;
+import com.arjuna.mw.wst11.UserTransactionFactory;
+import org.jboss.as.test.xts.simple.wsat.jaxws.RestaurantServiceAT;
+import org.jboss.logging.Logger;
 
 /**
  * An adapter class that exposes the RestaurantManager business API as a transactional Web Service.

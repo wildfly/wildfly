@@ -21,12 +21,12 @@
  */
 package org.jboss.as.server.deployment.reflect;
 
-import org.jboss.invocation.proxy.reflection.ClassMetadataSource;
-import org.jboss.invocation.proxy.reflection.ReflectionMetadataSource;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Collection;
+
+import org.jboss.invocation.proxy.reflection.ClassMetadataSource;
+import org.jboss.invocation.proxy.reflection.ReflectionMetadataSource;
 
 /**
  * @author Stuart Douglas

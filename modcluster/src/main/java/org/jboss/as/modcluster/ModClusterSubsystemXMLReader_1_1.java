@@ -21,15 +21,16 @@
  */
 package org.jboss.as.modcluster;
 
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+
+import java.util.List;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-
-import javax.xml.stream.XMLStreamException;
-import java.util.List;
-
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 
 public class ModClusterSubsystemXMLReader_1_1 extends ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<ModelNode>> {
 

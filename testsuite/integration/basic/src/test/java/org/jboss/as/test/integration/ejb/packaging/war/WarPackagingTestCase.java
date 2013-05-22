@@ -24,8 +24,8 @@ package org.jboss.as.test.integration.ejb.packaging.war;
 
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
+
 import javax.naming.InitialContext;
-import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -38,6 +38,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

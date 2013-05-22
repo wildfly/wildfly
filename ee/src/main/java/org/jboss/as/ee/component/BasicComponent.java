@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -40,8 +42,6 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.ImmediateValue;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * A basic component implementation.

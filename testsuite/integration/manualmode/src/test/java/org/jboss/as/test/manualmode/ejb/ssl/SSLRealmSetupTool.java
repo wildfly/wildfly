@@ -22,17 +22,39 @@
 
 package org.jboss.as.test.manualmode.ejb.ssl;
 
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
-import org.junit.Assert;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import org.jboss.arquillian.container.test.api.ContainerController;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
+import org.junit.Assert;
 
 /**
  * Setup for ssl ejb remote connection.

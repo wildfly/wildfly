@@ -21,6 +21,10 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import java.util.concurrent.TimeUnit;
+
+import javax.ejb.StatefulTimeout;
+
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
@@ -32,9 +36,6 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.metadata.ejb.spec.StatefulTimeoutMetaData;
-
-import javax.ejb.StatefulTimeout;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Handles the {@link javax.annotation.security.RunAs} annotation merging

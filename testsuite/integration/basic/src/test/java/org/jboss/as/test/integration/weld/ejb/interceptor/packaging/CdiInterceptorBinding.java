@@ -21,9 +21,10 @@
  */
 package org.jboss.as.test.integration.weld.ejb.interceptor.packaging;
 
-import javax.interceptor.InterceptorBinding;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+
+import javax.interceptor.InterceptorBinding;
 
 /**
  * @author Stuart Douglas

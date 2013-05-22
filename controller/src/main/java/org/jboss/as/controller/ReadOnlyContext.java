@@ -22,6 +22,10 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
+import java.io.InputStream;
+
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -33,10 +37,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.io.InputStream;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * A read-only {@linkplain OperationContext}, allowing read-only access to the current write model from a different

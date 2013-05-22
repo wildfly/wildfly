@@ -27,6 +27,7 @@ import static org.jboss.as.process.ProcessMessages.MESSAGES;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 public abstract class CommandLineArgumentUsage {

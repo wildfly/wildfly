@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.Map;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -51,8 +53,6 @@ import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.threads.UnboundedQueueThreadPoolResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import java.util.Map;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the EJB3 subsystem's root management resource.

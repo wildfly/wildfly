@@ -22,14 +22,14 @@
 
 package org.jboss.as.controller.registry;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.util.Collections;
 import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * Resource that solely holds a place in the resource tree and has no model or children. A typically usage

@@ -21,12 +21,9 @@
 */
 package org.jboss.as.naming.subsystem;
 
-import org.jboss.as.naming.subsystem.NamingExtension;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.dmr.ModelNode;
-import org.junit.Test;
-
 import java.io.IOException;
+
+import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>

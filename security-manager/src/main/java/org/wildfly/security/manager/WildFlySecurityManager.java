@@ -22,6 +22,18 @@
 
 package org.wildfly.security.manager;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+import static java.lang.System.clearProperty;
+import static java.lang.System.getProperties;
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
+import static java.lang.System.getenv;
+import static java.lang.System.setProperty;
+import static java.lang.Thread.currentThread;
+import static java.security.AccessController.doPrivileged;
+import static org.wildfly.security.manager._private.SecurityMessages.access;
+
 import java.io.FileDescriptor;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
@@ -38,19 +50,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 import java.util.PropertyPermission;
-import sun.reflect.Reflection;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
-import static java.lang.System.clearProperty;
-import static java.lang.System.getProperties;
-import static java.lang.System.getProperty;
-import static java.lang.System.getSecurityManager;
-import static java.lang.System.getenv;
-import static java.lang.System.setProperty;
-import static java.lang.Thread.currentThread;
-import static java.security.AccessController.doPrivileged;
-import static org.wildfly.security.manager._private.SecurityMessages.access;
+import sun.reflect.Reflection;
 
 /**
  * The security manager.  This security manager implementation can be switched on and off on a per-thread basis,

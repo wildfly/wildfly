@@ -21,6 +21,8 @@
  */
 package org.jboss.as.naming;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 import java.util.Hashtable;
 
 import javax.naming.Context;
@@ -34,8 +36,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StabilityMonitor;
-
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
 /**
  * Abstract object factory that allows for the creation of service references. Object factories that subclass
  * {@link ServiceReferenceObjectFactory} can get access to the value of the service described by the reference.

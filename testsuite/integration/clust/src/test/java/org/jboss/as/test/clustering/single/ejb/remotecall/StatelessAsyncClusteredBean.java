@@ -23,6 +23,7 @@
 package org.jboss.as.test.clustering.single.ejb.remotecall;
 
 import java.util.concurrent.Future;
+
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;

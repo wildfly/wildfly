@@ -21,10 +21,17 @@
  */
 package org.jboss.as.clustering.web.infinispan;
 
-import java.util.Map;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.same;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import java.util.Map;
 
 import org.jboss.as.clustering.web.DistributableSessionMetadata;
 import org.junit.Test;

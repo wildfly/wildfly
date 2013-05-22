@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
 
 import java.lang.annotation.Annotation;
@@ -46,8 +47,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.modules.Module;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Processes {@link Local @Local} and {@link @Remote} annotation of a session bean and sets up the {@link SessionBeanComponentDescription}

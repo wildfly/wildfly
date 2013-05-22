@@ -23,10 +23,6 @@
 package org.jboss.as.test.integration.security.loginmodules.common;
 
 import javax.ejb.Local;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.login.LoginException;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.

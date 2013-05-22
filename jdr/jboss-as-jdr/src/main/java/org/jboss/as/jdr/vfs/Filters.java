@@ -21,15 +21,15 @@
  */
 package org.jboss.as.jdr.vfs;
 
-import org.jboss.as.jdr.util.WildcardPattern;
-import org.jboss.vfs.VirtualFile;
-import org.jboss.vfs.VirtualFileFilter;
-import org.jboss.vfs.util.MatchAllVirtualFileFilter;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import org.jboss.as.jdr.util.WildcardPattern;
+import org.jboss.vfs.VirtualFile;
+import org.jboss.vfs.VirtualFileFilter;
+import org.jboss.vfs.util.MatchAllVirtualFileFilter;
 
 /**
  * @author csams@redhat.com

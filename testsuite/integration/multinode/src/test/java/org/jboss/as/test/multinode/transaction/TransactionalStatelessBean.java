@@ -22,7 +22,10 @@
 package org.jboss.as.test.multinode.transaction;
 
 import javax.annotation.Resource;
-import javax.ejb.*;
+import javax.ejb.Remote;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 /**

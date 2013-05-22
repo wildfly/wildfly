@@ -21,6 +21,8 @@
 */
 package org.jboss.as.network;
 
+import static org.jboss.as.network.NetworkMessages.MESSAGES;
+
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -32,8 +34,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.network.NetworkMessages.MESSAGES;
 
 /**
  * An encapsulation of socket binding related information.

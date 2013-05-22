@@ -22,12 +22,12 @@
 
 package org.jboss.as.pojo.descriptor;
 
-import org.jboss.as.pojo.BeanState;
-import org.jboss.msc.service.ServiceName;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
+
+import org.jboss.as.pojo.BeanState;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * The legacy bean meta data.

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.server.deployment.scanner;
 
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerMessages.MESSAGES;
+
 import java.io.Closeable;
 import java.io.EOFException;
 import java.io.File;
@@ -29,8 +31,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
-
-import static org.jboss.as.server.deployment.scanner.DeploymentScannerMessages.MESSAGES;
 
 /**
  * Scans a zip file to check whether the complete end of directory record is

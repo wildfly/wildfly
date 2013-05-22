@@ -22,6 +22,10 @@
 
 package org.jboss.as.pojo.descriptor;
 
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -39,10 +43,6 @@ import org.jboss.as.pojo.ParseResult;
 import org.jboss.as.pojo.PojoMessages;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 /**
  * Parse Microcontainer jboss-beans.xml.

@@ -1,5 +1,7 @@
 package org.jboss.as.test.integration.deployment.structure.jar;
 
+import static org.junit.Assert.assertEquals;
+
 import javax.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -12,8 +14,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
 
 
 /**

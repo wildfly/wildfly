@@ -22,6 +22,9 @@
 
 package org.jboss.as.naming.service;
 
+import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 import javax.naming.NamingException;
 
 import org.jboss.as.naming.NamingContext;
@@ -31,9 +34,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * Service responsible for creating and managing the life-cycle of the Naming Server.

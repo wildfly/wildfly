@@ -21,6 +21,10 @@
  */
 package org.jboss.as.test.smoke.deployment.rar.tests.raconnection;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -40,10 +44,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.junit.Assert.assertTrue;
 
 
 /**

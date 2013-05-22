@@ -22,12 +22,13 @@
 
 package org.jboss.as.test.clustering.cluster.ejb2;
 
-import org.jboss.as.test.clustering.NodeNameGetter;
-import org.jboss.logging.Logger;
+import java.rmi.RemoteException;
 
 import javax.ejb.EJBException;
 import javax.ejb.SessionContext;
-import java.rmi.RemoteException;
+
+import org.jboss.as.test.clustering.NodeNameGetter;
+import org.jboss.logging.Logger;
 
 /**
  * @author Jan Martiska

@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.integration.management.api.web;
 
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
@@ -44,9 +47,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.junit.Assert.assertTrue;
 
 /**
  *

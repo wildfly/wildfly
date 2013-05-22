@@ -27,14 +27,15 @@ package org.jboss.as.test.integration.security.loginmodules.common;
  * Simple unsecured EJB implementation example.
  */
 
-import org.jboss.as.test.integration.security.loginmodules.common.UnsecuredEJB;
+import java.security.Principal;
 
 import javax.annotation.Resource;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Named;
-import java.security.Principal;
+
+import org.jboss.as.test.integration.security.loginmodules.common.UnsecuredEJB;
 
 
 @Named("unsecuredEJB")

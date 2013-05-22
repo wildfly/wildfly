@@ -22,6 +22,24 @@
 
 package org.jboss.as.server.mgmt.domain;
 
+import java.io.DataInput;
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.URI;
+import java.nio.charset.Charset;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.RealmCallback;
+import javax.security.sasl.RealmChoiceCallback;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.remote.TransactionalProtocolOperationHandler;
 import org.jboss.as.protocol.ProtocolConnectionConfiguration;
@@ -41,23 +59,6 @@ import org.jboss.as.server.ServerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
-
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.RealmCallback;
-import javax.security.sasl.RealmChoiceCallback;
-import java.io.DataInput;
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.net.URI;
-import java.nio.charset.Charset;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 /**
  * The connection to the host-controller. In case the channel is closed it's the host-controllers responsibility

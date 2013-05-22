@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.management.security.password;
 
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +31,6 @@ import java.util.Properties;
 
 import org.jboss.as.domain.management.security.password.PasswordCheckResult.Result;
 import org.jboss.as.domain.management.security.password.simple.SimplePasswordStrengthChecker;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 /**
  * Simple util which narrows down password checks so there is no hassle in performing those checks in CLI.
  * @author baranowb

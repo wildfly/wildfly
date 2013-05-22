@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.deploymentoverlay;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -30,8 +32,6 @@ import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayLinkServic
 import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayPriority;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Removes a link between a deployment overlay and a deployment

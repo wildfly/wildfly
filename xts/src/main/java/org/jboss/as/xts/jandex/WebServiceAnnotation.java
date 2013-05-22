@@ -22,12 +22,12 @@
 
 package org.jboss.as.xts.jandex;
 
+import javax.xml.namespace.QName;
+
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.xts.XTSException;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
-
-import javax.xml.namespace.QName;
 
 /**
  * @author paul.robinson@redhat.com, 2012-02-06

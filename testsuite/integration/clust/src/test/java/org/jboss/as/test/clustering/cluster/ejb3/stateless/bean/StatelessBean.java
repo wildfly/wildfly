@@ -25,7 +25,6 @@ package org.jboss.as.test.clustering.cluster.ejb3.stateless.bean;
 import javax.ejb.Remote;
 import javax.ejb.TransactionAttributeType;
 
-
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.ejb3.annotation.Clustered;
 import org.jboss.logging.Logger;

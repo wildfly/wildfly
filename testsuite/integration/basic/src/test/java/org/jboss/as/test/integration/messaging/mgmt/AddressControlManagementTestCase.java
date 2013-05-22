@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.messaging.mgmt;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.junit.Assert;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -42,6 +41,7 @@ import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;

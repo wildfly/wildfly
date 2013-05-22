@@ -22,12 +22,13 @@
 
 package org.jboss.as.controller.client.helpers.domain;
 
-import javax.security.auth.callback.CallbackHandler;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.impl.DomainClientImpl;

@@ -22,6 +22,9 @@
 
 package org.jboss.as.ee.managedbean.processors;
 
+import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
@@ -46,7 +49,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.wildfly.security.manager.AccessCheckingInterceptor;
 import org.jboss.invocation.ContextClassLoaderInterceptor;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.PrivilegedInterceptor;
@@ -55,9 +57,7 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
+import org.wildfly.security.manager.AccessCheckingInterceptor;
 
 /**
  * Deployment unit processor responsible for scanning a deployment to find classes with {@code javax.annotation.ManagedBean} annotations.

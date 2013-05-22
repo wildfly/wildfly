@@ -22,13 +22,14 @@
 
 package org.jboss.as.test.integration.ejb.remote.distinctname;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import java.util.Hashtable;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import java.util.Hashtable;
+
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Tests that invocation on EJBs deployed in a deployment with distinct name works successfully

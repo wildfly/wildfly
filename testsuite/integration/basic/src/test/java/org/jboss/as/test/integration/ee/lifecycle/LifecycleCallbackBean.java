@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.ee.lifecycle;
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
-import javax.interceptor.InvocationContext;
 
 /**
  * User: jpai

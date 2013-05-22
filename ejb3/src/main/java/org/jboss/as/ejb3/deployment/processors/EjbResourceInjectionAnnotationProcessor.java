@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.util.List;
 import java.util.Locale;
 
@@ -53,8 +55,6 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.logging.Logger;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Deployment processor responsible for processing @EJB annotations within components.  Each @EJB annotation will be registered

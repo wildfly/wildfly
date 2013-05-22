@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.stateful.passivation;
 
-import org.jboss.ejb3.annotation.Cache;
-
 import javax.ejb.PostActivate;
 import javax.ejb.PrePassivate;
 import javax.ejb.Stateful;

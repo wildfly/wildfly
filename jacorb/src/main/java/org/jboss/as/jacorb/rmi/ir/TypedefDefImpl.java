@@ -21,14 +21,14 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import org.omg.CORBA.TypeCode;
-import org.omg.CORBA.DefinitionKind;
-import org.omg.CORBA.TypedefDefOperations;
 import org.omg.CORBA.Any;
-import org.omg.CORBA.TypeDescription;
-import org.omg.CORBA.TypeDescriptionHelper;
 import org.omg.CORBA.ContainedOperations;
 import org.omg.CORBA.ContainedPackage.Description;
+import org.omg.CORBA.DefinitionKind;
+import org.omg.CORBA.TypeCode;
+import org.omg.CORBA.TypeDescription;
+import org.omg.CORBA.TypeDescriptionHelper;
+import org.omg.CORBA.TypedefDefOperations;
 
 /**
  * TypedefDef IR object.

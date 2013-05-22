@@ -22,6 +22,7 @@
 package org.jboss.as.naming.subsystem;
 
 import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 

@@ -1,5 +1,7 @@
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -14,8 +16,6 @@ import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * @author Stuart Douglas

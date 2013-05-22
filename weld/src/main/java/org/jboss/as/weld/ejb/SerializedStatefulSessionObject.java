@@ -21,13 +21,13 @@
  */
 package org.jboss.as.weld.ejb;
 
-import org.jboss.ejb.client.SessionID;
-import org.jboss.msc.service.ServiceName;
-
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.jboss.ejb.client.SessionID;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Serialized form of a SFSB

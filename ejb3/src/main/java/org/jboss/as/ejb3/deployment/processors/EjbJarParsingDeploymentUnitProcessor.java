@@ -23,6 +23,8 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -66,8 +68,6 @@ import org.jboss.metadata.ejb.parser.spec.EjbJarMetaDataParser;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.parser.util.MetaDataElementParser;
 import org.jboss.vfs.VirtualFile;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Processes a {@link DeploymentUnit} containing a ejb-jar.xml and creates {@link EjbJarMetaData}

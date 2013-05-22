@@ -25,7 +25,6 @@ package org.jboss.as.host.controller;
 import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
-import javax.net.SocketFactory;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -34,18 +33,20 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import javax.net.SocketFactory;
+
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.process.ProcessMessageHandler;
 import org.jboss.as.process.protocol.ProtocolClient;
 import org.jboss.as.protocol.StreamUtils;
-import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 
 /**
  * Provides a client for interacting with the process controller.

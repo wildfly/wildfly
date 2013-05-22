@@ -1,5 +1,8 @@
 package org.jboss.as.server.moduleservice;
 
+import static org.jboss.msc.service.ServiceBuilder.DependencyType.OPTIONAL;
+import static org.jboss.msc.service.ServiceBuilder.DependencyType.REQUIRED;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -16,9 +19,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import static org.jboss.msc.service.ServiceBuilder.DependencyType.OPTIONAL;
-import static org.jboss.msc.service.ServiceBuilder.DependencyType.REQUIRED;
 
 /**
  * Module phase resolve service. Basically this service attempts to resolve

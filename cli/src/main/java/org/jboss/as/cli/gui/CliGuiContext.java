@@ -19,9 +19,11 @@
 package org.jboss.as.cli.gui;
 
 import java.awt.Window;
+
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.gui.component.CLIOutput;
 import org.jboss.dmr.ModelNode;

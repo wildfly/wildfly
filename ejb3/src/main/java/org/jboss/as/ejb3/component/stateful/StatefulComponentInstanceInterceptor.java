@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.rmi.RemoteException;
 
 import javax.ejb.ConcurrentAccessException;
@@ -34,9 +37,6 @@ import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
-
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Associate the proper component instance to the invocation based on the passed in session identifier.

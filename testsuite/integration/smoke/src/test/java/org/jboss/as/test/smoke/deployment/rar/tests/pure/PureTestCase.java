@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.smoke.deployment.rar.tests.pure;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.util.List;
 import java.util.Set;
 
@@ -30,9 +33,9 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
@@ -52,9 +55,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 
 /**

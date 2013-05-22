@@ -22,9 +22,10 @@
 
 package org.jboss.as.ejb3.component.pool;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * User: jpai
  */

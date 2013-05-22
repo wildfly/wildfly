@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.integration.management.api;
 
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -30,9 +33,6 @@ import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.junit.Assert.assertTrue;
 
 
 /**

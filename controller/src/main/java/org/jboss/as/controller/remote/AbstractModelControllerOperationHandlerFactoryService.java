@@ -21,6 +21,9 @@
 */
 package org.jboss.as.controller.remote;
 
+import static java.security.AccessController.doPrivileged;
+import static org.jboss.as.controller.ControllerLogger.SERVER_MANAGEMENT_LOGGER;
+
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -30,17 +33,14 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
-import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import static java.security.AccessController.doPrivileged;
-import static org.jboss.as.controller.ControllerLogger.SERVER_MANAGEMENT_LOGGER;
 import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 
 /**
  * Service used to create operation handlers per incoming channel

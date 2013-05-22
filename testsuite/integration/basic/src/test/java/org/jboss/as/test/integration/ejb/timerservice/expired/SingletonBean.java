@@ -22,7 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.timerservice.expired;
 
-import org.jboss.logging.Logger;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 import javax.ejb.ConcurrencyManagement;
@@ -34,11 +35,8 @@ import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import org.jboss.logging.Logger;
 
 /**
  * @author Jaikiran Pai

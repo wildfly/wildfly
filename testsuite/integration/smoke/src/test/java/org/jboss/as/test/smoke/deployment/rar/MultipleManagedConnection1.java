@@ -22,7 +22,6 @@
 package org.jboss.as.test.smoke.deployment.rar;
 
 import java.io.PrintWriter;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -35,7 +34,6 @@ import javax.resource.spi.ConnectionRequestInfo;
 import javax.resource.spi.LocalTransaction;
 import javax.resource.spi.ManagedConnection;
 import javax.resource.spi.ManagedConnectionMetaData;
-
 import javax.security.auth.Subject;
 import javax.transaction.xa.XAResource;
 

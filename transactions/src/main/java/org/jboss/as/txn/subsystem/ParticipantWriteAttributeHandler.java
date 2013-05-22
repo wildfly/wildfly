@@ -24,14 +24,14 @@ package org.jboss.as.txn.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
 
 
 public class ParticipantWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {

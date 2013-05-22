@@ -21,10 +21,9 @@
 */
 package org.jboss.as.host.controller.mgmt;
 
+import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-
-import static java.security.AccessController.doPrivileged;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
@@ -54,7 +53,6 @@ import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementPongRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
-import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -62,6 +60,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.remoting3.Channel;
 import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 
 /**
  * Installs {@link MasterDomainControllerOperationHandlerImpl} which handles requests from slave DC to master DC.

@@ -21,9 +21,9 @@
  */
 package org.jboss.as.domain.management.security;
 
-import java.io.IOException;
-
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
+import java.io.IOException;
 
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>

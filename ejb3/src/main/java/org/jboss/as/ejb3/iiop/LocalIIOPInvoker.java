@@ -21,8 +21,9 @@
  */
 package org.jboss.as.ejb3.iiop;
 
-import javax.transaction.Transaction;
 import java.security.Principal;
+
+import javax.transaction.Transaction;
 
 /**
  * Interface used by local IIOP invocations.

@@ -22,20 +22,9 @@
 
 package org.jboss.as.protocol;
 
-import org.jboss.remoting3.Connection;
-import org.jboss.remoting3.Endpoint;
-import org.xnio.IoFuture;
-import org.xnio.OptionMap;
-import org.xnio.Options;
 import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
 import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
-import org.xnio.Property;
-import org.xnio.Sequence;
 
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -46,6 +35,19 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+
+import org.jboss.remoting3.Connection;
+import org.jboss.remoting3.Endpoint;
+import org.xnio.IoFuture;
+import org.xnio.OptionMap;
+import org.xnio.Options;
+import org.xnio.Property;
+import org.xnio.Sequence;
 
 /**
  * Protocol Connection utils.

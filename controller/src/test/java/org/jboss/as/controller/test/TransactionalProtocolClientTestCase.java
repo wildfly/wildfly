@@ -22,31 +22,6 @@
 
 package org.jboss.as.controller.test;
 
-import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationAttachments;
-import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.remote.BlockingQueueOperationListener;
-import org.jboss.as.controller.remote.TransactionalOperationImpl;
-import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
-import org.jboss.as.controller.remote.TransactionalProtocolClient;
-import org.jboss.as.controller.support.ChannelServer;
-import org.jboss.as.protocol.ProtocolChannelClient;
-import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.Connection;
-import org.jboss.remoting3.OpenListener;
-import org.jboss.remoting3.security.PasswordClientCallbackHandler;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.xnio.IoFuture;
-import org.xnio.OptionMap;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -61,6 +36,31 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.remote.BlockingQueueOperationListener;
+import org.jboss.as.controller.remote.TransactionalOperationImpl;
+import org.jboss.as.controller.remote.TransactionalProtocolClient;
+import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
+import org.jboss.as.controller.support.ChannelServer;
+import org.jboss.as.protocol.ProtocolChannelClient;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.Connection;
+import org.jboss.remoting3.OpenListener;
+import org.jboss.remoting3.security.PasswordClientCallbackHandler;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.xnio.IoFuture;
+import org.xnio.OptionMap;
 
 /**
  * Transactional protocol tests.

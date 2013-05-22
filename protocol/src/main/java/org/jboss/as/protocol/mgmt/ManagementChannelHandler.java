@@ -22,13 +22,13 @@
 
 package org.jboss.as.protocol.mgmt;
 
-import org.jboss.as.protocol.ProtocolMessages;
-import org.jboss.remoting3.Channel;
-import org.jboss.threads.AsyncFuture;
-
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+
+import org.jboss.as.protocol.ProtocolMessages;
+import org.jboss.remoting3.Channel;
+import org.jboss.threads.AsyncFuture;
 
 /**
  * Generic management channel handler allowing to assemble multiple {@code ManagementRequestHandlerFactory} per channel.

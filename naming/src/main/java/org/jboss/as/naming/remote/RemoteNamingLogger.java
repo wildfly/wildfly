@@ -22,8 +22,10 @@
 
 package org.jboss.as.naming.remote;
 
-import java.io.IOException;
 import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
+
+import java.io.IOException;
+
 import org.jboss.naming.remote.server.RemoteNamingServerLogger;
 import org.jboss.remoting3.Channel;
 

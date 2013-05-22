@@ -21,6 +21,14 @@
  */
 package org.jboss.as.test.integration.beanvalidation.hibernate.scriptassert;
 
+import java.sql.SQLException;
+import java.util.Set;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -30,14 +38,6 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
-
-import java.sql.SQLException;
-import java.util.Set;
 
 /**
  * AS7-1110

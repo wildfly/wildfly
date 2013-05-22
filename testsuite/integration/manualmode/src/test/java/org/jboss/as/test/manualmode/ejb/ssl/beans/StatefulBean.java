@@ -23,10 +23,11 @@
 package org.jboss.as.test.manualmode.ejb.ssl.beans;
 
 
-import javax.ejb.Stateful;
 import java.util.concurrent.Future;
+
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
+import javax.ejb.Stateful;
 
 /**
  * @author Jan Martiska

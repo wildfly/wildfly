@@ -24,6 +24,10 @@
 
 package org.wildfly.extension.undertow.deployment;
 
+import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.AUTHENTICATE;
+import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.DENY;
+import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.PERMIT;
+
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -90,13 +94,6 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
-import org.wildfly.extension.undertow.ServletContainerService;
-import org.wildfly.extension.undertow.UndertowService;
-import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
-import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
-import org.wildfly.extension.undertow.security.SecurityContextAssociationHandler;
-import org.wildfly.extension.undertow.security.SecurityContextCreationHandler;
-import org.wildfly.extension.undertow.session.DistributableSessionManager;
 import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.WebInjectionContainer;
 import org.jboss.marshalling.ClassResolver;
@@ -137,10 +134,13 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.audit.AuditManager;
 import org.jboss.vfs.VirtualFile;
-
-import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.AUTHENTICATE;
-import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.DENY;
-import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.PERMIT;
+import org.wildfly.extension.undertow.ServletContainerService;
+import org.wildfly.extension.undertow.UndertowService;
+import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
+import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
+import org.wildfly.extension.undertow.security.SecurityContextAssociationHandler;
+import org.wildfly.extension.undertow.security.SecurityContextCreationHandler;
+import org.wildfly.extension.undertow.session.DistributableSessionManager;
 
 /**
  * Service that builds up the undertow metadata.

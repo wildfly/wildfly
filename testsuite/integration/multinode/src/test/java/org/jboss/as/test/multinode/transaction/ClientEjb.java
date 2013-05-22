@@ -21,7 +21,8 @@
  */
 package org.jboss.as.test.multinode.transaction;
 
-import org.junit.Assert;
+import java.rmi.RemoteException;
+import java.util.Hashtable;
 
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
@@ -29,9 +30,15 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.naming.Context;
 import javax.naming.NamingException;
-import javax.transaction.*;
-import java.rmi.RemoteException;
-import java.util.Hashtable;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.Status;
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
+
+import org.junit.Assert;
 
 /**
  * @author Stuart Douglas

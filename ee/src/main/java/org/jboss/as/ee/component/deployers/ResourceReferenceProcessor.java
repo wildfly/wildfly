@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ee.component.deployers;
 
+import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -53,9 +56,6 @@ import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferencesMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferencesMetaData;
 import org.jboss.msc.value.ImmediateValue;
-
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * Deployment processor that sets up env-entry, resource-ref and resource-env-ref bindings

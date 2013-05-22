@@ -21,8 +21,6 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.attribute;
 
-import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
-
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
@@ -30,6 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 
 /**
  * DayOfWeek

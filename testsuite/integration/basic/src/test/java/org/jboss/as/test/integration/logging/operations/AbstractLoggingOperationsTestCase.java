@@ -31,7 +31,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.Operations;

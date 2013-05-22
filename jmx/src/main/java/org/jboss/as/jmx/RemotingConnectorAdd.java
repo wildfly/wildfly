@@ -22,6 +22,8 @@
 
 package org.jboss.as.jmx;
 
+import static org.jboss.as.jmx.CommonAttributes.USE_MANAGEMENT_ENDPOINT;
+
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -31,8 +33,6 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-
-import static org.jboss.as.jmx.CommonAttributes.USE_MANAGEMENT_ENDPOINT;
 
 /**
  * @author Stuart Douglas

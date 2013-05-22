@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.deployment.module;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,8 +56,6 @@ import org.jboss.vfs.VirtualFilePermission;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.FilterVirtualFileVisitor;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static java.security.AccessController.doPrivileged;
 
 /**
  * Resource loader capable of loading resources from VFS archives.

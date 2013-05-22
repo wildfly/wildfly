@@ -21,8 +21,8 @@
  */
 package org.jboss.as.cli.parsing.test;
 
-import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.CommandLineParser;
+import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.junit.Assert;

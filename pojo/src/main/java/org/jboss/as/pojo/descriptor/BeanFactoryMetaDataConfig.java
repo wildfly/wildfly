@@ -22,11 +22,11 @@
 
 package org.jboss.as.pojo.descriptor;
 
-import org.jboss.as.pojo.BeanState;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+
+import org.jboss.as.pojo.BeanState;
 
 /**
  * The legacy bean factory meta data.

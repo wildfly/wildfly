@@ -22,17 +22,17 @@
 
 package org.jboss.as.jpa.hibernate3;
 
+import java.util.Properties;
+
 import org.hibernate.cfg.Environment;
 import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.jpa.hibernate3.infinispan.InfinispanRegionFactory;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
-
-import java.util.Properties;
 
 /**
  * Second level cache setup.

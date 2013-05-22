@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.manualmode.ejb.client.cluster;
 
-import org.jboss.ejb3.annotation.Clustered;
-
 import javax.ejb.Remote;
 import javax.ejb.Stateful;
+
+import org.jboss.ejb3.annotation.Clustered;
 
 /**
  * @author Jaikiran Pai

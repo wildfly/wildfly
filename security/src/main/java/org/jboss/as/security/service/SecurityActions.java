@@ -22,22 +22,22 @@
 
 package org.jboss.as.security.service;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
 import org.jboss.as.security.SecurityMessages;
 import org.jboss.as.security.remoting.RemotingContext;
-import org.wildfly.security.manager.GetModuleClassLoaderAction;
-import org.wildfly.security.manager.WildFlySecurityManager;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.remoting3.Connection;
-
-import static java.security.AccessController.doPrivileged;
+import org.wildfly.security.manager.GetModuleClassLoaderAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Privileged blocks for this package

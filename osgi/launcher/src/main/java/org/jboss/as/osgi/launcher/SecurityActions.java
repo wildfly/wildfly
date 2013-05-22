@@ -16,12 +16,13 @@
  */
 package org.jboss.as.osgi.launcher;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.lang.reflect.Method;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static java.security.AccessController.doPrivileged;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Secured actions not to leak out of this package

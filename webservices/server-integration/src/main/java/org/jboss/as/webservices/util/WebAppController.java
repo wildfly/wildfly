@@ -24,11 +24,12 @@ package org.jboss.as.webservices.util;
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
 
 import java.io.File;
+
 import javax.servlet.Servlet;
 
 import org.jboss.as.web.host.ServletBuilder;
-import org.jboss.as.web.host.WebDeploymentController;
 import org.jboss.as.web.host.WebDeploymentBuilder;
+import org.jboss.as.web.host.WebDeploymentController;
 import org.jboss.as.web.host.WebHost;
 import org.jboss.msc.service.StartException;
 

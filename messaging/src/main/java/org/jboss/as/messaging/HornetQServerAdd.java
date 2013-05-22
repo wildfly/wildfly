@@ -97,12 +97,12 @@ import java.util.Set;
 
 import javax.management.MBeanServer;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;

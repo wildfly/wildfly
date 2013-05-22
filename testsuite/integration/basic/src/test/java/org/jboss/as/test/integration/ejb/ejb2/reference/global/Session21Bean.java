@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.ejb.ejb2.reference.global;
 
 import javax.ejb.SessionContext;
 import javax.naming.InitialContext;
+
 import org.jboss.logging.Logger;
 
 /**

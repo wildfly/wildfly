@@ -22,6 +22,9 @@
 
 package org.jboss.as.jpa.hibernate4;
 
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.URISyntaxException;
@@ -43,9 +46,6 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
-
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Annotation scanner for Hibernate

@@ -22,13 +22,13 @@
 
 package org.jboss.as.server.deployment.module;
 
+import java.util.List;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-
-import java.util.List;
 
 /**
  * Deployment unit processor that will extract module dependencies from an archive.

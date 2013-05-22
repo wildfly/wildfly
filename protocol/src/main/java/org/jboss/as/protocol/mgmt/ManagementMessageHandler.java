@@ -22,11 +22,11 @@
 
 package org.jboss.as.protocol.mgmt;
 
-import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
-import org.jboss.remoting3.Channel;
-
 import java.io.DataInput;
 import java.io.IOException;
+
+import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
+import org.jboss.remoting3.Channel;
 
 /**
  * @author Emanuel Muckenhuber

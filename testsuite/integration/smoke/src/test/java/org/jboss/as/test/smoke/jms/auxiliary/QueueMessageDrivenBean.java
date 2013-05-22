@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.smoke.jms.auxiliary;
 
-import org.jboss.logging.Logger;
-
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
 import javax.enterprise.event.Event;
@@ -32,6 +30,8 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
+
+import org.jboss.logging.Logger;
 
 /**
  * Auxiliary class for JMS smoke tests - receives messages from a queue and fires events afterwards

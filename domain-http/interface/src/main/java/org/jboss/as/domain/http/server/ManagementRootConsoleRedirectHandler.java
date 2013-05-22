@@ -24,6 +24,7 @@ package org.jboss.as.domain.http.server;
 import static org.jboss.as.domain.http.server.Common.METHOD_NOT_ALLOWED_HANDLER;
 import static org.jboss.as.domain.http.server.Common.MOVED_PERMANENTLY;
 import static org.jboss.as.domain.http.server.Common.NOT_FOUND;
+
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;

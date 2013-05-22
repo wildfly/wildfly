@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.http.server.security;
 
+import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
+
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 
@@ -30,11 +32,8 @@ import javax.net.ssl.SSLSession;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
-
-import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 
 /**
  * Filter to redirect to the error context while the security realm is not ready.

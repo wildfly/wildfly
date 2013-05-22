@@ -25,7 +25,6 @@ import java.util.logging.Logger;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
-
 import javax.resource.ResourceException;
 import javax.resource.cci.Connection;
 import javax.resource.cci.ConnectionSpec;

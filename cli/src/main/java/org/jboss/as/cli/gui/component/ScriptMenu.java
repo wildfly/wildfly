@@ -23,8 +23,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.prefs.Preferences;
+
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+
 import org.jboss.as.cli.gui.CliGuiContext;
 import org.jboss.as.cli.gui.metacommand.ChooseScriptAction;
 import org.jboss.as.cli.gui.metacommand.OpenScriptAction;

@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.integration.ejb.transaction.bmt;
 
-import org.junit.Assert;
-
 import javax.annotation.Resource;
 import javax.ejb.EJBContext;
 import javax.ejb.Stateful;
@@ -32,6 +30,8 @@ import javax.transaction.NotSupportedException;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
+
+import org.junit.Assert;
 
 /**
  * Stateful session bean that uses the same transaction over two method invocations

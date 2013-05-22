@@ -22,15 +22,15 @@
 
 package org.jboss.as.controller.client;
 
+import java.io.IOException;
+import java.net.URL;
+
 import org.jboss.as.controller.client.helpers.domain.DeploymentAction.Type;
 import org.jboss.as.controller.client.helpers.domain.RollbackCancelledException;
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
-
-import java.io.IOException;
-import java.net.URL;
 
 /**
  * Date: 05.11.2011

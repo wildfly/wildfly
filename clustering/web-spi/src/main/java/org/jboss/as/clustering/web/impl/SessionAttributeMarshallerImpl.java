@@ -21,14 +21,14 @@
  */
 package org.jboss.as.clustering.web.impl;
 
+import static org.jboss.as.clustering.web.impl.ClusteringWebMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.Serializable;
 
 import org.jboss.as.clustering.MarshallingContext;
 import org.jboss.as.clustering.SimpleMarshalledValue;
 import org.jboss.as.clustering.web.SessionAttributeMarshaller;
-
-import static org.jboss.as.clustering.web.impl.ClusteringWebMessages.MESSAGES;
 
 /**
  * Session attribute marshaller that marshals attribute values using a {@link SimpleMarshalledValue}.

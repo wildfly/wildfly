@@ -22,10 +22,10 @@
 
 package org.jboss.as.jdr;
 
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
-import org.jboss.as.controller.OperationFailedException;
 
 /**
  * This module is using message IDs in the range 13100-13199. This file is using the subset 13150-13199 for

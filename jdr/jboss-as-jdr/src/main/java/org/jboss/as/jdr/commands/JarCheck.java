@@ -22,16 +22,16 @@
 package org.jboss.as.jdr.commands;
 
 
-import org.jboss.as.jdr.util.Utils;
-import org.jboss.vfs.VFS;
-import org.jboss.vfs.VirtualFile;
-import org.jboss.vfs.util.automount.Automounter;
+import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
+import org.jboss.as.jdr.util.Utils;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VirtualFile;
+import org.jboss.vfs.util.automount.Automounter;
 
 public class JarCheck extends JdrCommand {
 

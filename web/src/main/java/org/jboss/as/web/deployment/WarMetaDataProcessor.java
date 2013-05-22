@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
 
-import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
@@ -50,6 +49,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.ManifestHelper;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.web.common.WarMetaData;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.javaee.spec.EmptyMetaData;

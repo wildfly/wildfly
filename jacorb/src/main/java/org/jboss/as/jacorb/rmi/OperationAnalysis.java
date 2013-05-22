@@ -21,11 +21,9 @@
  */
 package org.jboss.as.jacorb.rmi;
 
+import java.lang.reflect.Method;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-
-import java.lang.reflect.Method;
-
 import java.util.ArrayList;
 
 import org.jboss.as.jacorb.JacORBMessages;

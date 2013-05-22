@@ -16,6 +16,8 @@
  */
 package org.jboss.as.web.deployment;
 
+import java.util.List;
+
 import javax.el.ELContextListener;
 import javax.el.ELResolver;
 import javax.el.ExpressionFactory;
@@ -25,8 +27,6 @@ import javax.servlet.jsp.JspContext;
 import org.apache.jasper.el.ELContextImpl;
 import org.apache.jasper.runtime.JspApplicationContextImpl;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
-
-import java.util.List;
 
 /**
  * @author pmuir

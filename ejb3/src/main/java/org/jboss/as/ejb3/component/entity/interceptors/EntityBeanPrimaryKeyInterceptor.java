@@ -23,8 +23,8 @@ package org.jboss.as.ejb3.component.entity.interceptors;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
+import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;

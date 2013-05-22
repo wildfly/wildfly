@@ -15,7 +15,6 @@
  */
 package org.jboss.as.test.integration.ejb.mdb.dynamic.impl;
 
-import javax.resource.spi.endpoint.MessageEndpoint;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.io.PrintStream;
@@ -23,6 +22,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.regex.Pattern;
+
+import javax.resource.spi.endpoint.MessageEndpoint;
 
 /**
  * @version $Revision$ $Date$

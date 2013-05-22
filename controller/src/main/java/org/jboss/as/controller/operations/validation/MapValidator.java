@@ -18,14 +18,14 @@
  */
 package org.jboss.as.controller.operations.validation;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.util.List;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * Validates parameters of type {@link org.jboss.dmr.ModelType#OBJECT}.

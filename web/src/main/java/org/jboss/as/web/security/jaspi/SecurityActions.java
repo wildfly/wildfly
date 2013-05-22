@@ -22,13 +22,13 @@
 
 package org.jboss.as.web.security.jaspi;
 
-import org.jboss.security.SecurityContext;
-import org.jboss.security.SecurityContextAssociation;
-
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+
+import org.jboss.security.SecurityContext;
+import org.jboss.security.SecurityContextAssociation;
 
 /**
  * <p>

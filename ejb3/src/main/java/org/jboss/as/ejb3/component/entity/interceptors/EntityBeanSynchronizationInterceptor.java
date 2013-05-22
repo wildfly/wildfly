@@ -21,6 +21,10 @@
  */
 package org.jboss.as.ejb3.component.entity.interceptors;
 
+import static org.jboss.as.ejb3.EjbLogger.EJB3_LOGGER;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import javax.ejb.EJBException;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
@@ -29,19 +33,15 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
-import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
+import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
 import org.jboss.as.ejb3.tx.OwnableReentrantLock;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-
-import static org.jboss.as.ejb3.EjbLogger.EJB3_LOGGER;
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * {@link org.jboss.invocation.Interceptor} which manages {@link javax.transaction.Synchronization} semantics on an entity bean.

@@ -23,13 +23,14 @@
 package org.jboss.as.server.deployment;
 
 
+import static java.security.AccessController.doPrivileged;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.Executors;
 
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
-import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -41,8 +42,7 @@ import org.jboss.vfs.TempFileProvider;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
-
-import static java.security.AccessController.doPrivileged;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 
 /**
  * Provides VFS mounts of deployment content.

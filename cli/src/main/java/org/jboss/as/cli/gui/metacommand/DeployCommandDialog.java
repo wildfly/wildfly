@@ -29,6 +29,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -40,6 +41,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
+
 import org.jboss.as.cli.gui.CliGuiContext;
 import org.jboss.as.cli.gui.component.HelpButton;
 import org.jboss.as.cli.gui.component.ServerGroupChooser;

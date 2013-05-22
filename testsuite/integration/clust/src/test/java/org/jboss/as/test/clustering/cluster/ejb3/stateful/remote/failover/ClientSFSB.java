@@ -22,14 +22,12 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover;
 
-import org.jboss.logging.Logger;
-
 import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
 import javax.ejb.Remote;
 import javax.ejb.Stateful;
-import javax.ejb.Stateless;
 import javax.naming.InitialContext;
+
+import org.jboss.logging.Logger;
 
 /**
  * @author Jaikiran Pai

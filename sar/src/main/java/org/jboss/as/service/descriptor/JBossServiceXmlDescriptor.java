@@ -22,12 +22,12 @@
 
 package org.jboss.as.service.descriptor;
 
-import org.jboss.as.server.deployment.AttachmentKey;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.as.server.deployment.AttachmentKey;
 
 /**
  * The object representation of a legacy "jboss-service.xml" descriptor file.

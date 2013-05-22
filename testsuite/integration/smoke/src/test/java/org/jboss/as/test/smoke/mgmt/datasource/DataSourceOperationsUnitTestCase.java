@@ -33,18 +33,12 @@ import static org.jboss.as.test.integration.management.jca.ComplexPropertiesPars
 import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.setOperationParams;
 import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.xaDsProperties;
 
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
 import java.util.List;
 import java.util.Properties;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;

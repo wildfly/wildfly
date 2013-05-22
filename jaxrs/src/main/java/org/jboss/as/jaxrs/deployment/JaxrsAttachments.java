@@ -21,10 +21,10 @@
  */
 package org.jboss.as.jaxrs.deployment;
 
+import java.util.Map;
+
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.modules.ModuleIdentifier;
-
-import java.util.Map;
 
 /**
  * Jaxrs attachments

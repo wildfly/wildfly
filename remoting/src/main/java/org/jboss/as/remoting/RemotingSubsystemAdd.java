@@ -22,14 +22,13 @@
 
 package org.jboss.as.remoting;
 
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ProcessType;
-
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;

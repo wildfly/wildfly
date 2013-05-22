@@ -22,9 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.remote.jndi;
 
+import java.util.Hashtable;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import java.util.Hashtable;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;

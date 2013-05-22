@@ -22,11 +22,11 @@
 
 package org.jboss.as.ejb3.remote;
 
+import java.util.Random;
+
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.ejb.client.DeploymentNodeSelector;
 import org.jboss.logging.Logger;
-
-import java.util.Random;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

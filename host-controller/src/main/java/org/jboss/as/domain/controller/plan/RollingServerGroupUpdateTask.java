@@ -22,10 +22,10 @@
 
 package org.jboss.as.domain.controller.plan;
 
+import java.util.List;
+
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.domain.controller.ServerIdentity;
-
-import java.util.List;
 
 /**
  * @author Emanuel Muckenhuber

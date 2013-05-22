@@ -1,5 +1,8 @@
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
@@ -27,9 +30,6 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
  * @author Stuart Douglas

@@ -22,14 +22,14 @@
 
 package org.jboss.as.process.protocol;
 
-import org.jboss.logging.annotations.Cause;
-import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
-
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.UTFDataFormatException;
+
+import org.jboss.logging.Messages;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 
 /**
  * This module is using message IDs in the range 16600-16699.

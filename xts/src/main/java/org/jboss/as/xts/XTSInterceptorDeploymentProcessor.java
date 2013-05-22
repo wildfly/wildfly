@@ -22,6 +22,9 @@
 
 package org.jboss.as.xts;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
@@ -38,9 +41,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.webservices.injection.WSComponentDescription;
 import org.jboss.narayana.txframework.api.annotation.service.ServiceRequest;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 
 
 public class XTSInterceptorDeploymentProcessor implements DeploymentUnitProcessor {

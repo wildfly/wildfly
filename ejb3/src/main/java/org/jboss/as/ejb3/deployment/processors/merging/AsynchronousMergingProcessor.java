@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
@@ -58,8 +60,6 @@ import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Merging processor that handles EJB async methods, and adds a configurator to configure any that are found.
  *

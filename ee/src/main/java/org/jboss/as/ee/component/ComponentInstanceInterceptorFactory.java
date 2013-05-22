@@ -21,11 +21,11 @@
  */
 package org.jboss.as.ee.component;
 
+import java.util.Map;
+
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-
-import java.util.Map;
 
 /**
  * A factory to create interceptors per ComponentInstance instance.

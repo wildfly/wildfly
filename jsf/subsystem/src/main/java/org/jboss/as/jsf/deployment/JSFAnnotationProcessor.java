@@ -22,6 +22,22 @@
 
 package org.jboss.as.jsf.deployment;
 
+import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.faces.bean.ManagedBean;
+import javax.faces.component.FacesComponent;
+import javax.faces.component.behavior.FacesBehavior;
+import javax.faces.convert.FacesConverter;
+import javax.faces.event.NamedEvent;
+import javax.faces.render.FacesBehaviorRenderer;
+import javax.faces.render.FacesRenderer;
+import javax.faces.validator.FacesValidator;
+
 import org.jboss.as.jsf.JSFMessages;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -35,21 +51,6 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.modules.Module;
-
-import javax.faces.bean.ManagedBean;
-import javax.faces.component.FacesComponent;
-import javax.faces.component.behavior.FacesBehavior;
-import javax.faces.convert.FacesConverter;
-import javax.faces.event.NamedEvent;
-import javax.faces.render.FacesBehaviorRenderer;
-import javax.faces.render.FacesRenderer;
-import javax.faces.validator.FacesValidator;
-import java.lang.annotation.Annotation;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * {@link DeploymentUnitProcessor} implementation responsible for extracting JSF annotations from a deployment and attaching them

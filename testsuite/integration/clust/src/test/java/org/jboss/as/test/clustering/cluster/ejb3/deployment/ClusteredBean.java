@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.deployment;
 
-import org.jboss.ejb3.annotation.Clustered;
-
 import javax.ejb.Stateful;
+
+import org.jboss.ejb3.annotation.Clustered;
 
 /**
  * @author Jaikiran Pai

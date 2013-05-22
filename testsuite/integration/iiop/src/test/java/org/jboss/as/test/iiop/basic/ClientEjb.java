@@ -8,8 +8,8 @@ import javax.ejb.HomeHandle;
 import javax.ejb.Stateless;
 import javax.rmi.PortableRemoteObject;
 
-import org.junit.Assert;
 import org.jboss.ejb.iiop.HandleImplIIOP;
+import org.junit.Assert;
 
 /**
  * @author Stuart Douglas

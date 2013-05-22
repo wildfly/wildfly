@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.container.CreatedEntityManagers;
+import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.invocation.Interceptor;

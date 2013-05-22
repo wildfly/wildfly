@@ -21,6 +21,9 @@
  */
 package org.jboss.as.domain.http.server;
 
+import static io.undertow.predicate.Predicates.not;
+import static io.undertow.predicate.Predicates.path;
+
 import java.util.Locale;
 
 import io.undertow.predicate.Predicates;
@@ -33,9 +36,6 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
-
-import static io.undertow.predicate.Predicates.not;
-import static io.undertow.predicate.Predicates.path;
 
 /**
  * ResourceHandler for the error context.

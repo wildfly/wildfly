@@ -29,6 +29,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Properties;
+
 import javax.mail.Authenticator;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;

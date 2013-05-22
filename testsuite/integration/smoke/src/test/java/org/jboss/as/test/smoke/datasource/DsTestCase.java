@@ -21,10 +21,11 @@
  */
 package org.jboss.as.test.smoke.datasource;
 
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
+
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

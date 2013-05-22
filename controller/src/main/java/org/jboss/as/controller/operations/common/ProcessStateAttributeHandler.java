@@ -27,8 +27,8 @@ package org.jboss.as.controller.operations.common;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.dmr.ModelNode;
 
 /**

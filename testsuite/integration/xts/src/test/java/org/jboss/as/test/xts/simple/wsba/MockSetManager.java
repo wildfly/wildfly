@@ -20,10 +20,10 @@
  */
 package org.jboss.as.test.xts.simple.wsba;
 
-import org.jboss.logging.Logger;
-
 import java.util.HashSet;
 import java.util.Set;
+
+import org.jboss.logging.Logger;
 
 /**
  * This class represents a simple Set collection.

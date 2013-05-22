@@ -21,12 +21,12 @@
  */
 package org.jboss.as.clustering.web.infinispan;
 
+import static org.jboss.as.clustering.web.infinispan.InfinispanWebLogger.ROOT_LOGGER;
+import static org.jboss.as.clustering.web.infinispan.InfinispanWebMessages.MESSAGES;
+
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.clustering.web.SessionAttributeMarshaller;
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
-
-import static org.jboss.as.clustering.web.infinispan.InfinispanWebLogger.ROOT_LOGGER;
-import static org.jboss.as.clustering.web.infinispan.InfinispanWebMessages.MESSAGES;
 
 /**
  * Default factory for creating strategies for storing session attributes.

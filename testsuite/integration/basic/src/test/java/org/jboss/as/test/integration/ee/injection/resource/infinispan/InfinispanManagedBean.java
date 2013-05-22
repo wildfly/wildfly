@@ -28,10 +28,9 @@ import javax.annotation.Resource;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.junit.Assert;
-
 import org.infinispan.Cache;
 import org.infinispan.manager.CacheContainer;
+import org.junit.Assert;
 
 /**
  * @author Paul Ferraro

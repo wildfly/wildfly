@@ -20,6 +20,7 @@ package org.jboss.as.cli.gui;
 
 import java.awt.Cursor;
 import java.io.IOException;
+
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.controller.client.ModelControllerClient;

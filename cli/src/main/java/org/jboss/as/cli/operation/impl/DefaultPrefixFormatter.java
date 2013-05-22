@@ -23,8 +23,8 @@ package org.jboss.as.cli.operation.impl;
 
 import java.util.Iterator;
 
-import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.NodePathFormatter;
+import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestAddress.Node;
 
 /**

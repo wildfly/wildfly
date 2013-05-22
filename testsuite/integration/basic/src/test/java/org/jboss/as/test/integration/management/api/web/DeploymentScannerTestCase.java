@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.integration.management.api.web;
 
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -45,9 +48,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.junit.Assert.assertTrue;
 
 
 /**

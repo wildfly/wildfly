@@ -21,9 +21,12 @@
  */
 package org.jboss.as.ejb3.iiop.stub;
 
-import javax.rmi.CORBA.Util;
+import static java.security.AccessController.doPrivileged;
 
 import java.security.PrivilegedAction;
+
+import javax.rmi.CORBA.Util;
+
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.iiop.LocalIIOPInvoker;
 import org.jboss.as.jacorb.rmi.marshal.strategy.StubStrategy;
@@ -35,8 +38,6 @@ import org.omg.CORBA.portable.ApplicationException;
 import org.omg.CORBA.portable.RemarshalException;
 import org.omg.CORBA_2_3.portable.InputStream;
 import org.omg.CORBA_2_3.portable.OutputStream;
-
-import static java.security.AccessController.doPrivileged;
 
 /**
  * Dynamically generated IIOP stub classes extend this abstract superclass,

@@ -21,6 +21,13 @@
 */
 package org.jboss.as.ee.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.ANNOTATIONS;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.GLOBAL_MODULES;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.META_INF;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.SERVICES;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -40,13 +47,6 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.ANNOTATIONS;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.GLOBAL_MODULES;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.META_INF;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.SERVICES;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>

@@ -29,8 +29,8 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>

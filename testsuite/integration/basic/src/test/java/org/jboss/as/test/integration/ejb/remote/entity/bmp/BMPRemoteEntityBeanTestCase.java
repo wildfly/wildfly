@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.remote.entity.bmp;
 
+import static org.junit.Assert.fail;
+
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.util.Collection;
@@ -46,8 +48,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.fail;
 
 /**
  * Tests bean managed persistence

@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Paul Ferraro

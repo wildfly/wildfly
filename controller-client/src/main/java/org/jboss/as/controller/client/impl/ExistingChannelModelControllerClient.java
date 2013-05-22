@@ -21,15 +21,15 @@
 */
 package org.jboss.as.controller.client.impl;
 
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
-
-import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  *

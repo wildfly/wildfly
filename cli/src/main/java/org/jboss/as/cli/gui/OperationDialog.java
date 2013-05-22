@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Vector;
+
 import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -43,6 +44,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
+
 import org.jboss.as.cli.gui.ManagementModelNode.UserObject;
 import org.jboss.as.cli.gui.component.ListEditor;
 import org.jboss.as.cli.gui.component.WordWrapLabel;

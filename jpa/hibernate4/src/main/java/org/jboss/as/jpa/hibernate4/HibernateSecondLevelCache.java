@@ -31,9 +31,9 @@ import org.jboss.as.jpa.hibernate4.infinispan.InfinispanRegionFactory;
 import org.jboss.as.jpa.hibernate4.infinispan.SharedInfinispanRegionFactory;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
 
 /**
  * Second level cache setup.

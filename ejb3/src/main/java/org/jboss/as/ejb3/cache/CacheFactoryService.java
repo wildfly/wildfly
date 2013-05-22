@@ -22,15 +22,15 @@
 
 package org.jboss.as.ejb3.cache;
 
+import java.io.Serializable;
+import java.util.Set;
+
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-
-import java.io.Serializable;
-import java.util.Set;
 
 /**
  * @author Paul Ferraro

@@ -26,6 +26,7 @@ import static org.jboss.as.logging.CommonAttributes.ADD_HANDLER_OPERATION_NAME;
 import static org.jboss.as.logging.CommonAttributes.REMOVE_HANDLER_OPERATION_NAME;
 
 import java.util.Locale;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 

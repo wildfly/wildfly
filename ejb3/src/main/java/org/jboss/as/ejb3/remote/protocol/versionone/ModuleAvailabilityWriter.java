@@ -22,12 +22,12 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import java.io.DataOutput;
+import java.io.IOException;
+
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.ejb.client.remoting.PackedInteger;
-
-import java.io.DataOutput;
-import java.io.IOException;
 
 /**
  * @author Jaikiran Pai

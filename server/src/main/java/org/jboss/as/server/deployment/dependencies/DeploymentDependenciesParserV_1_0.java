@@ -22,6 +22,11 @@
 
 package org.jboss.as.server.deployment.dependencies;
 
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,11 +39,6 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXMLParser;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 /**
  * @author Stuart Douglas

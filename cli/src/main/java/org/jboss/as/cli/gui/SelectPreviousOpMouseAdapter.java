@@ -25,8 +25,10 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Utilities;
+
 import org.jboss.as.cli.gui.component.CLIOutput;
 
 /**

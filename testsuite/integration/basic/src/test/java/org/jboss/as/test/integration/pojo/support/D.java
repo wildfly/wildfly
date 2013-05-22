@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.pojo.support;
 
-import org.jboss.as.pojo.api.BeanFactory;
-
 import java.lang.reflect.Method;
+
+import org.jboss.as.pojo.api.BeanFactory;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>

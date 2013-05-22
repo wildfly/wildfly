@@ -22,6 +22,8 @@
 package org.jboss.as.ejb3.iiop;
 
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -86,8 +88,6 @@ import org.omg.PortableServer.Current;
 import org.omg.PortableServer.CurrentHelper;
 import org.omg.PortableServer.POA;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * This is an IIOP "proxy factory" for <code>EJBHome</code>s and

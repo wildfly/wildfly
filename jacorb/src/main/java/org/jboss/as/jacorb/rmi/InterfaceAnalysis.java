@@ -22,8 +22,8 @@
 package org.jboss.as.jacorb.rmi;
 
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.jboss.as.jacorb.JacORBMessages;
 

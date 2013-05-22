@@ -24,6 +24,8 @@
 
 package org.wildfly.extension.undertow.session;
 
+import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
+
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,11 +63,6 @@ import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.as.clustering.web.OutgoingAttributeGranularitySessionData;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.clustering.web.OutgoingSessionGranularitySessionData;
-import org.wildfly.extension.undertow.UndertowLogger;
-import org.wildfly.extension.undertow.session.notification.ClusteredSessionNotificationCapability;
-import org.wildfly.extension.undertow.session.notification.ClusteredSessionNotificationCause;
-import org.wildfly.extension.undertow.session.notification.ClusteredSessionNotificationPolicy;
-import org.wildfly.extension.undertow.session.notification.IgnoreUndeployLegacyClusteredSessionNotificationPolicy;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.ClassResolver;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -74,9 +71,12 @@ import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
 import org.jboss.metadata.web.jboss.ReplicationTrigger;
 import org.jboss.metadata.web.jboss.SnapshotMode;
+import org.wildfly.extension.undertow.UndertowLogger;
+import org.wildfly.extension.undertow.session.notification.ClusteredSessionNotificationCapability;
+import org.wildfly.extension.undertow.session.notification.ClusteredSessionNotificationCause;
+import org.wildfly.extension.undertow.session.notification.ClusteredSessionNotificationPolicy;
+import org.wildfly.extension.undertow.session.notification.IgnoreUndeployLegacyClusteredSessionNotificationPolicy;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
 
 /**
  * @author Paul Ferraro

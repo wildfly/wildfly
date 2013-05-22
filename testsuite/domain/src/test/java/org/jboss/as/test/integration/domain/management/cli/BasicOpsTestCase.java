@@ -21,15 +21,15 @@
  */
 package org.jboss.as.test.integration.domain.management.cli;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.util.List;
+
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Test;
-
-import java.util.List;
 /**
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>

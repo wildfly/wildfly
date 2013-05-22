@@ -46,15 +46,17 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.SimpleTimeZone;
 import java.util.SortedMap;
 import java.util.TimeZone;
 import java.util.TreeMap;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+
 import org.jboss.util.Base64;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;

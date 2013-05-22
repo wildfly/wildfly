@@ -22,16 +22,16 @@
 
 package org.jboss.as.ee.component.deployers;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Class that is responsible for resolving name conflicts.

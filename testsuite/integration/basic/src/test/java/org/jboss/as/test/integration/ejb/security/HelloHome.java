@@ -1,6 +1,7 @@
 package org.jboss.as.test.integration.ejb.security;
 
 import java.rmi.RemoteException;
+
 import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
 

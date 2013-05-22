@@ -23,13 +23,9 @@
 package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
-import org.jboss.as.domain.management.CallbackHandlerFactory;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.util.Base64;
+import java.io.IOException;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -38,9 +34,13 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.RealmCallback;
 import javax.security.sasl.RealmChoiceCallback;
-import java.io.IOException;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.as.domain.management.CallbackHandlerFactory;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.util.Base64;
 
 
 /**

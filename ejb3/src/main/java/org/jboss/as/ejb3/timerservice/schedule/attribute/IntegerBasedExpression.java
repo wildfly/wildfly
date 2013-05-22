@@ -21,6 +21,13 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.attribute;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import org.jboss.as.ejb3.timerservice.schedule.ScheduleExpressionTypeUtil;
 import org.jboss.as.ejb3.timerservice.schedule.value.IncrementValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.ListValue;
@@ -28,12 +35,6 @@ import org.jboss.as.ejb3.timerservice.schedule.value.RangeValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.SingleValue;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Represents a {@link Integer} type value in a {@link javax.ejb.ScheduleExpression}.
  * <p/>

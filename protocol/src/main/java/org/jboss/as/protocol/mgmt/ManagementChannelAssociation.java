@@ -22,10 +22,10 @@
 
 package org.jboss.as.protocol.mgmt;
 
+import java.io.IOException;
+
 import org.jboss.remoting3.Channel;
 import org.jboss.threads.AsyncFuture;
-
-import java.io.IOException;
 
 /**
  * Associates a remoting {@code Channel} to a management client.

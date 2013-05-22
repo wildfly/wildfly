@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.component.stateful;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.ee.component.Component;
@@ -31,7 +33,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * User: jpai
  */

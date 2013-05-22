@@ -22,17 +22,17 @@
 
 package org.jboss.as.domain.management.security.state;
 
-import org.jboss.as.domain.management.security.ConsoleMock;
-import org.jboss.msc.service.StartException;
-import org.junit.Before;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.jboss.as.domain.management.security.ConsoleMock;
+import org.jboss.msc.service.StartException;
+import org.junit.Before;
 
 /**
  * Helper for setting up a test case with ConsoleMock, StateValues and

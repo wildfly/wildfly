@@ -22,13 +22,13 @@
 
 package org.jboss.as.controller.client.impl;
 
-import org.jboss.as.controller.client.ControllerClientLogger;
-import org.jboss.as.controller.client.ControllerClientMessages;
 import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.controller.client.ControllerClientLogger;
+import org.jboss.as.controller.client.ControllerClientMessages;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.ModelControllerClientConfiguration;
 import org.jboss.as.protocol.ProtocolChannelClient;

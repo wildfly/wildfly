@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.deployment.processors.dd;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,7 +33,6 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.MethodMetaData;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author Stuart Douglas
  */

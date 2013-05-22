@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.Calendar;
 import java.util.Date;
@@ -33,8 +35,6 @@ import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.ejb3.timerservice.task.CalendarTimerTask;
 import org.jboss.as.ejb3.timerservice.task.TimerTask;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Represents a {@link javax.ejb.Timer} which is created out a calendar expression

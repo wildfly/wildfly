@@ -22,11 +22,11 @@
 
 package org.jboss.as.pojo.descriptor;
 
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.AttachmentList;
-
 import java.io.Serializable;
 import java.util.List;
+
+import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
 
 /**
  * The object representation of a legacy "jboss-beans.xml" descriptor file.

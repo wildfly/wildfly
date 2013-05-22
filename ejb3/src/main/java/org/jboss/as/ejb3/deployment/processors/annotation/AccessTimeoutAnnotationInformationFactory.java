@@ -21,13 +21,14 @@
  */
 package org.jboss.as.ejb3.deployment.processors.annotation;
 
+import java.util.concurrent.TimeUnit;
+
+import javax.ejb.AccessTimeout;
+
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
-
-import javax.ejb.AccessTimeout;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Processes the {@link javax.ejb.AccessTimeout} annotation on a session bean

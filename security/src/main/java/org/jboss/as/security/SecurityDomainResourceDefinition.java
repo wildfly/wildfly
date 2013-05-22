@@ -21,6 +21,9 @@
  */
 package org.jboss.as.security;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.security.Principal;
 import java.util.EnumSet;
 import java.util.Set;
@@ -48,9 +51,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.security.CacheableManager;
 import org.jboss.security.SimplePrincipal;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * @author Jason T. Greene

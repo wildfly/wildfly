@@ -22,15 +22,21 @@
 
 package org.jboss.as.test.smoke.jms.auxiliary;
 
-import org.jboss.logging.Logger;
-
 import javax.annotation.Resource;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.enterprise.context.RequestScoped;
-import javax.jms.*;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.Topic;
+
+import org.jboss.logging.Logger;
 
 /**
  * Auxiliary class for JMS smoke tests - sends messages to a topic from within a transaction

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.jpa.processor;
 
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
@@ -37,8 +39,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
 
 /**
  * @author Stuart Douglas

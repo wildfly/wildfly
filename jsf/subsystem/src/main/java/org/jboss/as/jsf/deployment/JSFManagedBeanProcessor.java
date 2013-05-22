@@ -21,6 +21,16 @@
  */
 package org.jboss.as.jsf.deployment;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamReader;
+
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -47,15 +57,6 @@ import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Sets up JSF managed beans as components using information in the annotations and

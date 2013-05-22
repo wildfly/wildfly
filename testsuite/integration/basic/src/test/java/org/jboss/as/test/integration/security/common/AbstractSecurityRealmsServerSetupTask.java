@@ -21,7 +21,21 @@
  */
 package org.jboss.as.test.integration.security.common;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

@@ -1,10 +1,11 @@
 package org.jboss.as.test.integration.jca.reauth;
 
+import static org.junit.Assert.*;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import static org.junit.Assert.*;
 
 public class DsUtil {
     public static void testConnection(Connection con, String query, String resultContains) {

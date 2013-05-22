@@ -21,8 +21,9 @@
  */
 package org.jboss.as.test.integration.ejb.remote.async;
 
-import javax.ejb.Remote;
 import java.util.concurrent.Future;
+
+import javax.ejb.Remote;
 
 /**
  * @author Stuart Douglas

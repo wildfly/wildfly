@@ -23,9 +23,8 @@ package org.jboss.as.cli.completion.mock;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Map;
-
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;

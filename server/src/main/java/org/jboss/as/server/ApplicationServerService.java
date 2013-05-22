@@ -22,6 +22,9 @@
 
 package org.jboss.as.server;
 
+import static org.jboss.as.server.ServerLogger.AS_ROOT_LOGGER;
+import static org.jboss.as.server.ServerLogger.CONFIG_LOGGER;
+
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.Iterator;
@@ -51,9 +54,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.threads.AsyncFuture;
-
-import static org.jboss.as.server.ServerLogger.AS_ROOT_LOGGER;
-import static org.jboss.as.server.ServerLogger.CONFIG_LOGGER;
 
 /**
  * The root service for an Application Server process.

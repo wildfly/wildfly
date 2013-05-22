@@ -22,6 +22,9 @@
 
 package org.jboss.as.security;
 
+import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
+import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
+
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.NoSuchAlgorithmException;
@@ -57,9 +60,6 @@ import org.jboss.sasl.callback.VerifyPasswordCallback;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
 import org.jboss.security.SimpleGroup;
 import org.jboss.security.auth.spi.UsernamePasswordLoginModule;
-
-import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
-import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
 /**
  * A login module implementation to interface directly with the security realm.

@@ -22,13 +22,13 @@
 
 package org.jboss.as.controller.remote;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.security.PrivilegedAction;
 
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.security.SecurityContext;
-
-import static java.security.AccessController.doPrivileged;
 
 /**
  * Security Actions for classes in the org.jboss.as.controller.remote package.

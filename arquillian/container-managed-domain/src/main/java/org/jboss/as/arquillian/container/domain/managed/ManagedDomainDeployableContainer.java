@@ -38,10 +38,10 @@ import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.domain.CommonDomainDeployableContainer;
 import org.jboss.as.arquillian.container.domain.Domain;
 import org.jboss.as.arquillian.container.domain.Domain.Server;
-import org.jboss.dmr.ModelNode;
 import org.jboss.as.arquillian.container.domain.ManagementClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.ServerMessages;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>

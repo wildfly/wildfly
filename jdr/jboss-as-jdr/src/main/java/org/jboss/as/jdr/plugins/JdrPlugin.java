@@ -21,9 +21,9 @@
  */
 package org.jboss.as.jdr.plugins;
 
-import org.jboss.as.jdr.commands.JdrCommand;
-
 import java.util.List;
+
+import org.jboss.as.jdr.commands.JdrCommand;
 
 public interface JdrPlugin {
 

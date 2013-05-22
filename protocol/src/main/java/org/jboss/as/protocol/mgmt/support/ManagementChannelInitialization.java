@@ -22,9 +22,9 @@
 
 package org.jboss.as.protocol.mgmt.support;
 
-import org.jboss.remoting3.Channel;
-
 import java.util.concurrent.TimeUnit;
+
+import org.jboss.remoting3.Channel;
 
 /**
  * @author Emanuel Muckenhuber

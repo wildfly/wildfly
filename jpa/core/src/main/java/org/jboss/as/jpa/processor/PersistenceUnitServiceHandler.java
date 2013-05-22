@@ -22,6 +22,11 @@
 
 package org.jboss.as.jpa.processor;
 
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+import static org.jboss.as.server.Services.addServerExecutorDependency;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -92,11 +97,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
-
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
-import static org.jboss.as.server.Services.addServerExecutorDependency;
 
 /**
  * Handle the installation of the Persistence Unit service

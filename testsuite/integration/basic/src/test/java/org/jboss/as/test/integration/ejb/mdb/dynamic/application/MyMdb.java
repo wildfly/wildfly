@@ -15,16 +15,17 @@
  */
 package org.jboss.as.test.integration.ejb.mdb.dynamic.application;
 
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Pattern;
+
+import javax.ejb.ActivationConfigProperty;
+import javax.ejb.MessageDriven;
+
 import org.jboss.as.test.integration.ejb.mdb.dynamic.api.Command;
 import org.jboss.as.test.integration.ejb.mdb.dynamic.api.Option;
 import org.jboss.as.test.integration.ejb.mdb.dynamic.api.TelnetListener;
 import org.jboss.ejb3.annotation.ResourceAdapter;
-
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.MessageDriven;
-import java.util.Map;
-import java.util.Properties;
-import java.util.regex.Pattern;
 
 @MessageDriven(activationConfig = {
         @ActivationConfigProperty(propertyName = "beanClass", propertyValue = "org.jboss.as.test.integration.ejb.mdb.dynamic.application.MyMdb"),

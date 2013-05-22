@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.List;
+
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -35,8 +37,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueInjectionService;
-
-import java.util.List;
 
 /**
  * @author Jaikiran Pai

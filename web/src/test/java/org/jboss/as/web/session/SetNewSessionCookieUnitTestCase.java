@@ -35,8 +35,8 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.deploy.SessionCookie;
 import org.jboss.as.web.session.mocks.MockEngine;
 import org.jboss.as.web.session.mocks.MockHost;
-import org.jboss.as.web.session.mocks.MockSessionManager;
 import org.jboss.as.web.session.mocks.MockResponse;
+import org.jboss.as.web.session.mocks.MockSessionManager;
 import org.junit.Test;
 
 /**

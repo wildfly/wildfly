@@ -22,9 +22,6 @@
 
 package org.jboss.as.test.clustering.extended.ejb2.stateful.passivation;
 
-import java.rmi.RemoteException;
-
-import javax.ejb.EJBException;
 import javax.ejb.RemoteHome;
 import javax.ejb.SessionBean;
 import javax.ejb.Stateful;

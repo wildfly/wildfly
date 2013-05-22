@@ -22,12 +22,13 @@
 
 package org.jboss.as.test.manualmode.ejb.client.cluster;
 
+import java.util.Properties;
+
 import javax.ejb.Remote;
 import javax.ejb.Stateful;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import java.util.Properties;
 
 /**
  * @author Jaikiran Pai

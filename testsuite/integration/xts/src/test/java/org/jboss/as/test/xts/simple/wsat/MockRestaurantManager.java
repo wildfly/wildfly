@@ -27,9 +27,9 @@
  */
 package org.jboss.as.test.xts.simple.wsat;
 
-import org.jboss.logging.Logger;
-
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.jboss.logging.Logger;
 
 /**
  * This class represents the back-end resource for managing Restaurant bookings.

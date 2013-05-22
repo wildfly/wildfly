@@ -1,5 +1,7 @@
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeLogger.SERVER_DEPLOYMENT_LOGGER;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
@@ -18,8 +20,6 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
 import org.jboss.msc.value.InjectedValue;
-
-import static org.jboss.as.ee.EeLogger.SERVER_DEPLOYMENT_LOGGER;
 
 /**
  * @author Stuart Douglas

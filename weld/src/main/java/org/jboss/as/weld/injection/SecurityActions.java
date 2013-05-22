@@ -22,11 +22,12 @@
 
 package org.jboss.as.weld.injection;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.lang.reflect.AccessibleObject;
 import java.security.PrivilegedAction;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static java.security.AccessController.doPrivileged;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 final class SecurityActions {
 

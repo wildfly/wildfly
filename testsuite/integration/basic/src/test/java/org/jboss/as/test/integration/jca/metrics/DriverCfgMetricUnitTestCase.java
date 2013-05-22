@@ -23,14 +23,13 @@
 package org.jboss.as.test.integration.jca.metrics;
 
 
+import static org.junit.Assert.assertEquals;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * XA datasource configuration and metrics unit test.

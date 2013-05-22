@@ -24,6 +24,14 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
+import java.security.AccessController;
+import java.security.Principal;
+import java.security.PrivilegedAction;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.security.auth.Subject;
+
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -31,13 +39,6 @@ import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
 import org.jboss.security.SimplePrincipal;
-
-import javax.security.auth.Subject;
-import java.security.AccessController;
-import java.security.Principal;
-import java.security.PrivilegedAction;
-import java.util.HashSet;
-import java.util.Set;
 
 public class HornetQSecurityManagerAS7 implements org.hornetq.spi.core.security.HornetQSecurityManager {
     private SecurityDomainContext securityDomainContext;

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.jaxrs.provider.preference;
 
+import static org.junit.Assert.assertEquals;
+
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
@@ -36,8 +38,6 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Tests that user-provided providers are given priority over built-in providers.

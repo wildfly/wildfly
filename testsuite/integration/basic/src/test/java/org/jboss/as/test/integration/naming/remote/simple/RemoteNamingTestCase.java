@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.naming.remote.simple;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Properties;
 
 import javax.naming.Context;
@@ -38,8 +40,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author John Bailey

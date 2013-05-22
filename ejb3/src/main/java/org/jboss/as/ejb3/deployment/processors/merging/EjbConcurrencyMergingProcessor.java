@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
@@ -45,8 +47,6 @@ import org.jboss.metadata.ejb.spec.ConcurrentMethodsMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Class that can merge {@link javax.ejb.Lock} and {@link javax.ejb.AccessTimeout} metadata
  *

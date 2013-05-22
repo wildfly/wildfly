@@ -23,12 +23,14 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
-
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-import static org.junit.Assert.*;
 
 /**
  *  Assert builder for the console. Use this together with the ConsoleMock object

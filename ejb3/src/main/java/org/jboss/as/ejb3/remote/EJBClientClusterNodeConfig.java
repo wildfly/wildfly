@@ -22,13 +22,13 @@
 
 package org.jboss.as.ejb3.remote;
 
+import java.util.Properties;
+
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
 import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceRegistry;
 import org.xnio.OptionMap;
-
-import java.util.Properties;
 
 /**
  * @author Jaikiran Pai

@@ -22,10 +22,11 @@
 
 package org.jboss.as.test.integration.ejb.security.runas.ejb2mdb;
 
+import javax.annotation.Resource;
+import javax.annotation.security.RunAs;
+import javax.ejb.ActivationConfigProperty;
 import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
-import javax.ejb.ActivationConfigProperty;
-
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -36,8 +37,7 @@ import javax.jms.QueueConnectionFactory;
 import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.TextMessage;
-import javax.annotation.security.RunAs;
-import javax.annotation.Resource;
+
 import org.jboss.ejb3.annotation.ResourceAdapter;
 import org.jboss.logging.Logger;
 

@@ -23,6 +23,7 @@ package org.jboss.as.test.integration.ejb.remote.entity.bmp;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
 import javax.ejb.Remote;
 import javax.ejb.Singleton;
 

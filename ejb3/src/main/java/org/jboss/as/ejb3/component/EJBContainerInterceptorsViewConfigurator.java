@@ -22,6 +22,21 @@
 
 package org.jboss.as.ejb3.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ClassDescriptionTraversal;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -55,21 +70,6 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.value.CachedValue;
 import org.jboss.msc.value.ConstructedValue;
 import org.jboss.msc.value.Value;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
  * A {@link ViewConfigurator} which sets up the EJB view with the relevant {@link Interceptor}s

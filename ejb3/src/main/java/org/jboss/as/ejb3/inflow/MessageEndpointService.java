@@ -21,9 +21,10 @@
  */
 package org.jboss.as.ejb3.inflow;
 
-import javax.transaction.TransactionManager;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
+
+import javax.transaction.TransactionManager;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

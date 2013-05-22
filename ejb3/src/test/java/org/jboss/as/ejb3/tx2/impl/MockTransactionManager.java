@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.tx2.impl;
 
+import static org.mockito.Mockito.mock;
+
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
 import javax.transaction.InvalidTransactionException;
@@ -30,8 +32,6 @@ import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-
-import static org.mockito.Mockito.mock;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

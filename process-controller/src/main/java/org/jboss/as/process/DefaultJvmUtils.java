@@ -21,9 +21,9 @@
  */
 package org.jboss.as.process;
 
-import java.io.File;
-
 import static org.jboss.as.process.ProcessMessages.MESSAGES;
+
+import java.io.File;
 
 /**
  *

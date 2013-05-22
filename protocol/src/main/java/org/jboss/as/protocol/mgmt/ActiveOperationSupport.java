@@ -22,12 +22,6 @@
 
 package org.jboss.as.protocol.mgmt;
 
-import org.jboss.as.protocol.ProtocolLogger;
-import org.jboss.as.protocol.ProtocolMessages;
-import org.jboss.threads.AsyncFuture;
-import org.jboss.threads.AsyncFutureTask;
-import org.xnio.Cancellable;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +31,12 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.jboss.as.protocol.ProtocolLogger;
+import org.jboss.as.protocol.ProtocolMessages;
+import org.jboss.threads.AsyncFuture;
+import org.jboss.threads.AsyncFutureTask;
+import org.xnio.Cancellable;
 
 /**
  * Management operation support encapsulating active operations.

@@ -22,10 +22,10 @@
 
 package org.jboss.as.pojo.service;
 
+import java.lang.reflect.Type;
+
 import org.jboss.as.pojo.PojoMessages;
 import org.jboss.as.pojo.descriptor.ValueConfig;
-
-import java.lang.reflect.Type;
 
 /**
  * Abstract joinpoint; keep parameters.

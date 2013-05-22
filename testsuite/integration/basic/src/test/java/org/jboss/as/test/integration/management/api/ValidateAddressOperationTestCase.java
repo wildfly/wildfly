@@ -21,6 +21,12 @@
 */
 package org.jboss.as.test.integration.management.api;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROBLEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALID;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -32,12 +38,6 @@ import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROBLEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALID;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests that the validate-address operation works as it should

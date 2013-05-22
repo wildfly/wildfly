@@ -30,16 +30,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import org.junit.Assert;
-
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

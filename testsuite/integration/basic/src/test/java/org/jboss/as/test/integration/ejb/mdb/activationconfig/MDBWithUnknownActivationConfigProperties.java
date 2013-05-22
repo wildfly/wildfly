@@ -22,15 +22,15 @@
 
 package org.jboss.as.test.integration.ejb.mdb.activationconfig;
 
-import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
-import org.jboss.logging.Logger;
-
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
+
+import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
+import org.jboss.logging.Logger;
 
 /**
  * User: jpai

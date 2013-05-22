@@ -21,14 +21,14 @@
  */
 package org.jboss.as.test.integration.management.cli;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  *

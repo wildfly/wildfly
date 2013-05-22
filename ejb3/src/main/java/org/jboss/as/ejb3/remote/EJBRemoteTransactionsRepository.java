@@ -22,6 +22,22 @@
 
 package org.jboss.as.ejb3.remote;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.resource.spi.XATerminator;
+import javax.transaction.NotSupportedException;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.Xid;
+
 import com.arjuna.ats.arjuna.common.Uid;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionImple;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
@@ -40,21 +56,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import javax.resource.spi.XATerminator;
-import javax.transaction.NotSupportedException;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.Xid;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Jaikiran Pai

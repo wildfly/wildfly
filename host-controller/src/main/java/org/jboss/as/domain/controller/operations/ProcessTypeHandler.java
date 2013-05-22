@@ -23,8 +23,8 @@
 package org.jboss.as.domain.controller.operations;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.dmr.ModelNode;
 
 /**

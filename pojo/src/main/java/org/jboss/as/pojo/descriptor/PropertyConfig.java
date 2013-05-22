@@ -22,12 +22,12 @@
 
 package org.jboss.as.pojo.descriptor;
 
-import org.jboss.as.pojo.PojoMessages;
-import org.jboss.as.pojo.service.BeanInfo;
-
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.List;
+
+import org.jboss.as.pojo.PojoMessages;
+import org.jboss.as.pojo.service.BeanInfo;
 
 /**
  * Property meta data.

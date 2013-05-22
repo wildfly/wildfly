@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.hibernate;
 
+import static org.junit.Assert.assertTrue;
+
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
@@ -39,8 +41,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * Test operations including rollback using Hibernate transaction and Sessionfactory inititated from hibernate.cfg.xml and

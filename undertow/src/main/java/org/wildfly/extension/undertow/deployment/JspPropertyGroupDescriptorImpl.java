@@ -24,10 +24,11 @@
 
 package org.wildfly.extension.undertow.deployment;
 
-import org.apache.jasper.deploy.JspPropertyGroup;
+import java.util.Collection;
 
 import javax.servlet.descriptor.JspPropertyGroupDescriptor;
-import java.util.Collection;
+
+import org.apache.jasper.deploy.JspPropertyGroup;
 
 /**
  * @author Stuart Douglas

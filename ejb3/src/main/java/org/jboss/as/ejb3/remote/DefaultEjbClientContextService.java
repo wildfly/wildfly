@@ -21,6 +21,13 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.Collections;
+import java.util.Iterator;
+
+import javax.security.auth.callback.CallbackHandler;
+
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.DeploymentNodeSelector;
 import org.jboss.ejb.client.EJBClientConfiguration;
@@ -34,12 +41,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.xnio.OptionMap;
-
-import javax.security.auth.callback.CallbackHandler;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.Collections;
-import java.util.Iterator;
 
 /**
  * Service that manages an EJBClientContext

@@ -22,8 +22,12 @@
 
 package org.jboss.as.test.integration.security.loginmodules.common;
 
-import org.jboss.security.SimpleGroup;
-import org.jboss.security.SimplePrincipal;
+import java.io.IOException;
+import java.security.Principal;
+import java.security.acl.Group;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.naming.Context;
@@ -37,12 +41,9 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
-import java.io.IOException;
-import java.security.Principal;
-import java.security.acl.Group;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+
+import org.jboss.security.SimpleGroup;
+import org.jboss.security.SimplePrincipal;
 
 /**
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.

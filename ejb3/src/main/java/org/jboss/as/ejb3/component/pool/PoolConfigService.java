@@ -22,12 +22,13 @@
 
 package org.jboss.as.ejb3.component.pool;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * User: jpai

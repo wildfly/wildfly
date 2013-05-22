@@ -20,6 +20,7 @@ package org.jboss.as.cli.gui.component;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+
 import org.jboss.as.cli.gui.CliGuiContext;
 
 /**

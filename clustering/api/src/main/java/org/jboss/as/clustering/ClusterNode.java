@@ -21,8 +21,8 @@
  */
 package org.jboss.as.clustering;
 
-import java.net.InetAddress;
 import java.io.Serializable;
+import java.net.InetAddress;
 
 /**
  * Abstract identifier for a member of an @{link HAPartition}.

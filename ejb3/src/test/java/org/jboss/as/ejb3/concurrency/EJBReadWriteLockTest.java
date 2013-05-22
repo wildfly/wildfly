@@ -21,16 +21,17 @@
 */
 package org.jboss.as.ejb3.concurrency;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+
+import javax.ejb.ConcurrentAccessTimeoutException;
+import javax.ejb.IllegalLoopbackException;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.ejb.IllegalLoopbackException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 
 /**
  * Tests the {@link EJBReadWriteLock}

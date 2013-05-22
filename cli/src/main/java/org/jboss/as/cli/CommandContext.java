@@ -26,11 +26,11 @@ import java.util.Collection;
 
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
+import org.jboss.as.cli.operation.CommandLineParser;
+import org.jboss.as.cli.operation.NodePathFormatter;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestAddress;
-import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.ParsedCommandLine;
-import org.jboss.as.cli.operation.NodePathFormatter;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 

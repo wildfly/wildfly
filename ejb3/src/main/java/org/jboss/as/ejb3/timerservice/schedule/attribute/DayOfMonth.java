@@ -21,11 +21,7 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.attribute;
 
-import org.jboss.as.ejb3.timerservice.schedule.util.CalendarUtil;
-import org.jboss.as.ejb3.timerservice.schedule.value.RangeValue;
-import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
-import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleValue;
-import org.jboss.as.ejb3.timerservice.schedule.value.SingleValue;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -36,7 +32,12 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
+import org.jboss.as.ejb3.timerservice.schedule.util.CalendarUtil;
+import org.jboss.as.ejb3.timerservice.schedule.value.RangeValue;
+import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
+import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleValue;
+import org.jboss.as.ejb3.timerservice.schedule.value.SingleValue;
 /**
  * Represents the value of a day in a month, constructed out of a {@link javax.ejb.ScheduleExpression#getDayOfMonth()}
  * <p/>

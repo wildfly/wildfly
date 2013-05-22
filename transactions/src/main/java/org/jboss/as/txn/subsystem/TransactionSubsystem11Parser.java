@@ -22,6 +22,18 @@
 
 package org.jboss.as.txn.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
+import static org.jboss.as.controller.parsing.ParseUtils.missingOneOf;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -36,18 +48,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
-import static org.jboss.as.controller.parsing.ParseUtils.missingOneOf;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 /**
  */

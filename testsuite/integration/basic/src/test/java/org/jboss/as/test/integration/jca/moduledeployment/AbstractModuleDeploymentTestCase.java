@@ -28,10 +28,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
 import java.util.Set;
+
 import javax.naming.InitialContext;
 import javax.resource.cci.ConnectionFactory;
 
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;

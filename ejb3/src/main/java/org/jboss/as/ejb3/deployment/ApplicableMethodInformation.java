@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.deployment;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,8 +31,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.ejb3.component.MethodIntf;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Metadata store for method level information that can be applied to a method via various different deployment

@@ -22,13 +22,13 @@
 
 package org.jboss.as.modcluster;
 
+import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-
-import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 
 public class ModClusterAddProxy implements OperationStepHandler {
 

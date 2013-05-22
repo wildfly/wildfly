@@ -22,16 +22,26 @@
 
 package org.jboss.as.controller.remote;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
+
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.impl.AbstractDelegatingAsyncFuture;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
@@ -43,17 +53,8 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
-import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFuture;
-
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Base implementation for the transactional protocol.

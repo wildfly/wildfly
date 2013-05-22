@@ -22,6 +22,9 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.util.List;
 
 import javax.ejb.PostActivate;
@@ -45,9 +48,6 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
-
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * Deployment processor responsible for finding @PostConstruct and @PreDestroy annotated methods.

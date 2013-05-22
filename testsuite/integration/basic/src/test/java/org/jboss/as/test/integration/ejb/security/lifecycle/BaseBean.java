@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.ejb.security.lifecycle;
 
-import javax.ejb.EJBContext;
-
 import java.security.Identity;
+
+import javax.ejb.EJBContext;
 
 /**
  * The base class for calling the four EJBContext methods.

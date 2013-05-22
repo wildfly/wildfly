@@ -22,6 +22,8 @@
 
 package org.jboss.as.arquillian.service;
 
+import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -53,8 +55,6 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.resolver.XBundleRevision;
 import org.osgi.framework.BundleContext;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
 
 /**
  * Service responsible for creating and managing the life-cycle of the Arquillian service.

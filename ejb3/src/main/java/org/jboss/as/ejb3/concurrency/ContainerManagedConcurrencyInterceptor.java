@@ -22,18 +22,20 @@
 
 package org.jboss.as.ejb3.concurrency;
 
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
-import javax.ejb.LockType;
-import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+
+import javax.ejb.LockType;
+import javax.interceptor.InvocationContext;
+
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.logging.Logger;
 /**
  * @author Jaikiran Pai
  */

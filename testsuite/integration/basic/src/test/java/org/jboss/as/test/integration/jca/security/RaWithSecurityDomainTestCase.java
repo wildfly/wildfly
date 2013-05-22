@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.jca.security;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,8 +40,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Test for RA with security domain JBQA-5953

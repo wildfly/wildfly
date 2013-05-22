@@ -23,6 +23,7 @@
 package org.jboss.as.security.remoting;
 
 import static org.jboss.as.security.SecurityMessages.MESSAGES;
+
 import java.security.Principal;
 import java.util.Collection;
 

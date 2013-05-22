@@ -22,16 +22,11 @@
 
 package org.jboss.as.test.integration.jpa.mockprovider.classtransformer;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.jar.JarInputStream;
 import java.util.zip.ZipEntry;
 

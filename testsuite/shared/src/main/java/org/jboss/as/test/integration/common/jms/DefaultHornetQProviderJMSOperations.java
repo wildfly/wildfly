@@ -22,13 +22,13 @@
 
 package org.jboss.as.test.integration.common.jms;
 
+import java.io.IOException;
+
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-
-import java.io.IOException;
 
 /**
  * A default implementation of JMSOperations used with hornetq

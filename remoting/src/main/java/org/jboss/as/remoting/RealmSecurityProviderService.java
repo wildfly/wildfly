@@ -21,7 +21,10 @@
  */
 package org.jboss.as.remoting;
 
+import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
+
 import java.io.File;
+
 import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.domain.management.SecurityRealm;
@@ -31,8 +34,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 
 /**
  * The service to make the RealmAuthenticationProvider available.

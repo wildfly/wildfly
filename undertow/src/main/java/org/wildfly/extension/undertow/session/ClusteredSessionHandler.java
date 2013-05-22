@@ -34,8 +34,8 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.handlers.ServletRequestContext;
 import io.undertow.servlet.spec.HttpServletRequestImpl;
 import org.jboss.as.clustering.web.BatchingManager;
-import org.wildfly.extension.undertow.UndertowMessages;
 import org.jboss.logging.Logger;
+import org.wildfly.extension.undertow.UndertowMessages;
 
 
 /**

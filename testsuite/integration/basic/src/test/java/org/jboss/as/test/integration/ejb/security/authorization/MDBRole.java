@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.security.authorization;
 
-import org.jboss.ejb3.annotation.SecurityDomain;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
@@ -41,6 +39,8 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+
+import org.jboss.ejb3.annotation.SecurityDomain;
 
 /**
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.

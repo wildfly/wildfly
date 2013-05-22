@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.component.entity.interceptors;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
@@ -28,7 +30,6 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  *

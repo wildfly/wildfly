@@ -22,12 +22,13 @@
 
 package org.jboss.as.test.integration.xerces.ws;
 
-import org.apache.xerces.parsers.DOMParser;
-import org.xml.sax.InputSource;
+import java.io.InputStream;
 
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
-import java.io.InputStream;
+
+import org.apache.xerces.parsers.DOMParser;
+import org.xml.sax.InputSource;
 
 /**
  * User: jpai

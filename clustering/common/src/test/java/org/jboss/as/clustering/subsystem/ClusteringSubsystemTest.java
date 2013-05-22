@@ -1,15 +1,10 @@
 package org.jboss.as.clustering.subsystem;
 
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
-import java.net.URISyntaxException;
-import java.net.URL;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.RunningMode;

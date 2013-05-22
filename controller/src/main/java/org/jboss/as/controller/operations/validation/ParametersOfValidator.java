@@ -21,12 +21,12 @@
  */
 package org.jboss.as.controller.operations.validation;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.util.List;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

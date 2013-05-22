@@ -21,12 +21,13 @@
 */
 package org.jboss.as.config.assembly;
 
-import javax.xml.stream.XMLOutputFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.StringWriter;
 import java.net.URL;
+
+import javax.xml.stream.XMLOutputFactory;
 
 import org.junit.Assert;
 import org.junit.Ignore;

@@ -21,8 +21,9 @@
  */
 package org.jboss.as.test.integration.weld.ejb.injection;
 
-import javax.ejb.Stateless;
 import java.io.Serializable;
+
+import javax.ejb.Stateless;
 
 /**
  * @author Stuart Douglas

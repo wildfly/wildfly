@@ -22,12 +22,13 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api.interceptor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.ejb.Remote;
 import javax.ejb.Stateful;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Jaikiran Pai

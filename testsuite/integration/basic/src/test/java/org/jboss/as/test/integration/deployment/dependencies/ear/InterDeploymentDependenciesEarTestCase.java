@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.integration.deployment.dependencies.ear;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.util.Hashtable;
 
 import javax.naming.Context;
@@ -41,9 +44,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 /**
  * Test for inter-deployment dependencies in EAR files. It also contains a module dependency simple test - EJB module depends on

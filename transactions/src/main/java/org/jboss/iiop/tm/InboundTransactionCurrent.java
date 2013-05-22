@@ -23,8 +23,8 @@ package org.jboss.iiop.tm;
 
 import javax.transaction.Transaction;
 
-import org.omg.CORBA.LocalInterface;
 import org.omg.CORBA.Current;
+import org.omg.CORBA.LocalInterface;
 
 /**
  * Interface to be implemented by a CORBA OTS provider for integration with

@@ -22,6 +22,9 @@
 
 package org.jboss.as.test.integration.weld.jpa.scoping;
 
+import javax.inject.Inject;
+import javax.persistence.NoResultException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -33,9 +36,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.inject.Inject;
-import javax.persistence.NoResultException;
 
 /**
  *  AS7-1761

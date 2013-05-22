@@ -18,6 +18,8 @@
  */
 package org.jboss.as.controller.client.impl;
 
+import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
+
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +44,6 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
-import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFuture;
 

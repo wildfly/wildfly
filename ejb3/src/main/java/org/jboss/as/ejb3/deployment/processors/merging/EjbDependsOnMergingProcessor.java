@@ -22,6 +22,9 @@
 
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.util.Set;
 
 import javax.ejb.DependsOn;
@@ -41,9 +44,6 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
-
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author Stuart Douglas

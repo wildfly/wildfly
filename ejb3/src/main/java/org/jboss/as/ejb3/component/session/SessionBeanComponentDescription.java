@@ -23,6 +23,8 @@
 package org.jboss.as.ejb3.component.session;
 
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -56,8 +58,6 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author Jaikiran Pai
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>

@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.mdb.messagelistener;
 
-import org.jboss.logging.Logger;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
@@ -36,6 +34,8 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+
+import org.jboss.logging.Logger;
 
 /**
  * @author Jaikiran Pai

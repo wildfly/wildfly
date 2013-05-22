@@ -22,6 +22,15 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import static org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProcessor.getEjbJarDescription;
+
+import java.lang.reflect.Modifier;
+import java.util.List;
+
+import javax.ejb.Singleton;
+import javax.ejb.Stateful;
+import javax.ejb.Stateless;
+
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
@@ -46,14 +55,6 @@ import org.jboss.metadata.ejb.spec.SessionBean32MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionType;
 import org.jboss.msc.service.ServiceName;
-
-import javax.ejb.Singleton;
-import javax.ejb.Stateful;
-import javax.ejb.Stateless;
-import java.lang.reflect.Modifier;
-import java.util.List;
-
-import static org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProcessor.getEjbJarDescription;
 
 /**
  * User: jpai

@@ -21,10 +21,11 @@
  */
 package org.jboss.as.jdr.util;
 
-import org.apache.commons.io.IOUtils;
-import org.jboss.vfs.VirtualFileFilter;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
+import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -36,11 +37,11 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 
-import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
+import org.apache.commons.io.IOUtils;
+import org.jboss.vfs.VirtualFileFilter;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
 /**
  * {@link Sanitizer} subclass that removes the contents of the matched xpath expression

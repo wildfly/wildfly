@@ -21,16 +21,6 @@
  */
 package org.jboss.as.test.integration.deployment.jcedeployment;
 
-import org.jboss.as.test.integration.deployment.jcedeployment.provider.DummyProvider;
-import org.jboss.logging.Logger;
-
-import javax.crypto.Cipher;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -47,6 +37,17 @@ import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Map;
+
+import javax.crypto.Cipher;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.jboss.as.test.integration.deployment.jcedeployment.provider.DummyProvider;
+import org.jboss.logging.Logger;
 
 /**
  * This servlet requires Oracle JDK 7 as it uses javax.crypto.JarVerifier

@@ -19,9 +19,9 @@
 package org.jboss.as.controller.operations.common;
 
 
-import org.jboss.as.controller.AbstractRemoveStepHandler;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 
 /**
  * Handler for the socket-binding resource's remove operation.

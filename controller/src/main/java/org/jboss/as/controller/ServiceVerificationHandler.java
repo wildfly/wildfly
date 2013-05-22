@@ -22,6 +22,14 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
@@ -30,14 +38,6 @@ import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.service.StartException;
-
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * Tracks the status of a service installed by an {@link OperationStepHandler}, recording a failure desription

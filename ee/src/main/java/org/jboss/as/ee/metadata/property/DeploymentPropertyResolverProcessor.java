@@ -25,6 +25,7 @@ package org.jboss.as.ee.metadata.property;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;

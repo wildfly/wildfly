@@ -23,6 +23,7 @@
 package org.wildfly.security.manager;
 
 import java.security.PrivilegedAction;
+
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 

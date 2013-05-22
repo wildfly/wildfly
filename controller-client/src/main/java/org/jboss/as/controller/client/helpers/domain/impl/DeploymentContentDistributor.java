@@ -22,8 +22,8 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.jboss.as.controller.client.helpers.domain.DuplicateDeploymentNameException;
 

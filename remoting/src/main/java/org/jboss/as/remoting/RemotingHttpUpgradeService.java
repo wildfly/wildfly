@@ -8,7 +8,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedExceptionAction;
 
-
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.ChannelUpgradeHandler;
 import io.undertow.server.handlers.HttpUpgradeHandshake;

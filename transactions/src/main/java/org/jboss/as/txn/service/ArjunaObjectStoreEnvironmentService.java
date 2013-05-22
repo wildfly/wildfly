@@ -25,16 +25,15 @@
  */
 package org.jboss.as.txn.service;
 
+import com.arjuna.ats.arjuna.common.ObjectStoreEnvironmentBean;
+import com.arjuna.ats.internal.arjuna.objectstore.hornetq.HornetqJournalEnvironmentBean;
+import com.arjuna.common.internal.util.propertyservice.BeanPopulator;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import com.arjuna.ats.arjuna.common.ObjectStoreEnvironmentBean;
-import com.arjuna.ats.internal.arjuna.objectstore.hornetq.HornetqJournalEnvironmentBean;
-import com.arjuna.common.internal.util.propertyservice.BeanPopulator;
 
 /**
  * Configures the {@link ObjectStoreEnvironmentBean}s using an injected path.

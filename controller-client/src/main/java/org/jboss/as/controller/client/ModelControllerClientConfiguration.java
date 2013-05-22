@@ -22,11 +22,12 @@
 
 package org.jboss.as.controller.client;
 
-import javax.net.ssl.SSLContext;
-import javax.security.auth.callback.CallbackHandler;
 import java.io.Closeable;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+
+import javax.net.ssl.SSLContext;
+import javax.security.auth.callback.CallbackHandler;
 
 /**
  * The configuration used to create the {@code ModelControllerClient}.

@@ -22,6 +22,8 @@
 
 package org.jboss.as.jpa.container;
 
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.AccessController;
@@ -37,8 +39,6 @@ import org.jboss.as.jpa.util.JPAServiceNames;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Transaction scoped entity manager will be injected into SLSB or SFSB beans.  At bean invocation time, they

@@ -22,9 +22,9 @@
 
 package org.jboss.as.clustering.lock;
 
-import org.jboss.as.clustering.ClusterNode;
-
 import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
+
+import org.jboss.as.clustering.ClusterNode;
 
 /**
  * Thrown to indicate failure to acquire a lock within a specified timeout.

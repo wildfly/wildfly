@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,8 +45,6 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * A description of a generic Java EE component.  The description is pre-classloading so it references everything by name.

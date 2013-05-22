@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.integration.ejb.transaction.bmt;
 
-import org.junit.Assert;
-
 import javax.annotation.Resource;
 import javax.ejb.EJBContext;
 import javax.ejb.Stateless;
@@ -31,6 +29,8 @@ import javax.ejb.TransactionManagementType;
 import javax.transaction.NotSupportedException;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
+
+import org.junit.Assert;
 
 /**
  *

@@ -22,29 +22,30 @@
 
 package org.jboss.as.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+
+import org.jboss.as.model.ParseResult;
 import org.jboss.as.service.descriptor.JBossServiceAttributeConfig;
 import org.jboss.as.service.descriptor.JBossServiceConfig;
 import org.jboss.as.service.descriptor.JBossServiceConstructorConfig;
 import org.jboss.as.service.descriptor.JBossServiceDependencyConfig;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptorParser;
-import org.jboss.as.model.ParseResult;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Before;
 import org.junit.Test;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 /**
  * Test to verify the {@code JBossServiceXmlDescriptorParser} implementation.

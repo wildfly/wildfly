@@ -23,8 +23,8 @@ package org.jboss.as.cli.operation.impl;
 
 import java.util.regex.Pattern;
 
-import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.CommandLineParser.CallbackHandler;
+import org.jboss.as.cli.operation.OperationFormatException;
 
 /**
  *

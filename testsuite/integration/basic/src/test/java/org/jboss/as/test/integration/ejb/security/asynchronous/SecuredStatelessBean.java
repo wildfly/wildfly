@@ -38,6 +38,7 @@ import javax.ejb.Stateless;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
 import org.jboss.ejb3.annotation.SecurityDomain;
 import org.junit.Assert;
 

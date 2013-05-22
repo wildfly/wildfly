@@ -21,6 +21,8 @@
  */
 package org.jboss.as.appclient.deployment;
 
+import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,8 +55,6 @@ import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
 import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
 import org.jboss.modules.Module;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * Processor that starts an application client deployment

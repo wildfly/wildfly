@@ -37,7 +37,6 @@ import org.jboss.as.test.integration.jpa.beanvalidation.SLSBInheritance;
 import org.jboss.as.test.integration.jpa.beanvalidation.SoccerPlayer;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;

@@ -39,9 +39,9 @@ import javax.ejb.spi.EJBContainerProvider;
 
 import org.jboss.as.embedded.EmbeddedServerFactory;
 import org.jboss.as.embedded.StandaloneServer;
-import org.wildfly.security.manager.WildFlySecurityManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

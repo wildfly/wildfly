@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.integration.weld.ejb.removemethod;
 
+import javax.ejb.NoSuchEJBException;
+import javax.inject.Inject;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -29,9 +32,6 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.NoSuchEJBException;
-import javax.inject.Inject;
 
 /**
  * AS7-1463

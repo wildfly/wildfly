@@ -22,14 +22,14 @@
 
 package org.jboss.as.pojo.descriptor;
 
-import org.jboss.as.pojo.PojoMessages;
-
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.as.pojo.PojoMessages;
 
 /**
  * Map meta data.

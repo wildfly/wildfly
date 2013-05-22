@@ -22,11 +22,12 @@
 
 package org.jboss.as.test.integration.naming.local.simple;
 
+import static org.junit.Assert.assertNotNull;
+
 import javax.ejb.Stateless;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * @author John Bailey

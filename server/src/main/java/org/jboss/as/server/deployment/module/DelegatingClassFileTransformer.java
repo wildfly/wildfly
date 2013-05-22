@@ -22,13 +22,13 @@
 
 package org.jboss.as.server.deployment.module;
 
-import org.jboss.as.server.deployment.AttachmentKey;
-
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.jboss.as.server.deployment.AttachmentKey;
 
 /**
  * @author Marius Bogoevici

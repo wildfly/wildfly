@@ -21,7 +21,6 @@
 */
 package org.jboss.as.test.integration.domain.mixed;
 
-import static org.junit.Assert.assertTrue;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
@@ -40,6 +39,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.validateResponse;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.xnio.IoUtils.safeClose;
 

@@ -21,31 +21,31 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import org.omg.CORBA.ModuleDefOperations;
-import org.omg.CORBA.ModuleDefPOATie;
+import org.omg.CORBA.AliasDef;
 import org.omg.CORBA.Any;
-import org.omg.CORBA.IRObject;
+import org.omg.CORBA.ConstantDef;
 import org.omg.CORBA.Contained;
 import org.omg.CORBA.ContainedOperations;
 import org.omg.CORBA.ContainedPackage.Description;
-import org.omg.CORBA.IDLType;
 import org.omg.CORBA.DefinitionKind;
-import org.omg.CORBA.StructMember;
-import org.omg.CORBA.UnionMember;
-import org.omg.CORBA.InterfaceDef;
-import org.omg.CORBA.ConstantDef;
 import org.omg.CORBA.EnumDef;
-import org.omg.CORBA.ValueDef;
-import org.omg.CORBA.ValueBoxDef;
-import org.omg.CORBA.Initializer;
-import org.omg.CORBA.StructDef;
-import org.omg.CORBA.UnionDef;
-import org.omg.CORBA.ModuleDef;
-import org.omg.CORBA.AliasDef;
-import org.omg.CORBA.NativeDef;
 import org.omg.CORBA.ExceptionDef;
+import org.omg.CORBA.IDLType;
+import org.omg.CORBA.IRObject;
+import org.omg.CORBA.Initializer;
+import org.omg.CORBA.InterfaceDef;
+import org.omg.CORBA.ModuleDef;
+import org.omg.CORBA.ModuleDefOperations;
+import org.omg.CORBA.ModuleDefPOATie;
 import org.omg.CORBA.ModuleDescription;
 import org.omg.CORBA.ModuleDescriptionHelper;
+import org.omg.CORBA.NativeDef;
+import org.omg.CORBA.StructDef;
+import org.omg.CORBA.StructMember;
+import org.omg.CORBA.UnionDef;
+import org.omg.CORBA.UnionMember;
+import org.omg.CORBA.ValueBoxDef;
+import org.omg.CORBA.ValueDef;
 
 /**
  * Abstract base class for all contained IR entities.

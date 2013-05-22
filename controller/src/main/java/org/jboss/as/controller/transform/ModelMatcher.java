@@ -22,13 +22,13 @@
 
 package org.jboss.as.controller.transform;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>

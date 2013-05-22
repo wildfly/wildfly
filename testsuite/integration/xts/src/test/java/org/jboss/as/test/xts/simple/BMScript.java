@@ -20,12 +20,12 @@
  */
 package org.jboss.as.test.xts.simple;
 
-import org.jboss.byteman.agent.submit.Submit;
-
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jboss.byteman.agent.submit.Submit;
 
 /**
  * @Author paul.robinson@redhat.com 21/11/2012

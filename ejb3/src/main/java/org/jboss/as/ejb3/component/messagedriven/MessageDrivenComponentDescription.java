@@ -22,6 +22,8 @@
 package org.jboss.as.ejb3.component.messagedriven;
 
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.util.Properties;
 import java.util.Set;
 
@@ -68,8 +70,6 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

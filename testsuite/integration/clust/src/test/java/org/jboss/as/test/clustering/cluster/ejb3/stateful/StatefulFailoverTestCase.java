@@ -27,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
@@ -56,7 +57,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -64,8 +64,8 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.xnio.OptionMap;
 import org.wildfly.security.manager.WildFlySecurityManager;
+import org.xnio.OptionMap;
 
 /**
  * A handler that activates the HTTP management API on a Server.
