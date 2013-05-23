@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Deque;
 import java.util.Locale;
 import java.util.Map;
@@ -69,40 +70,50 @@ import org.xnio.streams.ChannelInputStream;
 class DomainApiHandler implements HttpHandler {
 
     /**
-     * Represents all possible management operations that can be executed using HTTP GET
+     * Represents all possible management operations that can be executed using HTTP GET. Cacheable operations
+     * have a {@code maxAge} property &gt; 0.
      */
     enum GetOperation {
         /*
          *  It is essential that the GET requests exposed over the HTTP interface are for read only
          *  operations that do not modify the domain model or update anything server side.
          */
-        RESOURCE(READ_RESOURCE_OPERATION),
-        ATTRIBUTE("read-attribute"),
-        RESOURCE_DESCRIPTION(READ_RESOURCE_DESCRIPTION_OPERATION),
-        SNAPSHOTS("list-snapshots"),
-        OPERATION_DESCRIPTION(READ_OPERATION_DESCRIPTION_OPERATION),
-        OPERATION_NAMES(READ_OPERATION_NAMES_OPERATION);
+        RESOURCE(READ_RESOURCE_OPERATION, 0),
+        ATTRIBUTE("read-attribute", 0),
+        RESOURCE_DESCRIPTION(READ_RESOURCE_DESCRIPTION_OPERATION, Common.ONE_WEEK),
+        SNAPSHOTS("list-snapshots", 0),
+        OPERATION_DESCRIPTION(READ_OPERATION_DESCRIPTION_OPERATION, Common.ONE_WEEK),
+        OPERATION_NAMES(READ_OPERATION_NAMES_OPERATION, 0);
 
         private String realOperation;
+        private int maxAge;
 
-        GetOperation(String realOperation) {
+        GetOperation(String realOperation, int maxAge) {
             this.realOperation = realOperation;
+            this.maxAge = maxAge;
         }
 
         public String realOperation() {
             return realOperation;
         }
+
+        public int getMaxAge() {
+            return maxAge;
+        }
     }
 
+    private final Date lastModified;
     private final ModelController modelController;
 
     DomainApiHandler(ModelController modelController) {
+        this.lastModified = new Date(); // use server start as last modified date
         this.modelController = modelController;
     }
 
     @Override
     public void handleRequest(final HttpServerExchange exchange) {
 
+        final int maxAge;
         final ModelNode dmr;
         ModelNode response;
 
@@ -112,7 +123,14 @@ class DomainApiHandler implements HttpHandler {
 
         final boolean get = exchange.getRequestMethod().equals(Methods.GET);
         try {
-            dmr = get ? convertGetRequest(exchange) : convertPostRequest(exchange, encode);
+            if (get) {
+                GetOperation operation = getOperation(exchange);
+                maxAge = operation.getMaxAge();
+                dmr = convertGetRequest(exchange, operation);
+            } else {
+                maxAge = 0;
+                dmr = convertPostRequest(exchange, encode);
+            }
         } catch (Exception e) {
             ROOT_LOGGER.debugf("Unable to construct ModelNode '%s'", e.getMessage());
             Common.sendError(exchange, get, false, e.getLocalizedMessage());
@@ -126,8 +144,14 @@ class DomainApiHandler implements HttpHandler {
                     Common.sendError(exchange, get, encode, response.get(FAILURE_DESCRIPTION).asString());
                     return;
                 }
-                final boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();
-                writeResponse(exchange, get, pretty, response, 200, encode);
+                OperationResult operationResult = new OperationResult.Builder(response, 200)
+                        .maxAge(maxAge)
+                        .lastModified(lastModified)
+                        .encode(encode)
+                        .pretty(dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean())
+                        .build();
+                writeResponse(exchange, operationResult);
+
             }
         };
 
@@ -154,6 +178,47 @@ class DomainApiHandler implements HttpHandler {
         callback.sendResponse(response);
     }
 
+    private GetOperation getOperation(HttpServerExchange exchange) {
+        Map<String, Deque<String>> queryParameters = exchange.getQueryParameters();
+
+        GetOperation operation = null;
+        Deque<String> parameter = queryParameters.get(OP);
+        if (parameter != null) {
+            String value = parameter.getFirst();
+            try {
+                operation = GetOperation.valueOf(value.toUpperCase(Locale.ENGLISH).replace('-', '_'));
+                value = operation.realOperation();
+            } catch (Exception e) {
+                throw MESSAGES.invalidOperation(e, value);
+            }
+        }
+
+        // This will now only occur if no operation at all was specified on the incoming request.
+        if (operation == null) {
+            operation = GetOperation.RESOURCE;
+        }
+        return operation;
+    }
+
+    private ModelNode convertGetRequest(HttpServerExchange exchange, GetOperation operation) {
+        ArrayList<String> pathSegments = decodePath(exchange.getRequestPath());
+        Map<String, Deque<String>> queryParameters = exchange.getQueryParameters();
+
+        ModelNode dmr = new ModelNode();
+        for (Entry<String, Deque<String>> entry : queryParameters.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue().getFirst();
+            dmr.get(key).set(!value.equals("") ? value : "true");
+        }
+        dmr.get(OP).set(operation.realOperation);
+
+        ModelNode list = dmr.get(OP_ADDR).setEmptyList();
+        for (int i = 1; i < pathSegments.size() - 1; i += 2) {
+            list.add(pathSegments.get(i), pathSegments.get(i + 1));
+        }
+        return dmr;
+    }
+
     private ModelNode convertPostRequest(HttpServerExchange exchange, boolean encode) throws IOException {
         InputStream in = new ChannelInputStream(exchange.getRequestChannel());
         try {
@@ -161,38 +226,6 @@ class DomainApiHandler implements HttpHandler {
         } finally {
             IoUtils.safeClose(in);
         }
-    }
-
-    private ModelNode convertGetRequest(HttpServerExchange exchange) {
-        ArrayList<String> pathSegments = decodePath(exchange.getRequestPath());
-        Map<String, Deque<String>> queryParameters = exchange.getQueryParameters();
-
-        GetOperation operation = null;
-        ModelNode dmr = new ModelNode();
-        for (Entry<String, Deque<String>> entry : queryParameters.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue().getFirst();
-            if (OP.equals(key)) {
-                try {
-                    operation = GetOperation.valueOf(value.toUpperCase(Locale.ENGLISH).replace('-', '_'));
-                    value = operation.realOperation();
-                } catch (Exception e) {
-                    throw MESSAGES.invalidOperation(e, value);
-                }
-            }
-            dmr.get(entry.getKey()).set(!value.equals("") ? value : "true");
-        }
-
-        // This will now only occur if no operation at all was specified on the incoming request.
-        if (operation == null) {
-            operation = GetOperation.RESOURCE;
-            dmr.get(OP).set(operation.realOperation);
-        }
-        ModelNode list = dmr.get(OP_ADDR).setEmptyList();
-        for (int i = 1; i < pathSegments.size() - 1; i += 2) {
-            list.add(pathSegments.get(i), pathSegments.get(i + 1));
-        }
-        return dmr;
     }
 
     private ArrayList<String> decodePath(String path) {
@@ -265,5 +298,4 @@ class DomainApiHandler implements HttpHandler {
 
         abstract void doSendResponse(ModelNode response);
     }
-
 }

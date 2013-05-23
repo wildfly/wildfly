@@ -50,6 +50,7 @@ public class Common {
     static final String APPLICATION_JSON = "application/json";
     static final String TEXT_PLAIN = "text/plain";
     static final String TEXT_HTML = "text/html";
+    static final int ONE_WEEK = 7 * 24 * 60 * 60;
 
 
     static String UTF_8 = "utf-8";
