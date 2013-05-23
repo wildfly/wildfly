@@ -74,6 +74,7 @@ public class CmpEntityBeanComponent extends EntityBeanComponent {
         this.relationInterceptorFactory = ejbComponentCreateService.getRelationInterceptorFactory();
         this.transactionEntityMap = ejbComponentCreateService.getTransactionEntityMap();
         this.cmp10 = ejbComponentCreateService.getEntityMetaData().isCMP1x();
+        ejbStoreForClean = ejbComponentCreateService.getEntityMetaData().getCmpConfig().isCallEjbStoreOnClean();
     }
 
     protected BasicComponentInstance instantiateComponentInstance(final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext interceptorContext) {

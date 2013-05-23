@@ -24,8 +24,6 @@ package org.jboss.as.cmp.component.interceptors;
 
 import java.lang.reflect.Method;
 
-import javax.ejb.NoSuchEJBException;
-
 import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.component.CmpEntityBeanComponentInstance;
@@ -61,6 +59,12 @@ public class CmpEntityBeanRemoveInterceptorFactory implements InterceptorFactory
                 }
 
                 final CmpEntityBeanComponentInstance instance = (CmpEntityBeanComponentInstance) context.getPrivateData(ComponentInstance.class);
+
+                if(!component.getStoreManager().getCmpConfig().isSyncOnCommitOnly()) {
+                    // before an instance is removed, persistent state must be synchronized
+                    component.synchronizeEntitiesWithinTransaction(instance.getEjbContext().getTransaction());
+                }
+
                 //Call the ejbRemove method
                 Method oldMethod = context.getMethod();
                 try {
@@ -75,8 +79,8 @@ public class CmpEntityBeanRemoveInterceptorFactory implements InterceptorFactory
                 }
 
                 // Invoke CMP remove
-                component.getStoreManager().removeEntity(instance.getEjbContext());
                 instance.setRemoved(true);
+                component.getStoreManager().removeEntity(instance.getEjbContext());
                 instance.removeAllTimers();
                 return null;
             }
