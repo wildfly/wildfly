@@ -22,18 +22,17 @@
 
 package org.jboss.as.patching;
 
-import java.io.File;
 import java.util.List;
 
 /**
- * Basic information about a patch.
+ * Basic patch information.
  *
  * @author Emanuel Muckenhuber
  */
 public interface PatchInfo {
 
     /** The default if no patches are active. */
-    String BASE = "base";
+    String BASE = Constants.BASE;
 
     /**
      * Get the current version.
@@ -55,29 +54,5 @@ public interface PatchInfo {
      * @return the patch ids
      */
     List<String> getPatchIDs();
-
-    /**
-     * Get the current path for patching.
-     * Note this does not include the module.path.
-     *
-     * @return the module path
-     * @deprecated TODO remove
-     */
-    @Deprecated
-    File[] getPatchingPath();
-
-    /**
-     * Get the resolved module path.
-     *
-     * @return the module path
-     */
-    File[] getModulePath();
-
-    /**
-     * Get the current bundle.path.
-     *
-     * @return the bundle path
-     */
-    File[] getBundlePath();
 
 }

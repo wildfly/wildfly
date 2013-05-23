@@ -35,6 +35,7 @@ import static org.jboss.as.patching.runner.TestUtils.createModule;
 import static org.jboss.as.patching.runner.TestUtils.createPatchXMLFile;
 import static org.jboss.as.patching.runner.TestUtils.createZippedPatchFile;
 import static org.jboss.as.patching.runner.TestUtils.dump;
+import static org.jboss.as.patching.runner.TestUtils.getModulePath;
 import static org.jboss.as.patching.runner.TestUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
@@ -86,7 +87,7 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
 
         assertPatchHasBeenApplied(result, patch);
         tree(env.getInstalledImage().getJbossHome());
-        assertDefinedModule(result.getPatchInfo().getModulePath(), moduleName, newHash);
+        assertDefinedModule(getModulePath(env, result.getPatchInfo()), moduleName, newHash);
     }
 
     @Test
@@ -131,8 +132,8 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         assertFileExists(standaloneShellFile);
         assertArrayEquals(updatedHash, hashFile(standaloneShellFile));
         tree(env.getInstalledImage().getJbossHome());
-        assertDirExists(env.getPatchDirectory(patchID));
-        assertDefinedModule(result.getPatchInfo().getModulePath(), moduleName, newModuleHash);
+        assertDirExists(env.getInstalledImage().getPatchHistoryDir(patchID));
+        assertDefinedModule(getModulePath(env, result.getPatchInfo()), moduleName, newModuleHash);
 
         // rollback the patch based on the updated PatchInfo
         PatchingResult rollbackResult = rollback(result.getPatchInfo(), patchID);
@@ -189,8 +190,8 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         assertFileExists(standaloneShellFile);
         assertArrayEquals(updatedHashForStandaloneShell, hashFile(standaloneShellFile));
         tree(env.getInstalledImage().getJbossHome());
-        assertDirExists(env.getPatchDirectory(patchID));
-        assertDefinedModule(result.getPatchInfo().getModulePath(), moduleName, newModuleHash);
+        assertDirExists(env.getInstalledImage().getPatchHistoryDir(patchID));
+        assertDefinedModule(getModulePath(env, result.getPatchInfo()), moduleName, newModuleHash);
 
         // build a 2nd one-off patch for the base installation
         // with 1 updated file
@@ -216,7 +217,7 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         assertFileExists(domainShellFile);
         assertArrayEquals(updatedHashForDomainShell, hashFile(domainShellFile));
         tree(env.getInstalledImage().getJbossHome());
-        assertDirExists(env.getPatchDirectory(patchID_2));
+        assertDirExists(env.getInstalledImage().getPatchHistoryDir(patchID_2));
 
         // rollback the *first* patch based on the updated PatchInfo
         PatchingResult rollbackResult = rollback(result_2.getPatchInfo(), patchID, true);

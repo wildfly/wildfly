@@ -22,12 +22,12 @@
 
 package org.jboss.as.patching.runner;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModificationType;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * A generic patching task.
@@ -47,11 +47,11 @@ public interface PatchingTask {
      * Prepare the content modification. This will backup the current target file and check
      * if the file was modified.
      *
-     * @param  context the patching context
+     * @param  context the patching task context
      * @return whether it meets the modification tasks expectation
      * @throws IOException
      */
-    boolean prepare(PatchingContext context) throws IOException;
+    boolean prepare(PatchingTaskContext context) throws IOException;
 
     /**
      * Execute.
@@ -60,11 +60,11 @@ public interface PatchingTask {
      * @return the rollback action
      * @throws IOException
      */
-    void execute(final PatchingContext context) throws IOException;
+    void execute(final PatchingTaskContext context) throws IOException;
 
     static final class Factory {
 
-        static PatchingTask create(final PatchingTaskDescription description, final PatchingContext context) {
+        static PatchingTask create(final PatchingTaskDescription description, final PatchingTaskContext context) {
             final ContentItem item = description.getContentItem();
             switch (item.getContentType()) {
                 case BUNDLE:
@@ -91,7 +91,7 @@ public interface PatchingTask {
             }
         }
 
-        static PatchingTask createMiscTask(final PatchingTaskDescription description, final MiscContentItem item, final PatchingContext context) {
+        static PatchingTask createMiscTask(final PatchingTaskDescription description, final MiscContentItem item, final PatchingTaskContext context) {
             // Create the task
             final File target = context.getTargetFile(item);
             final File backup = context.getBackupFile(item);

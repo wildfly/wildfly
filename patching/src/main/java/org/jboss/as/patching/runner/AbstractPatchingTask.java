@@ -24,12 +24,12 @@ package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 
+import java.io.IOException;
+import java.util.Arrays;
+
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentModification;
-
-import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * Basic patching task implementation.
@@ -61,7 +61,7 @@ abstract class AbstractPatchingTask<T extends ContentItem> implements PatchingTa
      * @return the hash of the content
      * @throws IOException
      */
-    abstract byte[] backup(PatchingContext context) throws IOException;
+    abstract byte[] backup(PatchingTaskContext context) throws IOException;
 
     /**
      * Apply the modification.
@@ -71,7 +71,7 @@ abstract class AbstractPatchingTask<T extends ContentItem> implements PatchingTa
      * @return the actual copied content hash
      * @throws IOException
      */
-    abstract byte[] apply(final PatchingContext context, final PatchContentLoader loader) throws IOException;
+    abstract byte[] apply(final PatchingTaskContext context, final PatchContentLoader loader) throws IOException;
 
     /**
      * Create the rollback entry.
@@ -84,7 +84,7 @@ abstract class AbstractPatchingTask<T extends ContentItem> implements PatchingTa
     abstract ContentModification createRollbackEntry(ContentModification original, byte[] targetHash, byte[] itemHash);
 
     @Override
-    public boolean prepare(final PatchingContext context) throws IOException {
+    public boolean prepare(final PatchingTaskContext context) throws IOException {
         // Backup
         backupHash = backup(context);
         // If the content is already present just resolve any conflict automatically
@@ -103,7 +103,7 @@ abstract class AbstractPatchingTask<T extends ContentItem> implements PatchingTa
     }
 
     @Override
-    public void execute(final PatchingContext context) throws IOException {
+    public void execute(final PatchingTaskContext context) throws IOException {
         final PatchContentLoader contentLoader = description.getLoader();
         final ContentModification original = description.getModification();
         final boolean skip = skipExecute | context.isExcluded(contentItem);

@@ -22,8 +22,14 @@
 
 package org.jboss.as.patching.tool;
 
-import org.jboss.as.patching.DirectoryStructure;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Collections;
+
 import org.jboss.as.patching.Constants;
+import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.metadata.MiscContentItem;
@@ -33,12 +39,6 @@ import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoader;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Collections;
 
 /**
  * The patch tool.
@@ -151,7 +151,7 @@ public interface PatchTool {
          * @throws IOException
          */
         public static PatchTool create(final File jbossHome) throws IOException {
-            final DirectoryStructure structure = DirectoryStructure.createDefault(jbossHome.getAbsoluteFile());
+            final DirectoryStructure structure = DirectoryStructure.createLegacy(jbossHome.getAbsoluteFile());
             final ModuleLoader loader = ModuleLoader.forClass(PatchTool.class);
             final ProductConfig config = new ProductConfig(loader, jbossHome.getAbsolutePath(), Collections.emptyMap());
             final PatchInfo info = LocalPatchInfo.load(config, structure);

@@ -22,19 +22,19 @@
 
 package org.jboss.as.patching.tool;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.runner.ContentVerificationPolicy;
 import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingResult;
-import org.jboss.as.patching.runner.PatchingTaskRunner;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
+import org.jboss.as.patching.runner.PatchingRunnerWrapper;
 
 /**
  * An interactive offline patch tool.
@@ -45,10 +45,10 @@ class LocalPatchTool implements PatchTool {
 
 
     private final PatchInfo patchInfo;
-    private final PatchingTaskRunner runner;
+    private final PatchingRunnerWrapper runner;
     LocalPatchTool(PatchInfo info, DirectoryStructure structure) {
         this.patchInfo = info;
-        this.runner = new PatchingTaskRunner(info, structure);
+        this.runner = PatchingRunnerWrapper.Factory.create(info, structure);
 
     }
 

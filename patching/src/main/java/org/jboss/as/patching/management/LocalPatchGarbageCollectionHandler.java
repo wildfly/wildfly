@@ -22,14 +22,14 @@
 
 package org.jboss.as.patching.management;
 
-import org.jboss.as.patching.DirectoryStructure;
+import java.io.File;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.dmr.ModelNode;
-
-import java.io.File;
 
 /**
  * @author Emanuel Muckenhuber
@@ -53,15 +53,15 @@ public class LocalPatchGarbageCollectionHandler implements OperationStepHandler 
         if(info.getPatchIDs().contains(patchId)) {
             throw PatchManagementMessages.MESSAGES.patchActive(patchId);
         }
-        final DirectoryStructure structure = service.getStructure();
+        final InstalledImage installedImage = service.getStructure().getInstalledImage();
 
         // Remove directories
-        final File history = structure.getHistoryDir(patchId);
+        final File history = installedImage.getPatchHistoryDir(patchId);
         if(history.exists()) {
             recursiveDelete(history);
         }
         // Remove patch contents
-        final File patchRoot = structure.getPatchDirectory(patchId);
+        final File patchRoot = installedImage.getPatchHistoryDir(patchId);
         if(patchRoot.exists()) {
             recursiveDelete(patchRoot);
         }

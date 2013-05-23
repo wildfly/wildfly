@@ -35,6 +35,7 @@ import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenAppl
 import static org.jboss.as.patching.runner.TestUtils.createBundle;
 import static org.jboss.as.patching.runner.TestUtils.createPatchXMLFile;
 import static org.jboss.as.patching.runner.TestUtils.createZippedPatchFile;
+import static org.jboss.as.patching.runner.TestUtils.getBundlePath;
 import static org.jboss.as.patching.runner.TestUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 
@@ -83,8 +84,8 @@ public class BundlePatchingTestCase extends AbstractTaskTestCase {
 
         File bundlesPatchingDirectory = env.getBundlesPatchDirectory(patchID);
         assertDirExists(bundlesPatchingDirectory);
-        assertContains(bundlesPatchingDirectory, result.getPatchInfo().getBundlePath());
-        assertDefinedBundle(result.getPatchInfo().getBundlePath(), bundleName, newHash);
+        assertContains(bundlesPatchingDirectory, getBundlePath(env, result.getPatchInfo()));
+        assertDefinedBundle(getBundlePath(env, result.getPatchInfo()), bundleName, newHash);
     }
 
     @Test
@@ -122,8 +123,8 @@ public class BundlePatchingTestCase extends AbstractTaskTestCase {
 
         File bundlesPatchingDirectory = env.getBundlesPatchDirectory(patchID);
         assertDirExists(bundlesPatchingDirectory);
-        assertContains(bundlesPatchingDirectory, result.getPatchInfo().getBundlePath());
-        assertDefinedBundle(result.getPatchInfo().getBundlePath(), bundleName, newHash);
+        assertContains(bundlesPatchingDirectory, getBundlePath(env, result.getPatchInfo()));
+        assertDefinedBundle(getBundlePath(env, result.getPatchInfo()), bundleName, newHash);
 
     }
 
@@ -160,8 +161,8 @@ public class BundlePatchingTestCase extends AbstractTaskTestCase {
 
         File bundlesPatchDirectory = env.getBundlesPatchDirectory(patch.getPatchId());
         assertDirExists(bundlesPatchDirectory);
-        assertContains(bundlesPatchDirectory, result.getPatchInfo().getBundlePath());
-        assertDefinedAbsentBundle(result.getPatchInfo().getBundlePath(), bundleName);
+        assertContains(bundlesPatchDirectory, getBundlePath(env, result.getPatchInfo()));
+        assertDefinedAbsentBundle(getBundlePath(env, result.getPatchInfo()), bundleName);
     }
 
 

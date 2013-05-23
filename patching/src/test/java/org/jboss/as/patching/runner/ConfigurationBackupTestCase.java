@@ -23,10 +23,10 @@
 package org.jboss.as.patching.runner;
 
 import static junit.framework.Assert.assertEquals;
-import static org.jboss.as.patching.metadata.ModificationType.ADD;
 import static org.jboss.as.patching.HashUtils.bytesToHexString;
 import static org.jboss.as.patching.HashUtils.hashFile;
 import static org.jboss.as.patching.IoUtils.NO_CONTENT;
+import static org.jboss.as.patching.metadata.ModificationType.ADD;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileContent;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenApplied;
@@ -38,6 +38,7 @@ import static org.jboss.as.patching.runner.TestUtils.dump;
 import static org.jboss.as.patching.runner.TestUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
+import static org.jboss.as.patching.runner.TestUtils.tree;
 
 import java.io.File;
 import java.util.Collections;
@@ -142,16 +143,18 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
         assertPatchHasBeenApplied(result, patch);
 
         // check the AS7 config files have been backed up
-        File backupAppclientXmlFile = assertFileExists(env.getHistoryDir(patch.getPatchId()), "configuration", "appclient", "appclient.xml");
+        File backupAppclientXmlFile = assertFileExists(env.getInstalledImage().getPatchHistoryDir(patch.getPatchId()), "configuration", "appclient", "appclient.xml");
         assertFileContent(originalAppClientHash, backupAppclientXmlFile);
-        File backupStandaloneXmlFile = assertFileExists(env.getHistoryDir(patch.getPatchId()), "configuration", "standalone", "standalone.xml");
+        File backupStandaloneXmlFile = assertFileExists(env.getInstalledImage().getPatchHistoryDir(patch.getPatchId()), "configuration", "standalone", "standalone.xml");
         assertFileContent(originalStandaloneHash, backupStandaloneXmlFile);
-        File backupDomainXmlFile = assertFileExists(env.getHistoryDir(patch.getPatchId()), "configuration", "domain", "domain.xml");
+        File backupDomainXmlFile = assertFileExists(env.getInstalledImage().getPatchHistoryDir(patch.getPatchId()), "configuration", "domain", "domain.xml");
         assertFileContent(originalDomainHash, backupDomainXmlFile);
 
         // let's change the standalone.xml file
         dump(standaloneXmlFile, "<updated standalone configuration with changes from the added module>");
         byte[] updatedStandaloneXmlFile = hashFile(standaloneXmlFile);
+
+        tree(tempDir);
 
         PatchingResult rollbackResult = rollback(result.getPatchInfo(), patch.getPatchId());
 

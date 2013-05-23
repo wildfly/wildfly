@@ -35,11 +35,13 @@ import static org.jboss.as.patching.runner.TestUtils.createModule;
 import static org.jboss.as.patching.runner.TestUtils.createPatchXMLFile;
 import static org.jboss.as.patching.runner.TestUtils.createZippedPatchFile;
 import static org.jboss.as.patching.runner.TestUtils.dump;
+import static org.jboss.as.patching.runner.TestUtils.getModulePath;
 import static org.jboss.as.patching.runner.TestUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
 import static org.jboss.as.patching.runner.TestUtils.tree;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.util.Collections;
@@ -51,8 +53,6 @@ import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModuleItem;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
 /**
@@ -88,7 +88,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
 
         assertPatchHasBeenApplied(result, patch);
         tree(env.getInstalledImage().getJbossHome());
-        assertDefinedModule(result.getPatchInfo().getModulePath(), moduleName, newHash);
+        assertDefinedModule(getModulePath(env, result.getPatchInfo()), moduleName, newHash);
     }
 
     @Test
@@ -133,8 +133,8 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         assertFileExists(standaloneShellFile);
         assertArrayEquals(updatedHash, hashFile(standaloneShellFile));
         tree(env.getInstalledImage().getJbossHome());
-        assertDirExists(env.getPatchDirectory(patchID));
-        assertDefinedModule(result.getPatchInfo().getModulePath(), moduleName, newModuleHash);
+        assertDirExists(env.getInstalledImage().getPatchHistoryDir(patchID));
+        assertDefinedModule(getModulePath(env, result.getPatchInfo()), moduleName, newModuleHash);
 
         // rollback the patch based on the updated PatchInfo
         PatchingResult rollbackResult = rollback(result.getPatchInfo(), patchID);
@@ -173,7 +173,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
 
         assertPatchHasBeenApplied(resultOfCumulativePatch, cumulativePatch);
 
-        assertDefinedModule(resultOfCumulativePatch.getPatchInfo().getModulePath(), moduleName, newHash);
+        assertDefinedModule(getModulePath(env, resultOfCumulativePatch.getPatchInfo()), moduleName, newHash);
 
         // apply a one-off patch now
         String oneOffPatchID = randomString();
@@ -198,7 +198,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
 
         assertPatchHasBeenApplied(resultOfOneOffPatch, oneOffPatch);
 
-        assertDefinedModule(resultOfOneOffPatch.getPatchInfo().getModulePath(), moduleName, updatedHash);
+        assertDefinedModule(getModulePath(env, resultOfOneOffPatch.getPatchInfo()), moduleName, updatedHash);
     }
 
     @Test
@@ -235,7 +235,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
 
         assertPatchHasBeenApplied(resultOfCumulativePatch, cumulativePatch);
 
-        assertDefinedModule(resultOfCumulativePatch.getPatchInfo().getModulePath(), moduleName, updatedHashCP);
+        assertDefinedModule(getModulePath(env, resultOfCumulativePatch.getPatchInfo()), moduleName, updatedHashCP);
 
         // apply a one-off patch now
         String oneOffPatchID = randomString();
@@ -260,7 +260,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
 
         assertPatchHasBeenApplied(resultOfOneOffPatch, oneOffPatch);
 
-        assertDefinedModule(resultOfOneOffPatch.getPatchInfo().getModulePath(), moduleName, updatedHashOneOff);
+        assertDefinedModule(getModulePath(env, resultOfOneOffPatch.getPatchInfo()), moduleName, updatedHashOneOff);
 
         // rollback the cumulative patch, this should also rollback the one-off patch
         PatchingResult resultOfCumulativePatchRollback = rollback(resultOfOneOffPatch.getPatchInfo(), culumativePatchID);
@@ -269,7 +269,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         assertPatchHasBeenRolledBack(resultOfCumulativePatchRollback, cumulativePatch, info);
         // assertNoResourcesForPatch(resultOfCumulativePatchRollback.getPatchInfo(), oneOffPatch);
 
-        assertDefinedModule(resultOfCumulativePatchRollback.getPatchInfo().getModulePath(), moduleName, existingHash);
+        assertDefinedModule(getModulePath(env, resultOfCumulativePatchRollback.getPatchInfo()), moduleName, existingHash);
     }
 
     @Test
@@ -299,7 +299,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
 
         assertPatchHasBeenApplied(result, patch);
         tree(env.getInstalledImage().getJbossHome());
-        assertDefinedModule(result.getPatchInfo().getModulePath(), moduleName, oneModuleHash);
+        assertDefinedModule(getModulePath(env, result.getPatchInfo()), moduleName, oneModuleHash);
 
         // build a CP patch for the base installation
         String culumativePatchID = randomString() + "-CP";
@@ -320,8 +320,8 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         PatchingResult resultOfCumulativePatch = executePatch(info, zippedCumulativePatch);
 
         assertPatchHasBeenApplied(resultOfCumulativePatch, cumulativePatch);
-        assertEquals(2, resultOfCumulativePatch.getPatchInfo().getModulePath().length); // only CP and modules
-        assertDefinedModule(resultOfCumulativePatch.getPatchInfo().getModulePath(), moduleName, updatedHashCP);
+        assertEquals(2, getModulePath(env, resultOfCumulativePatch.getPatchInfo()).length); // only CP and modules
+        assertDefinedModule(getModulePath(env, resultOfCumulativePatch.getPatchInfo()), moduleName, updatedHashCP);
 
     }
 

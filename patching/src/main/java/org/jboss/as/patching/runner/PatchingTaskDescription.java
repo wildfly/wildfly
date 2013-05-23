@@ -22,12 +22,12 @@
 
 package org.jboss.as.patching.runner;
 
+import java.util.Arrays;
+
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.ContentType;
 import org.jboss.as.patching.metadata.ModificationType;
-
-import java.util.Arrays;
 
 /**
  * @author Emanuel Muckenhuber

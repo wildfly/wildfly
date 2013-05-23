@@ -22,9 +22,6 @@
 
 package org.jboss.as.patching.management;
 
-import static java.util.Arrays.asList;
-import static org.jboss.as.patching.management.PatchManagementLogger.ROOT_LOGGER;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -69,10 +66,10 @@ public class PatchInfoService implements Service<PatchInfoService> {
     public synchronized void start(StartContext context) throws StartException {
         final ProductConfig config = productConfig.getValue();
         final File file = new File(System.getProperty("jboss.home.dir"));
-        final DirectoryStructure structure = DirectoryStructure.createDefault(file);
+        final DirectoryStructure structure = DirectoryStructure.createLegacy(file);
         try {
             this.patchInfo = LocalPatchInfo.load(config, structure);
-            ROOT_LOGGER.usingModulePath(asList(patchInfo.getModulePath()));
+            // ROOT_LOGGER.usingModulePath(asList(patchInfo.getModulePath()));
         } catch (IOException e) {
             throw new StartException(e);
         }

@@ -179,8 +179,7 @@ public class PatchingAssert {
         assertFalse("patch should have failed", result.getConflicts().isEmpty());
         assertTrue(problematicItem + " is not reported in the problems " + result.getConflicts(), result.getConflicts().contains(problematicItem));
 
-        assertDirDoesNotExist(structure.getPatchDirectory(patch.getPatchId()));
-        assertDirDoesNotExist(structure.getHistoryDir(patch.getPatchId()));
+        assertDirDoesNotExist(structure.getInstalledImage().getPatchHistoryDir(patch.getPatchId()));
     }
 
     static void assertPatchHasBeenRolledBack(PatchingResult result, Patch patch, PatchInfo expectedPatchInfo) {
@@ -194,6 +193,6 @@ public class PatchingAssert {
     static void assertNoResourcesForPatch(DirectoryStructure structure, Patch patch) {
         assertDirDoesNotExist(structure.getModulePatchDirectory(patch.getPatchId()));
         assertDirDoesNotExist(structure.getBundlesPatchDirectory(patch.getPatchId()));
-        assertDirDoesNotExist(structure.getPatchDirectory(patch.getPatchId()));
+        assertDirDoesNotExist(structure.getInstalledImage().getPatchHistoryDir(patch.getPatchId()));
     }
 }

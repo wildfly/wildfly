@@ -29,12 +29,12 @@ import static org.jboss.as.patching.metadata.Patch.PatchType.ONE_OFF;
 import java.io.File;
 import java.util.List;
 
-import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.runner.PatchUtils;
 import org.jboss.dmr.ModelNode;
@@ -53,18 +53,19 @@ public final class LocalShowHistoryHandler implements OperationStepHandler {
 
         try {
             final PatchInfo info = service.getPatchInfo();
-            final DirectoryStructure structure = service.getStructure();
+            final InstalledImage installedImage =  service.getStructure().getInstalledImage();
+
             ModelNode result = new ModelNode();
             result.setEmptyList();
 
             String cumulativePatchID = info.getCumulativeID();
             if (!BASE.equals(cumulativePatchID)) {
-                fillHistory(result, CUMULATIVE, cumulativePatchID, structure.getHistoryDir(cumulativePatchID));
+                fillHistory(result, CUMULATIVE, cumulativePatchID, installedImage.getPatchHistoryDir(cumulativePatchID));
             }
 
             List<String> oneOffPatchIDs = info.getPatchIDs();
             for (String oneOffPatchID : oneOffPatchIDs) {
-                File historyDir = structure.getHistoryDir(oneOffPatchID);
+                File historyDir = installedImage.getPatchHistoryDir(oneOffPatchID);
                 fillHistory(result, ONE_OFF, oneOffPatchID, historyDir);
             }
             context.getResult().set(result);

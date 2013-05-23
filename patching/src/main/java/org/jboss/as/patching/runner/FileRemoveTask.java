@@ -68,7 +68,7 @@ class FileRemoveTask implements PatchingTask {
     }
 
     @Override
-    public boolean prepare(PatchingContext context) throws IOException {
+    public boolean prepare(PatchingTaskContext context) throws IOException {
         // we create the backup in any case, since it is possible that the task
         // will be processed anyhow if the user specified OVERRIDE_ALL policy.
         // If the task is undone, the patch history will be deleted (including this backup).
@@ -81,7 +81,7 @@ class FileRemoveTask implements PatchingTask {
     }
 
     @Override
-    public void execute(PatchingContext context) throws IOException {
+    public void execute(PatchingTaskContext context) throws IOException {
         // delete the file or directory recursively
         boolean ok = IoUtils.recursiveDelete(target);
         for(ContentModification mod : rollback) {

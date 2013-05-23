@@ -22,18 +22,18 @@
 
 package org.jboss.as.patching.runner;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import junit.framework.Assert;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.Patch;
 import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Emanuel Muckenhuber
@@ -144,7 +144,7 @@ public class PatchMergeUnitTestCase {
     static Map<Location, PatchingTasks.ContentTaskDefinition> process(final RollbackInfo... rollbackInfos) {
         final Map<Location, PatchingTasks.ContentTaskDefinition> foo = new HashMap<Location, PatchingTasks.ContentTaskDefinition>();
         for(final RollbackInfo info : rollbackInfos) {
-            PatchingTasks.rollback(info.original.getPatchId(), info.original, info.rollback, foo, ContentItemFilter.MISC_ONLY);
+            PatchingTasks.rollback(info.original.getPatchId(), info.original.getModifications(), info.rollback.getModifications(), foo, ContentItemFilter.MISC_ONLY);
         }
         return foo;
     }
