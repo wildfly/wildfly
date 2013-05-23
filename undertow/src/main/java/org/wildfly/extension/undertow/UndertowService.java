@@ -48,11 +48,9 @@ public class UndertowService implements Service<UndertowService> {
     public static final ServiceName SERVLET_CONTAINER = UNDERTOW.append(Constants.SERVLET_CONTAINER);
     public static final ServiceName SERVER = UNDERTOW.append(Constants.SERVER);
     /**
-     * The base name for jboss.web connector services.
+     * The base name for listener/handler/filter services.
      */
-    public static final ServiceName AJP_LISTENER = UNDERTOW.append("ajp-listener");
-    public static final ServiceName HTTP_LISTENER = UNDERTOW.append("http-listener");
-    public static final ServiceName HTTPS_LISTENER = UNDERTOW.append("https-listener");
+    public static final ServiceName LISTENER = UNDERTOW.append(Constants.LISTENER);
     public static final ServiceName HANDLER = UNDERTOW.append(Constants.HANDLER);
     public static final ServiceName FILTER = UNDERTOW.append(Constants.FILTER);
     public static final ServiceName ERROR_HANDLER = UNDERTOW.append(Constants.ERROR_HANDLER);
