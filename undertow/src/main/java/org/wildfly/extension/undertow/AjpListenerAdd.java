@@ -40,7 +40,7 @@ class AjpListenerAdd extends AbstractListenerAdd {
     }
 
     protected ServiceName constructServiceName(final String name) {
-        return UndertowService.AJP_LISTENER.append(name);
+        return UndertowService.LISTENER.append(name);
     }
 
     @Override
