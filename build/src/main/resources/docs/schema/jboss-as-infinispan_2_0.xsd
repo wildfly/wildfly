@@ -398,7 +398,12 @@
                     </xs:element>
                     <xs:element name="backups" type="tns:backups" minOccurs="0">
                         <xs:annotation>
-                            <xs:documentation>The state transfer configuration for distribution and replicated caches.</xs:documentation>
+                            <xs:documentation>A list of backup sites for this cache (for use with cross-site replication).</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="backup-for" type="tns:backup-for" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>Configures this cache as a backup for a cache on a remote site (for use with cross-site replication).</xs:documentation>
                         </xs:annotation>
                     </xs:element>
                 </xs:sequence>
@@ -803,6 +808,19 @@
         <xs:attribute name="enabled" type="xs:boolean" default="true">
             <xs:annotation>
                 <xs:documentation>Indicates whether or not this backup site is enabled.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="backup-for">
+        <xs:attribute name="remote-cache" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>The name of the remote cache for which this cache acts as a backup</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="remote-site" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>The site of the remote cache for which this cache acts as a backup.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>

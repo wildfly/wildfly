@@ -22,9 +22,10 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import javax.xml.XMLConstants;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.xml.XMLConstants;
 
 import org.jboss.as.controller.AttributeDefinition;
 
@@ -88,6 +89,8 @@ public enum Attribute {
     QUEUE_SIZE(ModelKeys.QUEUE_SIZE),
     RACK(ModelKeys.RACK),
     RELATIVE_TO(ModelKeys.RELATIVE_TO),
+    REMOTE_CACHE(ModelKeys.REMOTE_CACHE),
+    REMOTE_SITE(ModelKeys.REMOTE_SITE),
     REMOTE_TIMEOUT(ModelKeys.REMOTE_TIMEOUT),
     REPLICATION_QUEUE_EXECUTOR(ModelKeys.REPLICATION_QUEUE_EXECUTOR),
     SEGMENTS(ModelKeys.SEGMENTS),

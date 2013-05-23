@@ -314,6 +314,14 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             }
             writer.writeEndElement();
         }
+
+        if (cache.get(ModelKeys.BACKUP_FOR, ModelKeys.BACKUP_FOR_NAME).isDefined()) {
+            ModelNode backupFor = cache.get(ModelKeys.BACKUP_FOR, ModelKeys.BACKUP_FOR_NAME);
+            writer.writeStartElement(Element.BACKUP_FOR.getLocalName());
+            this.writeOptional(writer, Attribute.REMOTE_CACHE, backupFor, ModelKeys.REMOTE_CACHE);
+            this.writeOptional(writer, Attribute.REMOTE_SITE, backupFor, ModelKeys.REMOTE_SITE);
+            writer.writeEndElement();
+        }
     }
 
     private void writeAliases(XMLExtendedStreamWriter writer, Attribute attribute, ModelNode container, String key) throws XMLStreamException {

@@ -32,6 +32,8 @@ public class ModelKeys {
     static final String ALIASES = "aliases";
     static final String ASYNC_MARSHALLING = "async-marshalling";
     static final String BACKUP = "backup";
+    static final String BACKUP_FOR = "backup-for";
+    static final String BACKUP_FOR_NAME = "BACKUP_FOR";
     static final String BACKUP_FAILURE_POLICY = "failure-policy";
     static final String BACKUP_STRATEGY = "strategy";
     static final String BACKUPS = "backups";
@@ -109,8 +111,10 @@ public class ModelKeys {
     static final String QUEUE_SIZE = "queue-size";
     static final String RACK = "rack";
     static final String RELATIVE_TO = "relative-to";
+    static final String REMOTE_CACHE = "remote-cache";
     static final String REMOTE_SERVER = "remote-server";
     static final String REMOTE_SERVERS = "remote-servers";
+    static final String REMOTE_SITE = "remote-site";
     static final String REMOTE_STORE_NAME = "REMOTE_STORE";
     static final String REMOTE_STORE = "remote-store";
     static final String REMOTE_TIMEOUT = "remote-timeout";

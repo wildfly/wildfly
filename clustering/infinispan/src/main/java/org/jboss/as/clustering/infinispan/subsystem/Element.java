@@ -40,6 +40,7 @@ public enum Element {
 
     ALIAS(ModelKeys.ALIAS),
     BACKUP(ModelKeys.BACKUP),
+    BACKUP_FOR(ModelKeys.BACKUP_FOR),
     BACKUPS(ModelKeys.BACKUPS),
     BINARY_KEYED_TABLE(ModelKeys.BINARY_KEYED_TABLE),
     @Deprecated BUCKET_TABLE(ModelKeys.BUCKET_TABLE),
