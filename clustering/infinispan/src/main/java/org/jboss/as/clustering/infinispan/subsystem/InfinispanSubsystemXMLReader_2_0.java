@@ -454,6 +454,10 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
                 this.parseBackups(reader, cache, operations);
                 break;
             }
+            case BACKUP_FOR: {
+                this.parseBackupFor(reader, cache, operations);
+                break;
+            }
             default: {
                 this.parseCacheElement(reader, element, cache, operations);
             }
@@ -540,6 +544,32 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
         }
         ParseUtils.requireNoContent(reader);
         operations.add(stateTransfer);
+    }
+
+    private void parseBackupFor(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+
+        PathAddress backupForAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.BACKUP_FOR, ModelKeys.BACKUP_FOR_NAME);
+        ModelNode backupFor = Util.createAddOperation(backupForAddress);
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            String value = reader.getAttributeValue(i);
+            Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case REMOTE_CACHE: {
+                    BackupForResourceDefinition.REMOTE_CACHE.parseAndSetParameter(value, backupFor, reader);
+                    break;
+                }
+                case REMOTE_SITE: {
+                    BackupForResourceDefinition.REMOTE_SITE.parseAndSetParameter(value, backupFor, reader);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        ParseUtils.requireNoContent(reader);
+        operations.add(backupFor);
     }
 
     private void parseLocking(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {

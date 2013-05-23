@@ -63,6 +63,7 @@ public abstract class SharedStateCacheAdd extends ClusteredCacheAdd {
             builder.clustering().stateTransfer().chunkSize(chunkSize);
         }
 
+        // backup is a child resource
         if (cache.hasDefined(ModelKeys.BACKUP)) {
             SitesConfigurationBuilder sitesBuilder = builder.sites();
             for (Property property: cache.get(ModelKeys.BACKUP).asPropertyList()) {
@@ -79,5 +80,19 @@ public abstract class SharedStateCacheAdd extends ClusteredCacheAdd {
                 }
             }
         }
+
+        // backup-for is a child resource
+        if (cache.hasDefined(ModelKeys.BACKUP_FOR) && cache.get(ModelKeys.BACKUP_FOR, ModelKeys.BACKUP_FOR_NAME).isDefined()) {
+            ModelNode backupFor = cache.get(ModelKeys.BACKUP_FOR, ModelKeys.BACKUP_FOR_NAME);
+
+            ModelNode resolvedValue = null;
+            final String remoteCache = ((resolvedValue = BackupForResourceDefinition.REMOTE_CACHE.resolveModelAttribute(context, backupFor)).isDefined()) ? resolvedValue.asString() : null;
+            final String remoteSite = ((resolvedValue = BackupForResourceDefinition.REMOTE_SITE.resolveModelAttribute(context, backupFor)).isDefined()) ? resolvedValue.asString() : null;
+
+            // need to check that both are present
+            SitesConfigurationBuilder sitesBuilder = builder.sites();
+            sitesBuilder.backupFor().remoteCache(remoteCache).remoteSite(remoteSite);
+        }
+
     }
 }

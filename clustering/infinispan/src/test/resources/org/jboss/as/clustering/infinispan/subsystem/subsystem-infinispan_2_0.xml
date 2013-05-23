@@ -89,6 +89,7 @@
                     <take-offline after-failures="3" min-wait="10000"/>
                 </backup>
             </backups>
+            <backup-for remote-cache="users" remote-site="LON"/>
         </distributed-cache>
     </cache-container>
     <cache-container name="capedwarf" default-cache="default">
