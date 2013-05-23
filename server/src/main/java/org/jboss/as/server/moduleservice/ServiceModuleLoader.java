@@ -146,9 +146,12 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
     protected Module preloadModule(final ModuleIdentifier identifier) throws ModuleLoadException {
         if (identifier.getName().startsWith(MODULE_PREFIX)) {
             return super.preloadModule(identifier);
-        } else {
-            return preloadModule(identifier, mainModuleLoader);
         }
+        Module result = preloadModule(identifier, mainModuleLoader);
+        if (result == null) {
+            result = super.preloadModule(identifier);
+        }
+        return result;
     }
 
     @SuppressWarnings("unchecked")

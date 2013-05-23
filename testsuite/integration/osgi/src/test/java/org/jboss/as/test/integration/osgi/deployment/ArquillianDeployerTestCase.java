@@ -49,7 +49,7 @@ public class ArquillianDeployerTestCase {
     private static final String DEPLOYMENT_NAME = "arquillian-deployer-test-bundle";
 
     @ArquillianResource
-    public Deployer deployer;
+    Deployer deployer;
 
     @ArquillianResource
     BundleContext context;
