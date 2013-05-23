@@ -31,7 +31,7 @@ import org.junit.Test;
 
 public class RemoveModifiedFileTaskTestCase extends AbstractTaskTestCase {
 
-    private PatchingTaskRunner runner;
+    private PatchingRunnerWrapper runner;
     private File zippedPatch;
     private Patch patch;
     private ContentModification fileRemoved;
@@ -72,7 +72,7 @@ public class RemoveModifiedFileTaskTestCase extends AbstractTaskTestCase {
         createPatchXMLFile(patchDir, patch);
         zippedPatch = createZippedPatchFile(patchDir, patch.getPatchId());
 
-        runner = new PatchingTaskRunner(info, env);
+        runner = PatchingRunnerWrapper.Factory.create(info, env);
     }
 
     @After
@@ -109,7 +109,7 @@ public class RemoveModifiedFileTaskTestCase extends AbstractTaskTestCase {
         // and it's the new one
         assertFileDoesNotExist(removedFile);
         // the existing file has been backed up
-        File backupFile = assertFileExists(env.getHistoryDir(patch.getPatchId()), "misc", "bin", removedFile.getName());
+        File backupFile = assertFileExists(env.getInstalledImage().getPatchHistoryDir(patch.getPatchId()), "misc", "bin", removedFile.getName());
         assertArrayEquals(expectedModifiedHash, hashFile(backupFile));
     }
 

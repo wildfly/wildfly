@@ -32,6 +32,8 @@ import static org.jboss.as.patching.HashUtils.hexStringToByteArray;
 import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 import static org.jboss.as.patching.metadata.ModuleItem.MAIN_SLOT;
 
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,9 +42,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
 
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;

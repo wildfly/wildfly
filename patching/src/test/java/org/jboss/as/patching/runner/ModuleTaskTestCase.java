@@ -35,6 +35,7 @@ import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenAppl
 import static org.jboss.as.patching.runner.TestUtils.createModule;
 import static org.jboss.as.patching.runner.TestUtils.createPatchXMLFile;
 import static org.jboss.as.patching.runner.TestUtils.createZippedPatchFile;
+import static org.jboss.as.patching.runner.TestUtils.getModulePath;
 import static org.jboss.as.patching.runner.TestUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.tree;
@@ -86,8 +87,8 @@ public class ModuleTaskTestCase extends AbstractTaskTestCase{
         File modulesPatchDir = env.getModulePatchDirectory(patchID);
         assertDirExists(modulesPatchDir);
         tree(env.getInstalledImage().getJbossHome());
-        assertContains(modulesPatchDir, result.getPatchInfo().getModulePath());
-        assertDefinedModule(result.getPatchInfo().getModulePath(), moduleName, newHash);
+        assertContains(modulesPatchDir, getModulePath(env, result.getPatchInfo()));
+        assertDefinedModule(getModulePath(env, result.getPatchInfo()), moduleName, newHash);
     }
 
     @Test
@@ -124,8 +125,8 @@ public class ModuleTaskTestCase extends AbstractTaskTestCase{
 
         File modulesPatchDir = env.getModulePatchDirectory(patch.getPatchId());
         assertDirExists(modulesPatchDir);
-        assertContains(modulesPatchDir, result.getPatchInfo().getModulePath());
-        assertDefinedAbsentModule(result.getPatchInfo().getModulePath(), moduleName);
+        assertContains(modulesPatchDir, getModulePath(env, result.getPatchInfo()));
+        assertDefinedAbsentModule(getModulePath(env, result.getPatchInfo()), moduleName);
     }
 
     @Test
@@ -168,8 +169,8 @@ public class ModuleTaskTestCase extends AbstractTaskTestCase{
 
         File modulesPatchDir = env.getModulePatchDirectory(patch.getPatchId());
         assertDirExists(modulesPatchDir);
-        assertContains(modulesPatchDir, result.getPatchInfo().getModulePath());
+        assertContains(modulesPatchDir, getModulePath(env, result.getPatchInfo()));
         // check that the defined module is the updated one
-        assertDefinedModule(result.getPatchInfo().getModulePath(), moduleName, updatedHash);
+        assertDefinedModule(getModulePath(env, result.getPatchInfo()), moduleName, updatedHash);
     }
 }

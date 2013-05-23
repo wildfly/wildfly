@@ -24,6 +24,7 @@ package org.jboss.as.patching.runner;
 
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
+import static org.jboss.as.patching.Constants.BASE;
 import static org.jboss.as.patching.IoUtils.safeClose;
 import static org.jboss.as.patching.PatchLogger.ROOT_LOGGER;
 
@@ -31,8 +32,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
+import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.ZipUtils;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
@@ -98,7 +103,6 @@ public class TestUtils {
         }
     }
 
-
     public static File createModuleXmlFile(File mainDir, String moduleName, String... resources) throws Exception {
         StringBuilder content = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         content.append(format("<module xmlns=\"urn:jboss:module:1.2\" name=\"%s\" slot=\"main\" />\n", moduleName));
@@ -158,4 +162,34 @@ public class TestUtils {
         ZipUtils.zip(sourceDir, zipFile);
         return zipFile;
     }
+
+    static File[] getModulePath(final DirectoryStructure structure, final PatchInfo info) {
+        final List<File> path = new ArrayList<File>();
+        final List<String> patches = info.getPatchIDs();
+        for (final String patch : patches) {
+            path.add(structure.getModulePatchDirectory(patch));
+        }
+        final String ref = info.getCumulativeID();
+        if (!BASE.equals(ref)) {
+            path.add(structure.getModulePatchDirectory(ref));
+        }
+        path.add(structure.getModuleRoot());
+        return path.toArray(new File[path.size()]);
+    }
+
+    static File[] getBundlePath(final DirectoryStructure structure, final PatchInfo info) {
+        final List<String> patches = info.getPatchIDs();
+        final List<File> path = new ArrayList<File>();
+        for (final String patch : patches) {
+            path.add(structure.getBundlesPatchDirectory(patch));
+        }
+        final String ref = info.getCumulativeID();
+        if (!BASE.equals(ref)) {
+            path.add(structure.getBundlesPatchDirectory(ref));
+        }
+        path.add(structure.getBundleRepositoryRoot());
+        return path.toArray(new File[path.size()]);
+    }
+
+
 }

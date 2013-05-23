@@ -24,12 +24,11 @@ package org.jboss.as.patching.generator;
 
 import static org.jboss.as.patching.IoUtils.safeClose;
 
-import java.io.InputStream;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import java.io.InputStream;
 
 import org.jboss.staxmapper.XMLMapper;
 

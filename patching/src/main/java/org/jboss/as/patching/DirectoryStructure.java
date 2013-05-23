@@ -22,11 +22,25 @@
 
 package org.jboss.as.patching;
 
+import static org.jboss.as.patching.Constants.APP_CLIENT;
+import static org.jboss.as.patching.Constants.BUNDLES;
+import static org.jboss.as.patching.Constants.CUMULATIVE;
+import static org.jboss.as.patching.Constants.DOMAIN;
+import static org.jboss.as.patching.Constants.METADATA;
+import static org.jboss.as.patching.Constants.MODULES;
+import static org.jboss.as.patching.Constants.PATCHES;
+import static org.jboss.as.patching.Constants.REFERENCES;
+import static org.jboss.as.patching.Constants.STANDALONE;
+
 import java.io.File;
+
+import org.jboss.as.patching.installation.InstalledImage;
 
 /**
  * The patching directory structure.
  *
+ * <pre>
+ * <code>
  * ${JBOSS_HOME}
  * |
  * |-- bin
@@ -35,20 +49,32 @@ import java.io.File;
  * |   |-- system
  * |   |   |-- layers
  * |   |   |   | -- xyz
- * |   |   |   |    `-- .patches (overlay directory)
- * |   |   |   |        |-- patch-xyz-1
- * |   |   |   |        `-- patch-xyz-2
- * |   |   |   `-- vuw
- * |   |   |        `-- .patches (overlay directory)
- * |   |   |            `-- patch-vuw-1
- * |   |   |-- base
- * |   |   |   |-- .patches (overlay directory)
- * |   |   |   |   |-- patch-base-1
- * |   |   |   |   `-- patch-base-2
- * |   |   |   `-- org/jboss/as/osgi
+ * |   |   |   |   `-- .patches (overlay directory)
+ * |   |   |   |       |-- cumulative (cumulative link)
+ * |   |   |   |       |-- references
+ * |   |   |   |       |   `-- patch-xyz-1 (list of one-off patches)
+ * |   |   |   |       |-- patch-xyz-1
+ * |   |   |   |       `-- patch-xyz-2
+ * |   |   |   |-- vuw
+ * |   |   |   |   `-- .patches (overlay directory)
+ * |   |   |   |       |-- cumulative (cumulative link)
+ * |   |   |   |       |-- references
+ * |   |   |   |       |   `-- patch-vuw-1 (list of one-off patches)
+ * |   |   |   |       `-- patch-vuw-1
+ * |   |   |   `-- base
+ * |   |   |       |-- .patches (overlay directory)
+ * |   |   |       |   |-- cumulative (cumulative link)
+ * |   |   |       |   |-- references
+ * |   |   |       |   |   `-- patch-base-1 (list of one-off patches)
+ * |   |   |       |   |-- patch-base-1
+ * |   |   |       |   `-- patch-base-2
+ * |   |   |       `-- org/jboss/as/osgi
  * |   |   `-- add-ons
  * |   |       `-- def
  * |   |           `-- .patches (overlay directory)
+ * |   |               |-- cumulative (cumulative link)
+ * |   |               |-- references
+ * |   |               |   `-- patch-def-1 (list of one-off patches)
  * |   |               |-- patch-def-1
  * |   |               `-- patch-def-2
  * |   |
@@ -56,195 +82,73 @@ import java.io.File;
  * |
  * |-- docs
  * |-- modules
- * |   |-- layers.conf
+ * |   |-- layers.conf  (vuw,xyz,base)
  * |   |-- system
  * |   |   |-- layers
  * |   |   |   | -- xyz
  * |   |   |   |    `-- .patches (overlay directory)
- * |   |   |   |        |-- patch-xyz-1
- * |   |   |   |        `-- patch-xyz-2
- * |   |   |   `-- vuw
- * |   |   |        `-- .patches (overlay directory)
- * |   |   |            `-- patch-vuw-1
- * |   |   |-- base
- * |   |   |   |-- .patches (overlay directory)
- * |   |   |   |   |-- patch-base-1
- * |   |   |   |   `-- patch-base-2
- * |   |   |   |-- org/jboss/as/...
- * |   |   |   `-- org/jboss/as/server/main/module.xml
+ * |   |   |   |       |-- cumulative (cumulative link)
+ * |   |   |   |       |-- references
+ * |   |   |   |       |   `-- patch-xyz-1 (list of one-off patches)
+ * |   |   |   |       |-- patch-xyz-1
+ * |   |   |   |       `-- patch-xyz-2
+ * |   |   |   |-- vuw
+ * |   |   |   |    `-- .patches   (overlay directory)
+ * |   |   |   |       |-- cumulative (cumulative link)
+ * |   |   |   |       |-- references
+ * |   |   |   |       |   `-- patch-vuw-1 (list of one-off patches)
+ * |   |   |   |        `-- patch-vuw-1
+ * |   |   |   ` -- base
+ * |   |   |        |-- .patches   (overlay directory)
+ * |   |   |        |   |-- cumulative (links to given patchId)
+ * |   |   |        |   |-- references
+ * |   |   |        |   |   `-- patch-base-1 (list of one-off patches)
+ * |   |   |        |   |-- patch-base-1
+ * |   |   |        |   `-- patch-base-2
+ * |   |   |        |-- org/jboss/as/...
+ * |   |   |        `-- org/jboss/as/server/main/module.xml
  * |   |   |
  * |   |   `-- add-ons
  * |   |       `-- def
- * |   |           `-- .patches (overlay directory)
+ * |   |           `-- .patches    (overlay directory)
  * |   |               |-- patch-def-1
  * |   |               `-- patch-def-2
  * |   |
  * |   `-- my/own/module/root/repo
  * |
- * |-- .installation (metdata directory)
- * |   |-- layers
- * |   |   |-- xyz
- * |   |   |   |-- installation (layer metadata)
- * |   |   |   |-- cumulative (links to given patchId)
- * |   |   |   |-- references
- * |   |   |   |   `-- patch-xyz-1 (list of one-off patches)
- * |   |   |   `-- history
- * |   |   |       |-- patch-xyz-1
- * |   |   |       |   |-- cumulative (previous cp)
- * |   |   |       |   |-- misc
- * |   |   |       |   `-- rollback.xml
- * |   |   |       `-- patch-xyz-2
- * |   |   |           |-- cumulative
- * |   |   |           |-- misc
- * |   |   |           `-- rollback.xml
- * |   |   |
- * |   |   `-- vuw
- * |   |       |-- installation
- * |   |       |-- cumulative (links to given patchId)
- * |   |       |-- references
- * |   |       |   `-- patch-vuw-1 (list of one-off patches)
- * |   |       `-- history
- * |   |           `-- patch-vuw-1
- * |   |               |-- cumulative (previous cp)
- * |   |               |-- misc
- * |   |               `-- rollback.xml
- * |   |
- * |   |-- base
- * |   |   |-- installation
- * |   |   |-- cumulative (links to given patchId)
- * |   |   |-- references
- * |   |   |   `-- patch-base-1 (list of one-off patches)
- * |   |   `-- history
- * |   |       |-- patch-base-1
- * |   |       |   |-- cumulative (previous cp)
- * |   |       |   |-- misc
- * |   |       |   `-- rollback.xml
- * |   |       `-- patch-base-2
- * |   |           |-- cumulative
- * |   |           |-- misc
- * |   |           `-- rollback.xml
- * |   |
- * |   `-- add-ons
- * |       `-- def
- * |           |-- installation
- * |           |-- cumulative (links to given patchId)
- * |           |-- references
- * |           |   `-- patch-def-1 (list of one-off patches)
- * |           `-- history
- * |               |-- patch-def-1
- * |               |   |-- cumulative (previous cp)
- * |               |   |-- misc
- * |               |   `-- rollback.xml
- * |               `-- patch-def-2
- * |                   |-- cumulative (previous cp)
- * |                   |-- misc
- * |                   `-- rollback.xml
+ * |-- .installation               (metadata directory)
+ * |   |-- cumulative              (patchId for the identity)
+ * |   |-- references
+ * |   |   `-- patch-identity-1    (list of one-off patches)
+ * |   `-- patches                 (history dir)
+ * |       `-- patch-identity-1
+ * |           |-- patch.xml
+ * |           |-- rollback.xml
+ * |           |-- timestamp
+ * |           |-- configuration   (configuration backup)
+ * |           `-- misc            (misc backup)
  * |
  * `-- jboss-modules.jar
+ * </code>
+ * </pre>
  *
  * @author Emanuel Muckenhuber
  */
-public final class DirectoryStructure {
-
-    public interface InstalledImage {
-
-        /**
-         * Get the jboss home.
-         *
-         * @return the jboss home
-         */
-        File getJbossHome();
-
-        /**
-         * Get the app-client directory.
-         *
-         * @return the app client dir
-         */
-        File getAppClientDir();
-
-        /**
-         * Get the bundles directory.
-         *
-         * @return the bundles directory
-         */
-        File getBundlesDir();
-
-        /**
-         * Get the domain directory.
-         *
-         * @return the domain dir
-         */
-        File getDomainDir();
-
-        /**
-         * Get the modules directory.
-         *
-         * @return the modules dir
-         */
-        File getModulesDir();
-
-        /**
-         * Get the patches directory.
-         *
-         * @return the patches directory
-         */
-        File getPatchesDir();
-
-        /**
-         * Get the standalone dir.
-         *
-         * @return the standalone dir
-         */
-        File getStandaloneDir();
-
-    }
-
-    // Directories
-    public static String APP_CLIENT = "appclient";
-    public static String CONFIGURATION = "configuration";
-    public static String BUNDLES = "bundles";
-    public static String DOMAIN = "domain";
-    public static String HISTORY = "history";
-    public static String METADATA = ".metadata";
-    public static String MODULES = "modules";
-    public static String PATCHES = "patches";
-    public static String STANDALONE = "standalone";
-    // Markers
-    public static String CUMULATIVE = "cumulative";
-    public static String REFERENCES = "references";
-
-    private final InstalledImage image;
-
-    DirectoryStructure(final InstalledImage image) {
-        this.image = image;
-    }
+public abstract class DirectoryStructure {
 
     /**
      * Get the installed image layout.
      *
      * @return the installed image
      */
-    public InstalledImage getInstalledImage() {
-        return image;
-    }
-
-    /**
-     * Get the patches metadata directory.
-     *
-     * @return the patches metadata directory
-     */
-    public File getPatchesMetadata() {
-        return new File(getInstalledImage().getPatchesDir(), METADATA);
-    }
+    public abstract InstalledImage getInstalledImage();
 
     /**
      * Get the cumulative patch symlink file.
      *
      * @return the cumulative patch id
      */
-    public File getCumulativeLink() {
-        return new File(getPatchesMetadata(), CUMULATIVE);
-    }
+    public abstract File getCumulativeLink();
 
     /**
      * Get the references file, containing all active patches for a given
@@ -253,31 +157,14 @@ public final class DirectoryStructure {
      * @param cumulativeId the cumulative patch id
      * @return the cumulative references file
      */
-    public File getCumulativeRefs(final String cumulativeId) {
-        final File references = new File(getPatchesMetadata(), REFERENCES);
-        return new File(references, cumulativeId);
-    }
+    public abstract File getCumulativeRefs(final String cumulativeId);
 
     /**
-     * Get the history dir for a given patch id.
+     * Get the bundles repository root.
      *
-     * @param patchId the patch id
-     * @return the history dir
+     * @return the bundle base directory
      */
-    public File getHistoryDir(final String patchId) {
-        final File history = new File(getPatchesMetadata(), HISTORY);
-        return new File(history, patchId);
-    }
-
-    /**
-     * Get the patch directory for a given patch-id.
-     *
-     * @param patchId the patch-id
-     * @return the patch directory
-     */
-    public File getPatchDirectory(final String patchId) {
-        return new File(getInstalledImage().getPatchesDir(), patchId);
-    }
+    public abstract File getBundleRepositoryRoot();
 
     /**
      * Get the bundles patch directory for a given patch-id.
@@ -285,9 +172,14 @@ public final class DirectoryStructure {
      * @param patchId the patch-id
      * @return the bundles patch directory
      */
-    public File getBundlesPatchDirectory(final String patchId) {
-        return new File(getPatchDirectory(patchId), BUNDLES);
-    }
+    public abstract File getBundlesPatchDirectory(final String patchId);
+
+    /**
+     * Get the module root.
+     *
+     * @return the module root
+     */
+    public abstract File getModuleRoot();
 
     /**
      * Get the modules patch directory for a given patch-id.
@@ -295,24 +187,25 @@ public final class DirectoryStructure {
      * @param patchId the patch-id
      * @return the modules patch directory
      */
-    public File getModulePatchDirectory(final String patchId) {
-        return new File(getPatchDirectory(patchId), MODULES);
-    }
+    public abstract File getModulePatchDirectory(final String patchId);
 
     /**
-     * Create the patch environment based on the default layout.
+     * Create the legacy patch environment based on the default layout.
      *
      * @param jbossHome the $JBOSS_HOME
      * @return the patch environment
+     * @deprecated see {@linkplain org.jboss.as.patching.installation.InstallationManager}
      */
-    public static DirectoryStructure createDefault(final File jbossHome) {
+    @Deprecated
+    public static DirectoryStructure createLegacy(final File jbossHome) {
         final File appClient = new File(jbossHome, APP_CLIENT);
         final File bundles = new File(jbossHome, BUNDLES);
         final File domain = new File(jbossHome, DOMAIN);
         final File modules = new File(jbossHome, MODULES);
-        final File patches = new File(jbossHome, PATCHES);
+        final File installation = new File(jbossHome, Constants.INSTALLATION);
+        final File patches = new File(modules, PATCHES);
         final File standalone = new File(jbossHome, STANDALONE);
-        return new DirectoryStructure(new InstalledImage() {
+        return new LegacyDirectoryStructure(new InstalledImage() {
 
             @Override
             public File getJbossHome() {
@@ -330,8 +223,23 @@ public final class DirectoryStructure {
             }
 
             @Override
+            public File getInstallationMetadata() {
+                return installation;
+            }
+
+            @Override
+            public File getLayersConf() {
+                return new File(getModulesDir(), Constants.LAYERS_CONF);
+            }
+
+            @Override
             public File getPatchesDir() {
                 return patches;
+            }
+
+            @Override
+            public File getPatchHistoryDir(String patchId) {
+                return new File(getInstallationMetadata(), patchId);
             }
 
             @Override
@@ -349,6 +257,57 @@ public final class DirectoryStructure {
                 return standalone;
             }
         });
+    }
+
+    static class LegacyDirectoryStructure extends DirectoryStructure {
+        private final InstalledImage image;
+        LegacyDirectoryStructure(final InstalledImage image) {
+            this.image = image;
+        }
+
+        @Override
+        public InstalledImage getInstalledImage() {
+            return image;
+        }
+
+        public File getPatchesMetadata() {
+            return new File(getInstalledImage().getPatchesDir(), METADATA);
+        }
+
+        @Override
+        public File getCumulativeLink() {
+            return new File(getPatchesMetadata(), CUMULATIVE);
+        }
+
+        @Override
+        public File getCumulativeRefs(final String cumulativeId) {
+            final File references = new File(getPatchesMetadata(), REFERENCES);
+            return new File(references, cumulativeId);
+        }
+
+        public File getPatchDirectory(final String patchId) {
+            return new File(getInstalledImage().getPatchesDir(), patchId);
+        }
+
+        @Override
+        public File getBundlesPatchDirectory(final String patchId) {
+            return new File(getPatchDirectory(patchId), BUNDLES);
+        }
+
+        @Override
+        public File getModulePatchDirectory(final String patchId) {
+            return new File(getPatchDirectory(patchId), MODULES);
+        }
+
+        @Override
+        public File getBundleRepositoryRoot() {
+            return getInstalledImage().getBundlesDir();
+        }
+
+        @Override
+        public File getModuleRoot() {
+            return getInstalledImage().getModulesDir();
+        }
     }
 
 }

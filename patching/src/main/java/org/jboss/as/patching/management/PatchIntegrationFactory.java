@@ -25,6 +25,7 @@ package org.jboss.as.patching.management;
 import org.jboss.as.controller.ModelControllerServiceInitialization;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.patching.installation.InstallationManagerService;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -55,6 +56,12 @@ public final class PatchIntegrationFactory implements ModelControllerServiceInit
         final PatchInfoService service = new PatchInfoService();
         serviceTarget.addService(PatchInfoService.NAME, service)
                 .addDependency(JBOSS_PRODUCT_CONFIG_SERVICE, ProductConfig.class, service.getProductConfig())
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
+
+        final InstallationManagerService installationMgr = new InstallationManagerService();
+        serviceTarget.addService(InstallationManagerService.NAME, installationMgr)
+                .addDependency(JBOSS_PRODUCT_CONFIG_SERVICE, ProductConfig.class, installationMgr.getInjectedProductConfig())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
 

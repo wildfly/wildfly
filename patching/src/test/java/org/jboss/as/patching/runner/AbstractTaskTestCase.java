@@ -49,7 +49,7 @@ public abstract class AbstractTaskTestCase {
     public void setup() throws Exception {
         tempDir = mkdir(new File(System.getProperty("java.io.tmpdir")), randomString());
         File jbossHome = mkdir(tempDir, "jboss-installation");
-        env = DirectoryStructure.createDefault(jbossHome);
+        env = DirectoryStructure.createLegacy(jbossHome);
         // make sur we put the installation modules dir in the module.path
         // FIXME is there a way set the module path without changing this sys prop?
         storedModulesPath = System.getProperty("module.path");
@@ -66,7 +66,7 @@ public abstract class AbstractTaskTestCase {
     }
 
     PatchingResult executePatch(final PatchInfo info, final File file) throws FileNotFoundException, PatchingException {
-        final PatchingTaskRunner runner = new PatchingTaskRunner(info, env);
+        final PatchingRunnerWrapper runner = PatchingRunnerWrapper.Factory.create(info, env);
         final PatchingResult result = runner.executeDirect(new FileInputStream(file), ContentVerificationPolicy.STRICT);
         result.commit();
         return result;
@@ -77,7 +77,7 @@ public abstract class AbstractTaskTestCase {
     }
 
     PatchingResult rollback(final PatchInfo info, final String patchId, final boolean rollbackTo) throws PatchingException {
-        final PatchingTaskRunner runner = new PatchingTaskRunner(info, env);
+        final PatchingRunnerWrapper runner = PatchingRunnerWrapper.Factory.create(info, env);
         final PatchingResult result = runner.rollback(patchId, ContentVerificationPolicy.STRICT, rollbackTo, true);
         result.commit();
         return result;

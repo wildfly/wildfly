@@ -20,69 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.structure;
-
-import java.io.File;
+package org.jboss.as.patching.installation;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface InstalledImage {
+public interface AddOn extends PatchableTarget {
 
     /**
-     * Get the jboss home.
+     * The add-on name.
      *
-     * @return the jboss home
+     * @return the add-on name
      */
-    File getJbossHome();
-
-    /**
-     * Get the app-client directory.
-     *
-     * @return the app client dir
-     */
-    File getAppClientDir();
-
-    /**
-     * Get the bundles directory.
-     *
-     * @return the bundles directory
-     */
-    File getBundlesDir();
-
-    /**
-     * Get the domain directory.
-     *
-     * @return the domain dir
-     */
-    File getDomainDir();
-
-    /**
-     * Get the installation metadata directory.
-     *
-     * @return the patches metadata dir
-     */
-    File getInstallationMetadata();
-
-    /**
-     * Get the modules directory.
-     *
-     * @return the modules dir
-     */
-    File getModulesDir();
-
-    /**
-     * Get the standalone dir.
-     *
-     * @return the standalone dir
-     */
-    File getStandaloneDir();
-
-    /**
-     * Get the path to the layers.conf file.
-     *
-     * @return the layers.conf path
-     */
-    File getLayersConf();
+    String getName();
 
 }

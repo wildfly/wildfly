@@ -24,15 +24,14 @@ package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.jboss.as.patching.HashUtils;
-import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.metadata.BundleItem;
 import org.jboss.as.patching.metadata.ContentType;
 import org.jboss.as.patching.metadata.ModuleItem;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * Base {@linkplain PatchingTask} for module updates.
@@ -48,10 +47,9 @@ abstract class AbstractModuleTask extends AbstractPatchingTask<ModuleItem> {
     }
 
     @Override
-    byte[] backup(PatchingContext context) throws IOException {
+    byte[] backup(PatchingTaskContext context) throws IOException {
         // Check the module.xml hash
-        final PatchInfo patchInfo = context.getPatchInfo();
-        final File[] repoRoots = patchInfo.getModulePath();
+        final File[] repoRoots = context.getTargetModulePath();
         //
         final String moduleName = contentItem.getName();
         final String slot = contentItem.getSlot();
