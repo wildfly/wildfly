@@ -16,9 +16,6 @@
  */
 package org.jboss.as.test.integration.ejb.pool.lifecycle;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.InputStream;
 import java.util.logging.Logger;
 
@@ -47,6 +44,9 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Tests if pooled EJBs have proper lifecycle.
@@ -167,10 +167,11 @@ public class PooledEJBLifecycleTestCase {
             assertEquals("Wrong preDestroy calls count", 0, cycleCounter.getPreDestroyCount());
             triggerSLSB();
             assertEquals("Wrong postCreate calls count, after EJB has been triggered", 1, cycleCounter.getPostCreateCount());
-            assertEquals("Wrong preDestroy calls count, after EJB has been triggered", 0, cycleCounter.getPreDestroyCount());
+            // Note: we do not check the pre-destroy count since we can assume whether or not the SLSB instance is pooled by the container
             log.info("-->About to undeploy SLSB archive");
             deployer.undeploy(SLSB_DEPLOYMENT_NAME);
             assertEquals("Wrong postCreate calls count, after EJB has been undeployed", 1, cycleCounter.getPostCreateCount());
+            // We can now test the pre-destroy count since a undeployment is expected to trigger a @PreDestroy
             assertEquals("Wrong preDestroy calls count, after EJB has been undeployed", 1, cycleCounter.getPreDestroyCount());
         } finally {
             cycleCounter.reset();
