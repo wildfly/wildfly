@@ -60,4 +60,35 @@
             <artifactId>myfaces-impl</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <!-- The Weld ViewHandler will be loaded from here so that it is not tied to a particular JSF impl -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.jboss.weld</groupId>
+                                    <artifactId>weld-core</artifactId>
+                                    <type>jar</type>
+                                    <version>${version.org.jboss.weld.weld}</version>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                            <includes>org/jboss/weld/jsf/*.class,org/jboss/weld/servlet/ConversationPropagationFilter.class</includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
