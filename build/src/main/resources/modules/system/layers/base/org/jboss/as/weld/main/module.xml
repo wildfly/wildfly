@@ -45,6 +45,7 @@
         <module name="javax.servlet.api"/>
         <module name="javax.servlet.jsp.api"/>
         <module name="javax.transaction.api"/>
+        <module name="javax.validation.api"/>
         <module name="org.glassfish.javax.el" />
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.staxmapper"/>
