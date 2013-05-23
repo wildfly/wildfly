@@ -32,6 +32,7 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.weld.exceptions.DefinitionException;
 import org.jboss.weld.injection.spi.ResourceReference;
 import org.jboss.weld.injection.spi.ResourceReferenceFactory;
+import org.jboss.weld.injection.spi.helpers.SimpleResourceReference;
 import org.jboss.weld.util.reflection.HierarchyDiscovery;
 import org.jboss.weld.util.reflection.Reflections;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -106,6 +107,9 @@ public abstract class AbstractResourceInjectionServices {
             @Override
             public ResourceReference<Object> createResource() {
                 final ManagedReferenceFactory factory = getManagedReferenceFactory(ejbBindInfo);
+                if (factory == null) {
+                    return new SimpleResourceReference<>(null);
+                }
                 final ManagedReference instance = factory.getReference();
                 return new ResourceReference<Object>() {
                     @Override
