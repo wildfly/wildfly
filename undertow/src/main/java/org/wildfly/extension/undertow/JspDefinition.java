@@ -49,8 +49,8 @@ import org.jboss.msc.service.ServiceController;
  * @author Tomaz Cerar
  * @created 23.2.12 18:47
  */
-class JSPDefinition extends SimplePersistentResourceDefinition {
-    static final JSPDefinition INSTANCE = new JSPDefinition();
+class JspDefinition extends SimplePersistentResourceDefinition {
+    static final JspDefinition INSTANCE = new JspDefinition();
 
     protected static final SimpleAttributeDefinition DEVELOPMENT =
             new SimpleAttributeDefinitionBuilder(Constants.DEVELOPMENT, ModelType.BOOLEAN, true)
@@ -216,7 +216,7 @@ class JSPDefinition extends SimplePersistentResourceDefinition {
         }
     }
 
-    private JSPDefinition() {
+    private JspDefinition() {
         super(UndertowExtension.PATH_JSP,
                 UndertowExtension.getResolver(UndertowExtension.PATH_JSP.getKeyValuePair()),
                 new JSPAdd(),

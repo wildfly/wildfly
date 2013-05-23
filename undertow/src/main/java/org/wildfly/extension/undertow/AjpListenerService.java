@@ -38,11 +38,11 @@ import org.xnio.channels.AcceptingChannel;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class AJPListenerService extends AbstractListenerService<AJPListenerService> {
+public class AjpListenerService extends AbstractListenerService<AjpListenerService> {
 
     private volatile AcceptingChannel<StreamConnection> server;
 
-    public AJPListenerService(String name) {
+    public AjpListenerService(String name) {
         super(name);
     }
 
@@ -67,7 +67,7 @@ public class AJPListenerService extends AbstractListenerService<AJPListenerServi
     }
 
     @Override
-    public AJPListenerService getValue() throws IllegalStateException, IllegalArgumentException {
+    public AjpListenerService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 
