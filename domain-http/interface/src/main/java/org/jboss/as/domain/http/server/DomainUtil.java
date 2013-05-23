@@ -24,6 +24,7 @@ package org.jboss.as.domain.http.server;
 import static io.undertow.util.Headers.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.util.DateUtils;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
 
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
+import io.undertow.util.Methods;
 import org.jboss.dmr.ModelNode;
 import org.xnio.IoUtils;
 import org.xnio.streams.ChannelOutputStream;
@@ -42,14 +44,24 @@ import org.xnio.streams.ChannelOutputStream;
  */
 public class DomainUtil {
 
-    public static void writeResponse(HttpServerExchange exchange, boolean isGet, boolean pretty, ModelNode response, int status, boolean encode) {
-        final String contentType = encode ? Common.APPLICATION_DMR_ENCODED : Common.APPLICATION_JSON;
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, contentType  + ";" + Common.UTF_8);
-        exchange.setResponseCode(status);
+    public static void writeResponse(HttpServerExchange exchange, OperationResult operationResult) {
+        exchange.setResponseCode(operationResult.getStatus());
 
+        final HeaderMap responseHeaders = exchange.getResponseHeaders();
+        final String contentType = operationResult.isEncode() ? Common.APPLICATION_DMR_ENCODED : Common.APPLICATION_JSON;
+        responseHeaders.put(Headers.CONTENT_TYPE, contentType + ";" + Common.UTF_8);
 
-        //TODO Content-Length?
-        if (isGet && status == 200) {
+        // Write caching headers
+        if (operationResult.getMaxAge() > 0) {
+            responseHeaders.put(Headers.CACHE_CONTROL, "max-age=" + operationResult.getMaxAge() + ", private");
+        }
+        if (operationResult.getLastModified() != null) {
+            responseHeaders.put(Headers.LAST_MODIFIED, DateUtils.toDateString(operationResult.getLastModified()));
+        }
+
+        // TODO Content-Length?
+        ModelNode response = operationResult.getResponse();
+        if (exchange.getRequestMethod().equals(Methods.GET) && operationResult.getStatus() == 200) {
             response = response.get(RESULT);
         }
 
@@ -57,10 +69,10 @@ public class DomainUtil {
         PrintWriter print = new PrintWriter(out);
         try {
             try {
-                if (encode) {
+                if (operationResult.isEncode()) {
                     response.writeBase64(out);
                 } else {
-                    response.writeJSONString(print, !pretty);
+                    response.writeJSONString(print, !operationResult.isPretty());
                 }
             } finally {
                 print.flush();
