@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.weld.webtier.jsf;
+package org.jboss.as.jsf.injection.weld;
 
 import java.beans.FeatureDescriptor;
 import java.util.Iterator;

@@ -21,8 +21,12 @@
  */
 package org.jboss.as.jsf.deployment;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.jsf.JSFLogger;
 import org.jboss.as.jsf.JSFMessages;
 import org.jboss.as.server.deployment.Attachments;
@@ -32,6 +36,9 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.as.web.common.WarMetaData;
+import org.jboss.metadata.javaee.spec.ParamValueMetaData;
+import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -42,6 +49,7 @@ import org.jboss.modules.filter.PathFilters;
  * @author Stuart Douglas
  */
 public class JSFDependencyProcessor implements DeploymentUnitProcessor {
+    public static final String IS_CDI_PARAM = "org.jboss.jbossfaces.IS_CDI";
 
     private static final ModuleIdentifier JSF_SUBSYSTEM = ModuleIdentifier.create("org.jboss.as.jsf");
     private static final ModuleIdentifier BEAN_VALIDATION = ModuleIdentifier.create("org.hibernate.validator");
@@ -86,6 +94,9 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSF_SUBSYSTEM, false, false, true, false));
 
         addJSFInjection(jsfVersion, moduleSpecification, moduleLoader);
+
+        WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        addCDIFlag(warMetaData, topLevelDeployment);
     }
 
     @Override
@@ -100,9 +111,9 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
     }
 
     private void addJSFImpl(String jsfVersion,
-                            ModuleSpecification moduleSpecification,
-                            ModuleLoader moduleLoader,
-                            DeploymentUnit topLevelDeployment) {
+            ModuleSpecification moduleSpecification,
+            ModuleLoader moduleLoader,
+            DeploymentUnit topLevelDeployment) {
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
 
         ModuleIdentifier jsfModule = moduleIdFactory.getImplModId(jsfVersion);
@@ -118,5 +129,28 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         ModuleDependency jsfInjectionDependency = new ModuleDependency(moduleLoader, jsfInjectionModule, false, true, true, false);
         jsfInjectionDependency.addImportFilter(PathFilters.getMetaInfFilter(), true);
         moduleSpecification.addSystemDependency(jsfInjectionDependency);
+    }
+
+    // Add a flag to the sevlet context so that we know if we need to instantiate
+    // a CDI ViewHandler.
+    private void addCDIFlag(WarMetaData warMetaData, DeploymentUnit topLevelDeployment) {
+        WebMetaData webMetaData = warMetaData.getWebMetaData();
+        if (webMetaData == null) {
+            webMetaData = new WebMetaData();
+            warMetaData.setWebMetaData(webMetaData);
+        }
+
+        List<ParamValueMetaData> contextParams = warMetaData.getWebMetaData().getContextParams();
+        if (contextParams == null) {
+            contextParams = new ArrayList<ParamValueMetaData>();
+        }
+
+        boolean isCDI = WeldDeploymentMarker.isWeldDeployment(topLevelDeployment);
+        ParamValueMetaData param = new ParamValueMetaData();
+        param.setParamName(IS_CDI_PARAM);
+        param.setParamValue(Boolean.toString(isCDI));
+        contextParams.add(param);
+
+        webMetaData.setContextParams(contextParams);
     }
 }

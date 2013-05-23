@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.weld.webtier.jsf;
+package org.jboss.as.jsf.injection.weld;
 
 import javax.faces.application.Application;
 import javax.faces.application.ApplicationFactory;
