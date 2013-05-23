@@ -29,6 +29,7 @@ import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
 
+import org.jboss.ejb3.annotation.Pool;
 import org.jboss.ejb3.annotation.SecurityDomain;
 
 /**
@@ -40,6 +41,7 @@ import org.jboss.ejb3.annotation.SecurityDomain;
 @SecurityDomain("other")
 @DeclareRoles(value = {"Role1", "Role2", "Role3"})
 @RunAs("Role3")
+@Pool("slsb-strict-max-pool")
 public class ManagedStatelessBean extends AbstractManagedBean implements BusinessInterface {
     @Timeout
     @Schedule(second="15", persistent = false)

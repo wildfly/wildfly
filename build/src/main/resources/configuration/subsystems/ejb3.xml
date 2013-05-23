@@ -4,15 +4,13 @@
    <extension-module>org.jboss.as.ejb3</extension-module>
    <subsystem xmlns="urn:jboss:domain:ejb3:2.0">
        <session-bean>
-           <stateless>
-               <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
-           </stateless>
            <?STATEFUL-BEAN?>
            <singleton default-access-timeout="5000"/>
        </session-bean>
        <?MDB?>
        <pools>
            <bean-instance-pools>
+               <!-- A sample strict max pool configuration -->
                <strict-max-pool name="slsb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
                <strict-max-pool name="mdb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
            </bean-instance-pools>
