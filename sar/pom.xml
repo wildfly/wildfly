@@ -92,7 +92,7 @@
             <artifactId>wildfly-ee</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-security-manager</artifactId>
         </dependency>
         <dependency>

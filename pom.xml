@@ -265,6 +265,7 @@
         <version.org.slf4j>1.7.2</version.org.slf4j>
         <version.org.sonatype.aether>1.13.1</version.org.sonatype.aether>
         <version.org.testng>6.1.1</version.org.testng>
+        <version.org.wildfly.security.manager>1.0.0.Beta1</version.org.wildfly.security.manager>
         <version.org.yaml.snakeyaml>1.8</version.org.yaml.snakeyaml>
         <version.osgi>5.0.0</version.osgi>
         <version.sun.jaxb>2.2.5.jboss-1</version.sun.jaxb>
@@ -324,7 +325,6 @@
         <module>process-controller</module>
         <module>protocol</module>
         <module>remoting</module>
-        <module>security-manager</module>
         <module>server</module>
         <module>subsystem-test</module>
         <module>threads</module>
@@ -1242,12 +1242,6 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-security</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-security-manager</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -6086,6 +6080,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.wildfly.security</groupId>
+                <artifactId>wildfly-security-manager</artifactId>
+                <version>${version.org.wildfly.security.manager}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
                 <version>${version.org.yaml.snakeyaml}</version>
@@ -6234,7 +6234,6 @@
                 <module>system-jmx</module>
                 <module>sar</module>
                 <module>security</module>
-                <module>security-manager</module>
                 <module>spec-api</module>
                 <module>transactions</module>
                 <module>undertow</module>
