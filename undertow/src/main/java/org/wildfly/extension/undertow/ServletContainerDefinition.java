@@ -53,7 +53,7 @@ public class ServletContainerDefinition extends SimplePersistentResourceDefiniti
 
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
-        return Collections.singletonList(JSPDefinition.INSTANCE);
+        return Collections.singletonList(JspDefinition.INSTANCE);
 
     }
 }

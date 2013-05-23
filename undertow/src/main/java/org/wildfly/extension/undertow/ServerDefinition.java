@@ -53,7 +53,7 @@ public class ServerDefinition extends SimplePersistentResourceDefinition {
             .build();
     static final List<SimpleAttributeDefinition> ATTRIBUTES = Arrays.asList(DEFAULT_HOST, SERVLET_CONTAINER);
     static final List<SimplePersistentResourceDefinition> CHILDREN = Arrays.asList(
-            AJPListenerResourceDefinition.INSTANCE,
+            AjpListenerResourceDefinition.INSTANCE,
             HttpListenerResourceDefinition.INSTANCE,
             HttpsListenerResourceDefinition.INSTANCE,
             HostDefinition.INSTANCE);

@@ -24,19 +24,32 @@
 
 package org.wildfly.extension.undertow;
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-public class AJPListenerResourceDefinition extends AbstractListenerResourceDefinition {
-    protected static final AJPListenerResourceDefinition INSTANCE = new AJPListenerResourceDefinition();
+class AjpListenerAdd extends AbstractListenerAdd {
 
+    AjpListenerAdd(AjpListenerResourceDefinition def) {
+        super(def);
+    }
 
-    private AJPListenerResourceDefinition() {
-        super(UndertowExtension.AJP_LISTENER_PATH);
+    protected ServiceName constructServiceName(final String name) {
+        return UndertowService.AJP_LISTENER.append(name);
     }
 
     @Override
-    protected AbstractListenerAdd getAddHandler() {
-        return new AJPListenerAdd(this);
+    AbstractListenerService<? extends AbstractListenerService> createService(String name, OperationContext context, ModelNode model) throws OperationFailedException {
+        return new AjpListenerService(name);
+    }
+
+    @Override
+    void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends AbstractListenerService> serviceBuilder, ModelNode model, AbstractListenerService service) throws OperationFailedException {
+
     }
 }
