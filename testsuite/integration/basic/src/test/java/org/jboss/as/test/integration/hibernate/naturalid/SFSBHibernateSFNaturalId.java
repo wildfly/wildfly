@@ -30,6 +30,7 @@ import javax.ejb.TransactionManagementType;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
@@ -82,7 +83,7 @@ public class SFSBHibernateSFNaturalId {
             // build the serviceregistry
             final BootstrapServiceRegistryBuilder bootstrapbuilder = new BootstrapServiceRegistryBuilder();
             builder = new ServiceRegistryBuilder(bootstrapbuilder.build()).applySettings(properties);
-            serviceRegistry = builder.buildServiceRegistry();
+            serviceRegistry = builder.build();
 
             // Create the SessionFactory from Configuration
             sessionFactory = configuration.configure("hibernate.cfg.xml").buildSessionFactory(serviceRegistry);

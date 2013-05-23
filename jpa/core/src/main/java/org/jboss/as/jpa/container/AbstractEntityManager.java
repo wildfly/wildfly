@@ -22,20 +22,26 @@
 
 package org.jboss.as.jpa.container;
 
-import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
+import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
+import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.FlushModeType;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
+import javax.persistence.StoredProcedureQuery;
+import javax.persistence.SynchronizationType;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.CriteriaUpdate;
 import javax.persistence.metamodel.Metamodel;
 
 /**
@@ -62,7 +68,7 @@ public abstract class AbstractEntityManager implements EntityManager {
      */
     protected abstract boolean isInTx();
 
-
+    public abstract SynchronizationType getSynchronizationType();
 
     public <T> T unwrap(Class<T> cls) {
         return getEntityManager().unwrap(cls);
@@ -658,6 +664,163 @@ public abstract class AbstractEntityManager implements EntityManager {
         }
     }
 
+    public Query createQuery(CriteriaUpdate criteriaUpdate) {
+        long start = 0;
+        if (isTraceEnabled)
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().createQuery(criteriaUpdate);
+
+        } finally {
+            if (isTraceEnabled) {
+                long elapsed = System.currentTimeMillis() - start;
+                ROOT_LOGGER.tracef("createQuery(CriteriaUpdate) took %dms", elapsed);
+            }
+        }
+    }
+
+    public Query createQuery(CriteriaDelete criteriaDelete) {
+        long start = 0;
+        if (isTraceEnabled)
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().createQuery(criteriaDelete);
+        } finally {
+            if (isTraceEnabled) {
+                long elapsed = System.currentTimeMillis() - start;
+                ROOT_LOGGER.tracef("createQuery(criteriaDelete) took %dms", elapsed);
+            }
+        }
+    }
+
+    public StoredProcedureQuery createNamedStoredProcedureQuery(String name) {
+        long start = 0;
+        if (isTraceEnabled)
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().createNamedStoredProcedureQuery(name);
+        } finally {
+            if (isTraceEnabled) {
+                long elapsed = System.currentTimeMillis() - start;
+                ROOT_LOGGER.tracef("createNamedStoredProcedureQuery %s took %dms", name, elapsed);
+            }
+        }
+    }
+
+    public StoredProcedureQuery createStoredProcedureQuery(String procedureName) {
+        long start = 0;
+        if (isTraceEnabled)
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().createStoredProcedureQuery(procedureName);
+        } finally {
+            if (isTraceEnabled) {
+                long elapsed = System.currentTimeMillis() - start;
+                ROOT_LOGGER.tracef("createStoredProcedureQuery %s took %dms", procedureName, elapsed);
+            }
+        }
+    }
+
+    public StoredProcedureQuery createStoredProcedureQuery(String procedureName, Class... resultClasses) {
+        long start = 0;
+        if (isTraceEnabled)
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().createStoredProcedureQuery(procedureName, resultClasses);
+        } finally {
+            if (isTraceEnabled) {
+                long elapsed = System.currentTimeMillis() - start;
+                ROOT_LOGGER.tracef("createStoredProcedureQuery %s, resultClasses... took %dms", procedureName, elapsed);
+            }
+        }
+    }
+
+    public StoredProcedureQuery createStoredProcedureQuery(String procedureName, String... resultSetMappings) {
+        long start = 0;
+        if (isTraceEnabled)
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().createStoredProcedureQuery(procedureName, resultSetMappings);
+        } finally {
+            if (isTraceEnabled) {
+                long elapsed = System.currentTimeMillis() - start;
+                ROOT_LOGGER.tracef("createStoredProcedureQuery %s, resultSetMappings... took %dms", procedureName, elapsed);
+            }
+        }
+    }
+
+    public <T> EntityGraph<T> createEntityGraph(Class<T> tClass) {
+        long start = 0;
+        if (isTraceEnabled)
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().createEntityGraph(tClass);
+        } finally {
+            if (isTraceEnabled) {
+                long elapsed = System.currentTimeMillis() - start;
+                ROOT_LOGGER.tracef("createEntityGraph %s took %dms", tClass.getName(), elapsed);
+            }
+        }
+
+    }
+
+    public EntityGraph<?> createEntityGraph(String s) {
+        long start = 0;
+        if (isTraceEnabled)
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().createEntityGraph(s);
+        } finally {
+            if (isTraceEnabled) {
+                long elapsed = System.currentTimeMillis() - start;
+                ROOT_LOGGER.tracef("createEntityGraph %s took %dms", s, elapsed);
+            }
+        }
+    }
+
+    public <T> EntityGraph<T> getEntityGraph(String s) {
+        long start = 0;
+        if (isTraceEnabled)
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().getEntityGraph(s);
+        } finally {
+            if (isTraceEnabled) {
+                long elapsed = System.currentTimeMillis() - start;
+                ROOT_LOGGER.tracef("getEntityGraph %s took %dms", s, elapsed);
+            }
+        }
+    }
+
+    public <T> List<EntityGraph<? super T>> getEntityGraphs(Class<T> tClass) {
+        long start = 0;
+        if (isTraceEnabled)
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().getEntityGraphs(tClass);
+        } finally {
+            if (isTraceEnabled) {
+                long elapsed = System.currentTimeMillis() - start;
+                ROOT_LOGGER.tracef("getEntityGraphs %s took %dms", tClass.getName(), elapsed);
+            }
+        }
+    }
+
+    public boolean isJoinedToTransaction() {
+        long start = 0;
+        if (isTraceEnabled)
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().isJoinedToTransaction();
+        } finally {
+            if (isTraceEnabled) {
+                long elapsed = System.currentTimeMillis() - start;
+                ROOT_LOGGER.tracef("isJoinedToTransaction() took %dms", elapsed);
+            }
+        }
+    }
+
+
     // used by TransactionScopedEntityManager to auto detach loaded entities
     // after each non-jta invocation
     protected void detachNonTxInvocation(EntityManager underlyingEntityManager) {
@@ -714,6 +877,5 @@ public abstract class AbstractEntityManager implements EntityManager {
                 return "none";
         }
     }
-
 
 }

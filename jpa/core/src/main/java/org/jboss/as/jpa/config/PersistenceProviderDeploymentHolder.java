@@ -27,7 +27,7 @@ import java.util.List;
 
 import javax.persistence.spi.PersistenceProvider;
 
-import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
+import org.jipijapa.plugin.spi.PersistenceProviderAdaptor;
 
 /**
  * holds the deployed persistence provider + adaptor

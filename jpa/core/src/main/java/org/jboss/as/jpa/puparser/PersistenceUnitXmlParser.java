@@ -32,13 +32,14 @@ import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataImpl;
-import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.metadata.parser.util.MetaDataElementParser;
 import org.jboss.metadata.property.PropertyReplacer;
+import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
 
 /**
  * Parse a persistence.xml into a list of persistence unit definitions.
@@ -153,7 +154,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
         pu.setTransactionType(PersistenceUnitTransactionType.JTA);
         pu.setValidationMode(ValidationMode.AUTO);
         pu.setSharedCacheMode(SharedCacheMode.UNSPECIFIED);
-        pu.setPersistenceProviderClassName("org.hibernate.ejb.HibernatePersistence");  // TODO: move to domain.xml?
+        pu.setPersistenceProviderClassName(Configuration.PROVIDER_CLASS_DEFAULT);
         if (version.equals(Version.JPA_1_0)) {
             pu.setPersistenceXMLSchemaVersion("1.0");
         } else {

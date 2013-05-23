@@ -71,9 +71,15 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-jpa-spi</artifactId>
+            <groupId>org.jipijapa</groupId>
+            <artifactId>spi</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.jipijapa</groupId>
+            <artifactId>core</artifactId>
+        </dependency>
+
 
         <dependency>
             <groupId>org.wildfly</groupId>
@@ -99,6 +105,11 @@
             <artifactId>wildfly-subsystem-test</artifactId>
             <type>pom</type>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
         </dependency>
     </dependencies>
 </project>

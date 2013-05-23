@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.jpa.entitylistener;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import javax.naming.InitialContext;
@@ -32,7 +33,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,6 +53,7 @@ public class EntityListenersTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addPackage(EntityListenersTestCase.class.getPackage());
         jar.addAsManifestResource(EntityListenersTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+        jar.addAsManifestResource(EntityListenersTestCase.class.getPackage(), "beans.xml", "beans.xml");
         return jar;
     }
 
@@ -92,6 +93,19 @@ public class EntityListenersTestCase {
         MyListener.setInvocationCount(0);
         SFSBCMT cmt = lookup("SFSBCMT", SFSBCMT.class);
         this.doCMTTest(cmt, 2);
+
+    }
+
+    /**
+     * Test that @PostConstruct is invoked
+     * @throws Exception
+     */
+    @Test
+    public void testCDICallbackInvoked() throws Exception {
+        SFSBCMT cmt = lookup("SFSBCMT", SFSBCMT.class);
+        assertEquals("MyListener should of been created by the BeanManager instance passed into the " +
+                "persistence provider via property 'javax.persistence.bean.manager'. "
+                , 1, MyListener.getPostCtorInvocationCount());
 
     }
 

@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.jpa.entitylistener;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.EJBContext;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -32,7 +33,13 @@ import javax.persistence.PreUpdate;
  * test case from AS7-2968
  *
  */
+
 public class MyListener {
+
+
+    private static volatile int invocationCount = 0;
+
+    private static volatile int postCtorInvocationCount = 0;
 
     public static int getInvocationCount() {
         return invocationCount;
@@ -42,14 +49,19 @@ public class MyListener {
         MyListener.invocationCount = invocationCount;
     }
 
-    private static volatile int invocationCount = 0;
+    public static int getPostCtorInvocationCount() {
+        return postCtorInvocationCount;
+    }
+
+    public static void setPostCtorInvocationCount(int postCtorInvocationCount) {
+        MyListener.postCtorInvocationCount = postCtorInvocationCount;
+    }
 
     @PrePersist
     @PreUpdate
     public void onEntityCallback(Object entity) {
         try {
             invocationCount++;
-            // Thread.dumpStack();
             InitialContext jndiContext = new InitialContext();
             EJBContext ctx = (EJBContext)jndiContext.lookup("java:comp/EJBContext");
               System.out.println(ctx.getCallerPrincipal().getName() + ", entity=" + entity);
@@ -57,5 +69,10 @@ public class MyListener {
             throw new RuntimeException("initial context error", e);
         }
 
+    }
+
+    @PostConstruct
+    public void postCtor() {
+        postCtorInvocationCount++;
     }
 }
