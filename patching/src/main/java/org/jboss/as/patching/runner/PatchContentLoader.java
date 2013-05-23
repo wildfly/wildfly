@@ -22,17 +22,17 @@
 
 package org.jboss.as.patching.runner;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.metadata.BundleItem;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentType;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModuleItem;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * @author Emanuel Muckenhuber
@@ -68,6 +68,9 @@ class PatchContentLoader {
      */
     InputStream openContentStream(final ContentItem item) throws IOException {
         final File file = getFile(item);
+        if (file == null) {
+            throw new IllegalStateException();
+        }
         return new FileInputStream(file);
     }
 

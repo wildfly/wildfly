@@ -22,19 +22,18 @@
 
 package org.jboss.as.patching;
 
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
+import java.io.IOException;
+import java.util.List;
+import java.util.Set;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.Param;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Set;
-
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamException;
 
 /**
  * This module is using message IDs in the range 16800-16899.

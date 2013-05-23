@@ -20,11 +20,50 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.structure;
+package org.jboss.as.patching.installation;
+
+import java.io.IOException;
+import java.util.List;
+
+import org.jboss.as.patching.DirectoryStructure;
 
 /**
+ * A patchable target.
+ *
  * @author Emanuel Muckenhuber
  */
-public interface BaseLayer extends PatchableTarget {
+public interface PatchableTarget {
+
+    /**
+     * Load the target info.
+     *
+     * @return the target info
+     */
+    TargetInfo loadTargetInfo() throws IOException;
+
+    public interface TargetInfo {
+
+        /**
+         * Get the cumulative patch id.
+         *
+         * @return the cumulative patch id
+         */
+        String getCumulativeID();
+
+        /**
+         * Get the active one-off patches.
+         *
+         * @return the active one-off patches
+         */
+        List<String> getPatchIDs();
+
+        /**
+         * The directory structure for this target.
+         *
+         * @return the directory structure
+         */
+        DirectoryStructure getDirectoryStructure();
+
+    }
 
 }

@@ -32,7 +32,7 @@ import org.jboss.as.patching.PatchInfo;
 public interface PatchingResult {
 
     /**
-     * Get the patch id.
+     * Get the processed patch id.
      *
      * @return the patch id
      */

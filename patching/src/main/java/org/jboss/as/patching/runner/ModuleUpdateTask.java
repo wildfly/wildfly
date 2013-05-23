@@ -22,13 +22,13 @@
 
 package org.jboss.as.patching.runner;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.ModuleItem;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * Adding or updating a module will add a module in the patch overlay directory {@linkplain org.jboss.as.patching.DirectoryStructure#getModulePatchDirectory(String)}.
@@ -42,9 +42,9 @@ class ModuleUpdateTask extends AbstractModuleTask {
     }
 
     @Override
-    byte[] apply(PatchingContext context, PatchContentLoader loader) throws IOException {
+    byte[] apply(PatchingTaskContext context, PatchContentLoader loader) throws IOException {
         // Copy the new module resources to the patching directory
-        final File targetDir = context.getModulePatchDirectory(contentItem);
+        final File targetDir = context.getTargetFile(contentItem);
         final File sourceDir = loader.getFile(contentItem);
         // Recursively copy module contents (incl. native libs)
         IoUtils.copyFile(sourceDir, targetDir);

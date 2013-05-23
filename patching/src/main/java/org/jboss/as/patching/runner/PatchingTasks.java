@@ -23,21 +23,15 @@
 package org.jboss.as.patching.runner;
 
 
-import org.jboss.as.patching.DirectoryStructure;
-import org.jboss.as.patching.metadata.ContentItem;
-import org.jboss.as.patching.metadata.ContentModification;
-import org.jboss.as.patching.metadata.ModificationType;
-import org.jboss.as.patching.metadata.Patch;
-import org.jboss.as.patching.metadata.PatchXml;
-
-import javax.xml.stream.XMLStreamException;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.as.patching.metadata.ContentItem;
+import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.ModificationType;
 
 /**
  * @author Emanuel Muckenhuber
@@ -51,77 +45,63 @@ class PatchingTasks {
 
     /**
      * Process multiple patches for rollback, trying to determine the current and target state for this applying this combination.
-     *
+     * <p/>
      * This will track changes by location, trying to merge multiple changes per location and recording whether conflicts
      * were detected or not. It's up to the user to skip the content validation steps.
+     * </p>
+     * Compare the recorded rollback history and the original patch - to detect conflicts.
      *
-     * @param structure the directory structure
-     * @param patchId the patch-id to rollback
-     * @param modifications the modifications by lcoation
-     * @throws XMLStreamException
-     * @throws IOException
+     * @param patchId       the patch id
+     * @param originalPatch the original modifications
+     * @param rollbackPatch the rollback modifications
+     * @param modifications the definitions
+     * @param filter        the content filter
      */
-    static void rollback(final DirectoryStructure structure, final String patchId, final Map<Location, ContentTaskDefinition> modifications) throws XMLStreamException, IOException {
-        // TODO perhaps use a separate format for keeping this information
-        final Patch originalPatch = loadPatchInformation(patchId, structure);
-        final Patch rollbackPatch = loadRollbackInformation(patchId, structure);
-        // skip all module items for rollback
-        rollback(patchId, originalPatch, rollbackPatch, modifications, ROLLBACK_FILTER);
-    }
-
-    /**
-     * Compare the recorded rollback history and the original patch.xml to detect conflicts.
-     *
-     * @param patchId the patch id
-     * @param originalPatch the original patch.xml
-     * @param rollbackPatch the reverse (history) patch.xml
-     * @param modifications the modifications
-     * @param filter a generic content-item filter
-     */
-    static void rollback(final String patchId, final Patch originalPatch, final Patch rollbackPatch, final Map<Location, ContentTaskDefinition> modifications, ContentItemFilter filter) {
+    static void rollback(final String patchId, final List<ContentModification> originalPatch, final List<ContentModification> rollbackPatch,
+                         final Map<Location, ContentTaskDefinition> modifications, final ContentItemFilter filter) {
 
         // Process the original patch information
         final Map<Location, ContentModification> originalModifications = new HashMap<Location, ContentModification>();
-        for(final ContentModification modification : originalPatch.getModifications()) {
+        for (final ContentModification modification : originalPatch) {
             originalModifications.put(new Location(modification.getItem()), modification);
         }
         // Process the rollback information
-        for(final ContentModification modification : rollbackPatch.getModifications()) {
+        for (final ContentModification modification : rollbackPatch) {
 
             final ContentItem item = modification.getItem();
             // Skip module items when rolling back
-            if(! filter.accepts(item)) {
+            if (!filter.accepts(item)) {
                 continue;
             }
 
             final Location location = new Location(item);
             final ContentModification original = originalModifications.remove(location);
-            if(original == null) {
-                if(modification.getType() != ModificationType.ADD) {
+            if (original == null) {
+                if (modification.getType() != ModificationType.ADD) {
                     throw new IllegalStateException(item.toString()); // Only for development purpose
                 }
             }
 
             final ContentEntry contentEntry = new ContentEntry(patchId, modification);
             ContentTaskDefinition definition = modifications.get(location);
-            if(definition == null) {
+            if (definition == null) {
                 definition = new ContentTaskDefinition(location, contentEntry);
                 modifications.put(location, definition);
             } else {
                 // TODO perhaps we don't need check that
                 boolean strict = true; // Strict history checks
-                if(strict) {
+                if (strict) {
                     // Check if the consistency of the history
                     final ContentEntry previous = definition.getTarget();
                     final byte[] hash = previous.getItem().getContentHash();
-                    if(! Arrays.equals(hash, contentEntry.getTargetHash())) {
+                    if (!Arrays.equals(hash, contentEntry.getTargetHash())) {
                         throw new IllegalStateException();
                     }
                 }
                 //
                 definition.setTarget(contentEntry);
             }
-            if(original == null) {
+            if (original == null) {
                 continue;
             }
 
@@ -129,14 +109,14 @@ class PatchingTasks {
             final byte[] currentContent = modification.getTargetHash();
             final byte[] originalContent = original.getItem().getContentHash();
 
-            if(! Arrays.equals(currentContent, originalContent)) {
+            if (!Arrays.equals(currentContent, originalContent)) {
                 definition.addConflict(contentEntry);
             } else {
                 // Check if backup item was the targeted one (override)
                 final byte[] backupItem = item.getContentHash();
                 final byte[] originalTarget = original.getTargetHash();
                 //
-                if(! Arrays.equals(backupItem, originalTarget))  {
+                if (!Arrays.equals(backupItem, originalTarget)) {
                     definition.addConflict(contentEntry);
                 }
             }
@@ -144,25 +124,23 @@ class PatchingTasks {
     }
 
     /**
-     * Simply a apply a patch, without requiring the
+     * Apply modifications to a content task definition.
      *
-     * @param patch
-     * @param modifications
-     * @throws XMLStreamException
-     * @throws IOException
+     * @param patchId       the patch id
+     * @param modifications the modifications
+     * @param definitions   the task definitions
      */
-    static void apply(final Patch patch, final Map<Location, ContentTaskDefinition> modifications) throws XMLStreamException, IOException {
-        final String patchId = patch.getPatchId();
-        for(final ContentModification modification : patch.getModifications()) {
+    static void apply(final String patchId, final List<ContentModification> modifications, final Map<Location, ContentTaskDefinition> definitions) {
+        for (final ContentModification modification : modifications) {
 
             final ContentItem item = modification.getItem();
             final Location location = new Location(item);
 
             final ContentEntry contentEntry = new ContentEntry(patchId, modification);
-            ContentTaskDefinition definition = modifications.get(location);
-            if(definition == null) {
+            ContentTaskDefinition definition = definitions.get(location);
+            if (definition == null) {
                 definition = new ContentTaskDefinition(location, contentEntry);
-                modifications.put(location, definition);
+                definitions.put(location, definition);
             }
             definition.setTarget(contentEntry);
         }
@@ -194,7 +172,7 @@ class PatchingTasks {
         }
 
         public boolean hasConflicts() {
-            return ! conflicts.isEmpty();
+            return !conflicts.isEmpty();
         }
 
         public List<ContentEntry> getConflicts() {
@@ -237,18 +215,6 @@ class PatchingTasks {
             return modification.getTargetHash();
         }
 
-    }
-
-    static Patch loadPatchInformation(final String patchId, final DirectoryStructure structure) throws IOException, XMLStreamException {
-        final File patchDir = structure.getPatchDirectory(patchId);
-        final File patchXml = new File(patchDir, PatchXml.PATCH_XML);
-        return PatchXml.parse(patchXml);
-    }
-
-    static Patch loadRollbackInformation(final String patchId, final DirectoryStructure structure) throws IOException, XMLStreamException {
-        final File historyDir = structure.getHistoryDir(patchId);
-        final File patchXml = new File(historyDir, PatchingContext.ROLLBACK_XML);
-        return PatchXml.parse(patchXml);
     }
 
 }

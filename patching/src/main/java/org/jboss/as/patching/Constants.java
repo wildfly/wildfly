@@ -66,7 +66,8 @@ public class Constants {
 
     // Files
     public static final String CUMULATIVE = "cumulative";
-    public static final String INSTALLATION_METADATA = "installation";
+    @Deprecated public static final String INSTALLATION_METADATA = "installation";
     public static final String LAYERS_CONF = "layers.conf";
     public static final String REFERENCES = "references";
+    public static final String ROLLBACK_XML = "rollback.xml";
 }

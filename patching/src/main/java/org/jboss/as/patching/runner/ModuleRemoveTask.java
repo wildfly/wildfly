@@ -24,16 +24,16 @@ package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.IoUtils.copy;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.ModuleItem;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
 
 /**
  * Removing a module will create a module.xml containing a <module-absent /> element, which
@@ -49,8 +49,8 @@ class ModuleRemoveTask extends AbstractModuleTask {
     }
 
     @Override
-    byte[] apply(PatchingContext context, PatchContentLoader loader) throws IOException {
-        final File targetDir = context.getModulePatchDirectory(contentItem);
+    byte[] apply(PatchingTaskContext context, PatchContentLoader loader) throws IOException {
+        final File targetDir = context.getTargetFile(contentItem);
         if(! targetDir.mkdirs()) {
             throw PatchMessages.MESSAGES.cannotCreateDirectory(targetDir.getAbsolutePath());
         }

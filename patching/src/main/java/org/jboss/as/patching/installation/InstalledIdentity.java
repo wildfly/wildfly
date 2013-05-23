@@ -20,9 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.structure;
-
-import org.jboss.as.patching.Constants;
+package org.jboss.as.patching.installation;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,10 +29,22 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.patching.Constants;
+import org.jboss.as.version.ProductConfig;
+
 /**
+ * Information about the installed identity.
+ *
  * @author Emanuel Muckenhuber
  */
 public abstract class InstalledIdentity {
+
+    /**
+     * Get information about the installed identity.
+     *
+     * @return the identity
+     */
+    public abstract Identity getIdentity();
 
     /**
      * Get a list of installed layers.
@@ -42,13 +52,6 @@ public abstract class InstalledIdentity {
      * @return the installed layers
      */
     public abstract List<Layer> getLayers();
-
-    /**
-     * Get the base layer.
-     *
-     * @return the base
-     */
-    public abstract BaseLayer getBaseLayer();
 
     /**
      * Get a list of installed add-ons.
@@ -60,27 +63,29 @@ public abstract class InstalledIdentity {
     /**
      * Load the layers based on the default setup.
      *
-     * @param jbossHome the jboss home directory
-     * @param repoRoots the repository roots
+     * @param jbossHome     the jboss home directory
+     * @param productConfig the product config
+     * @param repoRoots     the repository roots
      * @return the available layers
      * @throws IOException
      */
-    public static InstalledIdentity load(final File jbossHome, final File... repoRoots) throws IOException {
+    public static InstalledIdentity load(final File jbossHome, final ProductConfig productConfig, final File... repoRoots) throws IOException {
         final InstalledImage installedImage = installedImage(jbossHome);
-        return load(installedImage, Arrays.<File>asList(repoRoots), Collections.<File>emptyList());
+        return load(installedImage, productConfig, Arrays.<File>asList(repoRoots), Collections.<File>emptyList());
     }
 
     /**
      * Load the InstalledIdentity configuration based on the module.path
      *
      * @param installedImage the installed image
+     * @param productConfig  the product config
      * @param moduleRoots    the module roots
      * @param bundleRoots    the bundle roots
      * @return the available layers
      * @throws IOException
      */
-    public static InstalledIdentity load(final InstalledImage installedImage, final List<File> moduleRoots, final List<File> bundleRoots) throws IOException {
-        return LayersFactory.load(installedImage, moduleRoots, bundleRoots);
+    public static InstalledIdentity load(final InstalledImage installedImage, final ProductConfig productConfig,  List<File> moduleRoots, final List<File> bundleRoots) throws IOException {
+        return LayersFactory.load(installedImage, productConfig, moduleRoots, bundleRoots);
     }
 
     static InstalledImage installedImage(final File jbossHome) {
@@ -118,8 +123,18 @@ public abstract class InstalledIdentity {
             }
 
             @Override
+            public File getPatchesDir() {
+                return new File(getInstallationMetadata(), Constants.PATCHES);
+            }
+
+            @Override
             public File getModulesDir() {
                 return modules;
+            }
+
+            @Override
+            public File getPatchHistoryDir(String patchId) {
+                return new File(getPatchesDir(), patchId);
             }
 
             @Override

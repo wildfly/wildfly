@@ -22,10 +22,10 @@
 
 package org.jboss.as.patching.runner;
 
-import org.jboss.as.patching.metadata.ContentItem;
-
 import java.util.Collection;
 import java.util.Collections;
+
+import org.jboss.as.patching.metadata.ContentItem;
 
 /**
  * @author Emanuel Muckenhuber

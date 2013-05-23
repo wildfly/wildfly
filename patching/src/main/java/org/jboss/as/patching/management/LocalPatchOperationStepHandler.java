@@ -26,13 +26,12 @@ import static org.jboss.as.patching.PatchMessages.MESSAGES;
 
 import java.io.InputStream;
 
-import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-
 import org.jboss.as.patching.Constants;
+import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentType;

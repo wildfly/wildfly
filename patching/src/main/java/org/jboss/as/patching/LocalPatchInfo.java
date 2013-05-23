@@ -22,14 +22,14 @@
 
 package org.jboss.as.patching;
 
-import org.jboss.as.patching.runner.PatchUtils;
-import org.jboss.as.version.ProductConfig;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import org.jboss.as.patching.runner.PatchUtils;
+import org.jboss.as.version.ProductConfig;
 
 /**
  * @author Emanuel Muckenhuber
@@ -102,13 +102,13 @@ public class LocalPatchInfo implements PatchInfo {
      */
     static PatchInfo loadHistory(final PatchInfo current, final DirectoryStructure structure) throws IOException {
         final String currentId = current.getCumulativeID();
-        final File history = structure.getHistoryDir(currentId);
-        final File cumulative = new File(history, DirectoryStructure.CUMULATIVE);
+        final File history = structure.getInstalledImage().getPatchHistoryDir(currentId);
+        final File cumulative = new File(history, Constants.CUMULATIVE);
         if(cumulative.exists()) {
             // Return the immediate persisted history
             // this does not necessarily mean it is consistent with the .metadata/references/cumulative-id
             final String ref = PatchUtils.readRef(cumulative);
-            final File refsFile = new File(history, DirectoryStructure.REFERENCES);
+            final File refsFile = new File(history, Constants.REFERENCES);
             final List<String> refs = PatchUtils.readRefs(refsFile);
             // TODO perhaps we can use the backed up patch.xml to get the version?
             return new LocalPatchInfo("unknown", ref, refs, structure);
@@ -116,13 +116,11 @@ public class LocalPatchInfo implements PatchInfo {
         return null;
     }
 
-    @Override
     public File[] getPatchingPath() {
         final List<File> path = getPatchingPathInternal();
         return path.toArray(new File[path.size()]);
     }
 
-    @Override
     public File[] getModulePath() {
         final List<File> path = getPatchingPathInternal();
         final String modulePath = System.getProperty(MODULE_PATH, System.getenv("JAVA_MODULEPATH"));
@@ -147,7 +145,6 @@ public class LocalPatchInfo implements PatchInfo {
         return path;
     }
 
-    @Override
     public File[] getBundlePath() {
         final List<File> path = new ArrayList<File>();
         for(final String patch : patches) {

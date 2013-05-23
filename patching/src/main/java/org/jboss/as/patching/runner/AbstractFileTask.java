@@ -26,15 +26,14 @@ import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 import static org.jboss.as.patching.IoUtils.copy;
 import static org.jboss.as.patching.IoUtils.safeClose;
 
-import org.jboss.as.patching.IoUtils;
-import org.jboss.as.patching.PatchMessages;
-
-import org.jboss.as.patching.metadata.ContentModification;
-import org.jboss.as.patching.metadata.MiscContentItem;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+
+import org.jboss.as.patching.IoUtils;
+import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.MiscContentItem;
 
 /**
  * Base {@linkplain PatchingTask} for misc file updates.
@@ -63,7 +62,7 @@ abstract class AbstractFileTask extends AbstractPatchingTask<MiscContentItem> {
     abstract ContentModification createRollbackEntry(ContentModification original, MiscContentItem item, byte[] targetHash);
 
     @Override
-    byte[] backup(PatchingContext context) throws IOException {
+    byte[] backup(PatchingTaskContext context) throws IOException {
         if(target.isFile()) {
             // Backup the original in the history directory
             return IoUtils.copy(target, backup);
@@ -72,7 +71,7 @@ abstract class AbstractFileTask extends AbstractPatchingTask<MiscContentItem> {
     }
 
     @Override
-    byte[] apply(PatchingContext context, PatchContentLoader loader) throws IOException {
+    byte[] apply(PatchingTaskContext context, PatchContentLoader loader) throws IOException {
         final MiscContentItem item = contentItem;
         if(item.isDirectory()) {
             if(! target.mkdir() && ! target.isDirectory()) {

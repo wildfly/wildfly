@@ -24,6 +24,7 @@ package org.jboss.as.patching.generator;
 
 import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -41,8 +42,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.patching.HashUtils;
 import org.jboss.as.patching.IoUtils;

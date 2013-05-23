@@ -22,8 +22,6 @@
 
 package org.jboss.as.patching.management;
 
-import java.io.File;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathElement;
@@ -155,24 +153,24 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
                 }
             }
         });
-        registry.registerReadOnlyAttribute(MODULE_PATH, new PatchAttributeReadHandler() {
-            @Override
-            void handle(ModelNode result, PatchInfo info) {
-                result.setEmptyList();
-                for(final File id : info.getModulePath()) {
-                    result.add(id.getAbsolutePath());
-                }
-            }
-        });
-        registry.registerReadOnlyAttribute(BUNDLE_PATH, new PatchAttributeReadHandler() {
-            @Override
-            void handle(ModelNode result, PatchInfo info) {
-                result.setEmptyList();
-                for(final File id : info.getBundlePath()) {
-                    result.add(id.getAbsolutePath());
-                }
-            }
-        });
+//        registry.registerReadOnlyAttribute(MODULE_PATH, new PatchAttributeReadHandler() {
+//            @Override
+//            void handle(ModelNode result, PatchInfo info) {
+//                result.setEmptyList();
+//                for(final File id : info.getModulePath()) {
+//                    result.add(id.getAbsolutePath());
+//                }
+//            }
+//        });
+//        registry.registerReadOnlyAttribute(BUNDLE_PATH, new PatchAttributeReadHandler() {
+//            @Override
+//            void handle(ModelNode result, PatchInfo info) {
+//                result.setEmptyList();
+//                for(final File id : info.getBundlePath()) {
+//                    result.add(id.getAbsolutePath());
+//                }
+//            }
+//        });
     }
 
     @Override

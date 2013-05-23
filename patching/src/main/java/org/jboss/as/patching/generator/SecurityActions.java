@@ -22,11 +22,11 @@
 
 package org.jboss.as.patching.generator;
 
-import org.wildfly.security.manager.ReadPropertyAction;
-
 import static java.lang.System.getProperty;
 import static java.lang.System.getSecurityManager;
 import static java.security.AccessController.doPrivileged;
+
+import org.wildfly.security.manager.ReadPropertyAction;
 
 /**
  * Security actions to access system environment information.  No methods in

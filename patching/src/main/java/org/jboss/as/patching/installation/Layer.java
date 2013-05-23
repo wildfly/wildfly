@@ -20,25 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.structure;
-
-import org.jboss.as.patching.PatchInfo;
-
-import java.io.IOException;
+package org.jboss.as.patching.installation;
 
 /**
- * A patchable target.
- *
  * @author Emanuel Muckenhuber
  */
-public interface PatchableTarget extends InstalledInfo {
+public interface Layer extends PatchableTarget {
 
     /**
-     * Load the patch info.
+     * The name of the layer.
      *
-     * @return the patch info
-     * @throws IOException
+     * @return the layer name
      */
-    PatchInfo loadPatchInfo() throws IOException;
+    String getName();
 
 }

@@ -24,17 +24,16 @@ package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.jboss.as.patching.HashUtils;
 import org.jboss.as.patching.IoUtils;
-import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.metadata.BundleItem;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.ModificationType;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * @author Emanuel Muckenhuber
@@ -46,10 +45,9 @@ class BundlePatchingTask extends AbstractPatchingTask<BundleItem> {
     }
 
     @Override
-    byte[] backup(PatchingContext context) throws IOException {
+    byte[] backup(PatchingTaskContext context) throws IOException {
         // Check the bundle dir hash
-        final PatchInfo patchInfo = context.getPatchInfo();
-        final File[] repoRoots = patchInfo.getBundlePath();
+        final File[] repoRoots = context.getTargetBundlePath();
         final String bundleName = contentItem.getName();
         final String slot = contentItem.getSlot();
         for(final File path : repoRoots) {
@@ -69,9 +67,9 @@ class BundlePatchingTask extends AbstractPatchingTask<BundleItem> {
     }
 
     @Override
-    byte[] apply(PatchingContext context, PatchContentLoader loader) throws IOException {
+    byte[] apply(PatchingTaskContext context, PatchContentLoader loader) throws IOException {
         // Copy the new bundle resources to the patching directory
-        final File targetDir = context.getModulePatchDirectory(contentItem);
+        final File targetDir = context.getTargetFile(contentItem);
         final File sourceDir = loader.getFile(contentItem);
         final File[] moduleResources = sourceDir.listFiles();
         if(! targetDir.mkdirs() && ! targetDir.exists()) {

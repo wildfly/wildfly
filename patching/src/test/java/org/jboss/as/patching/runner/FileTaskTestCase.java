@@ -36,8 +36,9 @@ import static org.jboss.as.patching.runner.TestUtils.dump;
 import static org.jboss.as.patching.runner.TestUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
-import static org.jboss.as.patching.runner.TestUtils.tree;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Collections;
@@ -48,8 +49,6 @@ import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 /**
@@ -124,7 +123,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         /// file has been removed from the AS7 installation
         assertFileDoesNotExist(standaloneShellFile);
         // but it's been backed up
-        assertFileExists(env.getHistoryDir(patch.getPatchId()), "misc", "bin", fileName);
+        assertFileExists(env.getInstalledImage().getPatchHistoryDir(patch.getPatchId()), "misc", "bin", fileName);
     }
 
     @Test
@@ -169,7 +168,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         assertFileExists(standaloneShellFile);
         assertArrayEquals(updatedHash, hashFile(standaloneShellFile));
         // the existing file has been backed up
-        File backupFile = assertFileExists(env.getHistoryDir(patchID), "misc", "bin", fileName);
+        File backupFile = assertFileExists(env.getInstalledImage().getPatchHistoryDir(patchID), "misc", "bin", fileName);
         assertArrayEquals(existingHash, hashFile(backupFile));
     }
 

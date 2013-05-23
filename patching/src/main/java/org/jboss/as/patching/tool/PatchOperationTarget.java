@@ -22,11 +22,6 @@
 
 package org.jboss.as.patching.tool;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -40,6 +35,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.metadata.ContentItem;
@@ -48,9 +51,6 @@ import org.jboss.as.patching.runner.ContentVerificationPolicy;
 import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.dmr.ModelNode;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * @author Emanuel Muckenhuber
@@ -117,14 +117,6 @@ public abstract class PatchOperationTarget {
             result.get(RESULT, Constants.PATCHES).setEmptyList();
             for(final String patch : info.getPatchIDs()) {
                 result.get(RESULT, Constants.PATCHES).add(patch);
-            }
-            result.get(RESULT, Constants.MODULE_PATH).setEmptyList();
-            for(final File path : info.getModulePath()) {
-                result.get(RESULT, Constants.MODULE_PATH).add(path.getAbsolutePath());
-            }
-            result.get(RESULT, Constants.BUNDLE_PATH).setEmptyList();
-            for(final File path : info.getBundlePath()) {
-                result.get(RESULT, Constants.BUNDLE_PATH).add(path.getAbsolutePath());
             }
             return result;
         }
