@@ -86,7 +86,8 @@ public class JMSMessagingUtil {
         if (destination == null) {
             return;
         }
-        final javax.jms.Message replyMsg = session.createTextMessage("replying to message: " + message.toString());
+        String text = (message instanceof TextMessage) ? ((TextMessage)message).getText() : message.toString();
+        final Message replyMsg = session.createTextMessage(text);
         replyMsg.setJMSCorrelationID(message.getJMSMessageID());
         this.sendMessage(replyMsg, destination, null);
     }

@@ -22,9 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.mdb.activationconfig.unit;
 
+import static org.jboss.as.test.integration.ejb.mdb.activationconfig.JMSHelper.assertSendAndReceiveTextMessage;
+
+import java.util.UUID;
+
 import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.jms.Message;
+import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -35,13 +38,14 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
+import org.jboss.as.test.integration.ejb.mdb.activationconfig.MDBWithLookupActivationConfigProperties;
 import org.jboss.as.test.integration.ejb.mdb.activationconfig.MDBWithUnknownActivationConfigProperties;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -56,16 +60,14 @@ public class MDBActivationConfigTestCase {
 
     private static final Logger logger = Logger.getLogger(MDBActivationConfigTestCase.class);
 
-    private static final String REPLY_QUEUE_JNDI_NAME = "java:jboss/jms/mdbtest/activation-config-reply-queue";
-
-    @EJB(mappedName = "java:module/JMSMessagingUtil")
-    private JMSMessagingUtil jmsUtil;
-
     @Resource(mappedName = MDBWithUnknownActivationConfigProperties.QUEUE_JNDI_NAME)
     private Queue queue;
 
-    @Resource(mappedName = MDBActivationConfigTestCase.REPLY_QUEUE_JNDI_NAME)
-    private Queue replyQueue;
+    @Resource(mappedName = MDBWithLookupActivationConfigProperties.QUEUE_JNDI_NAME)
+    private Queue queue2;
+
+    @Resource(mappedName = "/ConnectionFactory")
+    private ConnectionFactory cf;
 
     static class JmsQueueSetup implements ServerSetupTask {
 
@@ -75,14 +77,14 @@ public class MDBActivationConfigTestCase {
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             jmsAdminOperations = JMSOperationsProvider.getInstance(managementClient);
             jmsAdminOperations.createJmsQueue("mdbtest/activation-config-queue", MDBWithUnknownActivationConfigProperties.QUEUE_JNDI_NAME);
-            jmsAdminOperations.createJmsQueue("mdbtest/activation-config-replyQueue", REPLY_QUEUE_JNDI_NAME);
+            jmsAdminOperations.createJmsQueue("mdbtest/activation-config-queue2", MDBWithLookupActivationConfigProperties.QUEUE_JNDI_NAME);
         }
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             if (jmsAdminOperations != null) {
                 jmsAdminOperations.removeJmsQueue("mdbtest/activation-config-queue");
-                jmsAdminOperations.removeJmsQueue("mdbtest/activation-config-replyQueue");
+                jmsAdminOperations.removeJmsQueue("mdbtest/activation-config-queue2");
                 jmsAdminOperations.close();
             }
         }
@@ -90,13 +92,11 @@ public class MDBActivationConfigTestCase {
 
     @Deployment
     public static Archive getDeployment() {
-
-        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb-activation-config-test.jar");
-        ejbJar.addPackage(MDBWithUnknownActivationConfigProperties.class.getPackage());
-        ejbJar.addClasses(JMSOperations.class, JMSMessagingUtil.class, JmsQueueSetup.class);
-        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
-        logger.info(ejbJar.toString(true));
-        return ejbJar;
+        return ShrinkWrap.create(JavaArchive.class, "MDBActivationConfigTestCase")
+                .addPackage(MDBWithUnknownActivationConfigProperties.class.getPackage())
+                .addClasses(JMSOperations.class, JMSMessagingUtil.class, JmsQueueSetup.class)
+                .addClasses(TimeoutUtil.class)
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
     }
 
     /**
@@ -107,9 +107,20 @@ public class MDBActivationConfigTestCase {
      */
     @Test
     public void testUnrecognizedActivationConfigProps() throws Exception {
-        this.jmsUtil.sendTextMessage("Say hello to " + MDBWithUnknownActivationConfigProperties.class.getName(), this.queue, this.replyQueue);
-        final Message reply = this.jmsUtil.receiveMessage(replyQueue, 5000);
-        Assert.assertNotNull("Reply message was null on reply queue: " + this.replyQueue, reply);
+        String text = UUID.randomUUID().toString();
+
+        assertSendAndReceiveTextMessage(cf, queue, text);
     }
 
+    /**
+     * Test that deployment of a MDB can use the connectionFactoryLookup and destinationLookup activation config properties.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testConnectionFactoryLookupActivationConfigProperty() throws Exception {
+        String text = UUID.randomUUID().toString();
+
+        assertSendAndReceiveTextMessage(cf, queue2, text);
+    }
 }
