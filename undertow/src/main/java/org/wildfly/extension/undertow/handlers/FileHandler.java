@@ -28,7 +28,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 
-import io.undertow.UndertowLogger;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.server.handlers.resource.ResourceHandler;
@@ -39,6 +38,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.Constants;
+import org.wildfly.extension.undertow.UndertowLogger;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -78,7 +78,7 @@ public class FileHandler extends Handler {
     public HttpHandler createHandler(final OperationContext context, ModelNode model) throws OperationFailedException {
         String path = PATH.resolveModelAttribute(context, model).asString();
         boolean directoryListing = DIRECTORY_LISTING.resolveModelAttribute(context, model).asBoolean();
-        UndertowLogger.ROOT_LOGGER.infof("Creating file handler for path %s", path);
+        UndertowLogger.ROOT_LOGGER.creatingFileHandler(path);
         FileResourceManager resourceManager = new FileResourceManager(Paths.get(path));
         ResourceHandler handler = new ResourceHandler();
         handler.setResourceManager(resourceManager);

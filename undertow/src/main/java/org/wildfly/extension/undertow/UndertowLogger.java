@@ -24,15 +24,10 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
-
 import java.net.InetSocketAddress;
 
 import io.undertow.server.HttpHandler;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
-import org.wildfly.extension.undertow.session.ClusteredSession;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -40,6 +35,11 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.wildfly.extension.undertow.session.ClusteredSession;
+
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * <p/>
@@ -258,4 +258,12 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 17526, value = "Could not create redirect URI.")
     void invalidRedirectURI(@Cause Throwable cause);
+
+    @LogMessage(level = INFO)
+    @Message(id = 17527, value = "Creating file handler for path %s")
+    void creatingFileHandler(String path);
+
+    @LogMessage(level = INFO)
+    @Message(id = 17528, value="registering handler %s under path '%s'")
+    void registeringHandler(HttpHandler value, String locationPath);
 }
