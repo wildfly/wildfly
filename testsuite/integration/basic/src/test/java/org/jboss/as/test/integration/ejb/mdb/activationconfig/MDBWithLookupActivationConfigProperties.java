@@ -24,29 +24,21 @@ package org.jboss.as.test.integration.ejb.mdb.activationconfig;
 
 import static org.jboss.as.test.integration.ejb.mdb.activationconfig.JMSHelper.reply;
 
-import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
-import org.jboss.logging.Logger;
-
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
-import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
 import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 
 /**
- * User: jpai
  */
 @MessageDriven (activationConfig = {
-        @ActivationConfigProperty(propertyName = "destination", propertyValue = MDBWithUnknownActivationConfigProperties.QUEUE_JNDI_NAME),
-        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-        @ActivationConfigProperty(propertyName = "foo", propertyValue = "bar") // activation config properties which aren't supported by the resource adapter
+        @ActivationConfigProperty(propertyName = "connectionFactoryLookup", propertyValue = "java:/ConnectionFactory"),
+        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = MDBWithLookupActivationConfigProperties.QUEUE_JNDI_NAME),
 })
-public class MDBWithUnknownActivationConfigProperties implements MessageListener {
-
-    public static final String QUEUE_JNDI_NAME = "java:jboss/jms/mdbtest/unknown-activationconfig-props";
+public class MDBWithLookupActivationConfigProperties implements MessageListener {
+    public static final String QUEUE_JNDI_NAME = "java:jboss/jms/mdbtest/MDBWithLookupActivationConfigProperties";
 
     @Resource(mappedName = "java:/ConnectionFactory")
     private ConnectionFactory connectionFactory;
