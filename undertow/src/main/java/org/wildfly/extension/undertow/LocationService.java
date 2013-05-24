@@ -52,7 +52,7 @@ public class LocationService implements Service<LocationService> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        UndertowLogger.ROOT_LOGGER.infof("registering handler %s under path '%s'", httpHandler, locationPath);
+        UndertowLogger.ROOT_LOGGER.registeringHandler( httpHandler.getValue(), locationPath);
         host.getValue().registerHandler(locationPath, configureHandler());
     }
 
