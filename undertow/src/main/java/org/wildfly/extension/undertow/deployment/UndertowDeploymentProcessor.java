@@ -46,6 +46,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
+import org.jboss.metadata.web.spec.TldMetaData;
 import org.wildfly.extension.undertow.BufferCacheService;
 import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.Host;
@@ -53,7 +54,6 @@ import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowService;
 import org.jboss.as.web.common.ServletContextAttribute;
-import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.web.common.WebComponentDescription;
 import org.jboss.as.web.common.WebInjectionContainer;
@@ -181,6 +181,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(hostName,pathName);
 
+        TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
                         .setAttributes(deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY))
                 .setClassReflectionIndex(deploymentClassIndex)
@@ -194,8 +195,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .setScisMetaData(scisMetaData)
                 .setSecurityContextId(securityContextId)
                 .setSecurityDomain(securityDomain)
-                .setSharedTlds(deploymentUnit.getAttachment(SharedTldsMetaDataBuilder.ATTACHMENT_KEY))
-                .setTldsMetaData(deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY))
+                .setSharedTlds(tldsMetaData == null ? Collections.<TldMetaData>emptyList() : tldsMetaData.getSharedTlds(deploymentUnit))
+                .setTldsMetaData(tldsMetaData)
                 .setSetupActions(setupActions)
                 .createUndertowDeploymentInfoService();
 
