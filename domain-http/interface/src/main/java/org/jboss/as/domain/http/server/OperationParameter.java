@@ -2,38 +2,30 @@ package org.jboss.as.domain.http.server;
 
 import java.util.Date;
 
-import org.jboss.dmr.ModelNode;
-
 /**
  * Value class for describing the result of an operation against the {@link DomainApiHandler}.
- * Used by {@link DomainUtil#writeResponse(io.undertow.server.HttpServerExchange, OperationResult)}
+ * Used by {@link DomainUtil#writeResponse(io.undertow.server.HttpServerExchange, int, org.jboss.dmr.ModelNode, OperationParameter)}
  *
  * @author Harald Pehl
  * @date 05/14/2013
  */
-public class OperationResult {
-    private final ModelNode response;
-    private final int status;
+public class OperationParameter {
+    private final boolean get;
     private final int maxAge;
     private final Date lastModified;
     private final boolean encode;
     private final boolean pretty;
 
-    private OperationResult(Builder builder) {
-        this.response = builder.response;
-        this.status = builder.status;
+    private OperationParameter(Builder builder) {
+        this.get = builder.get;
         this.maxAge = builder.maxAge;
         this.lastModified = builder.lastModified;
         this.encode = builder.encode;
         this.pretty = builder.pretty;
     }
 
-    public ModelNode getResponse() {
-        return response;
-    }
-
-    public int getStatus() {
-        return status;
+    public boolean isGet() {
+        return get;
     }
 
     public int getMaxAge() {
@@ -52,13 +44,24 @@ public class OperationResult {
         return pretty;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("OperationResult{");
+        sb.append("get=").append(get);
+        sb.append(", maxAge=").append(maxAge);
+        sb.append(", lastModified=").append(lastModified);
+        sb.append(", encode=").append(encode);
+        sb.append(", pretty=").append(pretty);
+        sb.append('}');
+        return sb.toString();
+    }
+
     /**
-     * Builder for {@link OperationResult}.
+     * Builder for {@link OperationParameter}.
      */
     public static class Builder {
-        private final int status;
         // mandatory
-        private ModelNode response;
+        private final boolean get;
         // optional
         private int maxAge;
         private Date lastModified;
@@ -69,8 +72,7 @@ public class OperationResult {
          * Creates a new builder.
          * <p>Mandatory parameter</p>
          * <ol>
-         *     <li>response</li>
-         *     <li>status</li>
+         *     <li>get</li>
          * </ol>
          * <p>Optional parameter (and their default values)</p>
          * <ul>
@@ -80,12 +82,10 @@ public class OperationResult {
          *     <li>pretty (false)</li>
          * </ul>
          *
-         * @param response
-         * @param status
+         * @param get
          */
-        public Builder(final ModelNode response, final int status) {
-            this.response = response;
-            this.status = status;
+        public Builder(final boolean get) {
+            this.get = get;
             this.maxAge = 0;
             this.lastModified = null;
             this.encode = false;
@@ -102,11 +102,6 @@ public class OperationResult {
             return this;
         }
 
-        public Builder response(ModelNode response) {
-            this.response = response;
-            return this;
-        }
-
         public Builder encode(boolean encode) {
             this.encode = encode;
             return this;
@@ -117,8 +112,8 @@ public class OperationResult {
             return this;
         }
 
-        public OperationResult build() {
-            return new OperationResult(this);
+        public OperationParameter build() {
+            return new OperationParameter(this);
         }
     }
 }

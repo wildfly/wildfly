@@ -23,19 +23,22 @@ package org.jboss.as.domain.http.server;
 
 import static io.undertow.util.Headers.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.util.DateUtils;
-import io.undertow.util.HeaderMap;
-import io.undertow.util.Headers;
+import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
-import io.undertow.util.Methods;
 import org.jboss.dmr.ModelNode;
 import org.xnio.IoUtils;
 import org.xnio.streams.ChannelOutputStream;
+
+import io.undertow.server.HttpServerExchange;
+import io.undertow.util.DateUtils;
+import io.undertow.util.HeaderMap;
+import io.undertow.util.Headers;
 
 /**
  * Utility methods used for HTTP based domain management.
@@ -44,35 +47,42 @@ import org.xnio.streams.ChannelOutputStream;
  */
 public class DomainUtil {
 
-    public static void writeResponse(HttpServerExchange exchange, OperationResult operationResult) {
-        exchange.setResponseCode(operationResult.getStatus());
+    public static void writeResponse(HttpServerExchange exchange, final int status, final ModelNode response,
+            OperationParameter operationParameter) {
+
+        ModelNode localResponse = response;
+        exchange.setResponseCode(status);
 
         final HeaderMap responseHeaders = exchange.getResponseHeaders();
-        final String contentType = operationResult.isEncode() ? Common.APPLICATION_DMR_ENCODED : Common.APPLICATION_JSON;
+        final String contentType = operationParameter.isEncode() ? Common.APPLICATION_DMR_ENCODED : Common.APPLICATION_JSON;
         responseHeaders.put(Headers.CONTENT_TYPE, contentType + ";" + Common.UTF_8);
 
         // Write caching headers
-        if (operationResult.getMaxAge() > 0) {
-            responseHeaders.put(Headers.CACHE_CONTROL, "max-age=" + operationResult.getMaxAge() + ", private");
+        if (operationParameter.getMaxAge() > 0) {
+            responseHeaders.put(Headers.CACHE_CONTROL, "max-age=" + operationParameter.getMaxAge() + ", private, must-revalidate");
         }
-        if (operationResult.getLastModified() != null) {
-            responseHeaders.put(Headers.LAST_MODIFIED, DateUtils.toDateString(operationResult.getLastModified()));
+        if (operationParameter.getLastModified() != null) {
+            responseHeaders.put(Headers.LAST_MODIFIED, DateUtils.toDateString(operationParameter.getLastModified()));
         }
 
-        // TODO Content-Length?
-        ModelNode response = operationResult.getResponse();
-        if (exchange.getRequestMethod().equals(Methods.GET) && operationResult.getStatus() == 200) {
-            response = response.get(RESULT);
+        if (operationParameter.isGet() && status == 200) {
+            localResponse = localResponse.get(RESULT);
+            try {
+                int length = getResponseLength(localResponse, operationParameter);
+                responseHeaders.put(Headers.CONTENT_LENGTH, length);
+            } catch (IOException e) {
+                ROOT_LOGGER.errorf(e, "Unable to get length for '%s'", operationParameter);
+            }
         }
 
         OutputStream out = new ChannelOutputStream(exchange.getResponseChannel());
         PrintWriter print = new PrintWriter(out);
         try {
             try {
-                if (operationResult.isEncode()) {
-                    response.writeBase64(out);
+                if (operationParameter.isEncode()) {
+                    localResponse.writeBase64(out);
                 } else {
-                    response.writeJSONString(print, !operationResult.isPretty());
+                    localResponse.writeJSONString(print, !operationParameter.isPretty());
                 }
             } finally {
                 print.flush();
@@ -86,6 +96,22 @@ public class DomainUtil {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static int getResponseLength(final ModelNode modelNode, final OperationParameter operationParameter) throws IOException {
+        int length;
+        if (operationParameter.isEncode()) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            BufferedOutputStream out = new BufferedOutputStream(baos);
+            modelNode.writeBase64(out);
+            out.flush();
+            length = baos.size();
+            IoUtils.safeClose(out, baos);
+        } else {
+            String json = modelNode.toJSONString(!operationParameter.isPretty());
+            length = json.length();
+        }
+        return length;
     }
 
     /**
@@ -102,5 +128,4 @@ public class DomainUtil {
 
         return protocol + "://" + host + path;
     }
-
 }

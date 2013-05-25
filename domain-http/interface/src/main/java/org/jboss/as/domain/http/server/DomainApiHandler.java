@@ -21,28 +21,10 @@
 */
 package org.jboss.as.domain.http.server;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.domain.http.server.DomainUtil.writeResponse;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
-
-import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.util.HeaderMap;
-import io.undertow.util.Headers;
-import io.undertow.util.Methods;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,6 +44,13 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
 import org.xnio.IoUtils;
 import org.xnio.streams.ChannelInputStream;
+
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.util.DateUtils;
+import io.undertow.util.HeaderMap;
+import io.undertow.util.Headers;
+import io.undertow.util.Methods;
 
 /**
  *
@@ -106,29 +95,31 @@ class DomainApiHandler implements HttpHandler {
     private final ModelController modelController;
 
     DomainApiHandler(ModelController modelController) {
-        this.lastModified = new Date(); // use server start as last modified date
+        // Use server start as last modified date (make sure it's based on GMT)
+        this.lastModified = DateUtils.parseDate(DateUtils.toDateString(new Date()));
         this.modelController = modelController;
     }
 
     @Override
     public void handleRequest(final HttpServerExchange exchange) {
 
-        final int maxAge;
         final ModelNode dmr;
         ModelNode response;
 
         HeaderMap requestHeaders = exchange.getRequestHeaders();
+        final boolean get = exchange.getRequestMethod().equals(Methods.GET);
         final boolean encode = Common.APPLICATION_DMR_ENCODED.equals(requestHeaders.getFirst(Headers.ACCEPT))
                 || Common.APPLICATION_DMR_ENCODED.equals(requestHeaders.getFirst(Headers.CONTENT_TYPE));
 
-        final boolean get = exchange.getRequestMethod().equals(Methods.GET);
+        OperationParameter.Builder builder = new OperationParameter.Builder(get)
+                .lastModified(lastModified)
+                .encode(encode);
         try {
             if (get) {
                 GetOperation operation = getOperation(exchange);
-                maxAge = operation.getMaxAge();
+                builder.maxAge(operation.getMaxAge());
                 dmr = convertGetRequest(exchange, operation);
             } else {
-                maxAge = 0;
                 dmr = convertPostRequest(exchange, encode);
             }
         } catch (Exception e) {
@@ -137,6 +128,7 @@ class DomainApiHandler implements HttpHandler {
             return;
         }
 
+        final OperationParameter operationParameter = builder.build();
         final ResponseCallback callback = new ResponseCallback() {
             @Override
             void doSendResponse(final ModelNode response) {
@@ -144,16 +136,19 @@ class DomainApiHandler implements HttpHandler {
                     Common.sendError(exchange, get, encode, response.get(FAILURE_DESCRIPTION).asString());
                     return;
                 }
-                OperationResult operationResult = new OperationResult.Builder(response, 200)
-                        .maxAge(maxAge)
-                        .lastModified(lastModified)
-                        .encode(encode)
-                        .pretty(dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean())
-                        .build();
-                writeResponse(exchange, operationResult);
-
+                writeResponse(exchange, 200, response, operationParameter);
             }
         };
+
+        // cachable?
+        if (get && operationParameter.getMaxAge() > 0) {
+            // Cache is validated against last modified dates. Entity tags are not supported.
+            if (!DateUtils.handleIfModifiedSince(exchange, operationParameter.getLastModified())) {
+                exchange.setResponseCode(304);
+                exchange.endExchange();
+                return;
+            }
+        }
 
         final boolean sendPreparedResponse = sendPreparedResponse(dmr);
         final ModelController.OperationTransactionControl control = sendPreparedResponse ? new ModelController.OperationTransactionControl() {
@@ -285,9 +280,12 @@ class DomainApiHandler implements HttpHandler {
         return false;
     }
 
+    /**
+     * Callback to prevent the response will be sent multiple times.
+     */
     private abstract static class ResponseCallback {
-
         private volatile boolean complete;
+
         void sendResponse(final ModelNode response) {
             if (complete) {
                 return;
