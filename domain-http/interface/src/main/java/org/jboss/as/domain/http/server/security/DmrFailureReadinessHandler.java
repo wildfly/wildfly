@@ -34,7 +34,8 @@ import io.undertow.server.HttpServerExchange;
 
 import java.io.IOException;
 
-import org.jboss.as.domain.http.server.OperationResult;
+import io.undertow.util.Methods;
+import org.jboss.as.domain.http.server.OperationParameter;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.dmr.ModelNode;
 
@@ -63,11 +64,11 @@ public class DmrFailureReadinessHandler extends RealmReadinessHandler {
         rejection.get(ROLLED_BACK).set(Boolean.TRUE.toString());
 
         // Keep the response visible so it can easily be seen in network traces.
-        OperationResult operationResult = new OperationResult.Builder(rejection, 403)
+        boolean get = exchange.getRequestMethod().equals(Methods.GET);
+        OperationParameter operationParameter = new OperationParameter.Builder(get)
                 .encode(false)
                 .pretty(true)
                 .build();
-        writeResponse(exchange, operationResult);
+        writeResponse(exchange, 403, rejection, operationParameter);
     }
-
 }
