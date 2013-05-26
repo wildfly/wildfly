@@ -22,7 +22,6 @@
 package org.jboss.as.domain.http.server;
 
 import static io.undertow.util.Headers.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 
 import java.io.BufferedOutputStream;
@@ -50,7 +49,6 @@ public class DomainUtil {
     public static void writeResponse(HttpServerExchange exchange, final int status, final ModelNode response,
             OperationParameter operationParameter) {
 
-        ModelNode localResponse = response;
         exchange.setResponseCode(status);
 
         final HeaderMap responseHeaders = exchange.getResponseHeaders();
@@ -60,9 +58,11 @@ public class DomainUtil {
         writeCacheHeaders(exchange, operationParameter);
 
         if (operationParameter.isGet() && status == 200) {
-            localResponse = localResponse.get(RESULT);
+            // Why was only the RESULT part sent and not the complete model node?
+            // The admin console *always* expects complete model nodes!
+            // response = response.get(RESULT);
             try {
-                int length = getResponseLength(localResponse, operationParameter);
+                int length = getResponseLength(response, operationParameter);
                 responseHeaders.put(Headers.CONTENT_LENGTH, length);
             } catch (IOException e) {
                 ROOT_LOGGER.errorf(e, "Unable to get length for '%s'", operationParameter);
@@ -74,9 +74,9 @@ public class DomainUtil {
         try {
             try {
                 if (operationParameter.isEncode()) {
-                    localResponse.writeBase64(out);
+                    response.writeBase64(out);
                 } else {
-                    localResponse.writeJSONString(print, !operationParameter.isPretty());
+                    response.writeJSONString(print, !operationParameter.isPretty());
                 }
             } finally {
                 print.flush();
