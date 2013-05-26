@@ -40,6 +40,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -86,6 +87,7 @@ public class HttpGetMgmtOpsTestCase {
         String cmd = recursive ? "/subsystem/undertow/server/default-server?operation=resource&recursive=true" : "/subsystem/undertow/server/default-server?operation=resource";
 
         ModelNode node = httpMgmt.sendGetCommand(cmd);
+        node = assertPayload(node);
 
         assertTrue(node.has("host"));
         ModelNode vServer = node.get("host");
@@ -106,6 +108,7 @@ public class HttpGetMgmtOpsTestCase {
         HttpMgmtProxy httpMgmt = new HttpMgmtProxy(mgmtURL);
 
         ModelNode node = httpMgmt.sendGetCommand("/subsystem/undertow?operation=attribute&name=default-servlet-container");
+        node = assertPayload(node);
 
         // check that a boolean is returned
         assertTrue(node.getType() == ModelType.STRING);
@@ -120,7 +123,7 @@ public class HttpGetMgmtOpsTestCase {
         HttpMgmtProxy httpMgmt = new HttpMgmtProxy(mgmtURL);
 
         ModelNode node = httpMgmt.sendGetCommand("/subsystem/undertow?operation=resource-description");
-
+        node = assertPayload(node);
 
         assertTrue(node.has("description"));
         assertTrue(node.has("attributes"));
@@ -133,6 +136,7 @@ public class HttpGetMgmtOpsTestCase {
         HttpMgmtProxy httpMgmt = new HttpMgmtProxy(mgmtURL);
 
         ModelNode node = httpMgmt.sendGetCommand("/subsystem/undertow?operation=operation-names");
+        node = assertPayload(node);
 
         List<ModelNode> names = node.asList();
 
@@ -159,9 +163,18 @@ public class HttpGetMgmtOpsTestCase {
         HttpMgmtProxy httpMgmt = new HttpMgmtProxy(mgmtURL);
 
         ModelNode node = httpMgmt.sendGetCommand("/subsystem/undertow?operation=operation-description&name=add");
+        node = assertPayload(node);
 
         assertTrue(node.has("operation-name"));
         assertTrue(node.has("description"));
         assertTrue(node.has("request-properties"));
+    }
+
+    private ModelNode assertPayload(ModelNode node)
+    {
+        assertTrue(node.hasDefined("outcome"));
+        assertEquals(node.get("outcome").asString(), "success");
+        assertTrue(node.hasDefined("result"));
+        return node.get("result");
     }
 }
