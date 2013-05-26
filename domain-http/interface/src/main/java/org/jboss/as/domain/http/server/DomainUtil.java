@@ -57,13 +57,7 @@ public class DomainUtil {
         final String contentType = operationParameter.isEncode() ? Common.APPLICATION_DMR_ENCODED : Common.APPLICATION_JSON;
         responseHeaders.put(Headers.CONTENT_TYPE, contentType + ";" + Common.UTF_8);
 
-        // Write caching headers
-        if (operationParameter.getMaxAge() > 0) {
-            responseHeaders.put(Headers.CACHE_CONTROL, "max-age=" + operationParameter.getMaxAge() + ", private, must-revalidate");
-        }
-        if (operationParameter.getLastModified() != null) {
-            responseHeaders.put(Headers.LAST_MODIFIED, DateUtils.toDateString(operationParameter.getLastModified()));
-        }
+        writeCacheHeaders(exchange, operationParameter);
 
         if (operationParameter.isGet() && status == 200) {
             localResponse = localResponse.get(RESULT);
@@ -112,6 +106,16 @@ public class DomainUtil {
             length = json.length();
         }
         return length;
+    }
+
+    public static void writeCacheHeaders(final HttpServerExchange exchange, final OperationParameter operationParameter) {
+        final HeaderMap responseHeaders = exchange.getResponseHeaders();
+        if (operationParameter.getMaxAge() > 0) {
+            responseHeaders.put(Headers.CACHE_CONTROL, "max-age=" + operationParameter.getMaxAge() + ", private, must-revalidate");
+        }
+        if (operationParameter.getLastModified() != null) {
+            responseHeaders.put(Headers.LAST_MODIFIED, DateUtils.toDateString(operationParameter.getLastModified()));
+        }
     }
 
     /**

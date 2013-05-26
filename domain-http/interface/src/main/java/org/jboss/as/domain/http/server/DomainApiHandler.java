@@ -145,6 +145,7 @@ class DomainApiHandler implements HttpHandler {
             // Cache is validated against last modified dates. Entity tags are not supported.
             if (!DateUtils.handleIfModifiedSince(exchange, operationParameter.getLastModified())) {
                 exchange.setResponseCode(304);
+                DomainUtil.writeCacheHeaders(exchange, operationParameter);
                 exchange.endExchange();
                 return;
             }
