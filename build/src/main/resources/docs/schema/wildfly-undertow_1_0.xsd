@@ -85,6 +85,7 @@
         <xs:attribute name="worker" type="xs:string" default="default"/>
         <xs:attribute name="buffer-pool" type="xs:string" default="default"/>
         <xs:attribute name="enabled" type="xs:boolean" default="true"/>
+        <xs:attribute name="scheme" type="xs:string" default="http"/>
     </xs:complexType>
     <xs:complexType name="servletContainerType">
         <xs:sequence>

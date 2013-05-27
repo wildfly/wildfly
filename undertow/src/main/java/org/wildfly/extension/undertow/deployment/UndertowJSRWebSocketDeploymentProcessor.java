@@ -146,7 +146,7 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
                 }
             }
 
-            final Set<ClassInfo> subclasses = index.getAllKnownSubclasses(SERVER_APPLICATION_CONFIG);
+            final Set<ClassInfo> subclasses = index.getAllKnownImplementors(SERVER_APPLICATION_CONFIG);
 
             if (subclasses != null) {
                 for (final ClassInfo clazz : subclasses) {

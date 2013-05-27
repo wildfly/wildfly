@@ -41,14 +41,18 @@ import org.xnio.channels.AcceptingChannel;
 public class AjpListenerService extends AbstractListenerService<AjpListenerService> {
 
     private volatile AcceptingChannel<StreamConnection> server;
+    private final String scheme;
 
-    public AjpListenerService(String name) {
+    public AjpListenerService(String name, final String scheme) {
         super(name);
+        this.scheme = scheme;
     }
 
     @Override
     protected OpenListener createOpenListener() {
-        return new AjpOpenListener(getBufferPool().getValue(), getBufferSize());
+        AjpOpenListener ajpOpenListener = new AjpOpenListener(getBufferPool().getValue(), getBufferSize());
+        ajpOpenListener.setScheme(scheme);
+        return ajpOpenListener;
     }
 
     @Override
