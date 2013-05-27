@@ -27,31 +27,33 @@ package org.wildfly.extension.undertow;
 import io.undertow.servlet.api.DeploymentInfo;
 
 /**
+ * TODO: implement commented out Undertow events
+ *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  * @author Radoslav Husar
  */
 public interface UndertowEventListener {
     void onShutdown();
 
-    void onDeploymentAdd(DeploymentInfo deploymentInfo, Host host);
+    //void onDeploymentAdd(DeploymentInfo deploymentInfo, Host host);
 
     void onDeploymentStart(DeploymentInfo deploymentInfo, Host host);
 
     void onDeploymentStop(DeploymentInfo deploymentInfo, Host host);
 
-    void onDeploymentRemove(DeploymentInfo deploymentInfo, Host host);
+    //void onDeploymentRemove(DeploymentInfo deploymentInfo, Host host);
 
-    void onHostAdd(Host host);
+    //void onHostAdd(Host host);
 
-    void onHostRemove(Host host);
+    //void onHostRemove(Host host);
 
     void onHostStart(Host host);
 
     void onHostStop(Host host);
 
-    void onServerAdd(Server server);
+    //void onServerAdd(Server server);
 
-    void onServerRemove(Server server);
+    //void onServerRemove(Server server);
 
     void onServerStart(Server server);
 
