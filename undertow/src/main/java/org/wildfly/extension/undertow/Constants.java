@@ -65,6 +65,7 @@ public interface Constants {
     String ERROR_PAGE = "error-page";
     String ERROR_HANDLER = "error-handler";
     String SIMPLE_ERROR_PAGE = "simple-error-page";
+    String SCHEME = "scheme";
     /*JSP config */
     String CHECK_INTERVAL = "check-interval";
     String CONTAINER = "container";

@@ -45,7 +45,8 @@ class AjpListenerAdd extends AbstractListenerAdd {
 
     @Override
     AbstractListenerService<? extends AbstractListenerService> createService(String name, OperationContext context, ModelNode model) throws OperationFailedException {
-        return new AjpListenerService(name);
+        String scheme = AjpListenerResourceDefinition.SCHEME.resolveModelAttribute(context, model).asString();
+        return new AjpListenerService(name, scheme);
     }
 
     @Override

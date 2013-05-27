@@ -24,12 +24,29 @@
 
 package org.wildfly.extension.undertow;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 public class AjpListenerResourceDefinition extends AbstractListenerResourceDefinition {
     protected static final AjpListenerResourceDefinition INSTANCE = new AjpListenerResourceDefinition();
 
+    protected static final SimpleAttributeDefinition SCHEME = new SimpleAttributeDefinitionBuilder(Constants.SCHEME, ModelType.STRING)
+            .setAllowNull(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode("http"))
+            .setAllowExpression(true)
+            .build();
 
     private AjpListenerResourceDefinition() {
         super(UndertowExtension.AJP_LISTENER_PATH);
@@ -38,5 +55,12 @@ public class AjpListenerResourceDefinition extends AbstractListenerResourceDefin
     @Override
     protected AbstractListenerAdd getAddHandler() {
         return new AjpListenerAdd(this);
+    }
+
+
+    public Collection<AttributeDefinition> getAttributes() {
+        List<AttributeDefinition> attrs = new ArrayList<>(super.getAttributes());
+        attrs.add(SCHEME);
+        return attrs;
     }
 }

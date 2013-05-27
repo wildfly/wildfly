@@ -31,6 +31,7 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -103,7 +104,7 @@ public class WebBundleContextProcessor implements DeploymentUnitProcessor {
 
         @Override
         public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
-            chain.doFilter(req, res);
+            ((HttpServletResponse)res).sendError(404);
         }
     }
 }
