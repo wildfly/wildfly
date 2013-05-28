@@ -41,8 +41,6 @@ import org.jboss.modules.ModuleLoader;
 public class ServerDependenciesProcessor implements DeploymentUnitProcessor {
 
     private static ModuleIdentifier[] DEFAULT_MODULES = new ModuleIdentifier[] {
-        ModuleIdentifier.create("sun.jdk"),
-        ModuleIdentifier.create("ibm.jdk"),
         ModuleIdentifier.create("javax.api"),
         ModuleIdentifier.create("org.jboss.logging"),
         ModuleIdentifier.create("org.jboss.vfs"),
@@ -52,11 +50,19 @@ public class ServerDependenciesProcessor implements DeploymentUnitProcessor {
         ModuleIdentifier.create("org.jboss.logging.jul-to-slf4j-stub"),
     };
 
+    private static ModuleIdentifier[] DEFAULT_MODULES_WITH_SERVICE_IMPORTS = new ModuleIdentifier[] {
+            // The Sun JDK is added as a dependency with service import = true since it's required for JSR-223 Javascript engine to be availabe.
+            // @see https://issues.jboss.org/browse/AS7-1116 and https://issues.jboss.org/browse/WFLY-1373
+            ModuleIdentifier.create("sun.jdk"),
+            ModuleIdentifier.create("ibm.jdk"),
+    };
+
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+        // add module dependency (these do not require services to be imported)
         for (ModuleIdentifier moduleId : DEFAULT_MODULES) {
             try {
                 moduleLoader.loadModule(moduleId);
@@ -65,6 +71,16 @@ public class ServerDependenciesProcessor implements DeploymentUnitProcessor {
                 ServerLogger.ROOT_LOGGER.debugf("Module not found: %s", moduleId);
             }
         }
+        // add module dependency with importServices = true
+        for (ModuleIdentifier moduleId : DEFAULT_MODULES_WITH_SERVICE_IMPORTS) {
+            try {
+                moduleLoader.loadModule(moduleId);
+                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleId, false, false, true, false));
+            } catch (ModuleLoadException ex) {
+                ServerLogger.ROOT_LOGGER.debugf("Module not found: %s", moduleId);
+            }
+        }
+
     }
 
     @Override
