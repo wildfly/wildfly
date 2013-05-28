@@ -24,38 +24,39 @@ package org.wildfly.extension.undertow;
 import io.undertow.servlet.api.DeploymentInfo;
 
 /**
- * Implementers of {@link UndertowEventListener} should extend {@link AbstractUndertowEventListener} to maintai
+ * Implementers of the listener API through {@link UndertowEventListener} should extend this class to maintain
  * backward compatibility.
- * <p/>
- * TODO: implement commented out Undertow events
  *
- * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  * @author Radoslav Husar
+ * @since 8.0
  */
-public interface UndertowEventListener {
-    void onShutdown();
+public abstract class AbstractUndertowEventListener implements UndertowEventListener {
 
-    //void onDeploymentAdd(DeploymentInfo deploymentInfo, Host host);
+    @Override
+    public void onShutdown() {
+    }
 
-    void onDeploymentStart(DeploymentInfo deploymentInfo, Host host);
+    @Override
+    public void onDeploymentStart(DeploymentInfo deploymentInfo, Host host) {
+    }
 
-    void onDeploymentStop(DeploymentInfo deploymentInfo, Host host);
+    @Override
+    public void onDeploymentStop(DeploymentInfo deploymentInfo, Host host) {
+    }
 
-    //void onDeploymentRemove(DeploymentInfo deploymentInfo, Host host);
+    @Override
+    public void onHostStart(Host host) {
+    }
 
-    //void onHostAdd(Host host);
+    @Override
+    public void onHostStop(Host host) {
+    }
 
-    //void onHostRemove(Host host);
+    @Override
+    public void onServerStart(Server server) {
+    }
 
-    void onHostStart(Host host);
-
-    void onHostStop(Host host);
-
-    //void onServerAdd(Server server);
-
-    //void onServerRemove(Server server);
-
-    void onServerStart(Server server);
-
-    void onServerStop(Server server);
+    @Override
+    public void onServerStop(Server server) {
+    }
 }
