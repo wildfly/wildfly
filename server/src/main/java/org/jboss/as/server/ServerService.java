@@ -254,6 +254,7 @@ public final class ServerService extends AbstractControllerService {
             DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_SERVICE_MODULE_LOADER, new DeploymentUnitProcessor() {
                 @Override
                 public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+                    phaseContext.getDeploymentUnit().putAttachment(Attachments.MAIN_MODULE_LOADER, configuration.getModuleLoader());
                     phaseContext.getDeploymentUnit().putAttachment(Attachments.SERVICE_MODULE_LOADER, injectedModuleLoader.getValue());
                     phaseContext.getDeploymentUnit().putAttachment(Attachments.EXTERNAL_MODULE_SERVICE, injectedExternalModuleService.getValue());
                 }

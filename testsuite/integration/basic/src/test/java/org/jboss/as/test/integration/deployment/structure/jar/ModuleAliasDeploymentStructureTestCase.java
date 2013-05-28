@@ -25,7 +25,9 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class ModuleAliasDeploymentStructureTestCase {
 
-    private static final String TEST_ONE_JAR = "test-one.jar";
+    private static final String TEST_ONE = "test-one.jar";
+    private static final String TEST_TWO = "test-two.jar";
+    private static final String TEST_THREE = "test-three.jar";
 
     @ArquillianResource
     Deployer deployer;
@@ -38,7 +40,7 @@ public class ModuleAliasDeploymentStructureTestCase {
 
     @Test
     public void testModuleAlias() throws Exception {
-        deployer.deploy(TEST_ONE_JAR);
+        deployer.deploy(TEST_ONE);
         try {
             ModuleLoader moduleLoader = Module.getCallerModuleLoader();
             Module module = moduleLoader.loadModule(ModuleIdentifier.create("org.acme.foo"));
@@ -46,14 +48,58 @@ public class ModuleAliasDeploymentStructureTestCase {
             Object obj = module.getClassLoader().loadClass(className).newInstance();
             Assert.assertNotNull("Object not null", obj);
         } finally {
-            deployer.undeploy(TEST_ONE_JAR);
+            deployer.undeploy(TEST_ONE);
         }
     }
 
-    @Deployment(name = TEST_ONE_JAR, managed = false, testable = false)
+    @Test
+    public void testDuplicateAlias() throws Exception {
+        deployer.deploy(TEST_ONE);
+        try {
+            try {
+                deployer.deploy(TEST_TWO);
+                Assert.fail("DeploymentException expected");
+            } catch (RuntimeException ex) {
+                // expected
+            }
+        } finally {
+            deployer.undeploy(TEST_ONE);
+        }
+    }
+
+    @Test
+    public void testSystemModuleAlias() throws Exception {
+        ModuleLoader moduleLoader = Module.getCallerModuleLoader();
+        Module module = moduleLoader.loadModule(ModuleIdentifier.create("org.apache.neethi"));
+        Assert.assertNotNull(module);
+        try {
+            deployer.deploy(TEST_THREE);
+            Assert.fail("DeploymentException expected");
+        } catch (RuntimeException ex) {
+            // expected
+        }
+    }
+
+    @Deployment(name = TEST_ONE, managed = false, testable = false)
     public static JavaArchive getArchiveOne() {
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, TEST_ONE_JAR);
-        archive.addAsManifestResource(Available.class.getPackage(), "module-alias-deployment-structure.xml", "jboss-deployment-structure.xml");
+        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, TEST_ONE);
+        archive.addAsManifestResource(Available.class.getPackage(), "module-alias-one.xml", "jboss-deployment-structure.xml");
+        archive.add(getNestedArchive(), "/", ZipExporter.class);
+        return archive;
+    }
+
+    @Deployment(name = TEST_TWO, managed = false, testable = false)
+    public static JavaArchive getArchiveTwo() {
+        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, TEST_TWO);
+        archive.addAsManifestResource(Available.class.getPackage(), "module-alias-one.xml", "jboss-deployment-structure.xml");
+        archive.add(getNestedArchive(), "/", ZipExporter.class);
+        return archive;
+    }
+
+    @Deployment(name = TEST_THREE, managed = false, testable = false)
+    public static JavaArchive getArchiveThree() {
+        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, TEST_THREE);
+        archive.addAsManifestResource(Available.class.getPackage(), "module-alias-two.xml", "jboss-deployment-structure.xml");
         archive.add(getNestedArchive(), "/", ZipExporter.class);
         return archive;
     }

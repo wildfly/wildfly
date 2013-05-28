@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.deployment.module;
 
+import static org.jboss.as.server.ServerMessages.MESSAGES;
+
 import java.io.IOException;
 import java.security.Permission;
 import java.security.Permissions;
@@ -46,6 +48,8 @@ import org.jboss.as.server.moduleservice.ModuleResolvePhaseService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
 import org.jboss.modules.ResourceLoaderSpec;
 import org.jboss.modules.filter.MultiplePathFilterBuilder;
@@ -248,8 +252,15 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
     }
 
     private void installAliases(final ModuleSpecification moduleSpecification, final ModuleIdentifier moduleIdentifier, final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext) {
-
+        ModuleLoader mainModuleLoader = deploymentUnit.getAttachment(Attachments.MAIN_MODULE_LOADER);
         for (final ModuleIdentifier alias : moduleSpecification.getAliases()) {
+            // Check whether the alias is already used by a system module
+            try {
+                mainModuleLoader.loadModule(alias);
+                throw MESSAGES.invalidSystemModuleAlias(alias);
+            } catch (ModuleLoadException ex) {
+                // expected
+            }
             final ServiceName moduleSpecServiceName = ServiceModuleLoader.moduleSpecServiceName(alias);
             final ModuleSpec spec = ModuleSpec.buildAlias(alias, moduleIdentifier).create();
 

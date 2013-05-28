@@ -671,4 +671,6 @@ public interface ServerMessages {
     @Message(id = 18784, value = "Null '%s'")
     OperationFailedException nullParameter(String name);
 
+    @Message(id = 18785, value = "Invalid system module alias: %s")
+    IllegalArgumentException invalidSystemModuleAlias(ModuleIdentifier alias);
 }
