@@ -30,13 +30,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Deque;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.util.ETag;
+import io.undertow.util.ETagUtils;
+import io.undertow.util.HeaderMap;
+import io.undertow.util.Headers;
+import io.undertow.util.HexConverter;
+import io.undertow.util.Methods;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -44,13 +52,6 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
 import org.xnio.IoUtils;
 import org.xnio.streams.ChannelInputStream;
-
-import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.util.DateUtils;
-import io.undertow.util.HeaderMap;
-import io.undertow.util.Headers;
-import io.undertow.util.Methods;
 
 /**
  *
@@ -91,12 +92,9 @@ class DomainApiHandler implements HttpHandler {
         }
     }
 
-    private final Date lastModified;
     private final ModelController modelController;
 
     DomainApiHandler(ModelController modelController) {
-        // Use server start as last modified date (make sure it's based on GMT)
-        this.lastModified = DateUtils.parseDate(DateUtils.toDateString(new Date()));
         this.modelController = modelController;
     }
 
@@ -107,20 +105,21 @@ class DomainApiHandler implements HttpHandler {
         ModelNode response;
 
         HeaderMap requestHeaders = exchange.getRequestHeaders();
+        final boolean cachable;
         final boolean get = exchange.getRequestMethod().equals(Methods.GET);
         final boolean encode = Common.APPLICATION_DMR_ENCODED.equals(requestHeaders.getFirst(Headers.ACCEPT))
                 || Common.APPLICATION_DMR_ENCODED.equals(requestHeaders.getFirst(Headers.CONTENT_TYPE));
+        final OperationParameter.Builder operationParameterBuilder = new OperationParameter.Builder(get).encode(encode);
 
-        OperationParameter.Builder builder = new OperationParameter.Builder(get)
-                .lastModified(lastModified)
-                .encode(encode);
         try {
             if (get) {
                 GetOperation operation = getOperation(exchange);
-                builder.maxAge(operation.getMaxAge());
+                operationParameterBuilder.maxAge(operation.getMaxAge());
                 dmr = convertGetRequest(exchange, operation);
+                cachable = operation.getMaxAge() > 0;
             } else {
                 dmr = convertPostRequest(exchange, encode);
+                cachable = false;
             }
         } catch (Exception e) {
             ROOT_LOGGER.debugf("Unable to construct ModelNode '%s'", e.getMessage());
@@ -128,7 +127,6 @@ class DomainApiHandler implements HttpHandler {
             return;
         }
 
-        final OperationParameter operationParameter = builder.build();
         final ResponseCallback callback = new ResponseCallback() {
             @Override
             void doSendResponse(final ModelNode response) {
@@ -136,20 +134,9 @@ class DomainApiHandler implements HttpHandler {
                     Common.sendError(exchange, get, encode, response.get(FAILURE_DESCRIPTION).asString());
                     return;
                 }
-                writeResponse(exchange, 200, response, operationParameter);
+                writeResponse(exchange, 200, response, operationParameterBuilder.build());
             }
         };
-
-        // cachable?
-        if (get && operationParameter.getMaxAge() > 0) {
-            // Cache is validated against last modified dates. Entity tags are not supported.
-            if (!DateUtils.handleIfModifiedSince(exchange, operationParameter.getLastModified())) {
-                exchange.setResponseCode(304);
-                DomainUtil.writeCacheHeaders(exchange, operationParameter);
-                exchange.endExchange();
-                return;
-            }
-        }
 
         final boolean sendPreparedResponse = sendPreparedResponse(dmr);
         final ModelController.OperationTransactionControl control = sendPreparedResponse ? new ModelController.OperationTransactionControl() {
@@ -165,6 +152,19 @@ class DomainApiHandler implements HttpHandler {
 
         try {
             response = modelController.execute(dmr, OperationMessageHandler.logging, control, new OperationBuilder(dmr).build());
+            if (cachable) {
+                // Use the MD5 of the model nodes toString() method as ETag
+                MessageDigest md = MessageDigest.getInstance("MD5");
+                md.update(response.toString().getBytes());
+                ETag etag = new ETag(false, HexConverter.convertToHexString(md.digest()));
+                operationParameterBuilder.etag(etag);
+                if (!ETagUtils.handleIfNoneMatch(exchange, etag, false)) {
+                    exchange.setResponseCode(304);
+                    DomainUtil.writeCacheHeaders(exchange, 304, operationParameterBuilder.build());
+                    exchange.endExchange();
+                    return;
+                }
+            }
         } catch (Throwable t) {
             ROOT_LOGGER.modelRequestError(t);
             Common.sendError(exchange, get, encode, t.getLocalizedMessage());

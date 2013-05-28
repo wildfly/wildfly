@@ -1,6 +1,6 @@
 package org.jboss.as.domain.http.server;
 
-import java.util.Date;
+import io.undertow.util.ETag;
 
 /**
  * Value class for describing the result of an operation against the {@link DomainApiHandler}.
@@ -12,14 +12,14 @@ import java.util.Date;
 public class OperationParameter {
     private final boolean get;
     private final int maxAge;
-    private final Date lastModified;
+    private final ETag etag;
     private final boolean encode;
     private final boolean pretty;
 
     private OperationParameter(Builder builder) {
         this.get = builder.get;
         this.maxAge = builder.maxAge;
-        this.lastModified = builder.lastModified;
+        this.etag = builder.etag;
         this.encode = builder.encode;
         this.pretty = builder.pretty;
     }
@@ -32,8 +32,8 @@ public class OperationParameter {
         return maxAge;
     }
 
-    public Date getLastModified() {
-        return lastModified;
+    public ETag getEtag() {
+        return etag;
     }
 
     public boolean isEncode() {
@@ -49,7 +49,7 @@ public class OperationParameter {
         final StringBuilder sb = new StringBuilder("OperationResult{");
         sb.append("get=").append(get);
         sb.append(", maxAge=").append(maxAge);
-        sb.append(", lastModified=").append(lastModified);
+        sb.append(", etag=").append(etag);
         sb.append(", encode=").append(encode);
         sb.append(", pretty=").append(pretty);
         sb.append('}');
@@ -64,7 +64,7 @@ public class OperationParameter {
         private final boolean get;
         // optional
         private int maxAge;
-        private Date lastModified;
+        private ETag etag;
         private boolean pretty;
         private boolean encode;
 
@@ -77,7 +77,7 @@ public class OperationParameter {
          * <p>Optional parameter (and their default values)</p>
          * <ul>
          *     <li>maxAge (0)</li>
-         *     <li>lastModified (null)</li>
+         *     <li>etag (null)</li>
          *     <li>encode (false)</li>
          *     <li>pretty (false)</li>
          * </ul>
@@ -87,7 +87,6 @@ public class OperationParameter {
         public Builder(final boolean get) {
             this.get = get;
             this.maxAge = 0;
-            this.lastModified = null;
             this.encode = false;
             this.pretty = false;
         }
@@ -97,8 +96,8 @@ public class OperationParameter {
             return this;
         }
 
-        public Builder lastModified(Date lastModified) {
-            this.lastModified = lastModified;
+        public Builder etag(ETag etag) {
+            this.etag = etag;
             return this;
         }
 

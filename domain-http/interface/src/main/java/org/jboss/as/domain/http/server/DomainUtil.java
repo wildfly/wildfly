@@ -22,6 +22,7 @@
 package org.jboss.as.domain.http.server;
 
 import static io.undertow.util.Headers.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 
 import java.io.BufferedOutputStream;
@@ -30,14 +31,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
+import io.undertow.server.HttpServerExchange;
+import io.undertow.util.HeaderMap;
+import io.undertow.util.Headers;
 import org.jboss.dmr.ModelNode;
 import org.xnio.IoUtils;
 import org.xnio.streams.ChannelOutputStream;
-
-import io.undertow.server.HttpServerExchange;
-import io.undertow.util.DateUtils;
-import io.undertow.util.HeaderMap;
-import io.undertow.util.Headers;
 
 /**
  * Utility methods used for HTTP based domain management.
@@ -46,7 +45,7 @@ import io.undertow.util.Headers;
  */
 public class DomainUtil {
 
-    public static void writeResponse(HttpServerExchange exchange, final int status, final ModelNode response,
+    public static void writeResponse(final HttpServerExchange exchange, final int status, ModelNode response,
             OperationParameter operationParameter) {
 
         exchange.setResponseCode(status);
@@ -55,12 +54,12 @@ public class DomainUtil {
         final String contentType = operationParameter.isEncode() ? Common.APPLICATION_DMR_ENCODED : Common.APPLICATION_JSON;
         responseHeaders.put(Headers.CONTENT_TYPE, contentType + ";" + Common.UTF_8);
 
-        writeCacheHeaders(exchange, operationParameter);
+        writeCacheHeaders(exchange, status, operationParameter);
 
         if (operationParameter.isGet() && status == 200) {
-            // Why was only the RESULT part sent and not the complete model node?
-            // The admin console *always* expects complete model nodes!
-            // response = response.get(RESULT);
+            // For GET request the response is purley the model nodes result. The outcome
+            // is not send as part of the response but expressed with the HTTP status code.
+            response = response.get(RESULT);
             try {
                 int length = getResponseLength(response, operationParameter);
                 responseHeaders.put(Headers.CONTENT_LENGTH, length);
@@ -108,13 +107,16 @@ public class DomainUtil {
         return length;
     }
 
-    public static void writeCacheHeaders(final HttpServerExchange exchange, final OperationParameter operationParameter) {
+    public static void writeCacheHeaders(final HttpServerExchange exchange, final int status, final OperationParameter operationParameter) {
         final HeaderMap responseHeaders = exchange.getResponseHeaders();
-        if (operationParameter.getMaxAge() > 0) {
+
+        // No need to send this in a 304
+        // See http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5
+        if (operationParameter.getMaxAge() > 0 && status != 304) {
             responseHeaders.put(Headers.CACHE_CONTROL, "max-age=" + operationParameter.getMaxAge() + ", private, must-revalidate");
         }
-        if (operationParameter.getLastModified() != null) {
-            responseHeaders.put(Headers.LAST_MODIFIED, DateUtils.toDateString(operationParameter.getLastModified()));
+        if (operationParameter.getEtag() != null) {
+            responseHeaders.put(Headers.ETAG, operationParameter.getEtag().toString());
         }
     }
 
