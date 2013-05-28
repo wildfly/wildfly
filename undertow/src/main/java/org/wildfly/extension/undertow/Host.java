@@ -115,18 +115,28 @@ public class Host implements Service<Host>, WebHost {
         return rootHandler;
     }
 
-    public void registerDeployment(DeploymentInfo deploymentInfo, HttpHandler handler) {
+    public void registerDeployment(final DeploymentInfo deploymentInfo, HttpHandler handler) {
         String path = ServletContainerService.getDeployedContextPath(deploymentInfo);
         registerHandler(path, handler);
         UndertowLogger.ROOT_LOGGER.registerWebapp(path);
-        undertowService.getValue().fireEvent(EventType.DEPLOYMENT_START, deploymentInfo, this);
+        undertowService.getValue().fireEvent(new EventInvoker() {
+            @Override
+            public void invoke(UndertowEventListener listener) {
+                listener.onDeploymentStart(deploymentInfo, Host.this);
+            }
+        });
     }
 
-    public void unregisterDeployment(DeploymentInfo deploymentInfo) {
+    public void unregisterDeployment(final DeploymentInfo deploymentInfo) {
         String path = ServletContainerService.getDeployedContextPath(deploymentInfo);
         unregisterHandler(path);
         UndertowLogger.ROOT_LOGGER.unregisterWebapp(path);
-        undertowService.getValue().fireEvent(EventType.DEPLOYMENT_STOP, deploymentInfo, this);
+        undertowService.getValue().fireEvent(new EventInvoker() {
+            @Override
+            public void invoke(UndertowEventListener listener) {
+                listener.onDeploymentStop(deploymentInfo, Host.this);
+            }
+        });
     }
 
     public void registerHandler(String path, HttpHandler handler) {
