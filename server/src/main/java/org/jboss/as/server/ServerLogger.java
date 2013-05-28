@@ -275,10 +275,6 @@ public interface ServerLogger extends BasicLogger {
     @Message(id = 15892, value = "Deployment unit processor %s unexpectedly threw an exception during undeploy phase %s of %s")
     void caughtExceptionUndeploying(@Cause Throwable cause, DeploymentUnitProcessor dup, Phase phase, DeploymentUnit unit);
 
-    @LogMessage(level = WARN)
-    @Message(id = 15893, value = "Encountered invalid class name '%s' for service type '%s'")
-    void invalidServiceClassName(String className, String type);
-
     @LogMessage(level = ERROR)
     @Message(id = 15894, value = "Module %s will not have it's annotations processed as no %s file was found in the deployment. Please generate this file using the Jandex ant task.")
     void noCompositeIndex(ModuleIdentifier identifier, String indexLocation);
