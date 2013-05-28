@@ -248,6 +248,8 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         // remove socket binding
         cli.sendLine("/socket-binding-group=standard-sockets/socket-binding=test-binding:remove");
 
+        // remove rollout plan
+        cli.sendLine("rollout-plan remove --name=maxFailOnePlan");
     }
 
     /**
@@ -295,7 +297,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         Assert.assertFalse(getServerStatus("main-two", ret));
         Assert.assertFalse(getServerStatus("main-three", ret));
         Assert.assertTrue(getServerStatus("test-one", ret));
-        ret = testRemoveConnector("maxFailOnePlan");
+        ret = testRemoveConnector("maxFailPercPlan");
         Assert.assertTrue(ret.isIsOutcomeSuccess());
         Assert.assertFalse(getServerStatus("main-two", ret));
         Assert.assertFalse(getServerStatus("main-three", ret));
@@ -306,6 +308,9 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
 
         // remove socket binding
         cli.sendLine("/socket-binding-group=standard-sockets/socket-binding=test-binding:remove");
+
+        // remove rollout plan
+        cli.sendLine("rollout-plan remove --name=maxFailPercPlan");
     }
 
     /**
@@ -352,6 +357,9 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
 
         // remove socket binding
         cli.sendLine("/socket-binding-group=standard-sockets/socket-binding=test-binding:remove");
+
+        // remove rollout plan
+        cli.sendLine("rollout-plan remove --name=groupsRollbackPlan");
     }
 
     private CLIOpResult testAddConnector(String rolloutPlanId) throws Exception {
