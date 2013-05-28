@@ -22,6 +22,7 @@
 package org.jboss.as.weld.deployment.processors;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -30,6 +31,7 @@ import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -37,8 +39,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.web.common.WebComponentDescription;
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.WeldLogger;
+import org.jboss.as.weld.webtier.AsyncListenerContextActivationFilter;
 import org.jboss.as.weld.webtier.jsp.WeldJspExpressionFactoryWrapper;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -57,6 +59,8 @@ import org.jboss.weld.servlet.WeldListener;
 public class WebIntegrationProcessor implements DeploymentUnitProcessor {
     private final ListenerMetaData WBL;
     private final FilterMetaData conversationFilterMetadata;
+    private final FilterMetaData asyncFilterMetadata;
+    private final FilterMappingMetaData asyncFilterMappingMetadata;
 
     private static final String WELD_LISTENER = WeldListener.class.getName();
 
@@ -76,6 +80,13 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
         conversationFilterMetadata.setFilterClass(CONVERSATION_FILTER_CLASS);
         conversationFilterMetadata.setFilterName(CONVERSATION_FILTER_NAME);
         conversationFilterMetadata.setAsyncSupported(true);
+        asyncFilterMetadata = new FilterMetaData();
+        asyncFilterMetadata.setFilterClass(AsyncListenerContextActivationFilter.class.getName());
+        asyncFilterMetadata.setFilterName(AsyncListenerContextActivationFilter.class.getName());
+        asyncFilterMetadata.setAsyncSupported(true);
+        asyncFilterMappingMetadata = new FilterMappingMetaData();
+        asyncFilterMappingMetadata.setFilterName(AsyncListenerContextActivationFilter.class.getName());
+        asyncFilterMappingMetadata.setUrlPatterns(Collections.singletonList("/*"));
         CONVERSATION_FILTER_INITIALIZED.setParamName(ConversationFilter.CONVERSATION_FILTER_REGISTERED);
         CONVERSATION_FILTER_INITIALIZED.setParamValue(Boolean.TRUE.toString());
     }
@@ -129,39 +140,45 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
 
         deploymentUnit.addToAttachmentList(ExpressionFactoryWrapper.ATTACHMENT_KEY, WeldJspExpressionFactoryWrapper.INSTANCE);
 
-        if (webMetaData.getFilterMappings() != null) {
-            // register ConversationFilter
-            boolean filterMappingFound = false;
-            for (FilterMappingMetaData mapping : webMetaData.getFilterMappings()) {
-                if (CONVERSATION_FILTER_NAME.equals(mapping.getFilterName())) {
-                    filterMappingFound = true;
+        // register ConversationFilter
+        if (webMetaData.getFilters() == null) {
+            webMetaData.setFilters(new FiltersMetaData());
+        }
+        if (webMetaData.getFilterMappings() == null) {
+            webMetaData.setFilterMappings(new ArrayList<FilterMappingMetaData>());
+        }
+
+        webMetaData.getFilters().add(asyncFilterMetadata);
+        webMetaData.getFilterMappings().add(asyncFilterMappingMetadata);
+        registerAsComponent(asyncFilterMetadata.getFilterClass(), module, deploymentUnit, applicationClasses);
+
+        // register ConversationFilter
+        boolean filterMappingFound = false;
+        for (FilterMappingMetaData mapping : webMetaData.getFilterMappings()) {
+            if (CONVERSATION_FILTER_NAME.equals(mapping.getFilterName())) {
+                filterMappingFound = true;
+                break;
+            }
+        }
+
+        if (filterMappingFound) { // otherwise WeldListener will take care of conversation context activation
+            boolean filterFound = false;
+            for (FilterMetaData filter : webMetaData.getFilters()) {
+                if (CONVERSATION_FILTER_CLASS.equals(filter.getFilterClass())) {
+                    filterFound = true;
                     break;
                 }
             }
-
-            if (filterMappingFound) { // otherwise WeldListener will take care of conversation context activation
-                boolean filterFound = false;
-                for (FilterMetaData filter : webMetaData.getFilters()) {
-                    if (CONVERSATION_FILTER_CLASS.equals(filter.getFilterClass())) {
-                        filterFound = true;
-                        break;
-                    }
+            if (!filterFound) {
+                // register ConversationFilter
+                webMetaData.getFilters().add(conversationFilterMetadata);
+                registerAsComponent(CONVERSATION_FILTER_CLASS, module, deploymentUnit, applicationClasses);
+                List<ParamValueMetaData> contextParams = webMetaData.getContextParams();
+                if (contextParams == null) {
+                    webMetaData.setContextParams(new ArrayList<ParamValueMetaData>());
                 }
-                if (!filterFound) {
-                    // register ConversationFilter
-                    if (webMetaData.getFilters() == null) {
-                        webMetaData.setFilters(new FiltersMetaData());
-                    }
-                    webMetaData.getFilters().add(conversationFilterMetadata);
-                    registerAsComponent(CONVERSATION_FILTER_CLASS, module, deploymentUnit, applicationClasses);
-                    List<ParamValueMetaData> contextParams = webMetaData.getContextParams();
-                    if (contextParams == null) {
-                        webMetaData.setContextParams(new ArrayList<ParamValueMetaData>());
-                    }
-                    webMetaData.getContextParams().add(CONVERSATION_FILTER_INITIALIZED);
-                }
+                webMetaData.getContextParams().add(CONVERSATION_FILTER_INITIALIZED);
             }
-
         }
     }
 
