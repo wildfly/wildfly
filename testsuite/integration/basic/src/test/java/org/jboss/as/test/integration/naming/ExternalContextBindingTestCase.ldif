@@ -1,0 +1,14 @@
+dn: ou=People,dc=jboss,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: People
+
+dn: uid=jduke,ou=People,dc=jboss,dc=org
+objectclass: top
+objectclass: uidObject
+objectclass: person
+uid: jduke
+cn: Java Duke
+sn: Duke
+userPassword: theduke
+description: awesome
