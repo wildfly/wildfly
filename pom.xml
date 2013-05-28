@@ -228,7 +228,7 @@
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.0.Alpha1</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
         <version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>1.0.1.Final</version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>
         <version.org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec>1.0.3.Final</version.org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec>
-        <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.1_spec>1.0.1.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.1_spec>
+        <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>1.0.0.Alpha3</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>
         <version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>1.0.4.Final</version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>
         <version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>1.0.1.Final</version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>
         <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>1.0.2.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>
@@ -470,6 +470,7 @@
                                             <exclude>org.jboss.security:jbosssx</exclude>
                                             <exclude>org.jboss.slf4j:slf4j-jboss-logging</exclude>
                                             <exclude>org.jboss.spec.javax.resource:jboss-connector-api_1.5_spec</exclude>
+                                            <exclude>org.jboss.spec.javax.transaction:jboss-transaction-api_1.1_spec</exclude>
                                             <exclude>org.ops4j.base</exclude>
                                             <exclude>org.ops4j.pax.swissbox</exclude>
                                             <exclude>org.ops4j.pax.web</exclude>
@@ -1055,6 +1056,14 @@
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-ejb3</artifactId>
                 <version>${project.version}</version>
+                <exclusions>
+                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -3676,6 +3685,12 @@
                        <groupId>org.jboss.spec.javax.jms</groupId>
                        <artifactId>jboss-jms-api_1.1_spec</artifactId>
                     </exclusion>
+                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -3749,6 +3764,12 @@
                     <exclusion>
                         <groupId>org.jboss</groupId>
                         <artifactId>staxmapper</artifactId>
+                    </exclusion>
+                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4098,7 +4119,7 @@
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4123,6 +4144,12 @@
                     <exclusion>
                         <groupId>org.jboss.threads</groupId>
                         <artifactId>jboss-threads</artifactId>
+                    </exclusion>
+                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4160,6 +4187,12 @@
                         <groupId>org.picketbox</groupId>
                         <artifactId>jbosssx</artifactId>
                     </exclusion>
+                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -4192,6 +4225,12 @@
                         <groupId>org.jboss</groupId>
                         <artifactId>jboss-common-core</artifactId>
                     </exclusion>
+                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -4205,12 +4244,28 @@
                 <groupId>org.jboss.ironjacamar</groupId>
                 <artifactId>ironjacamar-spec-api</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
+                <exclusions>
+                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
                 <artifactId>ironjacamar-jdbc</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
+                <exclusions>
+                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -4229,6 +4284,14 @@
                 <groupId>org.jipijapa</groupId>
                 <artifactId>spi</artifactId>
                 <version>${version.org.jipijapa}</version>
+                <exclusions>
+                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -5222,8 +5285,8 @@
 
             <dependency>
                 <groupId>org.jboss.spec.javax.transaction</groupId>
-                <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.1_spec}</version>
+                <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec}</version>
             </dependency>
 
             <dependency>
