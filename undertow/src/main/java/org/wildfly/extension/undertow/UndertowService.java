@@ -31,7 +31,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import io.undertow.Version;
-import io.undertow.servlet.api.DeploymentInfo;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -96,7 +95,13 @@ public class UndertowService implements Service<UndertowService> {
     @Override
     public void stop(StopContext context) {
         UndertowLogger.ROOT_LOGGER.serverStopping(Version.getVersionString());
-        fireEvent(EventType.SHUTDOWN, null);
+
+        fireEvent(new EventInvoker() {
+            @Override
+            public void invoke(UndertowEventListener listener) {
+                listener.onShutdown();
+            }
+        });
     }
 
     @Override
@@ -104,14 +109,24 @@ public class UndertowService implements Service<UndertowService> {
         return this;
     }
 
-    protected void registerServer(Server server) {
+    protected void registerServer(final Server server) {
         registeredServers.add(server);
-        fireEvent(EventType.SERVER_START, server);
+        fireEvent(new EventInvoker() {
+            @Override
+            public void invoke(UndertowEventListener listener) {
+                listener.onServerStart(server);
+            }
+        });
     }
 
-    protected void unregisterServer(Server server) {
+    protected void unregisterServer(final Server server) {
         registeredServers.remove(server);
-        fireEvent(EventType.SERVER_STOP, server);
+        fireEvent(new EventInvoker() {
+            @Override
+            public void invoke(UndertowEventListener listener) {
+                listener.onServerStop(server);
+            }
+        });
     }
 
     public String getDefaultContainer() {
@@ -147,33 +162,9 @@ public class UndertowService implements Service<UndertowService> {
         this.listeners.add(listener);
     }
 
-    protected void fireEvent(EventType type, Object... eventData) {
+    protected void fireEvent(EventInvoker invoker) {
         for (UndertowEventListener listener : listeners) {
-            switch (type) {
-                case HOST_START:
-                    listener.onHostStart((Host) eventData[0]);
-                    break;
-                case HOST_STOP:
-                    listener.onHostStop((Host) eventData[0]);
-                    break;
-                case DEPLOYMENT_START:
-                    listener.onDeploymentStart((DeploymentInfo) eventData[0], (Host) eventData[1]);
-                    break;
-                case DEPLOYMENT_STOP:
-                    listener.onDeploymentStop((DeploymentInfo) eventData[0], (Host) eventData[1]);
-                    break;
-                case SERVER_START:
-                    listener.onServerStart((Server) eventData[0]);
-                    break;
-                case SERVER_STOP:
-                    listener.onServerStop((Server) eventData[0]);
-                    break;
-                case SHUTDOWN:
-                    listener.onShutdown();
-                    break;
-                default:
-                    throw new IllegalArgumentException("not supported yet");
-            }
+            invoker.invoke(listener);
         }
     }
 }
