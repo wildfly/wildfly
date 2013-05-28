@@ -42,5 +42,9 @@
         <module name="javax.resource.api"/>
         <module name="org.hornetq"/>
         <module name="org.jacorb"/>
+        <module name="javax.enterprise.api"/>
+        <module name="org.jboss.weld.core"/>
+        <module name="javax.annotation.api" export="true" />
+        <module name="javax.interceptor.api" export="true" />
     </dependencies>
 </module>
