@@ -30,9 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
-import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
@@ -45,8 +43,6 @@ import org.jboss.vfs.VirtualFile;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ServiceLoaderProcessor implements DeploymentUnitProcessor {
-
-    private static final Pattern VALID_NAME = Pattern.compile("(?:[a-zA-Z0-9_]+\\.)*[a-zA-Z0-9_]+");
 
     /**
      * {@inheritDoc}
@@ -71,7 +67,7 @@ public final class ServiceLoaderProcessor implements DeploymentUnitProcessor {
         final VirtualFile child = virtualFile.getChild("META-INF/services");
         for (VirtualFile serviceType : child.getChildren()) {
             final String name = serviceType.getName();
-            if (VALID_NAME.matcher(name).matches()) try {
+            try {
                 List<String> list = foundServices.get(name);
                 if (list == null) {
                     foundServices.put(name, list = new ArrayList<String>());
@@ -90,9 +86,6 @@ public final class ServiceLoaderProcessor implements DeploymentUnitProcessor {
                         }
                         if (className.length() == 0) {
                             continue;
-                        }
-                        if (!VALID_NAME.matcher(className).matches()) {
-                            ServerLogger.DEPLOYMENT_LOGGER.invalidServiceClassName(className, name);
                         }
                         list.add(className);
                     }
