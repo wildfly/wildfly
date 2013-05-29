@@ -28,12 +28,12 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-parent</artifactId>
-        <version>7.2.0.Final-redhat-X</version>
+        <version>7.2.2-internal-SNAPSHOT</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-ee-deployment</artifactId>
-    <version>7.2.0.Final-redhat-X</version>
+    <version>7.2.2-internal-SNAPSHOT</version>
 
     <name>JBoss Application Server: EE Deployment</name>
 
