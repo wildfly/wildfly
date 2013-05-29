@@ -35,12 +35,15 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.jar.Manifest;
 
 import org.jboss.as.server.ServerMessages;
 import org.jboss.modules.AbstractResourceLoader;
 import org.jboss.modules.ClassSpec;
+import org.jboss.modules.IterableResourceLoader;
 import org.jboss.modules.PackageSpec;
 import org.jboss.modules.PathUtils;
 import org.jboss.modules.Resource;
@@ -61,8 +64,9 @@ import static java.security.AccessController.doPrivileged;
  * Resource loader capable of loading resources from VFS archives.
  *
  * @author John Bailey
+ * @author Thomas.Diesler@jboss.com
  */
-public class VFSResourceLoader extends AbstractResourceLoader {
+public class VFSResourceLoader extends AbstractResourceLoader implements IterableResourceLoader {
 
     private final VirtualFile root;
     private final String rootName;
@@ -127,7 +131,7 @@ public class VFSResourceLoader extends AbstractResourceLoader {
                     final ClassSpec spec = new ClassSpec();
                     final InputStream is = file.openStream();
                     try {
-                        if (size <= (long) Integer.MAX_VALUE) {
+                        if (size <= Integer.MAX_VALUE) {
                             final int castSize = (int) size;
                             byte[] bytes = new byte[castSize];
                             int a = 0, res;
@@ -187,7 +191,7 @@ public class VFSResourceLoader extends AbstractResourceLoader {
                     if (!file.exists()) {
                         return null;
                     }
-                    return new VFSEntryResource(file, file.toURL());
+                    return new VFSEntryResource(file.getPathNameRelativeTo(root), file, file.toURL());
                 } catch (MalformedURLException e) {
                     // must be invalid...?  (todo: check this out)
                     return null;
@@ -239,17 +243,63 @@ public class VFSResourceLoader extends AbstractResourceLoader {
         return index;
     }
 
+    @Override
+    public Iterator<Resource> iterateResources(String startPath, boolean recursive) {
+        VirtualFile child = root.getChild(startPath);
+        if (startPath.length() > 1 && child == root) {
+            return Collections.<Resource>emptySet().iterator();
+        }
+        VirtualFileFilter filter = new VirtualFileFilter() {
+            @Override
+            public boolean accepts(VirtualFile file) {
+                return file.isFile();
+            }
+        };
+        final Iterator<VirtualFile> children;
+        try {
+            children = (recursive ? child.getChildrenRecursively(filter) : child.getChildren(filter)).iterator();
+        } catch (IOException ex) {
+            throw new IllegalStateException(ex);
+        }
+        return new Iterator<Resource>() {
+
+            @Override
+            public boolean hasNext() {
+                return children.hasNext();
+            }
+
+            @Override
+            public Resource next() {
+                VirtualFile file = children.next();
+                URL fileURL;
+                try {
+                    fileURL = file.toURL();
+                } catch (MalformedURLException ex) {
+                    throw new IllegalStateException(ex);
+                }
+                return new VFSEntryResource(file.getPathNameRelativeTo(root), file, fileURL);
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
     static class VFSEntryResource implements Resource {
+        private final String name;
         private final VirtualFile entry;
         private final URL resourceURL;
 
-        VFSEntryResource(final VirtualFile entry, final URL resourceURL) {
+        VFSEntryResource(final String name, final VirtualFile entry, final URL resourceURL) {
+            this.name = name;
             this.entry = entry;
             this.resourceURL = resourceURL;
         }
 
         public String getName() {
-            return entry.getName();
+            return name;
         }
 
         public URL getURL() {
@@ -265,5 +315,4 @@ public class VFSResourceLoader extends AbstractResourceLoader {
             return size == -1 ? 0 : size;
         }
     }
-
 }

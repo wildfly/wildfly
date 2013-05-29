@@ -25,6 +25,7 @@ import static org.jboss.as.network.SocketBinding.JBOSS_BINDING_NAME;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
 
 import java.net.InetSocketAddress;
+import java.net.URL;
 import java.util.Dictionary;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -54,8 +55,11 @@ import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.jboss.osgi.framework.spi.SystemServices;
 import org.jboss.osgi.framework.spi.SystemServicesPlugin;
+import org.jboss.osgi.provision.XResourceProvisioner;
 import org.jboss.osgi.repository.XRepository;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.util.xml.XMLParserActivator;
 
 /**
  * An {@link org.jboss.osgi.framework.spi.IntegrationService} that provides system services on framework startup
@@ -68,6 +72,7 @@ final class SystemServicesIntegration extends SystemServicesPlugin {
     private final InjectedValue<ModelController> injectedModelController = new InjectedValue<ModelController>();
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
     private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
+    private final InjectedValue<XResourceProvisioner> injectedProvisioner = new InjectedValue<XResourceProvisioner>();
     private final InjectedValue<XRepository> injectedRepository = new InjectedValue<XRepository>();
     private final List<SubsystemExtension> extensions;
     private final OSGiRuntimeResource resource;
@@ -85,6 +90,7 @@ final class SystemServicesIntegration extends SystemServicesPlugin {
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, injectedModelController);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
         builder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, injectedBundleContext);
+        builder.addDependency(OSGiConstants.PROVISION_SERVICE_NAME, XResourceProvisioner.class, injectedProvisioner);
         builder.addDependency(OSGiConstants.REPOSITORY_SERVICE_NAME, XRepository.class, injectedRepository);
         // Subsystem extension dependencies
         for(SubsystemExtension extension : extensions) {
@@ -114,74 +120,112 @@ final class SystemServicesIntegration extends SystemServicesPlugin {
         }
 
         // Unregister the system services
-        getValue().unregisterServices();
+        super.stop(context);
     }
 
 
     @Override
     protected SystemServices createServiceValue(StartContext startContext) throws StartException {
-        return new SystemServicesImpl();
-    }
+        final SystemServices delegate = super.createServiceValue(startContext);
+        return new SystemServices() {
 
-    class SystemServicesImpl implements SystemServices {
+            @Override
+            public void registerServices(BundleContext syscontext) {
+                // Call the default implementation
+                delegate.registerServices(syscontext);
 
-        @Override
-        public void registerServices(final BundleContext syscontext) {
+                // Inject the system bundle context into the runtime resource
+                BundleManager bundleManager = injectedBundleManager.getValue();
+                resource.getInjectedBundleManager().inject(bundleManager);
 
-            // Inject the system bundle context into the runtime resource
-            BundleManager bundleManager = injectedBundleManager.getValue();
-            resource.getInjectedBundleManager().inject(bundleManager);
-
-            // Register the socket-binding services
-            String bindingNames = syscontext.getProperty(FrameworkBootstrapService.MAPPED_OSGI_SOCKET_BINDINGS);
-            if (bindingNames != null) {
-                final Set<ServiceName> socketBindingNames = new HashSet<ServiceName>();
-                for (String suffix : bindingNames.split(",")) {
-                    socketBindingNames.add(JBOSS_BINDING_NAME.append(suffix));
-                }
-                ServiceTarget serviceTarget = bundleManager.getServiceTarget();
-                ServiceName serviceName = IntegrationServices.SYSTEM_SERVICES_PLUGIN.append("BINDINGS");
-                ServiceBuilder<Void> builder = serviceTarget.addService(serviceName, new AbstractService<Void>() {
-                    @Override
-                    public void start(StartContext context) throws StartException {
-                        for (ServiceName serviceName : socketBindingNames) {
-                            SocketBinding binding = (SocketBinding) serviceContainer.getRequiredService(serviceName).getValue();
-                            Dictionary<String, String> props = new Hashtable<String, String>();
-                            props.put("socketBinding", serviceName.getSimpleName());
-                            InetSocketAddress value = binding.getSocketAddress();
-                            syscontext.registerService(InetSocketAddress.class.getName(), value, props);
-                        }
-                    }
-                });
-                ServiceName[] serviceNameArray = socketBindingNames.toArray(new ServiceName[socketBindingNames.size()]);
-                builder.addDependencies(serviceNameArray);
-                builder.install();
+                registerJAXPServices(syscontext);
+                registerServiceContainer(syscontext);
+                registerSocketBindings(syscontext);
+                registerRepository(syscontext);
+                registerResourceProvisioner(syscontext);
+                registerModelControllerClient(syscontext);
             }
 
-            // The ExecutorService that is used by the ModelControllerClient service
-            controllerThreadExecutor = Executors.newSingleThreadExecutor(new ThreadFactory() {
+            @Override
+            public void unregisterServices() {
+                resource.getInjectedBundleManager().uninject();
+                controllerThreadExecutor.shutdown();
+                delegate.unregisterServices();
+            }
+        };
+    }
+
+    private void registerJAXPServices(BundleContext syscontext) {
+        try {
+            final ClassLoader resloader = getClass().getClassLoader();
+            XMLParserActivator activator = new XMLParserActivator() {
                 @Override
-                public Thread newThread(Runnable run) {
-                    Thread thread = new Thread(run);
-                    thread.setName("OSGi ModelControllerClient Thread");
-                    thread.setDaemon(true);
-                    return thread;
+                protected URL getResourceURL(Bundle parserBundle, String resname) {
+                    return resloader.getResource(resname);
+                }
+            };
+            activator.start(syscontext);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private void registerServiceContainer(final BundleContext syscontext) {
+        syscontext.registerService(ServiceContainer.class, serviceContainer, null);
+    }
+
+    private void registerRepository(BundleContext syscontext) {
+        XRepository repository = injectedRepository.getValue();
+        syscontext.registerService(XRepository.class, repository, null);
+    }
+
+    private void registerResourceProvisioner(BundleContext syscontext) {
+        XResourceProvisioner provisioner = injectedProvisioner.getValue();
+        syscontext.registerService(XResourceProvisioner.class, provisioner, null);
+    }
+
+    private void registerModelControllerClient(final BundleContext syscontext) {
+        // The ExecutorService that is used by the ModelControllerClient service
+        controllerThreadExecutor = Executors.newSingleThreadExecutor(new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable run) {
+                Thread thread = new Thread(run);
+                thread.setName("OSGi ModelControllerClient Thread");
+                thread.setDaemon(true);
+                return thread;
+            }
+        });
+        // Register the {@link ModelControllerClient} service
+        ModelController modelController = injectedModelController.getValue();
+        ModelControllerClient client = modelController.createClient(controllerThreadExecutor);
+        syscontext.registerService(ModelControllerClient.class, client, null);
+    }
+
+    private void registerSocketBindings(final BundleContext syscontext) {
+        BundleManager bundleManager = injectedBundleManager.getValue();
+        String bindingNames = syscontext.getProperty(FrameworkBootstrapService.MAPPED_OSGI_SOCKET_BINDINGS);
+        if (bindingNames != null) {
+            final Set<ServiceName> socketBindingNames = new HashSet<ServiceName>();
+            for (String suffix : bindingNames.split(",")) {
+                socketBindingNames.add(JBOSS_BINDING_NAME.append(suffix));
+            }
+            ServiceTarget serviceTarget = bundleManager.getServiceTarget();
+            ServiceName serviceName = IntegrationServices.SYSTEM_SERVICES_PLUGIN.append("BINDINGS");
+            ServiceBuilder<Void> builder = serviceTarget.addService(serviceName, new AbstractService<Void>() {
+                @Override
+                public void start(StartContext context) throws StartException {
+                    for (ServiceName serviceName : socketBindingNames) {
+                        SocketBinding binding = (SocketBinding) serviceContainer.getRequiredService(serviceName).getValue();
+                        Dictionary<String, String> props = new Hashtable<String, String>();
+                        props.put("socketBinding", serviceName.getSimpleName());
+                        InetSocketAddress value = binding.getSocketAddress();
+                        syscontext.registerService(InetSocketAddress.class, value, props);
+                    }
                 }
             });
-
-            // Register the {@link ModelControllerClient} service
-            ModelController modelController = injectedModelController.getValue();
-            ModelControllerClient client = modelController.createClient(controllerThreadExecutor);
-            syscontext.registerService(ModelControllerClient.class.getName(), client, null);
-
-            // Register the {@link ServiceContainer} as OSGi service
-            syscontext.registerService(ServiceContainer.class.getName(), serviceContainer, null);
-        }
-
-        @Override
-        public void unregisterServices() {
-            resource.getInjectedBundleManager().uninject();
-            controllerThreadExecutor.shutdown();
+            ServiceName[] serviceNameArray = socketBindingNames.toArray(new ServiceName[socketBindingNames.size()]);
+            builder.addDependencies(serviceNameArray);
+            builder.install();
         }
     }
 }
