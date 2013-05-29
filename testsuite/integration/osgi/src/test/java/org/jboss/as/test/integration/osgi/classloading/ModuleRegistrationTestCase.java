@@ -37,12 +37,12 @@ import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.osgi.resolver.XBundleRevision;
+import org.jboss.osgi.resolver.XBundleRevisionBuilder;
 import org.jboss.osgi.resolver.XBundleRevisionBuilderFactory;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XIdentityCapability;
 import org.jboss.osgi.resolver.XRequirement;
 import org.jboss.osgi.resolver.XResource;
-import org.jboss.osgi.resolver.XResourceBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -94,7 +94,7 @@ public class ModuleRegistrationTestCase {
     public void testFindPackageCapability() throws Exception {
 
         // Build a package requirement
-        XResourceBuilder builder = XBundleRevisionBuilderFactory.create();
+        XBundleRevisionBuilder builder = XBundleRevisionBuilderFactory.create();
         builder.addCapability(IDENTITY_NAMESPACE, "somename");
         XRequirement req = builder.addRequirement(PACKAGE_NAMESPACE, SimpleService.class.getPackage().getName());
         builder.getResource();
@@ -108,7 +108,7 @@ public class ModuleRegistrationTestCase {
         XIdentityCapability icap = xres.getIdentityCapability();
         assertEquals("deployment.example-module-reg", icap.getSymbolicName());
         assertEquals(Version.emptyVersion, icap.getVersion());
-        assertEquals("unknown", icap.getType());
+        assertEquals(XResource.TYPE_MODULE, icap.getType());
     }
 
     @Test
