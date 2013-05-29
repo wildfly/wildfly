@@ -145,7 +145,7 @@ class ModelControllerImpl implements ModelController {
         final OperationContext delegateContext = activeOperations.get(operationId);
         if(delegateContext == null) {
             // TODO we might just allow this case too, but for now it's just wrong (internal) usage
-            throw MESSAGES.noContextToDelegateTo(operationId);;
+            throw MESSAGES.noContextToDelegateTo(operationId);
         }
         final ModelNode response = new ModelNode();
         final OperationTransactionControl originalResultTxControl = control == null ? null : new OperationTransactionControl() {
