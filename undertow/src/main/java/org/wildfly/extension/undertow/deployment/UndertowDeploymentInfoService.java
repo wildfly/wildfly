@@ -508,10 +508,12 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             if (mergedMetaData.getErrorPages() != null) {
                 for (final ErrorPageMetaData page : mergedMetaData.getErrorPages()) {
                     final ErrorPage errorPage;
-                    if (page.getExceptionType() == null || page.getExceptionType().isEmpty()) {
+                    if (page.getExceptionType() != null && !page.getExceptionType().isEmpty()) {
+                        errorPage = new ErrorPage(page.getLocation(), (Class<? extends Throwable>) module.getClassLoader().loadClass(page.getExceptionType()));
+                    } else if(page.getErrorCode() != null && !page.getErrorCode().isEmpty()){
                         errorPage = new ErrorPage(page.getLocation(), Integer.parseInt(page.getErrorCode()));
                     } else {
-                        errorPage = new ErrorPage(page.getLocation(), (Class<? extends Throwable>) classReflectionIndex.classIndex(page.getExceptionType()).getModuleClass());
+                        errorPage = new ErrorPage(page.getLocation());
                     }
                     d.addErrorPages(errorPage);
                 }
