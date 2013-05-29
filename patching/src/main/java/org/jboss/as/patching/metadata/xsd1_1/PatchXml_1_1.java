@@ -247,7 +247,7 @@ public class PatchXml_1_1 implements XMLStreamConstants, XMLElementReader<PatchB
             final List<ContentModification> modulesUpdate = new ArrayList<ContentModification>();
             final List<ContentModification> modulesRemove = new ArrayList<ContentModification>();
 
-            for(final ContentModification mod : patch.getModifications()) {
+            for(final ContentModification mod : element.getModifications()) {
                 final ModificationType modificationType = mod.getType();
                 final ContentType contentType = mod.getItem().getContentType();
                 switch (contentType) {

@@ -31,23 +31,23 @@
         <description>element-01 description</description>
         <layer name="base" version="1.0.0"/>
         <upgrade to-version="1.0.1" />
-        
+
         <modules>
             <added name="org.jboss.as.test" slot="prod" hash="1a2b3c4d"/>
-	        <added name="org.jboss.as.test2" slot="prod" hash="1a2b3c4d"/>
-	        <updated name="org.jboss.as.test" hash="1a2a3a4a" new-hash="5a6a7a8a"/>
+            <added name="org.jboss.as.test2" slot="prod" hash="1a2b3c4d"/>
+            <updated name="org.jboss.as.test" hash="1a2a3a4a" new-hash="5a6a7a8a"/>
             <updated name="org.jboss.as.test3" hash="1b2b3b4b" new-hash="5b6b7b8b"/>
-	        <removed name="org.jboss.as.test" hash="1c2c3c4c"/>
-	        <removed name="org.jboss.as.test4" hash="1d2d3d4d"/>
+            <removed name="org.jboss.as.test" hash="1c2c3c4c"/>
+            <removed name="org.jboss.as.test4" hash="1d2d3d4d"/>
         </modules>
 
-	    <bundles>
+        <bundles>
             <added name="org.jboss.as.test" slot="prod" hash="1a2b3c4d"/>
-	        <added name="org.jboss.as.test2" slot="prod" hash="1a2b3c4d"/>
-	        <updated name="org.jboss.as.test" hash="1a2a3a4a" new-hash="5a6a7a8a"/>
-	        <updated name="org.jboss.as.test3" hash="1b2b3b4b" new-hash="5b6b7b8b"/>
-	        <removed name="org.jboss.as.test" hash="1c2c3c4c"/>
-	        <removed name="org.jboss.as.test4" hash="1d2d3d4d"/>
+            <added name="org.jboss.as.test2" slot="prod" hash="1a2b3c4d"/>
+            <updated name="org.jboss.as.test" hash="1a2a3a4a" new-hash="5a6a7a8a"/>
+            <updated name="org.jboss.as.test3" hash="1b2b3b4b" new-hash="5b6b7b8b"/>
+            <removed name="org.jboss.as.test" hash="1c2c3c4c"/>
+            <removed name="org.jboss.as.test4" hash="1d2d3d4d"/>
         </bundles>
 
         <misc-files>
@@ -57,6 +57,58 @@
             <updated path="test/file3" hash="5e6f7a" new-hash="6e7f8e" directory="true" />
             <removed path="test/file" hash="1a2b3c4d" in-runtime-use="true" />
             <removed path="test/file4" hash="5e6f7a" directory="true" />
+        </misc-files>
+    </element>
+    <element id="element-02">
+        <description>element-02 description</description>
+        <layer name="xyz" version="2.0.0"/>
+        <upgrade to-version="2.0.1" />
+
+        <modules>
+            <added name="org.jboss.xyz" slot="prod" hash="1a2b3c4d"/>
+            <updated name="org.jboss.xyz2" hash="1a2a3a4a" new-hash="5a6a7a8a"/>
+            <removed name="org.jboss.xyz3" hash="1c2c3c4c"/>
+        </modules>
+
+        <bundles>
+            <added name="org.jboss.osgi.xyz4" slot="prod" hash="1a2b3c4d"/>
+            <updated name="org.jboss.osgi.xyz5" hash="1a2a3a4a" new-hash="5a6a7a8a"/>
+            <removed name="org.jboss.osgi.xyz6" hash="1c2c3c4c"/>
+        </bundles>
+
+        <misc-files>
+            <added path="test/otherfile" hash="1a2b3c4d" />
+            <added path="test/otherfile2" hash="5e6f7a" directory="true" />
+            <updated path="test/otherfile" hash="1a2b3c4d" new-hash="2b3c4d5e" />
+            <updated path="test/otherfile3" hash="5e6f7a" new-hash="6e7f8e" directory="true" />
+            <removed path="test/otherfile" hash="1a2b3c4d" in-runtime-use="true" />
+            <removed path="test/otherfile4" hash="5e6f7a" directory="true" />
+        </misc-files>
+    </element>
+    <element id="element-03">
+        <description>element-03 description</description>
+        <add-on name="dev" version="1.0.0" />
+        <upgrade to-version="1.0.1" />
+
+        <modules>
+            <added name="org.jboss.def" slot="prod" hash="1a2b3c4d"/>
+            <updated name="org.jboss.def2" hash="1a2a3a4a" new-hash="5a6a7a8a"/>
+            <removed name="org.jboss.def3" hash="1c2c3c4c"/>
+        </modules>
+
+        <bundles>
+            <added name="org.jboss.osgi.def4" slot="prod" hash="1a2b3c4d"/>
+            <updated name="org.jboss.osgi.def5" hash="1a2a3a4a" new-hash="5a6a7a8a"/>
+            <removed name="org.jboss.osgi.def6" hash="1c2c3c4c"/>
+        </bundles>
+
+        <misc-files>
+            <added path="test/anotherfile" hash="1a2b3c4d" />
+            <added path="test/anotherfile2" hash="5e6f7a" directory="true" />
+            <updated path="test/anotherfile" hash="1a2b3c4d" new-hash="2b3c4d5e" />
+            <updated path="test/anotherfile3" hash="5e6f7a" new-hash="6e7f8e" directory="true" />
+            <removed path="test/anotherfile" hash="1a2b3c4d" in-runtime-use="true" />
+            <removed path="test/anotherfile4" hash="5e6f7a" directory="true" />
         </misc-files>
     </element>
 </patch>

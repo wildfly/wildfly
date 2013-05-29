@@ -38,7 +38,7 @@ abstract class InstallationModificationImpl extends MutableTargetImpl implements
         return version;
     }
 
-    InstallationState internalCommit() throws Exception {
+    InstallationState internalComplete() throws Exception {
         try {
             installationState.persist();
         } catch (Exception e) {

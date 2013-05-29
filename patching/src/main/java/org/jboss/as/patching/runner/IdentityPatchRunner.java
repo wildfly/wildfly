@@ -25,7 +25,7 @@ import org.jboss.as.patching.metadata.PatchXml;
 /**
  * @author Emanuel Muckenhuber
  */
-class IdentityPatchRunner implements InstallationManager.ModificationCompletedCallback {
+class IdentityPatchRunner implements InstallationManager.ModificationCompletion {
 
     private static final String DIRECTORY_SUFFIX = "jboss-as-patch-";
     private static final File TEMP_DIR = new File(System.getProperty("java.io.tmpdir"));
@@ -184,12 +184,12 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletedCa
     }
 
     @Override
-    public void committed() {
+    public void completed() {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public void rolledback() {
+    public void canceled() {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 

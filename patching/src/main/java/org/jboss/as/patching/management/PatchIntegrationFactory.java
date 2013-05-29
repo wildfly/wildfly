@@ -26,19 +26,12 @@ import org.jboss.as.controller.ModelControllerServiceInitialization;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.patching.installation.InstallationManagerService;
-import org.jboss.as.version.ProductConfig;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author Emanuel Muckenhuber
  */
 public final class PatchIntegrationFactory implements ModelControllerServiceInitialization {
-
-    static final ServiceName JBOSS_AS = ServiceName.JBOSS.append("as");
-    // static final ServiceName JBOSS_DIRECTORY_STRUCTURE_SERVICE = JBOSS_AS.append("directory-structure");
-    static final ServiceName JBOSS_PRODUCT_CONFIG_SERVICE = JBOSS_AS.append("product-config");
 
     @Override
     public void initializeStandalone(final ServiceTarget serviceTarget, final ManagementResourceRegistration registration, final Resource resource) {
@@ -53,17 +46,10 @@ public final class PatchIntegrationFactory implements ModelControllerServiceInit
     protected void initializeCoreServices(final ServiceTarget serviceTarget, final ManagementResourceRegistration registration, final Resource resource) {
 
         // Install the patch service
-        final PatchInfoService service = new PatchInfoService();
-        serviceTarget.addService(PatchInfoService.NAME, service)
-                .addDependency(JBOSS_PRODUCT_CONFIG_SERVICE, ProductConfig.class, service.getProductConfig())
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+        PatchInfoService.installService(serviceTarget);
 
-        final InstallationManagerService installationMgr = new InstallationManagerService();
-        serviceTarget.addService(InstallationManagerService.NAME, installationMgr)
-                .addDependency(JBOSS_PRODUCT_CONFIG_SERVICE, ProductConfig.class, installationMgr.getInjectedProductConfig())
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+        // Install the installation manager service
+        InstallationManagerService.installService(serviceTarget);
 
         // Register the patch resource description
         registration.registerSubModel(PatchResourceDefinition.INSTANCE);
