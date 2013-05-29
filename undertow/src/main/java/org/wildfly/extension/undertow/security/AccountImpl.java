@@ -59,15 +59,6 @@ public class AccountImpl implements Account, Serializable {
         this.roles.addAll(roles);
     }
 
-    public Set<String> getRoles() {
-        return roles;
-    }
-
-    @Override
-    public Object getAttribute(final String attributeName) {
-        return null;
-    }
-
     void setRoles(final Set<String> roles) {
         this.roles.clear();
         roles.addAll(roles);

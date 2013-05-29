@@ -21,19 +21,25 @@
  */
 package org.jboss.as.domain.http.server.security;
 
+import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
 import io.undertow.security.idm.Account;
 import io.undertow.security.idm.Credential;
+import io.undertow.security.idm.DigestCredential;
 import io.undertow.security.idm.IdentityManager;
 import io.undertow.security.idm.PasswordCredential;
 import io.undertow.security.idm.X509CertificateCredential;
+import io.undertow.util.HexConverter;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -55,6 +61,7 @@ import org.jboss.sasl.callback.VerifyPasswordCallback;
  */
 public class RealmIdentityManager implements IdentityManager {
 
+    private static final Charset UTF_8 = Charset.forName("UTF-8");
     private static final ThreadLocal<AuthMechanism> currentMechanism = new ThreadLocal<AuthMechanism>();
 
     static void setAuthenticationMechanism(final AuthMechanism mechanism) {
@@ -70,47 +77,6 @@ public class RealmIdentityManager implements IdentityManager {
     @Override
     public Account verify(Account account) {
         return account;
-    }
-
-    /*
-     * The next pair of methods would typically be used for Digest style authentication.
-     */
-
-    @Override
-    public Account getAccount(String id) {
-        assertMechanism(AuthMechanism.DIGEST);
-        AuthorizingCallbackHandler ach = securityRealm.getAuthorizingCallbackHandler(AuthMechanism.DIGEST);
-        Callback[] callbacks = new Callback[3];
-        callbacks[0] = new RealmCallback("Realm", securityRealm.getName());
-        callbacks[1] = new NameCallback("Username", id);
-        boolean plainText = plainTextDigest();
-        if (plainText) {
-            callbacks[2] = new PasswordCallback("Password", false);
-        } else {
-            callbacks[2] = new DigestHashCallback("Digest");
-        }
-
-        try {
-            ach.handle(callbacks);
-        } catch (Exception e) {
-            // TODO - Error reporting.
-            return null;
-        }
-
-        Principal user = new SimplePrincipal(id);
-        Collection<Principal> userCol = Collections.singleton(user);
-        SubjectUserInfo supplemental;
-        try {
-            supplemental = ach.createSubjectUserInfo(userCol);
-        } catch (IOException e) {
-            return null;
-        }
-        // TODO - Will modify for roles later, to begin with just get authentication working.
-        if (plainText) {
-            return new PlainDigestAccount(supplemental.getSubject(), user, ((PasswordCallback) callbacks[2]).getPassword());
-        } else {
-            return new HashedDigestAccount(supplemental.getSubject(), user, ((DigestHashCallback) callbacks[2]).getHash());
-        }
     }
 
     private boolean plainTextDigest() {
@@ -139,11 +105,21 @@ public class RealmIdentityManager implements IdentityManager {
     }
 
     /*
-     * The single method is used for BASIC authentication to perform validation in a single step.
+     * This verify method is used to verify both BASIC authentication and DIGEST authentication requests.
      */
 
     @Override
     public Account verify(String id, Credential credential) {
+        if (credential instanceof PasswordCredential) {
+            return verify(id, (PasswordCredential) credential);
+        } else if (credential instanceof DigestCredential) {
+            return verify(id, (DigestCredential) credential);
+        }
+
+        throw MESSAGES.invalidCredentialType(credential.getClass().getName());
+    }
+
+    private Account verify(String id, PasswordCredential credential) {
         assertMechanism(AuthMechanism.PLAIN);
         if (credential instanceof PasswordCredential == false) {
             return null;
@@ -158,7 +134,7 @@ public class RealmIdentityManager implements IdentityManager {
         try {
             ach.handle(callbacks);
         } catch (Exception e) {
-            // TODO - Error reporting.
+            ROOT_LOGGER.debug("Failure handling Callback(s) for BASIC authentication.", e);
             return null;
         }
 
@@ -176,6 +152,65 @@ public class RealmIdentityManager implements IdentityManager {
         }
 
         return new RealmIdentityAccount(supplemental.getSubject(), user);
+    }
+
+    private Account verify(String id, DigestCredential credential) {
+        assertMechanism(AuthMechanism.DIGEST);
+
+        AuthorizingCallbackHandler ach = securityRealm.getAuthorizingCallbackHandler(AuthMechanism.DIGEST);
+        Callback[] callbacks = new Callback[3];
+        callbacks[0] = new RealmCallback("Realm", credential.getRealm());
+        callbacks[1] = new NameCallback("Username", id);
+        boolean plainText = plainTextDigest();
+        if (plainText) {
+            callbacks[2] = new PasswordCallback("Password", false);
+        } else {
+            callbacks[2] = new DigestHashCallback("Digest");
+        }
+
+        try {
+            ach.handle(callbacks);
+        } catch (Exception e) {
+            ROOT_LOGGER.debug("Failure handling Callback(s) for BASIC authentication.", e);
+            return null;
+        }
+
+        byte[] ha1;
+        if (plainText) {
+            MessageDigest digest = null;
+            try {
+                digest = credential.getAlgorithm().getMessageDigest();
+
+                digest.update(id.getBytes(UTF_8));
+                digest.update((byte) ':');
+                digest.update(credential.getRealm().getBytes(UTF_8));
+                digest.update((byte) ':');
+                digest.update(new String(((PasswordCallback) callbacks[2]).getPassword()).getBytes(UTF_8));
+
+                ha1 = HexConverter.convertToHexBytes(digest.digest());
+            } catch (NoSuchAlgorithmException e) {
+                ROOT_LOGGER.debug("Unexpected authentication failure", e);
+                return null;
+            } finally {
+                digest.reset();
+            }
+        } else {
+            ha1 = ((DigestHashCallback) callbacks[2]).getHexHash().getBytes(UTF_8);
+        }
+
+        try {
+            if (credential.verifyHA1(ha1)) {
+                Principal user = new SimplePrincipal(id);
+                Collection<Principal> userCol = Collections.singleton(user);
+                SubjectUserInfo supplemental = ach.createSubjectUserInfo(userCol);
+
+                return new RealmIdentityAccount(supplemental.getSubject(), user);
+            }
+        } catch (IOException e) {
+            ROOT_LOGGER.debug("Unexpected authentication failure", e);
+        }
+
+        return null;
     }
 
     /*
@@ -231,16 +266,6 @@ public class RealmIdentityManager implements IdentityManager {
             return false;
         }
 
-        @Override
-        public Set<String> getRoles() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public Object getAttribute(final String attributeName) {
-            return null;
-        }
-
         public Subject getSubject() {
             // TODO may need to map this method to a domain management API to ensure it can be used.
             return subject;
@@ -248,47 +273,4 @@ public class RealmIdentityManager implements IdentityManager {
 
     }
 
-    private class PlainDigestAccount extends RealmIdentityAccount {
-
-        private final char[] password;
-
-        private PlainDigestAccount(final Subject subject, final Principal principal, final char[] password) {
-            super(subject, principal);
-            this.password = password;
-        }
-
-        private char[] getPassword() {
-            return password;
-        }
-
-        @Override
-        public Object getAttribute(final String attributeName) {
-            if(attributeName.equals(Account.PLAINTEXT_PASSWORD_ATTRIBUTE)) {
-                return password;
-            }
-            return null;
-        }
-    }
-
-    private class HashedDigestAccount extends RealmIdentityAccount {
-
-        private final byte[] hash;
-
-        private HashedDigestAccount(final Subject subject, final Principal principal, final byte[] hash) {
-            super(subject, principal);
-            this.hash = hash;
-        }
-
-        private byte[] getHash() {
-            return hash;
-        }
-
-        @Override
-        public Object getAttribute(final String attributeName) {
-            if(attributeName.startsWith(Account.DIGEST_HA1_HASH_ATTRIBUTE_PREFIX)) {
-                return hash;
-            }
-            return null;
-        }
-    }
 }

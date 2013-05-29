@@ -66,6 +66,9 @@ public interface HttpServerMessages {
     @Message(id = 15138, value = "Invalid resource")
     String invalidResource();
 
+    @Message(id = 15139, value = "Invalid Credential Type '%s'")
+    IllegalArgumentException invalidCredentialType(String value);
+
     /*
      * Message IDs 15100 to 15199 Reserved for the HTTP management interface, HttpServerLogger also contains messages in this
      * range commencing at 15100.

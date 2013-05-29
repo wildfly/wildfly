@@ -98,8 +98,7 @@ public class JAASIdentityManagerImpl implements IdentityManager {
         throw new IllegalArgumentException("Parameter must be a X509CertificateCredential");
     }
 
-    @Override
-    public Account getAccount(final String id) {
+    private Account getAccount(final String id) {
         return new AccountImpl(id);
     }
 
