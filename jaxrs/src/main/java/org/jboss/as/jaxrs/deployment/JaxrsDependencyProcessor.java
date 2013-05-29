@@ -43,6 +43,7 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
 
     public static final ModuleIdentifier RESTEASY_ATOM = ModuleIdentifier.create("org.jboss.resteasy.resteasy-atom-provider");
     public static final ModuleIdentifier RESTEASY_CDI = ModuleIdentifier.create("org.jboss.resteasy.resteasy-cdi");
+    public static final ModuleIdentifier RESTEASY_CRYPTO = ModuleIdentifier.create("org.jboss.resteasy.resteasy-crypto");
     public static final ModuleIdentifier RESTEASY_HIBERNATE_VALIDATOR = ModuleIdentifier.create("org.jboss.resteasy.resteasy-hibernatevalidator-provider");
     public static final ModuleIdentifier RESTEASY_JAXRS = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jaxrs");
     public static final ModuleIdentifier RESTEASY_JAXB = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jaxb-provider");
@@ -80,6 +81,7 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         addDependency(moduleSpecification, moduleLoader, RESTEASY_MULTIPART);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_YAML);
         addDependency(moduleSpecification, moduleLoader, JACKSON_CORE_ASL);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_CRYPTO);
 
         if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             addDependency(moduleSpecification, moduleLoader, RESTEASY_CDI);

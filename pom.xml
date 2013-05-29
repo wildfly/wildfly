@@ -4792,6 +4792,34 @@
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-crypto</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcprov-jdk16</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcmail-jdk16</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.mail</groupId>
+                        <artifactId>mail</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.james</groupId>
+                        <artifactId>apache-mime4j</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.resteasy</groupId>
+                        <artifactId>resteasy-client</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jaxb-provider</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>

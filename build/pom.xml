@@ -245,7 +245,7 @@
                     <artifactId>cal10n-api</artifactId>
                 </dependency>
 
-                <dependency> 
+                <dependency>
                     <groupId>com.fasterxml</groupId>
                     <artifactId>classmate</artifactId>
                 </dependency>
@@ -380,7 +380,7 @@
                         </exclusion>
                     </exclusions>
                 </dependency>
-                
+
                 <dependency>
                     <groupId>javax.inject</groupId>
                     <artifactId>javax.inject</artifactId>
@@ -1477,6 +1477,11 @@
 
                 <dependency>
                     <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-crypto</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.resteasy</groupId>
                     <artifactId>resteasy-hibernatevalidator-provider</artifactId>
                 </dependency>
 
@@ -1584,7 +1589,7 @@
                     <groupId>org.jboss.spec.javax.el</groupId>
                     <artifactId>jboss-el-api_2.2_spec</artifactId>
                 </dependency>
-                
+
                 <dependency>
                     <groupId>org.jboss.spec.javax.enterprise.concurrent</groupId>
                     <artifactId>jboss-concurrency-api_1.0_spec</artifactId>
