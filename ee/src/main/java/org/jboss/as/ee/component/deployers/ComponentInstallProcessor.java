@@ -39,7 +39,6 @@ import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.InjectionSource;
@@ -62,6 +61,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.CircularDependencyException;
 import org.jboss.msc.service.DuplicateServiceException;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -79,6 +79,8 @@ import static org.jboss.as.server.deployment.Attachments.MODULE;
  */
 public final class ComponentInstallProcessor implements DeploymentUnitProcessor {
 
+    private static final ServiceName JNDI_BINDINGS_SERVICE = ServiceName.of("JndiBindingsService");
+
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final Module module = deploymentUnit.getAttachment(MODULE);
@@ -86,7 +88,6 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         if (module == null || moduleConfiguration == null) {
             return;
         }
-        final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
         ComponentRegistry componentRegistry = deploymentUnit.getAttachment(COMPONENT_REGISTRY);
 
         final List<ServiceName> dependencies = deploymentUnit.getAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES);
@@ -111,7 +112,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    protected void deployComponent(final DeploymentPhaseContext phaseContext, final ComponentConfiguration configuration, final List<ServiceName> dependencies, final ServiceName bindingDependencyService) throws DeploymentUnitProcessingException {
+    protected void deployComponent(final DeploymentPhaseContext phaseContext, final ComponentConfiguration configuration, final List<ServiceName> jndiDependencies, final ServiceName bindingDependencyService) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
@@ -136,6 +137,12 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
         deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_COMPLETE_SERVICES, startServiceName);
 
+        //WFLY-1402 we don't add the bindings to the jndi dependencies list directly, instead
+        //the bindings depend on the this artificial service
+        ServiceName jndiDepServiceName = configuration.getComponentDescription().getServiceName().append(JNDI_BINDINGS_SERVICE);
+        final ServiceBuilder<Void> jndiDepServiceBuilder = serviceTarget.addService(jndiDepServiceName, Service.NULL);
+        jndiDependencies.add(jndiDepServiceName);
+
         // Add all service dependencies
         for (DependencyConfigurator configurator : configuration.getCreateDependencies()) {
             configurator.configureDependency(createBuilder, createService);
@@ -156,8 +163,6 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             final NamingStoreService contextService = new NamingStoreService();
             contextServiceName = configuration.getComponentDescription().getContextServiceName();
             serviceTarget.addService(contextServiceName, contextService).install();
-        } else {
-            contextServiceName = configuration.getComponentDescription().getContextServiceName();
         }
 
         final InjectionSource.ResolutionContext resolutionContext = new InjectionSource.ResolutionContext(
@@ -186,7 +191,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 final BinderService service = new BinderService(bindInfo.getBindName(), bindingConfiguration.getSource());
 
                 //these bindings should never be merged, if a view binding is duplicated it is an error
-                dependencies.add(bindInfo.getBinderServiceName());
+                jndiDepServiceBuilder.addDependency(bindInfo.getBinderServiceName());
 
                 ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(bindInfo.getBinderServiceName(), service);
                 bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
@@ -198,7 +203,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         if (configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
             // The bindings for the component
             final Set<ServiceName> bound = new HashSet<ServiceName>();
-            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, configuration.getComponentDescription().getBindingConfigurations(), dependencies, bound);
+            processBindings(phaseContext, configuration, serviceTarget, resolutionContext, configuration.getComponentDescription().getBindingConfigurations(), jndiDepServiceBuilder, bound);
 
             //class level bindings should be ignored if the deployment is metadata complete
             if (!MetadataCompleteMarker.isMetadataComplete(phaseContext.getDeploymentUnit())) {
@@ -208,7 +213,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                     @Override
                     protected void handle(final Class<?> clazz, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                         if (classDescription != null) {
-                            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classDescription.getBindingConfigurations(), dependencies, bound);
+                            processBindings(phaseContext, configuration, serviceTarget, resolutionContext, classDescription.getBindingConfigurations(), jndiDepServiceBuilder, bound);
                         }
                     }
                 }.run();
@@ -226,7 +231,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                             @Override
                             protected void handle(final Class<?> clazz, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                                 if (classDescription != null) {
-                                    processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classDescription.getBindingConfigurations(), dependencies, bound);
+                                    processBindings(phaseContext, configuration, serviceTarget, resolutionContext, classDescription.getBindingConfigurations(), jndiDepServiceBuilder, bound);
                                 }
                             }
                         }.run();
@@ -237,10 +242,11 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
         createBuilder.install();
         startBuilder.install();
+        jndiDepServiceBuilder.install();
     }
 
     @SuppressWarnings("unchecked")
-    private void processBindings(DeploymentPhaseContext phaseContext, ComponentConfiguration configuration, ServiceTarget serviceTarget, ServiceName contextServiceName, InjectionSource.ResolutionContext resolutionContext, List<BindingConfiguration> bindings, final List<ServiceName> dependencies, final Set<ServiceName> bound) throws DeploymentUnitProcessingException {
+    private void processBindings(DeploymentPhaseContext phaseContext, ComponentConfiguration configuration, ServiceTarget serviceTarget, InjectionSource.ResolutionContext resolutionContext, List<BindingConfiguration> bindings, final ServiceBuilder<?> jndiDepServiceBuilder, final Set<ServiceName> bound) throws DeploymentUnitProcessingException {
 
         //we only handle java:comp bindings for components that have their own namespace here, the rest are processed by ModuleJndiBindingProcessor
         for (BindingConfiguration bindingConfiguration : bindings) {
@@ -253,7 +259,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 bound.add(bindInfo.getBinderServiceName());
                 try {
                     final BinderService service = new BinderService(bindInfo.getBindName(), bindingConfiguration.getSource());
-                    dependencies.add(bindInfo.getBinderServiceName());
+                    jndiDepServiceBuilder.addDependency(bindInfo.getBinderServiceName());
                     ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(bindInfo.getBinderServiceName(), service);
                     bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
                     serviceBuilder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, service.getNamingStoreInjector());
