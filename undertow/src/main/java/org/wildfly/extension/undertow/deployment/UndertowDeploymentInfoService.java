@@ -90,16 +90,6 @@ import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.server.deployment.SetupAction;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
-import org.jboss.metadata.web.spec.CookieConfigMetaData;
-import org.jboss.metadata.web.spec.SessionConfigMetaData;
-import org.wildfly.extension.undertow.ServletContainerService;
-import org.wildfly.extension.undertow.UndertowService;
-import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
-import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
-import org.wildfly.extension.undertow.security.SecurityContextAssociationHandler;
-import org.wildfly.extension.undertow.security.SecurityContextCreationHandler;
-import org.wildfly.extension.undertow.session.DistributableSessionManager;
 import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.WebInjectionContainer;
 import org.jboss.marshalling.ClassResolver;
@@ -110,6 +100,7 @@ import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.AttributeMetaData;
+import org.jboss.metadata.web.spec.CookieConfigMetaData;
 import org.jboss.metadata.web.spec.DispatcherType;
 import org.jboss.metadata.web.spec.EmptyRoleSemanticType;
 import org.jboss.metadata.web.spec.ErrorPageMetaData;
@@ -125,6 +116,7 @@ import org.jboss.metadata.web.spec.LoginConfigMetaData;
 import org.jboss.metadata.web.spec.MimeMappingMetaData;
 import org.jboss.metadata.web.spec.SecurityConstraintMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
+import org.jboss.metadata.web.spec.SessionConfigMetaData;
 import org.jboss.metadata.web.spec.TagFileMetaData;
 import org.jboss.metadata.web.spec.TagMetaData;
 import org.jboss.metadata.web.spec.TldMetaData;
@@ -140,6 +132,13 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.audit.AuditManager;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.extension.undertow.ServletContainerService;
+import org.wildfly.extension.undertow.UndertowService;
+import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
+import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
+import org.wildfly.extension.undertow.security.SecurityContextAssociationHandler;
+import org.wildfly.extension.undertow.security.SecurityContextCreationHandler;
+import org.wildfly.extension.undertow.session.DistributableSessionManager;
 
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.AUTHENTICATE;
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.DENY;
@@ -162,7 +161,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final TldsMetaData tldsMetaData;
     private final List<TldMetaData> sharedTlds;
     private final Module module;
-    private final DeploymentClassIndex classReflectionIndex;
     private final WebInjectionContainer injectionContainer;
     private final ComponentRegistry componentRegistry;
     private final ScisMetaData scisMetaData;
@@ -180,13 +178,12 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<ServletContainerService> container = new InjectedValue<>();
     private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
 
-    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final DeploymentClassIndex classReflectionIndex, final WebInjectionContainer injectionContainer, final ComponentRegistry componentRegistry, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays) {
+    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final WebInjectionContainer injectionContainer, final ComponentRegistry componentRegistry, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays) {
         this.mergedMetaData = mergedMetaData;
         this.deploymentName = deploymentName;
         this.tldsMetaData = tldsMetaData;
         this.sharedTlds = sharedTlds;
         this.module = module;
-        this.classReflectionIndex = classReflectionIndex;
         this.injectionContainer = injectionContainer;
         this.componentRegistry = componentRegistry;
         this.scisMetaData = scisMetaData;
@@ -201,53 +198,59 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     @Override
     public synchronized void start(final StartContext startContext) throws StartException {
-        DeploymentInfo deploymentInfo = createServletConfig();
-        handleSessionReplication(deploymentInfo);
-        handleIdentityManager(deploymentInfo);
+        ClassLoader oldTccl = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(module.getClassLoader());
+            DeploymentInfo deploymentInfo = createServletConfig();
+            handleSessionReplication(deploymentInfo);
+            handleIdentityManager(deploymentInfo);
 
-        SessionConfigMetaData sessionConfig = mergedMetaData.getSessionConfig();
-        if(sessionConfig != null) {
-            if(sessionConfig.getSessionTimeoutSet()) {
-                deploymentInfo.setDefaultSessionTimeout(sessionConfig.getSessionTimeout() * 60);
-            }
-            CookieConfigMetaData cookieConfig = sessionConfig.getCookieConfig();
-            if(cookieConfig != null) {
-                SessionCookieConfig config = new SessionCookieConfigImpl();
-                if(cookieConfig.getName() != null) {
-                    config.setName(cookieConfig.getName());
+            SessionConfigMetaData sessionConfig = mergedMetaData.getSessionConfig();
+            if (sessionConfig != null) {
+                if (sessionConfig.getSessionTimeoutSet()) {
+                    deploymentInfo.setDefaultSessionTimeout(sessionConfig.getSessionTimeout() * 60);
                 }
-                config.setSecure(cookieConfig.getSecure());
-                config.setPath(cookieConfig.getPath());
-                config.setMaxAge(cookieConfig.getMaxAge());
-                config.setDomain(cookieConfig.getDomain());
-                config.setComment(cookieConfig.getComment());
-                config.setHttpOnly(cookieConfig.getHttpOnly());
-                deploymentInfo.setSessionCookieConfig(config);
-            }
-            //todo: session tracking modes
-
-        }
-
-        for (final SetupAction action : setupActions) {
-            deploymentInfo.addThreadSetupAction(new ThreadSetupAction() {
-
-                private final Handle handle = new Handle() {
-                    @Override
-                    public void tearDown() {
-                        action.teardown(Collections.<String, Object>emptyMap());
+                CookieConfigMetaData cookieConfig = sessionConfig.getCookieConfig();
+                if (cookieConfig != null) {
+                    SessionCookieConfig config = new SessionCookieConfigImpl();
+                    if (cookieConfig.getName() != null) {
+                        config.setName(cookieConfig.getName());
                     }
-                };
-
-                @Override
-                public Handle setup(final HttpServerExchange exchange) {
-                    action.setup(Collections.<String, Object>emptyMap());
-                    return handle;
+                    config.setSecure(cookieConfig.getSecure());
+                    config.setPath(cookieConfig.getPath());
+                    config.setMaxAge(cookieConfig.getMaxAge());
+                    config.setDomain(cookieConfig.getDomain());
+                    config.setComment(cookieConfig.getComment());
+                    config.setHttpOnly(cookieConfig.getHttpOnly());
+                    deploymentInfo.setSessionCookieConfig(config);
                 }
-            });
+                //todo: session tracking modes
+
+            }
+
+            for (final SetupAction action : setupActions) {
+                deploymentInfo.addThreadSetupAction(new ThreadSetupAction() {
+
+                    private final Handle handle = new Handle() {
+                        @Override
+                        public void tearDown() {
+                            action.teardown(Collections.<String, Object>emptyMap());
+                        }
+                    };
+
+                    @Override
+                    public Handle setup(final HttpServerExchange exchange) {
+                        action.setup(Collections.<String, Object>emptyMap());
+                        return handle;
+                    }
+                });
+            }
+
+
+            this.deploymentInfo = deploymentInfo;
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldTccl);
         }
-
-
-        this.deploymentInfo = deploymentInfo;
 
     }
 
@@ -335,7 +338,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 is22OrOlder = false;
             }
 
-            HashMap<String, TagLibraryInfo> tldInfo = createTldsInfo(tldsMetaData, sharedTlds, classReflectionIndex, componentRegistry, d);
+            HashMap<String, TagLibraryInfo> tldInfo = createTldsInfo(tldsMetaData, sharedTlds);
             HashMap<String, JspPropertyGroup> propertyGroups = createJspConfig(mergedMetaData);
 
             JspServletBuilder.setupDeployment(d, propertyGroups, tldInfo, new UndertowJSPInstanceManager(injectionContainer));
@@ -377,7 +380,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                         s = new ServletInfo(servlet.getName(), JspServlet.class);
                         s.addHandlerChainWrapper(new JspFileWrapper(servlet.getJspFile()));
                     } else {
-                        Class<? extends Servlet> servletClass = (Class<? extends Servlet>) classReflectionIndex.classIndex(servlet.getServletClass()).getModuleClass();
+                        Class<? extends Servlet> servletClass = (Class<? extends Servlet>) module.getClassLoader().loadClass(servlet.getServletClass());
                         ComponentRegistry.ComponentManagedReferenceFactory creator = componentRegistry.getComponentsByClass().get(servletClass);
                         if (creator != null) {
                             InstanceFactory<Servlet> factory = createInstanceFactory(creator);
@@ -446,7 +449,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             if (mergedMetaData.getFilters() != null) {
                 for (final FilterMetaData filter : mergedMetaData.getFilters()) {
-                    Class<? extends Filter> filterClass = (Class<? extends Filter>) classReflectionIndex.classIndex(filter.getFilterClass()).getModuleClass();
+                    Class<? extends Filter> filterClass = (Class<? extends Filter>) module.getClassLoader().loadClass(filter.getFilterClass());
                     ComponentRegistry.ComponentManagedReferenceFactory creator = componentRegistry.getComponentsByClass().get(filterClass);
                     FilterInfo f;
                     if (creator != null) {
@@ -505,7 +508,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             if (mergedMetaData.getListeners() != null) {
                 for (ListenerMetaData listener : mergedMetaData.getListeners()) {
-                    addListener(classReflectionIndex, componentRegistry, d, listener);
+                    addListener(module.getClassLoader(), componentRegistry, d, listener);
                 }
 
             }
@@ -518,8 +521,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             if (mergedMetaData.getWelcomeFileList() != null &&
                     mergedMetaData.getWelcomeFileList().getWelcomeFiles() != null) {
                 List<String> welcomeFiles = mergedMetaData.getWelcomeFileList().getWelcomeFiles();
-                for(String file : welcomeFiles) {
-                    if(file.startsWith("/")) {
+                for (String file : welcomeFiles) {
+                    if (file.startsWith("/")) {
                         d.addWelcomePages(file.substring(1));
                     } else {
                         d.addWelcomePages(file);
@@ -702,19 +705,19 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         return ret;
     }
 
-    private static HashMap<String, TagLibraryInfo> createTldsInfo(final TldsMetaData tldsMetaData, List<TldMetaData> sharedTlds, final DeploymentClassIndex classReflectionIndex, final ComponentRegistry components, final DeploymentInfo d) throws ClassNotFoundException {
+    private static HashMap<String, TagLibraryInfo> createTldsInfo(final TldsMetaData tldsMetaData, List<TldMetaData> sharedTlds) throws ClassNotFoundException {
 
         final HashMap<String, TagLibraryInfo> ret = new HashMap<>();
         if (tldsMetaData != null) {
             if (tldsMetaData.getTlds() != null) {
                 for (Map.Entry<String, TldMetaData> tld : tldsMetaData.getTlds().entrySet()) {
-                    createTldInfo(tld.getKey(), tld.getValue(), ret, classReflectionIndex, components, d);
+                    createTldInfo(tld.getKey(), tld.getValue(), ret);
                 }
             }
             if (sharedTlds != null) {
                 for (TldMetaData metaData : sharedTlds) {
 
-                    createTldInfo(null, metaData, ret, classReflectionIndex, components, d);
+                    createTldInfo(null, metaData, ret);
                 }
             }
         }
@@ -722,7 +725,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         return ret;
     }
 
-    private static TagLibraryInfo createTldInfo(final String location, final TldMetaData tldMetaData, final HashMap<String, TagLibraryInfo> ret, final DeploymentClassIndex classReflectionIndex, final ComponentRegistry components, final DeploymentInfo d) throws ClassNotFoundException {
+    private static TagLibraryInfo createTldInfo(final String location, final TldMetaData tldMetaData, final HashMap<String, TagLibraryInfo> ret) throws ClassNotFoundException {
         String relativeLocation = location;
         String jarPath = null;
         if (relativeLocation != null && relativeLocation.startsWith("/WEB-INF/lib/")) {
@@ -867,10 +870,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         return tagLibraryInfo;
     }
 
-    private static void addListener(final DeploymentClassIndex classReflectionIndex, final ComponentRegistry components, final DeploymentInfo d, final ListenerMetaData listener) throws ClassNotFoundException {
+    private static void addListener(final ClassLoader classLoader, final ComponentRegistry components, final DeploymentInfo d, final ListenerMetaData listener) throws ClassNotFoundException {
 
         ListenerInfo l;
-        final Class<? extends EventListener> listenerClass = (Class<? extends EventListener>) classReflectionIndex.classIndex(listener.getListenerClass()).getModuleClass();
+        final Class<? extends EventListener> listenerClass = (Class<? extends EventListener>) classLoader.loadClass(listener.getListenerClass());
         ComponentRegistry.ComponentManagedReferenceFactory creator = components.getComponentsByClass().get(listenerClass);
         if (creator != null) {
             InstanceFactory<EventListener> factory = createInstanceFactory(creator);
@@ -973,7 +976,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         private TldsMetaData tldsMetaData;
         private List<TldMetaData> sharedTlds;
         private Module module;
-        private DeploymentClassIndex classReflectionIndex;
         private WebInjectionContainer injectionContainer;
         private ComponentRegistry componentRegistry;
         private ScisMetaData scisMetaData;
@@ -1007,11 +1009,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
         public Builder setModule(final Module module) {
             this.module = module;
-            return this;
-        }
-
-        public Builder setClassReflectionIndex(final DeploymentClassIndex classReflectionIndex) {
-            this.classReflectionIndex = classReflectionIndex;
             return this;
         }
 
@@ -1066,7 +1063,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         }
 
         public UndertowDeploymentInfoService createUndertowDeploymentInfoService() {
-            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, classReflectionIndex, injectionContainer, componentRegistry, scisMetaData, deploymentRoot, securityContextId, securityDomain, attributes, contextPath, setupActions, overlays);
+            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, injectionContainer, componentRegistry, scisMetaData, deploymentRoot, securityContextId, securityDomain, attributes, contextPath, setupActions, overlays);
         }
     }
 
