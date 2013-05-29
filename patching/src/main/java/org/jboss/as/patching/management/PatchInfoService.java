@@ -22,6 +22,9 @@
 
 package org.jboss.as.patching.management;
 
+import static org.jboss.as.patching.Constants.JBOSS_PATCHING;
+import static org.jboss.as.patching.Constants.JBOSS_PRODUCT_CONFIG_SERVICE;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,7 +34,9 @@ import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -40,9 +45,9 @@ import org.jboss.msc.value.InjectedValue;
 /**
  * @author Emanuel Muckenhuber
  */
-public class PatchInfoService implements Service<PatchInfoService> {
+public class PatchInfoService implements Service<PatchInfo> {
 
-    public static ServiceName NAME = ServiceName.JBOSS.append("patch").append("info");
+    public static ServiceName NAME = JBOSS_PATCHING.append("info");
 
     private final InjectedValue<ProductConfig> productConfig = new InjectedValue<ProductConfig>();
 
@@ -58,7 +63,22 @@ public class PatchInfoService implements Service<PatchInfoService> {
      */
     private static final AtomicBoolean restartRequired = new AtomicBoolean(false);
 
-    protected PatchInfoService() {
+    /**
+     * Install the patch info service
+     *
+     * @param serviceTarget
+     *
+     * @return the service controller for the installed patch info service
+     */
+    public static ServiceController<PatchInfo> installService(final ServiceTarget serviceTarget) {
+        final PatchInfoService service = new PatchInfoService();
+        return serviceTarget.addService(PatchInfoService.NAME, service)
+                .addDependency(JBOSS_PRODUCT_CONFIG_SERVICE, ProductConfig.class, service.productConfig)
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
+    }
+
+    private PatchInfoService() {
         //
     }
 
@@ -81,20 +101,12 @@ public class PatchInfoService implements Service<PatchInfoService> {
     }
 
     @Override
-    public synchronized PatchInfoService getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
-    }
-
-    InjectedValue<ProductConfig> getProductConfig() {
-        return productConfig;
+    public synchronized PatchInfo getValue() throws IllegalStateException, IllegalArgumentException {
+        return patchInfo;
     }
 
     public DirectoryStructure getStructure() {
         return directoryStructure;
-    }
-
-    public PatchInfo getPatchInfo() {
-        return patchInfo;
     }
 
     public boolean requiresRestart() {

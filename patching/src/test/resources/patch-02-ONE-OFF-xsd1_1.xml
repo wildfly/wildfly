@@ -46,4 +46,17 @@
             <updated name="org.jboss.as.test" hash="1a2a3a4a" new-hash="1b2b3b4b"/>
         </modules>
     </element>
+    <element id="element-04">
+        <description>element-02 description</description>
+        <layer name="xyz" version="2.0.0">
+            <requires>
+                <element id="element-03"/>
+            </requires>
+        </layer>
+        <no-upgrade/>
+
+        <modules>
+            <updated name="org.jboss.xyz" hash="1a2a3a4a" new-hash="1b2b3b4b"/>
+        </modules>
+    </element>
 </patch>

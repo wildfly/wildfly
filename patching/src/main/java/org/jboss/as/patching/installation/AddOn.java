@@ -22,8 +22,6 @@
 
 package org.jboss.as.patching.installation;
 
-import org.jboss.as.patching.DirectoryStructure;
-
 /**
  *
  * Add-on target info layout:
@@ -34,22 +32,22 @@ import org.jboss.as.patching.DirectoryStructure;
  * |-- bundles
  * |   `-- system
  * |       `-- add-ons
- * |           `-- &lt;name> => {@link DirectoryStructure#getBundleRepositoryRoot()}
+ * |           `-- &lt;name> => {@link org.jboss.as.patching.DirectoryStructure#getBundleRepositoryRoot()}
  * |               `-- patches
- * |                   `-- &lt;patchId> => {@link DirectoryStructure#getBundlesPatchDirectory(String)}
+ * |                   `-- &lt;patchId> => {@link org.jboss.as.patching.DirectoryStructure#getBundlesPatchDirectory(String)}
  * |-- modules
  * |   `-- system
  * |       `-- add-ons
- * |           `-- &lt;name> => {@link DirectoryStructure#getModuleRoot()}
+ * |           `-- &lt;name> => {@link org.jboss.as.patching.DirectoryStructure#getModuleRoot()}
  * |                `-- patches
- * |                   `-- &lt;patchId> => {@link DirectoryStructure#getModulePatchDirectory(String)}
+ * |                   `-- &lt;patchId> => {@link org.jboss.as.patching.DirectoryStructure#getModulePatchDirectory(String)}
  * `-- .installation
  *     `-- patches
  *         `-- add-ons
  *             `-- &lt;name>
- *                 |-- cumulative => {@link DirectoryStructure#getCumulativeLink()}
+ *                 |-- cumulative => {@link org.jboss.as.patching.DirectoryStructure#getCumulativeLink()}
  *                 `-- references
- *                     `-- &lt;patchId> => {@link DirectoryStructure#getCumulativeRefs(String)}
+ *                     `-- &lt;patchId> => {@link org.jboss.as.patching.DirectoryStructure#getCumulativeRefs(String)}
  * <code>
  * </pre>
  *
