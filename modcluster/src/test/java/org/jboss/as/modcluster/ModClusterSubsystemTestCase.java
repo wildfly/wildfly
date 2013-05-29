@@ -208,25 +208,25 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelNode model = services.readWholeModel();
         ModelNode config = model.get(SUBSYSTEM, getMainSubsystemName()).get(MOD_CLUSTER_CONFIG, CONFIGURATION);
         ModelNode ssl = config.get(SSL, CONFIGURATION);
-        Assert.assertEquals(ssl.get("ca-certificate-file").resolve().asString(), "/home/rhusar/client-keystore.jks");
-        Assert.assertEquals(ssl.get("ca-revocation-url").resolve().asString(), "/home/rhusar/revocations");
-        Assert.assertEquals(ssl.get("certificate-key-file").resolve().asString(), "/home/rhusar/client-keystore.jks");
-        Assert.assertEquals(ssl.get("cipher-suite").resolve().asString(), "SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,SSL_RSA_WITH_RC4_128_MD5,SSL_RSA_WITH_RC4_128_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA");
-        Assert.assertEquals(ssl.get("key-alias").resolve().asString(), "mykeyalias");
-        Assert.assertEquals(ssl.get("password").resolve().asString(), "mypassword");
-        Assert.assertEquals(ssl.get("protocol").resolve().asString(), "TLS");
+        Assert.assertEquals("/home/rhusar/client-keystore.jks", ssl.get("ca-certificate-file").resolve().asString());
+        Assert.assertEquals("/home/rhusar/revocations", ssl.get("ca-revocation-url").resolve().asString());
+        Assert.assertEquals("/home/rhusar/client-keystore.jks", ssl.get("certificate-key-file").resolve().asString());
+        Assert.assertEquals("SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,SSL_RSA_WITH_RC4_128_MD5,SSL_RSA_WITH_RC4_128_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA", ssl.get("cipher-suite").resolve().asString());
+        Assert.assertEquals("mykeyalias", ssl.get("key-alias").resolve().asString());
+        Assert.assertEquals("mypassword", ssl.get("password").resolve().asString());
+        Assert.assertEquals("TLS", ssl.get("protocol").resolve().asString());
         ServiceController<ModCluster> service = (ServiceController<ModCluster>) services.getContainer().getService(ModClusterService.NAME);
         ModClusterService modCluster = (ModClusterService) service.getService().getValue();
         ModClusterConfig modClusterConfig = modCluster.getConfig();
         Assert.assertTrue(modClusterConfig.isSsl());
-        Assert.assertEquals(modClusterConfig.getSslKeyAlias(), "mykeyalias");
-        Assert.assertEquals(modClusterConfig.getSslTrustStorePassword(), "mypassword");
-        Assert.assertEquals(modClusterConfig.getSslKeyStorePassword(), "mypassword");
-        Assert.assertEquals(modClusterConfig.getSslKeyStore(), "/home/rhusar/client-keystore.jks");
-        Assert.assertEquals(modClusterConfig.getSslCiphers(), "SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,SSL_RSA_WITH_RC4_128_MD5,SSL_RSA_WITH_RC4_128_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA");
-        Assert.assertEquals(modClusterConfig.getSslProtocol(), "TLS");
-        Assert.assertEquals(modClusterConfig.getSslTrustStore(), "/home/rhusar/client-keystore.jks");
-        Assert.assertEquals(modClusterConfig.getSslCrlFile(), "/home/rhusar/revocations");
+        Assert.assertEquals("mykeyalias", modClusterConfig.getSslKeyAlias());
+        Assert.assertEquals("mypassword", modClusterConfig.getSslTrustStorePassword());
+        Assert.assertEquals("mypassword", modClusterConfig.getSslKeyStorePassword());
+        Assert.assertEquals("/home/rhusar/client-keystore.jks", modClusterConfig.getSslKeyStore());
+        Assert.assertEquals("SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,SSL_RSA_WITH_RC4_128_MD5,SSL_RSA_WITH_RC4_128_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA", modClusterConfig.getSslCiphers());
+        Assert.assertEquals("TLS", modClusterConfig.getSslProtocol());
+        Assert.assertEquals("/home/rhusar/client-keystore.jks", modClusterConfig.getSslTrustStore());
+        Assert.assertEquals("/home/rhusar/revocations", modClusterConfig.getSslCrlFile());
     }
 
 
