@@ -25,7 +25,6 @@
 package org.wildfly.extension.undertow.deployment;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -49,7 +48,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.server.handlers.resource.CachingResourceManager;
-import io.undertow.server.handlers.resource.FileResourceManager;
+import io.undertow.server.handlers.resource.ResourceManager;
 import io.undertow.server.session.SessionManager;
 import io.undertow.servlet.api.ClassIntrospecter;
 import io.undertow.servlet.api.ConfidentialPortManager;
@@ -169,6 +168,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final List<ServletContextAttribute> attributes;
     private final String contextPath;
     private final List<SetupAction> setupActions;
+    private final Set<VirtualFile> overlays;
 
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
     private final InjectedValue<DistributedCacheManagerFactory> distributedCacheManagerFactoryInjectedValue = new InjectedValue<DistributedCacheManagerFactory>();
@@ -176,7 +176,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<ServletContainerService> container = new InjectedValue<>();
     private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
 
-    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final DeploymentClassIndex classReflectionIndex, final WebInjectionContainer injectionContainer, final ComponentRegistry componentRegistry, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions) {
+    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final DeploymentClassIndex classReflectionIndex, final WebInjectionContainer injectionContainer, final ComponentRegistry componentRegistry, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays) {
         this.mergedMetaData = mergedMetaData;
         this.deploymentName = deploymentName;
         this.tldsMetaData = tldsMetaData;
@@ -192,6 +192,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         this.attributes = attributes;
         this.contextPath = contextPath;
         this.setupActions = setupActions;
+        this.overlays = overlays;
     }
 
     @Override
@@ -287,7 +288,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             d.setDeploymentName(deploymentName);
             try {
                 //TODO: make the caching limits configurable
-                d.setResourceManager(new CachingResourceManager(100, 10 * 1024 * 1024, bufferCacheInjectedValue.getOptionalValue(), new FileResourceManager(Paths.get(deploymentRoot.getPhysicalFile().getAbsolutePath())), -1));
+                ResourceManager resourceManager = new ServletResourceManager(deploymentRoot, overlays);
+                d.setResourceManager(new CachingResourceManager(100, 10 * 1024 * 1024, bufferCacheInjectedValue.getOptionalValue(), resourceManager, -1));
             } catch (IOException e) {
                 throw new StartException(e);
             }
@@ -959,6 +961,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         private String contextPath;
         private String securityDomain;
         private List<SetupAction> setupActions;
+        private Set<VirtualFile> overlays;
 
         Builder setMergedMetaData(final JBossWebMetaData mergedMetaData) {
             this.mergedMetaData = mergedMetaData;
@@ -1030,13 +1033,18 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             return this;
         }
 
-        public UndertowDeploymentInfoService createUndertowDeploymentInfoService() {
-            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, classReflectionIndex, injectionContainer, componentRegistry, scisMetaData, deploymentRoot, securityContextId, securityDomain, attributes, contextPath, setupActions);
-        }
-
         public Builder setSecurityDomain(final String securityDomain) {
             this.securityDomain = securityDomain;
             return this;
+        }
+
+        public Builder setOverlays(final Set<VirtualFile> overlays) {
+            this.overlays = overlays;
+            return this;
+        }
+
+        public UndertowDeploymentInfoService createUndertowDeploymentInfoService() {
+            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, classReflectionIndex, injectionContainer, componentRegistry, scisMetaData, deploymentRoot, securityContextId, securityDomain, attributes, contextPath, setupActions, overlays);
         }
     }
 

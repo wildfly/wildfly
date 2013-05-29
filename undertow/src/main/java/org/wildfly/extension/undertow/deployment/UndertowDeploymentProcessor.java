@@ -198,6 +198,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .setSharedTlds(tldsMetaData == null ? Collections.<TldMetaData>emptyList() : tldsMetaData.getSharedTlds(deploymentUnit))
                 .setTldsMetaData(tldsMetaData)
                 .setSetupActions(setupActions)
+                .setOverlays(warMetaData.getOverlays())
                 .createUndertowDeploymentInfoService();
 
         final ServiceName deploymentInfoServiceName = deploymentServiceName.append(UndertowDeploymentInfoService.SERVICE_NAME);
