@@ -39,6 +39,7 @@ import java.util.Set;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContainerInitializer;
+import javax.servlet.SessionCookieConfig;
 import javax.servlet.http.HttpServletRequest;
 
 import io.undertow.jsp.JspFileWrapper;
@@ -70,6 +71,7 @@ import io.undertow.servlet.api.ServletSecurityInfo;
 import io.undertow.servlet.api.SessionManagerFactory;
 import io.undertow.servlet.api.ThreadSetupAction;
 import io.undertow.servlet.api.WebResourceCollection;
+import io.undertow.servlet.spec.SessionCookieConfigImpl;
 import io.undertow.servlet.util.ConstructorInstanceFactory;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
 import org.apache.jasper.deploy.FunctionInfo;
@@ -89,6 +91,8 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
+import org.jboss.metadata.web.spec.CookieConfigMetaData;
+import org.jboss.metadata.web.spec.SessionConfigMetaData;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
@@ -201,10 +205,28 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         handleSessionReplication(deploymentInfo);
         handleIdentityManager(deploymentInfo);
 
-        if(mergedMetaData.getSessionConfig() != null && mergedMetaData.getSessionConfig().getSessionTimeoutSet()) {
-            deploymentInfo.setDefaultSessionTimeout(mergedMetaData.getSessionConfig().getSessionTimeout() * 60);
+        SessionConfigMetaData sessionConfig = mergedMetaData.getSessionConfig();
+        if(sessionConfig != null) {
+            if(sessionConfig.getSessionTimeoutSet()) {
+                deploymentInfo.setDefaultSessionTimeout(sessionConfig.getSessionTimeout() * 60);
+            }
+            CookieConfigMetaData cookieConfig = sessionConfig.getCookieConfig();
+            if(cookieConfig != null) {
+                SessionCookieConfig config = new SessionCookieConfigImpl();
+                if(cookieConfig.getName() != null) {
+                    config.setName(cookieConfig.getName());
+                }
+                config.setSecure(cookieConfig.getSecure());
+                config.setPath(cookieConfig.getPath());
+                config.setMaxAge(cookieConfig.getMaxAge());
+                config.setDomain(cookieConfig.getDomain());
+                config.setComment(cookieConfig.getComment());
+                config.setHttpOnly(cookieConfig.getHttpOnly());
+                deploymentInfo.setSessionCookieConfig(config);
+            }
+            //todo: session tracking modes
+
         }
-        //TODO: the rest of the session config
 
         for (final SetupAction action : setupActions) {
             deploymentInfo.addThreadSetupAction(new ThreadSetupAction() {
