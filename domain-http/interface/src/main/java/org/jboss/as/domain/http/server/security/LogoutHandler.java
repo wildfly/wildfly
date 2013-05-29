@@ -34,7 +34,7 @@ import java.util.Collections;
 import java.util.List;
 
 import io.undertow.io.IoCallback;
-import io.undertow.security.impl.DigestAlgorithm;
+import io.undertow.security.idm.DigestAlgorithm;
 import io.undertow.security.impl.DigestAuthenticationMechanism;
 import io.undertow.security.impl.DigestQop;
 import io.undertow.security.impl.SimpleNonceManager;
@@ -59,9 +59,9 @@ public class LogoutHandler implements HttpHandler {
         List<DigestAlgorithm> digestAlgorithms = Collections.singletonList(DigestAlgorithm.MD5);
         List<DigestQop> digestQops = Collections.emptyList();
         digestMechanism = new DigestAuthenticationMechanism(digestAlgorithms, digestQops, realmName, "/management",
-                new SimpleNonceManager(), false);
+                new SimpleNonceManager());
         fakeRealmdigestMechanism = new DigestAuthenticationMechanism(digestAlgorithms, digestQops, "HIT THE ESCAPE KEY",
-                "/management", new SimpleNonceManager(), false);
+                "/management", new SimpleNonceManager());
     }
 
     @Override

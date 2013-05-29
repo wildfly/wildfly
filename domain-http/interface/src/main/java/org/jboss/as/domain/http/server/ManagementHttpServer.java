@@ -21,16 +21,10 @@
  */
 package org.jboss.as.domain.http.server;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.net.ssl.SSLContext;
-
+import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
+import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
+import static org.xnio.SslClientAuthMode.REQUESTED;
+import static org.xnio.SslClientAuthMode.REQUIRED;
 import io.undertow.security.api.AuthenticationMechanism;
 import io.undertow.security.api.AuthenticationMode;
 import io.undertow.security.handlers.AuthenticationCallHandler;
@@ -38,10 +32,10 @@ import io.undertow.security.handlers.AuthenticationConstraintHandler;
 import io.undertow.security.handlers.AuthenticationMechanismsHandler;
 import io.undertow.security.handlers.SecurityInitialHandler;
 import io.undertow.security.handlers.SinglePortConfidentialityHandler;
+import io.undertow.security.idm.DigestAlgorithm;
 import io.undertow.security.impl.BasicAuthenticationMechanism;
 import io.undertow.security.impl.CachedAuthenticatedSessionMechanism;
 import io.undertow.security.impl.ClientCertAuthenticationMechanism;
-import io.undertow.security.impl.DigestAlgorithm;
 import io.undertow.security.impl.DigestAuthenticationMechanism;
 import io.undertow.security.impl.DigestQop;
 import io.undertow.security.impl.SimpleNonceManager;
@@ -53,6 +47,16 @@ import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.cache.CacheHandler;
 import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.server.handlers.error.SimpleErrorPageHandler;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import javax.net.ssl.SSLContext;
+
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.domain.http.server.security.AuthenticationMechanismWrapper;
@@ -81,12 +85,6 @@ import org.xnio.channels.AcceptingChannel;
 import org.xnio.channels.SslConnection;
 import org.xnio.ssl.JsseXnioSsl;
 import org.xnio.ssl.XnioSsl;
-
-import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
-import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
-import static org.xnio.SslClientAuthMode.REQUESTED;
-import static org.xnio.SslClientAuthMode.REQUIRED;
 
 /**
  * The general HTTP server for handling management API requests.
@@ -243,15 +241,10 @@ public class ManagementHttpServer {
                         undertowMechanisms.add(wrap(new ClientCertAuthenticationMechanism(), current));
                         break;
                     case DIGEST:
-                        Map<String, String> mechConfig = securityRealm.getMechanismConfig(AuthMechanism.DIGEST);
-                        boolean plainTextDigest = true;
-                        if (mechConfig.containsKey(DIGEST_PLAIN_TEXT)) {
-                            plainTextDigest = Boolean.parseBoolean(mechConfig.get(DIGEST_PLAIN_TEXT));
-                        }
                         List<DigestAlgorithm> digestAlgorithms = Collections.singletonList(DigestAlgorithm.MD5);
                         List<DigestQop> digestQops = Collections.emptyList();
                         undertowMechanisms.add(wrap(new DigestAuthenticationMechanism(digestAlgorithms, digestQops,
-                                securityRealm.getName(), "/management", new SimpleNonceManager(), plainTextDigest), current));
+                                securityRealm.getName(), "/management", new SimpleNonceManager()), current));
                         break;
                     case PLAIN:
                         undertowMechanisms.add(wrap(new BasicAuthenticationMechanism(securityRealm.getName()), current));
