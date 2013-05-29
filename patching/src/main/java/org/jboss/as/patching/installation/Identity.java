@@ -1,7 +1,5 @@
 package org.jboss.as.patching.installation;
 
-import org.jboss.as.patching.DirectoryStructure;
-
 /**
  *
  * An identity is a named set of distribution base + layered distribution(s) that is certified as a valid combination.
@@ -14,15 +12,15 @@ import org.jboss.as.patching.DirectoryStructure;
  * |-- bundles
  * |   `-- system
  * |       `-- layers
- * |           `-- base => {@link DirectoryStructure#getBundleRepositoryRoot()}
+ * |           `-- base => {@link org.jboss.as.patching.DirectoryStructure#getBundleRepositoryRoot()}
  * |               `-- patches
- * |                   `-- &lt;patchId> => {@link DirectoryStructure#getBundlesPatchDirectory(String)}
+ * |                   `-- &lt;patchId> => {@link org.jboss.as.patching.DirectoryStructure#getBundlesPatchDirectory(String)}
  * |-- modules
  * |   `-- system
  * |       `-- layers
- * |           `-- base => {@link DirectoryStructure#getModuleRoot()}
+ * |           `-- base => {@link org.jboss.as.patching.DirectoryStructure#getModuleRoot()}
  * |                `-- patches
- * |                   `-- &lt;patchId> => {@link DirectoryStructure#getModulePatchDirectory(String)}
+ * |                   `-- &lt;patchId> => {@link org.jboss.as.patching.DirectoryStructure#getModulePatchDirectory(String)}
  * `-- .installation
  *     |-- cumulative
  *     |-- references
@@ -30,9 +28,9 @@ import org.jboss.as.patching.DirectoryStructure;
  *     `-- patches
  *         `-- layers
  *             `-- base
- *                 |-- cumulative => {@link DirectoryStructure#getCumulativeLink()}
+ *                 |-- cumulative => {@link org.jboss.as.patching.DirectoryStructure#getCumulativeLink()}
  *                 `-- references
- *                     `-- &lt;patchId> => {@link DirectoryStructure#getCumulativeRefs(String)}
+ *                     `-- &lt;patchId> => {@link org.jboss.as.patching.DirectoryStructure#getCumulativeRefs(String)}
  * <code>
  * </pre>
  *

@@ -11,7 +11,6 @@ public interface IdentityPatch extends Patch {
 
     public enum LayerType {
 
-        Identity("identity"),
         Layer("layer"),
         AddOn("add-on"),
         ;

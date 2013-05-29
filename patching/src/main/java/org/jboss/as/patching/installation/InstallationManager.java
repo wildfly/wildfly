@@ -23,7 +23,7 @@ public interface InstallationManager {
      * @param callback a completed callback
      * @return the modification
      */
-    InstallationModification modifyInstallation(ModificationCompletedCallback callback);
+    InstallationModification modifyInstallation(ModificationCompletion callback);
 
     public interface InstallationModification extends MutablePatchingTarget {
 
@@ -44,14 +44,14 @@ public interface InstallationManager {
         MutablePatchingTarget resolve(String name, IdentityPatch.LayerType type);
 
         /**
-         * Commit the changes.
+         * Complete the modifications.
          */
-        void commit();
+        void complete();
 
         /**
-         * Rollback the changes
+         * Cancel the modifications. The installation is unchanged.
          */
-        void rollback();
+        void cancel();
 
     }
 
@@ -81,10 +81,17 @@ public interface InstallationManager {
 
     }
 
-    public interface ModificationCompletedCallback {
+    public interface ModificationCompletion {
 
-        void committed();
-        void rolledback();
+        /**
+         * The modification has been successfully completed.
+         */
+        void completed();
+
+        /**
+         * The modification has been canceled. The installation did not change.
+         */
+        void canceled();
 
     }
 

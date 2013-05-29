@@ -58,7 +58,7 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
             throw MESSAGES.serverRequiresRestart();
         }
 
-        final PatchInfo info = service.getPatchInfo();
+        final PatchInfo info = service.getValue();
         final DirectoryStructure structure = service.getStructure();
         final PatchTool runner = PatchTool.Factory.create(info, structure);
         final ContentVerificationPolicy policy = PatchTool.Factory.create(operation);

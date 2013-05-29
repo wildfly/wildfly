@@ -35,7 +35,7 @@ public class InstallationManagerImpl implements InstallationManager {
     }
 
     @Override
-    public InstallationModification modifyInstallation(final ModificationCompletedCallback callback) {
+    public InstallationModification modifyInstallation(final ModificationCompletion callback) {
         if (! writable.compareAndSet(true, false)) {
             // This should be guarded by the OperationContext.lock
             throw new IllegalStateException();
@@ -47,25 +47,25 @@ public class InstallationManagerImpl implements InstallationManager {
 
             return new InstallationModificationImpl(identityInfo, identity.getVersion(), state) {
                 @Override
-                public void commit() {
+                public void complete() {
                     try {
 
-                        final InstallationState newState = internalCommit();
+                        final InstallationState newState = internalComplete();
                         // TODO update state
-                        callback.committed();
+                        callback.completed();
                         InstallationManagerImpl.this.state = newState;
                         writable.set(true);
                     } catch (Exception e) {
-                        rollback();
+                        cancel();
                         throw new RuntimeException(e);
                     }
 
                 }
 
                 @Override
-                public void rollback() {
+                public void cancel() {
                     try {
-                        callback.rolledback();
+                        callback.canceled();
                     } finally {
                         writable.set(true);
                     }

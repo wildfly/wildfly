@@ -34,9 +34,7 @@ import static org.jboss.as.patching.Constants.STANDALONE;
 
 import java.io.File;
 
-import org.jboss.as.patching.installation.AddOn;
 import org.jboss.as.patching.installation.InstalledImage;
-import org.jboss.as.patching.installation.Layer;
 
 /**
  * The patching directory structure.
@@ -136,22 +134,22 @@ import org.jboss.as.patching.installation.Layer;
  *
  * <ol>
  *     <li>let paths be a list of File</li>
- *     <li>for each layer in {@link InstalledImage#getModuleLayersConf()} file and "base":</li>
+ *     <li>for each layer in {@link org.jboss.as.patching.installation.InstalledImage#getLayersConf()} file and "base":</li>
  *     <ol>
- *        <li>read the cumulativeID in {@link Layer#loadTargetInfo()#getCumulativeLink()}</li>
- *        <li>append {@link Layer#loadTargetInfo()#getModulePatchDirectory(String)} for the cumulativeID (if it exists) to the paths</li>
- *        <li>for each one-off patchIDs in {@link Layer#loadTargetInfo()#getCumulativeRefs(String)}</li>
+ *        <li>read the cumulativeID in {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getCumulativeLink()}</li>
+ *        <li>append {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getModulePatchDirectory(String)} for the cumulativeID (if it exists) to the paths</li>
+ *        <li>for each one-off patchIDs in {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getCumulativeRefs(String)}</li>
  *        <ol>
- *            <li>append {@link Layer#loadTargetInfo()#getModulePatchDirectory(String)} (if it exists) to the paths</li>
+ *            <li>append {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getModulePatchDirectory(String)} (if it exists) to the paths</li>
  *        </ol>
  *     </ol>
  *     <li>for each addOn in {@link InstalledImage#getModulesDir()}}/system/add-ons</li>
  *     <ol>
- *        <li>read the cumulativeID in {@link AddOn#loadTargetInfo()#getCumulativeLink()}</li>
- *        <li>append {@link AddOn#loadTargetInfo()#getModulePatchDirectory(String)} for the cumulativeID (if it exists) to the paths</li>
- *        <li>for each one-off patchIDs in {@link AddOn#loadTargetInfo()#getCumulativeRefs(String)}</li>
+ *        <li>read the cumulativeID in {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getCumulativeLink()}</li>
+ *        <li>append {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getModulePatchDirectory(String)} for the cumulativeID (if it exists) to the paths</li>
+ *        <li>for each one-off patchIDs in {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getCumulativeRefs(String)}</li>
  *        <ol>
- *            <li>append {@link AddOn#loadTargetInfo()#getModulePatchDirectory(String)} (if it exists) to the paths</li>
+ *            <li>append {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getModulePatchDirectory(String)} (if it exists) to the paths</li>
  *        </ol>
  *     </ol>
  *     <li>return paths</li>

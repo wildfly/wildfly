@@ -174,7 +174,7 @@ class IdentityPatchContext implements PatchContentProvider {
             @Override
             public void commit() {
                 try {
-                    modification.commit();
+                    modification.complete();
                     callback.commit();
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -187,7 +187,7 @@ class IdentityPatchContext implements PatchContentProvider {
                 try {
                     callback.rollback();
                 } finally {
-                    modification.rollback();
+                    modification.cancel();
                 }
             }
         };

@@ -22,6 +22,8 @@
 
 package org.jboss.as.patching;
 
+import org.jboss.msc.service.ServiceName;
+
 /**
  * @author Emanuel Muckenhuber
  */
@@ -70,4 +72,9 @@ public class Constants {
     public static final String LAYERS_CONF = "layers.conf";
     public static final String REFERENCES = "references";
     public static final String ROLLBACK_XML = "rollback.xml";
+
+    // Service names
+    public static final ServiceName JBOSS_AS = ServiceName.JBOSS.append("as");
+    public static final ServiceName JBOSS_PATCHING = ServiceName.JBOSS.append("patching");
+    public static final ServiceName JBOSS_PRODUCT_CONFIG_SERVICE = JBOSS_AS.append("product-config");
 }
