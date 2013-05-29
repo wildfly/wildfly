@@ -45,7 +45,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SetupAction;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.metadata.web.spec.TldMetaData;
 import org.wildfly.extension.undertow.BufferCacheService;
 import org.wildfly.extension.undertow.DeploymentDefinition;
@@ -129,7 +128,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         if (module == null) {
             throw new DeploymentUnitProcessingException(MESSAGES.failedToResolveModule(deploymentUnit));
         }
-        final DeploymentClassIndex deploymentClassIndex = deploymentUnit.getAttachment(Attachments.CLASS_INDEX);
         final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
         final List<SetupAction> setupActions = deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS);
         metaData.resolveRunAs();
@@ -165,8 +163,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         final String pathName = pathNameOfDeployment(deploymentUnit, metaData);
 
 
-
-
         String metaDataSecurityDomain = metaData.getSecurityDomain();
         if (metaDataSecurityDomain == null) {
             metaDataSecurityDomain = getJBossAppSecurityDomain(deploymentUnit);
@@ -184,7 +180,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
                         .setAttributes(deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY))
-                .setClassReflectionIndex(deploymentClassIndex)
                 .setComponentRegistry(componentRegistry)
                 .setContextPath(pathName)
                 .setDeploymentName(deploymentUnit.getName())
