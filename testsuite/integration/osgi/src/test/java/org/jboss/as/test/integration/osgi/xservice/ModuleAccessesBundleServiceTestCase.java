@@ -24,8 +24,6 @@ package org.jboss.as.test.integration.osgi.xservice;
 
 import java.io.InputStream;
 
-import javax.inject.Inject;
-
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -63,8 +61,8 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
     private static final String TARGET_BUNDLE_NAME = "example-xservice-mab-target-bundle";
     private static final String CLIENT_MODULE_NAME = "example-xservice-mab-client-module";
 
-    @Inject
-    public ServiceContainer serviceContainer;
+    @ArquillianResource
+    ServiceContainer serviceContainer;
 
     @ArquillianResource
     public Deployer deployer;

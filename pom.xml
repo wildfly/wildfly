@@ -159,7 +159,7 @@
         <version.org.jdom>1.1.2</version.org.jdom>
         <version.org.jboss.aesh>0.33.3</version.org.jboss.aesh>
         <version.org.jboss.arquillian.core>1.0.3.Final</version.org.jboss.arquillian.core>
-        <version.org.jboss.arquillian.osgi>2.0.0.CR2</version.org.jboss.arquillian.osgi>
+        <version.org.jboss.arquillian.osgi>2.0.0.CR3</version.org.jboss.arquillian.osgi>
         <version.org.jboss.as.console>1.6.0.Final</version.org.jboss.as.console>
         <version.org.jboss.as.jbossweb-native>2.0.10.Final</version.org.jboss.as.jbossweb-native>
         <version.org.jboss.byteman>2.0.1</version.org.jboss.byteman>

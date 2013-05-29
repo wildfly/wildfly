@@ -30,7 +30,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import javax.inject.Inject;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -58,8 +57,8 @@ public class JpaDsRestartTestCase {
     @ArquillianResource
     private InitialContext iniCtx;
 
-    @Inject
-    public ServiceContainer serviceContainer;
+    @ArquillianResource
+    ServiceContainer serviceContainer;
 
     @Deployment
     public static Archive<?> deploy() {

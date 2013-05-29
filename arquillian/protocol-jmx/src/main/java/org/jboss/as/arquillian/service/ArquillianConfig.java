@@ -28,11 +28,11 @@ import java.util.Set;
 
 import org.jboss.arquillian.testenricher.msc.ServiceTargetAssociation;
 import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
-import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
@@ -44,10 +44,9 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.Services;
-import org.jboss.osgi.resolver.XBundle;
-import org.jboss.osgi.resolver.XBundleRevision;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleReference;
 
 /**
  * The ArquillianConfig represents an Arquillian deployment.
@@ -79,7 +78,7 @@ class ArquillianConfig implements Service<ArquillianConfig> {
 
     ServiceBuilder<ArquillianConfig> buildService(ServiceTarget serviceTarget, ServiceController<?> depController) {
         ServiceBuilder<ArquillianConfig> builder = serviceTarget.addService(getServiceName(), this);
-        builder.addDependency(DependencyType.OPTIONAL, Services.FRAMEWORK_CREATE, BundleContext.class, injectedBundleContext);
+        builder.addDependency(DependencyType.OPTIONAL, ServiceName.parse("jbosgi.framework.CREATE"), BundleContext.class, injectedBundleContext);
         builder.addDependency(depController.getName());
         return builder;
     }
@@ -105,39 +104,30 @@ class ArquillianConfig implements Service<ArquillianConfig> {
         if (testClasses.contains(className) == false)
             throw new ClassNotFoundException("Class '" + className + "' not found in: " + testClasses);
 
-        XBundleRevision brev = depUnit.getAttachment(OSGiConstants.BUNDLE_REVISION_KEY);
         Module module = depUnit.getAttachment(Attachments.MODULE);
-        if (brev == null && module == null)
-            throw new IllegalStateException("Cannot determine deployment type: " + depUnit);
+        BundleAssociation.setBundle(getAssociatedBundle(module));
 
-        Class<?> testClass;
-        if (brev != null) {
-            XBundle bundle = brev.getBundle();
-            testClass = bundle.loadClass(className);
-            BundleAssociation.setBundle(bundle);
-        } else {
-            testClass = module.getClassLoader().loadClass(className);
-        }
+        Class<?> testClass = module.getClassLoader().loadClass(className);
 
+        ServiceTargetAssociation.setServiceTarget(serviceTarget);
         return testClass;
+    }
+
+    static Bundle getAssociatedBundle(Module module) {
+        ModuleClassLoader classLoader = module != null ? module.getClassLoader() : null;
+        return classLoader instanceof BundleReference ? ((BundleReference)classLoader).getBundle() : null;
     }
 
     @Override
     public synchronized void start(StartContext context) throws StartException {
         serviceTarget = context.getChildTarget();
         arqService.registerArquillianConfig(this);
-        for(String testClass : testClasses) {
-            ServiceTargetAssociation.setServiceTarget(testClass, serviceTarget);
-        }
     }
 
     @Override
     public synchronized void stop(StopContext context) {
         context.getController().setMode(Mode.REMOVE);
         arqService.unregisterArquillianConfig(this);
-        for(String testClass : testClasses) {
-            ServiceTargetAssociation.clearServiceTarget(testClass);
-        }
     }
 
     @Override
