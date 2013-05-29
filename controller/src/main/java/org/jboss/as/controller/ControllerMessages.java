@@ -2656,4 +2656,7 @@ public interface ControllerMessages {
 
     @Message(id = 13454, value = "Failed to load Extension module %s")
     RuntimeException extensionModuleLoadingFailure(@Cause ModuleLoadException cause, String module);
+
+    @Message(id = 13455, value = "no context to delegate with id: %s")
+    IllegalStateException noContextToDelegateTo(int operationId);
 }
