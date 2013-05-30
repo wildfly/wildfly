@@ -21,7 +21,7 @@
  */
 package org.wildfly.extension.undertow;
 
-import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.Deployment;
 
 /**
  * Implementers of {@link UndertowEventListener} should extend {@link AbstractUndertowEventListener} to maintai
@@ -37,9 +37,9 @@ public interface UndertowEventListener {
 
     //void onDeploymentAdd(DeploymentInfo deploymentInfo, Host host);
 
-    void onDeploymentStart(DeploymentInfo deploymentInfo, Host host);
+    void onDeploymentStart(Deployment deployment, Host host);
 
-    void onDeploymentStop(DeploymentInfo deploymentInfo, Host host);
+    void onDeploymentStop(Deployment deployment, Host host);
 
     //void onDeploymentRemove(DeploymentInfo deploymentInfo, Host host);
 

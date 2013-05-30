@@ -36,6 +36,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.form.MultiPartHandler;
 import io.undertow.server.handlers.resource.FileResourceManager;
+import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
 import io.undertow.servlet.api.ServletContainer;
@@ -62,7 +63,7 @@ public class Host implements Service<Host>, WebHost {
     private final InjectedValue<Server> server = new InjectedValue<>();
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
     private volatile MultiPartHandler rootHandler;
-    private final Set<DeploymentInfo> deploymentInfoSet = Collections.synchronizedSet(new HashSet<DeploymentInfo>());
+    private final Set<Deployment> deployments = Collections.synchronizedSet(new HashSet<Deployment>());
 
     protected Host(String name, List<String> aliases) {
         this.name = name;
@@ -116,28 +117,30 @@ public class Host implements Service<Host>, WebHost {
         return rootHandler;
     }
 
-    public void registerDeployment(final DeploymentInfo deploymentInfo, HttpHandler handler) {
+    public void registerDeployment(final Deployment deployment, HttpHandler handler) {
+        DeploymentInfo deploymentInfo = deployment.getDeploymentInfo();
         String path = ServletContainerService.getDeployedContextPath(deploymentInfo);
         registerHandler(path, handler);
-        deploymentInfoSet.add(deploymentInfo);
+        deployments.add(deployment);
         UndertowLogger.ROOT_LOGGER.registerWebapp(path);
         undertowService.getValue().fireEvent(new EventInvoker() {
             @Override
             public void invoke(UndertowEventListener listener) {
-                listener.onDeploymentStart(deploymentInfo, Host.this);
+                listener.onDeploymentStart(deployment, Host.this);
             }
         });
     }
 
-    public void unregisterDeployment(final DeploymentInfo deploymentInfo) {
+    public void unregisterDeployment(final Deployment deployment) {
+        DeploymentInfo deploymentInfo = deployment.getDeploymentInfo();
         String path = ServletContainerService.getDeployedContextPath(deploymentInfo);
         unregisterHandler(path);
-        deploymentInfoSet.remove(deploymentInfo);
+        deployments.remove(deployment);
         UndertowLogger.ROOT_LOGGER.unregisterWebapp(path);
         undertowService.getValue().fireEvent(new EventInvoker() {
             @Override
             public void invoke(UndertowEventListener listener) {
-                listener.onDeploymentStop(deploymentInfo, Host.this);
+                listener.onDeploymentStop(deployment, Host.this);
             }
         });
     }
@@ -158,10 +161,10 @@ public class Host implements Service<Host>, WebHost {
     }
 
     /**
-     * @return set of registered deployments as {@link DeploymentInfo}
+     * @return set of currently registered {@link Deployment}s on this host
      */
-    public Set<DeploymentInfo> getDeploymentInfo() {
-        return Collections.unmodifiableSet(deploymentInfoSet);
+    public Set<Deployment> getDeployments() {
+        return Collections.unmodifiableSet(deployments);
     }
 
     @Override
@@ -179,7 +182,7 @@ public class Host implements Service<Host>, WebHost {
             } else {
                 s = new ServletInfo(servlet.getServletName(), (Class<? extends Servlet>) servlet.getServletClass(), new ImmediateInstanceFactory<>(servlet.getServlet()));
             }
-            if (servlet.isForceInit()){
+            if (servlet.isForceInit()) {
                 s.setLoadOnStartup(1);
             }
             s.addMappings(servlet.getUrlMappings());
@@ -211,13 +214,13 @@ public class Host implements Service<Host>, WebHost {
         @Override
         public void start() throws Exception {
             HttpHandler handler = manager.start();
-            registerDeployment(deploymentInfo,handler);
+            registerDeployment(manager.getDeployment(), handler);
         }
 
         @Override
         public void stop() throws Exception {
             manager.stop();
-            unregisterDeployment(deploymentInfo);
+            unregisterDeployment(manager.getDeployment());
         }
 
         @Override

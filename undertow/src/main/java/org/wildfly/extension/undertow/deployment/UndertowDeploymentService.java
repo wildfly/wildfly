@@ -75,7 +75,8 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
             deploymentManager.deploy();
             try {
                 HttpHandler handler = deploymentManager.start();
-                host.getValue().registerDeployment(deploymentInfo, handler);
+                Deployment deployment = deploymentManager.getDeployment();
+                host.getValue().registerDeployment(deployment, handler);
             } catch (ServletException e) {
                 throw new StartException(e);
             }
@@ -86,13 +87,14 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
 
     @Override
     public void stop(final StopContext stopContext) {
+        Deployment deployment = deploymentManager.getDeployment();
         try {
             deploymentManager.stop();
         } catch (ServletException e) {
             throw new RuntimeException(e);
         }
         deploymentManager.undeploy();
-        host.getValue().unregisterDeployment(deploymentInfoInjectedValue.getValue());
+        host.getValue().unregisterDeployment(deployment);
     }
 
     @Override
