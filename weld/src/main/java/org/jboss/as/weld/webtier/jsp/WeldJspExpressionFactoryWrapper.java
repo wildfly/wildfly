@@ -40,9 +40,9 @@ import org.jboss.as.weld.util.Reflections;
  * @author Pete Muir
  * @author Stuart Douglas
  */
-public class JspInitializationListener implements ExpressionFactoryWrapper{
+public class WeldJspExpressionFactoryWrapper implements ExpressionFactoryWrapper {
 
-    public static final JspInitializationListener INSTANCE = new JspInitializationListener();
+    public static final WeldJspExpressionFactoryWrapper INSTANCE = new WeldJspExpressionFactoryWrapper();
 
     @Override
     public ExpressionFactory wrap(ExpressionFactory expressionFactory, ServletContext servletContext) {
