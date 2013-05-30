@@ -88,7 +88,6 @@ public class PersistenceTestCase {
 
     @Test
     @SuppressWarnings("unchecked")
-    @Ignore  // until WFLY-1349 is fixed
     public void testEntityManagerFactoryService() throws Exception {
         deployer.deploy(PERSISTENCE_BUNDLE_A);
         try {
@@ -107,7 +106,6 @@ public class PersistenceTestCase {
 
     @Test
     @SuppressWarnings("unchecked")
-    @Ignore  // until WFLY-1349 is fixed
     public void testDeferredEntityManagerFactoryService() throws Exception {
         InputStream input = deployer.getDeployment(PERSISTENCE_BUNDLE_A);
         Bundle bundle = context.installBundle(PERSISTENCE_BUNDLE_A, input);

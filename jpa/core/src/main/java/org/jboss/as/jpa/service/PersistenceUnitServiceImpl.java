@@ -31,6 +31,7 @@ import javax.persistence.spi.PersistenceProvider;
 import javax.sql.DataSource;
 
 import org.jboss.as.jpa.classloader.TempClassLoaderFactoryImpl;
+import org.jboss.as.jpa.spi.PersistenceUnitService;
 import org.jboss.as.jpa.subsystem.PersistenceUnitRegistryImpl;
 import org.jboss.as.jpa.util.JPAServiceNames;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
@@ -43,7 +44,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jipijapa.plugin.spi.PersistenceProviderAdaptor;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
-import org.jipijapa.plugin.spi.PersistenceUnitService;
+
 
 import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
 

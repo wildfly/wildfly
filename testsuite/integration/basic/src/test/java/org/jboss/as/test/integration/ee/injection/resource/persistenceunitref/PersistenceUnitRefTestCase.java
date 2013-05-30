@@ -32,7 +32,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -84,21 +83,18 @@ public class PersistenceUnitRefTestCase {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    @Ignore  // until WFLY-1349 is fixed
     public void testCorrectPersistenceUnitInjectedFromAnnotation2() throws NamingException {
         PuManagedBean bean = getManagedBean();
         bean.getMypu().getMetamodel().entity(PuOtherEntity.class);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    @Ignore  // until WFLY-1349 is fixed
     public void testCorrectPersistenceUnitInjectedFromPersistenceUnitRef() throws NamingException {
         PuManagedBean bean = getManagedBean();
         bean.getOtherpc().getMetamodel().entity(PuMyEntity.class);
     }
 
     @Test
-    @Ignore  // until WFLY-1349 is fixed
     public void testCorrectPersistenceUnitInjectedFromPersistenceUnitRef2() throws NamingException {
         PuManagedBean bean = getManagedBean();
         bean.getOtherpc().getMetamodel().entity(PuOtherEntity.class);
@@ -111,7 +107,6 @@ public class PersistenceUnitRefTestCase {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    @Ignore  // until WFLY-1349 is fixed
     public void testCorrectPersistenceUnitInjectedFromRefInjectionTarget2() throws NamingException {
         PuManagedBean bean = getManagedBean();
         bean.getMypu2().getMetamodel().entity(PuOtherEntity.class);

@@ -26,7 +26,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jipijapa.plugin.spi.PersistenceUnitService;
+
+import org.jboss.as.jpa.spi.PersistenceUnitService;
 import org.jipijapa.plugin.spi.PersistenceUnitServiceRegistry;
 
 
