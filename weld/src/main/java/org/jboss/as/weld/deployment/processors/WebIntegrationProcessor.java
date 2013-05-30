@@ -39,7 +39,7 @@ import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.web.common.WebComponentDescription;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.WeldLogger;
-import org.jboss.as.weld.webtier.jsp.JspInitializationListener;
+import org.jboss.as.weld.webtier.jsp.WeldJspExpressionFactoryWrapper;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.FilterMappingMetaData;
@@ -127,7 +127,7 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
         //These listeners use resource injection, so they need to be components
         registerAsComponent(WELD_LISTENER, module, deploymentUnit, applicationClasses);
 
-        deploymentUnit.addToAttachmentList(ExpressionFactoryWrapper.ATTACHMENT_KEY, JspInitializationListener.INSTANCE);
+        deploymentUnit.addToAttachmentList(ExpressionFactoryWrapper.ATTACHMENT_KEY, WeldJspExpressionFactoryWrapper.INSTANCE);
 
         if (webMetaData.getFilterMappings() != null) {
             // register ConversationFilter
