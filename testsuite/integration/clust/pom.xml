@@ -24,8 +24,6 @@
         <!-- additional properties for xsite tests -->
         <node2>127.0.0.1</node2>
         <node3>127.0.0.1</node3>
-        <siteA>siteA</siteA>
-        <siteB>siteB</siteB>
     </properties>
 
     <dependencies>
@@ -417,8 +415,10 @@
                                             <property name="node1" value="127.0.0.1"/>
                                             <property name="node2" value="127.0.0.1"/>
                                             <property name="node3" value="127.0.0.1"/>
-                                            <property name="mcast0" value="230.0.0.4"/>
-                                            <property name="mcast1" value="230.0.0.5"/>
+                                            <property name="mcast-lon" value="230.0.0.4"/>
+                                            <property name="mcast-nyc" value="230.0.0.5"/>
+                                            <property name="mcast-sfo" value="230.0.0.6"/>
+                                            <property name="mcast-mping" value="230.0.0.7"/>
                                             <target name="build-clustering-xsite"/>
                                         </ant>
                                     </target>

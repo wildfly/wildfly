@@ -91,34 +91,24 @@
          4 nodes: ${node0}, ${node1}, ${node2}, ${node3}
          3 sites: LON (node0, node1), NYC (node2), SFO (node3)
 
-         LON configuration:
-         web/repl backed up to NYC web/repl and SFO web/LONrepl
-         ejb/repl backed up to NYC ejb/repl and SFO ejb/LONrepl
-         web/SFOrepl backs up SFO web/repl
-         ejb/SFOrepl backs up SFO ejb/repl
-
-         NYC configuration:
-         web/repl backs up LON web/repl
-         ejb/repl backs up LON ejb/repl
-
-         SFO configuration:
-         web/repl backed up to LON web/SFOrepl and LON web/SFOrepl
-         ejb/repl backed up to LON ejb/SFOrepl and LON ejb/SFOrepl
-         web/LONrepl backs up LON web/repl
-         ejb/LONrepl backs up LON ejb/repl
-
          NOTE: the TCP bridge between sites makes use of MPING and so a common mcast address needs to be used.
      -->
     <target name="build-clustering-xsite" description="Builds server configurations for x-site testing on three sites">
 
         <echo>Building x-site configs with sites LON, NYC, SFO</echo>
 
+        <!--
+           Configuration for testing backups using standard backup naming conventions
+        -->
+
         <!-- site LON, node 0, mcast 0 -->
         <echo message="Building config clustering-xsite-LON-0"/>
         <copy todir="target/wildfly-clustering-xsite-LON-0" overwrite="true">
             <fileset dir="${basedir}/target/jbossas"/>
         </copy>
-        <ts.config-as.ip-with-multicast name="wildfly-clustering-xsite-LON-0" node="${node0}" mcast="${mcast0}"/>
+        <ts.config-as.ip-with-multicast-longform name="wildfly-clustering-xsite-LON-0"
+                                                 managementIPAddress="${node0}" publicIPAddress="${node0}"
+                                                 udpMcastAddress="${mcast-lon}" diagnosticsMcastAddress="${mcast-lon}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-lon}"/>
         <ts.config-as.add-port-offset name="wildfly-clustering-xsite-LON-0"/>
         <!-- define relay at JGroups level on udp stack -->
         <ts.config-as.add-xsite-relay name="wildfly-clustering-xsite-LON-0" stack="udp" relay.site="LON"
@@ -136,7 +126,9 @@
         <copy todir="target/wildfly-clustering-xsite-LON-1" overwrite="true">
             <fileset dir="${basedir}/target/jbossas"/>
         </copy>
-        <ts.config-as.ip-with-multicast name="wildfly-clustering-xsite-LON-1" node="${node1}" mcast="${mcast0}"/>
+        <ts.config-as.ip-with-multicast-longform name="wildfly-clustering-xsite-LON-1"
+                                                 managementIPAddress="${node1}" publicIPAddress="${node1}"
+                                                 udpMcastAddress="${mcast-lon}" diagnosticsMcastAddress="${mcast-lon}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-lon}"/>
         <ts.config-as.add-port-offset name="wildfly-clustering-xsite-LON-1" offset="100" nativePort="9999" httpPort="9990"/>
         <!-- define relay at JGroups level -->
         <ts.config-as.add-xsite-relay name="wildfly-clustering-xsite-LON-1" stack="udp" relay.site="LON"
@@ -156,31 +148,36 @@
         </copy>
         <ts.config-as.ip-with-multicast-longform name="wildfly-clustering-xsite-NYC-0"
                                                  managementIPAddress="${node2}" publicIPAddress="${node2}"
-                                                 udpMcastAddress="${mcast1}" diagnosticsMcastAddress="${mcast1}" mpingMcastAddress="${mcast0}" modclusterMcastAddress="${mcast1}"/>
+                                                 udpMcastAddress="${mcast-nyc}" diagnosticsMcastAddress="${mcast-nyc}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-nyc}"/>
         <ts.config-as.add-port-offset name="wildfly-clustering-xsite-NYC-0" offset="200" nativePort="9999" httpPort="9990"/>
         <!-- define relay at JGroups level -->
         <ts.config-as.add-xsite-relay name="wildfly-clustering-xsite-NYC-0" stack="udp" relay.site="NYC"
                                       remote-site.site="LON" remote-site.stack="tcp" remote-site.cluster="bridge"/>
+        <ts.config-as.add-xsite-remote-site name="wildfly-clustering-xsite-NYC-0" stack="udp"
+                                      remote-site.site="SFO" remote-site.stack="tcp" remote-site.cluster="bridge"/>
 
-        <!-- site SFO, node 3, mcast 1 -->
+        <!-- site SFO, node 3, mcast 2 -->
         <echo message="Building config clustering-xsite-SFO-0"/>
         <copy todir="target/wildfly-clustering-xsite-SFO-0" overwrite="true">
             <fileset dir="${basedir}/target/jbossas"/>
         </copy>
         <ts.config-as.ip-with-multicast-longform name="wildfly-clustering-xsite-SFO-0"
                                                  managementIPAddress="${node3}" publicIPAddress="${node3}"
-                                                 udpMcastAddress="${mcast1}" diagnosticsMcastAddress="${mcast1}" mpingMcastAddress="${mcast0}" modclusterMcastAddress="${mcast1}"/>
+                                                 udpMcastAddress="${mcast-sfo}" diagnosticsMcastAddress="${mcast-sfo}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-sfo}"/>
         <ts.config-as.add-port-offset name="wildfly-clustering-xsite-SFO-0" offset="300" nativePort="9999" httpPort="9990"/>
         <!-- define relay at JGroups level -->
         <ts.config-as.add-xsite-relay name="wildfly-clustering-xsite-SFO-0" stack="udp" relay.site="SFO"
                                       remote-site.site="LON" remote-site.stack="tcp" remote-site.cluster="bridge"/>
-        <!-- define cache backups at Infinispan level -->
-        <!--
-        <ts.config-as.add-xsite-backup name="wildfly-clustering-xsite-SFO-0" container="web"
-                                       cache-type="replicated-cache" cache="repl" backup.site="LON"/>
+        <ts.config-as.add-xsite-remote-site name="wildfly-clustering-xsite-SFO-0" stack="udp"
+                                      remote-site.site="NYC" remote-site.stack="tcp" remote-site.cluster="bridge"/>
+
+        <!-- create a named backup cache based on repl for LON:web:dist and mark as backup-for
+        <ts.config-as.copy-cache name="wildfly-clustering-xsite-SFO-0" container.name="web"
+                                       cache-type="replicated-cache" cache.base="repl" cache.name="LONrepl"/>
         <ts.config-as.add-xsite-backup-for name="wildfly-clustering-xsite-SFO-0" container="web"
-                                       cache-type="replicated-cache" cache="repl" remote-site="LON" remote-cache="users"/>
+                                       cache-type="replicated-cache" cache="LONrepl" remote-site="LON" remote-cache="repl"/>
         -->
+
     </target>
 
 
