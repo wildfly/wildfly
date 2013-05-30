@@ -220,12 +220,21 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
             protocolDefinitions.add(protocolDefinition);
         }
 
+        // create the relay resource definition if element is defined
+        ResourceDefinition relayDefinition = null ;
+        if (stack.hasDefined(ModelKeys.RELAY)) {
+            relayDefinition = getProtocolMetricResourceDefinition(context, channelName, "relay.RELAY2");
+        }
+
         // register the channel resource and its protocol resources
         ManagementResourceRegistration subsystemRootRegistration = context.getResourceRegistrationForUpdate();
         ManagementResourceRegistration channelRegistration = subsystemRootRegistration.registerSubModel(new ChannelInstanceResourceDefinition(channelName, true));
         channelRegistration.registerSubModel(transportDefinition);
         for (ResourceDefinition protocolDefinition : protocolDefinitions) {
             channelRegistration.registerSubModel(protocolDefinition);
+        }
+        if (stack.hasDefined(ModelKeys.RELAY)) {
+            channelRegistration.registerSubModel(relayDefinition);
         }
     }
 
