@@ -43,21 +43,21 @@ import org.jboss.weld.bootstrap.api.ServiceRegistry;
 import org.jboss.weld.bootstrap.api.helpers.SimpleServiceRegistry;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.bootstrap.spi.BeansXml;
-import org.jboss.weld.bootstrap.spi.Deployment;
+import org.jboss.weld.bootstrap.spi.CDI11Deployment;
 import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.resources.spi.AnnotationDiscovery;
 import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jboss.weld.serialization.spi.ProxyServices;
 
 /**
- * Abstract implementation of {@link Deployment}.
+ * Abstract implementation of {@link CDI11Deployment}.
  * <p>
  * Thread safety: This class is thread safe, and does not require a happens before action between construction and usage
  *
  * @author Stuart Douglas
  *
  */
-public class WeldDeployment implements Deployment {
+public class WeldDeployment implements CDI11Deployment {
 
     public static final String ADDITIONAL_CLASSES_BDA_SUFFIX = ".additionalClasses";
     public static final String BOOTSTRAP_CLASSLOADER_BDA_ID = "bootstrapBDA" + ADDITIONAL_CLASSES_BDA_SUFFIX;
@@ -150,20 +150,13 @@ public class WeldDeployment implements Deployment {
     }
 
     /** {@inheritDoc} */
-    public synchronized BeanDeploymentArchive loadBeanDeploymentArchive(Class<?> beanClass) {
-        if (beanDeploymentsByClassName.containsKey(beanClass.getName())) {
-            return beanDeploymentsByClassName.get(beanClass.getName());
+    public synchronized BeanDeploymentArchive loadBeanDeploymentArchive(final Class<?> beanClass) {
+        final BeanDeploymentArchive bda = this.getBeanDeploymentArchive(beanClass);
+        if (bda != null) {
+            return bda;
         }
         /*
-         * We haven't found this class in a bean archive so apparently it was added by an extension and the class itself does
-         * not come from a BDA. Before we create a new BDA, let's try to find an existing BDA that uses the same classloader
-         * (and thus has the required accessibility to other BDAs)
-         */
-        if (additionalBeanDeploymentArchivesByClassloader.containsKey(beanClass.getClassLoader())) {
-            return additionalBeanDeploymentArchivesByClassloader.get(beanClass.getClassLoader());
-        }
-        /*
-         * No, there is no BDA for the class' classloader yet. Let's create one.
+         * No, there is no BDA for the class yet. Let's create one.
          */
         return createAndRegisterAdditionalBeanDeploymentArchive(beanClass);
     }
@@ -211,5 +204,21 @@ public class WeldDeployment implements Deployment {
         for (BeanDeploymentArchiveImpl bda : additionalBeanDeploymentArchivesByClassloader.values()) {
             bda.getServices().add(type, service);
         }
+    }
+
+    @Override
+    public synchronized BeanDeploymentArchive getBeanDeploymentArchive(final Class<?> beanClass) {
+        if (beanDeploymentsByClassName.containsKey(beanClass.getName())) {
+            return beanDeploymentsByClassName.get(beanClass.getName());
+        }
+        /*
+         * We haven't found this class in a bean archive so apparently it was added by an extension and the class itself does
+         * not come from a BDA. Let's try to find an existing BDA that uses the same classloader
+         * (and thus has the required accessibility to other BDAs)
+         */
+        if (additionalBeanDeploymentArchivesByClassloader.containsKey(beanClass.getClassLoader())) {
+            return additionalBeanDeploymentArchivesByClassloader.get(beanClass.getClassLoader());
+        }
+        return null;
     }
 }
