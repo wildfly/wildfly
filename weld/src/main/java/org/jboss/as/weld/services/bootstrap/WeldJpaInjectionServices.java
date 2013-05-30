@@ -81,7 +81,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         return new ResourceReferenceFactory<EntityManager>() {
             @Override
             public ResourceReference<EntityManager> createResource() {
-                final TransactionScopedEntityManager result = new TransactionScopedEntityManager(scopedPuName, new HashMap<Object, Object>(), persistenceUnitService.getEntityManagerFactory(), context.synchronizationType());
+                final TransactionScopedEntityManager result = new TransactionScopedEntityManager(scopedPuName, new HashMap<Object, Object>(), persistenceUnitService.getEntityManagerFactory(), context.synchronization());
                 return new SimpleResourceReference<EntityManager>(result);
             }
         };
