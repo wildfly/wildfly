@@ -48,15 +48,23 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Validate the <distributable/> works for a two-node cluster.
+ * Test xsite functionality on a 4-node, 3-site test deployment:
+ *
+ * sites:
+ *   LON: {LON-0, LON-1}  // maps to CONTAINER_1/CONTAINER_2 (see arquillian.xml)
+ *   NYC: {NYC-0}         // maps to CONTAINER_3 (see arquillian.xml)
+ *   SFO: {SFO-0}         // maps to CONTAINER_4 (see arquillian.xml)
+ *
+ * routes:
+ *   LON -> NYC,SFO
+ *   NYC -> LON
+ *   SFO -> LON
  *
  * @author Richard Achmatowicz
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
-
-    private static final int REQUEST_DURATION = 10000;
 
     @Deployment(name = DEPLOYMENT_1, managed = false)
     @TargetsContainer(CONTAINER_1)
@@ -97,10 +105,16 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
         deploy(XSITE_DEPLOYMENTS);
     }
 
-
+    /*
+     * Tests that puts get relayed to their backup sites
+     *
+     * Put the key-value (a,100) on LON-0 on site LON and check that the key-value pair:
+     *   arrives at LON-1 on site LON
+     *   arrives at NYC-0 on site NYC
+     *   arrives at SFO-0 on site SFO
+     */
     @Test
-    @OperateOnDeployment(DEPLOYMENT_1) // For change, operate on the 2nd deployment first
-    public void testSitePutRelayedToBackupSite(
+    public void testPutRelayedToBackups(
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3,
@@ -116,38 +130,84 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
         String url4 = baseURL4.toString() + "cache?operation=get&key=a";
 
         try {
-            // put a value to siteA-node0
+            // put a value to LON-0
             System.out.println("Executing HTTP request: " + url1);
             HttpResponse response = client.execute(new HttpGet(url1));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             response.getEntity().getContent().close();
+            System.out.println("Executed HTTP request");
 
             // Lets wait for the session to replicate
             waitForReplication(GRACE_TIME_TO_REPLICATE);
 
-            // do a get on siteA-node1
-
-            // Note that this DOES rely on the fact that both servers are running on the "same" domain,
-            // which is '127.0.0.0'. Otherwise you will have to spoof cookies. @Rado
+            // do a get on LON-1
             System.out.println("Executing HTTP request: " + url2);
             response = client.execute(new HttpGet(url2));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(100, Integer.parseInt(response.getFirstHeader("value").getValue()));
             response.getEntity().getContent().close();
+            System.out.println("Executed HTTP request");
 
-            // do a get on siteB-node0
+            // do a get on NYC-0
             System.out.println("Executing HTTP request: " + url3);
             response = client.execute(new HttpGet(url3));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(100, Integer.parseInt(response.getFirstHeader("value").getValue()));
             response.getEntity().getContent().close();
+            System.out.println("Executed HTTP request");
 
-            // do a get on siteB-node1
+            // do a get on SFO-0
             System.out.println("Executing HTTP request: " + url4);
             response = client.execute(new HttpGet(url4));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(100, Integer.parseInt(response.getFirstHeader("value").getValue()));
             response.getEntity().getContent().close();
+            System.out.println("Executed HTTP request");
+        } finally {
+            client.getConnectionManager().shutdown();
+        }
+    }
+
+
+    /*
+     * Tests that puts at the backup caches do not get relayed back to the origin cache.
+     *
+     * Put the key-value (b,200) on NYC-0 on site NYC and check that the key-value pair:
+     *   does not arrive at LON-0 on site LON
+     */
+    @Test
+    public void testPutToBackupNotRelayed(
+            @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+            @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
+            @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3,
+            @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_4) URL baseURL4)
+
+            throws IllegalStateException, IOException, InterruptedException {
+
+        DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
+
+        String url1 = baseURL1.toString() + "cache?operation=get&key=b";
+        String url3 = baseURL3.toString() + "cache?operation=put&key=b&value=200";
+
+        try {
+            // put a value to NYC-0
+            System.out.println("Executing HTTP request: " + url3);
+            HttpResponse response = client.execute(new HttpGet(url3));
+            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            response.getEntity().getContent().close();
+            System.out.println("Executed HTTP request");
+
+            // Lets wait for the session to replicate
+            waitForReplication(GRACE_TIME_TO_REPLICATE);
+
+            // do a get on LON-1 - this should fail
+            System.out.println("Executing HTTP request: " + url1);
+            response = client.execute(new HttpGet(url1));
+            Assert.assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, response.getStatusLine().getStatusCode());
+            // Assert.assertEquals(500, Integer.parseInt(response.getFirstHeader("value").getValue()));
+            response.getEntity().getContent().close();
+            System.out.println("Executed HTTP request");
+
         } finally {
             client.getConnectionManager().shutdown();
         }

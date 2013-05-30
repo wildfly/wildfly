@@ -26,6 +26,10 @@ import java.io.IOException;
 import java.io.Serializable;
 
 import javax.annotation.Resource;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -51,10 +55,36 @@ public class CacheAccessServlet extends HttpServlet {
     private final String PUT = "put";
     private final String KEY = "key";
     private final String VALUE = "value";
+    private final String DEFAULT_CACHE_NAME = "java:jboss/infinispan/cache/web/repl";
+
     public static final String URL = "cache";
 
-    @Resource(lookup="java:jboss/infinispan/cache/web/repl")
+    // default is java:jboss/infinispan/cache/web/repl
+    @Resource
     Cache<String,Custom> cache;
+
+    @Override
+    public void init() throws ServletException {
+
+        // get the JNDI name of the cache we shall access
+        ServletConfig sc = getServletConfig();
+        String cacheJNDIName = sc.getInitParameter("cache-name");
+        if (cacheJNDIName == null) {
+            cacheJNDIName = DEFAULT_CACHE_NAME ;
+        }
+
+        Context ctx = null ;
+        try {
+            ctx = (Context)new InitialContext();
+            cache = (Cache<String,Custom>) ctx.lookup(cacheJNDIName);
+            if (cache == null) {
+                throw new ServletException(String.format("Unable to access cache with JNDI name '%s'", cacheJNDIName));
+            }
+        }
+        catch(NamingException ne) {
+            throw new ServletException(String.format("Problem looking up name for cache '%s'", cacheJNDIName));
+        }
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
