@@ -4338,6 +4338,33 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <dependency>
+                <groupId>org.jipijapa</groupId>
+                <artifactId>jipijapa-hibernate4-1</artifactId>
+                <version>${version.org.jipijapa}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-entitymanager</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-infinispan</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jipijapa</groupId>
+                <artifactId>jipijapa-eclipselink</artifactId>
+                <version>${version.org.jipijapa}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.jipijapa</groupId>
                 <artifactId>jipijapa-openjpa</artifactId>

@@ -1264,6 +1264,16 @@
 
                 <dependency>
                     <groupId>org.jipijapa</groupId>
+                    <artifactId>jipijapa-hibernate4-1</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jipijapa</groupId>
+                    <artifactId>jipijapa-eclipselink</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jipijapa</groupId>
                     <artifactId>jipijapa-openjpa</artifactId>
                 </dependency>
 
@@ -2281,6 +2291,8 @@
                                         <exclude>org.wildfly:wildfly-jpa</exclude>
                                         <exclude>org.jipijapa:jipijapa-hibernate3</exclude>
                                         <exclude>org.jipijapa:jipijapa-hibernate4-3</exclude>
+                                        <exclude>org.jipijapa:jipijapa-hibernate4-1</exclude>
+                                        <exclude>org.jipijapa:jipijapa-eclipselink</exclude>
                                         <exclude>org.jipijapa:jipijapa-openjpa</exclude>
                                         <exclude>org.jipijapa:jipijapa-spi</exclude>
                                         <exclude>org.wildfly:wildfly-jpa-util</exclude>

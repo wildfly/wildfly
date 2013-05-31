@@ -22,15 +22,14 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<!-- Represents the Hibernate 4.3.x module-->
-<module xmlns="urn:jboss:module:1.1" name="org.hibernate">
+<!-- Represents the Hibernate 4.1.x (works with Hibernate 4.2.x jars also) module  -->
+<module xmlns="urn:jboss:module:1.1" name="org.hibernate" slot="4.1">
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
         <module name="asm.asm"/>
-        <module name="com.fasterxml.classmate"/>
         <module name="javax.api"/>
         <module name="javax.annotation.api"/>
         <module name="javax.enterprise.api"/>
@@ -48,6 +47,6 @@
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.vfs"/>
-	    <module name="org.hibernate.commons-annotations"/>
+        <module name="org.hibernate.commons-annotations"/>
     </dependencies>
 </module>
