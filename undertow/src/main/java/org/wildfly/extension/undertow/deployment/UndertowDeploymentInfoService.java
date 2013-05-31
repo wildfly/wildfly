@@ -90,6 +90,7 @@ import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.server.deployment.SetupAction;
+import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.WebInjectionContainer;
 import org.jboss.marshalling.ClassResolver;
@@ -171,6 +172,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final String contextPath;
     private final List<SetupAction> setupActions;
     private final Set<VirtualFile> overlays;
+    private final List<ExpressionFactoryWrapper> expressionFactoryWrappers;
 
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
     private final InjectedValue<DistributedCacheManagerFactory> distributedCacheManagerFactoryInjectedValue = new InjectedValue<DistributedCacheManagerFactory>();
@@ -178,7 +180,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<ServletContainerService> container = new InjectedValue<>();
     private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
 
-    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final WebInjectionContainer injectionContainer, final ComponentRegistry componentRegistry, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays) {
+    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final WebInjectionContainer injectionContainer, final ComponentRegistry componentRegistry, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers) {
         this.mergedMetaData = mergedMetaData;
         this.deploymentName = deploymentName;
         this.tldsMetaData = tldsMetaData;
@@ -194,6 +196,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         this.contextPath = contextPath;
         this.setupActions = setupActions;
         this.overlays = overlays;
+        this.expressionFactoryWrappers = expressionFactoryWrappers;
     }
 
     @Override
@@ -355,6 +358,13 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             final Set<String> jspPropertyGroupMappings = propertyGroups.keySet();
             for (final String mapping : jspPropertyGroupMappings) {
                 jspServlet.addMapping(mapping);
+            }
+
+
+            //setup JSP expression factory wrapper
+            if (!expressionFactoryWrappers.isEmpty()) {
+                d.addListener(new ListenerInfo(JspInitializationListener.class));
+                d.addServletContextAttribute(JspInitializationListener.CONTEXT_KEY, expressionFactoryWrappers);
             }
 
             d.setClassIntrospecter(new ComponentClassIntrospector(componentRegistry));
@@ -986,6 +996,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         private String securityDomain;
         private List<SetupAction> setupActions;
         private Set<VirtualFile> overlays;
+        private List<ExpressionFactoryWrapper> expressionFactoryWrappers;
 
         Builder setMergedMetaData(final JBossWebMetaData mergedMetaData) {
             this.mergedMetaData = mergedMetaData;
@@ -1062,8 +1073,13 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             return this;
         }
 
+        public Builder setExpressionFactoryWrappers(final List<ExpressionFactoryWrapper> expressionFactoryWrappers) {
+            this.expressionFactoryWrappers = expressionFactoryWrappers;
+            return this;
+        }
+
         public UndertowDeploymentInfoService createUndertowDeploymentInfoService() {
-            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, injectionContainer, componentRegistry, scisMetaData, deploymentRoot, securityContextId, securityDomain, attributes, contextPath, setupActions, overlays);
+            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, injectionContainer, componentRegistry, scisMetaData, deploymentRoot, securityContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers);
         }
     }
 

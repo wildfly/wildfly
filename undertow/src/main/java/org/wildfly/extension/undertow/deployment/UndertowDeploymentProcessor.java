@@ -24,7 +24,6 @@
 
 package org.wildfly.extension.undertow.deployment;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -47,7 +46,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
-import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.metadata.web.spec.TldMetaData;
 import org.wildfly.extension.undertow.BufferCacheService;
 import org.wildfly.extension.undertow.DeploymentDefinition;
@@ -156,18 +154,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             componentRegistry = new ComponentRegistry(null);
         }
 
-        //setup JSP expression factory wrapper
-        List<ExpressionFactoryWrapper> wrappers = deploymentUnit.getAttachmentList(ExpressionFactoryWrapper.ATTACHMENT_KEY);
-        if (!wrappers.isEmpty()) {
-            if (metaData.getListeners() == null) {
-                metaData.setListeners(new ArrayList<ListenerMetaData>());
-            }
-            final ListenerMetaData listenerMetaData = new ListenerMetaData();
-            listenerMetaData.setListenerClass(JspInitializationListener.class.getName());
-            metaData.getListeners().add(listenerMetaData);
-            deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(JspInitializationListener.CONTEXT_KEY, wrappers));
-        }
-
         final WebInjectionContainer injectionContainer = new WebInjectionContainer(module.getClassLoader(), componentRegistry);
 
         String securityContextId = deploymentUnit.getName();
@@ -209,6 +195,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .setTldsMetaData(tldsMetaData)
                 .setSetupActions(setupActions)
                 .setOverlays(warMetaData.getOverlays())
+                .setExpressionFactoryWrappers(deploymentUnit.getAttachmentList(ExpressionFactoryWrapper.ATTACHMENT_KEY))
                 .createUndertowDeploymentInfoService();
 
         final ServiceName deploymentInfoServiceName = deploymentServiceName.append(UndertowDeploymentInfoService.SERVICE_NAME);

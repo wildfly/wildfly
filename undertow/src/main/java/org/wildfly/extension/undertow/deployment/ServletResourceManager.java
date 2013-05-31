@@ -36,11 +36,13 @@ public class ServletResourceManager implements ResourceManager {
         if (p.startsWith("/")) {
             p = p.substring(1);
         }
-        for (VirtualFile overlay : overlays) {
-            VirtualFile child = overlay.getChild(p);
-            if (child.exists()) {
-                URL url = child.toURL();
-                return new URLResource(url, url.openConnection());
+        if(overlays != null) {
+            for (VirtualFile overlay : overlays) {
+                VirtualFile child = overlay.getChild(p);
+                if (child.exists()) {
+                    URL url = child.toURL();
+                    return new URLResource(url, url.openConnection());
+                }
             }
         }
         return null;
