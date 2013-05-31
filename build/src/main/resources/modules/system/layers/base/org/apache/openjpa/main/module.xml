@@ -22,4 +22,12 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module-alias xmlns="urn:jboss:module:1.1" name="org.hibernate.envers" target-name="org.hibernate"/>
+<!-- Represents the OpenJPA module  -->
+<module xmlns="urn:jboss:module:1.1" name="org.apache.openjpa">
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
+
+    <dependencies>
+    </dependencies>
+</module>
