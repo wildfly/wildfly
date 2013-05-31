@@ -25,6 +25,7 @@ import java.util.Date;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -58,6 +59,7 @@ public class SimpleTimerServiceTestCase {
     }
 
     @Test
+    @InSequence(1)
     public void testAnnotationTimeoutMethod() throws NamingException {
         InitialContext ctx = new InitialContext();
         AnnotationTimerServiceBean bean = (AnnotationTimerServiceBean) ctx.lookup("java:module/" + AnnotationTimerServiceBean.class.getSimpleName());
@@ -76,6 +78,7 @@ public class SimpleTimerServiceTestCase {
     }
 
     @Test
+    @InSequence(2)
     public void testTimedObjectTimeoutMethod() throws NamingException {
         InitialContext ctx = new InitialContext();
         TimedObjectTimerServiceBean bean = (TimedObjectTimerServiceBean) ctx.lookup("java:module/" + TimedObjectTimerServiceBean.class.getSimpleName());
@@ -96,6 +99,7 @@ public class SimpleTimerServiceTestCase {
     }
 
     @Test
+    @InSequence(3)
     public void testIntervalTimer() throws NamingException {
         InitialContext ctx = new InitialContext();
         TimerConfig timerConfig = new TimerConfig();

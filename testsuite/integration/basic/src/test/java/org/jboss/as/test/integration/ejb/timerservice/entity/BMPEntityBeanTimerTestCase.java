@@ -30,6 +30,7 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -63,6 +64,7 @@ public class BMPEntityBeanTimerTestCase {
     }
 
     @Test
+    @InSequence(1)
     public void testEntityBeanTimerService() throws Exception {
         DataStore.DATA.clear();
         DataStore.DATA.put(20, "Existing");
@@ -89,6 +91,7 @@ public class BMPEntityBeanTimerTestCase {
      * Aimed to test EJB3.1 18.4.5.
      */
     @Test
+    @InSequence(2)
     public void testExistenceAfterDelete() throws Exception {
         DataStore.DATA.clear();
 

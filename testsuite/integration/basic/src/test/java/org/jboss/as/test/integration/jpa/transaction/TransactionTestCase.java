@@ -33,10 +33,10 @@ import javax.persistence.TransactionRequiredException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -79,6 +79,7 @@ public class TransactionTestCase {
     }
 
     @Test
+    @InSequence(1)
     public void testMultipleNonTXTransactionalEntityManagerInvocations() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         sfsb1.getEmployeeNoTX(1);   // For each call in, we will use a transactional entity manager
@@ -89,6 +90,7 @@ public class TransactionTestCase {
     }
 
     @Test
+    @InSequence(2)
     public void testQueryNonTXTransactionalEntityManagerInvocations() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         String name = sfsb1.queryEmployeeNameNoTX(1);
@@ -99,6 +101,7 @@ public class TransactionTestCase {
     // For a transaction scoped persistence context non jta-tx invocation, entities returned from Query
     // must be detached.
     @Test
+    @InSequence(3)
     public void testQueryNonTXTransactionalDetach() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         sfsb1.createEmployee("Jill", "54 Country Lane", 2);
@@ -115,6 +118,7 @@ public class TransactionTestCase {
      * @throws Exception
      */
     @Test
+    @InSequence(4)
     public void testTransactionRequiredException() throws Exception {
         Throwable error = null;
         try {
@@ -143,6 +147,7 @@ public class TransactionTestCase {
      * 3) The transaction fails after the DAO calls and the JTA transaction is rolled back and no database changes should occur.  
      */
     @Test
+    @InSequence(5)
     public void testFailInDAOCalls() throws Exception {
     	SLSB1 slsb1 = lookup("SLSB1", SLSB1.class);
     	slsb1.addEmployee();
@@ -158,6 +163,7 @@ public class TransactionTestCase {
     }
 
     @Test
+    @InSequence(6)
     public void testUserTxRollbackDiscardsChanges() throws Exception {
         SFSBXPC sfsbxpc = lookup("SFSBXPC", SFSBXPC.class);
         sfsbxpc.createEmployeeNoTx("Amory Lorch", "Lannister House", 10);  // create the employee but leave in xpc
@@ -173,6 +179,7 @@ public class TransactionTestCase {
     }
 
     @Test
+    @InSequence(7)
     public void testEnlistXPCInUserTx() throws Exception {
         SFSBXPC sfsbxpc = lookup("SFSBXPC", SFSBXPC.class);
         sfsbxpc.createEmployeeNoTx("Amory Lorch", "Lannister House", 20);  // create the employee but leave in xpc
