@@ -54,7 +54,7 @@ import org.jboss.logmanager.config.PojoConfiguration;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public final class ConfigurationPersistence implements Configurator, LogContextConfiguration {
+public class ConfigurationPersistence implements Configurator, LogContextConfiguration {
 
     private static final Object LOCK = new Object();
     private static final String PROPERTIES_FILE = "logging.properties";
@@ -68,7 +68,11 @@ public final class ConfigurationPersistence implements Configurator, LogContextC
     }
 
     public ConfigurationPersistence(final LogContext logContext) {
-        config = new PropertyConfigurator(logContext);
+        this(new PropertyConfigurator(logContext));
+    }
+
+    public ConfigurationPersistence(final PropertyConfigurator config) {
+        this.config = config;
         delegate = config.getLogContextConfiguration();
     }
 
@@ -90,12 +94,28 @@ public final class ConfigurationPersistence implements Configurator, LogContextC
      */
     public static ConfigurationPersistence getOrCreateConfigurationPersistence(final LogContext logContext) {
         final Logger root = logContext.getLogger(CommonAttributes.ROOT_LOGGER_NAME);
-        ConfigurationPersistence result = (ConfigurationPersistence) root.getAttachment(Configurator.ATTACHMENT_KEY);
-        if (result == null) {
-            result = new ConfigurationPersistence(logContext);
-            ConfigurationPersistence existing = (ConfigurationPersistence) root.attachIfAbsent(Configurator.ATTACHMENT_KEY, result);
-            if (existing != null) {
-                result = existing;
+        final ConfigurationPersistence result;
+        synchronized (LOCK) {
+            Configurator configurator = root.getAttachment(Configurator.ATTACHMENT_KEY);
+            if (configurator == null) {
+                configurator = new ConfigurationPersistence(logContext);
+                Configurator existing = root.attachIfAbsent(Configurator.ATTACHMENT_KEY, configurator);
+                if (existing != null) {
+                    configurator = existing;
+                }
+            }
+            if (configurator instanceof ConfigurationPersistence) {
+                // We have the correct configurator
+                result = (ConfigurationPersistence) configurator;
+            } else if (configurator instanceof PropertyConfigurator) {
+                // Create a new configurator delegating to the configurator found
+                result = new ConfigurationPersistence((PropertyConfigurator) configurator);
+                root.attach(Configurator.ATTACHMENT_KEY, result);
+            } else {
+                // An unknown configurator, log a warning and replace
+                LoggingLogger.ROOT_LOGGER.replacingConfigurator(configurator);
+                result = new ConfigurationPersistence(logContext);
+                root.attach(Configurator.ATTACHMENT_KEY, result);
             }
         }
         return result;
@@ -223,7 +243,7 @@ public final class ConfigurationPersistence implements Configurator, LogContextC
     @Override
     public FilterConfiguration addFilterConfiguration(final String moduleName, final String className, final String filterName, final String... constructorProperties) {
         synchronized (LOCK) {
-            return delegate.addFilterConfiguration(moduleName,  className, filterName, constructorProperties);
+            return delegate.addFilterConfiguration(moduleName, className, filterName, constructorProperties);
         }
     }
 

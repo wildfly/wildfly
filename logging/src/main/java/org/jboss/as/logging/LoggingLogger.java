@@ -34,6 +34,9 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.logging.annotations.Transform;
+import org.jboss.logging.annotations.Transform.TransformType;
+import org.jboss.logmanager.Configurator;
 
 /**
  * This module is using message IDs in the range 11500-11599.
@@ -151,4 +154,13 @@ public interface LoggingLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 11511, value = "Replacing handler '%s' during add operation. Either the handler type or the module name differs from the initial configuration.")
     void replacingNamedHandler(String name);
+
+    /**
+     * Logs a warning message indicating the configurator class is an unknown type and will be replaced.
+     *
+     * @param c the class that is being replaced
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11512, value = "A configurator class, '%s', is not a known configurator and will be replaced.")
+    void replacingConfigurator(@Transform(TransformType.GET_CLASS) Configurator c);
 }
