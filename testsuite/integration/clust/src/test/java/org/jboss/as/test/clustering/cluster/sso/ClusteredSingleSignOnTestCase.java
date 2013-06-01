@@ -51,7 +51,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("AS7-5317")
 public class ClusteredSingleSignOnTestCase {
 
     @ArquillianResource
