@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.List;
@@ -46,15 +47,16 @@ public class JGroupsSubsystemRemove extends AbstractRemoveStepHandler {
     @Override
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        // remove the subsystem first
-        ModelNode removeSubsystem = Util.createOperation(REMOVE, PathAddress.pathAddress(JGroupsExtension.SUBSYSTEM_PATH));
+        final PathAddress opAddress = PathAddress.pathAddress(operation.require(OP_ADDR));
+        // Add a step *on the top of the stack* to actually remove the subsystem resource
+        ModelNode removeSubsystem = Util.createOperation(REMOVE, opAddress);
         context.addStep(removeSubsystem, new OriginalSubsystemRemoveHandler(), OperationContext.Stage.IMMEDIATE);
 
-        // now remove any existing child stacks
+        // Now add steps on top of the one added above to remove any existing child stacks
         if (model.hasDefined(ModelKeys.STACK)) {
             List<Property> stacks = model.get(ModelKeys.STACK).asPropertyList() ;
             for (Property stack: stacks) {
-                PathAddress address = PathAddress.pathAddress(JGroupsExtension.SUBSYSTEM_PATH).append(ModelKeys.STACK, stack.getName());
+                PathAddress address = opAddress.append(ModelKeys.STACK, stack.getName());
                 ModelNode removeStack = Util.createOperation(REMOVE, address);
                 // remove the stack
                 context.addStep(removeStack, ProtocolStackRemove.INSTANCE, OperationContext.Stage.IMMEDIATE);
