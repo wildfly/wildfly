@@ -41,6 +41,7 @@ import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
 
@@ -103,11 +104,19 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
     public void undeploy(DeploymentUnit context) {
     }
 
-    private void addJSFAPI(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
+    private void addJSFAPI(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) throws DeploymentUnitProcessingException {
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
 
         ModuleIdentifier jsfModule = moduleIdFactory.getApiModId(jsfVersion);
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, jsfModule, false, false, false, false));
+        ModuleDependency jsfAPI = new ModuleDependency(moduleLoader, jsfModule, false, false, false, false);
+        moduleSpecification.addSystemDependency(jsfAPI);
+
+        //TODO: Figure out best way to detect JSF 1.1.  Don't add JSFInjection if using JSF 1.1.
+        try {
+        System.out.println("API paths=" + jsfAPI.getModuleLoader().loadModule(jsfModule).getExportedPaths());
+        } catch (ModuleLoadException e) {
+            throw new DeploymentUnitProcessingException(e);
+        }
     }
 
     private void addJSFImpl(String jsfVersion,

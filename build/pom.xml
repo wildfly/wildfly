@@ -1772,13 +1772,18 @@
 
                 <dependency>
                     <groupId>org.jboss.weld</groupId>
-                    <artifactId>weld-core</artifactId>
+                    <artifactId>weld-core-impl</artifactId>
                     <exclusions>
                         <exclusion>
                             <groupId>org.jboss.spec.javax.interceptor</groupId>
                             <artifactId>jboss-interceptors-api_1.1_spec</artifactId>
                         </exclusion>
                     </exclusions>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.weld</groupId>
+                    <artifactId>weld-core-jsf</artifactId>
                 </dependency>
 
                 <dependency>

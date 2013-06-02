@@ -938,6 +938,7 @@
 
         <module-def name="org.jboss.as.jsf-injection">
             <maven-resource group="org.wildfly" artifact="wildfly-jsf-injection" />
+            <maven-resource group="org.jboss.weld" artifact="weld-core-jsf"/>
         </module-def>
 
         <module-def name="org.jboss.as.jsr77">
@@ -1230,7 +1231,7 @@
         </module-def>
 
         <module-def name="org.jboss.weld.core">
-            <maven-resource group="org.jboss.weld" artifact="weld-core"/>
+            <maven-resource group="org.jboss.weld" artifact="weld-core-impl"/>
         </module-def>
 
         <module-def name="org.jboss.weld.api">
