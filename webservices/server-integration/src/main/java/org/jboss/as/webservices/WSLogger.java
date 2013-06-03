@@ -261,4 +261,13 @@ public interface WSLogger extends BasicLogger {
     @LogMessage(level = TRACE)
     @Message(id = 15597, value = "Child '%s' not found for VirtualFile: %s")
     void missingChild(String child, VirtualFile file);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 15600, value = "Cannot register endpoint: %s with JMX server")
+    void cannotRegisterEndpoint(Object endpoint);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 15601, value = "Cannot unregister endpoint:%s with JMX server")
+    void cannotUnregisterEndpoint(Object endpoint);
+
 }
