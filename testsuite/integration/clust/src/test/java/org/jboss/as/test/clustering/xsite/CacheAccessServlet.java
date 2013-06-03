@@ -46,6 +46,15 @@ import org.infinispan.Cache;
  *
  * where keys are Strings and Values are String representations of int.
  *
+ * NOTE: Caches defined in the infinispan subsystem need to be started on demand.
+ * On demand in this case means either:
+ * (i) through deployment of a distributable web app which uses the cache as a session cache
+ * (ii) by way of @Resource(lookup=) which will cause the corresponding JNDI binding instance to be started
+ * and so the cache.
+ *
+ * Cache instances are started in this test case by way of a res-ref in the web.xml file in order to
+ * permit parametrization of the JNDI name.
+ *
  * @author Richard Achmatowicz
  */
 @WebServlet(urlPatterns = {"/cache"})
@@ -60,7 +69,7 @@ public class CacheAccessServlet extends HttpServlet {
     public static final String URL = "cache";
 
     // default is java:jboss/infinispan/cache/web/repl
-    @Resource
+    @Resource(name="TheTargetCache")
     Cache<String,Custom> cache;
 
     @Override
@@ -68,7 +77,7 @@ public class CacheAccessServlet extends HttpServlet {
 
         // get the JNDI name of the cache we shall access
         ServletConfig sc = getServletConfig();
-        String cacheJNDIName = sc.getInitParameter("cache-name");
+        String cacheJNDIName = sc.getInitParameter("jndi-name");
         if (cacheJNDIName == null) {
             cacheJNDIName = DEFAULT_CACHE_NAME ;
         }
