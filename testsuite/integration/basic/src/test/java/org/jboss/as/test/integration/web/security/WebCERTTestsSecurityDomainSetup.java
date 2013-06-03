@@ -96,111 +96,116 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
     }
 
     @Override
-    public void setup(ManagementClient managementClient, String containerId) throws Exception {
-        super.setup(managementClient, containerId);
-        log.debug("start of the domain creation");
+    public void setup(ManagementClient managementClient, String containerId) {
+        try {
+            super.setup(managementClient, containerId);
+            log.debug("start of the domain creation");
 
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        URL keystore = tccl.getResource("security/jsse.keystore");
-        URL roles = getClass().getResource("cert/roles.properties");
+            ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+            URL keystore = tccl.getResource("security/jsse.keystore");
+            URL roles = getClass().getResource("cert/roles.properties");
 
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
-        PathAddress address = PathAddress.pathAddress()
-                .append(SUBSYSTEM, "security")
-                .append(SECURITY_DOMAIN, APP_SECURITY_DOMAIN);
+            final List<ModelNode> updates = new ArrayList<ModelNode>();
+            PathAddress address = PathAddress.pathAddress().append(SUBSYSTEM, "security")
+                    .append(SECURITY_DOMAIN, APP_SECURITY_DOMAIN);
 
-        updates.add(Util.createAddOperation(address));
-        address = address.append(Constants.AUTHENTICATION, Constants.CLASSIC);
-        updates.add(Util.createAddOperation(address));
+            updates.add(Util.createAddOperation(address));
+            address = address.append(Constants.AUTHENTICATION, Constants.CLASSIC);
+            updates.add(Util.createAddOperation(address));
 
-        ModelNode loginModule = Util.createAddOperation(address.append(LOGIN_MODULE, "CertificateRoles"));
-        loginModule.get(CODE).set("CertificateRoles");
-        loginModule.get(FLAG).set("required");
-        ModelNode moduleOptions = loginModule.get(MODULE_OPTIONS);
-        moduleOptions.add("securityDomain", APP_SECURITY_DOMAIN);
-        moduleOptions.add("rolesProperties", roles.getPath());
-        loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            ModelNode loginModule = Util.createAddOperation(address.append(LOGIN_MODULE, "CertificateRoles"));
+            loginModule.get(CODE).set("CertificateRoles");
+            loginModule.get(FLAG).set("required");
+            ModelNode moduleOptions = loginModule.get(MODULE_OPTIONS);
+            moduleOptions.add("securityDomain", APP_SECURITY_DOMAIN);
+            moduleOptions.add("rolesProperties", roles.getPath());
+            loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
 
-        updates.add(loginModule);
+            updates.add(loginModule);
 
-        // Add the JSSE security domain.
-        address = PathAddress.pathAddress()
-                .append(SUBSYSTEM, "security")
-                .append(SECURITY_DOMAIN, APP_SECURITY_DOMAIN);
+            // Add the JSSE security domain.
+            address = PathAddress.pathAddress().append(SUBSYSTEM, "security").append(SECURITY_DOMAIN, APP_SECURITY_DOMAIN);
 
-        ModelNode op = Util.createAddOperation(address.append(JSSE, Constants.CLASSIC));
+            ModelNode op = Util.createAddOperation(address.append(JSSE, Constants.CLASSIC));
 
-        op.get(TRUSTSTORE, PASSWORD).set("changeit");
+            op.get(TRUSTSTORE, PASSWORD).set("changeit");
 
-        op.get(TRUSTSTORE, URL).set(keystore.getPath());
-        op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        updates.add(op);
+            op.get(TRUSTSTORE, URL).set(keystore.getPath());
+            op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            updates.add(op);
 
-        // Add the HTTPS socket binding.
-        op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add("socket-binding-group", "standard-sockets");
-        op.get(OP_ADDR).add("socket-binding", "https-test");
-        op.get("interface").set("public");
-        op.get("port").set(8380);
-        updates.add(op);
+            // Add the HTTPS socket binding.
+            op = new ModelNode();
+            op.get(OP).set(ADD);
+            op.get(OP_ADDR).add("socket-binding-group", "standard-sockets");
+            op.get(OP_ADDR).add("socket-binding", "https-test");
+            op.get("interface").set("public");
+            op.get("port").set(8380);
+            updates.add(op);
 
-        // Add the HTTPS connector.
-        final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
-        final ModelNode steps = composite.get(STEPS);
-        op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "undertow");
-        op.get(OP_ADDR).add("server", "default-server");
-        op.get(OP_ADDR).add("https-listener", "testConnector");
-        op.get("socket-binding").set("https-test");
-        op.get("enabled").set(true);
-        /*op.get("protocol").set("HTTP/1.1");
-        op.get("scheme").set("https");*/
-        /*op.get("secure").set(true);*/
-        op.get("security-realm").set("ssl-cert-realm");
-        steps.add(op);
+            // Add the HTTPS connector.
+            final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
+            final ModelNode steps = composite.get(STEPS);
+            op = new ModelNode();
+            op.get(OP).set(ADD);
+            op.get(OP_ADDR).add(SUBSYSTEM, "undertow");
+            op.get(OP_ADDR).add("server", "default-server");
+            op.get(OP_ADDR).add("https-listener", "testConnector");
+            op.get("socket-binding").set("https-test");
+            op.get("enabled").set(true);
+            /*
+             * op.get("protocol").set("HTTP/1.1"); op.get("scheme").set("https");
+             */
+            /* op.get("secure").set(true); */
+            op.get("security-realm").set("ssl-cert-realm");
+            steps.add(op);
 
-        updates.add(composite);
+            updates.add(composite);
 
-        applyUpdates(managementClient.getControllerClient(), updates);
+            applyUpdates(managementClient.getControllerClient(), updates);
 
-        log.debug("end of the domain creation");
+            log.debug("end of the domain creation");
+        } catch (Exception e) {
+            log.error("Failed to setup domain creation.",e);
+        }
     }
 
     @Override
-    public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+    public void tearDown(ManagementClient managementClient, String containerId) {
+        try {
+            final List<ModelNode> updates = new ArrayList<ModelNode>();
 
-        // remove the security domains.
-        ModelNode op = new ModelNode();
-        op.get(OP).set(REMOVE);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(Constants.SECURITY_DOMAIN, APP_SECURITY_DOMAIN);
-        // Don't rollback when the AS detects the war needs the module
-        op.get(OPERATION_HEADERS, ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-        op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        updates.add(op);
+            // remove the security domains.
+            ModelNode op = new ModelNode();
+            op.get(OP).set(REMOVE);
+            op.get(OP_ADDR).add(SUBSYSTEM, "security");
+            op.get(OP_ADDR).add(Constants.SECURITY_DOMAIN, APP_SECURITY_DOMAIN);
+            // Don't rollback when the AS detects the war needs the module
+            op.get(OPERATION_HEADERS, ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            updates.add(op);
 
+            // remove the HTTPS connector and the socket binding.
+            op = new ModelNode();
+            op.get(OP).set(REMOVE);
+            op.get(OP_ADDR).add(SUBSYSTEM, "undertow");
+            op.get(OP_ADDR).add("server", "default-server");
+            op.get(OP_ADDR).add("https-listener", "testConnector");
+            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            updates.add(op);
 
-        // remove the HTTPS connector and the socket binding.
-        op = new ModelNode();
-        op.get(OP).set(REMOVE);
-        op.get(OP_ADDR).add(SUBSYSTEM, "undertow");
-        op.get(OP_ADDR).add("server", "default-server");
-        op.get(OP_ADDR).add("https-listener", "testConnector");
-        op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        updates.add(op);
+            op = new ModelNode();
+            op.get(OP).set(REMOVE);
+            op.get(OP_ADDR).add("socket-binding-group", "standard-sockets");
+            op.get(OP_ADDR).add("socket-binding", "https-test");
+            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            updates.add(op);
 
-        op = new ModelNode();
-        op.get(OP).set(REMOVE);
-        op.get(OP_ADDR).add("socket-binding-group", "standard-sockets");
-        op.get(OP_ADDR).add("socket-binding", "https-test");
-        op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        updates.add(op);
-
-        applyUpdates(managementClient.getControllerClient(), updates);
-        super.tearDown(managementClient, containerId);
+            applyUpdates(managementClient.getControllerClient(), updates);
+            super.tearDown(managementClient, containerId);
+        } catch (Exception e) {
+            log.error("Failed to clean domain setup.", e);
+        }
     }
 
     @Override
