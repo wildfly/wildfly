@@ -26,8 +26,8 @@ import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
-import org.jboss.as.controller.SimplePersistentResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
@@ -38,12 +38,10 @@ import org.wildfly.extension.undertow.UndertowService;
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
-abstract class Handler extends SimplePersistentResourceDefinition {
-    private String name;
+abstract class Handler extends PersistentResourceDefinition {
 
     protected Handler(String name) {
         super(PathElement.pathElement(name), UndertowExtension.getResolver(Constants.HANDLER, name));
-        this.name = name;
     }
 
     @Override
@@ -53,11 +51,6 @@ abstract class Handler extends SimplePersistentResourceDefinition {
         registerAddOperation(resourceRegistration, add, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
         registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(UndertowService.HANDLER, add), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
 
-    }
-
-    @Override
-    public String getXmlElementName() {
-        return name;
     }
 
     abstract HttpHandler createHandler(final OperationContext context, ModelNode model) throws OperationFailedException;

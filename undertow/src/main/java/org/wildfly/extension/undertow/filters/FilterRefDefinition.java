@@ -27,15 +27,15 @@ import java.util.Collections;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimplePersistentResourceDefinition;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
-public class FilterRefDefinition extends SimplePersistentResourceDefinition {
+public class FilterRefDefinition extends PersistentResourceDefinition {
 
     public static final FilterRefDefinition INSTANCE = new FilterRefDefinition();
 

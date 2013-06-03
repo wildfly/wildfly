@@ -31,14 +31,13 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimplePersistentResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class ServerDefinition extends SimplePersistentResourceDefinition {
+public class ServerDefinition extends PersistentResourceDefinition {
     static final ServerDefinition INSTANCE = new ServerDefinition();
     static final SimpleAttributeDefinition DEFAULT_HOST = new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_HOST, ModelType.STRING)
             .setAllowNull(true)
@@ -50,7 +49,7 @@ public class ServerDefinition extends SimplePersistentResourceDefinition {
             .setDefaultValue(new ModelNode("default"))
             .build();
     static final List<SimpleAttributeDefinition> ATTRIBUTES = Arrays.asList(DEFAULT_HOST, SERVLET_CONTAINER);
-    static final List<SimplePersistentResourceDefinition> CHILDREN = Arrays.asList(
+    static final List<PersistentResourceDefinition> CHILDREN = Arrays.asList(
             AjpListenerResourceDefinition.INSTANCE,
             HttpListenerResourceDefinition.INSTANCE,
             HttpsListenerResourceDefinition.INSTANCE,
@@ -67,9 +66,7 @@ public class ServerDefinition extends SimplePersistentResourceDefinition {
     }
 
     @Override
-    public List<? extends PersistentResourceDefinition> getChildren() {
-        //noinspection unchecked
+    protected List<? extends PersistentResourceDefinition> getChildren() {
         return CHILDREN;
     }
-
 }

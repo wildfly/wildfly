@@ -174,7 +174,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
                         if (!found) {
                             ServerLogger.DEPLOYMENT_LOGGER.classPathEntryNotValid(item, resourceRoot.getRoot().getPathName());
                         } else {
-                            handlingExistingClassPathEntry(deploymentUnit, resourceRoots, topLevelDeployment, topLevelRoot, subDeployments, additionalModules, existingAccessibleRoots, resourceRoot, target, classPathFile);
+                            handlingExistingClassPathEntry(resourceRoots, topLevelDeployment, topLevelRoot, subDeployments, additionalModules, existingAccessibleRoots, resourceRoot, target, classPathFile);
                         }
                     } else if (topLevelClassPathFile.exists()) {
                         boolean found = false;
@@ -188,7 +188,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
                         if (!found) {
                             ServerLogger.DEPLOYMENT_LOGGER.classPathEntryNotValid(item, resourceRoot.getRoot().getPathName());
                         } else {
-                            handlingExistingClassPathEntry(deploymentUnit, resourceRoots, topLevelDeployment, topLevelRoot, subDeployments, additionalModules, existingAccessibleRoots, resourceRoot, target, topLevelClassPathFile);
+                            handlingExistingClassPathEntry(resourceRoots, topLevelDeployment, topLevelRoot, subDeployments, additionalModules, existingAccessibleRoots, resourceRoot, target, topLevelClassPathFile);
                         }
                     } else {
                         ServerLogger.DEPLOYMENT_LOGGER.classPathEntryNotValid(item, resourceRoot.getRoot().getPathName());
@@ -198,7 +198,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
         }
     }
 
-    private void handlingExistingClassPathEntry(final DeploymentUnit deploymentUnit, final ArrayDeque<RootEntry> resourceRoots, final DeploymentUnit topLevelDeployment, final VirtualFile topLevelRoot, final Map<VirtualFile, ResourceRoot> subDeployments, final Map<VirtualFile, AdditionalModuleSpecification> additionalModules, final Set<VirtualFile> existingAccessibleRoots, final ResourceRoot resourceRoot, final Attachable target, final VirtualFile classPathFile) throws DeploymentUnitProcessingException {
+    private void handlingExistingClassPathEntry(final ArrayDeque<RootEntry> resourceRoots, final DeploymentUnit topLevelDeployment, final VirtualFile topLevelRoot, final Map<VirtualFile, ResourceRoot> subDeployments, final Map<VirtualFile, AdditionalModuleSpecification> additionalModules, final Set<VirtualFile> existingAccessibleRoots, final ResourceRoot resourceRoot, final Attachable target, final VirtualFile classPathFile) throws DeploymentUnitProcessingException {
         if (existingAccessibleRoots.contains(classPathFile)) {
             ServerLogger.DEPLOYMENT_LOGGER.debugf("Class-Path entry %s in %s ignored, as target is already accessible", classPathFile, resourceRoot.getRoot());
         } else if (additionalModules.containsKey(classPathFile)) {
@@ -219,8 +219,6 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
 
     private ModuleIdentifier createAdditionalModule(final ResourceRoot resourceRoot, final DeploymentUnit topLevelDeployment, final VirtualFile topLevelRoot, final Map<VirtualFile, AdditionalModuleSpecification> additionalModules, final VirtualFile classPathFile, final ArrayDeque<RootEntry> resourceRoots) throws DeploymentUnitProcessingException {
         final ResourceRoot root = createResourceRoot(classPathFile);
-
-
         final String pathName = root.getRoot().getPathNameRelativeTo(topLevelRoot);
         ModuleIdentifier identifier = ModuleIdentifier.create(ServiceModuleLoader.MODULE_PREFIX + topLevelDeployment.getName() + "." + pathName);
         AdditionalModuleSpecification module = new AdditionalModuleSpecification(identifier, root);

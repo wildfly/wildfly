@@ -31,19 +31,18 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimplePersistentResourceDefinition;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
-public class FilterDefinitions extends SimplePersistentResourceDefinition {
+public class FilterDefinitions extends PersistentResourceDefinition {
 
     public static final FilterDefinitions INSTANCE = new FilterDefinitions();
-    private static List<? extends SimplePersistentResourceDefinition> FILTERS = Collections.unmodifiableList(Arrays.asList(
-            new BasicAuthHandler(),
-            new ConnectionLimitHandler()
+    private static List<? extends PersistentResourceDefinition> FILTERS = Collections.unmodifiableList(Arrays.asList(
+            BasicAuthHandler.INSTANCE,
+            ConnectionLimitHandler.INSTANCE
     ));
 
     private FilterDefinitions() {
@@ -57,11 +56,6 @@ public class FilterDefinitions extends SimplePersistentResourceDefinition {
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return Collections.emptySet();
-    }
-
-    @Override
-    public String getXmlElementName() {
-        return "filters";
     }
 
     @Override

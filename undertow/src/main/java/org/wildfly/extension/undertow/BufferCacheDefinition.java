@@ -28,10 +28,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimplePersistentResourceDefinition;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelType;
@@ -39,7 +39,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class BufferCacheDefinition extends SimplePersistentResourceDefinition {
+public class BufferCacheDefinition extends PersistentResourceDefinition {
     protected static final SimpleAttributeDefinition BUFFER_SIZE = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_SIZE, ModelType.INT)
             .setAllowNull(false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
@@ -68,10 +68,5 @@ public class BufferCacheDefinition extends SimplePersistentResourceDefinition {
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return (Collection) ATTRIBUTES;
-    }
-
-    @Override
-    public String getXmlWrapperElement() {
-        return Constants.BUFFER_CACHES;
     }
 }

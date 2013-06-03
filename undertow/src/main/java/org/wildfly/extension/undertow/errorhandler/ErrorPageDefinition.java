@@ -36,18 +36,18 @@ import org.wildfly.extension.undertow.Constants;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-class ErrorPageDefinition extends AbstractHandlerDefinition {
+public class ErrorPageDefinition extends AbstractHandlerDefinition {
 
-    static final ErrorPageDefinition INSTANCE = new ErrorPageDefinition();
-    private static final AttributeDefinition CODE = new SimpleAttributeDefinitionBuilder("code", ModelType.INT)
+    public static final ErrorPageDefinition INSTANCE = new ErrorPageDefinition();
+    public static final AttributeDefinition CODE = new SimpleAttributeDefinitionBuilder("code", ModelType.INT)
             .setAllowExpression(true)
             .setAllowNull(true)
             .build();
-    private static final AttributeDefinition PATH = new SimpleAttributeDefinitionBuilder("path", ModelType.STRING)
+    public static final AttributeDefinition PATH = new SimpleAttributeDefinitionBuilder("path", ModelType.STRING)
             .setAllowExpression(true)
             .setAllowNull(true)
             .build();
-    private static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(CODE, PATH));
+    public static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(CODE, PATH));
 
     private ErrorPageDefinition() {
         super(Constants.ERROR_PAGE);

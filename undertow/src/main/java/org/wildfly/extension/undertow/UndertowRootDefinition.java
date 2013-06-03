@@ -31,7 +31,6 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimplePersistentResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.wildfly.extension.undertow.errorhandler.ErrorHandlerDefinitions;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
@@ -42,7 +41,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-class UndertowRootDefinition extends SimplePersistentResourceDefinition {
+class UndertowRootDefinition extends PersistentResourceDefinition {
     public static final UndertowRootDefinition INSTANCE = new UndertowRootDefinition();
     protected static final SimpleAttributeDefinition DEFAULT_VIRTUAL_HOST =
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_VIRTUAL_HOST, ModelType.STRING, true)

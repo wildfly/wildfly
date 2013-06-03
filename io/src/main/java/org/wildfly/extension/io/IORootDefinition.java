@@ -24,19 +24,25 @@
 
 package org.wildfly.extension.io;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimplePersistentResourceDefinition;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-class IORootDefinition extends SimplePersistentResourceDefinition {
+class IORootDefinition extends PersistentResourceDefinition {
     static final IORootDefinition INSTANCE = new IORootDefinition();
 
+    static final PersistentResourceDefinition[] CHILDREN = {
+            WorkerResourceDefinition.INSTANCE,
+            BufferPoolResourceDefinition.INSTANCE
+        };
 
     private IORootDefinition() {
         super(IOExtension.SUBSYSTEM_PATH,
@@ -48,5 +54,10 @@ class IORootDefinition extends SimplePersistentResourceDefinition {
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return Collections.emptySet();
+    }
+
+    @Override
+    protected List<? extends PersistentResourceDefinition> getChildren() {
+        return Arrays.asList(CHILDREN);
     }
 }

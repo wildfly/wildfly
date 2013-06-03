@@ -30,15 +30,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimplePersistentResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.xnio.Options;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-class WorkerResourceDefinition extends SimplePersistentResourceDefinition {
+class WorkerResourceDefinition extends PersistentResourceDefinition {
     //The defaults for these come from XnioWorker
 
     /*static final OptionAttributeDefinition THREAD_DAEMON = new OptionAttributeDefinition.Builder(Constants.THREAD_DAEMON, Options.THREAD_DAEMON)
