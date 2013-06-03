@@ -89,6 +89,7 @@ call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\as\protocol
 call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\dmr\main"
 call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\as\controller-client\main"
 call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\jboss\threads\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\wildfly\security\manager\main"
 
 rem echo %CLASSPATH%
 
