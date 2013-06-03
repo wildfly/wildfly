@@ -64,7 +64,7 @@ public class InterceptorLifecycleSFSBTestCase {
         InitialContext ctx = new InitialContext();
         InterceptedWithProceedSLSB bean = (InterceptedWithProceedSLSB)ctx.lookup("java:module/" + InterceptedWithProceedSLSB.class.getSimpleName());
         bean.doStuff();
-        Assert.assertTrue(LifecycleInterceptorNoProceed.postConstruct);
+        Assert.assertTrue(LifecycleInterceptorWithProceed.postConstruct);
         Assert.assertTrue(bean.isPostConstructCalled());
     }
 
