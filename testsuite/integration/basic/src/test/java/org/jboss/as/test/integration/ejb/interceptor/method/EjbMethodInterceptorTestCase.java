@@ -52,6 +52,8 @@ public class EjbMethodInterceptorTestCase {
         final InitialContext ctx = new InitialContext();
         final ClassifiedBean bean = (ClassifiedBean) ctx.lookup("java:module/" + ClassifiedBean.class.getSimpleName());
 
+        TopSecretInterceptor.called = false;
+        SecretInterceptor.called = false;
         final String secret = bean.secretMethod();
         Assert.assertEquals("Secret", secret);
         Assert.assertTrue(SecretInterceptor.called);
