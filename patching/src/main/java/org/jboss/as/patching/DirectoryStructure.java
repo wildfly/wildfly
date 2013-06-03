@@ -34,47 +34,36 @@ import static org.jboss.as.patching.Constants.STANDALONE;
 
 import java.io.File;
 
+import org.jboss.as.patching.installation.AddOn;
 import org.jboss.as.patching.installation.InstalledImage;
+import org.jboss.as.patching.installation.Layer;
 
 /**
  * The patching directory structure.
  *
  * <pre>
  * <code>
+ *
  * ${JBOSS_HOME}
- * |
  * |-- bin
  * |-- bundles
- * |   |-- layers.conf
- * |   |-- system
+ * |   |-- system (system bundles contains only bundles, no patches metadata)
  * |   |   |-- layers
- * |   |   |   | -- xyz
- * |   |   |   |   `-- .patches (overlay directory)
- * |   |   |   |       |-- cumulative (cumulative link)
- * |   |   |   |       |-- references
- * |   |   |   |       |   `-- patch-xyz-1 (list of one-off patches)
+ * |   |   |   |-- xyz
+ * |   |   |   |   `-- patches (overlay directory)
  * |   |   |   |       |-- patch-xyz-1
  * |   |   |   |       `-- patch-xyz-2
  * |   |   |   |-- vuw
- * |   |   |   |   `-- .patches (overlay directory)
- * |   |   |   |       |-- cumulative (cumulative link)
- * |   |   |   |       |-- references
- * |   |   |   |       |   `-- patch-vuw-1 (list of one-off patches)
+ * |   |   |   |   `-- patches (overlay directory)
  * |   |   |   |       `-- patch-vuw-1
  * |   |   |   `-- base
- * |   |   |       |-- .patches (overlay directory)
- * |   |   |       |   |-- cumulative (cumulative link)
- * |   |   |       |   |-- references
- * |   |   |       |   |   `-- patch-base-1 (list of one-off patches)
+ * |   |   |       |-- patches (overlay directory)
  * |   |   |       |   |-- patch-base-1
  * |   |   |       |   `-- patch-base-2
  * |   |   |       `-- org/jboss/as/osgi
  * |   |   `-- add-ons
  * |   |       `-- def
- * |   |           `-- .patches (overlay directory)
- * |   |               |-- cumulative (cumulative link)
- * |   |               |-- references
- * |   |               |   `-- patch-def-1 (list of one-off patches)
+ * |   |           `-- patches (overlay directory)
  * |   |               |-- patch-def-1
  * |   |               `-- patch-def-2
  * |   |
@@ -82,55 +71,93 @@ import org.jboss.as.patching.installation.InstalledImage;
  * |
  * |-- docs
  * |-- modules
- * |   |-- layers.conf  (vuw,xyz,base)
- * |   |-- system
+ * |   |-- layers.conf (xyz,vuw)
+ * |   |-- system (system modules contains only modules, no patches metadata)
  * |   |   |-- layers
- * |   |   |   | -- xyz
- * |   |   |   |    `-- .patches (overlay directory)
- * |   |   |   |       |-- cumulative (cumulative link)
- * |   |   |   |       |-- references
- * |   |   |   |       |   `-- patch-xyz-1 (list of one-off patches)
+ * |   |   |   |-- xyz
+ * |   |   |   |    `-- patches (overlay directory)
  * |   |   |   |       |-- patch-xyz-1
  * |   |   |   |       `-- patch-xyz-2
  * |   |   |   |-- vuw
- * |   |   |   |    `-- .patches   (overlay directory)
- * |   |   |   |       |-- cumulative (cumulative link)
- * |   |   |   |       |-- references
- * |   |   |   |       |   `-- patch-vuw-1 (list of one-off patches)
+ * |   |   |   |    `-- patches (overlay directory)
  * |   |   |   |        `-- patch-vuw-1
  * |   |   |   ` -- base
- * |   |   |        |-- .patches   (overlay directory)
- * |   |   |        |   |-- cumulative (links to given patchId)
- * |   |   |        |   |-- references
- * |   |   |        |   |   `-- patch-base-1 (list of one-off patches)
+ * |   |   |        |-- patches (overlay directory)
  * |   |   |        |   |-- patch-base-1
  * |   |   |        |   `-- patch-base-2
  * |   |   |        |-- org/jboss/as/...
  * |   |   |        `-- org/jboss/as/server/main/module.xml
- * |   |   |
  * |   |   `-- add-ons
  * |   |       `-- def
- * |   |           `-- .patches    (overlay directory)
+ * |   |           `-- patches (overlay directory)
  * |   |               |-- patch-def-1
  * |   |               `-- patch-def-2
  * |   |
  * |   `-- my/own/module/root/repo
  * |
- * |-- .installation               (metadata directory)
- * |   |-- cumulative              (patchId for the identity)
+ * |-- .installation (metadata directory for the installation)
+ * |   |-- cumulative (cumulative link for the installed identity)
  * |   |-- references
- * |   |   `-- patch-identity-1    (list of one-off patches)
- * |   `-- patches                 (history dir)
- * |       `-- patch-identity-1
- * |           |-- patch.xml
- * |           |-- rollback.xml
- * |           |-- timestamp
- * |           |-- configuration   (configuration backup)
- * |           `-- misc            (misc backup)
- * |
+ * |   |   `-- patch-identity-1  (list of one-off patches for the installed identity)
+ * |   `-- patches
+ * |       |-- history (history of the patches applied to the identity)
+ * |       |   `-- patch-identity-1
+ * |       |       |-- patch.xml
+ * |       |       |-- rollback.xml
+ * |       |       |-- timestamp
+ * |       |       |-- configuration   (configuration backup)
+ * |       |       `-- misc            (misc backup)
+ * |       |-- layers (metadata for patched layers)
+ * |       |   |-- base
+ * |       |   |   |-- cumulative (cumulative link)
+ * |       |   |   `-- references
+ * |       |   |       |-- patch-base-1 (list of one-off patches)
+ * |       |   |       `-- patch-base-2
+ * |       |   |-- xyz
+ * |       |   |   |-- cumulative
+ * |       |   |   `-- references
+ * |       |   |       |-- patch-xyz-1
+ * |       |   |       `-- patch-xyz-2
+ * |       |   |-- vuw
+ * |       |   |   |-- cumulative
+ * |       |   |   `-- references
+ * |       |   |       `-- patch-vuw-1
+ * |       `-- add-ons (metadata for patched add-ons)
+ * |           `-- def
+ * |               |-- cumulative
+ * |               `-- references
+ * |                  |-- patch-def-1
+ * |                  `-- patch-def-2
  * `-- jboss-modules.jar
  * </code>
  * </pre>
+ *
+ * Algorithm to build the module path when the server boots:
+ *
+ * <ol>
+ *     <li>let paths be a list of File</li>
+ *     <li>for each layer in {@link InstalledImage#getModuleLayersConf()} file and "base":</li>
+ *     <ol>
+ *        <li>read the cumulativeID in {@link Layer#loadTargetInfo()#getCumulativeLink()}</li>
+ *        <li>append {@link Layer#loadTargetInfo()#getModulePatchDirectory(String)} for the cumulativeID (if it exists) to the paths</li>
+ *        <li>for each one-off patchIDs in {@link Layer#loadTargetInfo()#getCumulativeRefs(String)}</li>
+ *        <ol>
+ *            <li>append {@link Layer#loadTargetInfo()#getModulePatchDirectory(String)} (if it exists) to the paths</li>
+ *        </ol>
+ *     </ol>
+ *     <li>for each addOn in {@link InstalledImage#getModulesDir()}}/system/add-ons</li>
+ *     <ol>
+ *        <li>read the cumulativeID in {@link AddOn#loadTargetInfo()#getCumulativeLink()}</li>
+ *        <li>append {@link AddOn#loadTargetInfo()#getModulePatchDirectory(String)} for the cumulativeID (if it exists) to the paths</li>
+ *        <li>for each one-off patchIDs in {@link AddOn#loadTargetInfo()#getCumulativeRefs(String)}</li>
+ *        <ol>
+ *            <li>append {@link AddOn#loadTargetInfo()#getModulePatchDirectory(String)} (if it exists) to the paths</li>
+ *        </ol>
+ *     </ol>
+ *     <li>return paths</li>
+ * </ol>
+ *
+ * Same algorithm applies to build the bundle path.
  *
  * @author Emanuel Muckenhuber
  */
