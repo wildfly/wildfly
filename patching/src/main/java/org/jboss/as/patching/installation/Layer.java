@@ -22,7 +22,35 @@
 
 package org.jboss.as.patching.installation;
 
+import org.jboss.as.patching.DirectoryStructure;
 /**
+ * Layer target info layout:
+ *
+ * <pre><code>
+ *
+ * ${JBOSS_HOME}
+ * |-- bundles
+ * |   `-- system
+ * |       `-- layers
+ * |           `-- &lt;name> => {@link DirectoryStructure#getBundleRepositoryRoot()}
+ * |               `-- patches
+ * |                   `-- &lt;patchId> => {@link DirectoryStructure#getBundlesPatchDirectory(String)}
+ * |-- modules
+ * |   `-- system
+ * |       `-- layers
+ * |           `-- &lt;name> => {@link DirectoryStructure#getModuleRoot()}
+ * |                `-- patches
+ * |                   `-- &lt;patchId> => {@link DirectoryStructure#getModulePatchDirectory(String)}
+ * `-- .installation
+ *     `-- patches
+ *         `-- layers
+ *             `-- &lt;name>
+ *                 |-- cumulative => {@link DirectoryStructure#getCumulativeLink()}
+ *                 `-- references
+ *                     `-- &lt;patchId> => {@link DirectoryStructure#getCumulativeRefs(String)}
+ * <code>
+ * </pre>
+ *
  * @author Emanuel Muckenhuber
  */
 public interface Layer extends PatchableTarget {
@@ -33,5 +61,4 @@ public interface Layer extends PatchableTarget {
      * @return the layer name
      */
     String getName();
-
 }
