@@ -1,26 +1,54 @@
 package org.jboss.as.controller;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import javax.xml.stream.XMLStreamException;
 
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 
 /**
+ * A persistent resource definition. This needs to be combined with {@link PersistentResourceXMLDescription} to
+ * simplify the process of creating parsers and persisters.
+ *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public interface PersistentResourceDefinition extends ResourceDefinition {
-    Collection<AttributeDefinition> getAttributes();
+public abstract class PersistentResourceDefinition extends SimpleResourceDefinition {
 
-    List<? extends PersistentResourceDefinition> getChildren();
+    protected PersistentResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver) {
+        super(pathElement, descriptionResolver);
+    }
 
-    String getXmlElementName();
+    protected PersistentResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
+        super(pathElement, descriptionResolver, addHandler, removeHandler);
+    }
 
-    String getXmlWrapperElement();
+    protected PersistentResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler, OperationEntry.Flag addRestartLevel, OperationEntry.Flag removeRestartLevel) {
+        super(pathElement, descriptionResolver, addHandler, removeHandler, addRestartLevel, removeRestartLevel);
+    }
 
-    void parse(XMLExtendedStreamReader reader, PathAddress parentAddress, List<ModelNode> list) throws XMLStreamException;
 
-    void persist(XMLExtendedStreamWriter writer, ModelNode model) throws XMLStreamException;
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+        for (PersistentResourceDefinition child : getChildren()) {
+            resourceRegistration.registerSubModel(child);
+        }
+    }
+
+    @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        super.registerAttributes(resourceRegistration);
+        ReloadRequiredWriteAttributeHandler handler = new ReloadRequiredWriteAttributeHandler(getAttributes());
+        for (AttributeDefinition attr : getAttributes()) {
+            resourceRegistration.registerReadWriteAttribute(attr, null, handler);
+        }
+    }
+
+    protected List<? extends PersistentResourceDefinition> getChildren() {
+        return Collections.emptyList();
+    }
+
+    public abstract Collection<AttributeDefinition> getAttributes();
 }

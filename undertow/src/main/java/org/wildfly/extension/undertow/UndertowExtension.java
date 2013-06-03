@@ -71,7 +71,7 @@ public class UndertowExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_1_0.getUriString(), UndertowSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_1_0.getUriString(), UndertowSubsystemParser_1_0.INSTANCE);
     }
 
     @Override
@@ -88,7 +88,7 @@ public class UndertowExtension implements Extension {
         final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(DeploymentDefinition.INSTANCE);
         deployments.registerSubModel(DeploymentServletDefinition.INSTANCE);
 
-        subsystem.registerXMLElementWriter(UndertowSubsystemParser.INSTANCE);
+        subsystem.registerXMLElementWriter(UndertowSubsystemParser_1_0.INSTANCE);
     }
 
 

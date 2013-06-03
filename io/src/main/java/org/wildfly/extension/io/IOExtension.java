@@ -57,7 +57,7 @@ public class IOExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.IO_1_0.getUriString(), IOSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.IO_1_0.getUriString(), IOSubsystemParser_1_0.INSTANCE);
     }
 
     @Override
@@ -65,10 +65,7 @@ public class IOExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0, 0);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(IORootDefinition.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE, false);
-        registration.registerSubModel(WorkerResourceDefinition.INSTANCE);
-        registration.registerSubModel(BufferPoolResourceDefinition.INSTANCE);
-
-        subsystem.registerXMLElementWriter(IOSubsystemParser.INSTANCE);
+        subsystem.registerXMLElementWriter(IOSubsystemParser_1_0.INSTANCE);
     }
 
 

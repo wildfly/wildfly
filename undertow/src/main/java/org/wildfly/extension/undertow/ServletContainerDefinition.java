@@ -29,12 +29,11 @@ import java.util.List;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimplePersistentResourceDefinition;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class ServletContainerDefinition extends SimplePersistentResourceDefinition {
+public class ServletContainerDefinition extends PersistentResourceDefinition {
     static final ServletContainerDefinition INSTANCE = new ServletContainerDefinition();
 
     private ServletContainerDefinition() {

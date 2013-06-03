@@ -31,18 +31,17 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimplePersistentResourceDefinition;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
-public class HandlerDefinitions extends SimplePersistentResourceDefinition {
+public class HandlerDefinitions extends PersistentResourceDefinition {
 
     public static final HandlerDefinitions INSTANCE = new HandlerDefinitions();
-    private static List<? extends SimplePersistentResourceDefinition> HANDLERS = Collections.unmodifiableList(Arrays.asList(
-            new FileHandler()
+    private static List<? extends PersistentResourceDefinition> HANDLERS = Collections.unmodifiableList(Arrays.asList(
+            FileHandler.INSTANCE
     ));
 
     private HandlerDefinitions() {
@@ -56,11 +55,6 @@ public class HandlerDefinitions extends SimplePersistentResourceDefinition {
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return Collections.emptySet();
-    }
-
-    @Override
-    public String getXmlElementName() {
-        return "handlers";
     }
 
     @Override

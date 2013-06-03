@@ -31,11 +31,11 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimplePersistentResourceDefinition;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -47,7 +47,7 @@ import org.jboss.msc.service.ServiceController;
  * @author Tomaz Cerar
  * @created 23.2.12 18:47
  */
-class JspDefinition extends SimplePersistentResourceDefinition {
+class JspDefinition extends PersistentResourceDefinition {
     static final JspDefinition INSTANCE = new JspDefinition();
 
     protected static final SimpleAttributeDefinition DEVELOPMENT =
@@ -224,11 +224,6 @@ class JspDefinition extends SimplePersistentResourceDefinition {
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return ATTRIBUTES_MAP.values();
-    }
-
-    @Override
-    public String getXmlElementName() {
-        return Constants.JSP_CONFIG;
     }
 
     private static class JSPAdd extends AbstractBoottimeAddStepHandler {

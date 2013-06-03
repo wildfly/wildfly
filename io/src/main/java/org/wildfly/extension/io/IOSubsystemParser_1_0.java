@@ -20,13 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.undertow;
+package org.wildfly.extension.io;
 
 import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
@@ -34,13 +36,33 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-/**
- * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
- */
-public class UndertowSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
-    protected static final UndertowSubsystemParser INSTANCE = new UndertowSubsystemParser();
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
-    private UndertowSubsystemParser() {
+/**
+ * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
+ */
+class IOSubsystemParser_1_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+    static final IOSubsystemParser_1_0 INSTANCE = new IOSubsystemParser_1_0();
+
+
+    private static final PersistentResourceXMLDescription xmlDescription;
+
+    static {
+        xmlDescription = builder(IORootDefinition.INSTANCE)
+                .addChild(
+                        builder(WorkerResourceDefinition.INSTANCE)
+                                .addAttributes(
+                                        WorkerResourceDefinition.WORKER_IO_THREADS,
+                                        WorkerResourceDefinition.WORKER_TASK_KEEPALIVE,
+                                        WorkerResourceDefinition.WORKER_TASK_MAX_THREADS,
+                                        WorkerResourceDefinition.STACK_SIZE)
+                )
+                .addChild(
+                        builder(BufferPoolResourceDefinition.INSTANCE)
+                                .addAttributes(BufferPoolResourceDefinition.BUFFER_SIZE,
+                                        BufferPoolResourceDefinition.BUFFER_PER_SLICE)
+                )
+                .build();
     }
 
     /**
@@ -49,8 +71,8 @@ public class UndertowSubsystemParser implements XMLStreamConstants, XMLElementRe
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
         ModelNode model = new ModelNode();
-        model.get(UndertowRootDefinition.INSTANCE.getPathElement().getKeyValuePair()).set(context.getModelNode());//this is bit of workaround for SPRD to work properly
-        UndertowRootDefinition.INSTANCE.persist(writer, model, Namespace.CURRENT.getUriString());
+        model.get(IORootDefinition.INSTANCE.getPathElement().getKeyValuePair()).set(context.getModelNode());//this is bit of workaround for SPRD to work properly
+        xmlDescription.persist(writer, model, Namespace.CURRENT.getUriString());
     }
 
     /**
@@ -58,7 +80,7 @@ public class UndertowSubsystemParser implements XMLStreamConstants, XMLElementRe
      */
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-        UndertowRootDefinition.INSTANCE.parse(reader, PathAddress.EMPTY_ADDRESS, list);
+        xmlDescription.parse(reader, PathAddress.EMPTY_ADDRESS, list);
     }
 }
 

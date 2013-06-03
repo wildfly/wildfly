@@ -32,7 +32,6 @@ import javax.xml.stream.XMLStreamWriter;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.DefaultAttributeMarshaller;
 import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.SimplePersistentResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -41,7 +40,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-class HostDefinition extends SimplePersistentResourceDefinition {
+class HostDefinition extends PersistentResourceDefinition {
     static final StringListAttributeDefinition ALIAS = new StringListAttributeDefinition.Builder(Constants.ALIAS)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -67,7 +66,7 @@ class HostDefinition extends SimplePersistentResourceDefinition {
             .build();
     static final HostDefinition INSTANCE = new HostDefinition();
     private static final Collection ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(ALIAS));
-    private static final List<? extends SimplePersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(Arrays.asList(LocationDefinition.INSTANCE));
+    private static final List<? extends PersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(Arrays.asList(LocationDefinition.INSTANCE));
 
     private HostDefinition() {
         super(UndertowExtension.HOST_PATH, UndertowExtension.getResolver(Constants.HOST),
