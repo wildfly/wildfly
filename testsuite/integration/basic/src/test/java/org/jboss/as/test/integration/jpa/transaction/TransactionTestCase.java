@@ -60,7 +60,9 @@ public class TransactionTestCase {
             SFSB1.class,
             SFSBXPC.class,
             SFSBCMT.class,
-            SLSB1.class
+            SLSB1.class,
+            UnsynchronizedSFSB.class,
+            InnerUnsynchronizedSFSB.class
         );
         jar.addAsManifestResource(TransactionTestCase.class.getPackage(), "persistence.xml","persistence.xml");
         return jar;
@@ -196,4 +198,44 @@ public class TransactionTestCase {
         assertNotNull("could read employee record from extended persistence context (wasn't saved to db during savePendingChanges())", employee);
 
     }
+
+    /**
+     * test JPA 2.1 SynchronizationType.UNSYNCHRONIZED support
+     *
+     * Note: Each invocation to UnsynchronizedSFSB will get a new persistence context as expected for transaction scoped entity manager.
+     */
+
+
+
+    @Test
+    @InSequence(8)
+    public void testUnsynchronized() throws Exception {
+        UnsynchronizedSFSB unsynchronizedSFSB = lookup("UnsynchronizedSFSB", UnsynchronizedSFSB.class);
+        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+
+        // create entity in UNSYNCHRONIZED persistence context which shouldn't be stored in the database until after em.joinTransaction()
+        Employee employee = unsynchronizedSFSB.createAndFind("New England Revolution","Gillette Stadium", 50);
+        assertNotNull("SynchronizationType.UNSYNCHRONIZED should be visible in the same persistence context",employee);    // we should see new employee in unsynchronized persistence context
+
+        employee = sfsb1.getEmployeeNoTX(50);
+        assertNull("SynchronizationType.UNSYNCHRONIZED change is visible to separate persistence context", employee);       // other persistence context shouldn't see unsynchronized (pending) changes
+
+        unsynchronizedSFSB.createAndJoin("New England Revolution","Gillette Stadium", 50);
+        employee = sfsb1.getEmployeeNoTX(50);   // so that other persistence context can also see new entity
+        assertNotNull("SynchronizationType.UNSYNCHRONIZED should be visible to separate persistence context after joining persistence context to jta transaction",
+                employee);
+
+        // check that propagation of UNSYNCHRONIZED persistence context happens during call to inner bean and that
+        // inner bean sees new entity that hasn't been saved to the database
+        employee = unsynchronizedSFSB.createAndPropagatedFind("Catherine Stark", "Winterfell", 55);
+        assertNotNull("SynchronizationType.UNSYNCHRONIZED should be propagated across bean invocations as per JPA 2.1 section 7.6.4",
+                        employee);
+
+        unsynchronizedSFSB.createAndPropagatedJoin("Jon Snow","knows nothing",56);
+        unsynchronizedSFSB.find(56);
+        assertNotNull("SynchronizationType.UNSYNCHRONIZED should be propagated across bean invocations as per JPA 2.1 section 7.6.4 and " +
+                "pending changes saved when inner bean calls EntityManager.joinTransaction",
+                                employee);
+    }
+
 }

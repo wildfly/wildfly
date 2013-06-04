@@ -302,7 +302,7 @@ public class JPAAnnotationProcessor implements DeploymentUnitProcessor {
             PersistenceContextType type = (pcType == null || PersistenceContextType.TRANSACTION.name().equals(pcType.asString()))
                 ? PersistenceContextType.TRANSACTION : PersistenceContextType.EXTENDED;
 
-            AnnotationValue stType = annotation.value("synchronizationType");
+            AnnotationValue stType = annotation.value("synchronization");
             SynchronizationType synchronizationType =
                     (stType == null || SynchronizationType.SYNCHRONIZED.name().equals(stType.asString()))?
                             SynchronizationType.SYNCHRONIZED: SynchronizationType.UNSYNCHRONIZED;
