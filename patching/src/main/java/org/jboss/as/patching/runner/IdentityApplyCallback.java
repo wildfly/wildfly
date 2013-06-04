@@ -8,20 +8,19 @@ import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.installation.InstalledImage;
-import org.jboss.as.patching.metadata.IdentityPatch;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class IdentityApplyCallback implements IdentityPatchContext.FinalizeCallback {
+class IdentityApplyCallback implements IdentityPatchContext.FinalizeCallback {
 
     private final String patchId;
-    private final IdentityPatch original;
+    private final Patch original;
     private final DirectoryStructure structure;
 
-    public IdentityApplyCallback(final IdentityPatch original, final DirectoryStructure structure) {
+    public IdentityApplyCallback(final Patch original, final DirectoryStructure structure) {
         this.patchId = original.getPatchId();
         this.original = original;
         this.structure = structure;
@@ -38,7 +37,7 @@ public class IdentityApplyCallback implements IdentityPatchContext.FinalizeCallb
     }
 
     @Override
-    public void finishPatch(final IdentityPatch rollbackPatch, final IdentityPatchContext context) throws Exception {
+    public void finishPatch(final Patch rollbackPatch, final IdentityPatchContext context) throws Exception {
         final File historyDir = structure.getInstalledImage().getPatchHistoryDir(patchId);
 
         if (!historyDir.exists()) {

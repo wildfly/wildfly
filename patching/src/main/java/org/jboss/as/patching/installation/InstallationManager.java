@@ -1,6 +1,6 @@
 package org.jboss.as.patching.installation;
 
-import org.jboss.as.patching.metadata.IdentityPatch;
+import org.jboss.as.patching.metadata.LayerType;
 import org.jboss.as.patching.metadata.Patch;
 
 /**
@@ -41,7 +41,7 @@ public interface InstallationManager {
          * @param type the layer type
          * @return the patching target
          */
-        MutablePatchingTarget resolve(String name, IdentityPatch.LayerType type);
+        MutablePatchingTarget resolve(String name, LayerType type);
 
         /**
          * Complete the modifications.

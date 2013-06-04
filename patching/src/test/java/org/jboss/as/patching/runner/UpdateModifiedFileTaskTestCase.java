@@ -43,10 +43,8 @@ import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.Patch;
-import org.jboss.as.patching.metadata.xsd1_1.PatchBuilder1_1;
-import org.jboss.as.patching.metadata.xsd1_1.impl.IdentityImpl;
-import org.jboss.as.patching.metadata.xsd1_1.impl.PatchElementImpl;
-import org.jboss.as.patching.metadata.xsd1_1.impl.PatchElementProviderImpl;
+import org.jboss.as.patching.metadata.PatchBuilder;
+import org.jboss.as.patching.metadata.impl.IdentityImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -85,22 +83,22 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
         updatedHash = hashFile(updatedFile);
         fileUpdated = new ContentModification(new MiscContentItem(fileName, new String[] { "bin" }, updatedHash), unmodifiedHash, MODIFY);
 
-        PatchBuilder1_1 builder = PatchBuilder1_1.create()
+        PatchBuilder builder = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
                 .setIdentity(new IdentityImpl("eap", info.getVersion()))
                 .setNoUpgrade();
 
-        PatchElementImpl element = new PatchElementImpl("patch element 01");
-        builder.addElement(element);
-        element.setDescription("patch element 01 description");
-        element.setNoUpgrade();
+//        PatchElementImpl element = new PatchElementImpl("patch element 01");
+//        builder.addElement(element);
+//        element.setDescription("patch element 01 description");
+//        element.setNoUpgrade();
+//
+//        PatchElementProviderImpl provider = new PatchElementProviderImpl("base", "4.5.6", false);
+//        provider.require("patch element 02");
+//        element.setProvider(provider);
 
-        PatchElementProviderImpl provider = new PatchElementProviderImpl("base", "4.5.6", false);
-        provider.require("patch element 02");
-        element.setProvider(provider);
-
-        element.addContentModification(fileUpdated);
+        builder.addContentModification(fileUpdated);
 
         patch = builder.build();
 

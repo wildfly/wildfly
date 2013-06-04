@@ -30,18 +30,22 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.patching.metadata.Patch.PatchType;
+import org.jboss.as.patching.metadata.impl.IdentityImpl;
+import org.jboss.as.patching.metadata.impl.UpgradeCallback;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class PatchBuilder implements Builder {
+public class PatchBuilder implements UpgradeCallback, Builder {
 
     private String patchId;
     private String description;
     private String resultingVersion;
     private PatchType patchType;
-    private List<String> appliesTo;
+    private Identity identity;
+
     private final List<ContentModification> modifications = new ArrayList<ContentModification>();
+    private final List<PatchElement> elements = new ArrayList<PatchElement>();
 
     public static PatchBuilder create() {
         return new PatchBuilder();
@@ -60,16 +64,36 @@ public class PatchBuilder implements Builder {
         return this;
     }
 
-    public PatchBuilder setCumulativeType(String appliesToVersion, String resultingVersion) {
+    @Override
+    public PatchBuilder setUpgrade(String toVersion) {
         this.patchType = PatchType.CUMULATIVE;
-        this.appliesTo = Collections.singletonList(appliesToVersion);
-        this.resultingVersion = resultingVersion;
+        this.resultingVersion = toVersion;
         return this;
     }
 
-    public PatchBuilder setOneOffType(List<String> appliesTo) {
+    @Override
+    public PatchBuilder setNoUpgrade() {
         this.patchType = PatchType.ONE_OFF;
-        this.appliesTo = Collections.unmodifiableList(appliesTo);
+        return this;
+    }
+
+    public PatchBuilder setIdentity(Identity identity) {
+        this.identity = identity;
+        return this;
+    }
+
+    @Deprecated
+    public PatchBuilder setCumulativeType(String appliesToVersion, String resultingVersion) {
+        this.identity = new IdentityImpl("", appliesToVersion);
+        setUpgrade(resultingVersion);
+        return this;
+    }
+
+    @Deprecated
+    public PatchBuilder setOneOffType(List<String> appliesTo) {
+        assert appliesTo.size() == 1; // TODO update
+        this.identity = new IdentityImpl("", appliesTo.get(0));
+        setNoUpgrade();
         return this;
     }
 
@@ -82,8 +106,20 @@ public class PatchBuilder implements Builder {
         return this;
     }
 
+    public PatchBuilder addElement(PatchElement element) {
+        this.elements.add(element);
+        return this;
+    }
+
+    public List<ContentModification> getModifications() {
+        return modifications;
+    }
+
     @Override
     public Patch build() {
+        assert notNull(identity);
+        assert notNull(patchId);
+        assert notNull(patchType);
         return new Patch() {
 
             @Override
@@ -113,8 +149,23 @@ public class PatchBuilder implements Builder {
 
             @Override
             public List<String> getAppliesTo() {
-                return unmodifiableList(appliesTo);
+                return Collections.singletonList(identity.getVersion());
+            }
+
+            @Override
+            public Identity getIdentity() {
+                return identity;
+            }
+
+            @Override
+            public List<org.jboss.as.patching.metadata.PatchElement> getElements() {
+                return elements;
             }
         };
     }
+
+    static boolean notNull(Object o) {
+        return o != null;
+    }
+
 }

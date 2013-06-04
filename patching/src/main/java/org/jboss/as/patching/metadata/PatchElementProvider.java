@@ -20,29 +20,49 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.metadata.xsd1_1;
+package org.jboss.as.patching.metadata;
 
-import java.util.List;
+import java.util.Collection;
 
-import org.jboss.as.patching.metadata.Patch;
 
 /**
  * @author Alexey Loubyansky
  *
  */
-public interface Patch1_1 extends Patch {
+public interface PatchElementProvider {
 
     /**
-     * Returns the identity which produced this patch.
+     * Patch element provider name.
      *
-     * @return  identity which produced this patch
+     * @return  patch element provider name
      */
-    Identity getIdentity();
+    String getName();
 
     /**
-     * List of patch elements.
+     * Patch element provider version.
      *
-     * @return  list of patch elements
+     * @return  patch element provider version
      */
-    List<PatchElement> getElements();
+    String getVersion();
+
+    /**
+     * List of the applied patch elements to this provider.
+     *
+     * @return  list of id's of the patch elements applied to this provider
+     */
+    Collection<String> getRequires();
+
+    /**
+     * Get the layer type for this element.
+     *
+     * @return the layer type
+     */
+    LayerType getLayerType();
+
+    /**
+     * Whether the provider is an add-on (or a layer)
+     *
+     * @return  true if the provider is an add-on, otherwise - false, which means it's a layer.
+     */
+    boolean isAddOn();
 }

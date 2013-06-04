@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.patching.PatchLogger;
-import org.jboss.as.patching.metadata.IdentityPatch;
+import org.jboss.as.patching.metadata.LayerType;
 
 /**
  * @author Emanuel Muckenhuber
@@ -25,8 +25,8 @@ abstract class InstallationModificationImpl extends MutableTargetImpl implements
     }
 
     @Override
-    public InstallationManager.MutablePatchingTarget resolve(String name, IdentityPatch.LayerType type) {
-        if (type == IdentityPatch.LayerType.Layer) {
+    public InstallationManager.MutablePatchingTarget resolve(String name, LayerType type) {
+        if (type == LayerType.Layer) {
             return installationState.layers.get(name);
         } else {
             return installationState.addOns.get(name);

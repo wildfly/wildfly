@@ -18,8 +18,10 @@ import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.metadata.ContentItem;
-import org.jboss.as.patching.metadata.IdentityPatch;
+import org.jboss.as.patching.metadata.LayerType;
 import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.metadata.PatchElement;
+import org.jboss.as.patching.metadata.PatchElementProvider;
 import org.jboss.as.patching.metadata.PatchXml;
 
 /**
@@ -45,7 +47,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
      * @param modification    the installation modification
      * @throws PatchingException for any error
      */
-    public PatchingResult applyPatch(final IdentityPatch patch, final PatchContentProvider contentProvider, final ContentVerificationPolicy contentPolicy, final InstallationManager.InstallationModification modification) throws PatchingException {
+    public PatchingResult applyPatch(final Patch patch, final PatchContentProvider contentProvider, final ContentVerificationPolicy contentPolicy, final InstallationManager.InstallationModification modification) throws PatchingException {
         try {
             // Check if we can apply this patch
             final String patchId = patch.getPatchId();
@@ -84,7 +86,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
      * @throws IOException
      * @throws XMLStreamException
      */
-    private PatchingResult applyPatch(final String patchId, final IdentityPatch patch, final IdentityPatchContext context) throws PatchingException, IOException, XMLStreamException {
+    private PatchingResult applyPatch(final String patchId, final Patch patch, final IdentityPatchContext context) throws PatchingException, IOException, XMLStreamException {
 
         final List<String> rollbacks;
         final Patch.PatchType patchType = patch.getPatchType();
@@ -98,10 +100,10 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
             rollback(rollback, context);
         }
         // Then apply the current patch
-        for (final IdentityPatch.PatchElement element : patch.getPatchElements()) {
+        for (final PatchElement element : patch.getElements()) {
             // Apply the content modifications
             final IdentityPatchContext.PatchEntry target = context.resolveForElement(element);
-            final String elementPatchId = element.getPatchId();
+            final String elementPatchId = element.getId();
             checkApplied(elementPatchId, target);
             apply(elementPatchId, element.getModifications(), target.getModifications());
             target.apply(elementPatchId, patchType);
@@ -203,17 +205,18 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
     private void rollback(final String patchID, final IdentityPatchContext context) throws PatchingException {
         try {
             // Load the patch history
-            final IdentityPatch originalPatch = loadPatchInformation(patchID, installedImage);
-            final IdentityPatch rollbackPatch = loadRollbackInformation(patchID, installedImage);
+            final Patch originalPatch = loadPatchInformation(patchID, installedImage);
+            final Patch rollbackPatch = loadRollbackInformation(patchID, installedImage);
             final Patch.PatchType patchType = rollbackPatch.getPatchType();
 
             // Process originals by type first
-            final LinkedHashMap<String, IdentityPatch.PatchElement> originalLayers = new LinkedHashMap<String, IdentityPatch.PatchElement>();
-            final LinkedHashMap<String, IdentityPatch.PatchElement> originalAddOns = new LinkedHashMap<String, IdentityPatch.PatchElement>();
-            for (final IdentityPatch.PatchElement patchElement : originalPatch.getPatchElements()) {
-                final String layerName = patchElement.getLayerName();
-                final IdentityPatch.LayerType layerType = patchElement.getLayerType();
-                final Map<String, IdentityPatch.PatchElement> originals;
+            final LinkedHashMap<String, PatchElement> originalLayers = new LinkedHashMap<String, PatchElement>();
+            final LinkedHashMap<String, PatchElement> originalAddOns = new LinkedHashMap<String, PatchElement>();
+            for (final PatchElement patchElement : originalPatch.getElements()) {
+                final PatchElementProvider provider = patchElement.getProvider();
+                final String layerName = provider.getName();
+                final LayerType layerType = provider.getLayerType();
+                final Map<String, PatchElement> originals;
                 switch (layerType) {
                     case Layer:
                         originals = originalLayers;
@@ -231,10 +234,11 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
                 }
             }
             // Process the rollback xml
-            for (final IdentityPatch.PatchElement patchElement : rollbackPatch.getPatchElements()) {
-                final String layerName = patchElement.getLayerName();
-                final IdentityPatch.LayerType layerType = patchElement.getLayerType();
-                final LinkedHashMap<String, IdentityPatch.PatchElement> originals;
+            for (final PatchElement patchElement : rollbackPatch.getElements()) {
+                final PatchElementProvider provider = patchElement.getProvider();
+                final String layerName = provider.getName();
+                final LayerType layerType = provider.getLayerType();
+                final LinkedHashMap<String, PatchElement> originals;
                 switch (layerType) {
                     case Layer:
                         originals = originalLayers;
@@ -245,7 +249,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
                     default:
                         throw new IllegalStateException();
                 }
-                final IdentityPatch.PatchElement original = originals.remove(layerName);
+                final PatchElement original = originals.remove(layerName);
                 if (original == null) {
                     throw new PatchingException("did not exist in original " + layerName);
                 }
@@ -380,16 +384,16 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
 
     }
 
-    static IdentityPatch loadPatchInformation(final String patchId, final InstalledImage installedImage) throws IOException, XMLStreamException {
+    static Patch loadPatchInformation(final String patchId, final InstalledImage installedImage) throws IOException, XMLStreamException {
         final File patchDir = installedImage.getPatchHistoryDir(patchId);
         final File patchXml = new File(patchDir, PatchXml.PATCH_XML);
-        return IdentityPatch.Wrapper.wrap(PatchXml.parse(patchXml));
+        return PatchXml.parse(patchXml);
     }
 
-    static IdentityPatch loadRollbackInformation(final String patchId, final InstalledImage installedImage) throws IOException, XMLStreamException {
+    static Patch loadRollbackInformation(final String patchId, final InstalledImage installedImage) throws IOException, XMLStreamException {
         final File historyDir = installedImage.getPatchHistoryDir(patchId);
         final File patchXml = new File(historyDir, Constants.ROLLBACK_XML);
-        return IdentityPatch.Wrapper.wrap(PatchXml.parse(patchXml));
+        return PatchXml.parse(patchXml);
     }
 
     static void checkApplied(final String patchId, final PatchableTarget.TargetInfo info) throws PatchingException {

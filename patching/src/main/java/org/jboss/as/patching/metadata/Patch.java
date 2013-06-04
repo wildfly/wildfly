@@ -69,6 +69,13 @@ public interface Patch {
     PatchType getPatchType();
 
     /**
+     * Returns the identity which produced this patch.
+     *
+     * @return  identity which produced this patch
+     */
+    Identity getIdentity();
+
+    /**
      * Get the resulting version of a CP or {@code null} for a one-off patch
      *
      * @return the resulting version
@@ -81,6 +88,13 @@ public interface Patch {
      * @return the versions the patch can be applied
      */
     List<String> getAppliesTo();
+
+    /**
+     * List of patch elements.
+     *
+     * @return  list of patch elements
+     */
+    List<PatchElement> getElements();
 
     /**
      * Get the content modifications.
