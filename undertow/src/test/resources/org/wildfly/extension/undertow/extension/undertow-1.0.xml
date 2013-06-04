@@ -62,6 +62,12 @@
                     java-encoding="${prop.java-encoding:utf-8}"
                     x-powered-by="${prop.x-powered-by:true}"
                     display-source-fragment="${prop.display-source-fragment:true}"/>
+        <session-cookie name="MYSESSIONCOOKIE"
+                        domain="example.com"
+                        comment="session cookie"
+                        secure="true"
+                        http-only="true"
+                        max-age="1000"/>
     </servlet-container>
 
     <error-handlers>

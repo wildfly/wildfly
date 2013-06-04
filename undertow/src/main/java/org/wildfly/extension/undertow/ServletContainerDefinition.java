@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +36,15 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
  */
 public class ServletContainerDefinition extends PersistentResourceDefinition {
     static final ServletContainerDefinition INSTANCE = new ServletContainerDefinition();
+
+    private static final List<? extends PersistentResourceDefinition> CHILDREN;
+
+    static {
+        List<PersistentResourceDefinition>  children = new ArrayList<>();
+        children.add(JspDefinition.INSTANCE);
+        children.add(SessionCookieDefinition.INSTANCE);
+        CHILDREN = Collections.unmodifiableList(children);
+    }
 
     private ServletContainerDefinition() {
         super(UndertowExtension.PATH_SERVLET_CONTAINER,
@@ -50,7 +60,6 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
 
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
-        return Collections.singletonList(JspDefinition.INSTANCE);
-
+        return CHILDREN;
     }
 }

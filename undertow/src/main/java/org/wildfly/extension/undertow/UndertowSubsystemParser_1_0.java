@@ -128,6 +128,17 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                                         JspDefinition.X_POWERED_BY,
                                                         JspDefinition.DISPLAY_SOURCE_FRAGMENT)
                                 )
+                                .addChild(
+                                        builder(SessionCookieDefinition.INSTANCE)
+                                                .addAttributes(
+                                                        SessionCookieDefinition.NAME,
+                                                        SessionCookieDefinition.DOMAIN,
+                                                        SessionCookieDefinition.COMMENT,
+                                                        SessionCookieDefinition.HTTP_ONLY,
+                                                        SessionCookieDefinition.SECURE,
+                                                        SessionCookieDefinition.MAX_AGE
+                                                )
+                                )
                 )
                 .addChild(
                         builder(ErrorHandlerDefinitions.INSTANCE)
