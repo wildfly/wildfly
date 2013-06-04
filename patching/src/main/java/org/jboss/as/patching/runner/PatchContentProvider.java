@@ -1,5 +1,7 @@
 package org.jboss.as.patching.runner;
 
+import java.io.File;
+
 /**
  * @author Emanuel Muckenhuber
  */
@@ -12,6 +14,11 @@ public interface PatchContentProvider {
      * @return the content loader
      */
     PatchContentLoader getLoader(String patchId);
+
+    /**
+     * @return the root directory of the patch content
+     */
+    File getPatchContentRootDir();
 
     /**
      * Cleanup

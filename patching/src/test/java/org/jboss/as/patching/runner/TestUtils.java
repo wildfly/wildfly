@@ -74,15 +74,6 @@ public class TestUtils {
         }
     }
 
-    public static File mkdir(File parent, String... segments) throws Exception {
-        File dir = parent;
-        for (String segment : segments) {
-            dir = new File(dir, segment);
-        }
-        dir.mkdirs();
-        return dir;
-    }
-
     public static File touch(File baseDir, String... segments) throws Exception {
         File f = baseDir;
         for (String segment : segments) {
@@ -120,8 +111,8 @@ public class TestUtils {
     }
 
     public static File createModule(File baseDir, String moduleName, String... resourcesContents) throws Exception {
-        File moduleDir = mkdir(baseDir, "modules", moduleName);
-        File mainDir = mkdir(moduleDir, "main");
+        File moduleDir = IoUtils.mkdir(baseDir, "modules", moduleName);
+        File mainDir = IoUtils.mkdir(moduleDir, "main");
         String resourceFilePrefix = randomString();
         String[] resourceFileNames = new String[resourcesContents.length];
         for (int i = 0; i < resourcesContents.length; i++) {
@@ -136,8 +127,8 @@ public class TestUtils {
     }
 
     public static File createBundle(File baseDir, String moduleName, boolean content) throws Exception {
-        File bundles = mkdir(baseDir, "bundles", moduleName);
-        File mainDir = mkdir(bundles, "main");
+        File bundles = IoUtils.mkdir(baseDir, "bundles", moduleName);
+        File mainDir = IoUtils.mkdir(bundles, "main");
         if(content) {
             File f = touch(mainDir, "content");
             dump(f, randomString());
@@ -145,7 +136,7 @@ public class TestUtils {
         return bundles;
     }
 
-    static void createPatchXMLFile(File dir, Patch patch) throws Exception {
+    public static void createPatchXMLFile(File dir, Patch patch) throws Exception {
         File patchXMLfile = new File(dir, "patch.xml");
         patchXMLfile.createNewFile();
         FileOutputStream fos = new FileOutputStream(patchXMLfile);
@@ -156,14 +147,14 @@ public class TestUtils {
         }
     }
 
-    static File createZippedPatchFile(File sourceDir, String zipFileName) {
+    public static File createZippedPatchFile(File sourceDir, String zipFileName) {
         tree(sourceDir);
         File zipFile = new File(sourceDir.getParent(), zipFileName + ".zip");
         ZipUtils.zip(sourceDir, zipFile);
         return zipFile;
     }
 
-    static File[] getModulePath(final DirectoryStructure structure, final PatchInfo info) {
+    public static File[] getModulePath(final DirectoryStructure structure, final PatchInfo info) {
         final List<File> path = new ArrayList<File>();
         final List<String> patches = info.getPatchIDs();
         for (final String patch : patches) {

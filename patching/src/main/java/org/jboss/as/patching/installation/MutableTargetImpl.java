@@ -1,14 +1,14 @@
 package org.jboss.as.patching.installation;
 
-import java.io.File;
+import static org.jboss.as.patching.runner.PatchUtils.writeRef;
+import static org.jboss.as.patching.runner.PatchUtils.writeRefs;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.metadata.Patch;
-import org.jboss.as.patching.runner.PatchUtils;
 
 /**
  * @author Emanuel Muckenhuber
@@ -66,33 +66,17 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
 
     protected void persist() throws IOException {
         // persist the state for bundles and modules directory
-        final File modules = structure.getModuleRoot();
-        final File bundles = structure.getBundleRepositoryRoot();
-        persist(modules, cumulative, patchIds);
-        persist(bundles, cumulative, patchIds);
+        persist(cumulative, patchIds);
     }
 
     protected void restore() throws IOException {
         // persist the state for bundles and modules directory
-        final File modules = structure.getModuleRoot();
-        final File bundles = structure.getBundleRepositoryRoot();
-        persist(modules, current.getCumulativeID(), current.getPatchIDs());
-        persist(bundles, current.getCumulativeID(), current.getPatchIDs());
+        persist(current.getCumulativeID(), current.getPatchIDs());
     }
 
-    static void persist(final File root, final String cumulative, final List<String> patches) throws IOException {
-        if (root == null) {
-            return; // skip the root, if not configured
-        }
-        final File patchesDir = new File(root, Constants.PATCHES);
-        if (! patchesDir.exists()) {
-            patchesDir.mkdir();
-        }
-        final File cumulativeFile = new File(patchesDir, Constants.CUMULATIVE);
-        final File referencesDir = new File(patchesDir, Constants.REFERENCES);
-        final File referencesFile = new File(referencesDir, cumulative);
-        PatchUtils.writeRef(cumulativeFile, cumulative);
-        PatchUtils.writeRefs(referencesFile, patches);
+    private void persist(final String cumulative, final List<String> patches) throws IOException {
+        writeRef(structure.getCumulativeLink(), cumulative);
+        writeRefs(structure.getCumulativeRefs(cumulative), patches);
     }
 
     @Override

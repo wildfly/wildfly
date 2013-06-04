@@ -37,8 +37,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
+import junit.framework.Assert;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.Patch;
 
@@ -47,20 +49,20 @@ import org.jboss.as.patching.metadata.Patch;
  */
 public class PatchingAssert {
 
-    static void assertContains(File f, File... files) {
+    public static void assertContains(File f, File... files) {
         List<File> set = Arrays.asList(files);
         assertTrue(f + " not found in " + set, set.contains(f));
     }
 
-    static File assertDirExists(File rootDir, String... segments) {
+    public static File assertDirExists(File rootDir, String... segments) {
         return assertFileExists(true, rootDir, segments);
     }
 
-    static void assertDirDoesNotExist(File rootDir, String... segments) {
+    public static void assertDirDoesNotExist(File rootDir, String... segments) {
         assertFileDoesNotExist(rootDir, segments);
     }
 
-    static File assertFileExists(File rootDir, String... segments) {
+    public static File assertFileExists(File rootDir, String... segments) {
         return assertFileExists(false, rootDir, segments);
     }
 
@@ -98,7 +100,7 @@ public class PatchingAssert {
         assertEquals(message, bytesToHexString(expected), bytesToHexString(hashFile(f)));
     }
 
-    static void assertDefinedModule(File[] modulesPath, String moduleName, byte[] expectedHash) throws Exception {
+    public static void assertDefinedModule(File[] modulesPath, String moduleName, byte[] expectedHash) throws Exception {
         for (File path : modulesPath) {
             final File modulePath = PatchContentLoader.getModulePath(path, moduleName, "main");
             final File moduleXml = new File(modulePath, "module.xml");
@@ -112,6 +114,20 @@ public class PatchingAssert {
             }
         }
         fail("count not find module for " + moduleName + " in " + asList(modulesPath));
+    }
+
+    public static void assertDefinedModule(File moduleRoot, String moduleName, byte[] expectedHash) throws Exception {
+        final File modulePath = PatchContentLoader.getModulePath(moduleRoot, moduleName, "main");
+        final File moduleXml = new File(modulePath, "module.xml");
+        if (moduleXml.exists()) {
+            assertDefinedModuleWithRootElement(moduleXml, moduleName, "<module");
+            if (expectedHash != null) {
+                byte[] actualHash = hashFile(modulePath);
+                assertTrue("content of module differs", Arrays.equals(expectedHash, actualHash));
+            }
+            return;
+        }
+        fail("count not find module for " + moduleName + " in " + moduleRoot);
     }
 
     static void assertDefinedBundle(File[] bundlesPath, String moduleName, byte[] expectedHash) throws Exception {
@@ -164,7 +180,7 @@ public class PatchingAssert {
         assertTrue(string + " not found in " + f + " with content=" + content, content.contains(string));
     }
 
-    static void assertPatchHasBeenApplied(PatchingResult result, Patch patch) {
+    public static void assertPatchHasBeenApplied(PatchingResult result, Patch patch) {
         if (CUMULATIVE == patch.getPatchType()) {
             assertEquals(patch.getPatchId(), result.getPatchInfo().getCumulativeID());
             assertEquals(patch.getResultingVersion(), result.getPatchInfo().getVersion());
@@ -182,7 +198,7 @@ public class PatchingAssert {
         assertDirDoesNotExist(structure.getInstalledImage().getPatchHistoryDir(patch.getPatchId()));
     }
 
-    static void assertPatchHasBeenRolledBack(PatchingResult result, Patch patch, PatchInfo expectedPatchInfo) {
+    public static void assertPatchHasBeenRolledBack(PatchingResult result, Patch patch, PatchInfo expectedPatchInfo) {
         assertEquals(expectedPatchInfo.getVersion(), result.getPatchInfo().getVersion());
         assertEquals(expectedPatchInfo.getCumulativeID(), result.getPatchInfo().getCumulativeID());
         assertEquals(expectedPatchInfo.getPatchIDs(), result.getPatchInfo().getPatchIDs());
@@ -194,5 +210,15 @@ public class PatchingAssert {
         assertDirDoesNotExist(structure.getModulePatchDirectory(patch.getPatchId()));
         assertDirDoesNotExist(structure.getBundlesPatchDirectory(patch.getPatchId()));
         assertDirDoesNotExist(structure.getInstalledImage().getPatchHistoryDir(patch.getPatchId()));
+    }
+
+    public static void assertInstallationIsPatched(Patch patch, PatchableTarget.TargetInfo targetInfo) {
+        if (CUMULATIVE == patch.getPatchType()) {
+            assertEquals(patch.getPatchId(), targetInfo.getCumulativeID());
+        } else {
+            Assert.assertTrue(targetInfo.getPatchIDs().contains(patch.getPatchId()));
+            // applied one-off patch is at the top of the patchIDs
+            assertEquals(patch.getPatchId(), targetInfo.getPatchIDs().get(0));
+        }
     }
 }

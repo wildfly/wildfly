@@ -22,7 +22,7 @@
 
 package org.jboss.as.patching.runner;
 
-import static org.jboss.as.patching.runner.TestUtils.mkdir;
+import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 
 import java.io.File;
@@ -32,6 +32,8 @@ import java.io.FileNotFoundException;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.installation.InstalledIdentity;
+import org.jboss.as.patching.installation.InstalledImage;
 import org.junit.After;
 import org.junit.Before;
 
@@ -65,18 +67,33 @@ public abstract class AbstractTaskTestCase {
         }
     }
 
-    PatchingResult executePatch(final PatchInfo info, final File file) throws FileNotFoundException, PatchingException {
+    protected PatchingResult executePatch(final File file, InstalledIdentity installedIdentity, InstalledImage installedImage) throws FileNotFoundException, PatchingException {
+        LegacyPatchRunner runner = new LegacyPatchRunner(installedImage, installedIdentity);
+        final PatchingResult result = runner.executeDirect(new FileInputStream(file), ContentVerificationPolicy.STRICT);
+        result.commit();
+        return result;
+    }
+
+    @Deprecated
+    protected PatchingResult executePatch(final PatchInfo info, final File file) throws FileNotFoundException, PatchingException {
         final PatchingRunnerWrapper runner = PatchingRunnerWrapper.Factory.create(info, env);
         final PatchingResult result = runner.executeDirect(new FileInputStream(file), ContentVerificationPolicy.STRICT);
         result.commit();
         return result;
     }
 
-    PatchingResult rollback(final PatchInfo info, final String patchId) throws PatchingException {
+    protected PatchingResult rollback( String patchId, InstalledIdentity installedIdentity, InstalledImage installedImage) throws FileNotFoundException, PatchingException {
+        LegacyPatchRunner runner = new LegacyPatchRunner(installedImage, installedIdentity);
+        final PatchingResult result = runner.rollback(patchId, ContentVerificationPolicy.STRICT, false, true);
+        result.commit();
+        return result;
+    }
+
+    protected PatchingResult rollback(final PatchInfo info, final String patchId) throws PatchingException {
         return rollback(info, patchId, false);
     }
 
-    PatchingResult rollback(final PatchInfo info, final String patchId, final boolean rollbackTo) throws PatchingException {
+    protected PatchingResult rollback(final PatchInfo info, final String patchId, final boolean rollbackTo) throws PatchingException {
         final PatchingRunnerWrapper runner = PatchingRunnerWrapper.Factory.create(info, env);
         final PatchingResult result = runner.rollback(patchId, ContentVerificationPolicy.STRICT, rollbackTo, true);
         result.commit();
