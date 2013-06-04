@@ -130,6 +130,7 @@ import org.jboss.vfs.VirtualFile;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.undertow.session.SessionManagerFacadeFactory;
 import org.wildfly.extension.undertow.ServletContainerService;
+import org.wildfly.extension.undertow.SessionCookieConfigService;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
 import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
@@ -170,6 +171,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
     private final InjectedValue<ServletContainerService> container = new InjectedValue<>();
     private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
+    private final InjectedValue<SessionCookieConfigService> defaultSessionCookieConfig = new InjectedValue<>();
 
     private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final WebInjectionContainer injectionContainer, final ComponentRegistry componentRegistry, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers) {
         this.mergedMetaData = mergedMetaData;
@@ -199,27 +201,60 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             handleDistributable(deploymentInfo);
             handleIdentityManager(deploymentInfo);
 
+
             SessionConfigMetaData sessionConfig = mergedMetaData.getSessionConfig();
+            SessionCookieConfig config = null;
+            //default session config
+            SessionCookieConfigService defaultSessionConfig = defaultSessionCookieConfig.getOptionalValue();
+            if(defaultSessionConfig != null) {
+                config = new SessionCookieConfigImpl();
+                if(defaultSessionConfig.getName() != null) {
+                    config.setName(defaultSessionConfig.getName());
+                }
+                if(defaultSessionConfig.getDomain() != null) {
+                    config.setDomain(defaultSessionConfig.getDomain());
+                }
+                if(defaultSessionConfig.getHttpOnly() != null) {
+                    config.setHttpOnly(defaultSessionConfig.getHttpOnly());
+                }
+                if(defaultSessionConfig.getSecure() != null) {
+                    config.setSecure(defaultSessionConfig.getSecure());
+                }
+                if(defaultSessionConfig.getMaxAge() != null) {
+                    config.setMaxAge(defaultSessionConfig.getMaxAge());
+                }
+                if(defaultSessionConfig.getComment() != null) {
+                    config.setComment(defaultSessionConfig.getComment());
+                }
+            }
+
             if (sessionConfig != null) {
                 if (sessionConfig.getSessionTimeoutSet()) {
                     deploymentInfo.setDefaultSessionTimeout(sessionConfig.getSessionTimeout() * 60);
                 }
                 CookieConfigMetaData cookieConfig = sessionConfig.getCookieConfig();
                 if (cookieConfig != null) {
-                    SessionCookieConfig config = new SessionCookieConfigImpl();
+                    if(config == null) {
+                        config = new SessionCookieConfigImpl();
+                    }
                     if (cookieConfig.getName() != null) {
                         config.setName(cookieConfig.getName());
+                    }
+                    if(cookieConfig.getDomain() != null) {
+                        config.setDomain(cookieConfig.getDomain());
+                    }
+                    if(cookieConfig.getDomain() != null) {
+                        config.setComment(cookieConfig.getComment());
                     }
                     config.setSecure(cookieConfig.getSecure());
                     config.setPath(cookieConfig.getPath());
                     config.setMaxAge(cookieConfig.getMaxAge());
-                    config.setDomain(cookieConfig.getDomain());
-                    config.setComment(cookieConfig.getComment());
                     config.setHttpOnly(cookieConfig.getHttpOnly());
-                    deploymentInfo.setSessionCookieConfig(config);
                 }
                 //todo: session tracking modes
-
+            }
+            if(config != null) {
+                deploymentInfo.setSessionCookieConfig(config);
             }
 
             for (final SetupAction action : setupActions) {
@@ -917,6 +952,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     public InjectedValue<DirectBufferCache> getBufferCacheInjectedValue() {
         return bufferCacheInjectedValue;
+    }
+
+    public InjectedValue<SessionCookieConfigService> getDefaultSessionCookieConfig() {
+        return defaultSessionCookieConfig;
     }
 
     private static class ComponentClassIntrospector implements ClassIntrospecter {

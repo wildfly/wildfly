@@ -90,6 +90,7 @@
     <xs:complexType name="servletContainerType">
         <xs:sequence>
             <xs:element name="jsp-config" type="jsp-configurationType" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="session-cookie" type="session-cookieType" maxOccurs="1" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
     </xs:complexType>
@@ -121,6 +122,15 @@
         <xs:attribute name="java-encoding" default="UTF8" type="xs:string"/>
         <xs:attribute name="x-powered-by" default="true" type="xs:boolean"/>
         <xs:attribute name="display-source-fragment" default="true" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="session-cookieType">
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="domain" type="xs:string"/>
+        <xs:attribute name="comment" type="xs:string"/>
+        <xs:attribute name="http-only" type="xs:boolean"/>
+        <xs:attribute name="secure" type="xs:boolean"/>
+        <xs:attribute name="max-age" type="xs:int"/>
     </xs:complexType>
     <xs:complexType name="handlerType">
         <xs:sequence>

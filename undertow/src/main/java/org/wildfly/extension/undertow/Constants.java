@@ -104,4 +104,12 @@ public interface Constants {
     String FILTER = "filter";
     String FILTERS = "filters";
     String FILTER_REF = "filter-ref";
+
+    //session cookie config
+    String SESSION_COOKIE = "session-cookie";
+    String DOMAIN = "domain";
+    String COMMENT = "comment";
+    String HTTP_ONLY = "http-only";
+    String SECURE = "secure";
+    String MAX_AGE = "max-age";
 }
