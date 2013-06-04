@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -97,11 +97,13 @@ public final class EndpointService implements Service<Endpoint> {
             registerRecordProcessor(processor, endpoint);
         }
         registerEndpoint(endpoint);
+        endpoint.getLifecycleHandler().start(endpoint);
     }
 
     @Override
     public void stop(final StopContext context) {
         ROOT_LOGGER.stopping(name);
+        endpoint.getLifecycleHandler().stop(endpoint);
         endpoint.setSecurityDomainContext(null);
         unregisterEndpoint(endpoint);
         final List<RecordProcessor> processors = endpoint.getRecordProcessors();
@@ -117,7 +119,7 @@ public final class EndpointService implements Service<Endpoint> {
                 ManagedEndpoint jmxEndpoint = new ManagedEndpoint(endpoint, mbeanServer);
                 mbeanServer.registerMBean(jmxEndpoint, endpoint.getName());
             } catch (final JMException ex) {
-                ROOT_LOGGER.trace("Cannot register endpoint with JMX server: " + ex.getMessage(), ex);
+                ROOT_LOGGER.trace("Cannot register endpoint with JMX server: " + ex.getMessage());
                 ROOT_LOGGER.cannotRegisterEndpoint(endpoint.getShortName());
             }
         } else {
@@ -131,7 +133,7 @@ public final class EndpointService implements Service<Endpoint> {
             try {
                 mbeanServer.unregisterMBean(endpoint.getName());
             } catch (final JMException ex) {
-                ROOT_LOGGER.trace("Cannot unregister endpoint with JMX server: " + ex.getMessage(), ex);
+                ROOT_LOGGER.trace("Cannot unregister endpoint with JMX server: " + ex.getMessage());
                 ROOT_LOGGER.cannotUnregisterEndpoint(endpoint.getShortName());
             }
         } else {
