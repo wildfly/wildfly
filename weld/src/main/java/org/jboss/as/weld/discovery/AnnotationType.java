@@ -16,16 +16,25 @@
  */
 package org.jboss.as.weld.discovery;
 
+import org.jboss.as.weld.util.Indices;
+import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 
 import com.google.common.base.Function;
 
-class AnnotationType {
+public class AnnotationType {
 
     public static final Function<AnnotationType, String> TO_FQCN = new Function<AnnotationType, String>() {
         @Override
         public String apply(AnnotationType input) {
             return input.name.toString();
+        }
+    };
+
+    public static final Function<ClassInfo, AnnotationType> FOR_CLASSINFO = new Function<ClassInfo, AnnotationType>() {
+        @Override
+        public AnnotationType apply(ClassInfo clazz) {
+            return new AnnotationType(clazz.name(), clazz.annotations().containsKey(Indices.INHERITED_NAME));
         }
     };
 

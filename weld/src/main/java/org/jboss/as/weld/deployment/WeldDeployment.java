@@ -34,7 +34,9 @@ import javax.enterprise.inject.spi.Extension;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.as.weld.WeldLogger;
 import org.jboss.as.weld.WeldModuleResourceLoader;
+import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl.BeanArchiveType;
 import org.jboss.as.weld.discovery.WeldAnnotationDiscovery;
 import org.jboss.as.weld.services.bootstrap.ProxyServicesImpl;
 import org.jboss.modules.Module;
@@ -170,7 +172,8 @@ public class WeldDeployment implements CDI11Deployment {
             id = module.getIdentifier() + ADDITIONAL_CLASSES_BDA_SUFFIX;
         }
         BeanDeploymentArchiveImpl newBda = new BeanDeploymentArchiveImpl(Collections.singleton(beanClass.getName()),
-                BeansXml.EMPTY_BEANS_XML, module, id, false);
+                BeansXml.EMPTY_BEANS_XML, module, id, BeanArchiveType.SYNTHETIC, false);
+        WeldLogger.DEPLOYMENT_LOGGER.beanArchiveDiscovered(newBda);
         newBda.addBeanClass(beanClass);
         newBda.getServices().addAll(serviceRegistry.entrySet());
         // handle BDAs visible from the new BDA
