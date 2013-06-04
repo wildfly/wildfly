@@ -550,10 +550,6 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
      */
     protected void logout(String ssoId) {
         deregister(ssoId);
-        // broadcast logout to any cluster
-        if (ssoClusterManager != null) {
-            ssoClusterManager.logout(ssoId);
-        }
     }
 
     /**
