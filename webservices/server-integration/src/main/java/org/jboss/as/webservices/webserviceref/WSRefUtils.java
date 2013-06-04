@@ -62,12 +62,17 @@ import org.jboss.wsf.spi.serviceref.ServiceRefType;
 /**
  * Translates WS Refs from JBossAS MD to JBossWS UMDM format.
  *
+ * Some of the methods on this class are public to allow weld
+ *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 final class WSRefUtils {
 
     private WSRefUtils() {
     }
+
+
+
 
     static UnifiedServiceRefMetaData translate(final ServiceReferenceMetaData serviceRefMD, final UnifiedServiceRefMetaData serviceRefUMDM) {
         serviceRefUMDM.setServiceRefName(serviceRefMD.getName());

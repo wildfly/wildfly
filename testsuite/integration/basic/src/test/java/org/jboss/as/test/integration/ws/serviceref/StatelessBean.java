@@ -25,16 +25,20 @@ package org.jboss.as.test.integration.ws.serviceref;
 import javax.annotation.Resource;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.xml.ws.WebServiceRef;
 
 /**
  * A test bean that delegates to a web service provided through serviceref injection.
- * 
+ *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 @Stateless(name = "StatelessBean")
 @Remote(StatelessRemote.class)
 public class StatelessBean implements StatelessRemote {
+
+    @Inject
+    private CdiBean cdiBean;
 
     @WebServiceRef(value = EndpointService.class, mappedName = "jbossws-client/service/TestService", wsdlLocation = "META-INF/wsdl/TestService.wsdl")
     EndpointInterface endpoint1;
@@ -87,4 +91,7 @@ public class StatelessBean implements StatelessRemote {
         return _endpoint4.echo(id + ":" + string);
     }
 
+    public String echoCDI(final String string) throws Exception {
+        return cdiBean.echo(id + ":" + string);
+    }
 }

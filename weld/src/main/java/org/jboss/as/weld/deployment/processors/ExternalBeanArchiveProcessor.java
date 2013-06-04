@@ -46,9 +46,11 @@ import org.jboss.as.weld.deployment.BeanDeploymentModule;
 import org.jboss.as.weld.deployment.UrlScanner;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.deployment.WeldDeploymentMetadata;
+import org.jboss.as.weld.services.bootstrap.WeldJaxwsInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldJpaInjectionServices;
 import org.jboss.modules.Module;
 import org.jboss.weld.bootstrap.spi.BeansXml;
+import org.jboss.weld.injection.spi.JaxwsInjectionServices;
 import org.jboss.weld.injection.spi.JpaInjectionServices;
 import org.jboss.weld.xml.BeansXmlParser;
 
@@ -152,7 +154,9 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
 
             final BeanDeploymentModule bdm = new BeanDeploymentModule(Collections.singleton(bda));
             final JpaInjectionServices jpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit, deploymentUnit.getServiceRegistry());
+            final JaxwsInjectionServices jaxwsInjectionServices = new WeldJaxwsInjectionServices(deploymentUnit);
             bdm.addService(JpaInjectionServices.class, jpaInjectionServices);
+            bdm.addService(JaxwsInjectionServices.class, jaxwsInjectionServices);
             deploymentUnit.addToAttachmentList(WeldAttachments.ADDITIONAL_BEAN_DEPLOYMENT_MODULES, bdm);
             for (DeploymentUnit du : entry.getValue()) {
                 du.addToAttachmentList(WeldAttachments.VISIBLE_ADDITIONAL_BEAN_DEPLOYMENT_MODULE, bdm);
