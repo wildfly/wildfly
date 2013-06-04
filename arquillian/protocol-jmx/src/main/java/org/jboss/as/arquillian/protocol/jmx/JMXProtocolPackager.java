@@ -103,16 +103,20 @@ public class JMXProtocolPackager implements DeploymentPackager {
     public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> protocolProcessors) {
         final Archive<?> appArchive = testDeployment.getApplicationArchive();
         if (archiveHolder.getArchive() == null) {
-            final Collection<Archive<?>> auxArchives = testDeployment.getAuxiliaryArchives();
-            JavaArchive archive = generateArquillianServiceArchive(auxArchives);
-            archiveHolder.setArchive(archive);
+            try {
+                Collection<Archive<?>> auxArchives = testDeployment.getAuxiliaryArchives();
+                JavaArchive archive = generateArquillianServiceArchive(auxArchives);
+                archiveHolder.setArchive(archive);
+            } catch (Exception ex) {
+                throw new IllegalStateException("Cannot generate arquillian service", ex);
+            }
         }
         addModulesManifestDependencies(appArchive);
         archiveHolder.addPreparedDeployment(testDeployment.getDeploymentName());
         return appArchive;
     }
 
-    private JavaArchive generateArquillianServiceArchive(Collection<Archive<?>> auxArchives) {
+    private JavaArchive generateArquillianServiceArchive(Collection<Archive<?>> auxArchives) throws Exception {
 
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arquillian-service");
         log.debugf("Generating: %s", archive.getName());
@@ -141,20 +145,16 @@ public class JMXProtocolPackager implements DeploymentPackager {
             Node node = aux.get(loadableExtensionsPath);
             if (node != null) {
                 BufferedReader br = new BufferedReader(new InputStreamReader(node.getAsset().openStream()));
-                try {
-                    String line = br.readLine();
-                    while (line != null) {
-                        loadableExtensions.add(line);
-                        ClassLoader classLoader = getClass().getClassLoader();
-                        Object extension = classLoader.loadClass(line).newInstance();
-                        if (extension instanceof DependenciesProvider) {
-                            DependenciesProvider provider = (DependenciesProvider) extension;
-                            archiveDependencies.addAll(provider.getDependencies());
-                        }
-                        line = br.readLine();
+                String line = br.readLine();
+                while (line != null) {
+                    loadableExtensions.add(line);
+                    ClassLoader classLoader = getClass().getClassLoader();
+                    Object extension = classLoader.loadClass(line).newInstance();
+                    if (extension instanceof DependenciesProvider) {
+                        DependenciesProvider provider = (DependenciesProvider) extension;
+                        archiveDependencies.addAll(provider.getDependencies());
                     }
-                } catch (Exception ex) {
-                    // ignore
+                    line = br.readLine();
                 }
             }
             log.debugf("Merging archive: %s", aux);
