@@ -31,6 +31,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
@@ -130,6 +131,7 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                 )
                 .addChild(
                         builder(ErrorHandlerDefinitions.INSTANCE)
+                                .setNoAddOperation(true)
                                 .setXmlElementName(Constants.ERROR_HANDLERS)
                                 .addChild(
                                         builder(ErrorPageDefinition.INSTANCE)
@@ -142,6 +144,7 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                 .addChild(
                         builder(HandlerDefinitions.INSTANCE)
                                 .setXmlElementName(Constants.HANDLERS)
+                                .setNoAddOperation(true)
                                 .addChild(
                                         builder(FileHandler.INSTANCE)
                                                 .addAttributes(
@@ -156,6 +159,7 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                 .addChild(
                         builder(FilterDefinitions.INSTANCE)
                                 .setXmlElementName(Constants.FILTERS)
+                                .setNoAddOperation(true)
                                 .addChild(
                                         builder(BasicAuthHandler.INSTANCE)
                                                 .addAttributes(BasicAuthHandler.SECURITY_DOMAIN)
@@ -166,6 +170,14 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                 )
 
                 )
+                .setAdditionalOperationsGenerator(new PersistentResourceXMLDescription.AdditionalOperationsGenerator() {
+                    @Override
+                    public void additionalOperations(final PathAddress address, final ModelNode addOperation, final List<ModelNode> operations) {
+                        operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_FILTERS)));
+                        operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_HANDLERS)));
+                        operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_ERROR_HANDLERS)));
+                    }
+                })
                 .build();
     }
 
