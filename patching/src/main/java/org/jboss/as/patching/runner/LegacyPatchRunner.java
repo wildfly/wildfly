@@ -63,12 +63,17 @@ public class LegacyPatchRunner implements PatchingRunnerWrapper {
         }
     }
 
-    private PatchingResult execute(File workDir, ContentVerificationPolicy policy) throws PatchingException {
+    private PatchingResult execute(final File workDir, ContentVerificationPolicy policy) throws PatchingException {
         final PatchContentLoader loader = PatchContentLoader.create(workDir);
         final PatchContentProvider provider = new PatchContentProvider() {
             @Override
             public PatchContentLoader getLoader(String patchId) {
                 return loader;
+            }
+
+            @Override
+            public File getPatchContentRootDir() {
+                return workDir;
             }
 
             @Override

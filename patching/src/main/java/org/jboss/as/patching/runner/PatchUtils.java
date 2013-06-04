@@ -23,6 +23,7 @@
 package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.Constants.BASE;
+import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.safeClose;
 
 import java.io.File;
@@ -98,6 +99,7 @@ public final class PatchUtils {
     }
 
     public static void writeRef(final File file, final String ref) throws IOException {
+        mkdir(file.getParentFile());
         final OutputStream os = new FileOutputStream(file);
         try {
             writeLine(os, ref);
@@ -109,6 +111,7 @@ public final class PatchUtils {
     }
 
     public static void writeRefs(final File file, final List<String> refs) throws IOException {
+        mkdir(file.getParentFile());
         final OutputStream os = new FileOutputStream(file);
         try {
             writeRefs(os, refs);

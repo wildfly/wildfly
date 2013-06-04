@@ -151,9 +151,12 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilderF
         writer.writeAttribute(Attribute.ID.name, patch.getPatchId());
 
         // Description
-        writer.writeStartElement(Element.DESCRIPTION.name);
-        writer.writeCharacters(patch.getDescription());
-        writer.writeEndElement(); // description
+        String description = patch.getDescription();
+        if (description != null) {
+            writer.writeStartElement(Element.DESCRIPTION.name);
+            writer.writeCharacters(description);
+            writer.writeEndElement(); // description
+        }
 
         // identity
         final Identity identity = patch.getIdentity();
