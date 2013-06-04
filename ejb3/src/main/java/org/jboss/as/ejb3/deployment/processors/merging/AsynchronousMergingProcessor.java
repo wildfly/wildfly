@@ -43,6 +43,8 @@ import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.interceptors.AsyncFutureInterceptorFactory;
+import org.jboss.as.ejb3.component.interceptors.LogDiagnosticContextRecoveryInterceptor;
+import org.jboss.as.ejb3.component.interceptors.LogDiagnosticContextStorageInterceptor;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.processors.dd.MethodResolutionUtils;
@@ -156,7 +158,9 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
 
     private static void addAsyncInterceptor(final ViewConfiguration configuration, final Method method) throws DeploymentUnitProcessingException {
         if (method.getReturnType().equals(void.class) || method.getReturnType().equals(Future.class)) {
+            configuration.addClientInterceptor(method, LogDiagnosticContextStorageInterceptor.getFactory(), InterceptorOrder.Client.LOCAL_ASYNC_LOG_SAVE);
             configuration.addClientInterceptor(method, AsyncFutureInterceptorFactory.INSTANCE, InterceptorOrder.Client.LOCAL_ASYNC_INVOCATION);
+            configuration.addClientInterceptor(method, LogDiagnosticContextRecoveryInterceptor.getFactory(), InterceptorOrder.Client.LOCAL_ASYNC_LOG_RESTORE);
         } else {
             throw MESSAGES.wrongReturnTypeForAsyncMethod(method);
         }
