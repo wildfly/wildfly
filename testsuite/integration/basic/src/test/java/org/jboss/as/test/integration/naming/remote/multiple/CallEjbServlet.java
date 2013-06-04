@@ -14,6 +14,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jboss.as.network.NetworkUtils;
+
 @WebServlet(name = "CallEjbServlet", urlPatterns = {"/CallEjbServlet"})
 public class CallEjbServlet extends HttpServlet {
 	@EJB
@@ -23,7 +25,10 @@ public class CallEjbServlet extends HttpServlet {
 		Context ctx = null;
 		try {
 			Properties env = new Properties();
-			env.put(Context.PROVIDER_URL, "remote://localhost:4447");
+			String address = System.getProperty("node0", "localhost");
+			// format possible IPv6 address
+			address = NetworkUtils.formatPossibleIpv6Address(address);
+			env.put(Context.PROVIDER_URL, "remote://" + address + ":4447");
 			env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
 			ctx = new InitialContext(env);
 
