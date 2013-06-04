@@ -192,7 +192,9 @@ public class InterceptorOrder {
     public static final class Client {
 
         public static final int TO_STRING = 0x100;
+        public static final int LOCAL_ASYNC_LOG_SAVE = 0x180;
         public static final int LOCAL_ASYNC_INVOCATION = 0x200;
+        public static final int LOCAL_ASYNC_LOG_RESTORE = 0x280;
         public static final int ASSOCIATING_INTERCEPTOR = 0x300;
         public static final int EJB_EQUALS_HASHCODE = 0x400;
         public static final int WRITE_REPLACE = 0x500;
