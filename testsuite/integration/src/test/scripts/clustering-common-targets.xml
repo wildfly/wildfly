@@ -323,6 +323,42 @@
     </macrodef>
 
     <!--
+        Add a backups element to a cache in the Infinispan subsystem.
+    -->
+    <macrodef name="ts.config-as.add-xsite-backups" description="Add a backup element to a cache in the Infinispan subsystem">
+
+        <attribute name="name" default="wildfly"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <attribute name="container" default="web"/>
+        <attribute name="cache-type" default="replicated-cache"/>
+        <attribute name="cache" default="repl"/>
+        <attribute name="backup.site" default="siteB"/>
+        <attribute name="backup.failure-policy" default="WARN"/>
+        <attribute name="backup.strategy" default="SYNC"/>
+        <attribute name="backup.replication-timeout" default="10000"/>
+        <attribute name="backup.enabled" default="true"/>
+
+        <sequential>
+            <echo message="Adding backups element to cache @{cache} in container @{container} in Infinispan subsystem for config @{name}"/>
+
+            <execute-xslt-transform transform="addXsiteBackups.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+                <transform-params>
+                    <param name="container" expression="@{container}"/>
+                    <param name="cache-type" expression="@{cache-type}"/>
+                    <param name="cache" expression="@{cache}"/>
+                    <param name="backup.site" expression="@{backup.site}"/>
+                    <param name="backup.failure-policy" expression="@{backup.failure-policy}"/>
+                    <param name="backup.strategy" expression="@{backup.strategy}"/>
+                    <param name="backup.replication-timeout" expression="@{backup.replication-timeout}"/>
+                    <param name="backup.enabled" expression="@{backup.enabled}"/>
+                </transform-params>
+            </execute-xslt-transform>
+        </sequential>
+    </macrodef>
+
+    <!--
         Add a backup-for element to a cache in the Infinispan subsystem.
     -->
     <macrodef name="ts.config-as.add-xsite-backup-for" description="Add a backup-for element to a cache in the Infinispan subsystem">
