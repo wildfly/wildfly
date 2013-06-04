@@ -36,9 +36,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.jboss.as.patching.metadata.xsd1_1.Patch1_1;
-import org.jboss.as.patching.metadata.xsd1_1.PatchXml_1_1;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLMapper;
 
@@ -51,19 +51,16 @@ public class PatchXml {
 
     private static final XMLMapper MAPPER = XMLMapper.Factory.create();
     private static final PatchXml_1_0 XML1_0 = new PatchXml_1_0();
-    private static final PatchXml_1_1 XML1_1 = new PatchXml_1_1();
     private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
     private static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newFactory();
 
     static {
         MAPPER.registerRootElement(new QName(Namespace.PATCH_1_0.getNamespace(), PatchXml_1_0.Element.PATCH.name), XML1_0);
-        MAPPER.registerRootElement(new QName(Namespace.PATCH_1_1.getNamespace(), PatchXml_1_1.Element.PATCH.name), XML1_1);
     }
 
     public enum Namespace {
 
         PATCH_1_0("urn:jboss:patch:1.0"),
-        PATCH_1_1("urn:jboss:patch:1.1"),
         UNKNOWN(null),
         ;
 
@@ -76,6 +73,20 @@ public class PatchXml {
             return namespace;
         }
 
+        static Map<String, Namespace> elements = new HashMap<String, Namespace>();
+        static {
+            for(Namespace element : Namespace.values()) {
+                if(element != UNKNOWN) {
+                    elements.put(element.namespace, element);
+                }
+            }
+        }
+
+        static Namespace forUri(String name) {
+            final Namespace element = elements.get(name);
+            return element == null ? UNKNOWN : element;
+        }
+
     }
 
     private PatchXml() {
@@ -85,15 +96,18 @@ public class PatchXml {
     public static void marshal(final Writer writer, final Patch patch) throws XMLStreamException {
         final XMLOutputFactory outputFactory = OUTPUT_FACTORY;
         final XMLStreamWriter streamWriter = outputFactory.createXMLStreamWriter(writer);
-        final XMLElementWriter<?> xmlWriter = patch instanceof Patch1_1 ? XML1_1 : XML1_0;
+        final XMLElementWriter<?> xmlWriter = XML1_0;
         MAPPER.deparseDocument(xmlWriter, patch, streamWriter);
         streamWriter.close();
     }
 
     public static void marshal(final OutputStream os, final Patch patch) throws XMLStreamException {
+        marshal(os, patch, XML1_0);
+    }
+
+    protected static void marshal(final OutputStream os, final Patch patch, final XMLElementWriter<? extends Patch> xmlWriter) throws XMLStreamException {
         final XMLOutputFactory outputFactory = OUTPUT_FACTORY;
         final XMLStreamWriter streamWriter = outputFactory.createXMLStreamWriter(os);
-        final XMLElementWriter<?> xmlWriter = patch instanceof Patch1_1 ? XML1_1 : XML1_0;
         MAPPER.deparseDocument(xmlWriter, patch, streamWriter);
         streamWriter.close();
     }

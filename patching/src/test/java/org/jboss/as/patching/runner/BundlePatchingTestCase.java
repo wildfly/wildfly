@@ -141,7 +141,7 @@ public class BundlePatchingTestCase extends AbstractTaskTestCase {
 
         // build a one-off patch for the base installation
         // with 1 bundle removed
-        ContentModification bundleRemoved = new ContentModification(new BundleItem(bundleName, null, existingHash), existingHash, REMOVE);
+        ContentModification bundleRemoved = new ContentModification(new BundleItem(bundleName, null, NO_CONTENT), existingHash, REMOVE);
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(randomString())

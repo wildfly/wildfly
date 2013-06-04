@@ -25,11 +25,16 @@ import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.ContentType;
-import org.jboss.as.patching.metadata.IdentityPatch;
+import org.jboss.as.patching.metadata.Identity;
+import org.jboss.as.patching.metadata.LayerType;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModuleItem;
 import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.metadata.PatchElement;
+import org.jboss.as.patching.metadata.PatchElementProvider;
 import org.jboss.as.patching.metadata.PatchXml;
+import org.jboss.as.patching.metadata.impl.IdentityImpl;
+import org.jboss.as.patching.metadata.impl.PatchElementImpl;
 
 /**
  * @author Emanuel Muckenhuber
@@ -65,7 +70,7 @@ class IdentityPatchContext implements PatchContentProvider {
 
         this.miscBackup = new File(backup, PatchContentLoader.MISC);
         this.configBackup = new File(backup, Constants.CONFIGURATION);
-        this.identityEntry = new PatchEntry(modification);
+        this.identityEntry = new PatchEntry(modification, null);
     }
 
     PatchEntry getIdentityEntry() {
@@ -98,12 +103,13 @@ class IdentityPatchContext implements PatchContentProvider {
         // TODO
     }
 
-    protected PatchEntry resolveForElement(final IdentityPatch.PatchElement element) throws PatchingException {
-        final String layerName = element.getLayerName();
-        final IdentityPatch.LayerType layerType = element.getLayerType();
+    protected PatchEntry resolveForElement(final PatchElement element) throws PatchingException {
+        final PatchElementProvider provider = element.getProvider();
+        final String layerName = provider.getName();
+        final LayerType layerType = provider.getLayerType();
 
         final Map<String, PatchEntry> map;
-        if (layerType == IdentityPatch.LayerType.Layer) {
+        if (layerType == LayerType.Layer) {
             map = layers;
         } else {
             map = addOns;
@@ -111,7 +117,7 @@ class IdentityPatchContext implements PatchContentProvider {
         PatchEntry entry = map.get(layerName);
         if (entry == null) {
             final InstallationManager.MutablePatchingTarget target = modification.resolve(layerName, layerType);
-            entry = new PatchEntry(target);
+            entry = new PatchEntry(target, element);
             map.put(layerName, entry);
         }
         if (entry == null) {
@@ -128,7 +134,7 @@ class IdentityPatchContext implements PatchContentProvider {
         } else {
             patchId = callback.getPatchId();
         }
-        final IdentityPatch rollbackPatch = createRollbackPatch(patchId, patchType, modification.getVersion());
+        final Patch rollbackPatch = createRollbackPatch(patchId, patchType, modification.getVersion());
         callback.finishPatch(rollbackPatch, this);
         return new PatchingResult() {
             @Override
@@ -154,20 +160,6 @@ class IdentityPatchContext implements PatchContentProvider {
                         return identityEntry.delegate.getModifiedState().getPatchIDs();
                     }
 
-//                    @Override
-//                    public File[] getPatchingPath() {
-//                        return new File[0];
-//                    }
-//
-//                    @Override
-//                    public File[] getModulePath() {
-//                        return PatchUtils.getModulePath(identityEntry.getDirectoryStructure(), identityEntry.delegate.getModifiedState());
-//                    }
-//
-//                    @Override
-//                    public File[] getBundlePath() {
-//                        return PatchUtils.getBundlePath(identityEntry.getDirectoryStructure(), identityEntry.delegate.getModifiedState());
-//                    }
                 };
             }
 
@@ -248,7 +240,7 @@ class IdentityPatchContext implements PatchContentProvider {
         return PatchContentLoader.getMiscPath(root, item);
     }
 
-    public static void writePatch(final IdentityPatch rollbackPatch, final File file) throws IOException {
+    public static void writePatch(final Patch rollbackPatch, final File file) throws IOException {
         final File parent = file.getParentFile();
         if (!parent.isDirectory()) {
             if (!parent.mkdirs() && !parent.exists()) {
@@ -271,12 +263,15 @@ class IdentityPatchContext implements PatchContentProvider {
 
         private String applyPatchId;
         private String resultingVersion;
+        private final PatchElement element;
         private final InstallationManager.MutablePatchingTarget delegate;
         private final List<ContentModification> rollbackActions = new ArrayList<ContentModification>();
         private final Map<Location, PatchingTasks.ContentTaskDefinition> modifications = new LinkedHashMap<Location, PatchingTasks.ContentTaskDefinition>();
 
-        PatchEntry(InstallationManager.MutablePatchingTarget delegate) {
+        PatchEntry(final InstallationManager.MutablePatchingTarget delegate, final PatchElement element) {
+            assert delegate != null;
             this.delegate = delegate;
+            this.element = element;
             this.resultingVersion = modification.getVersion();
         }
 
@@ -448,7 +443,7 @@ class IdentityPatchContext implements PatchContentProvider {
 
         Patch.PatchType getPatchType();
 
-        void finishPatch(final IdentityPatch patch, IdentityPatchContext context) throws Exception;
+        void finishPatch(final Patch patch, IdentityPatchContext context) throws Exception;
 
         void commit();
 
@@ -456,11 +451,32 @@ class IdentityPatchContext implements PatchContentProvider {
     }
 
 
-    protected IdentityPatch createRollbackPatch(final String patchId, final Patch.PatchType patchType, final String resultingVersion) {
-        return new IdentityPatch() {
+    protected Patch createRollbackPatch(final String patchId, final Patch.PatchType patchType, final String resultingVersion) {
+        // Process elements
+        final List<PatchElement> elements = new ArrayList<PatchElement>();
+        // Process layers
+        for (final PatchEntry entry : getLayers()) {
+            final PatchElement element = createRollbackElement(entry);
+            elements.add(element);
+        }
+        // Process add-ons
+        for (final PatchEntry entry : getAddOns()) {
+            final PatchElement element = createRollbackElement(entry);
+            elements.add(element);
+        }
+
+        return new Patch() {
+
             @Override
-            public Collection<PatchElement> getPatchElements() {
-                return Collections.<PatchElement>emptyList();
+            public Identity getIdentity() {
+                // TODO get identity name !!
+                // TODO see if we need to add some requires, we probably need to maintain incompatible-with
+                return new IdentityImpl("", modification.getVersion());
+            }
+
+            @Override
+            public List<PatchElement> getElements() {
+                return elements;
             }
 
             @Override
@@ -496,5 +512,26 @@ class IdentityPatchContext implements PatchContentProvider {
 
     }
 
+    protected PatchElement createRollbackElement(final PatchEntry entry) {
+
+        final PatchElement patchElement = entry.element;
+        final Patch.PatchType patchType = patchElement.getPatchType();
+        final String patchId;
+        if (patchType == Patch.PatchType.CUMULATIVE) {
+            patchId = entry.getCumulativeID();
+        } else {
+            patchId = patchElement.getId();
+        }
+        final PatchElementImpl element = new PatchElementImpl(patchId);
+        element.setProvider(patchElement.getProvider());
+        if (patchType == Patch.PatchType.CUMULATIVE) {
+            element.setUpgrade(""); // no versions for patch-elements for nwo
+        } else {
+            element.setNoUpgrade();
+        }
+        // Add all the rollback actions
+        patchElement.getModifications().addAll(entry.rollbackActions);
+        return element;
+    }
 
 }

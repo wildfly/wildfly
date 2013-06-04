@@ -6,13 +6,12 @@ import java.util.Collection;
 
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.installation.InstalledImage;
-import org.jboss.as.patching.metadata.IdentityPatch;
 import org.jboss.as.patching.metadata.Patch;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class IdentityRollbackCallback implements IdentityPatchContext.FinalizeCallback {
+class IdentityRollbackCallback implements IdentityPatchContext.FinalizeCallback {
 
     private final String patchId;
     private final Collection<String> patches;
@@ -37,7 +36,7 @@ public class IdentityRollbackCallback implements IdentityPatchContext.FinalizeCa
     }
 
     @Override
-    public void finishPatch(final IdentityPatch patch, final IdentityPatchContext context) throws Exception {
+    public void finishPatch(final Patch patch, final IdentityPatchContext context) throws Exception {
         if (restoreConfiguration) {
             context.restoreConfiguration(patchId);
         }

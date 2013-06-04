@@ -20,13 +20,56 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.metadata.xsd1_1.impl;
+package org.jboss.as.patching.metadata;
+
+import java.util.Collection;
+
 
 /**
  * @author Alexey Loubyansky
  *
  */
-public interface RequiresCallback {
+public interface PatchElement {
 
-    void require(String id);
+    /**
+     * Patch element identifier.
+     *
+     * @return  patch element identifier
+     */
+    String getId();
+
+    /**
+     * The description of the patch element.
+     *
+     * @return  description of the patch element
+     */
+    String getDescription();
+
+    /**
+     * The provider of the patch element.
+     *
+     * @return  provider of the patch element
+     */
+    PatchElementProvider getProvider();
+
+    /**
+     * Get the patch type.
+     *
+     * @return the type of the patch
+     */
+    Patch.PatchType getPatchType();
+
+    /**
+     * Get the resulting version of a CP or {@code null} for a one-off patch
+     *
+     * @return the resulting version
+     */
+    String getResultingVersion();
+
+    /**
+     * Get the content modifications.
+     *
+     * @return the modifications
+     */
+    Collection<ContentModification> getModifications();
 }

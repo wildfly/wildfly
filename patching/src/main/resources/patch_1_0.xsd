@@ -20,8 +20,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns="urn:jboss:patch:1.1"
-           targetNamespace="urn:jboss:patch:1.1"
+           xmlns="urn:jboss:patch:1.0"
+           targetNamespace="urn:jboss:patch:1.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
         >

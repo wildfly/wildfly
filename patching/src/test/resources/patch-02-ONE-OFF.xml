@@ -21,16 +21,42 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<patch xmlns="urn:jboss:patch:1.0">
+<patch xmlns="urn:jboss:patch:1.0" id="patch-02">
 
-    <name>patch-02</name>
-    <description>patch description</description>
-    <one-off>
-        <applies-to-version>1.2.3</applies-to-version>
-        <applies-to-version>4.5.6</applies-to-version>
-    </one-off>
+    <description>patch-02 description</description>
+    <identity name="eap" version="1.2.3">
+        <requires>
+            <patch id="patch-03"/>
+            <patch id="patch-04"/>
+        </requires>
+    </identity>
+    <no-upgrade/>
 
-    <modules>
-        <updated-module name="org.jboss.as.test" existing-hash="1a2b3c4d" />
-    </modules>
+    <element id="element-01">
+        <description>element-01 description</description>
+        <layer name="base" version="1.0.0">
+            <requires>
+                <element id="element-02"/>
+                <element id="element-03"/>
+            </requires>
+        </layer>
+        <no-upgrade/>
+
+        <modules>
+            <updated name="org.jboss.as.test" hash="1a2a3a4a" new-hash="1b2b3b4b"/>
+        </modules>
+    </element>
+    <element id="element-04">
+        <description>element-02 description</description>
+        <layer name="xyz" version="2.0.0">
+            <requires>
+                <element id="element-03"/>
+            </requires>
+        </layer>
+        <no-upgrade/>
+
+        <modules>
+            <updated name="org.jboss.xyz" hash="1a2a3a4a" new-hash="1b2b3b4b"/>
+        </modules>
+    </element>
 </patch>

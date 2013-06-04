@@ -22,7 +22,6 @@
 
 package org.jboss.as.patching.metadata;
 
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
@@ -36,13 +35,17 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+import org.jboss.as.patching.metadata.Patch.PatchType;
+import org.jboss.as.patching.metadata.impl.IdentityImpl;
+import org.jboss.as.patching.metadata.impl.PatchElementImpl;
+import org.jboss.as.patching.metadata.impl.PatchElementProviderImpl;
+import org.jboss.as.patching.metadata.impl.RequiresCallback;
+import org.jboss.as.patching.metadata.impl.UpgradeCallback;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -55,32 +58,29 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilderF
 
     private static final String PATH_DELIMITER = "/";
 
-    enum Element {
+    public enum Element {
 
-        ADDED_BUNDLE("added-bundle"),
-        ADDED_MISC_CONTENT("added-misc-content"),
-        ADDED_MODULE("added-module"),
-        APPLIES_TO_VERSION("applies-to-version"),
+        ADD_ON("add-on"),
+        ADDED("added"),
         BUNDLES("bundles"),
-        CUMULATIVE("cumulative"),
         DESCRIPTION("description"),
+        ELEMENT("element"),
+        IDENTITY("identity"),
+        REQUIRES("requires"),
+        LAYER("layer"),
         MISC_FILES("misc-files"),
         MODULES("modules"),
-        NAME("name"),
-        ONE_OFF("one-off"),
+        NO_UPGRADE("no-upgrade"),
         PATCH("patch"),
-        REMOVED_BUNDLE("removed-bundle"),
-        REMOVED_MISC_CONTENT("removed-misc-content"),
-        REMOVED_MODULE("removed-module"),
-        UPDATED_BUNDLE("updated-bundle"),
-        UPDATED_MISC_CONTENT("updated-misc-content"),
-        UPDATED_MODULE("updated-module"),
+        REMOVED("removed"),
+        UPDATED("updated"),
+        UPGRADE("upgrade"),
 
         // default unknown element
         UNKNOWN(null),
         ;
 
-        final String name;
+        public final String name;
         Element(String name) {
             this.name = name;
         }
@@ -103,16 +103,18 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilderF
 
     enum Attribute {
 
-        APPLIES_TO_VERSION("applies-to-version"),
         DIRECTORY("directory"),
-        EXISTING_HASH("existing-hash"),
         EXISTING_PATH("existing-path"),
         HASH("hash"),
+        ID("id"),
         IN_RUNTIME_USE("in-runtime-use"),
         NAME("name"),
+        NEW_HASH("new-hash"),
         PATH("path"),
-        RESULTING_VERSION("resulting-version"),
         SLOT("slot"),
+        TO_VERSION("to-version"),
+        VERSION("version"),
+
 
         // default unknown attribute
         UNKNOWN(null);
@@ -145,28 +147,99 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilderF
         writer.writeStartElement(Element.PATCH.name);
         writer.writeDefaultNamespace(PatchXml.Namespace.PATCH_1_0.getNamespace());
 
-        // Name
-        writer.writeStartElement(Element.NAME.name);
-        writer.writeCharacters(patch.getPatchId());
-        writer.writeEndElement();
+        // id
+        writer.writeAttribute(Attribute.ID.name, patch.getPatchId());
 
         // Description
         writer.writeStartElement(Element.DESCRIPTION.name);
         writer.writeCharacters(patch.getDescription());
-        writer.writeEndElement();
+        writer.writeEndElement(); // description
 
-        // Type
-        final Patch.PatchType type = patch.getPatchType();
-        if(type == Patch.PatchType.ONE_OFF) {
-            writer.writeStartElement(Element.ONE_OFF.name);
-            writeAppliesToVersions(writer, patch.getAppliesTo());
-            writer.writeEndElement();
+        // identity
+        final Identity identity = patch.getIdentity();
+        writer.writeStartElement(Element.IDENTITY.name);
+        writer.writeAttribute(Attribute.NAME.name, identity.getName());
+        writer.writeAttribute(Attribute.VERSION.name, identity.getVersion());
+        if(!identity.getRequires().isEmpty()) {
+            writer.writeStartElement(Element.REQUIRES.name);
+            for(String patchId : identity.getRequires()) {
+                writer.writeStartElement(Element.PATCH.name);
+                writer.writeAttribute(Attribute.ID.name, patchId);
+                writer.writeEndElement(); // patch
+            }
+            writer.writeEndElement(); // includes
+        }
+        writer.writeEndElement(); // identity
+
+        // upgrade / no-upgrade
+        final PatchType type = patch.getPatchType();
+        if(type == PatchType.ONE_OFF) {
+            writer.writeEmptyElement(Element.NO_UPGRADE.name);
         } else {
-            writer.writeEmptyElement(Element.CUMULATIVE.name);
-            writer.writeAttribute(Attribute.APPLIES_TO_VERSION.name, patch.getAppliesTo().iterator().next());
-            writer.writeAttribute(Attribute.RESULTING_VERSION.name, patch.getResultingVersion());
+            writer.writeStartElement(Element.UPGRADE.name);
+            writer.writeAttribute(Attribute.TO_VERSION.name, patch.getResultingVersion());
+            writer.writeEndElement();
         }
 
+        // elements
+        final List<PatchElement> elements = patch.getElements();
+        for(PatchElement element : elements) {
+            writer.writeStartElement(Element.ELEMENT.name);
+            writer.writeAttribute(Attribute.ID.name, element.getId());
+
+            if(element.getDescription() != null) {
+                writer.writeStartElement(Element.DESCRIPTION.name);
+                writer.writeCharacters(element.getDescription());
+                writer.writeEndElement(); // description
+            }
+
+            // layer / add-on
+            final PatchElementProvider provider = element.getProvider();
+            if(provider == null) {
+                throw new XMLStreamException("Provider is missing for patch element " + element.getId());
+            }
+            if(provider.isAddOn()) {
+                writer.writeStartElement(Element.ADD_ON.name);
+            } else {
+                writer.writeStartElement(Element.LAYER.name);
+            }
+            writer.writeAttribute(Attribute.NAME.name, provider.getName());
+            writer.writeAttribute(Attribute.VERSION.name, provider.getVersion());
+            if(!provider.getRequires().isEmpty()) {
+                writer.writeStartElement(Element.REQUIRES.name);
+                for(String elementId : provider.getRequires()) {
+                    writer.writeStartElement(Element.ELEMENT.name);
+                    writer.writeAttribute(Attribute.ID.name, elementId);
+                    writer.writeEndElement(); // element
+                }
+                writer.writeEndElement(); // includes
+            }
+            writer.writeEndElement(); // add-on / layer
+
+            // upgrade / no-upgrade
+            final Patch.PatchType upgrade = element.getPatchType();
+            if(upgrade == Patch.PatchType.ONE_OFF) {
+                writer.writeEmptyElement(Element.NO_UPGRADE.name);
+            } else {
+                writer.writeEmptyElement(Element.UPGRADE.name);
+                writer.writeAttribute(Attribute.TO_VERSION.name, element.getResultingVersion());
+            }
+
+            // Write the content modifications
+            writeContentModifications(writer, element.getModifications());
+
+            writer.writeEndElement(); // element
+        }
+
+        // Write the identity modifications directory for some tests
+        writeContentModifications(writer, patch.getModifications());
+
+        // Done
+        writer.writeEndElement();
+        writer.writeEndDocument();
+    }
+
+    protected void writeContentModifications(final XMLExtendedStreamWriter writer, final Collection<ContentModification> modifications) throws XMLStreamException {
         // Sort by content and modification type
         final List<ContentModification> bundlesAdd  = new ArrayList<ContentModification>();
         final List<ContentModification> bundlesUpdate  = new ArrayList<ContentModification>();
@@ -180,7 +253,7 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilderF
         final List<ContentModification> modulesUpdate = new ArrayList<ContentModification>();
         final List<ContentModification> modulesRemove = new ArrayList<ContentModification>();
 
-        for(final ContentModification mod : patch.getModifications()) {
+        for(final ContentModification mod : modifications) {
             final ModificationType modificationType = mod.getType();
             final ContentType contentType = mod.getItem().getContentType();
             switch (contentType) {
@@ -231,10 +304,10 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilderF
                 !modulesUpdate.isEmpty() ||
                 !modulesRemove.isEmpty()) {
             writer.writeStartElement(Element.MODULES.name);
-            writeSlottedItems(writer, Element.ADDED_MODULE, modulesAdd);
-            writeSlottedItems(writer, Element.UPDATED_MODULE, modulesUpdate);
-            writeSlottedItems(writer, Element.REMOVED_MODULE, modulesRemove);
-            writer.writeEndElement();
+            writeSlottedItems(writer, Element.ADDED, modulesAdd);
+            writeSlottedItems(writer, Element.UPDATED, modulesUpdate);
+            writeSlottedItems(writer, Element.REMOVED, modulesRemove);
+            writer.writeEndElement(); // modules
         }
 
         // Bundles
@@ -242,10 +315,10 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilderF
                 !bundlesUpdate.isEmpty() ||
                 !bundlesRemove.isEmpty()) {
             writer.writeStartElement(Element.BUNDLES.name);
-            writeSlottedItems(writer, Element.ADDED_BUNDLE, bundlesAdd);
-            writeSlottedItems(writer, Element.UPDATED_BUNDLE, bundlesUpdate);
-            writeSlottedItems(writer, Element.REMOVED_BUNDLE, bundlesRemove);
-            writer.writeEndElement();
+            writeSlottedItems(writer, Element.ADDED, bundlesAdd);
+            writeSlottedItems(writer, Element.UPDATED, bundlesUpdate);
+            writeSlottedItems(writer, Element.REMOVED, bundlesRemove);
+            writer.writeEndElement(); // bundles
         }
 
         // Misc
@@ -253,119 +326,249 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilderF
                 !miscUpdate.isEmpty() ||
                 !miscRemove.isEmpty()) {
             writer.writeStartElement(Element.MISC_FILES.name);
-            writeMiscItems(writer, Element.ADDED_MISC_CONTENT, miscAdd);
-            writeMiscItems(writer, Element.UPDATED_MISC_CONTENT, miscUpdate);
-            writeMiscItems(writer, Element.REMOVED_MISC_CONTENT, miscRemove);
-            writer.writeEndElement();
+            writeMiscItems(writer, Element.ADDED, miscAdd);
+            writeMiscItems(writer, Element.UPDATED, miscUpdate);
+            writeMiscItems(writer, Element.REMOVED, miscRemove);
+            writer.writeEndElement(); // misc-files
         }
-
-        // Done
-        writer.writeEndElement();
-        writer.writeEndDocument();
     }
 
     @Override
     public void readElement(final XMLExtendedStreamReader reader, final PatchBuilderFactory factory) throws XMLStreamException {
         PatchBuilder patch = PatchBuilder.create();
         factory.setBuilder(patch);
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case NAME:
-                    patch.setPatchId(reader.getElementText());
-                    break;
-                case DESCRIPTION:
-                    patch.setDescription(reader.getElementText());
-                    break;
-                case CUMULATIVE:
-                    parseCumulativePatchType(reader, patch);
-                    break;
-                case ONE_OFF:
-                    parseOneOffPatchType(reader, patch);
-                    break;
-                case MODULES:
-                    parseModules(reader, patch);
-                    break;
-                case BUNDLES:
-                    parseBundles(reader, patch);
-                    break;
-                case MISC_FILES:
-                    parseMiscFiles(reader, patch);
-                    break;
-                default:
-                    throw unexpectedElement(reader);
-            }
-        }
-    }
 
-    static void parseCumulativePatchType(final XMLExtendedStreamReader reader, final PatchBuilder builder) throws XMLStreamException {
-
-        String appliesTo = null;
-        String resulting = null;
-
-        Set<Attribute> required = EnumSet.of(Attribute.APPLIES_TO_VERSION, Attribute.RESULTING_VERSION);
+        final PatchXml.Namespace namespace = PatchXml.Namespace.forUri(reader.getNamespaceURI());
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            required.remove(attribute);
-            switch (attribute) {
-                case APPLIES_TO_VERSION:
-                    appliesTo = value;
-                    break;
-                case RESULTING_VERSION:
-                    resulting = value;
-                    break;
-                default:
-                    throw unexpectedAttribute(reader, i);
+            if(Attribute.ID == attribute) {
+                patch.setPatchId(value);
+            } else {
+                throw unexpectedAttribute(reader, i);
             }
         }
 
+        final Collection<ContentModification> modifications = patch.getModifications();
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case DESCRIPTION:
+                    patch.setDescription(reader.getElementText());
+                    break;
+                case UPGRADE:
+                    parseUpgrade(reader, patch);
+                    break;
+                case NO_UPGRADE:
+                    parseNoUpgrade(reader, patch);
+                    break;
+                case IDENTITY:
+                    parseIdentity(reader, patch);
+                    break;
+                case ELEMENT:
+                    parseElement(reader, patch);
+                    break;
+                case MODULES:
+                    parseModules(reader, modifications);
+                    break;
+                case BUNDLES:
+                    parseBundles(reader, modifications);
+                    break;
+                case MISC_FILES:
+                    parseMiscFiles(reader, modifications);
+                    break;
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+    }
+
+    static void parseElement(final XMLExtendedStreamReader reader, final PatchBuilder builder) throws XMLStreamException {
+
+        String id = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            if(Attribute.ID == attribute) {
+                id = value;
+            } else {
+                throw unexpectedAttribute(reader, i);
+            }
+        }
+        final PatchElementImpl patchElement = new PatchElementImpl(id);
+        builder.addElement(patchElement);
+
+        final List<ContentModification> modifications = patchElement.getModifications();
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case DESCRIPTION:
+                    patchElement.setDescription(reader.getElementText());
+                    break;
+                case LAYER:
+                    parseElementProvider(reader, patchElement, false);
+                    break;
+                case ADD_ON:
+                    parseElementProvider(reader, patchElement, true);
+                    break;
+                case UPGRADE:
+                    parseUpgrade(reader, patchElement);
+                    break;
+                case NO_UPGRADE:
+                    parseNoUpgrade(reader, patchElement);
+                    break;
+                case MODULES:
+                    parseModules(reader, modifications);
+                    break;
+                case BUNDLES:
+                    parseBundles(reader, modifications);
+                    break;
+                case MISC_FILES:
+                    parseMiscFiles(reader, modifications);
+                    break;
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+    }
+
+    static void parseElementProvider(final XMLExtendedStreamReader reader, final PatchElementImpl patchElement, boolean isAddOn) throws XMLStreamException {
+
+        String name = null;
+        String version = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            if(Attribute.VERSION == attribute) {
+                version = value;
+            } else if(Attribute.NAME == attribute) {
+                name = value;
+            } else {
+                throw unexpectedAttribute(reader, i);
+            }
+        }
+
+        final PatchElementProviderImpl provider = new PatchElementProviderImpl(name, version, isAddOn);
+        patchElement.setProvider(provider);
+
+        int level = 0;
+        while (reader.hasNext()) {
+            if(reader.nextTag() == END_ELEMENT) {
+                if(level == 0) {
+                    break;
+                } else {
+                    --level;
+                }
+            }
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case REQUIRES:
+                    break;
+                case ELEMENT:
+                    level = 1;
+                    parseIncluded(reader, provider);
+                    break;
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+    }
+
+    static void parseIdentity(final XMLExtendedStreamReader reader, final PatchBuilder builder) throws XMLStreamException {
+
+        String name = null;
+        String version = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            if(Attribute.VERSION == attribute) {
+                version = value;
+            } else if(Attribute.NAME == attribute) {
+                name = value;
+            } else {
+                throw unexpectedAttribute(reader, i);
+            }
+        }
+
+        final IdentityImpl identity = new IdentityImpl(name, version);
+        builder.setIdentity(identity);
+
+        int level = 0;
+        while (reader.hasNext()) {
+            if(reader.nextTag() == END_ELEMENT) {
+                if(level == 0) {
+                    break;
+                } else {
+                    --level;
+                }
+            }
+
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case REQUIRES:
+                    break;
+                case PATCH:
+                    level = 1;
+                    parseIncluded(reader, identity);
+                    break;
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+    }
+
+    static void parseIncluded(final XMLExtendedStreamReader reader, final RequiresCallback includes) throws XMLStreamException {
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            if(Attribute.ID == attribute) {
+                includes.require(value);
+            } else {
+                throw unexpectedAttribute(reader, i);
+            }
+        }
         requireNoContent(reader);
-
-        if (!required.isEmpty()) {
-            throw missingRequired(reader, required);
-        }
-
-        builder.setCumulativeType(appliesTo, resulting);
     }
 
-    static void parseOneOffPatchType(final XMLExtendedStreamReader reader, final PatchBuilder builder) throws XMLStreamException {
+    static void parseUpgrade(final XMLExtendedStreamReader reader, final UpgradeCallback builder) throws XMLStreamException {
 
-        final List<String> appliesTo = new ArrayList<String>();
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            if(Attribute.TO_VERSION == attribute) {
+                builder.setUpgrade(value);
+            } else {
+                throw unexpectedAttribute(reader, i);
+            }
+        }
+        requireNoContent(reader);
+    }
 
+    static void parseNoUpgrade(final XMLExtendedStreamReader reader, final UpgradeCallback builder) throws XMLStreamException {
         requireNoAttributes(reader);
-
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case APPLIES_TO_VERSION:
-                    appliesTo.add(reader.getElementText());
-                    break;
-                default:
-                    throw unexpectedElement(reader);
-            }
-        }
-
-        if (appliesTo.isEmpty()) {
-            throw missingRequired(reader, Collections.singleton(Element.APPLIES_TO_VERSION));
-        }
-
-        builder.setOneOffType(appliesTo);
+        requireNoContent(reader);
+        builder.setNoUpgrade();
     }
 
-    static void parseModules(final XMLExtendedStreamReader reader, final PatchBuilder builder) throws XMLStreamException {
+    static void parseModules(final XMLExtendedStreamReader reader, final Collection<ContentModification> modifications) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
-                case ADDED_MODULE:
-                    builder.addContentModification(parseModuleModification(reader, ModificationType.ADD));
+                case ADDED:
+                    modifications.add(parseModuleModification(reader, ModificationType.ADD));
                     break;
-                case UPDATED_MODULE:
-                    builder.addContentModification(parseModuleModification(reader, ModificationType.MODIFY));
+                case UPDATED:
+                    modifications.add(parseModuleModification(reader, ModificationType.MODIFY));
                     break;
-                case REMOVED_MODULE:
-                    builder.addContentModification(parseModuleModification(reader, ModificationType.REMOVE));
+                case REMOVED:
+                    modifications.add(parseModuleModification(reader, ModificationType.REMOVE));
                     break;
                 default:
                     throw unexpectedElement(reader);
@@ -373,18 +576,18 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilderF
         }
     }
 
-    static void parseMiscFiles(final XMLExtendedStreamReader reader, final PatchBuilder builder) throws XMLStreamException {
+    static void parseMiscFiles(final XMLExtendedStreamReader reader, final Collection<ContentModification> modifications) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
-                case ADDED_MISC_CONTENT:
-                    builder.addContentModification(parseMiscModification(reader, ModificationType.ADD));
+                case ADDED:
+                    modifications.add(parseMiscModification(reader, ModificationType.ADD));
                     break;
-                case UPDATED_MISC_CONTENT:
-                    builder.addContentModification(parseMiscModification(reader, ModificationType.MODIFY));
+                case UPDATED:
+                    modifications.add(parseMiscModification(reader, ModificationType.MODIFY));
                     break;
-                case REMOVED_MISC_CONTENT:
-                    builder.addContentModification(parseMiscModification(reader, ModificationType.REMOVE));
+                case REMOVED:
+                    modifications.add(parseMiscModification(reader, ModificationType.REMOVE));
                     break;
                 default:
                     throw unexpectedElement(reader);
@@ -392,18 +595,18 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilderF
         }
     }
 
-    static void parseBundles(final XMLExtendedStreamReader reader, final PatchBuilder builder) throws XMLStreamException {
+    static void parseBundles(final XMLExtendedStreamReader reader, final Collection<ContentModification> modifications) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
-                case ADDED_BUNDLE:
-                    builder.addContentModification(parseBundleModification(reader, ModificationType.ADD));
+                case ADDED:
+                    modifications.add(parseBundleModification(reader, ModificationType.ADD));
                     break;
-                case UPDATED_BUNDLE:
-                    builder.addContentModification(parseBundleModification(reader, ModificationType.MODIFY));
+                case UPDATED:
+                    modifications.add(parseBundleModification(reader, ModificationType.MODIFY));
                     break;
-                case REMOVED_BUNDLE:
-                    builder.addContentModification(parseBundleModification(reader, ModificationType.REMOVE));
+                case REMOVED:
+                    modifications.add(parseBundleModification(reader, ModificationType.REMOVE));
                     break;
                 default:
                     throw unexpectedElement(reader);
@@ -438,10 +641,18 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilderF
                     slot = value;
                     break;
                 case HASH:
-                    hash = hexStringToByteArray(value);
+                    if(modificationType == ModificationType.REMOVE) {
+                        targetHash = hexStringToByteArray(value);
+                    } else {
+                        hash = hexStringToByteArray(value);
+                    }
                     break;
-                case EXISTING_HASH:
-                    targetHash = hexStringToByteArray(value);
+                case NEW_HASH:
+                    if(modificationType == ModificationType.REMOVE) {
+                        hash = hexStringToByteArray(value);
+                    } else {
+                        targetHash = hexStringToByteArray(value);
+                    }
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -473,10 +684,18 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilderF
                     path = value;
                     break;
                 case HASH:
-                    hash = hexStringToByteArray(value);
+                    if(type == ModificationType.REMOVE) {
+                        targetHash = hexStringToByteArray(value);
+                    } else {
+                        hash = hexStringToByteArray(value);
+                    }
                     break;
-                case EXISTING_HASH:
-                    targetHash = hexStringToByteArray(value);
+                case NEW_HASH:
+                    if(type == ModificationType.REMOVE) {
+                        hash = hexStringToByteArray(value);
+                    } else {
+                        targetHash = hexStringToByteArray(value);
+                    }
                     break;
                 case IN_RUNTIME_USE:
                     affectsRuntime = Boolean.parseBoolean(value);
@@ -499,7 +718,7 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilderF
 
     protected void writeAppliesToVersions(XMLExtendedStreamWriter writer, List<String> appliesTo) throws XMLStreamException {
         for (String version : appliesTo) {
-            writer.writeStartElement(Element.APPLIES_TO_VERSION.name);
+//            writer.writeStartElement(Element.APPLIES_TO_VERSION.name);
             writer.writeCharacters(version);
             writer.writeEndElement();
         }
@@ -522,16 +741,19 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilderF
         if (!MAIN_SLOT.equals(item.getSlot())) {
             writer.writeAttribute(Attribute.SLOT.name, item.getSlot());
         }
-        if(type != ModificationType.REMOVE) {
-            byte[] hash = item.getContentHash();
-            if (hash.length > 0) {
-                writer.writeAttribute(Attribute.HASH.name,  bytesToHexString(hash));
-            }
+        byte[] hash = item.getContentHash();
+        if (hash.length > 0) {
+            writer.writeAttribute(Attribute.HASH.name,  bytesToHexString(hash));
         }
-        if(type != ModificationType.ADD) {
+        if(type == ModificationType.REMOVE) {
             final byte[] existingHash = modification.getTargetHash();
             if (existingHash.length > 0) {
-                writer.writeAttribute(Attribute.EXISTING_HASH.name, bytesToHexString(existingHash));
+                writer.writeAttribute(Attribute.HASH.name, bytesToHexString(existingHash));
+            }
+        } else if(type == ModificationType.MODIFY) {
+            final byte[] existingHash = modification.getTargetHash();
+            if (existingHash.length > 0) {
+                writer.writeAttribute(Attribute.NEW_HASH.name, bytesToHexString(existingHash));
             }
         }
     }
@@ -560,11 +782,21 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilderF
             writer.writeAttribute(Attribute.DIRECTORY.name, "true");
         }
 
-        if(type != ModificationType.REMOVE) {
-            writer.writeAttribute(Attribute.HASH.name, bytesToHexString(item.getContentHash()));
+        byte[] hash = item.getContentHash();
+        if(hash.length > 0) {
+            writer.writeAttribute(Attribute.HASH.name, bytesToHexString(hash));
         }
-        if(type != ModificationType.ADD) {
-            writer.writeAttribute(Attribute.EXISTING_HASH.name, bytesToHexString(modification.getTargetHash()));
+
+        if(type == ModificationType.REMOVE) {
+            final byte[] existingHash = modification.getTargetHash();
+            if (existingHash.length > 0) {
+                writer.writeAttribute(Attribute.HASH.name, bytesToHexString(existingHash));
+            }
+            if(item.isAffectsRuntime()) {
+                writer.writeAttribute(Attribute.IN_RUNTIME_USE.name, "true");
+            }
+        } else if(type == ModificationType.MODIFY) {
+            writer.writeAttribute(Attribute.NEW_HASH.name, bytesToHexString(modification.getTargetHash()));
             if (item.isAffectsRuntime()) {
                 writer.writeAttribute(Attribute.IN_RUNTIME_USE.name, "true");
             }

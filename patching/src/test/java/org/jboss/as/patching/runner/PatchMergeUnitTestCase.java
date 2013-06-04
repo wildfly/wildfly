@@ -30,9 +30,11 @@ import java.util.Map;
 
 import junit.framework.Assert;
 import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.Identity;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.metadata.PatchElement;
 import org.junit.Test;
 
 /**
@@ -203,6 +205,16 @@ public class PatchMergeUnitTestCase {
             @Override
             public List<ContentModification> getModifications() {
                 return Arrays.asList(item);
+            }
+
+            @Override
+            public Identity getIdentity() {
+                return null;
+            }
+
+            @Override
+            public List<PatchElement> getElements() {
+                return null;
             }
         };
     }
