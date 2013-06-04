@@ -36,7 +36,7 @@ import static org.jboss.as.patching.runner.TestUtils.createBundle;
 import static org.jboss.as.patching.runner.TestUtils.createPatchXMLFile;
 import static org.jboss.as.patching.runner.TestUtils.createZippedPatchFile;
 import static org.jboss.as.patching.runner.TestUtils.getBundlePath;
-import static org.jboss.as.patching.runner.TestUtils.mkdir;
+import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 
 import java.io.File;

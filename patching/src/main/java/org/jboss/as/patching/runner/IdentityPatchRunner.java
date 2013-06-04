@@ -121,6 +121,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         try {
             return executeTasks(context, callback);
         } catch (Exception e) {
+            e.printStackTrace();
             callback.rollback();
             throw rethrowException(e);
         }
@@ -235,6 +236,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
             }
             // Process the rollback xml
             for (final PatchElement patchElement : rollbackPatch.getElements()) {
+                final String elementPatchId = patchElement.getId();
                 final PatchElementProvider provider = patchElement.getProvider();
                 final String layerName = provider.getName();
                 final LayerType layerType = provider.getLayerType();
@@ -256,8 +258,8 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
                 final IdentityPatchContext.PatchEntry entry = context.resolveForElement(patchElement);
                 final Map<Location, ContentTaskDefinition> modifications = entry.getModifications();
                 // Create the rollback
-                PatchingTasks.rollback(patchID, original.getModifications(), patchElement.getModifications(), modifications, ContentItemFilter.ALL_BUT_MISC);
-                entry.rollback(patchID);
+                PatchingTasks.rollback(elementPatchId, original.getModifications(), patchElement.getModifications(), modifications, ContentItemFilter.ALL_BUT_MISC);
+                entry.rollback(elementPatchId);
             }
             if (!originalLayers.isEmpty() || !originalAddOns.isEmpty()) {
                 throw new PatchingException("rollback did not contain all layers");

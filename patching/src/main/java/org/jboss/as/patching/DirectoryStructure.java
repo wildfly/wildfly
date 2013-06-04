@@ -31,6 +31,7 @@ import static org.jboss.as.patching.Constants.MODULES;
 import static org.jboss.as.patching.Constants.PATCHES;
 import static org.jboss.as.patching.Constants.REFERENCES;
 import static org.jboss.as.patching.Constants.STANDALONE;
+import static org.jboss.as.patching.IoUtils.newFile;
 
 import java.io.File;
 
@@ -97,14 +98,13 @@ import org.jboss.as.patching.installation.InstalledImage;
  * |   |-- cumulative (cumulative link for the installed identity)
  * |   |-- references
  * |   |   `-- patch-identity-1  (list of one-off patches for the installed identity)
- * |   `-- patches
- * |       |-- history (history of the patches applied to the identity)
- * |       |   `-- patch-identity-1
- * |       |       |-- patch.xml
- * |       |       |-- rollback.xml
- * |       |       |-- timestamp
- * |       |       |-- configuration   (configuration backup)
- * |       |       `-- misc            (misc backup)
+ * |   `-- patches  (history of the patches applied to the identity)
+ * |       `-- patch-identity-1
+ * |           |-- patch.xml
+ * |           |-- rollback.xml
+ * |           |-- timestamp
+ * |           |-- configuration   (configuration backup)
+ * |           `-- misc            (misc backup)
  * |       |-- layers (metadata for patched layers)
  * |       |   |-- base
  * |       |   |   |-- cumulative (cumulative link)
@@ -264,7 +264,7 @@ public abstract class DirectoryStructure {
 
             @Override
             public File getPatchHistoryDir(String patchId) {
-                return new File(getInstallationMetadata(), patchId);
+                return newFile(getInstallationMetadata(), PATCHES, patchId);
             }
 
             @Override

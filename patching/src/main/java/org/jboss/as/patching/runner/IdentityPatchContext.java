@@ -1,5 +1,10 @@
 package org.jboss.as.patching.runner;
 
+import static org.jboss.as.patching.Constants.BUNDLES;
+import static org.jboss.as.patching.Constants.MISC;
+import static org.jboss.as.patching.Constants.MODULES;
+import static org.jboss.as.patching.IoUtils.newFile;
+
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.FileFilter;
@@ -103,6 +108,11 @@ class IdentityPatchContext implements PatchContentProvider {
         // TODO
     }
 
+    @Override
+    public File getPatchContentRootDir() {
+        return contentProvider.getPatchContentRootDir();
+    }
+
     protected PatchEntry resolveForElement(final PatchElement element) throws PatchingException {
         final PatchElementProvider provider = element.getProvider();
         final String layerName = provider.getName();
@@ -119,6 +129,19 @@ class IdentityPatchContext implements PatchContentProvider {
             final InstallationManager.MutablePatchingTarget target = modification.resolve(layerName, layerType);
             entry = new PatchEntry(target, element);
             map.put(layerName, entry);
+
+            String elementId = element.getId();
+            // there is no content provider when a patch is rolled back
+            if (contentProvider != null) {
+                try {
+                    File miscRoot = newFile(getPatchContentRootDir(), elementId, layerType.getDirName(), layerName, MISC);
+                    File moduleRoot = newFile(getPatchContentRootDir(), elementId, layerType.getDirName(), layerName, MODULES);
+                    File bundleRoot = newFile(getPatchContentRootDir(), elementId, layerType.getDirName(), layerName, BUNDLES);
+                    contentLoaders.put(element.getId(), new PatchContentLoader(miscRoot, bundleRoot, moduleRoot));
+                } catch (Exception e) {
+                    throw new PatchingException("failed to resolve content for " + element);
+                }
+            }
         }
         if (entry == null) {
             throw new PatchingException("failed to resolve target for " + element);

@@ -23,14 +23,8 @@ package org.jboss.as.patching.installation;
  * |                   `-- &lt;patchId> => {@link org.jboss.as.patching.DirectoryStructure#getModulePatchDirectory(String)}
  * `-- .installation
  *     |-- cumulative
- *     |-- references
- *     |   `-- patch-identity-1
- *     `-- patches
- *         `-- layers
- *             `-- base
- *                 |-- cumulative => {@link org.jboss.as.patching.DirectoryStructure#getCumulativeLink()}
- *                 `-- references
- *                     `-- &lt;patchId> => {@link org.jboss.as.patching.DirectoryStructure#getCumulativeRefs(String)}
+ *     `-- references
+ *         `-- patch-identity-1
  * <code>
  * </pre>
  *

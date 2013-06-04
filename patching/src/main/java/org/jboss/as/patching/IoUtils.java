@@ -190,4 +190,26 @@ public class IoUtils {
         }
         return ok;
     }
+
+    public static File mkdir(File parent, String... segments) throws IOException {
+        File dir = parent;
+        for (String segment : segments) {
+            dir = new File(dir, segment);
+        }
+        dir.mkdirs();
+        return dir;
+    }
+
+    /**
+     * Return a new File object based on the baseDir and the segments.
+     *
+     * This method does not perform any operation on the file system.
+     */
+    public static File newFile(File baseDir, String... segments) {
+        File f = baseDir;
+        for (String segment : segments) {
+            f = new File(f, segment);
+        }
+        return f;
+    }
 }
