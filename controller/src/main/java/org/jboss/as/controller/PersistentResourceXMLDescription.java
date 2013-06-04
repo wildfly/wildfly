@@ -36,14 +36,18 @@ public class PersistentResourceXMLDescription {
     private final LinkedHashMap<String, AttributeDefinition> attributes;
     private final List<PersistentResourceXMLDescription> children;
     private final boolean useValueAsElementName;
+    private final boolean noAddOperation;
+    private final AdditionalOperationsGenerator additionalOperationsGenerator;
 
-    private PersistentResourceXMLDescription(final PersistentResourceDefinition resourceDefinition, final String xmlElementName, final String xmlWrapperElement, final LinkedHashMap<String, AttributeDefinition> attributes, final List<PersistentResourceXMLDescription> children, final boolean useValueAsElementName) {
+    private PersistentResourceXMLDescription(final PersistentResourceDefinition resourceDefinition, final String xmlElementName, final String xmlWrapperElement, final LinkedHashMap<String, AttributeDefinition> attributes, final List<PersistentResourceXMLDescription> children, final boolean useValueAsElementName, final boolean noAddOperation, final AdditionalOperationsGenerator additionalOperationsGenerator) {
         this.resourceDefinition = resourceDefinition;
         this.xmlElementName = xmlElementName;
         this.xmlWrapperElement = xmlWrapperElement;
         this.attributes = attributes;
         this.children = children;
         this.useValueAsElementName = useValueAsElementName;
+        this.noAddOperation = noAddOperation;
+        this.additionalOperationsGenerator = additionalOperationsGenerator;
     }
 
     public void parse(final XMLExtendedStreamReader reader, PathAddress parentAddress, List<ModelNode> list) throws XMLStreamException {
@@ -85,8 +89,13 @@ public class PersistentResourceXMLDescription {
         }
         PathElement path = wildcard ? PathElement.pathElement(resourceDefinition.getPathElement().getKey(), name) : resourceDefinition.getPathElement();
         PathAddress address = parentAddress.append(path);
-        op.get(ADDRESS).set(address.toModelNode());
-        list.add(op);
+        if(!noAddOperation) {
+            op.get(ADDRESS).set(address.toModelNode());
+            list.add(op);
+        }
+        if(additionalOperationsGenerator != null) {
+            additionalOperationsGenerator.additionalOperations(address, op, list);
+        }
         parseChildren(reader, address, list);
         if (xmlWrapperElement != null) {
             ParseUtils.requireNoContent(reader);
@@ -220,6 +229,8 @@ public class PersistentResourceXMLDescription {
         private String xmlElementName;
         private String xmlWrapperElement;
         private boolean useValueAsElementName;
+        private boolean noAddOperation;
+        private AdditionalOperationsGenerator additionalOperationsGenerator;
         private final LinkedHashMap<String, AttributeDefinition> attributes = new LinkedHashMap<>();
         private final List<PersistentResourceXMLBuilder> children = new ArrayList<>();
 
@@ -260,13 +271,38 @@ public class PersistentResourceXMLDescription {
             return this;
         }
 
+        public PersistentResourceXMLBuilder setNoAddOperation(final boolean noAddOperation) {
+            this.noAddOperation = noAddOperation;
+            return this;
+        }
+
+        public PersistentResourceXMLBuilder setAdditionalOperationsGenerator(final AdditionalOperationsGenerator additionalOperationsGenerator) {
+            this.additionalOperationsGenerator = additionalOperationsGenerator;
+            return this;
+        }
+
         public PersistentResourceXMLDescription build() {
 
             List<PersistentResourceXMLDescription> builtChildren = new ArrayList<>();
             for (PersistentResourceXMLBuilder b : children) {
                 builtChildren.add(b.build());
             }
-            return new PersistentResourceXMLDescription(resourceDefinition, xmlElementName, xmlWrapperElement, attributes, builtChildren, useValueAsElementName);
+            return new PersistentResourceXMLDescription(resourceDefinition, xmlElementName, xmlWrapperElement, attributes, builtChildren, useValueAsElementName, noAddOperation, additionalOperationsGenerator);
         }
+    }
+
+    /**
+     * Some resources require more operations that just a simple add. This interface provides a hook for these to be plugged in.
+     */
+    public interface AdditionalOperationsGenerator {
+
+        /**
+         * Generates any additional operations required by the resource
+         * @param address The address of the resource
+         * @param addOperation The add operation for the resource
+         * @param operations The operation list
+         */
+        void additionalOperations(final PathAddress address, final ModelNode addOperation, final List<ModelNode> operations);
+
     }
 }
