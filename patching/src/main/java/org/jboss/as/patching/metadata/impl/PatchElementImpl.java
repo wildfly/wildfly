@@ -20,15 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.metadata.xsd1_1.impl;
+package org.jboss.as.patching.metadata.impl;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch.PatchType;
-import org.jboss.as.patching.metadata.xsd1_1.PatchElement;
-import org.jboss.as.patching.metadata.xsd1_1.PatchElementProvider;
+import org.jboss.as.patching.metadata.PatchElement;
+import org.jboss.as.patching.metadata.PatchElementProvider;
 
 /**
  * @author Alexey Loubyansky
@@ -52,7 +52,7 @@ public class PatchElementImpl implements PatchElement, UpgradeCallback {
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.xsd1_1.PatchElement#getId()
+     * @see org.jboss.as.patching.metadata.PatchElement#getId()
      */
     @Override
     public String getId() {
@@ -60,7 +60,7 @@ public class PatchElementImpl implements PatchElement, UpgradeCallback {
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.xsd1_1.PatchElement#getDescription()
+     * @see org.jboss.as.patching.metadata.PatchElement#getDescription()
      */
     @Override
     public String getDescription() {
@@ -72,7 +72,7 @@ public class PatchElementImpl implements PatchElement, UpgradeCallback {
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.xsd1_1.PatchElement#getProvider()
+     * @see org.jboss.as.patching.metadata.PatchElement#getProvider()
      */
     @Override
     public PatchElementProvider getProvider() {
@@ -87,7 +87,7 @@ public class PatchElementImpl implements PatchElement, UpgradeCallback {
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.xsd1_1.PatchElement#getPatchType()
+     * @see org.jboss.as.patching.metadata.PatchElement#getPatchType()
      */
     @Override
     public PatchType getPatchType() {
@@ -95,7 +95,7 @@ public class PatchElementImpl implements PatchElement, UpgradeCallback {
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.xsd1_1.PatchElement#getResultingVersion()
+     * @see org.jboss.as.patching.metadata.PatchElement#getResultingVersion()
      */
     @Override
     public String getResultingVersion() {
@@ -112,7 +112,7 @@ public class PatchElementImpl implements PatchElement, UpgradeCallback {
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.xsd1_1.PatchElement#getModifications()
+     * @see org.jboss.as.patching.metadata.PatchElement#getModifications()
      */
     @Override
     public List<ContentModification> getModifications() {

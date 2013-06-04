@@ -14,7 +14,6 @@ import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerImpl;
 import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.installation.InstalledImage;
-import org.jboss.as.patching.metadata.IdentityPatch;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
 
@@ -90,9 +89,8 @@ public class LegacyPatchRunner implements PatchingRunnerWrapper {
             }
 
             // run, run, RUN !!!!
-            final IdentityPatch wrappedPatch = IdentityPatch.Wrapper.wrap(patch);
             final InstallationManager.InstallationModification modification = manager.modifyInstallation(runner);
-            return runner.applyPatch(wrappedPatch, provider, policy, modification);
+            return runner.applyPatch(patch, provider, policy, modification);
         } catch (Exception e) {
             throw IdentityPatchRunner.rethrowException(e);
         }

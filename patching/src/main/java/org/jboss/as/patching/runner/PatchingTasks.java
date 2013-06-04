@@ -25,6 +25,7 @@ package org.jboss.as.patching.runner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +58,7 @@ class PatchingTasks {
      * @param modifications the definitions
      * @param filter        the content filter
      */
-    static void rollback(final String patchId, final List<ContentModification> originalPatch, final List<ContentModification> rollbackPatch,
+    static void rollback(final String patchId, final Collection<ContentModification> originalPatch, final Collection<ContentModification> rollbackPatch,
                          final Map<Location, ContentTaskDefinition> modifications, final ContentItemFilter filter) {
 
         // Process the original patch information
@@ -130,7 +131,7 @@ class PatchingTasks {
      * @param modifications the modifications
      * @param definitions   the task definitions
      */
-    static void apply(final String patchId, final List<ContentModification> modifications, final Map<Location, ContentTaskDefinition> definitions) {
+    static void apply(final String patchId, final Collection<ContentModification> modifications, final Map<Location, ContentTaskDefinition> definitions) {
         for (final ContentModification modification : modifications) {
 
             final ContentItem item = modification.getItem();

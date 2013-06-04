@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.metadata.xsd1_1.impl;
+package org.jboss.as.patching.metadata.impl;
 
 /**
  * @author Alexey Loubyansky

@@ -20,13 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.metadata.xsd1_1.impl;
+package org.jboss.as.patching.metadata.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.jboss.as.patching.metadata.xsd1_1.Identity;
+import org.jboss.as.patching.metadata.Identity;
 
 
 /**
@@ -51,7 +51,7 @@ public class IdentityImpl implements Identity, RequiresCallback {
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.xsd1_1.Identity#getName()
+     * @see org.jboss.as.patching.metadata.Identity#getName()
      */
     @Override
     public String getName() {
@@ -59,7 +59,7 @@ public class IdentityImpl implements Identity, RequiresCallback {
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.xsd1_1.Identity#getVersion()
+     * @see org.jboss.as.patching.metadata.Identity#getVersion()
      */
     @Override
     public String getVersion() {
@@ -67,7 +67,7 @@ public class IdentityImpl implements Identity, RequiresCallback {
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.xsd1_1.Identity#getIncludes()
+     * @see org.jboss.as.patching.metadata.Identity#getIncludes()
      */
     @Override
     public Collection<String> getRequires() {

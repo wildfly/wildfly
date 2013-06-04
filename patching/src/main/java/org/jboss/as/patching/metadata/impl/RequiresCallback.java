@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,35 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.metadata.xsd1_1;
-
-import java.util.Collection;
-
+package org.jboss.as.patching.metadata.impl;
 
 /**
  * @author Alexey Loubyansky
  *
  */
-public interface Identity {
+public interface RequiresCallback {
 
-    /**
-     * The name of the identity.
-     *
-     * @return  name of the identity
-     */
-    String getName();
-
-    /**
-     * The version of the identity.
-     *
-     * @return  version of the identity
-     */
-    String getVersion();
-
-    /**
-     * A list of the one-off patches applied to this identity.
-     *
-     * @return  list of the id's of the applied one-off patches
-     */
-    Collection<String> getRequires();
+    void require(String id);
 }

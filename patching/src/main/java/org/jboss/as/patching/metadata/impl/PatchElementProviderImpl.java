@@ -20,13 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.metadata.xsd1_1.impl;
+package org.jboss.as.patching.metadata.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.jboss.as.patching.metadata.xsd1_1.PatchElementProvider;
+import org.jboss.as.patching.metadata.LayerType;
+import org.jboss.as.patching.metadata.PatchElementProvider;
 
 
 /**
@@ -53,7 +54,7 @@ public class PatchElementProviderImpl implements PatchElementProvider, RequiresC
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.xsd1_1.PatchElementProvider#getName()
+     * @see org.jboss.as.patching.metadata.PatchElementProvider#getName()
      */
     @Override
     public String getName() {
@@ -61,7 +62,7 @@ public class PatchElementProviderImpl implements PatchElementProvider, RequiresC
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.xsd1_1.PatchElementProvider#getVersion()
+     * @see org.jboss.as.patching.metadata.PatchElementProvider#getVersion()
      */
     @Override
     public String getVersion() {
@@ -69,7 +70,7 @@ public class PatchElementProviderImpl implements PatchElementProvider, RequiresC
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.xsd1_1.PatchElementProvider#getIncludes()
+     * @see org.jboss.as.patching.metadata.PatchElementProvider#getIncludes()
      */
     @Override
     public Collection<String> getRequires() {
@@ -85,10 +86,16 @@ public class PatchElementProviderImpl implements PatchElementProvider, RequiresC
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.xsd1_1.PatchElementProvider#isAddOn()
+     * @see org.jboss.as.patching.metadata.PatchElementProvider#isAddOn()
      */
     @Override
     public boolean isAddOn() {
         return isAddOn;
     }
+
+    @Override
+    public LayerType getLayerType() {
+        return isAddOn ? LayerType.AddOn : LayerType.Layer;
+    }
+
 }
