@@ -22,8 +22,12 @@
 package org.jboss.as.weld.deployment;
 
 
+import java.util.Set;
+
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
+import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.weld.discovery.AnnotationType;
 
 /**
  * {@link AttachmentKey}s for weld attachments
@@ -53,5 +57,16 @@ public class WeldAttachments {
      * consistency, the bean manager that corresponds to this bda is always bound to the java:comp namespace for web modules.
      */
     public static final AttachmentKey<BeanDeploymentArchiveImpl> DEPLOYMENT_ROOT_BEAN_DEPLOYMENT_ARCHIVE = AttachmentKey.create(BeanDeploymentArchiveImpl.class);
+
+    /**
+     * A set of bean defining annotations, as defined by the CDI specification.
+     * @see CdiAnnotationProcessor
+     */
+    public static final AttachmentKey<Set<AnnotationType>> BEAN_DEFINING_ANNOTATIONS = AttachmentKey.create(Set.class);
+
+    /**
+     * The {@link ResourceRoot} for WEB-INF/classes of a web archive.
+     */
+    public static final AttachmentKey<ResourceRoot> CLASSES_RESOURCE_ROOT = AttachmentKey.create(ResourceRoot.class);
 
 }

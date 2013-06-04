@@ -21,6 +21,14 @@
  */
 package org.jboss.as.weld.deployment;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArraySet;
+
 import org.jboss.as.weld.WeldModuleResourceLoader;
 import org.jboss.modules.Module;
 import org.jboss.weld.bootstrap.api.ServiceRegistry;
@@ -31,14 +39,6 @@ import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jboss.weld.util.reflection.Reflections;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.CopyOnWriteArraySet;
-
 /**
  * Implementation of {@link BeanDeploymentArchive}.
  * <p>
@@ -48,6 +48,10 @@ import java.util.concurrent.CopyOnWriteArraySet;
  *
  */
 public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
+
+    public enum BeanArchiveType {
+        IMPLICIT, EXPLICIT, EXTERNAL, SYNTHETIC;
+    }
 
     private final Set<String> beanClasses;
 
@@ -67,11 +71,13 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     private final boolean root; // indicates whether this is a root BDA
 
-    public BeanDeploymentArchiveImpl(Set<String> beanClasses, BeansXml beansXml, Module module, String id) {
-        this(beanClasses, beansXml, module, id, false);
+    private final BeanArchiveType beanArchiveType;
+
+    public BeanDeploymentArchiveImpl(Set<String> beanClasses, BeansXml beansXml, Module module, String id, BeanArchiveType beanArchiveType) {
+        this(beanClasses, beansXml, module, id, beanArchiveType, false);
     }
 
-    public BeanDeploymentArchiveImpl(Set<String> beanClasses, BeansXml beansXml, Module module, String id, boolean root) {
+    public BeanDeploymentArchiveImpl(Set<String> beanClasses, BeansXml beansXml, Module module, String id, BeanArchiveType beanArchiveType, boolean root) {
         this.beanClasses = new ConcurrentSkipListSet<String>(beanClasses);
         this.beanDeploymentArchives = new CopyOnWriteArraySet<BeanDeploymentArchive>();
         this.beansXml = beansXml;
@@ -81,6 +87,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         this.serviceRegistry.add(ResourceLoader.class, resourceLoader);
         this.module = module;
         this.ejbDescriptors = new HashSet<EjbDescriptor<?>>();
+        this.beanArchiveType = beanArchiveType;
         this.root = root;
     }
 
@@ -196,8 +203,16 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         }
     }
 
+    public BeanArchiveType getBeanArchiveType() {
+        return beanArchiveType;
+    }
+
     @Override
     public String toString() {
-        return "BeanDeploymentArchiveImpl [id=" + id + "]";
+        StringBuilder builder = new StringBuilder(this.beanArchiveType.toString());
+        builder.append(" BeanDeploymentArchive (");
+        builder.append(this.id);
+        builder.append(")");
+        return builder.toString();
     }
 }
