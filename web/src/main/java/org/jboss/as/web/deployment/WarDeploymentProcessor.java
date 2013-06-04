@@ -40,8 +40,6 @@ import org.apache.catalina.Realm;
 import org.apache.catalina.Valve;
 import org.apache.catalina.core.StandardContext;
 import org.apache.tomcat.util.IntrospectionUtils;
-import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
-import org.jboss.as.clustering.web.DistributedCacheManagerFactoryService;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -91,6 +89,9 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.clustering.web.session.SessionManagerFactory;
+import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
+import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderService;
 
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
@@ -325,16 +326,18 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                 webappBuilder.addDependencies(action.dependencies());
             }
 
+            // Add distributable session manager factory dependency if necessary
             if (metaData.getDistributable() != null) {
-                DistributedCacheManagerFactoryService factoryService = new DistributedCacheManagerFactoryService();
-                DistributedCacheManagerFactory factory = factoryService.getValue();
-                if (factory != null) {
-                    ServiceName factoryServiceName = webappServiceName.append("session");
-                    webappBuilder.addDependency(DependencyType.OPTIONAL, factoryServiceName, DistributedCacheManagerFactory.class, config.getDistributedCacheManagerFactoryInjector());
+                SessionManagerFactoryBuilderService factoryBuilderService = new SessionManagerFactoryBuilderService();
+                SessionManagerFactoryBuilder factoryBuilder = factoryBuilderService.getValue();
+                if (factoryBuilder != null) {
+                    ServiceName factoryName = webappServiceName.append("session");
 
-                    ServiceBuilder<DistributedCacheManagerFactory> factoryBuilder = serviceTarget.addService(factoryServiceName, factoryService);
-                    boolean enabled = factory.addDeploymentDependencies(webappServiceName, deploymentUnit.getServiceRegistry(), serviceTarget, factoryBuilder, metaData);
-                    factoryBuilder.setInitialMode(enabled ? Mode.ON_DEMAND : Mode.NEVER).install();
+                    ServiceBuilder<SessionManagerFactory> builder = factoryBuilder.build(serviceTarget, factoryName, webappServiceName, module, metaData);
+                    if (builder != null) {
+                        builder.setInitialMode(Mode.ON_DEMAND).install();
+                        webappBuilder.addDependency(factoryName, SessionManagerFactory.class, config.getSessionManagerFactoryInjector());
+                    }
                 }
             }
 

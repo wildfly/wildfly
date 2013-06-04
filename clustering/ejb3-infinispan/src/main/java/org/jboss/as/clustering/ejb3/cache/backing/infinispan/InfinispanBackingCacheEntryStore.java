@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.ejb3.cache.backing.infinispan;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -243,11 +242,7 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
     }
 
     private MarshalledValue<E, C> marshalEntry(E value) {
-        try {
-            return this.valueFactory.createMarshalledValue(value);
-        } catch (IOException e) {
-            throw InfinispanEjbMessages.MESSAGES.serializationFailure(e, value.getId());
-        }
+        return this.valueFactory.createMarshalledValue(value);
     }
 
     private E unmarshalEntry(K id, MarshalledValue<E, C> value) {

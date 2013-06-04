@@ -867,6 +867,11 @@
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-annotations</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-clustering-api</artifactId>
                 </dependency>
 
@@ -912,6 +917,11 @@
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-web-catalina</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-clustering-web-infinispan</artifactId>
                 </dependency>
 
@@ -921,8 +931,13 @@
                 </dependency>
 
                 <dependency>
-                   <groupId>org.wildfly</groupId>
-                   <artifactId>wildfly-cmp</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-web-undertow</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-cmp</artifactId>
                 </dependency>
 
                 <dependency>
@@ -2233,8 +2248,10 @@
                                         <exclude>org.wildfly:wildfly-clustering-registry</exclude>
                                         <exclude>org.wildfly:wildfly-clustering-service</exclude>
                                         <exclude>org.wildfly:wildfly-clustering-singleton</exclude>
+                                        <exclude>org.wildfly:wildfly-clustering-web-catalina</exclude>
                                         <exclude>org.wildfly:wildfly-clustering-web-infinispan</exclude>
                                         <exclude>org.wildfly:wildfly-clustering-web-spi</exclude>
+                                        <exclude>org.wildfly:wildfly-clustering-web-undertow</exclude>
                                         <exclude>org.wildfly:wildfly-configadmin</exclude>
                                         <exclude>org.wildfly:wildfly-connector</exclude>
                                         <exclude>org.wildfly:wildfly-controller</exclude>
@@ -2883,6 +2900,10 @@
                                             <packages>org.jboss.as.cli:org.jboss.as.cli.batch:org.jboss.as.cli.batch.impl:org.jboss.as.cli.gui:org.jboss.as.cli.gui.component:org.jboss.as.cli.gui.metacommand:org.jboss.as.cli.handlers:org.jboss.as.cli.handlers.batch:org.jboss.as.cli.handlers.ifelse:org.jboss.as.cli.handlers.jca:org.jboss.as.cli.handlers.jms:org.jboss.as.cli.handlers.module:org.jboss.as.cli.handlers.trycatch:org.jboss.as.cli.impl:org.jboss.as.cli.operation:org.jboss.as.cli.operation.impl:org.jboss.as.cli.parsing:org.jboss.as.cli.parsing.arguments:org.jboss.as.cli.parsing.command:org.jboss.as.cli.parsing.operation:org.jboss.as.cli.parsing.operation.header:org.jboss.as.cli.scriptsupport:org.jboss.as.cli.util</packages>
                                         </group>
                                         <group>
+                                            <title>Module org.wildfly.clustering.annotations</title>
+                                            <packages>org.jboss.as.clustering.annotation</packages>
+                                        </group>
+                                        <group>
                                             <title>Module org.wildfly.clustering.api</title>
                                             <packages>org.jboss.as.clustering:org.jboss.as.clustering.lock</packages>
                                         </group>
@@ -2919,20 +2940,28 @@
                                             <packages>org.jboss.as.clustering.singleton:org.jboss.as.clustering.singleton.election</packages>
                                         </group>
                                         <group>
+                                            <title>Module org.wildfly.clustering.web.catalina</title>
+                                            <packages>org.wildfly.clustering.web.catalina:org.wildfly.clustering.web.catalina.session:org.wildfly.clustering.web.catalina.sso</packages>
+                                        </group>
+                                        <group>
                                             <title>Module org.wildfly.clustering.web.infinispan</title>
-                                            <packages>org.jboss.as.clustering.web.infinispan:org.jboss.as.clustering.web.sso.infinispan</packages>
+                                            <packages>org.wildfly.clustering.web.infinispan:org.wildfly.clustering.web.infinispan.session:org.wildfly.clustering.web.infinispan.sso</packages>
                                         </group>
                                         <group>
                                             <title>Module org.wildfly.clustering.web.spi</title>
-                                            <packages>org.jboss.as.clustering.web:org.jboss.as.clustering.web.impl:org.jboss.as.clustering.web.sso</packages>
+                                            <packages>org.wildfly.clustering.web:org.wildfly.clustering.web.session:org.wildfly.clustering.web.sso</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.wildfly.configadmin</title>
-                                            <packages>org.jboss.as.configadmin:org.jboss.as.configadmin.parser:org.jboss.as.configadmin.service</packages>
+                                            <title>Module org.wildfly.clustering.web.undertow</title>
+                                            <packages>org.wildfly.clustering.web.undertow.session</packages>
                                         </group>
                                         <group>
                                             <title>Module org.wildfly.cmp</title>
                                             <packages>org.jboss.as.cmp:org.jboss.as.cmp.subsystem</packages>
+                                        </group>
+                                        <group>
+                                            <title>Module org.wildfly.configadmin</title>
+                                            <packages>org.jboss.as.configadmin:org.jboss.as.configadmin.parser:org.jboss.as.configadmin.service</packages>
                                         </group>
                                         <group>
                                             <title>Module org.wildfly.connector</title>

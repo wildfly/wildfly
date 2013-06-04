@@ -21,6 +21,7 @@
  */
 package org.jboss.as.web.deployment;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -56,17 +57,12 @@ import org.apache.naming.resources.FileDirContext;
 import org.apache.naming.resources.ProxyDirContext;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.annotation.javaee.Icon;
-import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
-import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.AuthenticatorValve;
 import org.jboss.as.web.WebLogger;
 import org.jboss.as.web.WebServerService;
 import org.jboss.as.web.deployment.helpers.VFSDirContext;
-import org.jboss.as.web.session.DistributableSessionManager;
-import org.jboss.marshalling.ClassResolver;
-import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.metadata.javaee.spec.DescriptionGroupMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
@@ -117,6 +113,16 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.as.web.common.WarMetaData;
+import org.wildfly.clustering.web.LocalContextFactory;
+import org.wildfly.clustering.web.catalina.session.CatalinaSessionIdentifierFactory;
+import org.wildfly.clustering.web.catalina.session.LocalSessionContext;
+import org.wildfly.clustering.web.catalina.session.LocalSessionContextFactory;
+import org.wildfly.clustering.web.catalina.session.ManagerFacade;
+import org.wildfly.clustering.web.catalina.session.SessionContextAdapter;
+import org.wildfly.clustering.web.session.SessionContext;
+import org.wildfly.clustering.web.session.SessionIdentifierFactory;
+import org.wildfly.clustering.web.session.SessionManager;
+import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -126,7 +132,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class JBossContextConfig extends ContextConfig {
     private DeploymentUnit deploymentUnitContext = null;
     private Set<String> overlays = new HashSet<String>();
-    private final InjectedValue<DistributedCacheManagerFactory> factory = new InjectedValue<DistributedCacheManagerFactory>();
+    private final InjectedValue<SessionManagerFactory> factory = new InjectedValue<SessionManagerFactory>();
     private Map<String, AuthenticatorValve> authenValves = null;
     private boolean DELETE_WORK_DIR_ONCONTEXTDESTROY = Boolean.parseBoolean(WildFlySecurityManager.getPropertyPrivileged("org.jboss.as.web.deployment.DELETE_WORK_DIR_ONCONTEXTDESTROY", "false"));
 
@@ -282,9 +288,13 @@ public class JBossContextConfig extends ContextConfig {
         Module module = this.deploymentUnitContext.getAttachment(Attachments.MODULE);
         if (module != null && metaData.getDistributable() != null) {
             try {
-                ClassResolver resolver = ModularClassResolver.getInstance(module.getModuleLoader());
-                context.setManager(new DistributableSessionManager<OutgoingDistributableSessionData>(this.factory.getValue(), metaData, resolver));
-                context.setDistributable(true);
+                SessionContext context = new SessionContextAdapter(this.context);
+                SessionIdentifierFactory idFactory = new CatalinaSessionIdentifierFactory(new SecureRandom());
+                LocalContextFactory<LocalSessionContext> localContextFactory = new LocalSessionContextFactory();
+                SessionManager<LocalSessionContext> sessionManager = this.factory.getValue().createSessionManager(context, idFactory, localContextFactory);
+                ManagerFacade manager = new ManagerFacade(sessionManager, metaData.getReplicationConfig());
+                this.context.setManager(manager);
+                this.context.setDistributable(true);
             } catch (Exception e) {
                 WebLogger.WEB_LOGGER.clusteringNotSupported();
             }
@@ -932,7 +942,7 @@ public class JBossContextConfig extends ContextConfig {
 
     }
 
-    Injector<DistributedCacheManagerFactory> getDistributedCacheManagerFactoryInjector() {
+    Injector<SessionManagerFactory> getSessionManagerFactoryInjector() {
         return this.factory;
     }
 }

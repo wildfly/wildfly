@@ -7,7 +7,7 @@
     </subsystem>
     <supplement name="default">
         <replacement placeholder="CACHE-CONTAINERS">
-            <cache-container name="web" aliases="standard-session-cache" default-cache="local-web" module="org.jboss.as.clustering.web.infinispan">
+            <cache-container name="web" aliases="standard-session-cache" default-cache="local-web" module="org.wildfly.clustering.web.infinispan">
                 <local-cache name="local-web" batching="true">
                     <file-store passivation="false" purge="false"/>
                 </local-cache>
@@ -38,7 +38,7 @@
                     <locking isolation="REPEATABLE_READ"/>
                 </replicated-cache>
             </cache-container>
-            <cache-container name="web" aliases="standard-session-cache" default-cache="repl" module="org.jboss.as.clustering.web.infinispan">
+            <cache-container name="web" aliases="standard-session-cache" default-cache="repl" module="org.wildfly.clustering.web.infinispan">
                 <transport lock-timeout="60000"/>
                 <replicated-cache name="repl" mode="ASYNC" batching="true">
                     <file-store/>

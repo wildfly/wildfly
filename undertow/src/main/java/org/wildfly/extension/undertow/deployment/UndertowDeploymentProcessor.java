@@ -30,8 +30,7 @@ import java.util.Set;
 
 import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.servlet.api.DeploymentInfo;
-import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
-import org.jboss.as.clustering.web.DistributedCacheManagerFactoryService;
+
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -45,11 +44,15 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.metadata.web.spec.TldMetaData;
+import org.wildfly.clustering.web.session.SessionManagerFactory;
+import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
+import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderService;
 import org.wildfly.extension.undertow.BufferCacheService;
 import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.UndertowExtension;
+import org.wildfly.extension.undertow.UndertowLogger;
 import org.wildfly.extension.undertow.UndertowService;
 import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.WarMetaData;
@@ -173,7 +176,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         String securityDomain = metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY : SecurityUtil
                 .unprefixSecurityDomain(metaDataSecurityDomain);
 
-
         final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(hostName,pathName);
 
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
@@ -204,23 +206,22 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(ServiceBuilder.DependencyType.OPTIONAL, BufferCacheService.SERVICE_NAME.append("default"), DirectBufferCache.class, undertowDeploymentInfoService.getBufferCacheInjectedValue())
                 .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES));
 
-
-
         if (metaData.getDistributable() != null) {
-            DistributedCacheManagerFactoryService factoryService = new DistributedCacheManagerFactoryService();
-            DistributedCacheManagerFactory factory = factoryService.getValue();
-            if (factory != null) {
-                ServiceName factoryServiceName = deploymentServiceName.append("session");
-                infoBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, factoryServiceName, DistributedCacheManagerFactory.class, undertowDeploymentInfoService.getDistributedCacheManagerFactoryInjectedValue());
-
-                ServiceBuilder<DistributedCacheManagerFactory> factoryBuilder = serviceTarget.addService(factoryServiceName, factoryService);
-                boolean enabled = factory.addDeploymentDependencies(deploymentServiceName, deploymentUnit.getServiceRegistry(), serviceTarget, factoryBuilder, metaData);
-                factoryBuilder.setInitialMode(enabled ? Mode.ON_DEMAND : Mode.NEVER).install();
+            SessionManagerFactoryBuilderService factoryBuilderService = new SessionManagerFactoryBuilderService();
+            SessionManagerFactoryBuilder factoryBuilder = factoryBuilderService.getValue();
+            if (factoryBuilder != null) {
+                ServiceName factoryName = deploymentServiceName.append("session");
+                factoryBuilder.build(serviceTarget, factoryName, deploymentServiceName, module, metaData)
+                    .setInitialMode(Mode.ON_DEMAND)
+                    .install()
+                ;
+                infoBuilder.addDependency(factoryName, SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
+            } else {
+                UndertowLogger.ROOT_LOGGER.clusteringNotSupported();
             }
         }
 
         infoBuilder.install();
-
 
         final ServiceName hostServiceName = UndertowService.virtualHostName(defaultServer, hostName);
         final UndertowDeploymentService service = new UndertowDeploymentService(injectionContainer);
@@ -233,7 +234,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, deploymentServiceName);
 
-
         // OSGi web applications are activated in {@link WebContextActivationProcessor} according to bundle lifecycle changes
         if (deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
             builder.setInitialMode(Mode.NEVER);
@@ -243,7 +243,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             builder.setInitialMode(Mode.ACTIVE);
             builder.install();
         }
-
 
         // Process the web related mgmt information
         final ModelNode node = deploymentUnit.getDeploymentSubsystemModel(UndertowExtension.SUBSYSTEM_NAME);

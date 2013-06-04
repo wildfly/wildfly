@@ -775,6 +775,10 @@
             <maven-resource group="org.wildfly" artifact="wildfly-cli"/>
         </module-def>
 
+        <module-def name="org.wildfly.clustering.annotations">
+            <maven-resource group="org.wildfly" artifact="wildfly-clustering-annotations"/>
+        </module-def>
+
         <module-def name="org.jboss.as.clustering.api">
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-api"/>
         </module-def>
@@ -811,20 +815,33 @@
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-singleton"/>
         </module-def>
 
+        <module-def name="org.wildfly.clustering.web.catalina">
+            <maven-resource group="org.wildfly" artifact="wildfly-clustering-web-catalina"/>
+        </module-def>
+
         <module-def name="org.jboss.as.clustering.web.infinispan">
+            <!-- Dummy module that just depends on org.wildfly.clustering.web.infinispan -->
+            <!-- For configuration backwards compatability reasons -->
+        </module-def>
+
+        <module-def name="org.wildfly.clustering.web.infinispan">
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-web-infinispan"/>
         </module-def>
 
-        <module-def name="org.jboss.as.clustering.web.spi">
+        <module-def name="org.wildfly.clustering.web.spi">
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-web-spi"/>
         </module-def>
 
-        <module-def name="org.jboss.as.configadmin">
-            <maven-resource group="org.wildfly" artifact="wildfly-configadmin"/>
+        <module-def name="org.wildfly.clustering.web.undertow">
+            <maven-resource group="org.wildfly" artifact="wildfly-clustering-web-undertow"/>
         </module-def>
 
         <module-def name="org.jboss.as.cmp">
             <maven-resource group="org.wildfly" artifact="wildfly-cmp"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.configadmin">
+            <maven-resource group="org.wildfly" artifact="wildfly-configadmin"/>
         </module-def>
 
         <module-def name="org.jboss.as.connector">

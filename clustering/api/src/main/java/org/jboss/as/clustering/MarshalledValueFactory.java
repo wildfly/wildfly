@@ -22,11 +22,9 @@
 
 package org.jboss.as.clustering;
 
-import java.io.IOException;
-
 /**
  * @author Paul Ferraro
  */
 public interface MarshalledValueFactory<C> {
-    <T> MarshalledValue<T, C> createMarshalledValue(T object) throws IOException;
+    <T> MarshalledValue<T, C> createMarshalledValue(T object);
 }

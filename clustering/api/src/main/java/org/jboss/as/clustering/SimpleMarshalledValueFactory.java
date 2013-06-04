@@ -22,8 +22,6 @@
 
 package org.jboss.as.clustering;
 
-import java.io.IOException;
-
 /**
  * @author Paul Ferraro
  */
@@ -39,7 +37,7 @@ public class SimpleMarshalledValueFactory implements MarshalledValueFactory<Mars
      * @see org.jboss.as.clustering.MarshalledValueFactory#createMarshalledValue(java.lang.Object)
      */
     @Override
-    public <T> SimpleMarshalledValue<T> createMarshalledValue(T object) throws IOException {
+    public <T> SimpleMarshalledValue<T> createMarshalledValue(T object) {
         return new SimpleMarshalledValue<T>(object, this.context);
     }
 }
