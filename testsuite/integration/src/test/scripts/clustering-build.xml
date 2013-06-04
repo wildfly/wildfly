@@ -116,7 +116,7 @@
         <ts.config-as.add-xsite-remote-site name="wildfly-clustering-xsite-LON-0" stack="udp"
                                       remote-site.site="SFO" remote-site.stack="tcp" remote-site.cluster="bridge"/>
         <!-- define cache to be backed up at Infinispan level -->
-        <ts.config-as.add-xsite-backup name="wildfly-clustering-xsite-LON-0" container="web"
+        <ts.config-as.add-xsite-backups name="wildfly-clustering-xsite-LON-0" container="web"
                                        cache-type="replicated-cache" cache="repl" backup.site="NYC"/>
         <ts.config-as.add-xsite-backup name="wildfly-clustering-xsite-LON-0" container="web"
                                        cache-type="replicated-cache" cache="repl" backup.site="SFO"/>
@@ -136,7 +136,7 @@
         <ts.config-as.add-xsite-remote-site name="wildfly-clustering-xsite-LON-1" stack="udp"
                                       remote-site.site="SFO" remote-site.stack="tcp" remote-site.cluster="bridge"/>
         <!-- define cache to be backed up at Infinispan level -->
-        <ts.config-as.add-xsite-backup name="wildfly-clustering-xsite-LON-1" container="web"
+        <ts.config-as.add-xsite-backups name="wildfly-clustering-xsite-LON-1" container="web"
                                        cache-type="replicated-cache" cache="repl" backup.site="NYC"/>
         <ts.config-as.add-xsite-backup name="wildfly-clustering-xsite-LON-1" container="web"
                                        cache-type="replicated-cache" cache="repl" backup.site="SFO"/>
