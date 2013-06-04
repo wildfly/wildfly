@@ -26,14 +26,14 @@ import org.jboss.vfs.VirtualFile;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 
 /**
- * Maintains information about a bean archive
+ * Maintains information about an explicit bean archive
  * <p>
  * Thread Safety: This class is immutable and does not require a happens before event between construction and usage
  *
  * @author Stuart Douglas
  *
  */
-public class BeanArchiveMetadata {
+public class ExplicitBeanArchiveMetadata {
 
     /**
      * The location of the beans.xml file for this bean archive
@@ -61,11 +61,11 @@ public class BeanArchiveMetadata {
      */
     private final VirtualFile additionalBeansXmlFile;
 
-    public BeanArchiveMetadata(VirtualFile beansXmlFile, ResourceRoot resourceRoot, BeansXml beansXml, boolean deploymentRoot) {
+    public ExplicitBeanArchiveMetadata(VirtualFile beansXmlFile, ResourceRoot resourceRoot, BeansXml beansXml, boolean deploymentRoot) {
         this(beansXmlFile, null, resourceRoot, beansXml, deploymentRoot);
     }
 
-    public BeanArchiveMetadata(VirtualFile beansXmlFile, VirtualFile additionalBeansXmlFile, ResourceRoot resourceRoot, BeansXml beansXml, boolean deploymentRoot) {
+    public ExplicitBeanArchiveMetadata(VirtualFile beansXmlFile, VirtualFile additionalBeansXmlFile, ResourceRoot resourceRoot, BeansXml beansXml, boolean deploymentRoot) {
         this.beansXmlFile = beansXmlFile;
         this.additionalBeansXmlFile = additionalBeansXmlFile;
         this.resourceRoot = resourceRoot;

@@ -21,12 +21,12 @@
  */
 package org.jboss.as.weld.deployment;
 
+import java.util.Collection;
+import java.util.Set;
+
 import org.jboss.weld.bootstrap.api.Service;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * A collection of Bean Deployment archives that share similar bean visibility.
@@ -41,9 +41,8 @@ public class BeanDeploymentModule {
 
     private final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives;
 
-    public BeanDeploymentModule(Set<BeanDeploymentArchiveImpl> beanDeploymentArchives) {
-        this.beanDeploymentArchives = Collections
-                .unmodifiableSet(new HashSet<BeanDeploymentArchiveImpl>(beanDeploymentArchives));
+    public BeanDeploymentModule(Collection<BeanDeploymentArchiveImpl> beanDeploymentArchives) {
+        this.beanDeploymentArchives = ImmutableSet.copyOf(beanDeploymentArchives);
         for (BeanDeploymentArchiveImpl bda : beanDeploymentArchives) {
             bda.addBeanDeploymentArchives(beanDeploymentArchives);
         }

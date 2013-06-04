@@ -21,6 +21,8 @@
  */
 package org.jboss.as.weld.deployment;
 
+import static org.jboss.as.weld.util.Utils.getRootDeploymentUnit;
+
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
 
@@ -53,8 +55,7 @@ public final class CdiAnnotationMarker {
     }
 
     public static boolean cdiAnnotationsPresent(final DeploymentUnit deploymentUnit) {
-        DeploymentUnit deployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
-        Boolean val = deployment.getAttachment(ATTACHMENT_KEY);
+        Boolean val = getRootDeploymentUnit(deploymentUnit).getAttachment(ATTACHMENT_KEY);
         return val != null && val;
     }
 }
