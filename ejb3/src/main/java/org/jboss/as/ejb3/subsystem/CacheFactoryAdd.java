@@ -80,7 +80,8 @@ public class CacheFactoryAdd extends AbstractAddStepHandler {
         ModelNode passivationStoreModel = CacheFactoryResourceDefinition.PASSIVATION_STORE.resolveModelAttribute(context,model);
         String passivationStore = passivationStoreModel.isDefined() ? passivationStoreModel.asString() : null;
 
-        Set<String> aliases = new HashSet<String>(CacheFactoryResourceDefinition.ALIASES.unwrap(context,model));
+        final Collection<String> unwrappedAliasValues = CacheFactoryResourceDefinition.ALIASES.unwrap(context,model);
+        final Set<String> aliases = unwrappedAliasValues != null ? new HashSet<String>(unwrappedAliasValues) : Collections.EMPTY_SET;
         ServiceTarget target = context.getServiceTarget();
         ServiceBuilder<?> builder = (passivationStore != null) ? new GroupAwareCacheFactoryService<Serializable, Cacheable<Serializable>>(name, aliases).build(target, passivationStore) : new NonPassivatingCacheFactoryService<Serializable, Cacheable<Serializable>>(name, aliases).build(target);
         if (verificationHandler != null) {
