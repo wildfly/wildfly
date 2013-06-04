@@ -46,12 +46,14 @@ import org.jboss.as.weld.deployment.BeanDeploymentModule;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.deployment.WeldDeploymentMetadata;
 import org.jboss.as.weld.ejb.EjbDescriptorImpl;
+import org.jboss.as.weld.services.bootstrap.WeldJaxwsInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldJpaInjectionServices;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.weld.bootstrap.spi.BeansXml;
+import org.jboss.weld.injection.spi.JaxwsInjectionServices;
 import org.jboss.weld.injection.spi.JpaInjectionServices;
 
 /**
@@ -115,9 +117,11 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         processEEComponents(deploymentUnit, bdaMap, rootBda, indexes, reflectionIndex);
 
         final JpaInjectionServices jpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit, deploymentUnit.getServiceRegistry());
+        final JaxwsInjectionServices jaxwsInjectionServices = new WeldJaxwsInjectionServices(deploymentUnit);
 
         final BeanDeploymentModule bdm = new BeanDeploymentModule(beanDeploymentArchives);
         bdm.addService(JpaInjectionServices.class, jpaInjectionServices);
+        bdm.addService(JaxwsInjectionServices.class, jaxwsInjectionServices);
         deploymentUnit.putAttachment(WeldAttachments.BEAN_DEPLOYMENT_MODULE, bdm);
     }
 
