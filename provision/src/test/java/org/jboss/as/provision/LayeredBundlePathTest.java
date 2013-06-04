@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.osgi.service;
+package org.jboss.as.provision;
 
 import java.io.Closeable;
 import java.io.File;
@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.provision.service.LayeredBundlePathFactory;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

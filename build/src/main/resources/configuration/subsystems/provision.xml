@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config default-supplement="default">
+    <extension-module>org.jboss.as.provision</extension-module>
+    <subsystem xmlns="urn:jboss:domain:provision:1.0">
+    <?PROPERTIES?>
+    </subsystem>
+    <supplement name="default">
+    </supplement>
+</config>

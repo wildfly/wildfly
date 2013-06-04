@@ -117,9 +117,6 @@ public class FrameworkBootstrapService implements Service<Void> {
             Module.registerContentHandlerFactoryModule(coreFrameworkModule);
 
             ServiceTarget serviceTarget = context.getChildTarget();
-            JAXPServiceProvider.addService(serviceTarget);
-            RepositoryService.addService(serviceTarget);
-
             Activation activation = subsystemState.getActivationPolicy();
             Mode initialMode = (activation == Activation.EAGER ? Mode.ACTIVE : Mode.LAZY);
 
@@ -130,9 +127,11 @@ public class FrameworkBootstrapService implements Service<Void> {
 
             builder.createFrameworkServices(serviceContainer, true);
             builder.registerIntegrationService(FrameworkPhase.CREATE, new BundleLifecycleIntegration());
+            builder.registerIntegrationService(FrameworkPhase.CREATE, new EnvironmentIntegration());
             builder.registerIntegrationService(FrameworkPhase.CREATE, new FrameworkModuleIntegration(props));
             builder.registerIntegrationService(FrameworkPhase.CREATE, new ModuleLoaderIntegration());
             builder.registerIntegrationService(FrameworkPhase.CREATE, new LockManagerIntegration());
+            builder.registerIntegrationService(FrameworkPhase.CREATE, new AbstractResolverIntegration());
             builder.registerIntegrationService(FrameworkPhase.CREATE, new SystemServicesIntegration(resource, extensions));
             builder.registerIntegrationService(FrameworkPhase.INIT, new BootstrapBundlesIntegration());
             builder.registerIntegrationService(FrameworkPhase.INIT, new PersistentBundlesIntegration(deploymentTracker));

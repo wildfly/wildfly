@@ -56,7 +56,6 @@ class ResourceAddRemoveTestBase {
         Mockito.when(serviceController.getValue()).thenReturn(stateService);
         Mockito.when(serviceRegistry.getService(OSGiConstants.SUBSYSTEM_STATE_SERVICE_NAME)).thenReturn(serviceController);
         ModelNode result = new ModelNode();
-        ModelNode resolve = new ModelNode();
         final OperationContext context = Mockito.mock(OperationContext.class);
         Resource resource = Mockito.mock(Resource.class);
         Mockito.when(resource.getModel()).thenReturn(result);

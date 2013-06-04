@@ -55,6 +55,7 @@ public class OSGiExtension implements Extension {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void initialize(ExtensionContext context) {
 
         boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();

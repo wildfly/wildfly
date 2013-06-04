@@ -235,6 +235,10 @@
             <maven-resource group="org.wildfly" artifact="wildfly-protocol"/>
         </module-def>
 
+        <module-def name="org.jboss.as.provision">
+            <maven-resource group="org.wildfly" artifact="wildfly-provision"/>
+        </module-def>
+
         <module-def name="org.jboss.as.remoting">
             <maven-resource group="org.wildfly" artifact="wildfly-remoting"/>
         </module-def>
@@ -1093,9 +1097,12 @@
             <maven-resource group="org.jboss.osgi.framework" artifact="jbosgi-framework-core"/>
         </module-def>
 
+        <module-def name="org.jboss.osgi.provision">
+            <maven-resource group="org.jboss.osgi.provision" artifact="jbosgi-provision-core"/>
+        </module-def>
+
         <module-def name="org.jboss.osgi.repository">
             <maven-resource group="org.jboss.osgi.repository" artifact="jbosgi-repository-api"/>
-            <maven-resource group="org.jboss.osgi.repository" artifact="jbosgi-repository-core"/>
         </module-def>
 
         <module-def name="org.jboss.osgi.resolver">

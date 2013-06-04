@@ -42,8 +42,11 @@ interface SystemPackagesIntegration  {
         "org.jboss.modules",
         "org.jboss.msc",
         "org.jboss.osgi.framework",
+        "org.jboss.osgi.provision",
         "org.jboss.osgi.repository",
-        "org.jboss.osgi.resolver"
+        "org.jboss.osgi.resolver",
+        "org.slf4j",
+        "org.slf4j.impl"
     };
 
     String[] DEFAULT_INTEGRATION_PACKAGES = new String[] {
@@ -56,8 +59,13 @@ interface SystemPackagesIntegration  {
         "org.jboss.as.controller.client.helpers.standalone",
         "org.jboss.dmr;version=1.1.1",
         "org.jboss.logging;version=3.1.0",
+        "org.jboss.osgi.provision;version=1.0",
         "org.jboss.osgi.repository;version=1.0",
-        "org.osgi.service.repository;version=1.0"
+        "org.osgi.service.repository;version=1.0",
+        "org.slf4j;version=1.7",
+        "org.slf4j.spi;version=1.7",
+        "org.slf4j.helpers;version=1.7",
+        "org.slf4j.impl;version=1.7"
     };
 
     String[] DEFAULT_CAPABILITIES = new String[] {
