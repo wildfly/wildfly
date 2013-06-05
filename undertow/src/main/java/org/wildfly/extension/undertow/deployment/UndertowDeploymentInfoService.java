@@ -530,9 +530,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             }
 
             if (scisMetaData != null && scisMetaData.getHandlesTypes() != null) {
-                for (final Map.Entry<ServletContainerInitializer, Set<Class<?>>> sci : scisMetaData.getHandlesTypes().entrySet()) {
-                    final ImmediateInstanceFactory<ServletContainerInitializer> instanceFactory = new ImmediateInstanceFactory<>(sci.getKey());
-                    d.addServletContainerInitalizer(new ServletContainerInitializerInfo(sci.getKey().getClass(), instanceFactory, sci.getValue()));
+                for (final ServletContainerInitializer sci : scisMetaData.getScis()) {
+                    final ImmediateInstanceFactory<ServletContainerInitializer> instanceFactory = new ImmediateInstanceFactory<>(sci);
+                    d.addServletContainerInitalizer(new ServletContainerInitializerInfo(sci.getClass(), instanceFactory, scisMetaData.getHandlesTypes().get(sci)));
                 }
             }
 
