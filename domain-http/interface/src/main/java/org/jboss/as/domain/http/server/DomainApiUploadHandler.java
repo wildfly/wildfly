@@ -31,6 +31,7 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormData.FormValue;
 import io.undertow.server.handlers.form.FormDataParser;
+import io.undertow.server.handlers.form.FormParserFactory;
 import io.undertow.util.Headers;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -51,14 +52,16 @@ import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 class DomainApiUploadHandler implements HttpHandler {
 
     private final ModelController modelController;
+    private final FormParserFactory formParserFactory;
 
     public DomainApiUploadHandler(ModelController modelController) {
         this.modelController = modelController;
+        this.formParserFactory = FormParserFactory.builder().build();
     }
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        final FormDataParser parser = exchange.getAttachment(FormDataParser.ATTACHMENT_KEY);
+        final FormDataParser parser = formParserFactory.createParser(exchange);
         FormData data = parser.parseBlocking();
         for (String fieldName : data) {
             //Get all the files
