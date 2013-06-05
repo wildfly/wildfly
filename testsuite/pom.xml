@@ -99,6 +99,13 @@
         <node1>127.0.0.1</node1>
         <mcast>230.0.0.4</mcast> <!-- Default multicast address. -->
 
+        <!-- additional IP address defaults for xsite clustering tests -->
+        <node2>127.0.0.1</node2>
+        <node3>127.0.0.1</node3>
+        <mcast1>230.0.0.5</mcast1>
+        <mcast2>230.0.0.6</mcast2>
+        <mcast3>230.0.0.7</mcast3>
+
         <!-- IP stack configs. -->
         <jvm.args.ip>-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addresses=false</jvm.args.ip>
         <jvm.args.ip.server>${jvm.args.ip}</jvm.args.ip.server>
@@ -609,6 +616,14 @@
                 <node0>::1</node0>
                 <node1>::1</node1>
                 <mcast>ff01::1</mcast>      <!-- ff01::1  is IPv6 Node-Local scope mcast addr. -->
+
+                <!-- Override xsite IPv4 defaults from the top.  -->
+                <node2>::1</node2>
+                <node3>::1</node3>
+                <mcast1>ff01::2</mcast1>
+                <mcast2>ff01::3</mcast2>
+                <mcast3>ff01::4</mcast3>
+
             </properties>
         </profile>
         <!-- Ugly workaround for MANTRUN-172 :/   See AS7-3993. -->
@@ -626,6 +641,31 @@
             <id>ts.ipv6.dummy.mcast</id>
             <activation><property><name>mcast</name></property></activation>
             <properties><mcast>${mcast}</mcast></properties>
+        </profile>
+        <profile>
+            <id>ts.ipv6.dummy.node2</id>
+            <activation><property><name>node2</name></property></activation>
+            <properties> <node2>${node2}</node2> </properties>
+        </profile>
+        <profile>
+            <id>ts.ipv6.dummy.node3</id>
+            <activation><property><name>node3</name></property></activation>
+            <properties> <node3>${node3}</node3> </properties>
+        </profile>
+        <profile>
+            <id>ts.ipv6.dummy.mcast1</id>
+            <activation><property><name>mcast1</name></property></activation>
+            <properties><mcast1>${mcast1}</mcast1></properties>
+        </profile>
+        <profile>
+            <id>ts.ipv6.dummy.mcast2</id>
+            <activation><property><name>mcast2</name></property></activation>
+            <properties><mcast2>${mcast2}</mcast2></properties>
+        </profile>
+        <profile>
+            <id>ts.ipv6.dummy.mcast3</id>
+            <activation><property><name>mcast3</name></property></activation>
+            <properties><mcast3>${mcast3}</mcast3></properties>
         </profile>
 
 
