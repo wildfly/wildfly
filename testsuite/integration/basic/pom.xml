@@ -85,12 +85,17 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
+ 	<dependency>
             <groupId>org.apache.directory.server</groupId>
             <artifactId>apacheds-core-jndi</artifactId>
             <version>${version.apacheds}</version>
             <scope>test</scope>
         </dependency>
+	<dependency>
+	    <groupId>org.syslog4j</groupId>
+	    <artifactId>syslog4j</artifactId>
+	    <version>0.9.30</version>
+	</dependency>
     </dependencies>
 
     <profiles>
