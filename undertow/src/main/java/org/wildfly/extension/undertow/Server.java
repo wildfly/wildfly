@@ -30,11 +30,9 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.CanonicalPathHandler;
-import io.undertow.server.handlers.CookieHandler;
 import io.undertow.server.handlers.NameVirtualHostHandler;
 import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.server.handlers.error.SimpleErrorPageHandler;
-import io.undertow.server.handlers.form.FormEncodedDataHandler;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -63,8 +61,6 @@ public class Server implements Service<Server> {
     @Override
     public void start(StartContext startContext) throws StartException {
         root = virtualHostHandler;
-        root = new CookieHandler(root);
-        root = new FormEncodedDataHandler(root);
         root = new SimpleErrorPageHandler(root);
         root = new CanonicalPathHandler(root);
 
