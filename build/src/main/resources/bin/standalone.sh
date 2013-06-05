@@ -42,6 +42,8 @@ cygwin=false;
 darwin=false;
 linux=false;
 solaris=false;
+freebsd=false;
+
 case "`uname`" in
     CYGWIN*)
         cygwin=true
@@ -50,7 +52,9 @@ case "`uname`" in
     Darwin*)
         darwin=true
         ;;
-
+    FreeBSD)
+        freebsd=true
+        ;;
     Linux)
         linux=true
         ;;
@@ -155,6 +159,11 @@ if [ "$PRESERVE_JAVA_OPTS" != "true" ]; then
     JAVA_OPTS="$PREPEND_JAVA_OPTS $JAVA_OPTS"
 fi
 
+# Override SelectorProvider for Linux epoll functions on FreeBSD
+if $freebsd; then
+    JAVA_OPTS="$JAVA_OPTS -Djava.nio.channels.spi.SelectorProvider=sun.nio.ch.PollSelectorProvider"
+fi
+
 if [ "x$JBOSS_MODULEPATH" = "x" ]; then
     JBOSS_MODULEPATH="$JBOSS_HOME/modules"
 fi
@@ -182,7 +191,7 @@ if $linux || $solaris; then
 fi
 
 # No readlink -m on BSD
-if $darwin; then
+if $darwin || $freebsd; then
     # consolidate the server and command line opts
     CONSOLIDATED_OPTS="$JAVA_OPTS $SERVER_OPTS"
     # process the standalone options
