@@ -238,6 +238,9 @@
                         <node1>${node1}</node1>
                         <mcast>${mcast}</mcast>
 
+                        <node2>${node2}</node2>
+                        <node3>${node3}</node3>
+
                         <jbossas.ts.submodule.dir>${basedir}</jbossas.ts.submodule.dir>
                         <jbossas.ts.integ.dir>${jbossas.ts.integ.dir}</jbossas.ts.integ.dir>
                         <jbossas.ts.dir>${jbossas.ts.dir}</jbossas.ts.dir>
