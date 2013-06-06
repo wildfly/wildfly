@@ -197,11 +197,20 @@ final class HandlerOperations {
             }
 
             HandlerConfiguration configuration = logContextConfiguration.getHandlerConfiguration(name);
+            boolean replaceHandler = false;
             final boolean exists = configuration != null;
             if (!exists) {
                 LoggingLogger.ROOT_LOGGER.tracef("Adding handler '%s' at '%s'", name, LoggingOperations.getAddress(operation));
                 configuration = createHandlerConfiguration(className, moduleName, name, logContextConfiguration);
+            } else if (Log4jAppenderHandler.class.getName().equals(configuration.getClassName())) {
+                // Check the POJO names
+                final PojoConfiguration log4jPojo = logContextConfiguration.getPojoConfiguration(name);
+                replaceHandler = (log4jPojo != null && !className.equals(log4jPojo.getClassName()) || (moduleName == null ? log4jPojo.getModuleName() != null : !moduleName.equals(log4jPojo.getModuleName())));
             } else if (!className.equals(configuration.getClassName()) || (moduleName == null ? configuration.getModuleName() != null : !moduleName.equals(configuration.getModuleName()))) {
+                replaceHandler = true;
+            }
+
+            if (replaceHandler) {
                 LoggingLogger.ROOT_LOGGER.replacingNamedHandler(name);
                 LoggingLogger.ROOT_LOGGER.debugf("Removing handler %s of type '%s' in module '%s' and replacing with type '%s' in module '%s'",
                         name, configuration.getClassName(), configuration.getModuleName(), className, moduleName);
@@ -683,7 +692,7 @@ final class HandlerOperations {
     /**
      * Checks to see if a handler is disabled
      *
-     * @param handlerName   the name of the handler to enable.
+     * @param handlerName the name of the handler to enable.
      */
     static boolean isDisabledHandler(final LogContext logContext, final String handlerName) {
         final Map<String, String> disableHandlers = logContext.getAttachment(CommonAttributes.ROOT_LOGGER_NAME, DISABLED_HANDLERS_KEY);
