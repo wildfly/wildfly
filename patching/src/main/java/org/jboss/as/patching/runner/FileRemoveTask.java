@@ -99,7 +99,7 @@ class FileRemoveTask implements PatchingTask {
         } else if(root.isDirectory()) {
             final File[] files = root.listFiles();
             final String rootName = root.getName();
-            if(files.length == 0) {
+            if(files == null || files.length == 0) {
                 // Create empty directory
                 rollback.add(createRollbackItem(rootName, path, NO_CONTENT, true));
             } else {

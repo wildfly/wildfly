@@ -31,12 +31,13 @@ import java.util.List;
 
 import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.metadata.impl.IdentityImpl;
+import org.jboss.as.patching.metadata.impl.PatchElementImpl;
 import org.jboss.as.patching.metadata.impl.UpgradeCallback;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class PatchBuilder implements UpgradeCallback, Builder {
+public class PatchBuilder extends AbstractModificationBuilderTarget<PatchBuilder> implements UpgradeCallback, Builder {
 
     private String patchId;
     private String description;
@@ -45,13 +46,13 @@ public class PatchBuilder implements UpgradeCallback, Builder {
     private Identity identity;
 
     private final List<ContentModification> modifications = new ArrayList<ContentModification>();
-    private final List<PatchElement> elements = new ArrayList<PatchElement>();
+    private final List<PatchElementHolder> elements = new ArrayList<PatchElementHolder>();
 
     public static PatchBuilder create() {
         return new PatchBuilder();
     }
 
-    private PatchBuilder() {
+    protected PatchBuilder() {
     }
 
     public PatchBuilder setPatchId(String patchId) {
@@ -75,6 +76,10 @@ public class PatchBuilder implements UpgradeCallback, Builder {
     public PatchBuilder setNoUpgrade() {
         this.patchType = PatchType.ONE_OFF;
         return this;
+    }
+
+    public PatchBuilder setIdentity(final String name, final String version) {
+        return setIdentity(new IdentityImpl(name, version));
     }
 
     public PatchBuilder setIdentity(Identity identity) {
@@ -106,8 +111,26 @@ public class PatchBuilder implements UpgradeCallback, Builder {
         return this;
     }
 
-    public PatchBuilder addElement(PatchElement element) {
-        this.elements.add(element);
+    public PatchElementBuilder addElement(final String patchId, final String layerName, final boolean addOn) {
+        final PatchElementBuilder builder = new PatchElementBuilder(patchId, layerName, addOn);
+        elements.add(builder);
+        return builder;
+    }
+
+    public PatchBuilder addElement(final PatchElement element) {
+        this.elements.add(new PatchElementHolder() {
+            @Override
+            public PatchElement createElement(PatchType patchType) {
+                if (element.getPatchType() == null && element instanceof PatchElementImpl) {
+                    if (patchType == PatchType.CUMULATIVE) {
+                        ((PatchElementImpl)element).setUpgrade(resultingVersion);
+                    } else {
+                        ((PatchElementImpl)element).setNoUpgrade();
+                    }
+                }
+                return element;
+            }
+        });
         return this;
     }
 
@@ -120,6 +143,13 @@ public class PatchBuilder implements UpgradeCallback, Builder {
         assert notNull(identity);
         assert notNull(patchId);
         assert notNull(patchType);
+
+        // Create the elements
+        final List<PatchElement> elements = new ArrayList<PatchElement>();
+        for (final PatchElementHolder holder : this.elements) {
+            elements.add(holder.createElement(patchType));
+        }
+
         return new Patch() {
 
             @Override
@@ -158,14 +188,25 @@ public class PatchBuilder implements UpgradeCallback, Builder {
             }
 
             @Override
-            public List<org.jboss.as.patching.metadata.PatchElement> getElements() {
+            public List<PatchElement> getElements() {
                 return elements;
             }
         };
     }
 
+    @Override
+    protected PatchBuilder returnThis() {
+        return this;
+    }
+
     static boolean notNull(Object o) {
         return o != null;
+    }
+
+    protected interface PatchElementHolder {
+
+        PatchElement createElement(final PatchType type);
+
     }
 
 }
