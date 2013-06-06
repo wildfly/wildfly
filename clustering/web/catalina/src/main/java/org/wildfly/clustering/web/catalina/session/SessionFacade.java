@@ -29,6 +29,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.catalina.Manager;
 import org.apache.catalina.SessionListener;
+import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.session.HttpSessionAdapter;
 import org.wildfly.clustering.web.session.Session;
 
@@ -38,11 +39,16 @@ import org.wildfly.clustering.web.session.Session;
  */
 public class SessionFacade implements org.apache.catalina.Session {
 
-    private volatile Manager manager;
+    private final Manager manager;
     private final Session<LocalSessionContext> session;
+    private final String internalId;
+    private final Batcher batcher;
 
-    public SessionFacade(Session<LocalSessionContext> session) {
+    public SessionFacade(Manager manager, Session<LocalSessionContext> session, String internalId, Batcher batcher) {
+        this.manager = manager;
         this.session = session;
+        this.internalId = internalId;
+        this.batcher = batcher;
     }
 
     @Override
@@ -72,7 +78,7 @@ public class SessionFacade implements org.apache.catalina.Session {
 
     @Override
     public String getIdInternal() {
-        return this.getId();
+        return this.internalId;
     }
 
     @Override
@@ -102,7 +108,7 @@ public class SessionFacade implements org.apache.catalina.Session {
 
     @Override
     public void setManager(Manager manager) {
-        this.manager = manager;
+        // Do nothing
     }
 
     @Override
@@ -168,11 +174,13 @@ public class SessionFacade implements org.apache.catalina.Session {
     @Override
     public void endAccess() {
         this.session.close();
+        this.batcher.endBatch(true);
     }
 
     @Override
     public void expire() {
         this.session.invalidate();
+        this.batcher.endBatch(true);
     }
 
     @Override
