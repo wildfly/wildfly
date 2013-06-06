@@ -22,9 +22,28 @@
 
 package org.wildfly.extension.undertow.deployment;
 
+import io.undertow.servlet.api.DeploymentInfo;
+
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.AUTHENTICATE;
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.DENY;
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.PERMIT;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EventListener;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.Filter;
+import javax.servlet.Servlet;
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.http.HttpServletRequest;
+
 import io.undertow.jsp.JspFileWrapper;
 import io.undertow.jsp.JspServletBuilder;
 import io.undertow.server.HttpServerExchange;
@@ -47,6 +66,8 @@ import io.undertow.servlet.api.SecurityConstraint;
 import io.undertow.servlet.api.ServletContainerInitializerInfo;
 import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.api.ServletSecurityInfo;
+import io.undertow.servlet.api.ServletSessionConfig;
+import io.undertow.servlet.api.SessionManagerFactory;
 import io.undertow.servlet.api.ThreadSetupAction;
 import io.undertow.servlet.api.WebResourceCollection;
 import io.undertow.servlet.spec.SessionCookieConfigImpl;
@@ -203,11 +224,11 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
 
             SessionConfigMetaData sessionConfig = mergedMetaData.getSessionConfig();
-            SessionCookieConfig config = null;
+            ServletSessionConfig config = null;
             //default session config
             SessionCookieConfigService defaultSessionConfig = defaultSessionCookieConfig.getOptionalValue();
             if(defaultSessionConfig != null) {
-                config = new SessionCookieConfigImpl();
+                config = new ServletSessionConfig();
                 if(defaultSessionConfig.getName() != null) {
                     config.setName(defaultSessionConfig.getName());
                 }
@@ -235,7 +256,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 CookieConfigMetaData cookieConfig = sessionConfig.getCookieConfig();
                 if (cookieConfig != null) {
                     if(config == null) {
-                        config = new SessionCookieConfigImpl();
+                        config = new ServletSessionConfig();
                     }
                     if (cookieConfig.getName() != null) {
                         config.setName(cookieConfig.getName());
@@ -254,7 +275,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 //todo: session tracking modes
             }
             if(config != null) {
-                deploymentInfo.setSessionCookieConfig(config);
+                deploymentInfo.setServletSessionConfig(config);
             }
 
             for (final SetupAction action : setupActions) {
