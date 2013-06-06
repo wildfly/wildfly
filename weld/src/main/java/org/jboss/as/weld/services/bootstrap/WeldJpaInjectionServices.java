@@ -21,6 +21,8 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
+import static org.jboss.as.weld.util.ResourceInjectionUtilities.getResourceAnnotated;
+
 import java.util.HashMap;
 
 import javax.enterprise.inject.spi.InjectionPoint;
@@ -67,7 +69,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
     @Override
     public ResourceReferenceFactory<EntityManager> registerPersistenceContextInjectionPoint(final InjectionPoint injectionPoint) {
         //TODO: cache this stuff
-        final PersistenceContext context = injectionPoint.getAnnotated().getAnnotation(PersistenceContext.class);
+        final PersistenceContext context = getResourceAnnotated(injectionPoint).getAnnotation(PersistenceContext.class);
         if (context == null) {
             throw WeldMessages.MESSAGES.annotationNotFound(PersistenceContext.class, injectionPoint.getMember());
         }

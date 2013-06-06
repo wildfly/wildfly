@@ -21,9 +21,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import javax.annotation.Resource;
+import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.InjectionPoint;
 
 import org.jboss.as.weld.WeldMessages;
+import org.jboss.weld.injection.ParameterInjectionPoint;
 
 public class ResourceInjectionUtilities {
 
@@ -43,7 +45,7 @@ public class ResourceInjectionUtilities {
     }
 
     public static String getResourceName(InjectionPoint injectionPoint) {
-        Resource resource = injectionPoint.getAnnotated().getAnnotation(Resource.class);
+        Resource resource = getResourceAnnotated(injectionPoint).getAnnotation(Resource.class);
         String mappedName = resource.mappedName();
         if (!mappedName.equals("")) {
             return mappedName;
@@ -73,7 +75,18 @@ public class ResourceInjectionUtilities {
             return Introspector.decapitalize(methodName.substring(3));
         } else if (methodName.matches("^(is).*") && method.getParameterTypes().length == 0) {
             return Introspector.decapitalize(methodName.substring(2));
+        } else if (methodName.matches("^(set).*") && method.getParameterTypes().length == 1) {
+            return Introspector.decapitalize(methodName.substring(3));
         }
         return null;
     }
+
+    public static Annotated getResourceAnnotated(InjectionPoint injectionPoint) {
+
+        if(injectionPoint instanceof ParameterInjectionPoint) {
+            return ((ParameterInjectionPoint<?, ?>)injectionPoint).getAnnotated().getDeclaringCallable();
+        }
+        return injectionPoint.getAnnotated();
+    }
+
 }

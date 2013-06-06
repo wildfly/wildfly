@@ -21,6 +21,8 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
+import static org.jboss.as.weld.util.ResourceInjectionUtilities.getResourceAnnotated;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -82,7 +84,7 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
 
     @Override
     public ResourceReferenceFactory<Object> registerEjbInjectionPoint(final InjectionPoint injectionPoint) {
-        EJB ejb = injectionPoint.getAnnotated().getAnnotation(EJB.class);
+        EJB ejb = getResourceAnnotated(injectionPoint).getAnnotation(EJB.class);
         if (ejb == null) {
             throw WeldMessages.MESSAGES.annotationNotFound(EJB.class, injectionPoint.getMember());
         }
