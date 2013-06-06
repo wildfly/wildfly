@@ -214,4 +214,8 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 17528, value="registering handler %s under path '%s'")
     void registeringHandler(HttpHandler value, String locationPath);
+
+    @LogMessage(level = WARN)
+    @Message(id = 17529, value = "Could not resolve name in absolute ordering: %s")
+    void invalidAbsoluteOrdering(String name);
 }

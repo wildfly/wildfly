@@ -63,6 +63,7 @@ import org.jboss.metadata.web.spec.WebCommonMetaData;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.extension.undertow.UndertowLogger;
 
 import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
 
@@ -197,8 +198,9 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                             break;
                         }
                     }
-                    if (!found)
-                        throw new DeploymentUnitProcessingException(MESSAGES.invalidAbsoluteOrdering(orderingElementMetaData.getName()));
+                    if (!found) {
+                        UndertowLogger.ROOT_LOGGER.invalidAbsoluteOrdering(orderingElementMetaData.getName());
+                    }
                 }
                 i++;
             }
