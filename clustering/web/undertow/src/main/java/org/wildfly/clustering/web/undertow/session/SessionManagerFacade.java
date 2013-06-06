@@ -33,7 +33,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.wildfly.clustering.web.Batcher;
-import org.wildfly.clustering.web.session.RoutingSupport;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
 
@@ -41,7 +40,7 @@ import org.wildfly.clustering.web.session.SessionManager;
  * Undertow facade for a {@link SessionManager}.
  * @author Paul Ferraro
  */
-public class SessionManagerFacade implements UndertowSessionManager, RoutingSupport {
+public class SessionManagerFacade implements UndertowSessionManager {
     private final ReplicationConfig config;
     private final SessionListeners sessionListeners = new SessionListeners();
     private final SessionManager<Void> manager;
@@ -140,11 +139,10 @@ public class SessionManagerFacade implements UndertowSessionManager, RoutingSupp
      */
     private io.undertow.server.session.Session getSession(Session<Void> session, HttpServerExchange exchange, SessionConfig config) {
         SessionFacade facade = new SessionFacade(this, session, config);
-        String id = session.getId();
         if (this.config.getUseJK().booleanValue()) {
-            id = this.format(id, this.locate(id));
+            String id = session.getId();
+            config.setSessionId(exchange, this.format(id, this.locate(id)));
         }
-        config.setSessionId(exchange, id);
         return facade;
     }
 

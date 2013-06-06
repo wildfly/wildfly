@@ -21,10 +21,13 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.wildfly.clustering.web.session.Session;
+import org.wildfly.clustering.web.session.SessionManager;
 
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
@@ -36,55 +39,53 @@ import io.undertow.server.session.SessionListener.SessionDestroyedReason;
  */
 public class SessionFacade implements io.undertow.server.session.Session {
 
-    private final Session<Void> session;
-    private final SessionConfig config;
     private final UndertowSessionManager manager;
+    private volatile Map.Entry<Session<Void>, SessionConfig> entry;
 
     public SessionFacade(UndertowSessionManager manager, Session<Void> session, SessionConfig config) {
         this.manager = manager;
-        this.session = session;
-        this.config = config;
+        this.entry = new SimpleImmutableEntry<>(session, config);
     }
 
     @Override
     public String getId() {
-        return this.session.getId();
+        return this.entry.getKey().getId();
     }
 
     @Override
     public void requestDone(HttpServerExchange exchange) {
-        this.session.close();
+        this.entry.getKey().close();
         this.manager.getSessionManager().getBatcher().endBatch(true);
     }
 
     @Override
     public long getCreationTime() {
-        return this.session.getMetaData().getCreationTime().getTime();
+        return this.entry.getKey().getMetaData().getCreationTime().getTime();
     }
 
     @Override
     public long getLastAccessedTime() {
-        return this.session.getMetaData().getLastAccessedTime().getTime();
+        return this.entry.getKey().getMetaData().getLastAccessedTime().getTime();
     }
 
     @Override
     public void setMaxInactiveInterval(int interval) {
-        this.session.getMetaData().setMaxInactiveInterval(interval, TimeUnit.SECONDS);
+        this.entry.getKey().getMetaData().setMaxInactiveInterval(interval, TimeUnit.SECONDS);
     }
 
     @Override
     public int getMaxInactiveInterval() {
-        return (int) this.session.getMetaData().getMaxInactiveInterval(TimeUnit.SECONDS);
+        return (int) this.entry.getKey().getMetaData().getMaxInactiveInterval(TimeUnit.SECONDS);
     }
 
     @Override
     public Object getAttribute(String name) {
-        return this.session.getAttributes().getAttribute(name);
+        return this.entry.getKey().getAttributes().getAttribute(name);
     }
 
     @Override
     public Set<String> getAttributeNames() {
-        return this.session.getAttributes().getAttributeNames();
+        return this.entry.getKey().getAttributes().getAttributeNames();
     }
 
     @Override
@@ -92,7 +93,7 @@ public class SessionFacade implements io.undertow.server.session.Session {
         if (value == null) {
             return this.removeAttribute(name);
         }
-        Object old = this.session.getAttributes().setAttribute(name, value);
+        Object old = this.entry.getKey().getAttributes().setAttribute(name, value);
         if (old == null) {
             this.manager.getSessionListeners().attributeAdded(this, name, value);
         } else if (old != value) {
@@ -103,7 +104,7 @@ public class SessionFacade implements io.undertow.server.session.Session {
 
     @Override
     public Object removeAttribute(String name) {
-        Object old = this.session.getAttributes().removeAttribute(name);
+        Object old = this.entry.getKey().getAttributes().removeAttribute(name);
         if (old != null) {
             this.manager.getSessionListeners().attributeRemoved(this, name, old);
         }
@@ -112,10 +113,12 @@ public class SessionFacade implements io.undertow.server.session.Session {
 
     @Override
     public void invalidate(HttpServerExchange exchange) {
-        this.session.invalidate();
+        Map.Entry<Session<Void>, SessionConfig> entry = this.entry;
+        Session<Void> session = entry.getKey();
+        session.invalidate();
         this.manager.getSessionListeners().sessionDestroyed(this, exchange, SessionDestroyedReason.INVALIDATED);
         if (exchange != null) {
-            this.config.clearSession(exchange, this.session.getId());
+            entry.getValue().clearSession(exchange, session.getId());
         }
         this.manager.getSessionManager().getBatcher().endBatch(true);
     }
@@ -127,14 +130,18 @@ public class SessionFacade implements io.undertow.server.session.Session {
 
     @Override
     public String changeSessionId(HttpServerExchange exchange, SessionConfig config) {
-        Session<Void> session = this.manager.getSessionManager().createSession(this.manager.getSessionManager().createSessionId());
-        for (String name: this.session.getAttributes().getAttributeNames()) {
-            session.getAttributes().setAttribute(name, this.session.getAttributes().getAttribute(name));
+        Session<Void> oldSession = this.entry.getKey();
+        SessionManager<Void> manager = this.manager.getSessionManager();
+        String id = manager.createSessionId();
+        Session<Void> newSession = manager.createSession(id);
+        for (String name: oldSession.getAttributes().getAttributeNames()) {
+            newSession.getAttributes().setAttribute(name, oldSession.getAttributes().getAttribute(name));
         }
-        session.getMetaData().setMaxInactiveInterval(this.session.getMetaData().getMaxInactiveInterval(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
-        session.getMetaData().setLastAccessedTime(this.session.getMetaData().getLastAccessedTime());
-        this.session.invalidate();
-        config.setSessionId(exchange, session.getId());
-        return session.getId();
+        newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getMaxInactiveInterval(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
+        newSession.getMetaData().setLastAccessedTime(oldSession.getMetaData().getLastAccessedTime());
+        config.setSessionId(exchange, this.manager.format(id, manager.locate(id)));
+        this.entry = new SimpleImmutableEntry<>(newSession, config);
+        oldSession.invalidate();
+        return id;
     }
 }
