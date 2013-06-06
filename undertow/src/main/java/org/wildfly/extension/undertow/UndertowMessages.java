@@ -101,9 +101,6 @@ public interface UndertowMessages {
     @Message(id = 17315, value = "Duplicate others in absolute ordering")
     String invalidMultipleOthers();
 
-    @Message(id = 17316, value = "Could not resolve name in absolute ordering: %s")
-    String invalidAbsoluteOrdering(String name);
-
     @Message(id = 17317, value = "Invalid relative ordering")
     String invalidRelativeOrdering();
 
