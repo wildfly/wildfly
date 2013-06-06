@@ -41,7 +41,6 @@ import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
 
@@ -110,14 +109,16 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         ModuleIdentifier jsfModule = moduleIdFactory.getApiModId(jsfVersion);
         ModuleDependency jsfAPI = new ModuleDependency(moduleLoader, jsfModule, false, false, false, false);
         moduleSpecification.addSystemDependency(jsfAPI);
+    }
 
-        //TODO: Figure out best way to detect JSF 1.1.  Don't add JSFInjection if using JSF 1.1.
+    // Is JSF spec greater than 1.1?  If we add JSF 1.1 support we'll need this to keep from calling addJSFInjection()
+  /*  private boolean isJSFSpecOver1_1(ModuleIdentifier jsfModule, ModuleDependency jsfAPI) throws DeploymentUnitProcessingException {
         try {
-        System.out.println("API paths=" + jsfAPI.getModuleLoader().loadModule(jsfModule).getExportedPaths());
+            return (jsfAPI.getModuleLoader().loadModule(jsfModule).getClassLoader().getResource("/javax/faces/component/ActionSource2.class") != null);
         } catch (ModuleLoadException e) {
             throw new DeploymentUnitProcessingException(e);
         }
-    }
+    } */
 
     private void addJSFImpl(String jsfVersion,
             ModuleSpecification moduleSpecification,
