@@ -23,25 +23,16 @@
 package org.jboss.as.patching.installation;
 
 import static org.jboss.as.patching.Constants.ADD_ONS;
-import static org.jboss.as.patching.Constants.DEFAULT_ADD_ONS_PATH;
-import static org.jboss.as.patching.Constants.DEFAULT_LAYERS_PATH;
 import static org.jboss.as.patching.Constants.LAYERS;
-import static org.jboss.as.patching.Constants.LAYERS_CONF;
-import static org.jboss.as.patching.IoUtils.safeClose;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import org.jboss.as.version.ProductConfig;
@@ -177,7 +168,7 @@ class LayersFactory {
      * @throws IOException
      */
     static void processRoot(final File root, final ProcessedLayers layers, final LayerPathSetter setter) throws IOException {
-        final LayersConfig layersConfig = getLayersConfig(root);
+        final LayersConfig layersConfig = LayersConfig.getLayersConfig(root);
         // Process layers
         final File layersDir = new File(root, layersConfig.getLayersPath());
         if (!layersDir.exists()) {
@@ -376,82 +367,6 @@ class LayersFactory {
 
         Set<String> getInstalledAddOns() {
             return installedAddOns;
-        }
-    }
-
-    /**
-     * Process the layers.conf file.
-     *
-     * @param repoRoot the repository root
-     * @return the layers conf
-     * @throws IOException
-     */
-    static LayersConfig getLayersConfig(final File repoRoot) throws IOException {
-        File layersList = new File(repoRoot, LAYERS_CONF);
-        if (!layersList.exists()) {
-            return new LayersConfig();
-        }
-        final Properties properties = loadProperties(layersList);
-        return new LayersConfig(properties);
-    }
-
-    static Properties loadProperties(final File file) throws IOException {
-        Reader reader = null;
-        try {
-            reader = new InputStreamReader(new FileInputStream(file), "UTF-8");
-            final Properties props = new Properties();
-            props.load(reader);
-            return props;
-        } finally {
-            safeClose(reader);
-        }
-    }
-
-    static class LayersConfig {
-
-        private final boolean configured;
-        private final String layersPath;
-        private final String addOnsPath;
-        private final List<String> layers;
-
-        private LayersConfig() {
-            configured = false;
-            layersPath = DEFAULT_LAYERS_PATH;
-            addOnsPath = DEFAULT_ADD_ONS_PATH;
-            layers = Collections.emptyList();
-        }
-
-        private LayersConfig(Properties properties) {
-            configured = true;
-            // Possible future enhancement; probably better to use an xml file
-            layersPath = properties.getProperty("layers.path", DEFAULT_LAYERS_PATH);
-            addOnsPath = properties.getProperty("add-ons.path", DEFAULT_ADD_ONS_PATH);
-            String layersProp = (String) properties.get("layers");
-            if (layersProp == null || (layersProp = layersProp.trim()).length() == 0) {
-                layers = Collections.emptyList();
-            } else {
-                String[] layerNames = layersProp.split(",");
-                layers = new ArrayList<String>();
-                for (String layerName : layerNames) {
-                    layers.add(layerName);
-                }
-            }
-        }
-
-        boolean isConfigured() {
-            return configured;
-        }
-
-        String getLayersPath() {
-            return layersPath;
-        }
-
-        String getAddOnsPath() {
-            return addOnsPath;
-        }
-
-        List<String> getLayers() {
-            return layers;
         }
     }
 
