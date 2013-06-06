@@ -37,6 +37,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.web.rewrite.RewriteValve;
+import org.wildfly.clustering.web.catalina.session.ThreadLocalRequestValve;
 import org.wildfly.clustering.web.catalina.sso.LocalSSOContextFactory;
 import org.wildfly.clustering.web.catalina.sso.SingleSignOnFacade;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
@@ -95,6 +96,7 @@ public class WebVirtualHostService implements Service<VirtualHost> {
         if (defaultWebModule != null) {
             host.setDefaultWebapp(defaultWebModule);
         }
+        host.addValve(new ThreadLocalRequestValve());
         try {
             final WebServer server = webServer.getValue();
             server.addHost(host);

@@ -28,14 +28,14 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.catalina.Context;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.Pipeline;
-import org.apache.catalina.Valve;
 import org.apache.catalina.session.ManagerBase;
 import org.apache.catalina.util.LifecycleSupport;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
+import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.session.RoutingSupport;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
@@ -48,15 +48,15 @@ public class ManagerFacade extends ManagerBase implements Lifecycle, RoutingSupp
     private final SessionManager<LocalSessionContext> manager;
     private final ReplicationConfig config;
     private final LifecycleSupport support = new LifecycleSupport(this);
-    private volatile Valve transactionValve;
-    private volatile Valve lockValve;
-    private volatile Valve routingValve;
     private volatile int rejectedSessions = 0;
     private volatile boolean started = false;
 
     public ManagerFacade(SessionManager<LocalSessionContext> manager, ReplicationConfig config) {
         this.manager = manager;
         this.config = config;
+        if (this.config.getUseJK() == null) {
+            this.config.setUseJK(true);
+        }
     }
 
     @Override
@@ -81,22 +81,11 @@ public class ManagerFacade extends ManagerBase implements Lifecycle, RoutingSupp
         // so we need to defend against sloppy lifecycle behavior
         if (this.started) return;
 
-        this.transactionValve = new BatchValve(this.manager.getBatcher());
-        this.addContextValve(this.transactionValve);
-        if (this.config.getUseJK()) {
-            this.routingValve = new RoutingValve(this);
-            this.addContextValve(this.routingValve);
-        }
+        Context context = (Context) this.container;
+        this.manager.setDefaultMaxInactiveInterval(context.getSessionTimeout(), TimeUnit.MINUTES);
         this.manager.start();
-        this.started = true;
-    }
 
-    private void addContextValve(Valve valve) {
-        if (this.container instanceof Pipeline) {
-            ((Pipeline) this.container).addValve(valve);
-        } else {
-            this.container.getPipeline().addValve(valve);
-        }
+        this.started = true;
     }
 
     @Override
@@ -104,22 +93,8 @@ public class ManagerFacade extends ManagerBase implements Lifecycle, RoutingSupp
         if (!this.started) return;
 
         this.manager.stop();
-        if (this.transactionValve != null) {
-            this.removeContextValve(this.transactionValve);
-        }
-        if (this.routingValve != null) {
-            this.removeContextValve(this.routingValve);
-        }
-        if (this.lockValve != null) {
-            this.removeContextValve(this.lockValve);
-        }
-        this.started = false;
-    }
 
-    private void removeContextValve(Valve valve) {
-        if (this.container instanceof Pipeline) {
-            ((Pipeline) this.container).removeValve(valve);
-        }
+        this.started = false;
     }
 
     @Override
@@ -177,10 +152,44 @@ public class ManagerFacade extends ManagerBase implements Lifecycle, RoutingSupp
         // Do nothing
     }
 
+    /**
+     * Strips routing information from requested session identifier.
+     */
+    private String getSessionId(String requestedSesssionId) {
+        return this.config.getUseJK().booleanValue() ? this.parse(requestedSesssionId).getKey() : requestedSesssionId;
+    }
+
+    /**
+     * Appends routing information to session identifier.
+     */
+    private org.apache.catalina.Session getSession(Session<LocalSessionContext> session) {
+        String id = session.getId();
+        if (this.config.getUseJK().booleanValue()) {
+            id = this.format(id, this.locate(id));
+            ThreadLocalRequestValve.currentRequest().changeSessionId(id);
+        }
+        return new SessionFacade(this, session, id, this.manager.getBatcher());
+    }
+
     @Override
     public org.apache.catalina.Session findSession(String id) {
-        Session<LocalSessionContext> session = this.manager.findSession(id);
-        return (session != null) ? new SessionFacade(session) : null;
+        Batcher batcher = this.manager.getBatcher();
+        boolean started = batcher.startBatch();
+        Session<LocalSessionContext> session = this.manager.findSession(this.getSessionId(id));
+        if (session == null) {
+            if (started) {
+                batcher.endBatch(false);
+            }
+            return null;
+        }
+        return this.getSession(session);
+    }
+
+    @Override
+    public org.apache.catalina.Session createSession(String sessionId, Random random) {
+        String id = (sessionId != null) ? this.getSessionId(sessionId) : this.manager.createSessionId();
+        this.manager.getBatcher().startBatch();
+        return this.getSession(this.manager.createSession(id));
     }
 
     @Override
@@ -191,14 +200,6 @@ public class ManagerFacade extends ManagerBase implements Lifecycle, RoutingSupp
     @Override
     public void remove(org.apache.catalina.Session session) {
         // Do nothing
-    }
-
-    @Override
-    public org.apache.catalina.Session createSession(String sessionId, Random random) {
-        String id = (sessionId != null) ? sessionId : this.manager.createSessionId();
-        org.apache.catalina.Session session = new SessionFacade(this.manager.createSession(id));
-        session.setManager(this);
-        return session;
     }
 
     @Override
@@ -213,43 +214,83 @@ public class ManagerFacade extends ManagerBase implements Lifecycle, RoutingSupp
 
     @Override
     public String getSessionAttribute(String sessionId, String key) {
-        Session<LocalSessionContext> session = this.manager.findSession(sessionId);
-        if (session == null) return null;
-        Object attribute = session.getAttributes().getAttribute(key);
-        return (attribute != null) ? attribute.toString() : null;
+        Batcher batcher = this.manager.getBatcher();
+        boolean started = batcher.startBatch();
+        try {
+            Session<LocalSessionContext> session = this.manager.findSession(this.getSessionId(sessionId));
+            if (session == null) return null;
+            Object attribute = session.getAttributes().getAttribute(key);
+            return (attribute != null) ? attribute.toString() : null;
+        } finally {
+            if (started) {
+                batcher.endBatch(false);
+            }
+        }
     }
 
     @SuppressWarnings("rawtypes")
     @Override
     public HashMap getSession(String sessionId) {
-        Session session = this.manager.findSession(sessionId);
-        if (session == null) return null;
-        HashMap<String, Object> attributes = new HashMap<>();
-        for (String name: session.getAttributes().getAttributeNames()) {
-            attributes.put(name, session.getAttributes().getAttribute(name));
+        Batcher batcher = this.manager.getBatcher();
+        boolean started = batcher.startBatch();
+        try {
+            Session session = this.manager.findSession(this.getSessionId(sessionId));
+            if (session == null) return null;
+            HashMap<String, Object> attributes = new HashMap<>();
+            for (String name: session.getAttributes().getAttributeNames()) {
+                attributes.put(name, session.getAttributes().getAttribute(name));
+            }
+            return attributes;
+        } finally {
+            if (started) {
+                batcher.endBatch(false);
+            }
         }
-        return attributes;
     }
 
     @Override
     public void expireSession(String sessionId) {
-        Session<LocalSessionContext> session = this.manager.findSession(sessionId);
-        if (session != null) {
-            session.invalidate();
+        Batcher batcher = this.manager.getBatcher();
+        boolean started = batcher.startBatch();
+        try {
+            Session<LocalSessionContext> session = this.manager.findSession(this.getSessionId(sessionId));
+            if (session != null) {
+                session.invalidate();
+            }
+        } finally {
+            if (started) {
+                batcher.endBatch(true);
+            }
         }
     }
 
     @Override
     public String getLastAccessedTime(String sessionId) {
-        Session<LocalSessionContext> session = this.manager.findSession(sessionId);
-        if (session == null) return null;
-        return session.getMetaData().getLastAccessedTime().toString();
+        Batcher batcher = this.manager.getBatcher();
+        boolean started = batcher.startBatch();
+        try {
+            Session<LocalSessionContext> session = this.manager.findSession(this.getSessionId(sessionId));
+            if (session == null) return null;
+            return session.getMetaData().getLastAccessedTime().toString();
+        } finally {
+            if (started) {
+                batcher.endBatch(false);
+            }
+        }
     }
 
     @Override
     public String getCreationTime(String sessionId) {
-        Session<LocalSessionContext> session = this.manager.findSession(sessionId);
-        if (session == null) return null;
-        return session.getMetaData().getCreationTime().toString();
+        Batcher batcher = this.manager.getBatcher();
+        boolean started = batcher.startBatch();
+        try {
+            Session<LocalSessionContext> session = this.manager.findSession(this.getSessionId(sessionId));
+            if (session == null) return null;
+            return session.getMetaData().getCreationTime().toString();
+        } finally {
+            if (started) {
+                batcher.endBatch(false);
+            }
+        }
     }
 }

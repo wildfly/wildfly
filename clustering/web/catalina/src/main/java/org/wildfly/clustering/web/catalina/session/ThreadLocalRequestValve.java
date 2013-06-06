@@ -25,33 +25,39 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 
+import org.apache.catalina.Container;
+import org.apache.catalina.Host;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
-import org.wildfly.clustering.web.Batcher;
 
 /**
- * Ensures that the request is performed within the context of a batch.
+ * Valve to be installed in the Host pipeline, that makes the Request available to the Manager.
  * @author Paul Ferraro
  */
-public class BatchValve extends ValveBase {
-    private final Batcher manager;
+public class ThreadLocalRequestValve extends ValveBase {
 
-    public BatchValve(Batcher manager) {
-        this.manager = manager;
+    private static final ThreadLocal<Request> threadRequest = new ThreadLocal<>();
+
+    public static final Request currentRequest() {
+        return threadRequest.get();
+    }
+
+    @Override
+    public void setContainer(Container container) {
+        if (!(container instanceof Host)) {
+            throw new IllegalArgumentException(container.getClass().getName());
+        }
+        this.container = container;
     }
 
     @Override
     public void invoke(Request request, Response response) throws IOException, ServletException {
-        boolean started = this.manager.startBatch();
-        boolean successful = false;
+        threadRequest.set(request);
         try {
-            this.getNext().invoke(request, response);
-            successful = true;
+            this.next.invoke(request, response);
         } finally {
-            if (started) {
-                this.manager.endBatch(successful);
-            }
+            threadRequest.remove();
         }
     }
 }
