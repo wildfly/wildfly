@@ -34,7 +34,7 @@ import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModificationType;
 
 /**
- * Task adding new a file.
+ * Task adding a new file.
  *
  * @author Emanuel Muckenhuber
  */

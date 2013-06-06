@@ -37,7 +37,7 @@ import org.jboss.as.patching.metadata.ModuleItem;
 /**
  * @author Emanuel Muckenhuber
  */
-class PatchContentLoader {
+public class PatchContentLoader {
 
     public static final String MODULES = Constants.MODULES;
     public static final String BUNDLES = Constants.BUNDLES;
@@ -47,14 +47,14 @@ class PatchContentLoader {
     private final File bundlesRoot;
     private final File modulesRoot;
 
-    static PatchContentLoader create(final File root) {
+    public static PatchContentLoader create(final File root) {
         final File miscRoot = new File(root, PatchContentLoader.MISC);
         final File bundlesRoot = new File(root, PatchContentLoader.BUNDLES);
         final File modulesRoot = new File(root, PatchContentLoader.MODULES);
         return new PatchContentLoader(miscRoot, bundlesRoot, modulesRoot);
     }
 
-    PatchContentLoader(final File miscRoot, final File bundlesRoot, final File modulesRoot) {
+    public PatchContentLoader(final File miscRoot, final File bundlesRoot, final File modulesRoot) {
         this.bundlesRoot  = bundlesRoot;
         this.miscRoot = miscRoot;
         this.modulesRoot = modulesRoot;
@@ -81,7 +81,7 @@ class PatchContentLoader {
      * @return the file
      * @throws IOException
      */
-    File getFile(final ContentItem item) throws IOException {
+    public File getFile(final ContentItem item) throws IOException {
         final ContentType content = item.getContentType();
         switch (content) {
             case MODULE:
@@ -107,7 +107,7 @@ class PatchContentLoader {
         return getModulePath(bundlesRoot, item.getName(), item.getSlot());
     }
 
-    static File getMiscPath(final File miscRoot, final MiscContentItem item) {
+    public static File getMiscPath(final File miscRoot, final MiscContentItem item) {
         File file = miscRoot;
         for(final String path : item.getPath()) {
             file = new File(file, path);
@@ -116,7 +116,7 @@ class PatchContentLoader {
         return file;
     }
 
-    static File getModulePath(File root, ModuleItem item) {
+    public static File getModulePath(File root, ModuleItem item) {
         return getModulePath(root, item.getName(), item.getSlot());
     }
 
