@@ -134,9 +134,9 @@ class IdentityPatchContext implements PatchContentProvider {
             // there is no content provider when a patch is rolled back
             if (contentProvider != null) {
                 try {
-                    File miscRoot = newFile(getPatchContentRootDir(), elementId, layerType.getDirName(), layerName, MISC);
-                    File moduleRoot = newFile(getPatchContentRootDir(), elementId, layerType.getDirName(), layerName, MODULES);
-                    File bundleRoot = newFile(getPatchContentRootDir(), elementId, layerType.getDirName(), layerName, BUNDLES);
+                    File miscRoot = newFile(getPatchContentRootDir(), elementId, MISC);
+                    File moduleRoot = newFile(getPatchContentRootDir(), elementId, MODULES);
+                    File bundleRoot = newFile(getPatchContentRootDir(), elementId, BUNDLES);
                     contentLoaders.put(element.getId(), new PatchContentLoader(miscRoot, bundleRoot, moduleRoot));
                 } catch (Exception e) {
                     throw new PatchingException("failed to resolve content for " + element);
