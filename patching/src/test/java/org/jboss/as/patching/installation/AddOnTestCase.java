@@ -25,15 +25,16 @@ package org.jboss.as.patching.installation;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
+import static org.jboss.as.patching.Constants.ADD_ONS;
 import static org.jboss.as.patching.HashUtils.hashFile;
 import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.patching.PatchInfo.BASE;
-import static org.jboss.as.patching.metadata.LayerType.Layer;
 import static org.jboss.as.patching.metadata.ModificationType.ADD;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDefinedModule;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDirExists;
+import static org.jboss.as.patching.runner.PatchingAssert.assertFileDoesNotExist;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertInstallationIsPatched;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenApplied;
@@ -47,11 +48,8 @@ import static org.jboss.as.patching.runner.TestUtils.touch;
 import static org.jboss.as.patching.runner.TestUtils.tree;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.util.List;
-import java.util.Properties;
+import java.util.Collection;
 
-import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.LocalPatchInfo;
@@ -65,7 +63,6 @@ import org.jboss.as.patching.metadata.impl.IdentityImpl;
 import org.jboss.as.patching.metadata.impl.PatchElementImpl;
 import org.jboss.as.patching.metadata.impl.PatchElementProviderImpl;
 import org.jboss.as.patching.runner.AbstractTaskTestCase;
-import org.jboss.as.patching.runner.PatchingAssert;
 import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.as.patching.runner.TestUtils;
 import org.jboss.as.version.ProductConfig;
@@ -74,24 +71,12 @@ import org.junit.Test;
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
-public class LayerTestCase extends AbstractTaskTestCase {
+public class AddOnTestCase extends AbstractTaskTestCase {
 
     @Test
-    public void layerNotInLayersConf() throws Exception {
-        String layerName = randomString();
-        installLayer(env.getModuleRoot(), null, layerName);
-
-        ProductConfig productConfig = new ProductConfig("product", "version", "consoleSlot");
-        InstalledIdentity installedIdentity = InstalledIdentity.load(env.getInstalledImage().getJbossHome(), productConfig, env.getInstalledImage().getModulesDir());
-
-        // if the layer name is not in layers.conf, it's not part of the installed identity
-        assertTrue(installedIdentity.getLayers().isEmpty());
-    }
-
-    @Test
-    public void installedLayer() throws Exception {
-        String layerName = randomString();
-        installLayer(env.getModuleRoot(), env.getInstalledImage().getLayersConf(), layerName);
+    public void installedAddOn() throws Exception {
+        String addOnName = randomString();
+        installAddOn(env.getModuleRoot(), addOnName);
 
         ProductConfig productConfig = new ProductConfig("product", "version", "consoleSlot");
 
@@ -103,60 +88,60 @@ public class LayerTestCase extends AbstractTaskTestCase {
         assertEquals(productConfig.getProductName(), identity.getName());
         assertEquals(productConfig.resolveVersion(), identity.getVersion());
 
-        List<Layer> layers = installedIdentity.getLayers();
-        assertEquals(1, layers.size());
-        Layer layer = layers.get(0);
-        assertEquals(layerName, layer.getName());
+        Collection<AddOn> addOns = installedIdentity.getAddOns();
+        assertEquals(1, addOns.size());
+        AddOn addOn = addOns.iterator().next();
+        assertEquals(addOnName, addOn.getName());
 
-        PatchableTarget.TargetInfo targetInfo = layer.loadTargetInfo();
+        PatchableTarget.TargetInfo targetInfo = addOn.loadTargetInfo();
         assertEquals(BASE, targetInfo.getCumulativeID());
         assertTrue(targetInfo.getPatchIDs().isEmpty());
         DirectoryStructure directoryStructure = targetInfo.getDirectoryStructure();
-        assertEquals(newFile(env.getModuleRoot(), "system", "layers", layerName), directoryStructure.getModuleRoot());
+        assertEquals(newFile(env.getModuleRoot(), "system", ADD_ONS, addOnName), directoryStructure.getModuleRoot());
         assertNull(directoryStructure.getBundleRepositoryRoot());
     }
 
     @Test
-    public void patchLayer() throws Exception {
+    public void patchAddOn() throws Exception {
         // start from a base installation
         ProductConfig productConfig = new ProductConfig("product", "version", "consoleSlot");
 
-        // add a layer
-        String layerName = randomString();
-        installLayer(env.getModuleRoot(), env.getInstalledImage().getLayersConf(), layerName);
+        // add an add-on
+        String addOnName = randomString();
+        installAddOn(env.getModuleRoot(), addOnName);
 
         InstalledIdentity installedIdentity = InstalledIdentity.load(env.getInstalledImage().getJbossHome(), productConfig, env.getInstalledImage().getModulesDir());
 
         System.out.println("installation =>>");
         tree(env.getInstalledImage().getJbossHome());
 
-        // build a one-off patch for the layer with 1 added module
+        // build a one-off patch for the add-on with 1 added module
         // and 1 add file
         String patchID = randomString();
         File patchDir = mkdir(tempDir, patchID);
-        String layerPatchId = randomString();
+        String addOnPatchID = randomString();
         String moduleName = randomString();
-        File patchedLayerModuleRoot = newFile(patchDir, layerPatchId);
-        File moduleDir = createModule(patchedLayerModuleRoot, moduleName);
+        File patchedAddOnModuleRoot = newFile(patchDir, addOnPatchID);
+        File moduleDir = createModule(patchedAddOnModuleRoot, moduleName);
         byte[] newHash = hashFile(moduleDir);
         ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, ModuleItem.MAIN_SLOT, newHash), NO_CONTENT, ADD);
 
         String fileName =  "my-new-standalone.sh";
-        File newFile = touch(patchDir, layerPatchId, "misc", "bin", fileName);
+        File newFile = touch(patchDir, addOnPatchID, "misc", "bin", fileName);
         dump(newFile, "new file resource");
         byte[] newFileHash = hashFile(newFile);
         ContentModification fileAdded = new ContentModification(new MiscContentItem(fileName, new String[] { "bin" }, newFileHash), NO_CONTENT, ADD);
 
-        PatchElementImpl layerPatch = new PatchElementImpl(layerPatchId);
-        layerPatch.addContentModification(moduleAdded);
-        layerPatch.addContentModification(fileAdded);
-        layerPatch.setProvider(new PatchElementProviderImpl(layerName, "1.0.1", false));
-        layerPatch.setNoUpgrade();
+        PatchElementImpl addOnPatch = new PatchElementImpl(addOnPatchID);
+        addOnPatch.addContentModification(moduleAdded);
+        addOnPatch.addContentModification(fileAdded);
+        addOnPatch.setProvider(new PatchElementProviderImpl(addOnName, "1.0.1", true));
+        addOnPatch.setNoUpgrade();
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setOneOffType(productConfig.getProductVersion())
                 .setIdentity(new IdentityImpl(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion()))
-                .addElement(layerPatch)
+                .addElement(addOnPatch)
                 .build();
 
         createPatchXMLFile(patchDir, patch);
@@ -173,20 +158,20 @@ public class LayerTestCase extends AbstractTaskTestCase {
         System.out.println("installation =>>");
         tree(env.getInstalledImage().getJbossHome());
 
-        DirectoryStructure layerDirStructure = installedIdentity.getLayers().get(0).loadTargetInfo().getDirectoryStructure();
-        File modulesPatchDir = layerDirStructure.getModulePatchDirectory(layerPatchId);
+        DirectoryStructure addOnStructure = installedIdentity.getAddOns().iterator().next().loadTargetInfo().getDirectoryStructure();
+        File modulesPatchDir = addOnStructure.getModulePatchDirectory(addOnPatchID);
         assertDirExists(modulesPatchDir);
         assertDefinedModule(modulesPatchDir, moduleName, newHash);
     }
 
     @Test
-    public void patchAndRollbackLayer() throws Exception {
+    public void patchAndRollbackAddOn() throws Exception {
         // start from a base installation
         ProductConfig productConfig = new ProductConfig("product", "version", "consoleSlot");
 
-        // add a layer
-        String layerName = "mylayer";// randomString();
-        installLayer(env.getModuleRoot(), env.getInstalledImage().getLayersConf(), layerName);
+        // add an add-on
+        String addOnName = randomString();
+        installAddOn(env.getModuleRoot(), addOnName);
 
         InstalledIdentity installedIdentity = InstalledIdentity.load(env.getInstalledImage().getJbossHome(), productConfig, env.getInstalledImage().getModulesDir());
         PatchInfo originalPatchInfo = LocalPatchInfo.load(productConfig, env);
@@ -196,33 +181,33 @@ public class LayerTestCase extends AbstractTaskTestCase {
         System.out.println("installation =>>");
         tree(env.getInstalledImage().getJbossHome());
 
-        // build a one-off patch for the layer with 1 added module
+        // build a one-off patch for the add-on with 1 added module
         // and 1 added file
         String patchID = randomString();
         File patchDir = mkdir(tempDir, patchID);
-        String layerPatchId = randomString();
+        String addOnPatchID = randomString();
         String moduleName = randomString();
-        File patchedLayerModuleRoot = newFile(patchDir, layerPatchId);
-        File moduleDir = createModule(patchedLayerModuleRoot, moduleName);
+        File patchedAddOnModuleRoot = newFile(patchDir, addOnPatchID);
+        File moduleDir = createModule(patchedAddOnModuleRoot, moduleName);
         byte[] newHash = hashFile(moduleDir);
         ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, ModuleItem.MAIN_SLOT, newHash), NO_CONTENT, ADD);
 
         String fileName =  "my-new-standalone.sh";
-        File newFile = touch(patchDir, layerPatchId, "misc", "bin", fileName);
+        File newFile = touch(patchDir, addOnPatchID, "misc", "bin", fileName);
         dump(newFile, "new file resource");
         byte[] newFileHash = hashFile(newFile);
         ContentModification fileAdded = new ContentModification(new MiscContentItem(fileName, new String[] { "bin" }, newFileHash), NO_CONTENT, ADD);
 
-        PatchElementImpl layerPatch = new PatchElementImpl(layerPatchId);
-        layerPatch.addContentModification(moduleAdded);
-        layerPatch.addContentModification(fileAdded);
-        layerPatch.setProvider(new PatchElementProviderImpl(layerName, "1.0.1", false));
-        layerPatch.setNoUpgrade();
+        PatchElementImpl addOnPatch = new PatchElementImpl(addOnPatchID);
+        addOnPatch.addContentModification(moduleAdded);
+        addOnPatch.addContentModification(fileAdded);
+        addOnPatch.setProvider(new PatchElementProviderImpl(addOnName, "1.0.1", true));
+        addOnPatch.setNoUpgrade();
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setOneOffType(productConfig.getProductVersion())
                 .setIdentity(new IdentityImpl(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion()))
-                .addElement(layerPatch)
+                .addElement(addOnPatch)
                 .build();
 
         createPatchXMLFile(patchDir, patch);
@@ -240,37 +225,22 @@ public class LayerTestCase extends AbstractTaskTestCase {
         System.out.println("installation =>>");
         tree(env.getInstalledImage().getJbossHome());
 
-        DirectoryStructure layerDirStructure = patchedInstalledIdentity.getLayers().get(0).loadTargetInfo().getDirectoryStructure();
-        File modulesPatchDir = layerDirStructure.getModulePatchDirectory(layerPatchId);
+        DirectoryStructure layerDirStructure = patchedInstalledIdentity.getAddOns().iterator().next().loadTargetInfo().getDirectoryStructure();
+        File modulesPatchDir = layerDirStructure.getModulePatchDirectory(addOnPatchID);
         assertDirExists(modulesPatchDir);
         assertDefinedModule(modulesPatchDir, moduleName, newHash);
 
         // rollback the patch
         PatchingResult rollbackResult = rollback(patchID, patchedInstalledIdentity, env.getInstalledImage());
         assertPatchHasBeenRolledBack(rollbackResult, patch, originalPatchInfo);
-        // reload the rolled back installed identity
-        InstalledIdentity rolledBackInstalledIdentity = InstalledIdentity.load(env.getInstalledImage().getJbossHome(), productConfig, env.getInstalledImage().getModulesDir());
-        // why do we keep the patched module dir? bug or feature
-        //assertDirDoesNotExist(rolledBackInstalledIdentity.getLayers().get(0).loadTargetInfo().getDirectoryStructure().getModulePatchDirectory(layerPatchId));
-        PatchingAssert.assertFileDoesNotExist(env.getInstalledImage().getJbossHome(), "bin", fileName);
+
+        assertFileDoesNotExist(env.getInstalledImage().getJbossHome(), "bin", fileName);
 
     }
 
-    private static void installLayer(File baseDir, File layerConf, String... layers) throws Exception {
-        for (String layer : layers) {
-            IoUtils.mkdir(baseDir, "system", "layers", layer);
-        }
-        if (layerConf != null) {
-            Properties props = new Properties();
-            StringBuilder str = new StringBuilder();
-            for (int i = 0; i < layers.length; i++) {
-                if (i > 0) {
-                    str.append(',');
-                }
-                str.append(layers[i]);
-            }
-            props.put(Constants.LAYERS, str.toString());
-            props.store(new FileOutputStream(layerConf), "");
+    private static void installAddOn(File baseDir, String... addOns) throws Exception {
+        for (String addOn : addOns) {
+            IoUtils.mkdir(baseDir, "system", ADD_ONS, addOn);
         }
     }
 }

@@ -77,7 +77,7 @@ public class PatchingAssert {
         return f;
     }
 
-    static void assertFileDoesNotExist(File rootFile, String... segments) {
+    public static void assertFileDoesNotExist(File rootFile, String... segments) {
         if (segments.length == 0) {
             assertFalse(rootFile + " exists", rootFile.exists());
             return;

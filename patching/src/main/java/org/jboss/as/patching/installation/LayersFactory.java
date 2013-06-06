@@ -90,17 +90,17 @@ class LayersFactory {
         final InstalledConfiguration config = processedLayers.getConf();
 
         // Step 3 - create the actual config objects
-        final List<Layer> layers = new ArrayList<Layer>();
-        final Collection<AddOn> addOns = new ArrayList<AddOn>();
         // Process layers
+        final List<Layer> layers = new ArrayList<Layer>();
         for (final LayerPathConfig layer : processedLayers.getLayers().values()) {
             final String name = layer.name;
             layers.add(createPatchableTarget(name, layer, config.getLayerMetadataDir(name), image));
         }
         // Process add-ons
+        final Collection<AddOn> addOns = new ArrayList<AddOn>();
         for (final LayerPathConfig addOn : processedLayers.getAddOns().values()) {
             final String name = addOn.name;
-            layers.add(createPatchableTarget(name, addOn, config.getAddOnMetadataDir(name), image));
+            addOns.add(createPatchableTarget(name, addOn, config.getAddOnMetadataDir(name), image));
         }
         return new InstalledIdentity() {
             @Override
@@ -186,20 +186,20 @@ class LayersFactory {
                 throw processingError("No layers directory found at " + layersDir);
             }
             // else this isn't a root that has layers and add-ons
-            return;
-        }
-        // check for a valid layer configuration
-        for (final String layer : layersConfig.getLayers()) {
-            File layerDir = new File(layersDir, layer);
-            if (!layerDir.exists()) {
-                if (layersConfig.isConfigured()) {
-                    // Bad config from user
-                    throw processingError("Cannot find layer '%s' under directory %s", layer, layersDir);
+        } else {
+            // check for a valid layer configuration
+            for (final String layer : layersConfig.getLayers()) {
+                File layerDir = new File(layersDir, layer);
+                if (!layerDir.exists()) {
+                    if (layersConfig.isConfigured()) {
+                        // Bad config from user
+                        throw processingError("Cannot find layer '%s' under directory %s", layer, layersDir);
+                    }
+                    // else this isn't a standard layers and add-ons structure
+                    return;
                 }
-                // else this isn't a standard layers and add-ons structure
-                return;
+                layers.addLayer(layer, layerDir, setter);
             }
-            layers.addLayer(layer, layerDir, setter);
         }
         // Finally process the add-ons
         final File addOnsDir = new File(root, layersConfig.getAddOnsPath());
