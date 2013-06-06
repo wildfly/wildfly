@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
+import org.wildfly.clustering.web.session.RoutingSupport;
 import org.wildfly.clustering.web.session.SessionManager;
 
 import io.undertow.server.session.SessionListeners;
@@ -29,7 +30,7 @@ import io.undertow.server.session.SessionListeners;
  * Exposes additional session manager aspects to a session.
  * @author Paul Ferraro
  */
-public interface UndertowSessionManager extends io.undertow.server.session.SessionManager {
+public interface UndertowSessionManager extends io.undertow.server.session.SessionManager, RoutingSupport {
     SessionListeners getSessionListeners();
     SessionManager<Void> getSessionManager();
 }

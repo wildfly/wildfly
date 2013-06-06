@@ -316,6 +316,8 @@ public class SessionFacadeTestCase {
         SessionMetaData oldMetaData = mock(SessionMetaData.class);
         SessionMetaData newMetaData = mock(SessionMetaData.class);
         String sessionId = "session";
+        String route = "route";
+        String routedSessionid = "session:route";
         String name = "name";
         Object value = new Object();
         Date date = new Date();
@@ -335,6 +337,8 @@ public class SessionFacadeTestCase {
         when(oldMetaData.getLastAccessedTime()).thenReturn(date);
         when(oldMetaData.getMaxInactiveInterval(capturedUnit.capture())).thenReturn(interval);
         when(session.getId()).thenReturn(sessionId);
+        when(manager.locate(sessionId)).thenReturn(route);
+        when(this.manager.format(sessionId, route)).thenReturn(routedSessionid);
         
         String result = this.facade.changeSessionId(exchange, config);
         
@@ -342,6 +346,6 @@ public class SessionFacadeTestCase {
         
         verify(newMetaData).setLastAccessedTime(date);
         verify(newMetaData).setMaxInactiveInterval(interval, capturedUnit.getValue());
-        verify(config).setSessionId(exchange, sessionId);
+        verify(config).setSessionId(exchange, routedSessionid);
     }
 }
