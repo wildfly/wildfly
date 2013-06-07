@@ -22,7 +22,9 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<!-- contains the JPA integration classes for Hibernate 3.x --> 
+<!-- deprecated module that applications including Hibernate 3 jars might have a dependency on.
+-->
+
 <module xmlns="urn:jboss:module:1.1" name="org.jboss.as.jpa.hibernate" slot="3">
     <properties>
         <property name="jboss.api" value="private"/>

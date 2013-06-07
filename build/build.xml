@@ -913,19 +913,17 @@
             <maven-resource group="org.wildfly" artifact="wildfly-jpa"/>
         </module-def>
         
-<!-- legacy JPA module that applications may have dependencies on still -->
+        <!-- legacy Hibernate 3.x JPA integration module for applications that include Hibernate 3 jars may depend on -->
         <module-def name="org.jboss.as.jpa.hibernate" slot="3">
             <maven-resource group="org.jipijapa" artifact="jipijapa-hibernate3"/>
         </module-def>
 
+        <!-- legacy Hibernate 4.x JPA module that applications may have dependencies on still 
+             (they will likely use Hibernate 4.3.x which already contains the integration classes) 
+        -->
         <module-def name="org.jboss.as.jpa.hibernate" slot="4">
-            <maven-resource group="org.jipijapa" artifact="jipijapa-hibernate4-1"/>
         </module-def>
 
-        <module-def name="org.jboss.as.jpa.openjpa">
-            <maven-resource group="org.jipijapa" artifact="jipijapa-openjpa"/>
-        </module-def>
-<!-- end of legacy JPA module that applications may have dependencies on still -->
         <module-def name="org.jboss.as.jpa.spi">
             <maven-resource group="org.jipijapa" artifact="jipijapa-spi"/>
         </module-def>
