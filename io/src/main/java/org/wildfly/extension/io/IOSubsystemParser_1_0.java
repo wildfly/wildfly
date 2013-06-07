@@ -60,7 +60,8 @@ class IOSubsystemParser_1_0 implements XMLStreamConstants, XMLElementReader<List
                 .addChild(
                         builder(BufferPoolResourceDefinition.INSTANCE)
                                 .addAttributes(BufferPoolResourceDefinition.BUFFER_SIZE,
-                                        BufferPoolResourceDefinition.BUFFER_PER_SLICE)
+                                        BufferPoolResourceDefinition.BUFFER_PER_SLICE,
+                                        BufferPoolResourceDefinition.DIRECT_BUFFERS)
                 )
                 .build();
     }

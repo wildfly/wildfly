@@ -56,5 +56,6 @@
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="buffer-size" use="optional" type="xs:int" default="1024"/>
         <xs:attribute name="buffers-per-slice" use="optional" type="xs:int" default="1024"/>
+        <xs:attribute name="direct-buffers" use="optional" type="xs:boolean" default="true"/>
     </xs:complexType>
 </xs:schema>

@@ -31,6 +31,7 @@ interface Constants {
     String BUFFER_POOL = "buffer-pool";
     String BUFFER_SIZE = "buffer-size";
     String BUFFER_PER_SLICE = "buffers-per-slice";
+    String DIRECT_BUFFERS = "direct-buffers";
     String WORKER = "worker";
     String WORKER_IO_THREADS = "io-threads";
     String WORKER_TASK_CORE_THREADS = "task-core-threads";
