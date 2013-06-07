@@ -7,12 +7,17 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.jboss.as.network.NetworkUtils;
+
 @Stateless
 public class MyEjbBean implements MyEjb {
 	protected MyObject lookup() {
 		try {
 			Properties env = new Properties();
-			env.put(Context.PROVIDER_URL, "remote://localhost:4447");
+			String address = System.getProperty("node0", "localhost");
+			// format possible IPv6 address
+			address = NetworkUtils.formatPossibleIpv6Address(address);
+			env.put(Context.PROVIDER_URL, "remote://" + address + ":4447");
 			env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
 			Context ctx = new InitialContext(env);
 			try {
