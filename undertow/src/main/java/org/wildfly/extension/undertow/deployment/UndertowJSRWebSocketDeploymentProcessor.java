@@ -254,7 +254,10 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
 
         for (ServerApplicationConfig config : configInstances) {
             allAnnotatedEndpoints = config.getAnnotatedEndpointClasses(allAnnotatedEndpoints);
-            serverEndpointConfigurations.addAll(config.getEndpointConfigs(allScannedEndpointImplementations));
+            Set<ServerEndpointConfig> endpointConfigs = config.getEndpointConfigs(allScannedEndpointImplementations);
+            if(endpointConfigs != null) {
+                serverEndpointConfigurations.addAll(endpointConfigs);
+            }
         }
 
         //ok, now we have our endpoints, lets deploy them
