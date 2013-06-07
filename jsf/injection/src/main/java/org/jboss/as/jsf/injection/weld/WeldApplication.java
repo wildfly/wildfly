@@ -101,8 +101,9 @@ public class WeldApplication extends ForwardingApplication {
             synchronized (this) {
                 if (beanManager == null) {
                     try {
+                        // This can throw IllegalArgumentException on servlet context destroyed if init() was never called
                         beanManager = (BeanManager) new InitialContext().lookup("java:comp/BeanManager");
-                    } catch (NamingException e) {
+                    } catch (NamingException | IllegalArgumentException e) {
                         return null;
                     }
                 }
