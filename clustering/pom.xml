@@ -47,6 +47,7 @@
         <module>registry</module>
         <module>service</module>
         <module>singleton</module>
+        <module>subsystem</module>
         <module>ejb3-infinispan</module>
         <module>web</module>
     </modules>
