@@ -1,4 +1,17 @@
 <?xml version="1.0"?>
 <jboss-web>
-  <security-domain>web-tests</security-domain>
+	<security-domain>web-tests</security-domain>
+	<valve>
+		<class-name>org.jboss.as.web.security.GenericHeaderAuthenticator
+		</class-name>
+		<param>
+			<param-name>httpHeaderForSSOAuth</param-name>
+			<param-value>sm_ssoid,ct-remote-user,HTTP_OBLIX_UID</param-value>
+		</param>
+		<param>
+			<param-name>sessionCookieForSSOAuth</param-name>
+			<param-value>SMSESSION,CTSESSION,ObSSOCookie</param-value>
+		</param>
+	</valve>
+
 </jboss-web>

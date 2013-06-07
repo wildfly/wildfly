@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.web.security.form;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -32,11 +33,13 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
@@ -50,6 +53,7 @@ import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
  * Oracle JDK and IBM JDK.</i>
  * 
  * @author Josef Cacek
+ * @author wangchao
  */
 public abstract class AbstractWebSecurityFORMTestCase extends WebSecurityPasswordBasedBase {
     private static Logger LOGGER = Logger.getLogger(AbstractWebSecurityFORMTestCase.class);
@@ -138,6 +142,54 @@ public abstract class AbstractWebSecurityFORMTestCase extends WebSecurityPasswor
             // Either the authentication passed or failed based on the expected status code
             statusLine = response.getStatusLine();
             assertEquals(expectedStatusCode, statusLine.getStatusCode());
+        } finally {
+            // When HttpClient instance is no longer needed,
+            // shut down the connection manager to ensure
+            // immediate deallocation of all system resources
+            httpclient.getConnectionManager().shutdown();
+        }
+    }
+
+    protected void performHeaderAuth(String headerId, String cookieName, String username, String password,
+            int expectedStatusCode) throws Exception {
+        DefaultHttpClient httpclient = new DefaultHttpClient();
+        try {
+            String req = url.toExternalForm() + "secured/";
+            // We should now login with the user name and password
+            HttpGet httpGet = new HttpGet(req);
+
+            httpGet.addHeader(headerId, username);
+            CookieStore store = httpclient.getCookieStore();
+            BasicClientCookie basicCookie = new BasicClientCookie(cookieName, password);
+            basicCookie.setDomain(url.getHost());
+            basicCookie.setPath("/");
+            basicCookie.setExpiryDate(null);
+            basicCookie.setSecure(false);
+            store.addCookie(basicCookie);
+            httpclient.setCookieStore(store);
+
+            HttpResponse response = httpclient.execute(httpGet);
+
+            HttpEntity entity = response.getEntity();
+
+            String body = EntityUtils.toString(entity);
+
+            LOGGER.info("Post logon cookies:");
+            List<Cookie> cookies = httpclient.getCookieStore().getCookies();
+            if (cookies.isEmpty()) {
+                LOGGER.info("None");
+            } else {
+                for (int i = 0; i < cookies.size(); i++) {
+                    LOGGER.info("- " + cookies.get(i).toString());
+                }
+            }
+
+            // Either the authentication passed or failed based on the expected status code
+            StatusLine statusLine = response.getStatusLine();
+            assertEquals(expectedStatusCode, statusLine.getStatusCode());
+            // assert the redirection of to the SecureServlet
+            LOGGER.info("PERFORM HEADER logger entity content : " + body);
+            assertTrue("Redirect to SecureServlet has failed", body.indexOf("GOOD") >= 0);
         } finally {
             // When HttpClient instance is no longer needed,
             // shut down the connection manager to ensure
