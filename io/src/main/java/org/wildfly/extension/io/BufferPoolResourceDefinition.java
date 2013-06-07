@@ -58,13 +58,17 @@ class BufferPoolResourceDefinition extends PersistentResourceDefinition {
     static final SimpleAttributeDefinition BUFFER_PER_SLICE = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_PER_SLICE, ModelType.INT)
             .setDefaultValue(new ModelNode(1024))
             .build();
+    static final SimpleAttributeDefinition DIRECT_BUFFERS = new SimpleAttributeDefinitionBuilder(Constants.DIRECT_BUFFERS, ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(true))
+            .build();
 
 
     /*<buffer-pool name="default" buffer-size="1024" buffers-per-slice="1024"/>*/
 
     static List<SimpleAttributeDefinition> ATTRIBUTES = Arrays.asList(
             BUFFER_SIZE,
-            BUFFER_PER_SLICE
+            BUFFER_PER_SLICE,
+            DIRECT_BUFFERS
     );
 
 
@@ -98,8 +102,9 @@ class BufferPoolResourceDefinition extends PersistentResourceDefinition {
             final String name = address.getLastElement().getValue();
             int bufferSize = BUFFER_SIZE.resolveModelAttribute(context, model).asInt();
             int bufferPerSlice = BUFFER_PER_SLICE.resolveModelAttribute(context, model).asInt();
+            boolean direct = DIRECT_BUFFERS.resolveModelAttribute(context, model).asBoolean();
 
-            final BufferPoolService service = new BufferPoolService(bufferSize, bufferPerSlice);
+            final BufferPoolService service = new BufferPoolService(bufferSize, bufferPerSlice, direct);
             final ServiceBuilder<Pool<ByteBuffer>> serviceBuilder = context.getServiceTarget().addService(IOServices.BUFFER_POOL.append(name), service);
 
             serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
