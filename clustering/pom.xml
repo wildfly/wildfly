@@ -45,6 +45,7 @@
         <module>jgroups</module>
         <module>server</module>
         <module>singleton</module>
+        <module>subsystem</module>
         <module>web</module>
     </modules>
 
