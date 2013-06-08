@@ -2,7 +2,7 @@
 
 <!--
   ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2011, Red Hat, Inc., and individual contributors
+  ~ Copyright 2013, Red Hat, Inc., and individual contributors
   ~ as indicated by the @author tags. See the copyright.txt file in the
   ~ distribution for a full listing of individual contributors.
   ~
@@ -22,30 +22,15 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="org.apache.cxf">
+<module xmlns="urn:jboss:module:1.1" name="com.sun.xml.fastinfoset">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
 
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <module name="org.apache.cxf.impl" services="import">
-            <imports>
-                <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
-                <include path="META-INF/"/>
-            </imports>
-        </module>
-        <module name="asm.asm" />
-        <module name="javax.api" />
-        <module name="javax.annotation.api" />
-        <module name="javax.mail.api" />
-        <module name="javax.wsdl4j.api" />
-        <module name="javax.xml.bind.api" services="import"/>
-        <module name="com.sun.xml.bind" services="import"/>
-        <module name="com.sun.xml.fastinfoset"/>
-        <module name="org.apache.neethi" />
-        <module name="org.apache.ws.xmlschema" />
-        <module name="org.codehaus.woodstox" />
-        <module name="org.springframework.spring" optional="true" />
     </dependencies>
 </module>

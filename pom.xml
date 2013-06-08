@@ -87,6 +87,7 @@
         <version.com.sun.codemodel>2.6</version.com.sun.codemodel>
         <version.com.sun.faces>2.2.0-jbossorg-2</version.com.sun.faces>
         <version.com.sun.istack>2.6.1</version.com.sun.istack>
+        <version.com.sun.xml.fastinfoset>1.2.12</version.com.sun.xml.fastinfoset>
         <version.com.sun.xml.txw2>20110809</version.com.sun.xml.txw2>
         <version.com.sun.xsom>20110809</version.com.sun.xsom>
         <version.commons-beanutils>1.8.3</version.commons-beanutils>
@@ -1531,6 +1532,22 @@
                     <groupId>org.kohsuke.rngom</groupId>
                     <artifactId>rngom</artifactId>
                   </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.xml.fastinfoset</groupId>
+                <artifactId>FastInfoset</artifactId>
+                <version>${version.com.sun.xml.fastinfoset}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.xml</groupId>
+                        <artifactId>jsr173</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jsr173_api</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 

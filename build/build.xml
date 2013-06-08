@@ -401,6 +401,10 @@
             <maven-resource group="com.sun.xml.bind" artifact="jaxb-xjc"/>
         </module-def>
 
+        <module-def name="com.sun.xml.fastinfoset">
+            <maven-resource group="com.sun.xml.fastinfoset" artifact="FastInfoset"/>
+        </module-def>
+
         <module-def name="com.sun.xml.messaging.saaj">
             <maven-resource group="com.sun.xml.messaging.saaj" artifact="saaj-impl"/>
         </module-def>
