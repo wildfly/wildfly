@@ -29,6 +29,7 @@ import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.operations.common.Util;
@@ -73,23 +74,14 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                         .addChild(
                                 builder(AjpListenerResourceDefinition.INSTANCE)
                                         .addAttributes(AjpListenerResourceDefinition.SCHEME)
-                                        .addAttributes(AbstractListenerResourceDefinition.SOCKET_BINDING,
-                                                AbstractListenerResourceDefinition.WORKER,
-                                                AbstractListenerResourceDefinition.BUFFER_POOL,
-                                                AbstractListenerResourceDefinition.ENABLED)
+                                        .addAttributes(AjpListenerResourceDefinition.ATTRIBUTES)
                         )
                         .addChild(
                                 builder(HttpListenerResourceDefinition.INSTANCE)
-                                        .addAttributes(AbstractListenerResourceDefinition.SOCKET_BINDING,
-                                                AbstractListenerResourceDefinition.WORKER,
-                                                AbstractListenerResourceDefinition.BUFFER_POOL,
-                                                AbstractListenerResourceDefinition.ENABLED)
+                                        .addAttributes(HttpListenerResourceDefinition.ATTRIBUTES)
                         ).addChild(
                                 builder(HttpsListenerResourceDefinition.INSTANCE)
-                                        .addAttributes(AbstractListenerResourceDefinition.SOCKET_BINDING,
-                                                AbstractListenerResourceDefinition.WORKER,
-                                                AbstractListenerResourceDefinition.BUFFER_POOL,
-                                                AbstractListenerResourceDefinition.ENABLED)
+                                        .addAttributes(HttpsListenerResourceDefinition.INSTANCE.getAttributes().toArray(new AttributeDefinition[HttpsListenerResourceDefinition.INSTANCE.getAttributes().size()]))
                         ).addChild(
                                 builder(HostDefinition.INSTANCE)
                                         .addAttributes(HostDefinition.ALIAS)
