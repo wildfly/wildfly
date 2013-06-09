@@ -90,12 +90,13 @@ public class InfinispanRejectedExpressions_1_3 {
             ACCEPT14_ACCEPT13_TRANSPORT_ATTRIBUTES
     );
 
+    @SuppressWarnings("deprecation")
     public static final AttributeDefinition[] REJECT_CACHE_ATTRIBUTES = remove(
             concat(
                 CacheResourceDefinition.CACHE_ATTRIBUTES,
                 ClusteredCacheResourceDefinition.CLUSTERED_CACHE_ATTRIBUTES,
                 DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_ATTRIBUTES,
-                new AttributeDefinition[]{DistributedCacheResourceDefinition.VIRTUAL_NODES}
+                new AttributeDefinition[] { DistributedCacheResourceDefinition.VIRTUAL_NODES }
             ),
             ACCEPT14_ACCEPT13_CACHE_ATTRIBUTES
     );
@@ -141,12 +142,13 @@ public class InfinispanRejectedExpressions_1_3 {
             ACCEPT14_ACCEPT13_TRANSPORT_ATTRIBUTES
     );
 
+    @SuppressWarnings("deprecation")
     public static final AttributeDefinition[] ACCEPT14_REJECT13_CACHE_ATTRIBUTES = remove(
             concat(
                 CacheResourceDefinition.CACHE_ATTRIBUTES,
                 ClusteredCacheResourceDefinition.CLUSTERED_CACHE_ATTRIBUTES,
                 DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_ATTRIBUTES,
-                new AttributeDefinition[]{DistributedCacheResourceDefinition.VIRTUAL_NODES}
+                new AttributeDefinition[] { DistributedCacheResourceDefinition.VIRTUAL_NODES }
             ),
             NEVER_CACHE_ATTRIBUTES
     );

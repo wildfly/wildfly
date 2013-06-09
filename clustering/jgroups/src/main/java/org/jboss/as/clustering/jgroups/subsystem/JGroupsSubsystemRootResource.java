@@ -28,14 +28,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jgroups.Channel;
 
 /**
  * Custom resource to allow dynamic detection of channel resources.
@@ -100,12 +101,11 @@ public class JGroupsSubsystemRootResource implements Resource {
             if (hasChannel(element)) {
                 String name = element.getValue();
                 ServiceName serviceName = getServiceNameFromName(name);
-                ServiceController serviceController = registry.getService(serviceName);
-                assert serviceController != null;
+                ServiceController<Channel> serviceController = ServiceContainerHelper.getService(this.registry, serviceName);
                 return new ChannelInstanceResource(serviceController);
                 //return PlaceholderResource.INSTANCE;
             } else {
-                return null ;
+                return null;
             }
         } else {
             return delegate.getChild(element);
@@ -118,8 +118,7 @@ public class JGroupsSubsystemRootResource implements Resource {
             if (hasChannel(element)) {
                 String name = element.getValue();
                 ServiceName serviceName = getServiceNameFromName(name);
-                ServiceController serviceController = registry.getService(serviceName);
-                assert serviceController != null;
+                ServiceController<Channel> serviceController = ServiceContainerHelper.getService(this.registry, serviceName);
                 return new ChannelInstanceResource(serviceController);
                 // return PlaceholderResource.INSTANCE;
             }
@@ -151,8 +150,7 @@ public class JGroupsSubsystemRootResource implements Resource {
             }
             String name = address.getElement(0).getValue();
             ServiceName serviceName = getServiceNameFromName(name);
-            ServiceController serviceController = registry.getService(serviceName);
-            assert serviceController != null;
+            ServiceController<Channel> serviceController = ServiceContainerHelper.getService(this.registry, serviceName);
             return new ChannelInstanceResource(serviceController);
             //return PlaceholderResource.INSTANCE;
         } else {
@@ -182,8 +180,7 @@ public class JGroupsSubsystemRootResource implements Resource {
             Set<ResourceEntry> result = new HashSet<ResourceEntry>();
             for (ServiceName serviceName : getChannelServiceNames()) {
                 // build up a set of ResourceEntry descriptions
-                ServiceController serviceController = registry.getService(serviceName);
-                assert serviceController != null;
+                ServiceController<Channel> serviceController = ServiceContainerHelper.getService(this.registry, serviceName);
                 String name = getNameFromServiceName(serviceName);
                 result.add(new ChannelInstanceResource.ChannelInstanceResourceEntry(serviceController, MetricKeys.CHANNEL, name)) ;
                 //result.add(new PlaceholderResource.PlaceholderResourceEntry(childType, name));
@@ -237,22 +234,11 @@ public class JGroupsSubsystemRootResource implements Resource {
      * Returns true if a Channel exists at this address (channel=X) and is in UP state.
      */
     private boolean hasChannel(PathElement element) {
-        if (registry == null) {
-            return false;
-        }
+        if (registry == null) return false;
         assert element.getKey().equals(MetricKeys.CHANNEL);
         ServiceName channelName = ChannelInstanceResource.CHANNEL_PARENT.append(element.getValue());
-        boolean found = false;
-        try {
-            ServiceController controller = registry.getRequiredService(channelName);
-            if (serviceIsUp(channelName)) {
-                found = true ;
-            }
-        }
-        catch(ServiceNotFoundException snfe) {
-            // return false
-        }
-        return found;
+        ServiceController<?> controller = registry.getService(channelName);
+        return (controller != null) && serviceIsUp(channelName);
     }
 
     /*
@@ -292,13 +278,11 @@ public class JGroupsSubsystemRootResource implements Resource {
 
     private String getNameFromServiceName(ServiceName serviceName) {
         String serviceNameAsString = serviceName.toString();
-        String result = serviceNameAsString.substring(ChannelInstanceResource.CHANNEL_PREFIX_LENGTH + 1);
-        return result ;
+        return serviceNameAsString.substring(ChannelInstanceResource.CHANNEL_PREFIX_LENGTH + 1);
     }
 
     private ServiceName getServiceNameFromName(String name) {
-        ServiceName serviceName = ChannelInstanceResource.CHANNEL_PARENT.append(name);
-        return serviceName ;
+        return ChannelInstanceResource.CHANNEL_PARENT.append(name);
     }
 
     /*
@@ -306,13 +290,8 @@ public class JGroupsSubsystemRootResource implements Resource {
      * This method may be called with service names which do not correspond to existing channel services!
      */
     private boolean serviceIsUp(ServiceName name) {
-        if (registry == null)
-            return false ;
-        ServiceController controller = registry.getService(name);
-        if (controller == null) {
-            return false ;
-        } else {
-            return ServiceController.State.UP.equals(controller.getState());
-        }
+        if (registry == null) return false;
+        ServiceController<?> controller = registry.getService(name);
+        return (controller != null) ? ServiceController.State.UP.equals(controller.getState()) : false;
     }
 }
