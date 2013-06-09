@@ -57,21 +57,10 @@ public class ChannelInstanceResource implements Resource {
     // disregard this Protocol which is used in a shared transport configuration
     private static final String SHARED_TRANSPORT_PROTOCOL = "TP.ProtocolAdapter";
 
-    private final ServiceController controller;
+    final ServiceController<Channel> controller;
 
-    public ChannelInstanceResource(final ServiceController controller) {
+    public ChannelInstanceResource(final ServiceController<Channel> controller) {
         this.controller = controller;
-    }
-
-    public ServiceController getController() {
-        return controller;
-    }
-
-    public Channel getChannel() {
-        if (getController() == null)
-            return null ;
-
-        return (Channel) controller.getValue();
     }
 
     // this resource holds no persistent state, so "turn off" the model
@@ -171,8 +160,7 @@ public class ChannelInstanceResource implements Resource {
     @Override
     public Resource clone() {
         // don't clone the pointer to the unique controller for this service
-        ChannelInstanceResource clone = new ChannelInstanceResource(getController());
-        return clone;
+        return new ChannelInstanceResource(this.controller);
     }
 
     @Override
@@ -191,7 +179,7 @@ public class ChannelInstanceResource implements Resource {
     }
 
     private Set<String> getProtocolNames() {
-        Channel channel = getChannel();
+        Channel channel = this.controller.getValue();
         if (channel == null) {
             return Collections.emptySet();
         }
@@ -215,12 +203,12 @@ public class ChannelInstanceResource implements Resource {
 
         final PathElement path;
 
-        public ChannelInstanceResourceEntry(final ServiceController controller, final PathElement path) {
+        public ChannelInstanceResourceEntry(final ServiceController<Channel> controller, final PathElement path) {
             super(controller);
             this.path = path;
         }
 
-        public ChannelInstanceResourceEntry(final ServiceController controller, final String type, final String name) {
+        public ChannelInstanceResourceEntry(final ServiceController<Channel> controller, final String type, final String name) {
             super(controller);
             this.path = PathElement.pathElement(type, name);
         }
@@ -237,8 +225,7 @@ public class ChannelInstanceResource implements Resource {
 
         @Override
         public ChannelInstanceResourceEntry clone() {
-            return new ChannelInstanceResourceEntry(getController(), getPathElement());
+            return new ChannelInstanceResourceEntry(this.controller, getPathElement());
         }
     }
-
 }

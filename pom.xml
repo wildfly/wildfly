@@ -153,7 +153,7 @@
         <version.org.hibernate3>3.6.6.Final</version.org.hibernate3>
         <version.org.hibernate3.commons.annotations>3.2.0.Final</version.org.hibernate3.commons.annotations>
         <version.org.hornetq>2.3.1.Final</version.org.hornetq>
-        <version.org.infinispan>5.3.0.Beta2</version.org.infinispan>
+        <version.org.infinispan>5.3.0.CR1</version.org.infinispan>
         <version.org.jacorb>2.3.2.jbossorg-4</version.org.jacorb>
         <version.org.javassist>3.17.1-GA</version.org.javassist>
         <version.org.jdom>1.1.2</version.org.jdom>
@@ -248,7 +248,7 @@
         <version.org.jboss.xnio>3.1.0.CR3</version.org.jboss.xnio>
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
-        <version.org.jgroups>3.3.0.Final</version.org.jgroups>
+        <version.org.jgroups>3.3.1.Final</version.org.jgroups>
         <version.org.jipijapa>1.0.0.Alpha2</version.org.jipijapa>
         <version.org.kohsuke.rngom>201103.jboss-1</version.org.kohsuke.rngom>
         <version.org.mockito>1.9.5</version.org.mockito>
@@ -3731,10 +3731,6 @@
                         <artifactId>jgroups</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.jboss.javaee</groupId>
-                        <artifactId>jboss-transaction-api</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>org.jboss.marshalling</groupId>
                         <artifactId>jboss-marshalling</artifactId>
                     </exclusion>
@@ -3745,22 +3741,6 @@
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
                         <artifactId>jboss-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jandex</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.woodstox</groupId>
-                        <artifactId>woodstox-core-asl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.woodstox</groupId>
-                        <artifactId>woodstox-core-asl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.woodstox</groupId>
-                        <artifactId>stax2-api</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss</groupId>

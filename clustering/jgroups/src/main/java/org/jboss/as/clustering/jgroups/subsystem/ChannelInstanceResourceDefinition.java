@@ -152,18 +152,6 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
         }
     }
 
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-    }
-
-    @Override
-    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        super.registerChildren(resourceRegistration);
-
-        // the protocol resources are registered dynamically from ChannelService
-    }
-
     /*
      *  Add an operation step to register a channel and the protocols for the channel, in the context of the resource
      *  /subsystem=jgroups/channel=<channel name>
@@ -307,7 +295,7 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
 
         // register the resource's attributes
         for (AttributeDefinition def : attributes) {
-            protocolBuilder.addMetric(def, new ProtocolMetricsHandler(protocolName));
+            protocolBuilder.addMetric(def, new ProtocolMetricsHandler());
         }
 
         // add the attribute descriptions to the map
@@ -371,7 +359,7 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
         }
     }
 
-    private static Field[] getProtocolFields(Class clazz) {
+    private static Field[] getProtocolFields(Class<?> clazz) {
         List<Field> fields = new ArrayList<Field>();
         fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
         // stop recursing when we reach Protocol

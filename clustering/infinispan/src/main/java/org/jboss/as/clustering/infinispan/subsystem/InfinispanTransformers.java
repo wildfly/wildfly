@@ -79,6 +79,7 @@ public class InfinispanTransformers {
             .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, InfinispanRejectedExpressions_1_3.REJECT_TRANSPORT_ATTRIBUTES)
             .end();
 
+        @SuppressWarnings("deprecation")
         final ResourceTransformationDescriptionBuilder distributedCacheBuilder = cacheContainerBuilder.addChildResource(DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH)
                 .getAttributeBuilder()
                 .addRejectCheck(
@@ -281,6 +282,7 @@ public class InfinispanTransformers {
      *
      * @param subsystem the subsystems registration
      */
+    @SuppressWarnings("deprecation")
     private static void registerTransformers140(final SubsystemRegistration subsystem) {
         final ModelVersion version = ModelVersion.create(1, 4, 0);
 
