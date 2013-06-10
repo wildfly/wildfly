@@ -721,6 +721,12 @@
                     <artifactId>javax.el</artifactId>
                 </dependency>
 
+                <!-- JSR-236 RI -->
+                <dependency>
+                    <groupId>org.glassfish</groupId>
+                    <artifactId>javax.enterprise.concurrent</artifactId>                    
+                </dependency>
+
                 <dependency>
                     <groupId>org.hibernate</groupId>
                     <artifactId>hibernate-core</artifactId>
@@ -2179,6 +2185,7 @@
                                         <exclude>org.fusesource.jansi:jansi</exclude>
                                         <exclude>org.glassfish:javax.el</exclude>
                                         <exclude>org.glassfish:javax.json</exclude>
+                                        <exclude>org.glassfish:javax.enterprise.concurrent</exclude>
                                         <exclude>org.hornetq:hornetq-ra</exclude>
                                         <exclude>org.infinispan:infinispan-cachestore-jdbc</exclude>
                                         <exclude>org.infinispan:infinispan-cachestore-remote</exclude>
@@ -2760,6 +2767,10 @@
                                             <packages>javax.el:com.sun.glassfish:com.sun.el</packages>
                                         </group>
                                         <group>
+                                            <title>Module org.glassfish.javax.enterprise.concurrent</title>
+                                            <packages>org.glassfish.enterprise.concurrent:org.glassfish.enterprise.concurrent.internal:org.glassfish.enterprise.concurrent.management:org.glassfish.enterprise.concurrent.spi</packages>
+                                        </group>
+                                        <group>
                                             <title>Module org.glassfish.javax.json</title>
                                             <packages>javax.json:javax.json.spi:javax.json.stream:org.glassfish.json</packages>
                                         </group>
@@ -2902,7 +2913,7 @@
                                         <group>
                                             <title>Module org.wildfly.ee</title>
                                             <packages>org.jboss.as.ee:org.jboss.as.ee.beanvalidation:org.jboss.as.ee.component:org.jboss.as.ee.component.deployers:org.jboss.as.ee.component.interceptors:org.jboss.as.ee.component.serialization:org.jboss.as.ee.managedbean.component:org.jboss.as.ee.managedbean.processors:org.jboss.as.ee.metadata:org.jboss.as.ee.metadata.property:org.jboss.as.ee.naming:org.jboss.as.ee.structure:org.jboss.as.ee.subsystem:org.jboss.as.ee.utils</packages>
-                                        </group>
+                                        </group>                                        
                                         <group>
                                             <title>Module org.wildfly.ejb3</title>
                                             <packages>org.jboss.as.ejb3:org.jboss.as.ejb3.cache:org.jboss.as.ejb3.cache.impl:org.jboss.as.ejb3.cache.impl.backing:org.jboss.as.ejb3.cache.impl.backing.clustering:org.jboss.as.ejb3.cache.impl.factory:org.jboss.as.ejb3.cache.spi:org.jboss.as.ejb3.cache.spi.impl:org.jboss.as.ejb3.clustering:org.jboss.as.ejb3.component:org.jboss.as.ejb3.component.allowedmethods:org.jboss.as.ejb3.component.entity:org.jboss.as.ejb3.component.entity.entitycache:org.jboss.as.ejb3.component.entity.interceptors:org.jboss.as.ejb3.component.interceptors:org.jboss.as.ejb3.component.invocationmetrics:org.jboss.as.ejb3.component.messagedriven:org.jboss.as.ejb3.component.pool:org.jboss.as.ejb3.component.session:org.jboss.as.ejb3.component.singleton:org.jboss.as.ejb3.component.stateful:org.jboss.as.ejb3.component.stateless:org.jboss.as.ejb3.concurrency:org.jboss.as.ejb3.context:org.jboss.as.ejb3.deployment:org.jboss.as.ejb3.deployment.processors:org.jboss.as.ejb3.deployment.processors.annotation:org.jboss.as.ejb3.deployment.processors.dd:org.jboss.as.ejb3.deployment.processors.entity:org.jboss.as.ejb3.deployment.processors.merging:org.jboss.as.ejb3.deployment.processors.security:org.jboss.as.ejb3.iiop:org.jboss.as.ejb3.iiop.handle:org.jboss.as.ejb3.iiop.stub:org.jboss.as.ejb3.inflow:org.jboss.as.ejb3.interceptor:org.jboss.as.ejb3.pool:org.jboss.as.ejb3.pool.strictmax:org.jboss.as.ejb3.remote:org.jboss.as.ejb3.remote.protocol.versionone:org.jboss.as.ejb3.resourceadapterbinding.metadata:org.jboss.as.ejb3.resourceadapterbinding.parser:org.jboss.as.ejb3.security:org.jboss.as.ejb3.security.metadata:org.jboss.as.ejb3.security.parser:org.jboss.as.ejb3.subsystem:org.jboss.as.ejb3.subsystem.deployment:org.jboss.as.ejb3.timerservice:org.jboss.as.ejb3.timerservice.persistence:org.jboss.as.ejb3.timerservice.persistence.database:org.jboss.as.ejb3.timerservice.persistence.filestore:org.jboss.as.ejb3.timerservice.schedule:org.jboss.as.ejb3.timerservice.schedule.attribute:org.jboss.as.ejb3.timerservice.schedule.util:org.jboss.as.ejb3.timerservice.schedule.value:org.jboss.as.ejb3.timerservice.spi:org.jboss.as.ejb3.timerservice.task:org.jboss.as.ejb3.tx:org.jboss.as.ejb3.tx.util:org.jboss.as.ejb3.util</packages>

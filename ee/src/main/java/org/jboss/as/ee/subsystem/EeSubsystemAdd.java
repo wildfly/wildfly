@@ -23,7 +23,11 @@
 package org.jboss.as.ee.subsystem;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
+import org.glassfish.enterprise.concurrent.ContextServiceImpl;
+import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -35,6 +39,8 @@ import org.jboss.as.ee.component.ReflectiveClassIntrospector;
 import org.jboss.as.ee.component.deployers.ApplicationClassesAggregationProcessor;
 import org.jboss.as.ee.component.deployers.AroundInvokeAnnotationParsingProcessor;
 import org.jboss.as.ee.component.deployers.ComponentInstallProcessor;
+import org.jboss.as.ee.concurrent.DefaultContextSetupProviderImpl;
+import org.jboss.as.ee.concurrent.deployers.DefaultConcurrentManagedObjectsProcessor;
 import org.jboss.as.ee.component.deployers.DefaultEarSubDeploymentsIsolationProcessor;
 import org.jboss.as.ee.component.deployers.DescriptorEnvironmentLifecycleMethodProcessor;
 import org.jboss.as.ee.component.deployers.EEAnnotationProcessor;
@@ -46,6 +52,11 @@ import org.jboss.as.ee.component.deployers.EEModuleInitialProcessor;
 import org.jboss.as.ee.component.deployers.EEModuleNameProcessor;
 import org.jboss.as.ee.component.deployers.EarApplicationNameProcessor;
 import org.jboss.as.ee.component.deployers.EarMessageDestinationProcessor;
+import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
+import org.jboss.as.ee.concurrent.service.ContextServiceService;
+import org.jboss.as.ee.concurrent.service.ManagedExecutorServiceService;
+import org.jboss.as.ee.concurrent.service.ManagedScheduledExecutorServiceService;
+import org.jboss.as.ee.concurrent.service.ManagedThreadFactoryService;
 import org.jboss.as.ee.naming.InApplicationClientBindingProcessor;
 import org.jboss.as.ee.component.deployers.InterceptorAnnotationProcessor;
 import org.jboss.as.ee.component.deployers.LifecycleAnnotationParsingProcessor;
@@ -85,6 +96,7 @@ import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringPr
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
 
@@ -122,6 +134,43 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final EEJndiViewExtension extension = new EEJndiViewExtension();
         context.getServiceTarget().addService(EEJndiViewExtension.SERVICE_NAME, extension)
                 .addDependency(JndiViewExtensionRegistry.SERVICE_NAME, JndiViewExtensionRegistry.class, extension.getRegistryInjector())
+                .addListener(verificationHandler)
+                .install();
+
+        // jsr 236 concurrent default services TODO  service constructor args from subsystem xml
+        final ContextServiceService contextServiceService = new ContextServiceService("DefaultContextService", new DefaultContextSetupProviderImpl(), null);
+        final ServiceName contextServiceServiceName = ConcurrentServiceNames.getDefaultContextServiceServiceName();
+        context.getServiceTarget().addService(contextServiceServiceName, contextServiceService)
+                .addListener(verificationHandler)
+                .install();
+
+        final ManagedThreadFactoryService managedThreadFactoryService = new ManagedThreadFactoryService("DefaultManagedThreadFactory",Thread.NORM_PRIORITY);
+        context.getServiceTarget().addService(ConcurrentServiceNames.getDefaultManagedThreadFactoryServiceName(), managedThreadFactoryService)
+                .addDependency(contextServiceServiceName, ContextServiceImpl.class, managedThreadFactoryService.getContextServiceInjector())
+                .addListener(verificationHandler)
+                .install();
+
+        final ManagedThreadFactoryService managedExecutorServiceThreadFactoryService = new ManagedThreadFactoryService("DefaultManagedExecutorService",Thread.NORM_PRIORITY);
+        final ServiceName managedExecutorServiceThreadFactoryServiceServiceName = ConcurrentServiceNames.getDefaultManagedExecutorServiceThreadFactoryServiceName();
+        context.getServiceTarget().addService(managedExecutorServiceThreadFactoryServiceServiceName, managedExecutorServiceThreadFactoryService)
+                .addListener(verificationHandler)
+                .install();
+        final ManagedExecutorServiceService managedExecutorServiceService = new ManagedExecutorServiceService("DefaultManagedExecutorService", 60000, false, 5, 25, 5000, TimeUnit.MILLISECONDS, 0, Integer.MAX_VALUE, AbstractManagedExecutorService.RejectPolicy.ABORT);
+        context.getServiceTarget().addService(ConcurrentServiceNames.getDefaultManagedExecutorServiceServiceName(), managedExecutorServiceService)
+                .addDependency(managedExecutorServiceThreadFactoryServiceServiceName, ManagedThreadFactoryImpl.class, managedExecutorServiceService.getManagedThreadFactoryInjector())
+                .addDependency(contextServiceServiceName, ContextServiceImpl.class, managedExecutorServiceService.getContextServiceInjector())
+                .addListener(verificationHandler)
+                .install();
+
+        final ManagedThreadFactoryService managedScheduledExecutorServiceThreadFactoryService = new ManagedThreadFactoryService("DefaultManagedScheduledExecutorService",Thread.NORM_PRIORITY);
+        final ServiceName managedScheduledExecutorServiceThreadFactoryServiceServiceName = ConcurrentServiceNames.getDefaultManagedScheduledExecutorServiceThreadFactoryServiceName();
+        context.getServiceTarget().addService(managedScheduledExecutorServiceThreadFactoryServiceServiceName, managedScheduledExecutorServiceThreadFactoryService)
+                .addListener(verificationHandler)
+                .install();
+        final ManagedScheduledExecutorServiceService managedScheduledExecutorServiceService = new ManagedScheduledExecutorServiceService("DefaultManagedScheduledExecutorService", 60000, false, 2, 3000, TimeUnit.MILLISECONDS, 0, AbstractManagedExecutorService.RejectPolicy.ABORT);
+        context.getServiceTarget().addService(ConcurrentServiceNames.getDefaultManagedScheduledExecutorServiceServiceName(), managedScheduledExecutorServiceService)
+                .addDependency(managedScheduledExecutorServiceThreadFactoryServiceServiceName, ManagedThreadFactoryImpl.class, managedScheduledExecutorServiceService.getManagedThreadFactoryInjector())
+                .addDependency(contextServiceServiceName, ContextServiceImpl.class, managedScheduledExecutorServiceService.getContextServiceInjector())
                 .addListener(verificationHandler)
                 .install();
 
@@ -174,6 +223,7 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EAR_MESSAGE_DESTINATIONS, new EarMessageDestinationProcessor());
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_MANAGED_BEAN_ANNOTATION, new ManagedBeanAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_DESCRIPTOR_LIFECYCLE_METHOD_RESOLUTION, new DescriptorEnvironmentLifecycleMethodProcessor());
+                processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EE_CONCURRENT_DEFAULT_MANAGED_OBJECTS, new DefaultConcurrentManagedObjectsProcessor());
 
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_EE_PERMISSIONS, new EEDefaultPermissionsProcessor());
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_MANAGED_BEAN, new JavaEEDependencyProcessor());
