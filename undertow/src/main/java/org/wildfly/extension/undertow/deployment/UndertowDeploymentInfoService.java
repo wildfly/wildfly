@@ -243,7 +243,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     if(cookieConfig.getDomain() != null) {
                         config.setDomain(cookieConfig.getDomain());
                     }
-                    if(cookieConfig.getDomain() != null) {
+                    if(cookieConfig.getComment() != null) {
                         config.setComment(cookieConfig.getComment());
                     }
                     config.setSecure(cookieConfig.getSecure());
