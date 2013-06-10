@@ -119,10 +119,10 @@ public class LayerTestCase extends AbstractTaskTestCase {
     @Test
     public void patchLayer() throws Exception {
         // start from a base installation
-        ProductConfig productConfig = new ProductConfig("product", "version", "consoleSlot");
+        ProductConfig productConfig = new ProductConfig("product", "8.0.0.Alpha2-SNAPSHOT", "consoleSlot");
 
         // add a layer
-        String layerName = randomString();
+        String layerName = "mylayer";//randomString();
         installLayer(env.getModuleRoot(), env.getInstalledImage().getLayersConf(), layerName);
 
         InstalledIdentity installedIdentity = InstalledIdentity.load(env.getInstalledImage().getJbossHome(), productConfig, env.getInstalledImage().getModulesDir());
@@ -132,10 +132,10 @@ public class LayerTestCase extends AbstractTaskTestCase {
 
         // build a one-off patch for the layer with 1 added module
         // and 1 add file
-        String patchID = randomString();
+        String patchID = "mypatchID";//randomString();
         File patchDir = mkdir(tempDir, patchID);
-        String layerPatchId = randomString();
-        String moduleName = randomString();
+        String layerPatchId = "mylayerPatchID";//randomString();
+        String moduleName = "mymodule";//randomString();
         File patchedLayerModuleRoot = newFile(patchDir, layerPatchId);
         File moduleDir = createModule(patchedLayerModuleRoot, moduleName);
         byte[] newHash = hashFile(moduleDir);

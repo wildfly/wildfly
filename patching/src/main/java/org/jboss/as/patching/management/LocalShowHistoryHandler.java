@@ -52,7 +52,7 @@ public final class LocalShowHistoryHandler implements OperationStepHandler {
         final PatchInfoService service = (PatchInfoService) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME).getValue();
 
         try {
-            final PatchInfo info = service.getValue();
+            final PatchInfo info = service.getPatchInfo();
             final InstalledImage installedImage =  service.getStructure().getInstalledImage();
 
             ModelNode result = new ModelNode();

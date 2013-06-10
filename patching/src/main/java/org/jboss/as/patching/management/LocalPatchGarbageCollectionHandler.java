@@ -45,8 +45,8 @@ public class LocalPatchGarbageCollectionHandler implements OperationStepHandler 
         final String patchId = operation.require(PATCH_ID).asString();
         //
         context.acquireControllerLock();
-        PatchInfoService service = (PatchInfoService) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME);
-        final PatchInfo info = service.getValue();
+        final PatchInfoService service = (PatchInfoService) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME).getValue();
+        final PatchInfo info = service.getPatchInfo();
         if(info.getCumulativeID().equals(patchId)) {
             throw PatchManagementMessages.MESSAGES.patchActive(patchId);
         }

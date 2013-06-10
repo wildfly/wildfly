@@ -17,6 +17,8 @@ public interface InstallationManager {
      */
     Identity getIdentity();
 
+    InstalledIdentity getInstalledIdentity();
+
     /**
      * Modify the installation.
      *

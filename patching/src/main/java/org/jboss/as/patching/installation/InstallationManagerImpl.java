@@ -8,12 +8,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class InstallationManagerImpl implements InstallationManager {
 
-    // private volatile InstalledIdentity installedIdentity;
+    private volatile InstalledIdentity installedIdentity;
     private final Identity identity;
     private volatile InstallationModificationImpl.InstallationState state;
     private final AtomicBoolean writable = new AtomicBoolean(true);
 
     public InstallationManagerImpl(InstalledIdentity installedIdentity) throws IOException {
+        this.installedIdentity = installedIdentity;
         this.identity = installedIdentity.getIdentity();
         this.state = load(installedIdentity);
     }
@@ -27,6 +28,10 @@ public class InstallationManagerImpl implements InstallationManager {
             state.putAddOn(addOn);
         }
         return state;
+    }
+
+    public InstalledIdentity getInstalledIdentity() {
+        return installedIdentity;
     }
 
     @Override
