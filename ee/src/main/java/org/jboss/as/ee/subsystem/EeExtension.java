@@ -69,7 +69,7 @@ public class EeExtension implements Extension {
     protected static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, EeExtension.class.getClassLoader(), true, false);
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, EeExtension.class.getClassLoader(), true, true);
     }
 
     /**
@@ -85,6 +85,15 @@ public class EeExtension implements Extension {
 
         // Mandatory describe operation
         rootResource.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+
+        // register submodels
+        rootResource.registerSubModel(DefaultContextServiceResourceDefinition.INSTANCE);
+        rootResource.registerSubModel(DefaultManagedThreadFactoryResourceDefinition.INSTANCE);
+        rootResource.registerSubModel(DefaultManagedExecutorServiceResourceDefinition.INSTANCE);
+        rootResource.registerSubModel(DefaultManagedScheduledExecutorServiceResourceDefinition.INSTANCE);
+        rootResource.registerSubModel(ManagedThreadFactoryResourceDefinition.INSTANCE);
+        rootResource.registerSubModel(ManagedExecutorServiceResourceDefinition.INSTANCE);
+        rootResource.registerSubModel(ManagedScheduledExecutorServiceResourceDefinition.INSTANCE);
 
         subsystem.registerXMLElementWriter(EESubsystemXmlPersister.INSTANCE);
 
@@ -116,9 +125,16 @@ public class EeExtension implements Extension {
                 .addRejectCheck(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE)
                 .setValueConverter(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE);
 
+        builder.rejectChildResource(EESubsystemModel.DEFAULT_CONTEXT_SERVICE_PATH);
+        builder.rejectChildResource(EESubsystemModel.DEFAULT_MANAGED_THREAD_FACTORY_PATH);
+        builder.rejectChildResource(EESubsystemModel.DEFAULT_MANAGED_EXECUTOR_SERVICE_PATH);
+        builder.rejectChildResource(EESubsystemModel.DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_PATH);
+        builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY));
+        builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE));
+        builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE));
+
         TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
     }
-
 
     /**
      * Due to https://issues.jboss.org/browse/AS7-4892 the jboss-descriptor-property-replacement attribute

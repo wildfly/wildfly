@@ -25,6 +25,7 @@ package org.jboss.as.controller;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -45,6 +46,17 @@ import java.util.List;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public abstract class AbstractBoottimeAddStepHandler extends AbstractAddStepHandler {
+
+    protected AbstractBoottimeAddStepHandler() {
+    }
+
+    protected AbstractBoottimeAddStepHandler(Collection<AttributeDefinition> attributes) {
+        super(attributes);
+    }
+
+    protected AbstractBoottimeAddStepHandler(AttributeDefinition... attributes) {
+        super(attributes);
+    }
 
     /**
      * If {@link OperationContext#isBooting()} returns {@code true}, invokes

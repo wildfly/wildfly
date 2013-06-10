@@ -33,6 +33,10 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.annotation.Resources;
+import javax.enterprise.concurrent.ContextService;
+import javax.enterprise.concurrent.ManagedExecutorService;
+import javax.enterprise.concurrent.ManagedScheduledExecutorService;
+import javax.enterprise.concurrent.ManagedThreadFactory;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
@@ -46,6 +50,7 @@ import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.MethodInjectionTarget;
 import org.jboss.as.ee.component.OptionalLookupInjectionSource;
 import org.jboss.as.ee.component.ResourceInjectionConfiguration;
+import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -81,6 +86,11 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         locations.put("javax.transaction.UserTransaction", "java:jboss/UserTransaction");
         locations.put("javax.transaction.TransactionSynchronizationRegistry", "java:jboss/TransactionSynchronizationRegistry");
         locations.put("org.osgi.framework.BundleContext", "java:jboss/osgi/BundleContext");
+        // ee concurrent
+        locations.put(ContextService.class.getName(), ConcurrentServiceNames.DEFAULT_CONTEXT_SERVICE_JNDI_NAME);
+        locations.put(ManagedThreadFactory.class.getName(), ConcurrentServiceNames.DEFAULT_MANAGED_THREAD_FACTORY_JNDI_NAME);
+        locations.put(ManagedExecutorService.class.getName(), ConcurrentServiceNames.DEFAULT_MANAGED_EXECUTOR_SERVICE_JNDI_NAME);
+        locations.put(ManagedScheduledExecutorService.class.getName(), ConcurrentServiceNames.DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_JNDI_NAME);
 
         //we have to be careful with java:comp lookups here
         //as they will not work in entries in application.xml, as there is no comp context availble

@@ -36,6 +36,17 @@ enum Element {
     EAR_SUBDEPLOYMENTS_ISOLATED(EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.getXmlName()),
     SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT(EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.getXmlName()),
     JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT(EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.getXmlName()),
+    CONCURRENT("concurrent"),
+    DEFAULT_CONTEXT_SERVICE("default-context-service"),
+    DEFAULT_MANAGED_THREAD_FACTORY("default-managed-thread-factory"),
+    DEFAULT_MANAGED_EXECUTOR_SERVICE("default-managed-executor-service"),
+    DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE("default-managed-scheduled-executor-service"),
+    MANAGED_THREAD_FACTORIES("managed-thread-factories"),
+    MANAGED_THREAD_FACTORY("managed-thread-factory"),
+    MANAGED_EXECUTOR_SERVICES("managed-executor-services"),
+    MANAGED_EXECUTOR_SERVICE("managed-executor-service"),
+    MANAGED_SCHEDULED_EXECUTOR_SERVICES("managed-scheduled-executor-services"),
+    MANAGED_SCHEDULED_EXECUTOR_SERVICE("managed-scheduled-executor-service"),
     UNKNOWN(null);
 
     private final String name;

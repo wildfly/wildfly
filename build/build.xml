@@ -731,6 +731,10 @@
             <maven-resource group="org.glassfish" artifact="javax.el"/>
         </module-def>
 
+        <module-def name="org.glassfish.javax.enterprise.concurrent">
+            <maven-resource group="org.glassfish" artifact="javax.enterprise.concurrent"/>
+        </module-def>
+
         <module-def name="org.glassfish.javax.json">
             <maven-resource group="org.glassfish" artifact="javax.json"/>
         </module-def>

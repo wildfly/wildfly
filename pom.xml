@@ -142,6 +142,7 @@
         <version.org.eclipse.jdt.core.compiler>4.2.2</version.org.eclipse.jdt.core.compiler>
         <version.org.fusesource.jansi>1.9</version.org.fusesource.jansi>
         <version.org.glassfish.javax.el>3.0-b07</version.org.glassfish.javax.el>
+        <version.org.glassfish.javax.enterprise.concurrent>1.0</version.org.glassfish.javax.enterprise.concurrent>
         <version.org.glassfish.javax.json>1.0</version.org.glassfish.javax.json>
         <version.org.hibernate>4.3.0.Beta3</version.org.hibernate>
         <version.org.hibernate.commons.annotations>4.0.2.Final</version.org.hibernate.commons.annotations>
@@ -199,7 +200,7 @@
         <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.2_spec>1.0.0.Alpha1</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.2_spec>
         <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>1.0.0.Alpha2</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>
         <version.org.jboss.spec.javax.el.jboss-el-api_2.2_spec>1.0.2.Final</version.org.jboss.spec.javax.el.jboss-el-api_2.2_spec>
-        <version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>1.0.0.Alpha1</version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>
+        <version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>1.0.0.CR1</version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>
         <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>2.2.2</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>
         <version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.2_spec>1.0.0.Alpha3</version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.2_spec>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>1.0.0.Alpha1</version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
@@ -980,7 +981,7 @@
                 <artifactId>wildfly-client-all</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+        
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-core-model-test</artifactId>
@@ -3376,6 +3377,19 @@
                 <version>${version.org.glassfish.javax.el}</version>
             </dependency>
 
+            <!-- JSR-236 RI -->
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>javax.enterprise.concurrent</artifactId>
+                <version>${version.org.glassfish.javax.enterprise.concurrent}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.enterprise.concurrent</groupId>
+                        <artifactId>javax.enterprise.concurrent-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-core</artifactId>
@@ -6074,11 +6088,11 @@
                 <module>naming</module>
                 <module>pojo</module>
                 <module>remoting-test</module>
-                <module>system-jmx</module>
                 <module>sar</module>
                 <module>security</module>
                 <module>security-manager</module>
                 <module>spec-api</module>
+                <module>system-jmx</module>
                 <module>transactions</module>
                 <module>undertow</module>
                 <module>web-common</module>
