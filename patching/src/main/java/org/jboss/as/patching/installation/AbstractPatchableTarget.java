@@ -22,6 +22,8 @@
 
 package org.jboss.as.patching.installation;
 
+import static org.jboss.as.patching.Constants.PATCHES;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -63,7 +65,7 @@ abstract class AbstractPatchableTarget extends DirectoryStructure implements Lay
             return null;
         }
         // ${repo-root}/bundles/${layer.type+name}/patches/${patch.id}
-        final File patches = new File(getBundleRepositoryRoot(), patchId);
+        final File patches = new File(getBundleRepositoryRoot(), PATCHES);
         return new File(patches, patchId);
     }
 
@@ -73,7 +75,7 @@ abstract class AbstractPatchableTarget extends DirectoryStructure implements Lay
             return null;
         }
         // ${repo-root}/modules/${layer.type+name}/patches/${patch.id}
-        final File patches = new File(getModuleRoot(), Constants.PATCHES);
+        final File patches = new File(getModuleRoot(), PATCHES);
         return new File(patches, patchId);
     }
 
