@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.undertow.handlers;
 
-import java.nio.file.Paths;
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -80,7 +80,7 @@ public class FileHandler extends Handler {
         String path = PATH.resolveModelAttribute(context, model).asString();
         boolean directoryListing = DIRECTORY_LISTING.resolveModelAttribute(context, model).asBoolean();
         UndertowLogger.ROOT_LOGGER.creatingFileHandler(path);
-        FileResourceManager resourceManager = new FileResourceManager(Paths.get(path));
+        FileResourceManager resourceManager = new FileResourceManager(new File(path));
         ResourceHandler handler = new ResourceHandler();
         handler.setResourceManager(resourceManager);
         handler.setDirectoryListingEnabled(directoryListing);

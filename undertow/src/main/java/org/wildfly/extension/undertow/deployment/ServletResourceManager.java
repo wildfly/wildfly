@@ -2,7 +2,6 @@ package org.wildfly.extension.undertow.deployment;
 
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Paths;
 import java.util.Collection;
 
 import io.undertow.server.handlers.resource.FileResourceManager;
@@ -22,7 +21,7 @@ public class ServletResourceManager implements ResourceManager {
     private final Collection<VirtualFile> overlays;
 
     public ServletResourceManager(final VirtualFile resourcesRoot, final Collection<VirtualFile> overlays) throws IOException {
-        deploymentResourceManager = new FileResourceManager(Paths.get(resourcesRoot.getPhysicalFile().getAbsolutePath()));
+        deploymentResourceManager = new FileResourceManager(resourcesRoot.getPhysicalFile());
         this.overlays = overlays;
     }
 

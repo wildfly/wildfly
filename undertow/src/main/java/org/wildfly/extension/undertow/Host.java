@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
-import java.nio.file.Paths;
+import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -168,7 +168,7 @@ public class Host implements Service<Host>, WebHost {
         d.setDeploymentName(webDeploymentBuilder.getContextRoot());
         d.setContextPath(webDeploymentBuilder.getContextRoot());
         d.setClassLoader(webDeploymentBuilder.getClassLoader());
-        d.setResourceManager(new FileResourceManager(Paths.get(webDeploymentBuilder.getDocumentRoot().getAbsolutePath())));
+        d.setResourceManager(new FileResourceManager(new File(webDeploymentBuilder.getDocumentRoot().getAbsolutePath())));
         for (ServletBuilder servlet : webDeploymentBuilder.getServlets()) {
             ServletInfo s;
             if (servlet.getServlet() == null) {
