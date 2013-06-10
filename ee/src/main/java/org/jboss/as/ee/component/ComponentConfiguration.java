@@ -69,6 +69,9 @@ public class ComponentConfiguration {
     private final OrderedItemContainer<InterceptorFactory> postActivateInterceptors = new OrderedItemContainer<InterceptorFactory>();
     private final Map<Method, OrderedItemContainer<InterceptorFactory>> componentInterceptors = new IdentityHashMap<Method, OrderedItemContainer<InterceptorFactory>>();
 
+    // ee-concurrent interceptors
+    private final OrderedItemContainer<InterceptorFactory> defaultConcurrentContextInterceptors = new OrderedItemContainer<InterceptorFactory>();
+
     //TODO: move this into an EJB specific configuration
     private final Map<Method, OrderedItemContainer<InterceptorFactory>> timeoutInterceptors = new IdentityHashMap<Method, OrderedItemContainer<InterceptorFactory>>();
 
@@ -364,6 +367,27 @@ public class ComponentConfiguration {
     }
 
     /**
+     * Get the concurrent context (jsr 236) interceptors.
+     * <p/>
+     * This method should only be called after all interceptors have been added
+     *
+     * @return the sorted interceptor
+     */
+    public List<InterceptorFactory> getDefaultConcurrentContextInterceptors() {
+        return defaultConcurrentContextInterceptors.getSortedItems();
+    }
+
+    /**
+     * Adds a concurrent context (jsr 236) interceptor
+     *
+     * @param interceptorFactory The interceptor factory to add
+     * @param priority           The factories priority
+     */
+    public void addDefaultConcurrentContextInterceptor(InterceptorFactory interceptorFactory, int priority) {
+        defaultConcurrentContextInterceptors.add(interceptorFactory, priority);
+    }
+
+    /**
      * Get the application name.
      *
      * @return the application name
@@ -458,4 +482,5 @@ public class ComponentConfiguration {
     public Set<Object> getInterceptorContextKeys() {
         return interceptorContextKeys;
     }
+
 }

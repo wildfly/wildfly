@@ -108,6 +108,7 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                 configuration.addPostConstructInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.EJB_SESSION_CONTEXT_INTERCEPTOR);
                 configuration.addPreDestroyInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.ComponentPreDestroy.EJB_SESSION_CONTEXT_INTERCEPTOR);
+                configuration.addDefaultConcurrentContextInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.ConcurrentContext.EJB_SESSION_CONTEXT_INTERCEPTOR);
             }
         });
     }

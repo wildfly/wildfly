@@ -80,7 +80,7 @@ public final class NamespaceConfigurator implements ComponentConfigurator {
             configuration.addPrePassivateInterceptor(interceptorFactory, InterceptorOrder.ComponentPassivation.JNDI_NAMESPACE_INTERCEPTOR);
             configuration.addPostActivateInterceptor(interceptorFactory, InterceptorOrder.ComponentPassivation.JNDI_NAMESPACE_INTERCEPTOR);
         }
-
+        configuration.addDefaultConcurrentContextInterceptor(interceptorFactory, InterceptorOrder.ConcurrentContext.JNDI_NAMESPACE_INTERCEPTOR);
         configuration.setNamespaceContextInterceptorFactory(interceptorFactory);
         configuration.setNamespaceContextSelector(selector);
     }

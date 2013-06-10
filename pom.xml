@@ -202,7 +202,7 @@
         <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.2_spec>1.0.0.Alpha1</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.2_spec>
         <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>1.0.0.Alpha2</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>
         <version.org.jboss.spec.javax.el.jboss-el-api_2.2_spec>1.0.2.Final</version.org.jboss.spec.javax.el.jboss-el-api_2.2_spec>
-        <version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>1.0.0.Alpha1</version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>
+        <version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>1.0.0.Beta1</version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>
         <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>2.2.0</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>
         <version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.2_spec>1.0.0.Alpha3</version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.2_spec>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>1.0.0.Alpha1</version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
@@ -997,7 +997,7 @@
                 <artifactId>wildfly-client-all</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+        
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-core-model-test</artifactId>
@@ -1025,6 +1025,12 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-ee</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-ee-concurrent</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -6181,6 +6187,7 @@
                 <module>deployment-scanner</module>
                 <module>dist</module>
                 <module>ee</module>
+                <module>ee-concurrent</module>
                 <module>ejb3</module>
                 <module>host-controller</module>
                 <module>jacorb</module>
@@ -6199,11 +6206,11 @@
                 <module>naming</module>
                 <module>pojo</module>
                 <module>remoting-test</module>
-                <module>system-jmx</module>
                 <module>sar</module>
                 <module>security</module>
                 <module>security-manager</module>
                 <module>spec-api</module>
+                <module>system-jmx</module>
                 <module>transactions</module>
                 <module>undertow</module>
                 <module>web-common</module>

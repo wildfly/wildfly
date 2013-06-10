@@ -997,6 +997,11 @@
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-ee-concurrent</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-ejb3</artifactId>
                 </dependency>
 
@@ -2920,6 +2925,10 @@
                                         <group>
                                             <title>Module org.wildfly.ee</title>
                                             <packages>org.jboss.as.ee:org.jboss.as.ee.beanvalidation:org.jboss.as.ee.component:org.jboss.as.ee.component.deployers:org.jboss.as.ee.component.interceptors:org.jboss.as.ee.component.serialization:org.jboss.as.ee.managedbean.component:org.jboss.as.ee.managedbean.processors:org.jboss.as.ee.metadata:org.jboss.as.ee.metadata.property:org.jboss.as.ee.naming:org.jboss.as.ee.structure:org.jboss.as.ee.subsystem:org.jboss.as.ee.utils</packages>
+                                        </group>
+                                        <group>
+                                            <title>Module org.wildfly.ee.concurrent</title>
+                                            <packages>org.wildfly.ee.concurrent</packages>
                                         </group>
                                         <group>
                                             <title>Module org.wildfly.ejb3</title>

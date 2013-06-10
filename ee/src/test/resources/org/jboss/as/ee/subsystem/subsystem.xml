@@ -6,4 +6,17 @@
 	<ear-subdeployments-isolated>${test-exp:true}</ear-subdeployments-isolated>
 	<spec-descriptor-property-replacement>${test-exp1:false}</spec-descriptor-property-replacement>
 	<jboss-descriptor-property-replacement>${test-exp2:false}</jboss-descriptor-property-replacement>
+<!--
+    <concurrent>
+        <default-thread-factory group-name="wildfly-ee-concurrent-threads" thread-name-pattern="%G %i" priority="5"/>
+        <default-managed-executor-service>
+            <max-threads count="25"/>
+            <keepalive-time time="5" unit="seconds"/>
+        </default-managed-executor-service>
+        <default-managed-scheduled-executor-service>
+            <max-threads count="10"/>
+            <keepalive-time time="3" unit="seconds"/>
+        </default-managed-scheduled-executor-service>
+    </concurrent>
+-->
 </subsystem>
