@@ -160,4 +160,9 @@ public class SessionManagerFacade implements UndertowSessionManager {
     public void setDefaultSessionTimeout(int timeout) {
         this.manager.setDefaultMaxInactiveInterval(timeout, TimeUnit.SECONDS);
     }
+
+    @Override
+    public int activeSessions() {
+        return this.manager.size();
+    }
 }
