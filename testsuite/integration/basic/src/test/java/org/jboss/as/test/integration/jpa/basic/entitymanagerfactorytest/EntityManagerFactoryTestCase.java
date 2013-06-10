@@ -118,4 +118,21 @@ public class EntityManagerFactoryTestCase {
         Employee emp = (Employee)em.find(Employee.class,1);
         assertTrue("Name read from EntityManager is Sally", "Sally".equals(emp.getName())); 
     }
+
+    /**
+     * Test that EntityManager can be bound to specified JNDI name in persistence unit property jboss.entity.manager.jndi.name (AS7-6835)
+     */
+    @Test
+    public void testEntityManagerName() throws Exception {
+        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        sfsb1.createEmployee("Sharon", "304 Bubbles Lane", 2);
+
+        EntityManager em = rawLookup("java:/Manager1", EntityManager.class);
+        assertNotNull("JNDI lookup of jboss.entity.manager.jndi.name should return EntityManager", em);
+
+        Employee emp = em.find(Employee.class, 2);
+        assertTrue("Name read from EntityManager is Sharon", "Sharon".equals(emp.getName()));
+
+    }
+
 }
