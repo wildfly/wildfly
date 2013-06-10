@@ -25,17 +25,15 @@ package org.jboss.as.patching.runner;
 import static junit.framework.Assert.assertEquals;
 import static org.jboss.as.patching.HashUtils.bytesToHexString;
 import static org.jboss.as.patching.HashUtils.hashFile;
-import static org.jboss.as.patching.IoUtils.NO_CONTENT;
-import static org.jboss.as.patching.metadata.ModificationType.ADD;
+import static org.jboss.as.patching.IoUtils.mkdir;
+import static org.jboss.as.patching.PatchInfo.BASE;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileContent;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenApplied;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenRolledBack;
-import static org.jboss.as.patching.runner.TestUtils.createModule;
 import static org.jboss.as.patching.runner.TestUtils.createPatchXMLFile;
 import static org.jboss.as.patching.runner.TestUtils.createZippedPatchFile;
 import static org.jboss.as.patching.runner.TestUtils.dump;
-import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
 import static org.jboss.as.patching.runner.TestUtils.tree;
@@ -45,10 +43,14 @@ import java.util.Collections;
 
 import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.installation.Identity;
+import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.metadata.ContentModification;
-import org.jboss.as.patching.metadata.ModuleItem;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
+import org.jboss.as.patching.metadata.impl.IdentityImpl;
+import org.jboss.as.patching.metadata.impl.PatchElementImpl;
+import org.jboss.as.patching.metadata.impl.PatchElementProviderImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -95,17 +97,22 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
         // build a cumulative patch for the base installation
         // with 1 added module
         String patchID = randomString();
+        String layerPatchID = randomString();
         File patchDir = mkdir(tempDir, patchID);
         String moduleName = randomString();
-        File moduleDir = createModule(patchDir, moduleName);
-        byte[] newHash = hashFile(moduleDir);
-        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, null, newHash), NO_CONTENT , ADD);
+        ContentModification moduleAdded = ContentModificationUtils.addModule(patchDir, layerPatchID, moduleName);
+
+        InstalledIdentity installedIdentity = loadInstalledIdentity();
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setCumulativeType(info.getVersion(), info.getVersion() + "-CP")
-                .addContentModification(moduleAdded)
+                .setIdentity(new IdentityImpl(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion()))
+                .setUpgrade(productConfig.getProductVersion() + "-CP1")
+                .addElement(new PatchElementImpl(layerPatchID)
+                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
+                        .setNoUpgrade()
+                        .addContentModification(moduleAdded))
                 .build();
 
         checkApplyPatchAndRollbackRestoresBackupConfiguration(patchDir, patch);
@@ -114,20 +121,25 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
     @Test
     public void testOneOffPatch() throws Exception {
 
-        // build a cumulative patch for the base installation
+        // build a one-off patch for the base installation
         // with 1 added module
         String patchID = randomString();
+        String layerPatchID = randomString();
         File patchDir = mkdir(tempDir, patchID);
         String moduleName = randomString();
-        File moduleDir = createModule(patchDir, moduleName);
-        byte[] newHash = hashFile(moduleDir);
-        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, null, newHash), NO_CONTENT , ADD);
+        ContentModification moduleAdded = ContentModificationUtils.addModule(patchDir, layerPatchID, moduleName);
+
+        InstalledIdentity installedIdentity = loadInstalledIdentity();
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setOneOffType(info.getVersion())
-                .addContentModification(moduleAdded)
+                .setOneOffType(productConfig.getProductVersion())
+                .setIdentity(new IdentityImpl(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion()))
+                .addElement(new PatchElementImpl(layerPatchID)
+                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
+                        .setNoUpgrade()
+                        .addContentModification(moduleAdded))
                 .build();
 
         checkApplyPatchAndRollbackRestoresBackupConfiguration(patchDir, patch);
@@ -138,8 +150,9 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
         createPatchXMLFile(patchDir, patch);
         File zippedPatch = createZippedPatchFile(patchDir, patch.getPatchId());
 
-        PatchingResult result = executePatch(info, zippedPatch);
+        Identity identityBeforePatch = loadInstalledIdentity().getIdentity();
 
+        PatchingResult result = executePatch(zippedPatch);
         assertPatchHasBeenApplied(result, patch);
 
         // check the AS7 config files have been backed up
@@ -156,9 +169,9 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
 
         tree(tempDir);
 
-        PatchingResult rollbackResult = rollback(result.getPatchInfo(), patch.getPatchId());
+        PatchingResult rollbackResult = rollback(patch.getPatchId());
+        assertPatchHasBeenRolledBack(rollbackResult, identityBeforePatch);
 
-        assertPatchHasBeenRolledBack(rollbackResult, patch, info);
         File rolledBackStandaloneXmlFile = assertFileExists(env.getInstalledImage().getStandaloneDir(), "configuration", "standalone.xml");
         assertEquals("updated content was " + bytesToHexString(updatedStandaloneXmlFile), bytesToHexString(originalStandaloneHash), bytesToHexString(hashFile(rolledBackStandaloneXmlFile)));
     }

@@ -67,8 +67,9 @@ public class PatchElementImpl implements PatchElement, UpgradeCallback {
         return descr;
     }
 
-    public void setDescription(String descr) {
+    public PatchElementImpl setDescription(String descr) {
         this.descr = descr;
+        return this;
     }
 
     /* (non-Javadoc)
@@ -79,11 +80,12 @@ public class PatchElementImpl implements PatchElement, UpgradeCallback {
         return provider;
     }
 
-    public void setProvider(PatchElementProvider provider) {
+    public PatchElementImpl setProvider(PatchElementProvider provider) {
         if(provider == null) {
             throw new IllegalArgumentException("provider is null");
         }
         this.provider = provider;
+        return this;
     }
 
     /* (non-Javadoc)
@@ -119,8 +121,9 @@ public class PatchElementImpl implements PatchElement, UpgradeCallback {
         return modifications;
     }
 
-    public void addContentModification(ContentModification modification) {
+    public PatchElementImpl addContentModification(ContentModification modification) {
         this.modifications.add(modification);
+        return this;
     }
 
     @Override

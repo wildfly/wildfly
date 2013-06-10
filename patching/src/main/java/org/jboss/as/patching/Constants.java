@@ -78,4 +78,5 @@ public class Constants {
     public static final ServiceName JBOSS_AS = ServiceName.JBOSS.append("as");
     public static final ServiceName JBOSS_PATCHING = ServiceName.JBOSS.append("patching");
     public static final ServiceName JBOSS_PRODUCT_CONFIG_SERVICE = JBOSS_AS.append("product-config");
+    public static final String SYSTEM = "system";
 }

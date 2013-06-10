@@ -23,30 +23,25 @@
 package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.HashUtils.hashFile;
-import static org.jboss.as.patching.IoUtils.NO_CONTENT;
-import static org.jboss.as.patching.metadata.ModificationType.ADD;
-import static org.jboss.as.patching.metadata.ModificationType.MODIFY;
-import static org.jboss.as.patching.metadata.ModificationType.REMOVE;
+import static org.jboss.as.patching.IoUtils.mkdir;
+import static org.jboss.as.patching.runner.PatchingAssert.assertFileContent;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileDoesNotExist;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenApplied;
+import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenRolledBack;
 import static org.jboss.as.patching.runner.TestUtils.createPatchXMLFile;
 import static org.jboss.as.patching.runner.TestUtils.createZippedPatchFile;
 import static org.jboss.as.patching.runner.TestUtils.dump;
-import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
-import static org.junit.Assert.assertArrayEquals;
+import static org.jboss.as.patching.runner.TestUtils.tree;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.util.Collections;
 
-import org.jboss.as.patching.LocalPatchInfo;
-import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.installation.Identity;
 import org.jboss.as.patching.metadata.ContentModification;
-import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.junit.Test;
@@ -58,42 +53,35 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
 
     @Test
     public void testAddFile() throws Exception {
-
-        // start from a base installation
-        PatchInfo info = new LocalPatchInfo(randomString(), PatchInfo.BASE, Collections.<String>emptyList(), env);
-
         // build a one-off patch for the base installation
         // with 1 added file
         String patchID = randomString();
         File patchDir = mkdir(tempDir, patchID);
-        String fileName =  "my-new-standalone.sh";
-        File newFile = touch(patchDir, "misc", "bin", fileName);
-        dump(newFile, "new file resource");
-        byte[] newHash = hashFile(newFile);
-        ContentModification fileAdded = new ContentModification(new MiscContentItem(fileName, new String[] { "bin" }, newHash), NO_CONTENT, ADD);
+
+        ContentModification fileAdded = ContentModificationUtils.addMisc(patchDir, "new file resource", "bin", "my-new-standalone.sh");
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setOneOffType(info.getVersion())
+                .setOneOffType(productConfig.getProductVersion())
                 .addContentModification(fileAdded)
                 .build();
+
+        assertFileDoesNotExist(env.getInstalledImage().getJbossHome(), "bin", fileAdded.getItem().getName());
 
         createPatchXMLFile(patchDir, patch);
         File zippedPatch = createZippedPatchFile(patchDir, patch.getPatchId());
 
-        PatchingResult result = executePatch(info, zippedPatch);
-
+        PatchingResult result = executePatch(zippedPatch);
         assertPatchHasBeenApplied(result, patch);
 
-        assertFileExists(env.getInstalledImage().getJbossHome(), "bin", fileName);
+        assertFileExists(env.getInstalledImage().getJbossHome(), "bin", fileAdded.getItem().getName());
     }
 
     @Test
     public void testRemoveFile() throws Exception {
 
         // start from a base installation
-        PatchInfo info = new LocalPatchInfo(randomString(), PatchInfo.BASE, Collections.<String>emptyList(), env);
         // with a file in it
         String fileName = "standalone.sh";
         File standaloneShellFile = touch(env.getInstalledImage().getJbossHome(), "bin", fileName );
@@ -102,12 +90,12 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
 
         // build a one-off patch for the base installation
         // with 1 removed file
-        ContentModification fileRemoved = new ContentModification(new MiscContentItem(fileName, new String[] { "bin" }, NO_CONTENT), existingHash, REMOVE);
+        ContentModification fileRemoved = ContentModificationUtils.removeMisc(standaloneShellFile, "bin", fileName);
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(randomString())
                 .setDescription(randomString())
-                .setOneOffType(info.getVersion())
+                .setOneOffType(productConfig.getProductVersion())
                 .addContentModification(fileRemoved)
                 .build();
 
@@ -116,8 +104,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         createPatchXMLFile(patchDir, patch);
         File zippedPatch = createZippedPatchFile(patchDir, patch.getPatchId());
 
-        PatchingResult result = executePatch(info, zippedPatch);
-
+        PatchingResult result = executePatch(zippedPatch);
         assertPatchHasBeenApplied(result, patch);
 
         /// file has been removed from the AS7 installation
@@ -130,53 +117,45 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
     public void testUpdateFile() throws Exception {
 
         // start from a base installation
-        PatchInfo info = new LocalPatchInfo(randomString(), PatchInfo.BASE, Collections.<String>emptyList(), env);
         // with a file in it
         File binDir = mkdir(env.getInstalledImage().getJbossHome(), "bin");
         String fileName = "standalone.sh";
         File standaloneShellFile = touch(binDir, fileName);
         dump(standaloneShellFile, "original script to run standalone AS7");
-        byte[] existingHash = hashFile(standaloneShellFile);
 
         // build a one-off patch for the base installation
         // with 1 updated file
         String patchID = randomString();
         File patchDir = mkdir(tempDir, patchID);
 
-        File updatedFile = touch(patchDir, "misc", "bin", fileName);
-        dump(updatedFile, "updated script");
-        byte[] updatedHash = hashFile(updatedFile);
-        ContentModification fileUpdated = new ContentModification(new MiscContentItem(fileName, new String[] { "bin" }, updatedHash), existingHash, MODIFY);
+        ContentModification fileModified = ContentModificationUtils.modifyMisc(patchDir, "updated script", standaloneShellFile, "bin", "standalone.sh");
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setOneOffType(info.getVersion())
-                .addContentModification(fileUpdated)
+                .setOneOffType(productConfig.getProductVersion())
+                .addContentModification(fileModified)
                 .build();
 
         // create the patch
         createPatchXMLFile(patchDir, patch);
         File zippedPatch = createZippedPatchFile(patchDir, patch.getPatchId());
 
-        PatchingResult result = executePatch(info, zippedPatch);
-
+        PatchingResult result = executePatch(zippedPatch);
         assertPatchHasBeenApplied(result, patch);
 
         /// file has been updated in the AS7 installation
         // and it's the new one
         assertFileExists(standaloneShellFile);
-        assertArrayEquals(updatedHash, hashFile(standaloneShellFile));
+        assertFileContent(fileModified.getItem().getContentHash(), standaloneShellFile);
         // the existing file has been backed up
         File backupFile = assertFileExists(env.getInstalledImage().getPatchHistoryDir(patchID), "misc", "bin", fileName);
-        assertArrayEquals(existingHash, hashFile(backupFile));
+        assertFileContent(fileModified.getTargetHash(), backupFile);
     }
 
     @Test
     public void testRemoveDirectoryAndRollback() throws Exception {
-
         // start from a base installation
-        PatchInfo info = new LocalPatchInfo(randomString(), PatchInfo.BASE, Collections.<String>emptyList(), env);
         // Create a directory
         File test = mkdir(env.getInstalledImage().getJbossHome(), "test");
         String one = "one";
@@ -198,13 +177,15 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
 
         // build a one-off patch for the base installation
         // with 1 removed directory
-        ContentModification fileRemoved = new ContentModification(new MiscContentItem("test", new String[0], NO_CONTENT), existingHash, REMOVE);
+
+        String patchID = "patchID";//randomString();
+        ContentModification dirRemoved = ContentModificationUtils.removeMisc(test);
 
         Patch patch = PatchBuilder.create()
-                .setPatchId(randomString())
+                .setPatchId(patchID)
                 .setDescription(randomString())
-                .setOneOffType(info.getVersion())
-                .addContentModification(fileRemoved)
+                .setOneOffType(productConfig.getProductVersion())
+                .addContentModification(dirRemoved)
                 .build();
 
         // create the patch
@@ -212,18 +193,31 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         createPatchXMLFile(patchDir, patch);
         File zippedPatch = createZippedPatchFile(patchDir, patch.getPatchId());
 
+        Identity identityBeforePatch = loadInstalledIdentity().getIdentity();
+
+        System.out.println("before patch");
+        tree(env.getInstalledImage().getJbossHome());
+
         // Apply
-        PatchingResult result = executePatch(info, zippedPatch);
+        PatchingResult result = executePatch(zippedPatch);
+        assertPatchHasBeenApplied(result, patch);
         assertFalse(test.exists());
 
+        System.out.println("after patch");
+        tree(env.getInstalledImage().getJbossHome());
+
         // Rollback
-        result = rollback(result.getPatchInfo(), patch.getPatchId());
+        result = rollback(patch.getPatchId());
+        assertPatchHasBeenRolledBack(result, identityBeforePatch);
+
+        System.out.println("after rollback");
+        tree(env.getInstalledImage().getJbossHome());
+
         assertTrue(test.exists());
         assertTrue(fileOne.isFile());
         assertTrue(fileTwo.isFile());
         assertTrue(subOne.isFile());
         assertTrue(subTwo.isFile());
-
     }
 
 }

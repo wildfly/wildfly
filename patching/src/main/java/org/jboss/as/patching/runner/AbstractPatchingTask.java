@@ -117,7 +117,9 @@ abstract class AbstractPatchingTask<T extends ContentItem> implements PatchingTa
             PatchLogger.ROOT_LOGGER.debugf("wrong hash for content item (%s)", contentItem);
         }
         final ContentModification rollbackAction = createRollbackEntry(original, contentHash, backupHash);
-        context.recordRollbackAction(rollbackAction);
+        if (rollbackAction != null) {
+            context.recordRollbackAction(rollbackAction);
+        }
     }
 
 }

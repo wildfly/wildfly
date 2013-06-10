@@ -126,14 +126,28 @@ public class TestUtils {
         return moduleDir;
     }
 
-    public static File createBundle(File baseDir, String moduleName, boolean content) throws Exception {
-        File bundles = IoUtils.mkdir(baseDir, "bundles", moduleName);
-        File mainDir = IoUtils.mkdir(bundles, "main");
-        if(content) {
-            File f = touch(mainDir, "content");
-            dump(f, randomString());
+    public static File createModule0(File baseDir, String moduleName, String... resourcesContents) throws Exception {
+        File mainDir = IoUtils.mkdir(baseDir, moduleName, "main");
+        String resourceFilePrefix = randomString();
+        String[] resourceFileNames = new String[resourcesContents.length];
+        for (int i = 0; i < resourcesContents.length; i++) {
+            String content = resourcesContents[i];
+            String fileName = resourceFilePrefix + "-" + i;
+            resourceFileNames[i] = fileName;
+            File f = touch(mainDir, fileName);
+            dump(f, content);
         }
-        return bundles;
+        createModuleXmlFile(mainDir, moduleName, resourceFileNames);
+        return mainDir.getParentFile();
+    }
+
+    public static File createBundle0(File baseDir, String bundleName, String content) throws Exception {
+        File mainDir = IoUtils.mkdir(baseDir, bundleName, "main");
+        if(content != null) {
+            File f = touch(mainDir, "content");
+            dump(f, content);
+        }
+        return mainDir.getParentFile();
     }
 
     public static void createPatchXMLFile(File dir, Patch patch) throws Exception {
