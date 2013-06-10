@@ -9,6 +9,7 @@ import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.modules.Module;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
@@ -35,8 +36,13 @@ public class WebServiceReferences {
     }
 
     private static UnifiedServiceRefMetaData createServiceRef(final DeploymentUnit unit, final String type, final WSRefAnnotationWrapper annotation, final AnnotatedElement annotatedElement, final String bindingName) throws DeploymentUnitProcessingException {
-        final UnifiedServiceRefMetaData serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(unit));
-        serviceRefUMDM.setServiceRefName(bindingName);
+        final WSRefRegistry wsRefRegistry = ASHelper.getWSRefRegistry(unit);
+        UnifiedServiceRefMetaData serviceRefUMDM = wsRefRegistry.get(bindingName);
+        if (serviceRefUMDM == null) {
+            serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(unit));
+            serviceRefUMDM.setServiceRefName(bindingName);
+            wsRefRegistry.add(bindingName, serviceRefUMDM);
+        }
         initServiceRef(unit, serviceRefUMDM, type, annotation);
         processWSFeatures(serviceRefUMDM, annotatedElement);
         return serviceRefUMDM;

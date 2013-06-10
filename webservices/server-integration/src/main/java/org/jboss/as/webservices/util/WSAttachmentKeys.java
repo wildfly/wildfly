@@ -24,6 +24,7 @@ package org.jboss.as.webservices.util;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.webservices.injection.WSEndpointHandlersMapping;
 import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
+import org.jboss.as.webservices.webserviceref.WSRefRegistry;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
@@ -47,6 +48,7 @@ public final class WSAttachmentKeys {
     public static final AttachmentKey<JBossWebservicesMetaData> JBOSS_WEBSERVICES_METADATA_KEY = AttachmentKey.create(JBossWebservicesMetaData.class);
     public static final AttachmentKey<JBossWebMetaData> JBOSSWEB_METADATA_KEY = AttachmentKey.create(JBossWebMetaData.class);
     public static final AttachmentKey<ClassLoader> CLASSLOADER_KEY = AttachmentKey.create(ClassLoader.class);
+    public static final AttachmentKey<WSRefRegistry> WS_REFERENCES = AttachmentKey.create(WSRefRegistry.class);
     public static final AttachmentKey<WSEndpointHandlersMapping> WS_ENDPOINT_HANDLERS_MAPPING_KEY = AttachmentKey.create(WSEndpointHandlersMapping.class);
 
     private WSAttachmentKeys() {
