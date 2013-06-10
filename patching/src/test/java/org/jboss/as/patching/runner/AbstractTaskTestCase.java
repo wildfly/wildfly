@@ -22,18 +22,27 @@
 
 package org.jboss.as.patching.runner;
 
+import static org.jboss.as.patching.Constants.BASE;
+import static org.jboss.as.patching.Constants.BUNDLES;
+import static org.jboss.as.patching.Constants.LAYERS;
+import static org.jboss.as.patching.Constants.MODULES;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.installation.InstalledImage;
+import org.jboss.as.version.ProductConfig;
 import org.junit.After;
 import org.junit.Before;
 
@@ -45,59 +54,51 @@ public abstract class AbstractTaskTestCase {
 
     protected File tempDir;
     protected DirectoryStructure env;
-    private String storedModulesPath;
+    protected ProductConfig productConfig;
 
     @Before
     public void setup() throws Exception {
         tempDir = mkdir(new File(System.getProperty("java.io.tmpdir")), randomString());
         File jbossHome = mkdir(tempDir, "jboss-installation");
+        mkdir(jbossHome, MODULES, "system", LAYERS, BASE);
+        mkdir(jbossHome, BUNDLES, "system", LAYERS, BASE);
         env = DirectoryStructure.createLegacy(jbossHome);
-        // make sur we put the installation modules dir in the module.path
-        // FIXME is there a way set the module path without changing this sys prop?
-        storedModulesPath = System.getProperty("module.path");
-        System.setProperty("module.path", env.getInstalledImage().getModulesDir().getAbsolutePath());
+        productConfig = new ProductConfig("product", "version", "consoleSlot");
     }
 
     @After
     public void tearDown() {
         IoUtils.recursiveDelete(tempDir);
-        // reset the module.path sys prop
-        if (storedModulesPath != null) {
-            System.setProperty("module.path", storedModulesPath);
-        }
     }
 
-    protected PatchingResult executePatch(final File file, InstalledIdentity installedIdentity, InstalledImage installedImage) throws FileNotFoundException, PatchingException {
+    public InstalledIdentity loadInstalledIdentity() throws IOException {
+        List<File> moduleRoots = new ArrayList<File>();
+        moduleRoots.add(env.getInstalledImage().getModulesDir());
+        List<File> bundleRoots = new ArrayList<File>();
+        bundleRoots.add(env.getInstalledImage().getBundlesDir());
+        InstalledIdentity installedIdentity = InstalledIdentity.load(env.getInstalledImage(), productConfig, moduleRoots, bundleRoots);
+        return installedIdentity;
+    }
+
+    protected PatchingResult executePatch(final File file) throws IOException, PatchingException {
+        InstalledImage installedImage = env.getInstalledImage();
+        InstalledIdentity installedIdentity = loadInstalledIdentity();
         LegacyPatchRunner runner = new LegacyPatchRunner(installedImage, installedIdentity);
         final PatchingResult result = runner.executeDirect(new FileInputStream(file), ContentVerificationPolicy.STRICT);
         result.commit();
         return result;
     }
 
-    @Deprecated
-    protected PatchingResult executePatch(final PatchInfo info, final File file) throws FileNotFoundException, PatchingException {
-        final PatchingRunnerWrapper runner = PatchingRunnerWrapper.Factory.create(info, env);
-        final PatchingResult result = runner.executeDirect(new FileInputStream(file), ContentVerificationPolicy.STRICT);
-        result.commit();
-        return result;
+    protected PatchingResult rollback(String patchId) throws IOException, PatchingException {
+        return rollback(patchId, false);
     }
 
-    protected PatchingResult rollback( String patchId, InstalledIdentity installedIdentity, InstalledImage installedImage) throws FileNotFoundException, PatchingException {
+    protected PatchingResult rollback(String patchId, final boolean rollbackTo) throws IOException, PatchingException {
+        InstalledImage installedImage = env.getInstalledImage();
+        InstalledIdentity installedIdentity = loadInstalledIdentity();
         LegacyPatchRunner runner = new LegacyPatchRunner(installedImage, installedIdentity);
-        final PatchingResult result = runner.rollback(patchId, ContentVerificationPolicy.STRICT, false, true);
-        result.commit();
-        return result;
-    }
-
-    protected PatchingResult rollback(final PatchInfo info, final String patchId) throws PatchingException {
-        return rollback(info, patchId, false);
-    }
-
-    protected PatchingResult rollback(final PatchInfo info, final String patchId, final boolean rollbackTo) throws PatchingException {
-        final PatchingRunnerWrapper runner = PatchingRunnerWrapper.Factory.create(info, env);
         final PatchingResult result = runner.rollback(patchId, ContentVerificationPolicy.STRICT, rollbackTo, true);
         result.commit();
         return result;
     }
-
 }

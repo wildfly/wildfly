@@ -51,12 +51,12 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
 
     @Override
     public String getCumulativeID() {
-        return current.getCumulativeID();
+        return cumulative;
     }
 
     @Override
     public List<String> getPatchIDs() {
-        return current.getPatchIDs();
+        return new ArrayList<String>(patchIds);
     }
 
     @Override

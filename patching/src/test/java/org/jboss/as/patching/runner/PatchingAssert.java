@@ -33,13 +33,17 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
 import junit.framework.Assert;
 import org.jboss.as.patching.DirectoryStructure;
+import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.installation.Identity;
+import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.Patch;
@@ -78,18 +82,8 @@ public class PatchingAssert {
     }
 
     public static void assertFileDoesNotExist(File rootFile, String... segments) {
-        if (segments.length == 0) {
-            assertFalse(rootFile + " exists", rootFile.exists());
-            return;
-        }
-
-        File f = rootFile;
-        for (int i = 0; i < segments.length - 1; i++) {
-            String segment = segments[i];
-            f = new File(f, segment);
-            assertTrue(f + " does not exist", f.exists());
-        }
-        f = new File(f, segments[segments.length -1]);
+        File f = IoUtils.newFile(rootFile, segments);
+        assertFalse(f + " exists", f.exists());
     }
 
     static void assertFileContent(byte[] expected, File f) throws Exception {
@@ -144,6 +138,18 @@ public class PatchingAssert {
         fail("content not found bundle for " + moduleName + " in " + asList(bundlesPath));
     }
 
+    static void assertDefinedBundle(File bundlesDir, String moduleName, byte[] expectedHash) throws Exception {
+        final File bundlePath = PatchContentLoader.getModulePath(bundlesDir, moduleName, "main");
+        if(bundlePath.exists()) {
+            if(expectedHash != null) {
+                byte[] actualHash = hashFile(bundlePath);
+                assertTrue("content of bundle differs", Arrays.equals(expectedHash, actualHash));
+            }
+        } else {
+            fail("content not found bundle for " + moduleName + " in " + bundlesDir);
+        }
+    }
+
     static void assertDefinedAbsentBundle(File[] bundlesPath, String moduleName) throws Exception {
         for (File path : bundlesPath) {
             final File bundlePath = PatchContentLoader.getModulePath(path, moduleName, "main");
@@ -157,6 +163,17 @@ public class PatchingAssert {
         fail("content not found bundle for " + moduleName + " in " + asList(bundlesPath));
     }
 
+    static void assertDefinedAbsentBundle(File bundlesDir, String bundleName) throws Exception {
+        final File bundlePath = PatchContentLoader.getModulePath(bundlesDir, bundleName, "main");
+        if(bundlePath.exists()) {
+            final File[] children = bundlePath.listFiles();
+            if(children.length == 0) {
+                return;
+            }
+        }
+        fail("content found for " + bundleName + " in " + bundlesDir);
+    }
+
     static void assertDefinedAbsentModule(File[] modulesPath, String moduleName) throws Exception {
         for (File path : modulesPath) {
             final File modulePath = PatchContentLoader.getModulePath(path, moduleName, "main");
@@ -167,6 +184,16 @@ public class PatchingAssert {
             }
         }
         fail("count not found module for " + moduleName + " in " + asList(modulesPath));
+    }
+
+    static void assertDefinedAbsentModule(File modulesDir, String moduleName) throws Exception {
+            final File modulePath = PatchContentLoader.getModulePath(modulesDir, moduleName, "main");
+            final File moduleXml = new File(modulePath, "module.xml");
+            if (moduleXml.exists()) {
+                assertDefinedModuleWithRootElement(moduleXml, moduleName, "<module-absent ");
+            } else {
+                fail("count not found module for " + moduleName + " in " + modulesDir);
+        }
     }
 
     private static void assertDefinedModuleWithRootElement(File moduleXMLFile, String moduleName, String rootElement) throws Exception {
@@ -204,6 +231,12 @@ public class PatchingAssert {
         assertEquals(expectedPatchInfo.getPatchIDs(), result.getPatchInfo().getPatchIDs());
 
         // assertNoResourcesForPatch(result.getPatchInfo(), patch);
+    }
+
+    public static void assertPatchHasBeenRolledBack(PatchingResult result, Identity expectedIdentity) throws IOException {
+        assertEquals(expectedIdentity.getVersion(), result.getPatchInfo().getVersion());
+        assertEquals(expectedIdentity.loadTargetInfo().getCumulativeID(), result.getPatchInfo().getCumulativeID());
+        assertEquals(expectedIdentity.loadTargetInfo().getPatchIDs(), result.getPatchInfo().getPatchIDs());
     }
 
     static void assertNoResourcesForPatch(DirectoryStructure structure, Patch patch) {

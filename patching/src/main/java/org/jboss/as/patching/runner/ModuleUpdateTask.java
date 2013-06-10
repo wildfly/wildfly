@@ -27,8 +27,6 @@ import java.io.IOException;
 
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.metadata.ContentModification;
-import org.jboss.as.patching.metadata.ModificationType;
-import org.jboss.as.patching.metadata.ModuleItem;
 
 /**
  * Adding or updating a module will add a module in the patch overlay directory {@linkplain org.jboss.as.patching.DirectoryStructure#getModulePatchDirectory(String)}.
@@ -54,8 +52,9 @@ class ModuleUpdateTask extends AbstractModuleTask {
     @Override
     ContentModification createRollbackEntry(ContentModification original, byte[] targetHash, byte[] itemHash) {
         // Hmm we actually don't need to do anything when rolling back the patch?
-        final ModuleItem item = createContentItem(contentItem, itemHash);
-        return new ContentModification(item, targetHash, ModificationType.MODIFY);
+        // final ModuleItem item = createContentItem(contentItem, itemHash);
+        // return new ContentModification(item, targetHash, ModificationType.MODIFY);
+        return null;
     }
 
 }
