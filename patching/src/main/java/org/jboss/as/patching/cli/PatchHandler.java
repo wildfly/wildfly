@@ -23,7 +23,6 @@
 package org.jboss.as.patching.cli;
 
 import java.io.File;
-import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Arrays;
@@ -191,11 +190,10 @@ public class PatchHandler extends CommandHandlerWithHelp {
     protected void doHandle(CommandContext ctx) throws CommandLineException {
         final PatchOperationTarget target = createPatchOperationTarget(ctx);
         final PatchOperationBuilder builder = createPatchOperationBuilder(ctx.getParsedCommandLine());
-
         final ModelNode result;
         try {
             result = builder.execute(target);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new CommandLineException("Unable to apply patch", e);
         }
         if (!Util.isSuccess(result)) {

@@ -45,7 +45,7 @@ import org.jboss.msc.value.InjectedValue;
 /**
  * @author Emanuel Muckenhuber
  */
-public class PatchInfoService implements Service<PatchInfo> {
+public class PatchInfoService implements Service<PatchInfoService> {
 
     public static ServiceName NAME = JBOSS_PATCHING.append("info");
 
@@ -70,7 +70,7 @@ public class PatchInfoService implements Service<PatchInfo> {
      *
      * @return the service controller for the installed patch info service
      */
-    public static ServiceController<PatchInfo> installService(final ServiceTarget serviceTarget) {
+    public static ServiceController<PatchInfoService> installService(final ServiceTarget serviceTarget) {
         final PatchInfoService service = new PatchInfoService();
         return serviceTarget.addService(PatchInfoService.NAME, service)
                 .addDependency(JBOSS_PRODUCT_CONFIG_SERVICE, ProductConfig.class, service.productConfig)
@@ -101,7 +101,11 @@ public class PatchInfoService implements Service<PatchInfo> {
     }
 
     @Override
-    public synchronized PatchInfo getValue() throws IllegalStateException, IllegalArgumentException {
+    public synchronized PatchInfoService getValue() {
+        return this;
+    }
+
+    public PatchInfo getPatchInfo() {
         return patchInfo;
     }
 
