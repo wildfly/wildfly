@@ -45,7 +45,6 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
  * @author Jaikiran Pai
  * @author "<a href=\"mailto:wfink@redhat.com\">Wolf-Dieter Fink</a>"
  * @author Eduardo Martins
- * @version $Revision: $
  */
 public class CalendarBasedTimeout {
 
