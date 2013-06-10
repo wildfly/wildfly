@@ -24,6 +24,7 @@ package org.jboss.as.patching.management;
 
 import static org.jboss.as.patching.PatchMessages.MESSAGES;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.jboss.as.controller.OperationContext;
@@ -31,11 +32,14 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.patching.Constants;
-import org.jboss.as.patching.DirectoryStructure;
-import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.installation.InstallationManager;
+import org.jboss.as.patching.installation.InstallationManagerService;
+import org.jboss.as.patching.installation.InstalledIdentity;
+import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentType;
 import org.jboss.as.patching.runner.ContentVerificationPolicy;
+import org.jboss.as.patching.runner.LegacyPatchRunner;
 import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.as.patching.tool.PatchTool;
@@ -52,21 +56,22 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
         context.acquireControllerLock();
         // Setup
         final PatchInfoService service = (PatchInfoService) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME).getValue();
+        final InstallationManager installationManager = (InstallationManager) context.getServiceRegistry(false).getRequiredService(InstallationManagerService.NAME).getValue();
 
         // FIXME can we check whether the process is reload-required directly from the operation context?
         if (service.requiresRestart()) {
             throw MESSAGES.serverRequiresRestart();
         }
 
-        final PatchInfo info = service.getValue();
-        final DirectoryStructure structure = service.getStructure();
-        final PatchTool runner = PatchTool.Factory.create(info, structure);
-        final ContentVerificationPolicy policy = PatchTool.Factory.create(operation);
-
-        final int index = operation.get(ModelDescriptionConstants.INPUT_STREAM_INDEX).asInt(0);
-        final InputStream is = context.getAttachmentStream(index);
         try {
-            final PatchingResult result = runner.applyPatch(is, policy);
+            InstalledImage installedImage = installationManager.getIdentity().loadTargetInfo().getDirectoryStructure().getInstalledImage();
+            InstalledIdentity installedIdentity = installationManager.getInstalledIdentity();
+            LegacyPatchRunner runner = new LegacyPatchRunner(installedImage, installedIdentity);
+            final ContentVerificationPolicy policy = PatchTool.Factory.create(operation);
+
+            final int index = operation.get(ModelDescriptionConstants.INPUT_STREAM_INDEX).asInt(0);
+            final InputStream is = context.getAttachmentStream(index);
+            final PatchingResult result = runner.executeDirect(is, policy);
             service.restartRequired();
             context.restartRequired();
             context.completeStep(new OperationContext.ResultHandler() {
@@ -104,6 +109,8 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
             } else {
                 throw new OperationFailedException(e.getMessage(), e);
             }
+        } catch (IOException e) {
+            throw new OperationFailedException(e.getMessage(), e);
         }
     }
 

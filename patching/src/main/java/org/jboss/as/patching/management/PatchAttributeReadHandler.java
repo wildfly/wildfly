@@ -32,7 +32,8 @@ abstract class PatchAttributeReadHandler implements OperationStepHandler {
 
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final PatchInfo info = (PatchInfo) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME).getValue();
+        final PatchInfoService service = (PatchInfoService) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME).getValue();
+        PatchInfo info = service.getPatchInfo();
         final ModelNode result = context.getResult();
         handle(result, info);
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
