@@ -22,12 +22,30 @@
 
 package org.jboss.as.ee.subsystem;
 
+import org.jboss.as.controller.PathElement;
+
 /**
  * @author Stuart Douglas
+ * @author Eduardo Martins
  */
 public interface EESubsystemModel {
 
     String EAR_SUBDEPLOYMENTS_ISOLATED = "ear-subdeployments-isolated";
     String SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT = "spec-descriptor-property-replacement";
     String JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT = "jboss-descriptor-property-replacement";
+
+    String DEFAULT_CONTEXT_SERVICE = "default-context-service";
+    String DEFAULT_MANAGED_THREAD_FACTORY = "default-managed-thread-factory";
+    String DEFAULT_MANAGED_EXECUTOR_SERVICE = "default-managed-executor-service";
+    String DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE = "default-managed-scheduled-executor-service";
+    String MANAGED_THREAD_FACTORY = "managed-thread-factory";
+    String MANAGED_EXECUTOR_SERVICE = "managed-executor-service";
+    String MANAGED_SCHEDULED_EXECUTOR_SERVICE = "managed-scheduled-executor-service";
+    String SERVICE = "service";
+
+    PathElement DEFAULT_CONTEXT_SERVICE_PATH = PathElement.pathElement(SERVICE,DEFAULT_CONTEXT_SERVICE);
+    PathElement DEFAULT_MANAGED_THREAD_FACTORY_PATH = PathElement.pathElement(SERVICE,DEFAULT_MANAGED_THREAD_FACTORY);
+    PathElement DEFAULT_MANAGED_EXECUTOR_SERVICE_PATH = PathElement.pathElement(SERVICE,DEFAULT_MANAGED_EXECUTOR_SERVICE);
+    PathElement DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_PATH = PathElement.pathElement(SERVICE,DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE);
+
 }

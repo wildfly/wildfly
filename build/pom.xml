@@ -721,6 +721,12 @@
                     <artifactId>javax.el</artifactId>
                 </dependency>
 
+                <!-- JSR-236 RI -->
+                <dependency>
+                    <groupId>org.glassfish</groupId>
+                    <artifactId>javax.enterprise.concurrent</artifactId>                    
+                </dependency>
+
                 <dependency>
                     <groupId>org.hibernate</groupId>
                     <artifactId>hibernate-core</artifactId>

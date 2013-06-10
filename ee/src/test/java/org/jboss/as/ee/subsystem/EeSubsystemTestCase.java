@@ -42,14 +42,15 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.ANNOTATIONS;
 import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.GLOBAL_MODULES;
 import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.META_INF;
 import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.SERVICES;
+import static org.jboss.as.model.test.FailedOperationTransformationConfig.REJECTED_RESOURCE;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Eduardo Martins
  */
 public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
 
@@ -90,12 +91,9 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
                     modelVersion,
                     bootOps,
                     new FailedOperationTransformationConfig()
-                            .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EeExtension.SUBSYSTEM_NAME)),
-                                    new JBossDescriptorPropertyReplacementConfig()));
-
+                            .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM), new JBossDescriptorPropertyReplacementConfig()));
 
             checkSubsystemModelTransformation(mainServices, modelVersion, new ModelFixer() {
-
                 @Override
                 public ModelNode fixModel(ModelNode modelNode) {
                     Assert.assertTrue(modelNode.get(EESubsystemModel.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT).asBoolean());
@@ -132,7 +130,7 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformersRejectGlobalModules() throws Exception {
+    public void testTransformers713Reject() throws Exception {
 
         String subsystemXml = readResource("subsystem.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
@@ -149,9 +147,15 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue(mainServices.isSuccessfulBoot());
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, new FailedOperationTransformationConfig()
-                .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EeExtension.SUBSYSTEM_NAME)),
-                                    new GlobalModulesConfig()));
-
+                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM), new GlobalModulesConfig())
+                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM).append(EESubsystemModel.DEFAULT_CONTEXT_SERVICE_PATH), REJECTED_RESOURCE)
+                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM).append(EESubsystemModel.DEFAULT_MANAGED_THREAD_FACTORY_PATH), REJECTED_RESOURCE)
+                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM).append(EESubsystemModel.DEFAULT_MANAGED_EXECUTOR_SERVICE_PATH), REJECTED_RESOURCE)
+                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM).append(EESubsystemModel.DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_PATH), REJECTED_RESOURCE)
+                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY)), REJECTED_RESOURCE)
+                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE)), REJECTED_RESOURCE)
+                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE)), REJECTED_RESOURCE)
+        );
     }
 
     @Test
@@ -257,4 +261,6 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
             return toResolve;
         }
     }
+
+
 }

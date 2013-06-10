@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Enumeration of attributes used in the transactions subsystem.
+ * Enumeration of attributes used in the EE subsystem.
  *
  * @author John E. Bailey
  */
@@ -37,6 +37,20 @@ enum Attribute {
     ANNOTATIONS(GlobalModulesDefinition.ANNOTATIONS),
     SERVICES(GlobalModulesDefinition.SERVICES),
     META_INF(GlobalModulesDefinition.META_INF),
+
+    // from ee concurrent
+    USE_TRANSACTION_SETUP_PROVIDER(DefaultContextServiceResourceDefinition.USE_TRANSACTION_SETUP_PROVIDER),
+    CONTEXT_SERVICE(ManagedThreadFactoryResourceDefinition.CONTEXT_SERVICE),
+    PRIORITY(ManagedThreadFactoryResourceDefinition.PRIORITY),
+    THREAD_FACTORY(ManagedExecutorServiceResourceDefinition.THREAD_FACTORY),
+    HUNG_TASK_THRESHOLD(ManagedExecutorServiceResourceDefinition.HUNG_TASK_THRESHOLD),
+    LONG_RUNNING_TASKS(ManagedExecutorServiceResourceDefinition.LONG_RUNNING_TASKS),
+    CORE_THREADS(ManagedExecutorServiceResourceDefinition.CORE_THREADS),
+    MAX_THREADS(ManagedExecutorServiceResourceDefinition.MAX_THREADS),
+    KEEPALIVE_TIME(ManagedExecutorServiceResourceDefinition.KEEPALIVE_TIME),
+    QUEUE_LENGTH(ManagedExecutorServiceResourceDefinition.QUEUE_LENGTH),
+    REJECT_POLICY(ManagedExecutorServiceResourceDefinition.REJECT_POLICY),
+
     ;
     private final String name;
 

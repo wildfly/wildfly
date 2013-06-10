@@ -5,5 +5,11 @@
    <subsystem xmlns="urn:jboss:domain:ee:2.0">
         <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
         <jboss-descriptor-property-replacement>true</jboss-descriptor-property-replacement>
+        <concurrent>
+            <default-context-service/>
+            <default-managed-thread-factory/>
+            <default-managed-executor-service hung-task-threshold="60000" core-threads="5" max-threads="25" keepalive-time="5000"/>
+            <default-managed-scheduled-executor-service hung-task-threshold="60000" core-threads="2" keepalive-time="3000"/>
+       </concurrent>
    </subsystem>
 </config>

@@ -40,6 +40,7 @@
             <xs:element name="ear-subdeployments-isolated" default="false" type="ear-subdeployments-isolatedType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="spec-descriptor-property-replacement" type="descriptor-property-replacementType" minOccurs="0" maxOccurs="1" />
             <xs:element name="jboss-descriptor-property-replacement" type="descriptor-property-replacementType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="concurrent" type="concurrentType" minOccurs="0" maxOccurs="1" />
         </xs:sequence>
     </xs:complexType>
 
@@ -101,5 +102,291 @@
 
         <xs:restriction base="xs:boolean"/>
     </xs:simpleType>
+
+    <!-- EE Concurrent (JSR 236) XML elements and attributes definition -->
+
+    <xs:complexType name="concurrentType">
+        <xs:annotation>
+            <xs:documentation>
+                Configures EE Concurrent resources. If undefined, it turns off all EE Concurrent functionality.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="default-context-service" type="defaultContextServiceType" />
+            <xs:element name="default-managed-thread-factory" type="defaultManagedThreadFactoryType" />
+            <xs:element name="default-managed-executor-service" type="defaultManagedExecutorServiceType"/>
+            <xs:element name="default-managed-scheduled-executor-service" type="defaultManagedScheduledExecutorServiceType"/>
+            <xs:element name="managed-thread-factories" type="managedThreadFactoriesType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="managed-executor-services" type="managedExecutorServicesType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="managed-scheduled-executor-services" type="managedScheduledExecutorServicesType" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="defaultContextServiceType">
+        <xs:annotation>
+            <xs:documentation>
+                The default context service (implementing javax.enterprise.concurrent.ContextService).
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="use-transaction-setup-provider" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    The optional attribute that defines if the context service should use a transaction setup provider, which may be used to suspend and resume active transactions.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="defaultManagedThreadFactoryType">
+        <xs:annotation>
+            <xs:documentation>
+                The default managed thread factory (implementing javax.enterprise.concurrent.ManagedThreadFactory).
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="priority" type="priorityType" default="5"/>
+    </xs:complexType>
+
+    <xs:complexType name="defaultManagedExecutorServiceType">
+        <xs:annotation>
+            <xs:documentation>
+                The default managed executor service (implementing javax.enterprise.concurrent.ManagedExecutorService).
+                The task queue is based on the values of "core-threads" and "queue-length":
+                * If "queue-length" is 0, or "queue-length" is Integer.MAX_VALUE (2147483647) and "core-threads" is 0, direct handoff queuing strategy will be used and a SynchronousQueue will be created.
+                * If "queue-length" is Integer.MAX_VALUE but "core-threads" is not 0, an unbounded queue will be used.
+                * For any other valid value for "queue-length", a bounded queue wil be created.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="hung-task-threshold" type="hungTaskThresholdType" default="0"/>
+        <xs:attribute name="long-running-tasks" type="longRunningTasksType" default="false"/>
+        <xs:attribute name="core-threads" type="coreThreadsType" use="required"/>
+        <xs:attribute name="max-threads" type="maxThreadsType" default="2147483647"/>
+        <xs:attribute name="keepalive-time" type="keepAliveTimeType" default="60000"/>
+        <xs:attribute name="queue-length" type="queueLengthType" default="0"/>
+        <xs:attribute name="reject-policy" type="rejectPolicyType" default="ABORT"/>
+    </xs:complexType>
+
+    <xs:complexType name="defaultManagedScheduledExecutorServiceType">
+        <xs:annotation>
+            <xs:documentation>
+                The default managed scheduled executor service (implementing javax.enterprise.concurrent.ManagedScheduledExecutorService).
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="hung-task-threshold" type="hungTaskThresholdType" default="0"/>
+        <xs:attribute name="long-running-tasks" type="longRunningTasksType" default="false"/>
+        <xs:attribute name="core-threads" type="coreThreadsType" use="required"/>
+        <xs:attribute name="keepalive-time" type="keepAliveTimeType" default="60000"/>
+        <xs:attribute name="reject-policy" type="rejectPolicyType" default="ABORT"/>
+    </xs:complexType>
+
+    <xs:complexType name="managedThreadFactoriesType">
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="managed-thread-factory" type="managedThreadFactoryType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="managedThreadFactoryType">
+        <xs:annotation>
+            <xs:documentation>
+                A managed thread factory (implementing javax.enterprise.concurrent.ManagedThreadFactory).
+                The mandatory "name" attribute, which may not be empty or have the value "default", identifies the
+                created thread factory.
+                The optional "context-service" identifies which Context Service should be used by created threads.
+                The optional "priority" attribute may be used to specify the priority of created threads.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="nameType" use="required"/>
+        <xs:attribute name="context-service" type="nameType"/>
+        <xs:attribute name="priority" type="priorityType" default="5"/>
+    </xs:complexType>
+
+    <xs:complexType name="managedExecutorServicesType">
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="managed-executor-service" type="managedExecutorServiceType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="managedExecutorServiceType">
+        <xs:annotation>
+            <xs:documentation>
+                A managed executor service (implementing javax.enterprise.concurrent.ManagedExecutorService).
+                If the "thread-factory" attribute is not defined a managed thread factory with no context service and normal thread priority will be created and used by the executor.
+                The task queue is based on the values of "core-threads" and "queue-length":
+                * If "queue-length" is 0, or "queue-length" is Integer.MAX_VALUE (2147483647) and "core-threads" is 0, direct handoff queuing strategy will be used and a SynchronousQueue will be created.
+                * If "queue-length" is Integer.MAX_VALUE but "core-threads" is not 0, an unbounded queue will be used.
+                * For any other valid value for "queue-length", a bounded queue wil be created.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="nameType" use="required"/>
+        <xs:attribute name="context-service" type="contextServiceType"/>
+        <xs:attribute name="thread-factory" type="threadFactoryType"/>
+        <xs:attribute name="hung-task-threshold" type="hungTaskThresholdType" default="0"/>
+        <xs:attribute name="long-running-tasks" type="longRunningTasksType" default="false"/>
+        <xs:attribute name="core-threads" type="coreThreadsType" use="required"/>
+        <xs:attribute name="max-threads" type="maxThreadsType" default="2147483647"/>
+        <xs:attribute name="keepalive-time" type="keepAliveTimeType" default="60000"/>
+        <xs:attribute name="queue-length" type="queueLengthType" default="0"/>
+        <xs:attribute name="reject-policy" type="rejectPolicyType" default="ABORT"/>
+    </xs:complexType>
+
+    <xs:complexType name="managedScheduledExecutorServicesType">
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="managed-scheduled-executor-service" type="managedScheduledExecutorServiceType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="managedScheduledExecutorServiceType">
+        <xs:annotation>
+            <xs:documentation>
+                A managed scheduled executor service (implementing javax.enterprise.concurrent.ManagedScheduledExecutorService).
+                If the "thread-factory" attribute is not defined a managed thread factory with no context service and normal thread priority will be created and used by the executor.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="nameType" use="required"/>
+        <xs:attribute name="context-service" type="contextServiceType"/>
+        <xs:attribute name="thread-factory" type="threadFactoryType"/>
+        <xs:attribute name="hung-task-threshold" type="hungTaskThresholdType" default="0"/>
+        <xs:attribute name="long-running-tasks" type="longRunningTasksType" default="false"/>
+        <xs:attribute name="core-threads" type="coreThreadsType" use="required"/>
+        <xs:attribute name="keepalive-time" type="keepAliveTimeType" default="60000"/>
+        <xs:attribute name="reject-policy" type="rejectPolicyType" default="ABORT"/>
+    </xs:complexType>
+
+    <xs:simpleType name="nameType">
+        <xs:annotation>
+            <xs:documentation>
+                The name for a EE concurrent resource. Any non empty token is valid.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:token">
+            <xs:minLength value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="contextServiceType">
+        <xs:annotation>
+            <xs:documentation>
+                The name of the context service to be used. An empty name references the default context service.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string" />
+    </xs:simpleType>
+
+    <xs:simpleType name="threadFactoryType">
+        <xs:annotation>
+            <xs:documentation>
+                The name of the managed thread factory to be used by the executor. An empty name references the default managed thread factory.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string" />
+    </xs:simpleType>
+
+    <xs:simpleType name="priorityType">
+        <xs:annotation>
+            <xs:documentation>
+                A priority which can range from 1 to 10 (inclusive).  See http://java.sun.com/javase/6/docs/api/java/lang/Thread.html#setPriority(int) for more information.
+                This type matches EE Concurrent 1.0 Final Release attribute named "Priority", defined in sections 3.4.4.2
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:integer">
+            <xs:minInclusive value="1"/>
+            <xs:maxInclusive value="10"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="hungTaskThresholdType">
+        <xs:annotation>
+            <xs:documentation>
+                The amount of time in milliseconds that a task can execute before it is considered hung. If zero then tasks are never considered hung.
+                This xml attribute matches EE Concurrent 1.0 Final Release attribute named "Hung Task Threshold", defined in sections 3.1.4.2 and 3.2.4.2
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:long">
+            <xs:minInclusive value="0"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="longRunningTasksType">
+        <xs:annotation>
+            <xs:documentation>
+                If the application intends to run short vs. long-running tasks they can specify to use pooled or daemon threads.
+                This xml attribute matches EE Concurrent 1.0 Final Release attribute named "Thread Use", defined in section 3.2.4.2
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:boolean"/>
+    </xs:simpleType>
+
+    <xs:simpleType name="coreThreadsType">
+        <xs:annotation>
+            <xs:documentation>
+                The number of threads to keep in the executor's pool, even if they are idle.
+                This type matches EE Concurrent 1.0 Final Release attribute named "Pool Info: Core Size", defined in sections 3.1.4.2 and 3.2.4.2
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:int">
+            <xs:minInclusive value="0"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="maxThreadsType">
+        <xs:annotation>
+            <xs:documentation>
+                The maximum number of threads to allow in the executor's pool.
+                This type matches EE Concurrent 1.0 Final Release attribute named "Pool Info: Maximum Size", defined in section 3.1.4.2
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:int">
+            <xs:minInclusive value="0"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="keepAliveTimeType">
+        <xs:annotation>
+            <xs:documentation>
+                The time to allow threads to remain idle when the number of threads is greater than the core size.
+                This type matches EE Concurrent 1.0 Final Release attribute named "Pool Info: Keep Alive", defined in sections 3.1.4.2 and 3.2.4.2
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:long">
+            <xs:minInclusive value="0"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="queueLengthType">
+        <xs:annotation>
+            <xs:documentation>
+                The number of tasks that can be stored in the input queue. Zero means the queue capacity is not limited.
+                This type matches EE Concurrent 1.0 Final Release attribute named "Work Queue Capacity", defined in section 3.1.4.2
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:int">
+            <xs:minInclusive value="0"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="rejectPolicyType">
+        <xs:annotation>
+            <xs:documentation>
+                The policy to use when a task is to be rejected by the executor.
+                This type matches EE Concurrent 1.0 Final Release attribute named "Reject Policy", defined in sections 3.1.4.2 and 3.2.4.2
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ABORT">
+                <xs:annotation>
+                    <xs:documentation>
+                        Throw an exception when rejected.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RETRY_ABORT">
+                <xs:annotation>
+                    <xs:documentation>
+                        Automatically resubmit and abort if it fails.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
 
 </xs:schema>
