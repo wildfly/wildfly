@@ -45,6 +45,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.metadata.javaee.spec.ResourceInjectionTargetMetaData;
 import org.jboss.metadata.javaee.spec.ServiceReferenceMetaData;
@@ -91,9 +92,10 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
         final UnifiedServiceRefMetaData serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(unit));
         translate(serviceRefMD, serviceRefUMDM);
         processWSFeatures(unit, serviceRefMD.getInjectionTargets(), serviceRefUMDM);
+        final WSRefRegistry wsRefRegistry = ASHelper.getWSRefRegistry(unit);
+        wsRefRegistry.add(serviceRefUMDM.getServiceRefName(), serviceRefUMDM);
         return serviceRefUMDM;
     }
-
 
     private static void processWSFeatures(final DeploymentUnit unit, final Set<ResourceInjectionTargetMetaData> injectionTargets, final UnifiedServiceRefMetaData serviceRefUMDM) throws DeploymentUnitProcessingException {
         if (injectionTargets == null || injectionTargets.size() == 0) return;
