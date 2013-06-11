@@ -22,10 +22,13 @@
 
 package org.jboss.as.patching.management;
 
+
 import org.jboss.as.controller.ModelControllerServiceInitialization;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerService;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -49,12 +52,13 @@ public final class PatchIntegrationFactory implements ModelControllerServiceInit
         PatchInfoService.installService(serviceTarget);
 
         // Install the installation manager service
-        InstallationManagerService.installService(serviceTarget);
+        final ServiceController<InstallationManager> imController = InstallationManagerService.installService(serviceTarget);
 
         // Register the patch resource description
         registration.registerSubModel(PatchResourceDefinition.INSTANCE);
         // and resource
-        resource.registerChild(PatchResourceDefinition.PATH, Resource.Factory.create());
+        PatchResource patchResource = new PatchResource(imController);
+        resource.registerChild(PatchResourceDefinition.PATH, patchResource);
     }
 
     @Override
