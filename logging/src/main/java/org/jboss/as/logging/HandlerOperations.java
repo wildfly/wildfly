@@ -230,7 +230,8 @@ final class HandlerOperations {
                 if ((attribute.equals(CLASS) || attribute.equals(MODULE)) || attribute.equals(FILTER)) {
                     skip = true;
                 } else {
-                    // No need to change values that are equal
+                    // No need to change values that are equal, also values like a file name that are equal could result
+                    // already logged data being overwritten
                     skip = (exists && equalValue(attribute, context, model, logContextConfiguration, configuration));
                 }
 
@@ -675,9 +676,9 @@ final class HandlerOperations {
                 }
             }
         } else {
-            if (attribute instanceof PropertyAttributeDefinition) {
-                final PropertyAttributeDefinition propAttribute = ((PropertyAttributeDefinition) attribute);
-                final String resolvedValue = propAttribute.resolvePropertyValue(context, model);
+            if (attribute instanceof ConfigurationProperty) {
+                final ConfigurationProperty<?> propAttribute = ((ConfigurationProperty<?>) attribute);
+                final String resolvedValue = String.valueOf(propAttribute.resolvePropertyValue(context, model));
                 final String currentValue = configuration.getPropertyValueString(propAttribute.getPropertyName());
                 result = (resolvedValue == null ? currentValue == null : resolvedValue.equals(currentValue));
             } else {
