@@ -13,14 +13,12 @@ import java.io.IOException;
 public class ClusterSubsystemBaseParsingTestCase extends AbstractSubsystemBaseTest {
 
     public ClusterSubsystemBaseParsingTestCase() {
-        super(ClusterSubsystemExtension.SUBSYSTEM_NAME, new ClusterSubsystemExtension());
+        super(ClusterExtension.SUBSYSTEM_NAME, new ClusterExtension());
     }
 
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return "<subsystem xmlns=\"" + ClusterSubsystemExtension.NAMESPACE + "\">" +
-                "</subsystem>";
+        return readResource("subsystem-cluster-test.xml");
     }
-
 }

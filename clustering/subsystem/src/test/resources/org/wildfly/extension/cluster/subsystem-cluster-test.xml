@@ -1,0 +1,3 @@
+<subsystem xmlns="urn:jboss:domain:cluster:1.0">
+    <management-client socket-binding="management-native"/>
+</subsystem>

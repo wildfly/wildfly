@@ -2,7 +2,7 @@ package org.wildfly.extension.cluster;
 
 import java.util.List;
 
-import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -12,10 +12,10 @@ import org.jboss.msc.service.ServiceController;
 /**
  * Handler responsible for adding the subsystem resource to the model
  *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  *
  */
-class ClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
+class ClusterSubsystemAdd extends AbstractAddStepHandler {
 
     static final ClusterSubsystemAdd INSTANCE = new ClusterSubsystemAdd();
 
@@ -30,7 +30,7 @@ class ClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     /** {@inheritDoc} */
     @Override
-    public void performBoottime(OperationContext context, ModelNode operation, ModelNode model,
+    public void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
             ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
             throws OperationFailedException {
 

@@ -7,6 +7,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.io.IOException;
 import java.util.List;
 
 import junit.framework.Assert;
@@ -28,8 +29,10 @@ import org.junit.Test;
  */
 public class ClusterSubsystemParsingTestCase extends AbstractSubsystemTest {
 
+    final int EXPECTED_NUM_OPERATIONS = 2 ;
+
     public ClusterSubsystemParsingTestCase() {
-        super(ClusterSubsystemExtension.SUBSYSTEM_NAME, new ClusterSubsystemExtension());
+        super(ClusterExtension.SUBSYSTEM_NAME, new ClusterExtension());
     }
 
     /**
@@ -38,13 +41,12 @@ public class ClusterSubsystemParsingTestCase extends AbstractSubsystemTest {
     @Test
     public void testParseSubsystem() throws Exception {
         //Parse the subsystem xml into operations
-        String subsystemXml =
-                "<subsystem xmlns=\"" + ClusterSubsystemExtension.NAMESPACE + "\">" +
-                        "</subsystem>";
+        String subsystemXml = getSubsystemXml();
+
         List<ModelNode> operations = super.parse(subsystemXml);
 
         ///Check that we have the expected number of operations
-        Assert.assertEquals(1, operations.size());
+        Assert.assertEquals(EXPECTED_NUM_OPERATIONS, operations.size());
 
         //Check that each operation has the correct content
         ModelNode addSubsystem = operations.get(0);
@@ -53,7 +55,7 @@ public class ClusterSubsystemParsingTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(1, addr.size());
         PathElement element = addr.getElement(0);
         Assert.assertEquals(SUBSYSTEM, element.getKey());
-        Assert.assertEquals(ClusterSubsystemExtension.SUBSYSTEM_NAME, element.getValue());
+        Assert.assertEquals(ClusterExtension.SUBSYSTEM_NAME, element.getValue());
     }
 
     /**
@@ -62,14 +64,13 @@ public class ClusterSubsystemParsingTestCase extends AbstractSubsystemTest {
     @Test
     public void testInstallIntoController() throws Exception {
         //Parse the subsystem xml and install into the controller
-        String subsystemXml =
-                "<subsystem xmlns=\"" + ClusterSubsystemExtension.NAMESPACE + "\">" +
-                        "</subsystem>";
+        String subsystemXml = getSubsystemXml();
+
         KernelServices services = super.installInController(subsystemXml);
 
         //Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();
-        Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(ClusterSubsystemExtension.SUBSYSTEM_NAME));
+        Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(ClusterExtension.SUBSYSTEM_NAME));
     }
 
     /**
@@ -79,9 +80,8 @@ public class ClusterSubsystemParsingTestCase extends AbstractSubsystemTest {
     @Test
     public void testParseAndMarshalModel() throws Exception {
         //Parse the subsystem xml and install into the first controller
-        String subsystemXml =
-                "<subsystem xmlns=\"" + ClusterSubsystemExtension.NAMESPACE + "\">" +
-                        "</subsystem>";
+        String subsystemXml = getSubsystemXml();
+
         KernelServices servicesA = super.installInController(subsystemXml);
         //Get the model and the persisted xml from the first controller
         ModelNode modelA = servicesA.readWholeModel();
@@ -102,9 +102,8 @@ public class ClusterSubsystemParsingTestCase extends AbstractSubsystemTest {
     @Test
     public void testDescribeHandler() throws Exception {
         //Parse the subsystem xml and install into the first controller
-        String subsystemXml =
-                "<subsystem xmlns=\"" + ClusterSubsystemExtension.NAMESPACE + "\">" +
-                        "</subsystem>";
+        String subsystemXml =  getSubsystemXml();
+
         KernelServices servicesA = super.installInController(subsystemXml);
         //Get the model and the describe operations from the first controller
         ModelNode modelA = servicesA.readWholeModel();
@@ -112,7 +111,7 @@ public class ClusterSubsystemParsingTestCase extends AbstractSubsystemTest {
         describeOp.get(OP).set(DESCRIBE);
         describeOp.get(OP_ADDR).set(
                 PathAddress.pathAddress(
-                        PathElement.pathElement(SUBSYSTEM, ClusterSubsystemExtension.SUBSYSTEM_NAME)).toModelNode());
+                        PathElement.pathElement(SUBSYSTEM, ClusterExtension.SUBSYSTEM_NAME)).toModelNode());
         List<ModelNode> operations = super.checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
 
 
@@ -130,13 +129,17 @@ public class ClusterSubsystemParsingTestCase extends AbstractSubsystemTest {
     @Test
     public void testSubsystemRemoval() throws Exception {
         //Parse the subsystem xml and install into the first controller
-        String subsystemXml =
-                "<subsystem xmlns=\"" + ClusterSubsystemExtension.NAMESPACE + "\">" +
-                        "</subsystem>";
+        String subsystemXml = getSubsystemXml();
+
         KernelServices services = super.installInController(subsystemXml);
         //Checks that the subsystem was removed from the model
         super.assertRemoveSubsystemResources(services);
 
         //TODO Chek that any services that were installed were removed here
     }
+
+    protected String getSubsystemXml() throws IOException {
+        return readResource("subsystem-cluster-test.xml") ;
+    }
+
 }
