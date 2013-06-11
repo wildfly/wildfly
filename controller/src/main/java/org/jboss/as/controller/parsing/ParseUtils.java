@@ -136,6 +136,25 @@ public final class ParseUtils {
     }
 
     /**
+     * Get an exception reporting a missing, required XML attribute.
+     * @param reader the stream reader
+     * @param required a set of enums whose toString method returns the
+     *        attribute name
+     * @return the exception
+     */
+    public static XMLStreamException missingRequired(final XMLExtendedStreamReader reader, final String... required) {
+        final StringBuilder b = new StringBuilder();
+        for (int i = 0; i < required.length; i++) {
+            final String o = required[i];
+            b.append(o);
+            if (required.length > i + 1) {
+                b.append(", ");
+            }
+        }
+        return MESSAGES.missingRequiredAttributes(b, reader.getLocation());
+    }
+
+    /**
      * Get an exception reporting a missing, required XML child element.
      * @param reader the stream reader
      * @param required a set of enums whose toString method returns the

@@ -24,15 +24,10 @@ package org.jboss.as.patching.generator;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
-import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 
@@ -56,9 +51,9 @@ class PatchConfigBuilder {
     private Patch.PatchType patchType;
     private boolean generateByDiff;
     private List<String> appliesTo = new ArrayList<String>();
-    private Set<DistributionContentItem> runtimeUseItems = new HashSet<DistributionContentItem>();
-    private final Map<DistributionContentItem.Type, Map<ModificationType, SortedSet<DistributionContentItem>>> modifications =
-            new HashMap<DistributionContentItem.Type, Map<ModificationType, SortedSet<DistributionContentItem>>>();
+    private Set<String> runtimeUseItems = new HashSet<String>();
+//    private final Map<DistributionContentItem.Type, Map<ModificationType, SortedSet<DistributionContentItem>>> modifications =
+//            new HashMap<DistributionContentItem.Type, Map<ModificationType, SortedSet<DistributionContentItem>>>();
 
     private DistributionStructure updatedStructure;
     private DistributionStructure appliesToStructure;
@@ -100,7 +95,7 @@ class PatchConfigBuilder {
                 DistributionStructure structure = DistributionStructure.Factory.create(version);
                 if (!appliesToStructure.isCompatibleWith(structure)) {
                     throw new IllegalStateException(DistributionStructure.class.getSimpleName() + " for version " + version
-                     + " is incompatible with version " + structureVersion + ". The same patch cannot apply to both versions.");
+                            + " is incompatible with version " + structureVersion + ". The same patch cannot apply to both versions.");
                 }
             }
         }
@@ -110,35 +105,33 @@ class PatchConfigBuilder {
 
     PatchConfigBuilder setGenerateByDiff(boolean generateByDiff) {
         this.generateByDiff = generateByDiff;
-
         return this;
     }
 
-    PatchConfigBuilder addRuntimeUseItem(DistributionContentItem item) {
+    PatchConfigBuilder addRuntimeUseItem(String item) {
         this.runtimeUseItems.add(item);
-
         return this;
     }
 
-    PatchConfigBuilder addBundleModification(String name, String slot, String searchPath, ModificationType modificationType) {
-
-        DistributionContentItem item = appliesToStructure.getBundleRootContentItem(name, slot, searchPath);
-        return addModification(item, modificationType);
-    }
-
-    PatchConfigBuilder addModuleModification(String name, String slot, String searchPath, ModificationType modificationType) {
-        DistributionContentItem item = appliesToStructure.getModuleRootContentItem(name, slot, searchPath);
-        return addModification(item, modificationType);
-    }
-
-    PatchConfigBuilder addMiscModification(String path, boolean directory, boolean inRuntimeUse, ModificationType modificationType) {
-        DistributionContentItem item = appliesToStructure.getMiscContentItem(path, directory);
-        addModification(item, modificationType);
-        if (inRuntimeUse) {
-            addRuntimeUseItem(item);
-        }
-        return this;
-    }
+//    PatchConfigBuilder addBundleModification(String name, String slot, String searchPath, ModificationType modificationType) {
+//
+//        DistributionContentItem item = appliesToStructure.getBundleRootContentItem(name, slot, searchPath);
+//        return addModification(item, modificationType);
+//    }
+//
+//    PatchConfigBuilder addModuleModification(String name, String slot, String searchPath, ModificationType modificationType) {
+//        DistributionContentItem item = appliesToStructure.getModuleRootContentItem(name, slot, searchPath);
+//        return addModification(item, modificationType);
+//    }
+//
+//    PatchConfigBuilder addMiscModification(String path, boolean directory, boolean inRuntimeUse, ModificationType modificationType) {
+//        DistributionContentItem item = appliesToStructure.getMiscContentItem(path, directory);
+//        addModification(item, modificationType);
+//        if (inRuntimeUse) {
+//            addRuntimeUseItem(item);
+//        }
+//        return this;
+//    }
 
     PatchConfigBuilder addModuleSearchPath(final String name, final String standardPath, AffectsType affectsType) {
         switch (affectsType) {
@@ -244,33 +237,33 @@ class PatchConfigBuilder {
         return new PatchConfigImpl();
     }
 
-    private PatchConfigBuilder addModification(DistributionContentItem item, ModificationType modificationType) {
-        Map<ModificationType, SortedSet<DistributionContentItem>> typeMap;
-        DistributionContentItem.Type itemType = item.getType();
-        switch (itemType) {
-            case MODULE_ROOT:
-            case BUNDLE_ROOT:
-            case MISC:
-                typeMap = modifications.get(itemType);
-                if (typeMap == null) {
-                    typeMap = new HashMap<ModificationType, SortedSet<DistributionContentItem>>();
-                    modifications.put(itemType, typeMap);
-                }
-                break;
-            default:
-                throw new IllegalArgumentException(itemType + " is not a valid content item type for a modification");
-        }
-
-        SortedSet<DistributionContentItem> items = typeMap.get(modificationType);
-        if (items == null) {
-            items = new TreeSet<DistributionContentItem>();
-            typeMap.put(modificationType, items);
-        }
-
-        items.add(item);
-
-        return this;
-    }
+//    private PatchConfigBuilder addModification(DistributionContentItem item, ModificationType modificationType) {
+//        Map<ModificationType, SortedSet<DistributionContentItem>> typeMap;
+//        DistributionContentItem.Type itemType = item.getType();
+//        switch (itemType) {
+//            case MODULE_ROOT:
+//            case BUNDLE_ROOT:
+//            case MISC:
+//                typeMap = modifications.get(itemType);
+//                if (typeMap == null) {
+//                    typeMap = new HashMap<ModificationType, SortedSet<DistributionContentItem>>();
+//                    modifications.put(itemType, typeMap);
+//                }
+//                break;
+//            default:
+//                throw new IllegalArgumentException(itemType + " is not a valid content item type for a modification");
+//        }
+//
+//        SortedSet<DistributionContentItem> items = typeMap.get(modificationType);
+//        if (items == null) {
+//            items = new TreeSet<DistributionContentItem>();
+//            typeMap.put(modificationType, items);
+//        }
+//
+//        items.add(item);
+//
+//        return this;
+//    }
 
     private class PatchConfigImpl implements PatchConfig {
 
@@ -300,7 +293,7 @@ class PatchConfigBuilder {
         }
 
         @Override
-        public Set<DistributionContentItem> getInRuntimeUseItems() {
+        public Set<String> getInRuntimeUseItems() {
             return Collections.unmodifiableSet(runtimeUseItems);
         }
 
@@ -309,10 +302,10 @@ class PatchConfigBuilder {
             return generateByDiff;
         }
 
-        @Override
-        public Map<DistributionContentItem.Type, Map<ModificationType, SortedSet<DistributionContentItem>>> getSpecifiedContent() {
-            return Collections.unmodifiableMap(modifications);
-        }
+//        @Override
+//        public Map<DistributionContentItem.Type, Map<ModificationType, SortedSet<DistributionContentItem>>> getSpecifiedContent() {
+//            return Collections.unmodifiableMap(modifications);
+//        }
 
         @Override
         public DistributionStructure getOriginalDistributionStructure() {
