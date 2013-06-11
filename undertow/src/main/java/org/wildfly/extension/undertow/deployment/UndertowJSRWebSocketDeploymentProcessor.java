@@ -239,7 +239,8 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
     private void doDeployment(final ServerWebSocketContainer container, final Set<Class<?>> annotatedEndpoints, final Set<Class<? extends ServerApplicationConfig>> serverApplicationConfigClasses, final Set<Class<? extends Endpoint>> endpoints) throws DeploymentUnitProcessingException {
 
         Set<Class<? extends Endpoint>> allScannedEndpointImplementations = new HashSet<>(endpoints);
-        Set<Class<?>> allAnnotatedEndpoints = new HashSet<>(annotatedEndpoints);
+        Set<Class<?>> allScannedAnnotatedEndpoints = new HashSet<>(annotatedEndpoints);
+        Set<Class<?>> newAnnotatatedEndpoints = new HashSet<>();
         Set<ServerEndpointConfig> serverEndpointConfigurations = new HashSet<>();
 
         final Set<ServerApplicationConfig> configInstances = new HashSet<>();
@@ -252,18 +253,25 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
         }
 
 
-        for (ServerApplicationConfig config : configInstances) {
-            allAnnotatedEndpoints = config.getAnnotatedEndpointClasses(allAnnotatedEndpoints);
-            Set<ServerEndpointConfig> endpointConfigs = config.getEndpointConfigs(allScannedEndpointImplementations);
-            if(endpointConfigs != null) {
-                serverEndpointConfigurations.addAll(endpointConfigs);
+        if(!configInstances.isEmpty()) {
+            for (ServerApplicationConfig config : configInstances) {
+                Set<Class<?>> returnedEndpoints = config.getAnnotatedEndpointClasses(allScannedAnnotatedEndpoints);
+                if(returnedEndpoints != null) {
+                    newAnnotatatedEndpoints.addAll(returnedEndpoints);
+                }
+                Set<ServerEndpointConfig> endpointConfigs = config.getEndpointConfigs(allScannedEndpointImplementations);
+                if(endpointConfigs != null) {
+                    serverEndpointConfigurations.addAll(endpointConfigs);
+                }
             }
+        } else {
+            newAnnotatatedEndpoints.addAll(allScannedAnnotatedEndpoints);
         }
 
         //ok, now we have our endpoints, lets deploy them
         try {
             //annotated endpoints first
-            for (Class<?> endpoint : allAnnotatedEndpoints) {
+            for (Class<?> endpoint : newAnnotatatedEndpoints) {
                 container.addEndpoint(endpoint);
             }
 
