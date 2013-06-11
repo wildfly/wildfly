@@ -58,7 +58,7 @@ class BufferPoolResourceDefinition extends PersistentResourceDefinition {
     static final SimpleAttributeDefinition BUFFER_PER_SLICE = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_PER_SLICE, ModelType.INT)
             .setDefaultValue(new ModelNode(1024))
             .build();
-    static final SimpleAttributeDefinition DIRECT_BUFFERS = new SimpleAttributeDefinitionBuilder(Constants.DIRECT_BUFFERS, ModelType.BOOLEAN)
+    static final SimpleAttributeDefinition DIRECT_BUFFERS = new SimpleAttributeDefinitionBuilder(Constants.DIRECT_BUFFERS, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode(true))
             .build();
 
@@ -102,7 +102,11 @@ class BufferPoolResourceDefinition extends PersistentResourceDefinition {
             final String name = address.getLastElement().getValue();
             int bufferSize = BUFFER_SIZE.resolveModelAttribute(context, model).asInt();
             int bufferPerSlice = BUFFER_PER_SLICE.resolveModelAttribute(context, model).asInt();
-            boolean direct = DIRECT_BUFFERS.resolveModelAttribute(context, model).asBoolean();
+            boolean direct = true;
+            ModelNode directBuffersModel = DIRECT_BUFFERS.resolveModelAttribute(context, model);
+            if(directBuffersModel.isDefined()) {
+                direct = directBuffersModel.asBoolean();
+            }
 
             final BufferPoolService service = new BufferPoolService(bufferSize, bufferPerSlice, direct);
             final ServiceBuilder<Pool<ByteBuffer>> serviceBuilder = context.getServiceTarget().addService(IOServices.BUFFER_POOL.append(name), service);

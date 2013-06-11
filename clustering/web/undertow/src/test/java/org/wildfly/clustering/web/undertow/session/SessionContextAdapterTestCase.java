@@ -58,11 +58,11 @@ public class SessionContextAdapterTestCase {
 
         when(this.deployment.getDeploymentInfo()).thenReturn(info);
         ServletContextImpl context = new ServletContextImpl(container, deployment);
-        
+
         when(this.deployment.getServletContext()).thenReturn(context);
-        
+
         ServletContext result = this.context.getServletContext();
-        
+
         assertSame(context, result);
     }
 
@@ -71,16 +71,16 @@ public class SessionContextAdapterTestCase {
         ServletContext context = mock(ServletContext.class);
         HttpSessionListener listener1 = mock(HttpSessionListener.class);
         HttpSessionListener listener2 = mock(HttpSessionListener.class);
-        List<ManagedListener> list = Arrays.asList(new ManagedListener(new ListenerInfo(HttpSessionListener.class, new ImmediateInstanceFactory<>(listener1))), new ManagedListener(new ListenerInfo(HttpSessionListener.class, new ImmediateInstanceFactory<>(listener2))));
+        List<ManagedListener> list = Arrays.asList(new ManagedListener(new ListenerInfo(HttpSessionListener.class, new ImmediateInstanceFactory<>(listener1)), false), new ManagedListener(new ListenerInfo(HttpSessionListener.class, new ImmediateInstanceFactory<>(listener2)), false));
         ApplicationListeners listeners = new ApplicationListeners(list, context);
-        
+
         when(this.deployment.getApplicationListeners()).thenReturn(listeners);
-        
+
         Iterable<HttpSessionListener> result = this.context.getSessionListeners();
-        
+
         HttpSession createdSession = mock(HttpSession.class);
         HttpSession destroyedSession = mock(HttpSession.class);
-        
+
         HttpSessionEvent createdEvent = new HttpSessionEvent(createdSession);
         for (HttpSessionListener listener: result) {
             listener.sessionCreated(createdEvent);
@@ -89,11 +89,11 @@ public class SessionContextAdapterTestCase {
         for (HttpSessionListener listener: result) {
             listener.sessionDestroyed(destroyedEvent);
         }
-        
+
         ArgumentCaptor<HttpSessionEvent> capturedCreatedEvent1 = ArgumentCaptor.forClass(HttpSessionEvent.class);
         verify(listener1).sessionCreated(capturedCreatedEvent1.capture());
         assertSame(createdSession, capturedCreatedEvent1.getValue().getSession());
-        
+
         ArgumentCaptor<HttpSessionEvent> capturedCreatedEvent2 = ArgumentCaptor.forClass(HttpSessionEvent.class);
         verify(listener2).sessionCreated(capturedCreatedEvent2.capture());
         assertSame(createdSession, capturedCreatedEvent2.getValue().getSession());
@@ -101,7 +101,7 @@ public class SessionContextAdapterTestCase {
         ArgumentCaptor<HttpSessionEvent> capturedDestroyedEvent1 = ArgumentCaptor.forClass(HttpSessionEvent.class);
         verify(listener1).sessionDestroyed(capturedDestroyedEvent1.capture());
         assertSame(destroyedSession, capturedDestroyedEvent1.getValue().getSession());
-        
+
         ArgumentCaptor<HttpSessionEvent> capturedDestroyedEvent2 = ArgumentCaptor.forClass(HttpSessionEvent.class);
         verify(listener2).sessionDestroyed(capturedDestroyedEvent2.capture());
         assertSame(destroyedSession, capturedDestroyedEvent2.getValue().getSession());
@@ -112,13 +112,13 @@ public class SessionContextAdapterTestCase {
         ServletContext context = mock(ServletContext.class);
         HttpSessionAttributeListener listener1 = mock(HttpSessionAttributeListener.class);
         HttpSessionAttributeListener listener2 = mock(HttpSessionAttributeListener.class);
-        List<ManagedListener> list = Arrays.asList(new ManagedListener(new ListenerInfo(HttpSessionAttributeListener.class, new ImmediateInstanceFactory<>(listener1))), new ManagedListener(new ListenerInfo(HttpSessionAttributeListener.class, new ImmediateInstanceFactory<>(listener2))));
+        List<ManagedListener> list = Arrays.asList(new ManagedListener(new ListenerInfo(HttpSessionAttributeListener.class, new ImmediateInstanceFactory<>(listener1)), false), new ManagedListener(new ListenerInfo(HttpSessionAttributeListener.class, new ImmediateInstanceFactory<>(listener2)), false));
         ApplicationListeners listeners = new ApplicationListeners(list, context);
-        
+
         when(this.deployment.getApplicationListeners()).thenReturn(listeners);
-        
+
         Iterable<HttpSessionAttributeListener> result = this.context.getSessionAttributeListeners();
-        
+
         HttpSession session = mock(HttpSession.class);
         ArgumentCaptor<HttpSessionBindingEvent> capturedAddedEvent1 = ArgumentCaptor.forClass(HttpSessionBindingEvent.class);
         ArgumentCaptor<HttpSessionBindingEvent> capturedAddedEvent2 = ArgumentCaptor.forClass(HttpSessionBindingEvent.class);
@@ -126,14 +126,14 @@ public class SessionContextAdapterTestCase {
         ArgumentCaptor<HttpSessionBindingEvent> capturedReplacedEvent2 = ArgumentCaptor.forClass(HttpSessionBindingEvent.class);
         ArgumentCaptor<HttpSessionBindingEvent> capturedRemovedEvent1 = ArgumentCaptor.forClass(HttpSessionBindingEvent.class);
         ArgumentCaptor<HttpSessionBindingEvent> capturedRemovedEvent2 = ArgumentCaptor.forClass(HttpSessionBindingEvent.class);
-        
+
         doNothing().when(listener1).attributeAdded(capturedAddedEvent1.capture());
         doNothing().when(listener2).attributeAdded(capturedAddedEvent2.capture());
         doNothing().when(listener1).attributeReplaced(capturedReplacedEvent1.capture());
         doNothing().when(listener2).attributeReplaced(capturedReplacedEvent2.capture());
         doNothing().when(listener1).attributeRemoved(capturedRemovedEvent1.capture());
         doNothing().when(listener2).attributeRemoved(capturedRemovedEvent2.capture());
-        
+
         HttpSessionBindingEvent addedEvent = new HttpSessionBindingEvent(session, "added");
         for (HttpSessionAttributeListener listener: result) {
             listener.attributeAdded(addedEvent);
@@ -146,7 +146,7 @@ public class SessionContextAdapterTestCase {
         for (HttpSessionAttributeListener listener: result) {
             listener.attributeRemoved(removedEvent);
         }
-        
+
         assertSame(session, capturedAddedEvent1.getValue().getSession());
         assertEquals("added", capturedAddedEvent1.getValue().getName());
         assertSame(session, capturedAddedEvent2.getValue().getSession());
