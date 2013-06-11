@@ -35,6 +35,7 @@ import javax.security.auth.Subject;
 
 import io.undertow.security.idm.Account;
 import io.undertow.security.idm.Credential;
+import io.undertow.security.idm.DigestCredential;
 import io.undertow.security.idm.IdentityManager;
 import io.undertow.security.idm.PasswordCredential;
 import io.undertow.security.idm.X509CertificateCredential;
@@ -79,11 +80,14 @@ public class JAASIdentityManagerImpl implements IdentityManager {
     @Override
     public Account verify(String id, Credential credential) {
         Account account = getAccount(id);
-        final char[] password = ((PasswordCredential) credential).getPassword();
-        // The original array may be cleared, this integration relies on it being cached for use later.
-        final char[] duplicate = Arrays.copyOf(password, password.length);
-        return verifyCredential(account, duplicate);
-
+        if (credential instanceof DigestCredential) {
+            return verifyCredential(account, new DigestCredentialImpl((DigestCredential) credential));
+        } else {
+            final char[] password = ((PasswordCredential) credential).getPassword();
+            // The original array may be cleared, this integration relies on it being cached for use later.
+            final char[] duplicate = Arrays.copyOf(password, password.length);
+            return verifyCredential(account, duplicate);
+        }
     }
 
     @Override
