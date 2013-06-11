@@ -35,6 +35,13 @@ import org.jboss.as.patching.DirectoryStructure;
 public interface PatchableTarget {
 
     /**
+     * The name of the target.
+     *
+     * @return  name of the target
+     */
+    String getName();
+
+    /**
      * Load the target info.
      *
      * @return the target info

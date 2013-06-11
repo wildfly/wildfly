@@ -54,10 +54,4 @@ package org.jboss.as.patching.installation;
  */
 public interface Layer extends PatchableTarget {
 
-    /**
-     * The name of the layer.
-     *
-     * @return the layer name
-     */
-    String getName();
 }

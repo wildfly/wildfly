@@ -33,13 +33,6 @@ package org.jboss.as.patching.installation;
 public interface Identity extends PatchableTarget {
 
     /**
-     * Get the identity name.
-     *
-     * @return the identity name
-     */
-    String getName();
-
-    /**
      * Get the identity version.
      *
      * @return the identity version

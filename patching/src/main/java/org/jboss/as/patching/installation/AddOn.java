@@ -55,11 +55,4 @@ package org.jboss.as.patching.installation;
  */
 public interface AddOn extends PatchableTarget {
 
-    /**
-     * The add-on name.
-     *
-     * @return the add-on name
-     */
-    String getName();
-
 }

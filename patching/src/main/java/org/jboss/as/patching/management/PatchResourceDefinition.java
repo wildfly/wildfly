@@ -22,8 +22,11 @@
 
 package org.jboss.as.patching.management;
 
+import java.io.IOException;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.ResourceDefinition;
@@ -36,6 +39,7 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -59,12 +63,6 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
             .setStorageRuntime()
             .build();
     static final AttributeDefinition PATCHES = PrimitiveListAttributeDefinition.Builder.of(Constants.PATCHES, ModelType.STRING)
-            .setStorageRuntime()
-            .build();
-    static final AttributeDefinition MODULE_PATH = PrimitiveListAttributeDefinition.Builder.of(Constants.MODULE_PATH, ModelType.STRING)
-            .setStorageRuntime()
-            .build();
-    static final AttributeDefinition BUNDLE_PATH = PrimitiveListAttributeDefinition.Builder.of(Constants.BUNDLE_PATH, ModelType.STRING)
             .setStorageRuntime()
             .build();
 
@@ -153,24 +151,62 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
                 }
             }
         });
-//        registry.registerReadOnlyAttribute(MODULE_PATH, new PatchAttributeReadHandler() {
-//            @Override
-//            void handle(ModelNode result, PatchInfo info) {
-//                result.setEmptyList();
-//                for(final File id : info.getModulePath()) {
-//                    result.add(id.getAbsolutePath());
-//                }
-//            }
-//        });
-//        registry.registerReadOnlyAttribute(BUNDLE_PATH, new PatchAttributeReadHandler() {
-//            @Override
-//            void handle(ModelNode result, PatchInfo info) {
-//                result.setEmptyList();
-//                for(final File id : info.getBundlePath()) {
-//                    result.add(id.getAbsolutePath());
-//                }
-//            }
-//        });
+
+        StandardResourceDescriptionResolver resolver = new StandardResourceDescriptionResolver("patching.layer", "org.jboss.as.patching.management.LocalDescriptions", PatchResourceDefinition.class.getClassLoader());
+        registry.registerSubModel(new SimpleResourceDefinition(PathElement.pathElement("layer"), resolver) {
+            @Override
+            public void registerAttributes(final ManagementResourceRegistration resource) {
+                resource.registerReadOnlyAttribute(CUMULATIVE, new LayerAttributeReadHandler(){
+                    @Override
+                    void handle(ModelNode result, PatchableTarget layer) throws OperationFailedException {
+                        try {
+                            result.set(layer.loadTargetInfo().getCumulativeID());
+                        } catch (IOException e) {
+                            throw new OperationFailedException("Failed to load layer info", e);
+                        }
+                    }});
+                resource.registerReadOnlyAttribute(PATCHES, new LayerAttributeReadHandler(){
+                    @Override
+                    void handle(ModelNode result, PatchableTarget layer) throws OperationFailedException {
+                        result.setEmptyList();
+                        try {
+                            for(final String id : layer.loadTargetInfo().getPatchIDs()) {
+                                result.add(id);
+                            }
+                        } catch (IOException e) {
+                            throw new OperationFailedException("Failed to load layer info", e);
+                        }
+                    }});
+            }
+        });
+
+        resolver = new StandardResourceDescriptionResolver("patching.addon", "org.jboss.as.patching.management.LocalDescriptions", PatchResourceDefinition.class.getClassLoader());
+        registry.registerSubModel(new SimpleResourceDefinition(PathElement.pathElement("addon"), resolver) {
+            @Override
+            public void registerAttributes(final ManagementResourceRegistration resource) {
+                resource.registerReadOnlyAttribute(CUMULATIVE, new AddOnAttributeReadHandler(){
+                    @Override
+                    void handle(ModelNode result, PatchableTarget addon) throws OperationFailedException {
+                        try {
+                            result.set(addon.loadTargetInfo().getCumulativeID());
+                        } catch (IOException e) {
+                            throw new OperationFailedException("Failed to load add-on info", e);
+                        }
+                    }});
+                resource.registerReadOnlyAttribute(PATCHES, new AddOnAttributeReadHandler(){
+                    @Override
+                    void handle(ModelNode result, PatchableTarget addon) throws OperationFailedException {
+                        result.setEmptyList();
+                        try {
+                            for(final String id : addon.loadTargetInfo().getPatchIDs()) {
+                                result.add(id);
+                            }
+                        } catch (IOException e) {
+                            throw new OperationFailedException("Failed to load add-on info", e);
+                        }
+                    }});
+            }
+        });
     }
 
     @Override
