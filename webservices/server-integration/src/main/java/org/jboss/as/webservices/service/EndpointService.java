@@ -119,7 +119,7 @@ public final class EndpointService implements Service<Endpoint> {
                 ManagedEndpoint jmxEndpoint = new ManagedEndpoint(endpoint, mbeanServer);
                 mbeanServer.registerMBean(jmxEndpoint, endpoint.getName());
             } catch (final JMException ex) {
-                ROOT_LOGGER.trace("Cannot register endpoint with JMX server: " + ex.getMessage());
+                ROOT_LOGGER.trace("Cannot register endpoint in JMX server", ex);
                 ROOT_LOGGER.cannotRegisterEndpoint(endpoint.getShortName());
             }
         } else {
@@ -133,7 +133,7 @@ public final class EndpointService implements Service<Endpoint> {
             try {
                 mbeanServer.unregisterMBean(endpoint.getName());
             } catch (final JMException ex) {
-                ROOT_LOGGER.trace("Cannot unregister endpoint with JMX server: " + ex.getMessage());
+                ROOT_LOGGER.trace("Cannot unregister endpoint from JMX server", ex);
                 ROOT_LOGGER.cannotUnregisterEndpoint(endpoint.getShortName());
             }
         } else {
@@ -148,8 +148,7 @@ public final class EndpointService implements Service<Endpoint> {
                 mbeanServer.registerMBean(processor,
                         ObjectNameFactory.create(ep.getName() + ",recordProcessor=" + processor.getName()));
             } catch (final JMException ex) {
-                ROOT_LOGGER.trace("Cannot register endpoint with JMX server, trying with the default ManagedRecordProcessor: "
-                        + ex.getMessage());
+                ROOT_LOGGER.trace("Cannot register endpoint in JMX server, trying with the default ManagedRecordProcessor", ex);
                 try {
                     mbeanServer.registerMBean(new ManagedRecordProcessor(processor),
                             ObjectNameFactory.create(ep.getName() + ",recordProcessor=" + processor.getName()));
