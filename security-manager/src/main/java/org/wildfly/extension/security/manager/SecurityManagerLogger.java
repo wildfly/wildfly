@@ -44,11 +44,7 @@ public interface SecurityManagerLogger extends BasicLogger {
     SecurityManagerLogger ROOT_LOGGER = Logger.getMessageLogger(SecurityManagerLogger.class, SecurityManagerLogger.class.getPackage().getName());
 
     @LogMessage(level = INFO)
-    @Message(id = 17700, value = "Activating Security Manager Subsystem")
-    void activatingSubsystem();
-
-    @LogMessage(level = INFO)
-    @Message(id = 17701, value = "Instaling the WildFlySecurityManager")
+    @Message(id = 17700, value = "Installing the WildFly Security Manager")
     void installingWildFlySecurityManager();
 
 }

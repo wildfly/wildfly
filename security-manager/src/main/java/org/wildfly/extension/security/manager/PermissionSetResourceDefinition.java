@@ -33,18 +33,17 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimplePersistentResourceDefinition;
 
 /**
  * Defines a resource that represents a set of security permissions.
  *
  * @author <a href="sguilhen@jboss.com">Stefan Guilhen</a>
  */
-class PermissionSetResourceDefinition extends SimplePersistentResourceDefinition {
+class PermissionSetResourceDefinition extends PersistentResourceDefinition {
 
     private String setName;
 
-    private static final List<? extends SimplePersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(
+    private static final List<? extends PersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(
             Arrays.asList(PermissionResourceDefinition.INSTANCE));
 
 
@@ -63,10 +62,5 @@ class PermissionSetResourceDefinition extends SimplePersistentResourceDefinition
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
         return CHILDREN;
-    }
-
-    @Override
-    public String getXmlElementName() {
-        return this.setName;
     }
 }
