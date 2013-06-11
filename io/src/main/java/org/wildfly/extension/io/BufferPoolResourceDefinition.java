@@ -54,12 +54,15 @@ class BufferPoolResourceDefinition extends PersistentResourceDefinition {
 
     static final SimpleAttributeDefinition BUFFER_SIZE = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_SIZE, ModelType.INT)
             .setDefaultValue(new ModelNode(1024))
+            .setAllowExpression(true)
             .build();
     static final SimpleAttributeDefinition BUFFER_PER_SLICE = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_PER_SLICE, ModelType.INT)
             .setDefaultValue(new ModelNode(1024))
+            .setAllowExpression(true)
             .build();
     static final SimpleAttributeDefinition DIRECT_BUFFERS = new SimpleAttributeDefinitionBuilder(Constants.DIRECT_BUFFERS, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode(true))
+            .setAllowExpression(true)
             .build();
 
 
