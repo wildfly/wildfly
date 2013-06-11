@@ -26,23 +26,33 @@ import static org.jboss.as.patching.IoUtils.safeClose;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Writer;
 
 import org.jboss.staxmapper.XMLMapper;
 
 /**
- * Parser for a patch generation configuration document.
+ * Xml model for {@code Distribution}.
  *
- * @author Brian Stansberry (c) 2012 Red Hat Inc.
+ * @author Emanuel Muckenhuber
  */
-public class PatchConfigXml {
+class DistributionXml {
+
+    public static final String DISTRIBUTION_XML = "distribution.xml";
 
     private static final XMLMapper MAPPER = XMLMapper.Factory.create();
-    private static final PatchConfigXml_1_0 INSTANCE = null;
+    private static final DistributionXml_1_0 INSTANCE = new DistributionXml_1_0();
     private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
-    private static final QName ROOT_ELEMENT = new QName(Namespace.PATCH_1_0.getNamespace(), PatchConfigXml_1_0.Element.PATCH_CONFIG.name);
+    private static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newFactory();
+    private static final QName ROOT_ELEMENT = new QName(Namespace.DISTRIBUTION_1_0.getNamespace(), "distribution");
 
     static {
         MAPPER.registerRootElement(ROOT_ELEMENT, INSTANCE);
@@ -50,7 +60,7 @@ public class PatchConfigXml {
 
     enum Namespace {
 
-        PATCH_1_0("urn:jboss:patch-config:1.0"),
+        DISTRIBUTION_1_0("urn:jboss:distribution:1.0"),
         UNKNOWN(null),;
 
         private final String namespace;
@@ -65,18 +75,45 @@ public class PatchConfigXml {
 
     }
 
-    public static PatchConfig parse(final InputStream stream) throws XMLStreamException {
+    private DistributionXml() {
+        //
+    }
+
+    public static void marshal(final Writer writer, final Distribution root) throws XMLStreamException {
+        final XMLOutputFactory outputFactory = OUTPUT_FACTORY;
+        final XMLStreamWriter streamWriter = outputFactory.createXMLStreamWriter(writer);
+        MAPPER.deparseDocument(INSTANCE, root, streamWriter);
+        streamWriter.close();
+    }
+
+    public static void marshal(final OutputStream os, final Distribution root) throws XMLStreamException {
+        final XMLOutputFactory outputFactory = OUTPUT_FACTORY;
+        final XMLStreamWriter streamWriter = outputFactory.createXMLStreamWriter(os);
+        MAPPER.deparseDocument(INSTANCE, root, streamWriter);
+        streamWriter.close();
+    }
+
+    public static Distribution parse(final InputStream stream) throws XMLStreamException {
         try {
             final XMLInputFactory inputFactory = INPUT_FACTORY;
             setIfSupported(inputFactory, XMLInputFactory.IS_VALIDATING, Boolean.FALSE);
             setIfSupported(inputFactory, XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
             final XMLStreamReader streamReader = inputFactory.createXMLStreamReader(stream);
             //
-            final PatchConfigBuilder builder = new PatchConfigBuilder();
-            MAPPER.parseDocument(builder, streamReader);
-            return builder.build();
+            final Distribution root = new Distribution();
+            MAPPER.parseDocument(root, streamReader);
+            return root;
         } finally {
             safeClose(stream);
+        }
+    }
+
+    public static Distribution parse(final File patchXml) throws IOException, XMLStreamException {
+        final InputStream is = new FileInputStream(patchXml);
+        try {
+            return parse(is);
+        } finally {
+            safeClose(is);
         }
     }
 
@@ -84,9 +121,5 @@ public class PatchConfigXml {
         if (inputFactory.isPropertySupported(property)) {
             inputFactory.setProperty(property, value);
         }
-    }
-
-    private PatchConfigXml() {
-        //
     }
 }

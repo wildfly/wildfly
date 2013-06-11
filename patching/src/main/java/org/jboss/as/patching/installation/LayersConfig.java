@@ -17,7 +17,6 @@ import java.util.Properties;
 
 /**
  * @author Brian Stansberry
- * @author Emanuel Muckenhuber
  */
 public class LayersConfig {
 

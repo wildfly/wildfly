@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -83,18 +83,19 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
         UPDATED_MODULE("updated-module"),
 
         // default unknown element
-        UNKNOWN(null),
-        ;
+        UNKNOWN(null),;
 
         final String name;
+
         Element(String name) {
             this.name = name;
         }
 
         static Map<String, Element> elements = new HashMap<String, Element>();
+
         static {
-            for(Element element : Element.values()) {
-                if(element != UNKNOWN) {
+            for (Element element : Element.values()) {
+                if (element != UNKNOWN) {
                     elements.put(element.name, element);
                 }
             }
@@ -120,18 +121,19 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
         SLOT("slot"),
 
         // default unknown attribute
-        UNKNOWN(null),
-        ;
+        UNKNOWN(null),;
 
         private final String name;
+
         Attribute(String name) {
             this.name = name;
         }
 
         static Map<String, Attribute> attributes = new HashMap<String, Attribute>();
+
         static {
-            for(Attribute attribute : Attribute.values()) {
-                if(attribute != UNKNOWN) {
+            for (Attribute attribute : Attribute.values()) {
+                if (attribute != UNKNOWN) {
                     attributes.put(attribute.name, attribute);
                 }
             }
@@ -438,7 +440,7 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
 
         requireNoContent(reader);
 
-        patchConfigBuilder.addRuntimeUseItem(DistributionContentItem.createMiscItemForPath(path));
+        // patchConfigBuilder.addRuntimeUseItem(DistributionContentItem.createMiscItemForPath(path));
     }
 
     private void parseSpecifiedContent(XMLExtendedStreamReader reader, PatchConfigBuilder patchConfigBuilder) throws XMLStreamException {
@@ -521,7 +523,7 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
     }
 
     private void parseSlottedItem(final XMLExtendedStreamReader reader, ModificationType modificationType,
-                                         final boolean bundle, final PatchConfigBuilder builder) throws XMLStreamException {
+                                  final boolean bundle, final PatchConfigBuilder builder) throws XMLStreamException {
 
         String name = null;
         String slot = "main";
@@ -547,11 +549,11 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
         }
         requireNoContent(reader);
 
-        if (bundle) {
-            builder.addBundleModification(name, slot, searchPath, modificationType);
-        } else {
-            builder.addModuleModification(name, slot, searchPath, modificationType);
-        }
+//        if (bundle) {
+//            builder.addBundleModification(name, slot, searchPath, modificationType);
+//        } else {
+//            builder.addModuleModification(name, slot, searchPath, modificationType);
+//        }
     }
 
     private void parseMiscModification(final XMLExtendedStreamReader reader, final ModificationType modificationType,
@@ -576,11 +578,11 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
                     affectsRuntime = Boolean.parseBoolean(value);
                     break;
                 default:
-                    throw unexpectedAttribute(reader,i );
+                    throw unexpectedAttribute(reader, i);
             }
         }
         requireNoContent(reader);
 
-        builder.addMiscModification(path, directory, affectsRuntime, modificationType);
+        // builder.addMiscModification(path, directory, affectsRuntime, modificationType);
     }
 }

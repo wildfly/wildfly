@@ -67,7 +67,6 @@ fi
 #JAVA_OPTS="$JAVA_OPTS -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n"
 
 eval \"$JAVA\" $JAVA_OPTS \
-   -cp \"$JBOSS_HOME/jboss-modules.jar" \
-   org.jboss.modules.Main \
-   -mp \"${JBOSS_MODULEPATH}\" \
-   org.jboss.as.patching.generator '"$@"'
+    -jar \"$JBOSS_HOME/jboss-modules.jar\" \
+    -mp \"${JBOSS_MODULEPATH}\" \
+    org.jboss.as.patching.generator '"$@"'
