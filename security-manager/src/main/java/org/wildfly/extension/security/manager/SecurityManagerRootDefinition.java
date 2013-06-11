@@ -31,18 +31,17 @@ import java.util.List;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimplePersistentResourceDefinition;
 
 /**
  * Defines the security manager subsystem root resource.
  *
  * @author <a href="sguilhen@jboss.com">Stefan Guilhen</a>
  */
-class SecurityManagerRootDefinition extends SimplePersistentResourceDefinition {
+class SecurityManagerRootDefinition extends PersistentResourceDefinition {
 
     static final SecurityManagerRootDefinition INSTANCE = new SecurityManagerRootDefinition();
 
-    private static final List<? extends SimplePersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(
+    private static final List<? extends PersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(
             Arrays.asList(DeploymentPermissionsResourceDefinition.INSTANCE));
 
     private SecurityManagerRootDefinition() {

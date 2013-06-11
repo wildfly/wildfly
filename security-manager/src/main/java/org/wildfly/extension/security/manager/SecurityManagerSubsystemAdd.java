@@ -77,8 +77,6 @@ class SecurityManagerSubsystemAdd extends AbstractAddStepHandler {
                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers)
             throws OperationFailedException {
 
-        SecurityManagerLogger.ROOT_LOGGER.activatingSubsystem();
-
         // This needs to run after all child resources so that they can detect a fresh state
         context.addStep(new OperationStepHandler() {
             @Override

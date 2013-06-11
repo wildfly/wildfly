@@ -32,21 +32,20 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimplePersistentResourceDefinition;
 
 /**
  * Defines a resource that represents the security permissions that can be assigned to deployments.
  *
  * @author <a href="sguilhen@jboss.com">Stefan Guilhen</a>
  */
-class DeploymentPermissionsResourceDefinition extends SimplePersistentResourceDefinition {
+class DeploymentPermissionsResourceDefinition extends PersistentResourceDefinition {
 
     static final PathElement DEPLOYMENT_PERMISSIONS_PATH = PathElement.pathElement(
             Constants.DEPLOYMENT_PERMISSIONS, Constants.DEFAULT_VALUE);
 
     static final DeploymentPermissionsResourceDefinition INSTANCE = new DeploymentPermissionsResourceDefinition();
 
-    private static final List<? extends SimplePersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(
+    private static final List<? extends PersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(
             Arrays.asList(new PermissionSetResourceDefinition(Constants.MINIMUM_SET),
                     new PermissionSetResourceDefinition(Constants.MAXIMUM_SET)));
 
@@ -63,10 +62,5 @@ class DeploymentPermissionsResourceDefinition extends SimplePersistentResourceDe
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
         return CHILDREN;
-    }
-
-    @Override
-    public String getXmlElementName() {
-        return Constants.DEPLOYMENT_PERMISSIONS;
     }
 }

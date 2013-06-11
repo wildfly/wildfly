@@ -30,16 +30,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
  */
 public class PersistentResourceXMLDescription {
 
-    private final PersistentResourceDefinition resourceDefinition;
-    private final String xmlElementName;
-    private final String xmlWrapperElement;
-    private final LinkedHashMap<String, AttributeDefinition> attributes;
-    private final List<PersistentResourceXMLDescription> children;
-    private final boolean useValueAsElementName;
-    private final boolean noAddOperation;
-    private final AdditionalOperationsGenerator additionalOperationsGenerator;
+    protected final PersistentResourceDefinition resourceDefinition;
+    protected final String xmlElementName;
+    protected final String xmlWrapperElement;
+    protected final LinkedHashMap<String, AttributeDefinition> attributes;
+    protected final List<PersistentResourceXMLDescription> children;
+    protected final boolean useValueAsElementName;
+    protected final boolean noAddOperation;
+    protected final AdditionalOperationsGenerator additionalOperationsGenerator;
 
-    private PersistentResourceXMLDescription(final PersistentResourceDefinition resourceDefinition, final String xmlElementName, final String xmlWrapperElement, final LinkedHashMap<String, AttributeDefinition> attributes, final List<PersistentResourceXMLDescription> children, final boolean useValueAsElementName, final boolean noAddOperation, final AdditionalOperationsGenerator additionalOperationsGenerator) {
+    protected PersistentResourceXMLDescription(final PersistentResourceDefinition resourceDefinition, final String xmlElementName, final String xmlWrapperElement, final LinkedHashMap<String, AttributeDefinition> attributes, final List<PersistentResourceXMLDescription> children, final boolean useValueAsElementName, final boolean noAddOperation, final AdditionalOperationsGenerator additionalOperationsGenerator) {
         this.resourceDefinition = resourceDefinition;
         this.xmlElementName = xmlElementName;
         this.xmlWrapperElement = xmlWrapperElement;
@@ -225,16 +225,16 @@ public class PersistentResourceXMLDescription {
     public static class PersistentResourceXMLBuilder {
 
 
-        private final PersistentResourceDefinition resourceDefinition;
-        private String xmlElementName;
-        private String xmlWrapperElement;
-        private boolean useValueAsElementName;
-        private boolean noAddOperation;
-        private AdditionalOperationsGenerator additionalOperationsGenerator;
-        private final LinkedHashMap<String, AttributeDefinition> attributes = new LinkedHashMap<>();
-        private final List<PersistentResourceXMLBuilder> children = new ArrayList<>();
+        protected final PersistentResourceDefinition resourceDefinition;
+        protected String xmlElementName;
+        protected String xmlWrapperElement;
+        protected boolean useValueAsElementName;
+        protected boolean noAddOperation;
+        protected AdditionalOperationsGenerator additionalOperationsGenerator;
+        protected final LinkedHashMap<String, AttributeDefinition> attributes = new LinkedHashMap<>();
+        protected final List<PersistentResourceXMLBuilder> children = new ArrayList<>();
 
-        PersistentResourceXMLBuilder(final PersistentResourceDefinition resourceDefinition) {
+        protected PersistentResourceXMLBuilder(final PersistentResourceDefinition resourceDefinition) {
             this.resourceDefinition = resourceDefinition;
             this.xmlElementName = resourceDefinition.getPathElement().isWildcard() ? resourceDefinition.getPathElement().getKey() : resourceDefinition.getPathElement().getValue();
         }
