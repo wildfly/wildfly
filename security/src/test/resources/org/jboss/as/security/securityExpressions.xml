@@ -47,7 +47,7 @@
                   client-alias="${client-alias:client-alias}"
                   server-alias="${server-alias:server-alias}"
                   service-auth-token="${service-auth-token:service-auth-token}"
-                  client-auth="${client-auth:client-auth}"
+                  client-auth="${client-auth:false}"
                   cipher-suites="${cipher-suites:cipher-suites}"
                   protocols="${protocols:protocols}"
                     />
