@@ -243,7 +243,7 @@ public interface WSLogger extends BasicLogger {
     void ignoringPortComponentRef(Object o);
 
     @LogMessage(level = ERROR)
-    @Message(id = 15591, value = "Cannot register record processor from JMX server")
+    @Message(id = 15591, value = "Cannot register record processor in JMX server")
     void cannotRegisterRecordProcessor();
 
     @LogMessage(level = ERROR)
@@ -263,7 +263,7 @@ public interface WSLogger extends BasicLogger {
     void missingChild(String child, VirtualFile file);
 
     @LogMessage(level = ERROR)
-    @Message(id = 15600, value = "Cannot register endpoint: %s from JMX server")
+    @Message(id = 15600, value = "Cannot register endpoint: %s in JMX server")
     void cannotRegisterEndpoint(Object endpoint);
 
     @LogMessage(level = ERROR)
