@@ -23,6 +23,7 @@
 package org.jboss.as.security;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.security.AccessController;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
@@ -56,6 +57,7 @@ import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
 import org.jboss.security.SimpleGroup;
+import org.jboss.security.auth.callback.ObjectCallback;
 import org.jboss.security.auth.spi.UsernamePasswordLoginModule;
 
 import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
@@ -71,6 +73,7 @@ import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_
  */
 public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
 
+    private static final Charset UTF_8 = Charset.forName("UTF-8");
     private static final String DEFAULT_REALM = "ApplicationRealm";
     private static final String REALM_OPTION = "realm";
 
@@ -84,6 +87,7 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
     private ValidationMode validationMode;
     private UsernamePasswordHashUtil hashUtil;
     private AuthorizingCallbackHandler callbackHandler;
+    private DigestCredential digestCredential;
 
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
@@ -131,6 +135,19 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
                 validationMode = ValidationMode.PASSWORD;
             }
         }
+    }
+
+    @Override
+    public boolean login() throws LoginException {
+        if ((digestCredential = getDigestCredential()) != null && validationMode == ValidationMode.VALIDATION) {
+
+            /*
+             * Override the validation mode to digest as this is the only mode compatible if a DigestCredential is supplied.
+             */
+            validationMode = ValidationMode.DIGEST;
+        }
+
+        return super.login();
     }
 
     @Override
@@ -189,6 +206,10 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
 
     @Override
     protected boolean validatePassword(String inputPassword, String expectedPassword) {
+        if (digestCredential != null) {
+            return digestCredential.verifyHA1(expectedPassword.getBytes(UTF_8));
+        }
+
         switch (validationMode) {
             case DIGEST:
                 String inputHashed = hashUtil.generateHashedHexURP(getUsername(), securityRealm.getName(),
@@ -214,6 +235,31 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
         }
     }
 
+    private DigestCredential getDigestCredential() {
+        ObjectCallback oc = new ObjectCallback("Credential:");
+
+        try {
+            super.callbackHandler.handle(new Callback[] { oc });
+        } catch (IOException | UnsupportedCallbackException e) {
+            return null;
+        }
+
+        Object credential = oc.getCredential();
+        if (credential instanceof DigestCredential) {
+            /*
+             * This change is an intermediate change to allow the use of a DigestCredential until we are ready to switch to
+             * JAAS.
+             *
+             * However we only wish to accept trusted implementations so perform this final check.
+             */
+            if (credential.getClass().getName().equals("org.wildfly.extension.undertow.security.DigestCredentialImpl")) {
+                return (DigestCredential) credential;
+            }
+        }
+
+        return null;
+    }
+
     @Override
     protected Group[] getRoleSets() throws LoginException {
         Collection<Principal> principalCol = new HashSet<Principal>();
@@ -236,7 +282,23 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
     }
 
     private enum ValidationMode {
-        DIGEST, PASSWORD, VALIDATION
+        /**
+         * A DigestCallback will be used with the realm to obtain the pre-prepared hash of the username, realm, password
+         * combination.
+         */
+        DIGEST,
+
+        /**
+         * A PasswordCallback will be used with the realm to obtain the users plain text password.
+         */
+
+        PASSWORD,
+
+        /**
+         * The realm being delegated to will be passed a ValidatePasswordCallback to allow the realm to validate the password
+         * directly.
+         */
+        VALIDATION
     }
 
     ;
