@@ -36,6 +36,7 @@ import org.junit.Test;
  * Base cluster test that ensures the custom containers are already running.
  *
  * @author Radoslav Husar
+ * @author <a href="mailto:istudens@redhat.com">Ivo Studensky</a>
  * @version Oct 2012
  */
 public abstract class ClusterAbstractTestCase implements ClusteringTestConstants {
@@ -46,6 +47,11 @@ public abstract class ClusterAbstractTestCase implements ClusteringTestConstants
     protected ContainerController controller;
     @ArquillianResource
     protected Deployer deployer;
+
+    @BeforeClass
+    public static void resetDeployments() {
+        NodeUtil.resetDeployments();
+    }
 
     /**
      * Ensure the containers are running, otherwise start them.
@@ -80,20 +86,16 @@ public abstract class ClusterAbstractTestCase implements ClusteringTestConstants
         NodeUtil.stop(controller, containers);
     }
 
-    protected void deploy(String deployment) {
-        NodeUtil.deploy(deployer, deployment);
+    protected void deploy(String container, String deployment) {
+        NodeUtil.deploy(container, deployer, deployment);
     }
 
-    protected void deploy(String[] deployments) {
-        NodeUtil.deploy(deployer, deployments);
+    protected void undeploy(String container, String deployment) {
+        NodeUtil.undeploy(container, deployer, deployment);
     }
 
-    protected void undeploy(String deployments) {
-        NodeUtil.undeploy(deployer, deployments);
-    }
-
-    protected void undeploy(String[] deployments) {
-        NodeUtil.undeploy(deployer, deployments);
+    protected void cleanDeployments() {
+        NodeUtil.cleanDeployments(controller, deployer);
     }
 
     /**

@@ -114,7 +114,8 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends ClusterAbstract
         super.setUp();
 
         // Also deploy
-        deploy(DEPLOYMENTS);
+        deploy(CONTAINER_1, DEPLOYMENT_1);
+        deploy(CONTAINER_2, DEPLOYMENT_2);
     }
 
     /**
@@ -174,7 +175,7 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends ClusterAbstract
             final String previousInvocationNodeName = result.getNodeName();
             // the value is configured in arquillian.xml of the project
             if (previousInvocationNodeName.equals(NODE_1)) {
-                undeploy(DEPLOYMENT_1);
+                undeploy(CONTAINER_1, DEPLOYMENT_1);
                 if (!undeployOnly) {
                     stop(CONTAINER_1);
                 }
@@ -182,7 +183,7 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends ClusterAbstract
 
                 this.establishView(listener, NODE_2);
             } else {
-                undeploy(DEPLOYMENT_2);
+                undeploy(CONTAINER_2, DEPLOYMENT_2);
                 if (!undeployOnly) {
                     stop(CONTAINER_2);
                 }
@@ -228,23 +229,27 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends ClusterAbstract
             // Restore deployment for undeployment test
             if (container1Stopped) {
                 if (undeployOnly) {
-                    undeploy(DEPLOYMENT_2);
-                    deploy(DEPLOYMENTS); // This test required redeployment :-(
+                    undeploy(CONTAINER_2, DEPLOYMENT_2);
+                    deploy(CONTAINER_1, DEPLOYMENT_1); // This test required redeployment :-(
+                    deploy(CONTAINER_2, DEPLOYMENT_2);
                 } else {
-                    undeploy(DEPLOYMENT_2);
+                    undeploy(CONTAINER_2, DEPLOYMENT_2);
                     start(CONTAINER_1);
-                    deploy(DEPLOYMENTS);
+                    deploy(CONTAINER_1, DEPLOYMENT_1);
+                    deploy(CONTAINER_2, DEPLOYMENT_2);
                 }
             }
 
             if (container2Stopped) {
                 if (undeployOnly) {
-                    undeploy(DEPLOYMENT_1);
-                    deploy(DEPLOYMENTS); // This test required redeployment :-(
+                    undeploy(CONTAINER_1, DEPLOYMENT_1);
+                    deploy(CONTAINER_1, DEPLOYMENT_1); // This test required redeployment :-(
+                    deploy(CONTAINER_2, DEPLOYMENT_2);
                 } else {
-                    undeploy(DEPLOYMENT_1);
+                    undeploy(CONTAINER_1, DEPLOYMENT_1);
                     start(CONTAINER_2);
-                    deploy(DEPLOYMENTS);
+                    deploy(CONTAINER_1, DEPLOYMENT_1);
+                    deploy(CONTAINER_2, DEPLOYMENT_2);
                 }
             }
         }

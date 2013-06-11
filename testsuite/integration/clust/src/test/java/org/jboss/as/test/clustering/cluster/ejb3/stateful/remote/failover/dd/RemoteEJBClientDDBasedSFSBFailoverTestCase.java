@@ -97,7 +97,8 @@ public class RemoteEJBClientDDBasedSFSBFailoverTestCase extends ClusterAbstractT
     @Override
     protected void setUp() {
         super.setUp();
-        deploy(DEPLOYMENTS);
+        deploy(CONTAINER_1, DEPLOYMENT_1);
+        deploy(CONTAINER_2, DEPLOYMENT_2);
     }
 
     /**
@@ -131,11 +132,11 @@ public class RemoteEJBClientDDBasedSFSBFailoverTestCase extends ClusterAbstractT
             final String previousInvocationNodeName = result.getNodeName();
             // the value is configured in arquillian.xml of the project
             if (previousInvocationNodeName.equals(NODE_1)) {
-                undeploy(DEPLOYMENT_1);
+                undeploy(CONTAINER_1, DEPLOYMENT_1);
                 stop(CONTAINER_1);
                 container1Stopped = true;
             } else {
-                undeploy(DEPLOYMENT_2);
+                undeploy(CONTAINER_2, DEPLOYMENT_2);
                 stop(CONTAINER_2);
                 container2Stopped = true;
             }
@@ -165,6 +166,7 @@ public class RemoteEJBClientDDBasedSFSBFailoverTestCase extends ClusterAbstractT
             if (previousSelector != null) {
                 EJBClientContext.setSelector(previousSelector);
             }
+            cleanDeployments();
         }
     }
 }

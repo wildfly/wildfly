@@ -38,7 +38,9 @@ import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.web.ClusteredWebSimpleTestCase;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -57,12 +59,21 @@ public abstract class SessionExpirationTestCase extends ClusterAbstractTestCase 
 
     @Override
     protected void setUp() {
-        super.setUp();
-        deploy(DEPLOYMENTS);
+    }
+
+    @Before
+    public void deployBeforeTestForInjection() {
+        start(CONTAINERS);
+        deploy(CONTAINER_1, DEPLOYMENT_1);
+        deploy(CONTAINER_2, DEPLOYMENT_2);
+    }
+
+    @After
+    public void testCleanup() {
+        cleanDeployments();
     }
 
     @Test
-    @InSequence(1)
     public void test(@ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
                      @ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
                              throws IOException, URISyntaxException, InterruptedException {
@@ -404,11 +415,5 @@ public abstract class SessionExpirationTestCase extends ClusterAbstractTestCase 
         } finally {
             HttpClientUtils.closeQuietly(client);
         }
-    }
-
-    @Test
-    @InSequence(Integer.MAX_VALUE)
-    public void testCleanup() {
-        undeploy(DEPLOYMENTS);
     }
 }

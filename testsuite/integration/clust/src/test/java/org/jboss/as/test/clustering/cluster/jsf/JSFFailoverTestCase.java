@@ -102,7 +102,8 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
     @Override
     protected void setUp() {
         super.setUp();
-        deploy(DEPLOYMENTS);
+        deploy(CONTAINER_1, DEPLOYMENT_1);
+        deploy(CONTAINER_2, DEPLOYMENT_2);
     }
 
     /**
@@ -397,7 +398,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             Assert.assertEquals("9", state.remainingGuesses);
 
             // Gracefully undeploy from the 1st container.
-            undeploy(DEPLOYMENT_1);
+            undeploy(CONTAINER_1, DEPLOYMENT_1);
 
             this.establishView(client, baseURL2, NODE_2);
 
@@ -432,7 +433,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             Assert.assertEquals("98", state.biggest);
 
             // Redeploy
-            deploy(DEPLOYMENT_1);
+            deploy(CONTAINER_1, DEPLOYMENT_1);
 
             this.establishView(client, baseURL2, NODE_1, NODE_2);
 
@@ -473,7 +474,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
     @Test
     @InSequence(3)
     public void testUndeploy() {
-        undeploy(DEPLOYMENTS);
+        cleanDeployments();
     }
 
     /**

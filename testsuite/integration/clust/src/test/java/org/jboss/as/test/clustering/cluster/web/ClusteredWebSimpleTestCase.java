@@ -89,7 +89,8 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
     @Override
     protected void setUp() {
         super.setUp();
-        deploy(DEPLOYMENTS);
+        deploy(CONTAINER_1, DEPLOYMENT_1);
+        deploy(CONTAINER_2, DEPLOYMENT_2);
     }
 
     @Test
@@ -205,7 +206,7 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
 
         if (undeployOnly) {
             // Undeploy the app only.
-            undeploy(DEPLOYMENT_1);
+            undeploy(CONTAINER_1, DEPLOYMENT_1);
         } else {
             // Shutdown server.
             stop(CONTAINER_1);
@@ -234,7 +235,7 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
         // Cleanup after test.
         if (undeployOnly) {
             // Redeploy the app only.
-            deploy(DEPLOYMENT_1);
+            deploy(CONTAINER_1, DEPLOYMENT_1);
         } else {
             // Startup server.
             start(CONTAINER_1);

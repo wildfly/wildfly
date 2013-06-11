@@ -87,12 +87,10 @@ public class StatefulTimeoutTestCase extends ClusterAbstractTestCase {
      * Ensure the containers are running.
      */
     @Override
-    @Test
-    @InSequence(-1)
-    @RunAsClient
-    public void testSetup() {
-        start(CONTAINERS);
-        deploy(DEPLOYMENTS);
+    protected void setUp() {
+        super.setUp();
+        deploy(CONTAINER_1, DEPLOYMENT_1);
+        deploy(CONTAINER_2, DEPLOYMENT_2);
     }
 
     @Test

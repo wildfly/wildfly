@@ -25,27 +25,84 @@ import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.logging.Logger;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Utility class to start and stop containers and/or deployments.
  *
  * @author Radoslav Husar
+ * @author <a href="mailto:istudens@redhat.com">Ivo Studensky</a>
  * @version Oct 2012
  */
 public final class NodeUtil {
 
     private static final Logger log = Logger.getLogger(NodeUtil.class);
 
-    public static void deploy(Deployer deployer, String... deployments) {
-        for (int i = 0; i < deployments.length; i++) {
-            log.info("Deploying deployment=" + deployments[i]);
-            deployer.deploy(deployments[i]);
+    private static Map<String, Set<String>> deployed = new HashMap<String, Set<String>>();
+
+    public static void resetDeployments() {
+        if (!deployed.isEmpty()) {
+            deployed.clear();
         }
     }
 
-    public static void undeploy(Deployer deployer, String... deployments) {
-        for (int i = 0; i < deployments.length; i++) {
-            log.info("Undeploying deployment=" + deployments[i]);
-            deployer.undeploy(deployments[i]);
+    public static void cleanDeployments(ContainerController controller, Deployer deployer) {
+        Map<String, Set<String>> tempDeployed = new HashMap<String, Set<String>>(deployed);
+        for (String container: tempDeployed.keySet()) {
+            try {
+                Set<String> deployments = tempDeployed.get(container);
+                if (deployments == null) {
+                    continue;
+                }
+                boolean started = false;
+                if (!controller.isStarted(container)) {
+                    start(controller, container);
+                    started = true;
+                }
+                Set<String> tempDeployments = new HashSet<String>(deployments);
+                for (String deployment: tempDeployments) {
+                    undeploy(container, deployer, deployment);
+                }
+                if (started) {
+                    stop(controller, container);
+                }
+            } catch (Exception e) {
+                log.error("Failed to undeploy from container(s)", e);
+            }
+        }
+    }
+
+    public static void deploy(String container, Deployer deployer, String deployments) {
+        Set<String> containerDeployments = deployed.get(container);
+        if (containerDeployments == null) {
+            containerDeployments = new HashSet<String>();
+            deployed.put(container, containerDeployments);
+        } else if (containerDeployments.contains(deployments)) {
+            log.info("Already deployed deployment: " + deployments);
+            return;
+        }
+
+        log.info("Deploying deployment=" + deployments);
+        deployer.deploy(deployments);
+
+        // remember this deployment
+        containerDeployments.add(deployments);
+    }
+
+    public static void undeploy(String container, Deployer deployer, String deployments) {
+        log.info("Undeploying deployment=" + deployments);
+        deployer.undeploy(deployments);
+
+        // forget this deployment
+        Set<String> containerDeployments = deployed.get(container);
+        if (containerDeployments != null) {
+            containerDeployments.remove(deployments);
+            if (containerDeployments.isEmpty()) {
+                deployed.remove(container);
+            }
         }
     }
 
@@ -53,7 +110,7 @@ public final class NodeUtil {
         try {
             log.info("Starting deployment=" + deployment + ", container=" + container);
             controller.start(container);
-            deployer.deploy(deployment);
+            deploy(container, deployer, deployment);
             log.info("Started deployment=" + deployment + ", container=" + container);
         } catch (Throwable e) {
             log.error("Failed to start container(s)", e);
@@ -96,7 +153,7 @@ public final class NodeUtil {
     public static void stop(ContainerController controller, Deployer deployer, String container, String deployment) {
         try {
             log.info("Stopping deployment=" + deployment + ", container=" + container);
-            deployer.undeploy(deployment);
+            undeploy(container, deployer, deployment);
             controller.stop(container);
             log.info("Stopped deployment=" + deployment + ", container=" + container);
         } catch (Throwable e) {
@@ -115,4 +172,5 @@ public final class NodeUtil {
 
     private NodeUtil() {
     }
+
 }

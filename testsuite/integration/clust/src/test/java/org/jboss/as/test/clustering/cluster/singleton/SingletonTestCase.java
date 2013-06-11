@@ -50,7 +50,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -81,8 +83,20 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
 
     @Override
     protected void setUp() {
-        super.setUp();
-        deploy(DEPLOYMENTS);
+    }
+
+    @Before
+    public void deployBeforeTestForInjection() {
+        start(CONTAINERS);
+        deploy(CONTAINER_1, DEPLOYMENT_1);
+        deploy(CONTAINER_2, DEPLOYMENT_2);
+    }
+
+    @After
+    public void testCleanup() {
+        cleanDeployments();
+        stop(CONTAINER_1);
+        stop(CONTAINER_2);
     }
 
     @Test
@@ -180,7 +194,7 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            controller.start(CONTAINER_2);
+            start(CONTAINER_2);
 
             this.establishView(client, baseURL1, NODE_1, NODE_2);
 
@@ -237,7 +251,7 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            controller.start(CONTAINER_1);
+            start(CONTAINER_1);
 
             this.establishView(client, baseURL2, NODE_1, NODE_2);
 
@@ -274,11 +288,6 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
             }
         } finally {
             HttpClientUtils.closeQuietly(client);
-
-            deployer.undeploy(DEPLOYMENT_1);
-            controller.stop(CONTAINER_1);
-            deployer.undeploy(DEPLOYMENT_2);
-            controller.stop(CONTAINER_2);
         }
     }
 

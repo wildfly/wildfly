@@ -102,7 +102,10 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
     @Override
     protected void setUp() {
         super.setUp();
-        deploy(XSITE_DEPLOYMENTS);
+        deploy(CONTAINER_1, DEPLOYMENT_1);
+        deploy(CONTAINER_2, DEPLOYMENT_2);
+        deploy(CONTAINER_3, DEPLOYMENT_3);
+        deploy(CONTAINER_4, DEPLOYMENT_4);
     }
 
     /*

@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.naming.NamingException;
 
+import org.jboss.as.test.clustering.NodeUtil;
 import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -164,14 +165,14 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
         if (client1 == null || !client1.isServerInRunningState()) {
             log.info("Starting server: " + CONTAINER_1);
             start(CONTAINER_1);
-            deploy(DEPLOYMENT_HELPER_1);
-            deploy(DEPLOYMENT_1);
+            deploy(CONTAINER_1, DEPLOYMENT_HELPER_1);
+            deploy(CONTAINER_1, DEPLOYMENT_1);
         }
         if (client2 == null || !client2.isServerInRunningState()) {
             log.info("Starting server: " + CONTAINER_2);
             start(CONTAINER_2);
-            deploy(DEPLOYMENT_HELPER_2);
-            deploy(DEPLOYMENT_2);
+            deploy(CONTAINER_2, DEPLOYMENT_HELPER_2);
+            deploy(CONTAINER_2, DEPLOYMENT_2);
         }
     }
 
@@ -192,6 +193,12 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
     }
 
     // TEST METHODS -------------------------------------------------------------
+
+    @Override
+    protected void setUp() {
+        // nothing to start here, servers will be started at #arquillianStartServers()
+    }
+
     @Test
     @InSequence(-2)
     public void arquillianStartServers() {
@@ -282,8 +289,8 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
         waitForClusterContext();
 
         // Stopping node #2
-        deployer.undeploy(node2deployment.get(calledNodeSecond));
-        controller.stop(node2container.get(calledNodeSecond));
+        undeploy(node2container.get(calledNodeSecond), node2deployment.get(calledNodeSecond));
+        stop(node2container.get(calledNodeSecond));
 
         // We killed second node and we check the value on first node
         Assert.assertEquals(++clientNumber, statefulBeanRemote.getNumber()); // 42
@@ -397,7 +404,7 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
 
         // Stopping called node
         unsetPassivationAttributes(node2client.get(calledNodeName).getControllerClient());
-        undeploy(node2deployment.get(calledNodeName));
+        undeploy(node2container.get(calledNodeName), node2deployment.get(calledNodeName));
         stop(node2container.get(calledNodeName));
         log.info("Node " + calledNodeName + " was stopped.");
 
@@ -438,7 +445,6 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
         }
 
         // Undeploy
-        undeploy(DEPLOYMENTS);
-        undeploy(DEPLOYMENT_HELPERS);
+        cleanDeployments();
     }
 }
