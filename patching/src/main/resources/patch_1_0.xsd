@@ -41,6 +41,7 @@
                     <xs:element name="no-upgrade" type="no-upgradeType" maxOccurs="1"/>
                 </xs:choice>
                 <xs:element name="element" type="elementType" minOccurs="1" maxOccurs="unbounded"/>
+                <xs:element name="misc-files" type="misc-filesType" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
             <xs:attribute name="id" type="xs:string" use="required">
                 <xs:annotation>
@@ -147,7 +148,6 @@
             </xs:choice>
             <xs:element name="modules" type="modulesType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="bundles" type="bundlesType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="misc-files" type="misc-filesType" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
         <xs:attribute name="id" type="xs:string" use="required">
             <xs:annotation>
