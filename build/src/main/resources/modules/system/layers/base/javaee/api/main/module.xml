@@ -32,6 +32,7 @@
         <module name="javax.annotation.api" export="true"/>
         <module name="javax.ejb.api" export="true"/>
         <module name="javax.enterprise.api" export="true"/>
+        <module name="javax.enterprise.concurrent.api" export="true"/>
         <module name="javax.inject.api" export="true"/>
         <module name="javax.interceptor.api" export="true"/>
         <module name="javax.json.api" export="true"/>
