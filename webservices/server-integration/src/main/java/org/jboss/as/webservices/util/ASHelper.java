@@ -287,10 +287,10 @@ public final class ASHelper {
     }
 
     public static WSRefRegistry getWSRefRegistry(final DeploymentUnit unit) {
-        WSRefRegistry refRegistry = unit.getAttachment(WSAttachmentKeys.WS_REFERENCES);
+        WSRefRegistry refRegistry = unit.getAttachment(WSAttachmentKeys.WS_REFREGISTRY);
         if (refRegistry == null) {
             refRegistry = refRegistry.newInstance();
-            unit.putAttachment(WSAttachmentKeys.WS_REFERENCES, refRegistry);
+            unit.putAttachment(WSAttachmentKeys.WS_REFREGISTRY, refRegistry);
         }
         return refRegistry;
     }

@@ -48,7 +48,7 @@ public final class WSAttachmentKeys {
     public static final AttachmentKey<JBossWebservicesMetaData> JBOSS_WEBSERVICES_METADATA_KEY = AttachmentKey.create(JBossWebservicesMetaData.class);
     public static final AttachmentKey<JBossWebMetaData> JBOSSWEB_METADATA_KEY = AttachmentKey.create(JBossWebMetaData.class);
     public static final AttachmentKey<ClassLoader> CLASSLOADER_KEY = AttachmentKey.create(ClassLoader.class);
-    public static final AttachmentKey<WSRefRegistry> WS_REFERENCES = AttachmentKey.create(WSRefRegistry.class);
+    public static final AttachmentKey<WSRefRegistry> WS_REFREGISTRY = AttachmentKey.create(WSRefRegistry.class);
     public static final AttachmentKey<WSEndpointHandlersMapping> WS_ENDPOINT_HANDLERS_MAPPING_KEY = AttachmentKey.create(WSEndpointHandlersMapping.class);
 
     private WSAttachmentKeys() {
