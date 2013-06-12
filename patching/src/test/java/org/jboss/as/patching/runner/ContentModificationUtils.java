@@ -105,8 +105,8 @@ public class ContentModificationUtils {
         return moduleUpdated;
     }
 
-    public static ContentModification addMisc(File patchDir, String content, String... fileSegments) throws Exception {
-        File miscDir = newFile(patchDir, MISC);
+    public static ContentModification addMisc(File patchDir, String patchElementID, String content, String... fileSegments) throws Exception {
+        File miscDir = newFile(patchDir, patchElementID, MISC);
         File addedFile = touch(miscDir, fileSegments);
         dump(addedFile, content);
         byte[] newHash = hashFile(addedFile);
@@ -127,8 +127,8 @@ public class ContentModificationUtils {
         return fileRemoved;
     }
 
-    public static ContentModification modifyMisc(File patchDir, String modifiedContent, File existingFile, String... fileSegments) throws Exception {
-        File miscDir = newFile(patchDir, MISC);
+    public static ContentModification modifyMisc(File patchDir, String patchElementID, String modifiedContent, File existingFile, String... fileSegments) throws Exception {
+        File miscDir = newFile(patchDir, patchElementID, MISC);
         File modifiedFile = touch(miscDir, fileSegments);
         dump(modifiedFile, modifiedContent);
         byte[] existingHash = hashFile(existingFile);

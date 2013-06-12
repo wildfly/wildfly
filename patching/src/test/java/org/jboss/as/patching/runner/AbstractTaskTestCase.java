@@ -30,18 +30,16 @@ import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
-import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.installation.InstallationManager;
+import org.jboss.as.patching.installation.InstallationManagerImpl;
 import org.jboss.as.patching.installation.InstalledIdentity;
-import org.jboss.as.patching.installation.InstalledImage;
+import org.jboss.as.patching.tool.PatchTool;
 import org.jboss.as.version.ProductConfig;
 import org.junit.After;
 import org.junit.Before;
@@ -80,11 +78,15 @@ public abstract class AbstractTaskTestCase {
         return installedIdentity;
     }
 
+    protected PatchTool newPatchTool() throws IOException {
+        final InstalledIdentity installedIdentity = loadInstalledIdentity();
+        final InstallationManager manager = new InstallationManagerImpl(installedIdentity);
+        return PatchTool.Factory.create(manager);
+    }
+
     protected PatchingResult executePatch(final File file) throws IOException, PatchingException {
-        InstalledImage installedImage = env.getInstalledImage();
-        InstalledIdentity installedIdentity = loadInstalledIdentity();
-        LegacyPatchRunner runner = new LegacyPatchRunner(installedImage, installedIdentity);
-        final PatchingResult result = runner.executeDirect(new FileInputStream(file), ContentVerificationPolicy.STRICT);
+        final PatchTool tool = newPatchTool();
+        final PatchingResult result = tool.applyPatch(file, ContentVerificationPolicy.STRICT);
         result.commit();
         return result;
     }
@@ -94,10 +96,8 @@ public abstract class AbstractTaskTestCase {
     }
 
     protected PatchingResult rollback(String patchId, final boolean rollbackTo) throws IOException, PatchingException {
-        InstalledImage installedImage = env.getInstalledImage();
-        InstalledIdentity installedIdentity = loadInstalledIdentity();
-        LegacyPatchRunner runner = new LegacyPatchRunner(installedImage, installedIdentity);
-        final PatchingResult result = runner.rollback(patchId, ContentVerificationPolicy.STRICT, rollbackTo, true);
+        final PatchTool tool = newPatchTool();
+        final PatchingResult result = tool.rollback(patchId, ContentVerificationPolicy.STRICT, rollbackTo, true);
         result.commit();
         return result;
     }

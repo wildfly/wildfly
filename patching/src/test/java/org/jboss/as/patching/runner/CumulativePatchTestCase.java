@@ -125,7 +125,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         String moduleName = randomString();
 
         ContentModification moduleAdded = ContentModificationUtils.addModule(patchDir, layerPatchID, moduleName);
-        ContentModification fileModified = ContentModificationUtils.modifyMisc(patchDir, "updated script", standaloneShellFile, "bin", "standalone.sh");
+        ContentModification fileModified = ContentModificationUtils.modifyMisc(patchDir, patchID, "updated script", standaloneShellFile, "bin", "standalone.sh");
 
         InstalledIdentity installedIdentity = loadInstalledIdentity();
 

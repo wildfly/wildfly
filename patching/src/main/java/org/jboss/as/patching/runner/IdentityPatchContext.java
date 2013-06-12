@@ -1,10 +1,5 @@
 package org.jboss.as.patching.runner;
 
-import static org.jboss.as.patching.Constants.BUNDLES;
-import static org.jboss.as.patching.Constants.MISC;
-import static org.jboss.as.patching.Constants.MODULES;
-import static org.jboss.as.patching.IoUtils.newFile;
-
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.FileFilter;
@@ -134,20 +129,6 @@ class IdentityPatchContext implements PatchContentProvider {
         if (entry == null) {
             throw new PatchingException("failed to resolve target for " + element);
         }
-
-        String elementId = element.getId();
-        // there is no content provider when a patch is rolled back
-        if (contentProvider != null) {
-            try {
-                File miscRoot = newFile(getPatchContentRootDir(), elementId, MISC);
-                File moduleRoot = newFile(getPatchContentRootDir(), elementId, MODULES);
-                File bundleRoot = newFile(getPatchContentRootDir(), elementId, BUNDLES);
-                contentLoaders.put(element.getId(), new PatchContentLoader(miscRoot, bundleRoot, moduleRoot));
-            } catch (Exception e) {
-                throw new PatchingException("failed to resolve content for " + element);
-            }
-        }
-
         return entry;
     }
 
