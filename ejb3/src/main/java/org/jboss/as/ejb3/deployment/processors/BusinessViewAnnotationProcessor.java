@@ -22,9 +22,6 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
-import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
-
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,13 +38,18 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.metadata.ejb.spec.EjbJarMetaData;
+import org.jboss.metadata.ejb.spec.EjbJarVersion;
 import org.jboss.modules.Module;
 
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
 
 /**
  * Processes {@link Local @Local} and {@link @Remote} annotation of a session bean and sets up the {@link SessionBeanComponentDescription}
@@ -85,7 +87,7 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
                     continue;
                 }
                 final Class<?> ejbClass = this.getEjbClass(componentDescription.getComponentClassName(), moduleClassLoader);
-                this.processViewAnnotations(ejbClass, (SessionBeanComponentDescription) componentDescription);
+                this.processViewAnnotations(deploymentUnit, ejbClass, (SessionBeanComponentDescription) componentDescription);
             }
         }
         if (appclient) {
@@ -94,7 +96,7 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
                     continue;
                 }
                 final Class<?> ejbClass = this.getEjbClass(componentDescription.getComponentClassName(), moduleClassLoader);
-                this.processViewAnnotations(ejbClass, (SessionBeanComponentDescription) componentDescription);
+                this.processViewAnnotations(deploymentUnit, ejbClass, (SessionBeanComponentDescription) componentDescription);
             }
         }
     }
@@ -103,20 +105,21 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
      * Processes the session bean for remote and local views and updates the {@link SessionBeanComponentDescription}
      * accordingly
      *
+     * @param deploymentUnit The deployment unit
      * @param sessionBeanClass The bean class
      * @param sessionBeanComponentDescription
      *                         The component description
      * @throws DeploymentUnitProcessingException
      *
      */
-    private void processViewAnnotations(Class<?> sessionBeanClass, final SessionBeanComponentDescription sessionBeanComponentDescription) throws DeploymentUnitProcessingException {
-        final Collection<Class<?>> remoteBusinessInterfaces = this.getRemoteBusinessInterfaces(sessionBeanClass);
+    private void processViewAnnotations(final DeploymentUnit deploymentUnit, final Class<?> sessionBeanClass, final SessionBeanComponentDescription sessionBeanComponentDescription) throws DeploymentUnitProcessingException {
+        final Collection<Class<?>> remoteBusinessInterfaces = this.getRemoteBusinessInterfaces(deploymentUnit, sessionBeanClass);
         if (remoteBusinessInterfaces != null && !remoteBusinessInterfaces.isEmpty()) {
             sessionBeanComponentDescription.addRemoteBusinessInterfaceViews(this.toString(remoteBusinessInterfaces));
         }
 
         // fetch the local business interfaces of the bean
-        Collection<Class<?>> localBusinessInterfaces = this.getLocalBusinessInterfaces(sessionBeanClass);
+        Collection<Class<?>> localBusinessInterfaces = this.getLocalBusinessInterfaces(deploymentUnit, sessionBeanClass);
         if (localBusinessInterfaces != null && !localBusinessInterfaces.isEmpty()) {
             sessionBeanComponentDescription.addLocalBusinessInterfaceViews(this.toString(localBusinessInterfaces));
         }
@@ -132,11 +135,16 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
                 sessionBeanComponentDescription.addNoInterfaceView();
             } else if (potentialBusinessInterfaces.size() == 1) {
                 sessionBeanComponentDescription.addLocalBusinessInterfaceViews(potentialBusinessInterfaces.iterator().next().getName());
+            } else if (isEjbVersionGreaterThanOrEqualTo32(deploymentUnit)) {
+                // EJB 3.2 spec states (section 4.9.7):
+                // ... or if the bean class is annotated with neither the Local nor the Remote annotation, all implemented interfaces (excluding the interfaces listed above)
+                // are assumed to be local business interfaces of the bean
+                sessionBeanComponentDescription.addLocalBusinessInterfaceViews(toString(potentialBusinessInterfaces));
             }
         }
     }
 
-    private Collection<Class<?>> getRemoteBusinessInterfaces(Class<?> sessionBeanClass) throws DeploymentUnitProcessingException {
+    private Collection<Class<?>> getRemoteBusinessInterfaces(final DeploymentUnit deploymentUnit, final Class<?> sessionBeanClass) throws DeploymentUnitProcessingException {
         final Remote remoteViewAnnotation = sessionBeanClass.getAnnotation(Remote.class);
         if (remoteViewAnnotation == null) {
             Collection<Class<?>> interfaces = getBusinessInterfacesFromInterfaceAnnotations(sessionBeanClass, Remote.class);
@@ -148,14 +156,17 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
         Class<?>[] remoteViews = remoteViewAnnotation.value();
         if (remoteViews == null || remoteViews.length == 0) {
             Set<Class<?>> interfaces = getPotentialBusinessInterfaces(sessionBeanClass);
-            if (interfaces.size() != 1)
+            // For version < 3.2, the EJB spec didn't allow more than one implementing interfaces to be considered as remote when the bean class had the @Remote annotation without any explicit value.
+            // EJB 3.2 allows it (core spec, section 4.9.7)
+            if (interfaces.size() != 1 && !isEjbVersionGreaterThanOrEqualTo32(deploymentUnit)) {
                 throw MESSAGES.beanWithRemoteAnnotationImplementsMoreThanOneInterface(sessionBeanClass);
+            }
             return interfaces;
         }
         return Arrays.asList(remoteViews);
     }
 
-    private Collection<Class<?>> getLocalBusinessInterfaces(Class<?> sessionBeanClass) throws DeploymentUnitProcessingException {
+    private Collection<Class<?>> getLocalBusinessInterfaces(final DeploymentUnit deploymentUnit, final Class<?> sessionBeanClass) throws DeploymentUnitProcessingException {
         final Local localViewAnnotation = sessionBeanClass.getAnnotation(Local.class);
         if (localViewAnnotation == null) {
             Collection<Class<?>> interfaces = getBusinessInterfacesFromInterfaceAnnotations(sessionBeanClass, Local.class);
@@ -167,8 +178,11 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
         Class<?>[] localViews = localViewAnnotation.value();
         if (localViews == null || localViews.length == 0) {
             Set<Class<?>> interfaces = getPotentialBusinessInterfaces(sessionBeanClass);
-            if (interfaces.size() != 1)
+            // For version < 3.2, the EJB spec didn't allow more than one implementing interfaces to be considered as local when the bean class had the @Local annotation without any explicit value.
+            // EJB 3.2 allows it (core spec, section 4.9.7)
+            if (interfaces.size() != 1 && !isEjbVersionGreaterThanOrEqualTo32(deploymentUnit)) {
                 throw MESSAGES.beanWithLocalAnnotationImplementsMoreThanOneInterface(sessionBeanClass);
+            }
             return interfaces;
         }
         return Arrays.asList(localViews);
@@ -224,6 +238,20 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
             classNames.add(klass.getName());
         }
         return classNames;
+    }
+
+    private boolean isEjbVersionGreaterThanOrEqualTo32(final DeploymentUnit deploymentUnit) {
+        if (deploymentUnit == null) {
+            return false;
+        }
+        final EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
+        // if there's no EjbJarMetadata then it means that there's no ejb-jar.xml. That effectively means that the version of this EJB deployment is the "latest"
+        // which in this case (i.e. starting WildFly 8 version) is "greater than or equal to 3.2". Hence return true.
+        if (ejbJarMetaData == null) {
+            return true;
+        }
+        // let the ejb jar metadata tell us what the version is
+        return ejbJarMetaData.isVersionGreaterThanOrEqual(EjbJarVersion.EJB_3_2);
     }
 
     @Override
