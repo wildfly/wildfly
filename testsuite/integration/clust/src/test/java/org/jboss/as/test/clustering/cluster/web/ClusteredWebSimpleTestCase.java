@@ -21,9 +21,11 @@
  */
 package org.jboss.as.test.clustering.cluster.web;
 
+import static org.jboss.as.test.clustering.ClusterTestUtil.waitForReplication;
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.net.URL;
-import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -33,12 +35,13 @@ import java.util.concurrent.Future;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
+import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -46,25 +49,17 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.single.web.SimpleSecuredServlet;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.test.clustering.ClusterTestUtil.waitForReplication;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENTS;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.GRACE_TIME_TO_REPLICATE;
 
 /**
  * Validate the <distributable/> works for a two-node cluster.
@@ -92,7 +87,7 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
 
     private static Archive<?> getDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
-        war.addClass(SimpleServlet.class);
+        war.addClasses(SimpleServlet.class, SimpleSecuredServlet.class);
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
         log.info(war.toString(true));
         return war;
@@ -106,21 +101,22 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
 
     @Test
     @OperateOnDeployment(DEPLOYMENT_1)
-    public void testSerialized(@ArquillianResource(SimpleServlet.class) URL baseURL) throws ClientProtocolException, IOException {
+    public void testSerialized(@ArquillianResource(SimpleServlet.class) URL baseURL) throws ClientProtocolException,
+            IOException {
         DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
 
         // returns the URL of the deployment (http://127.0.0.1:8180/distributable)
-        String url = baseURL.toString();
+        final String url = baseURL.toString() + SimpleServlet.URL;
         log.info("URL = " + url);
 
         try {
-            HttpResponse response = client.execute(new HttpGet(url + "simple"));
+            HttpResponse response = client.execute(new HttpGet(url));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
             Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
             response.getEntity().getContent().close();
 
-            response = client.execute(new HttpGet(url + "simple"));
+            response = client.execute(new HttpGet(url));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
             // This won't be true unless we have somewhere to which to replicate
@@ -132,15 +128,16 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
     }
 
     @Test
-    @OperateOnDeployment(DEPLOYMENT_2) // For change, operate on the 2nd deployment first
+    @OperateOnDeployment(DEPLOYMENT_2)
+    // For change, operate on the 2nd deployment first
     public void testSessionReplication(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IllegalStateException, IOException, InterruptedException {
         DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
 
-        String url1 = baseURL1.toString() + "simple";
-        String url2 = baseURL2.toString() + "simple";
+        String url1 = baseURL1.toString() + SimpleServlet.URL;
+        String url2 = baseURL2.toString() + SimpleServlet.URL;
 
         try {
             HttpResponse response = client.execute(new HttpGet(url1));
@@ -177,9 +174,56 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
     }
 
     /**
+     * Test if the authentication status is successfully propagated between cluster nodes.
+     *
+     * @param baseURL1
+     * @param baseURL2
+     * @throws IOException when an HTTP client problem occurs
+     */
+    @Test
+    @OperateOnDeployment(DEPLOYMENT_1)
+    @Ignore("bz-973610 Clustered authentication doesn't work")
+    public void testAuthnPropagation(
+            @ArquillianResource(SimpleSecuredServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+            @ArquillianResource(SimpleSecuredServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws IOException {
+        DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
+
+        final String servletPath = SimpleSecuredServlet.SERVLET_PATH.substring(1); // remove the leading slash
+
+        try {
+            // make request to a protected resource without authentication
+            final HttpGet httpGet1 = new HttpGet(baseURL1.toString() + servletPath);
+            HttpResponse response = client.execute(httpGet1);
+            int statusCode = response.getStatusLine().getStatusCode();
+            assertEquals("Unexpected HTTP response status code.", HttpServletResponse.SC_UNAUTHORIZED, statusCode);
+            EntityUtils.consume(response.getEntity());
+
+            // set credentials and retry the request
+            final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials("user1", "password1");
+            client.getCredentialsProvider().setCredentials(new AuthScope(baseURL1.getHost(), baseURL1.getPort()), credentials);
+            response = client.execute(httpGet1);
+            statusCode = response.getStatusLine().getStatusCode();
+            assertEquals("Unexpected HTTP response status code.", HttpServletResponse.SC_OK, statusCode);
+            EntityUtils.consume(response.getEntity());
+
+            waitForReplication(GRACE_TIME_TO_REPLICATE);
+
+            // check on the 2nd server
+            final HttpGet httpGet2 = new HttpGet(baseURL2.toString() + servletPath);
+            response = client.execute(httpGet2);
+            Assert.assertEquals("Unexpected HTTP response status code.", HttpServletResponse.SC_OK, response.getStatusLine()
+                    .getStatusCode());
+            EntityUtils.consume(response.getEntity());
+        } finally {
+            client.getConnectionManager().shutdown();
+        }
+    }
+
+    /**
      * Test that a session is gracefully served when a clustered application is undeployed.
      */
     @Test
+    @InSequence(5)
     public void testGracefulServeOnUndeploy(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
             throws IllegalStateException, IOException, InterruptedException, Exception {
@@ -190,17 +234,18 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
      * Test that a session is gracefully served when clustered AS instanced is shutdown.
      */
     @Test
+    @InSequence(10)
     public void testGracefulServeOnShutdown(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
             throws IllegalStateException, IOException, InterruptedException, Exception {
         this.abstractGracefulServe(baseURL1, false);
     }
 
-    private void abstractGracefulServe(URL baseURL1, boolean undeployOnly)
-            throws IllegalStateException, IOException, InterruptedException, Exception {
+    private void abstractGracefulServe(URL baseURL1, boolean undeployOnly) throws IllegalStateException, IOException,
+            InterruptedException, Exception {
 
         final DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
-        String url1 = baseURL1.toString() + "simple";
+        String url1 = baseURL1.toString() + SimpleServlet.URL;
 
         // Make sure a normal request will succeed
         HttpResponse response = client.execute(new HttpGet(url1));
