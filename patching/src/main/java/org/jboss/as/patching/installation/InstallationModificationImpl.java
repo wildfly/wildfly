@@ -38,7 +38,14 @@ abstract class InstallationModificationImpl extends MutableTargetImpl implements
         return version;
     }
 
+    boolean setDone() {
+        return done.compareAndSet(false, true);
+    }
+
     InstallationState internalComplete() throws Exception {
+        if (!setDone()) {
+            throw new IllegalStateException();
+        }
         try {
             installationState.persist();
         } catch (Exception e) {
@@ -106,6 +113,5 @@ abstract class InstallationModificationImpl extends MutableTargetImpl implements
         }
 
     }
-
 
 }

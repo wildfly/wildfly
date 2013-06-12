@@ -23,9 +23,6 @@
 package org.jboss.as.patching.management;
 
 
-import java.util.Collection;
-import java.util.List;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -55,7 +52,7 @@ abstract class ElementProviderAttributeReadHandler implements OperationStepHandl
 
         final ServiceController<?> mgrService = context.getServiceRegistry(false).getRequiredService(InstallationManagerService.NAME);
         final InstallationManager mgr = (InstallationManager) mgrService.getValue();
-        PatchableTarget target = getProvider(name, mgr.getInstalledIdentity());
+        PatchableTarget target = getProvider(name, mgr);
         final ModelNode result = context.getResult();
         handle(result, target);
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
@@ -72,17 +69,7 @@ abstract class ElementProviderAttributeReadHandler implements OperationStepHandl
 
         @Override
         protected PatchableTarget getProvider(final String name, final InstalledIdentity identity) throws OperationFailedException {
-            final Collection<AddOn> addons = identity.getAddOns();
-            if (addons == null) {
-                throw new OperationFailedException("no layers for " + name);
-            }
-            AddOn target = null;
-            for (AddOn addon : addons) {
-                if (addon.getName().equals(name)) {
-                    target = addon;
-                    break;
-                }
-            }
+            final AddOn target = identity.getAddOn(name);
             if (target == null) {
                 throw new OperationFailedException("Target add-on not found: " + name);
             }
@@ -97,17 +84,7 @@ abstract class ElementProviderAttributeReadHandler implements OperationStepHandl
 
         @Override
         protected Layer getProvider(final String name, final InstalledIdentity identity) throws OperationFailedException {
-            final List<Layer> layers = identity.getLayers();
-            if (layers == null) {
-                throw new OperationFailedException("no layers for " + name);
-            }
-            Layer target = null;
-            for (Layer layer : layers) {
-                if (layer.getName().equals(name)) {
-                    target = layer;
-                    break;
-                }
-            }
+            final Layer target = identity.getLayer(name);
             if (target == null) {
                 throw new OperationFailedException("Target layer not found: " + name);
             }

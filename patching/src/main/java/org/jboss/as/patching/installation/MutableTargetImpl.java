@@ -23,6 +23,7 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
     private final Properties properties;
     private String cumulative;
 
+    private boolean modified = false;
 
     MutableTargetImpl(PatchableTarget.TargetInfo current) {
         this.current = current;
@@ -39,6 +40,7 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
                 throw new IllegalStateException("cannot rollback not-applied patch " + patchId);
             }
         }
+        modified = true;
     }
 
     @Override
@@ -51,6 +53,7 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
         } else {
             patchIds.add(0, patchId);
         }
+        modified = true;
     }
 
     @Override
@@ -74,13 +77,17 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
     }
 
     protected void persist() throws IOException {
-        // persist the state for bundles and modules directory
-        persist(cumulative, patchIds);
+        if (modified) {
+            // persist the state for bundles and modules directory
+            persist(cumulative, patchIds);
+        }
     }
 
     protected void restore() throws IOException {
-        // persist the state for bundles and modules directory
-        persist(current.getCumulativeID(), current.getPatchIDs());
+        if (modified) {
+            // persist the state for bundles and modules directory
+            persist(current.getCumulativeID(), current.getPatchIDs());
+        }
     }
 
     private void persist(final String cumulative, final List<String> patches) throws IOException {
@@ -97,27 +104,11 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
 
     @Override
     public PatchableTarget.TargetInfo getModifiedState() {
-        return new PatchableTarget.TargetInfo() {
-            @Override
-            public String getCumulativeID() {
-                return cumulative;
-            }
-
-            @Override
-            public List<String> getPatchIDs() {
-                return patchIds;
-            }
-
-            @Override
-            public DirectoryStructure getDirectoryStructure() {
-                return structure;
-            }
-
-            @Override
-            public Properties getProperties() {
-                return properties;
-            }
-        };
+        if (modified) {
+            return new LayerInfo.TargetInfoImpl(properties, cumulative, patchIds, structure);
+        } else {
+            return current;
+        }
     }
 
 }

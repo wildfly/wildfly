@@ -167,7 +167,12 @@ public class PatchToolImpl implements PatchTool {
                                    final boolean rollbackTo, final boolean restoreConfiguration) throws PatchingException {
         // Rollback the patch
         final InstallationManager.InstallationModification modification = manager.modifyInstallation(runner);
-        return runner.rollbackPatch(patchId, contentPolicy, rollbackTo, restoreConfiguration, modification);
+        try {
+            return runner.rollbackPatch(patchId, contentPolicy, rollbackTo, restoreConfiguration, modification);
+        } catch (Exception e) {
+            modification.cancel();
+            throw rethrowException(e);
+        }
     }
 
     protected PatchingResult execute(final File workDir, final ContentVerificationPolicy contentPolicy) throws PatchingException, IOException, XMLStreamException {
@@ -183,10 +188,22 @@ public class PatchToolImpl implements PatchTool {
         } finally {
             safeClose(patchIS);
         }
-
         // Apply the patch
         final InstallationManager.InstallationModification modification = manager.modifyInstallation(runner);
-        return runner.applyPatch(patch, contentProvider, contentPolicy, modification);
+        try {
+            return runner.applyPatch(patch, contentProvider, contentPolicy, modification);
+        } catch (Exception e) {
+            modification.cancel();
+            throw rethrowException(e);
+        }
+    }
+
+    static PatchingException rethrowException(final Exception e) {
+        if (e instanceof PatchingException) {
+            return (PatchingException) e;
+        } else {
+            return new PatchingException(e);
+        }
     }
 
 }

@@ -131,7 +131,7 @@ public class PatchResource extends AbstractModelResource {
         @Override
         public Set<String> children() {
             final InstallationManager manager = imController.getValue();
-            final Collection<? extends PatchableTarget> targets = getChildTargets(manager.getInstalledIdentity());
+            final Collection<? extends PatchableTarget> targets = getChildTargets(manager);
             if (targets.isEmpty()) {
                 return Collections.emptySet();
             }
