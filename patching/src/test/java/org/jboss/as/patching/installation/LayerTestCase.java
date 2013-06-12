@@ -123,7 +123,7 @@ public class LayerTestCase extends AbstractTaskTestCase {
         String layerPatchId = "mylayerPatchID";//randomString();
         String moduleName = randomString();
         ContentModification moduleAdded = ContentModificationUtils.addModule(patchDir, layerPatchId, moduleName);
-        ContentModification fileAdded = ContentModificationUtils.addMisc(patchDir, "new file resource", "bin", "my-new-standalone.sh");
+        ContentModification fileAdded = ContentModificationUtils.addMisc(patchDir, patchID, "new file resource", "bin", "my-new-standalone.sh");
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
@@ -178,7 +178,7 @@ public class LayerTestCase extends AbstractTaskTestCase {
         String layerPatchId = "mylayerPatchID";//randomString();
         String moduleName = randomString();
         ContentModification moduleAdded = ContentModificationUtils.addModule(patchDir, layerPatchId, moduleName);
-        ContentModification fileAdded = ContentModificationUtils.addMisc(patchDir, "new file resource", "bin", "my-new-standalone.sh");
+        ContentModification fileAdded = ContentModificationUtils.addMisc(patchDir, patchID, "new file resource", "bin", "my-new-standalone.sh");
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
