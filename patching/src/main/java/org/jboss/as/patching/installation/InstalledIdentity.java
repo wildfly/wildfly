@@ -47,11 +47,41 @@ public abstract class InstalledIdentity {
     public abstract Identity getIdentity();
 
     /**
+     * Get a list of available layer names.
+     *
+     * @return the available layers
+     */
+    public abstract List<String> getLayerNames();
+
+    /**
+     * Get a layer by name.
+     *
+     * @param layerName the layer name
+     * @return the layer, {@code null} if there is no matching layer
+     */
+    public abstract Layer getLayer(String layerName);
+
+    /**
      * Get a list of installed layers.
      *
      * @return the installed layers
      */
     public abstract List<Layer> getLayers();
+
+    /**
+     * Get a list of available add-on names.
+     *
+     * @return the available add-ons
+     */
+    public abstract Collection<String> getAddOnNames();
+
+    /**
+     * Get an add-on by name.
+     *
+     * @param addOnName the add-on name
+     * @return the add-on, {@code null} if is no matching add-on
+     */
+    public abstract AddOn getAddOn(String addOnName);
 
     /**
      * Get a list of installed add-ons.

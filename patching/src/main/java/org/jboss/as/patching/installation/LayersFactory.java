@@ -27,14 +27,13 @@ import static org.jboss.as.patching.Constants.LAYERS;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.version.ProductConfig;
 
 /**
@@ -57,7 +56,7 @@ class LayersFactory {
         // build the identity information
         final String productVersion = productConfig.resolveVersion();
         final String productName = productConfig.getProductName();
-        final Identity identity = new AbstractIdentity() {
+        final Identity identity = new AbstractLazyIdentity() {
             @Override
             public String getName() {
                 return productName;
@@ -82,33 +81,17 @@ class LayersFactory {
 
         // Step 3 - create the actual config objects
         // Process layers
-        final List<Layer> layers = new ArrayList<Layer>();
+        final InstalledIdentityImpl installedIdentity = new InstalledIdentityImpl(identity);
         for (final LayerPathConfig layer : processedLayers.getLayers().values()) {
             final String name = layer.name;
-            layers.add(createPatchableTarget(name, layer, config.getLayerMetadataDir(name), image));
+            installedIdentity.putLayer(name, createPatchableTarget(name, layer, config.getLayerMetadataDir(name), image));
         }
         // Process add-ons
-        final Collection<AddOn> addOns = new ArrayList<AddOn>();
         for (final LayerPathConfig addOn : processedLayers.getAddOns().values()) {
             final String name = addOn.name;
-            addOns.add(createPatchableTarget(name, addOn, config.getAddOnMetadataDir(name), image));
+            installedIdentity.putAddOn(name, createPatchableTarget(name, addOn, config.getAddOnMetadataDir(name), image));
         }
-        return new InstalledIdentity() {
-            @Override
-            public Collection<AddOn> getAddOns() {
-                return addOns;
-            }
-
-            @Override
-            public List<Layer> getLayers() {
-                return layers;
-            }
-
-            @Override
-            public Identity getIdentity() {
-                return identity;
-            }
-        };
+        return installedIdentity;
     }
 
     /**
@@ -212,9 +195,9 @@ class LayersFactory {
      * @return the patchable target
      * @throws IOException
      */
-    static AbstractPatchableTarget createPatchableTarget(final String name, final LayerPathConfig layer, final File metadata, final InstalledImage image) throws IOException {
+    static AbstractLazyPatchableTarget createPatchableTarget(final String name, final LayerPathConfig layer, final File metadata, final InstalledImage image) throws IOException {
         // patchable target
-        return new AbstractPatchableTarget() {
+        return new AbstractLazyPatchableTarget() {
 
             @Override
             public InstalledImage getInstalledImage() {
@@ -374,4 +357,37 @@ class LayersFactory {
         return new IllegalStateException(String.format(message, params));
     }
 
+    /**
+     * @author Emanuel Muckenhuber
+     */
+    abstract static class AbstractLazyPatchableTarget extends LayerDirectoryStructure implements Layer, AddOn {
+
+        @Override
+        public DirectoryStructure getDirectoryStructure() {
+            return this;
+        }
+
+        @Override
+        public TargetInfo loadTargetInfo() throws IOException {
+            return LayerInfo.loadTargetInfoFromDisk(getDirectoryStructure());
+        }
+
+    }
+
+    /**
+     * @author Emanuel Muckenhuber
+     */
+    abstract static class AbstractLazyIdentity extends LayerDirectoryStructure.IdentityDirectoryStructure implements Identity {
+
+        @Override
+        public DirectoryStructure getDirectoryStructure() {
+            return this;
+        }
+
+        @Override
+        public TargetInfo loadTargetInfo() throws IOException {
+            return LayerInfo.loadTargetInfoFromDisk(getDirectoryStructure());
+        }
+
+    }
 }

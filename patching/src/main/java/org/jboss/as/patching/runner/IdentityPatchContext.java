@@ -14,11 +14,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstalledImage;
@@ -59,6 +61,18 @@ class IdentityPatchContext implements PatchContentProvider {
     private final Map<String, PatchEntry> layers = new LinkedHashMap<String, PatchEntry>();
     private final Map<String, PatchEntry> addOns = new LinkedHashMap<String, PatchEntry>();
 
+    private volatile State state = State.NEW;
+    private static final AtomicReferenceFieldUpdater<IdentityPatchContext, State> stateUpdater = AtomicReferenceFieldUpdater.newUpdater(IdentityPatchContext.class, State.class, "state");
+
+    static enum State {
+
+        NEW,
+        FINISHED,
+        COMPLETED,
+        ROLLBACK_ONLY,;
+
+    }
+
     IdentityPatchContext(final File backup, final PatchContentProvider contentProvider, final ContentVerificationPolicy contentPolicy,
                          final InstallationManager.InstallationModification modification, final InstalledImage installedImage) {
 
@@ -69,11 +83,21 @@ class IdentityPatchContext implements PatchContentProvider {
         this.modification = modification;
         this.installedImage = installedImage;
 
-        this.miscBackup = new File(backup, PatchContentLoader.MISC);
-        this.configBackup = new File(backup, Constants.CONFIGURATION);
+        if (backup != null) {
+            this.miscBackup = new File(backup, PatchContentLoader.MISC);
+            this.configBackup = new File(backup, Constants.CONFIGURATION);
+        } else {
+            this.miscBackup = null;
+            this.configBackup = null;
+        }
         this.identityEntry = new PatchEntry(modification, null);
     }
 
+    /**
+     * Get the patch entry for the identity.
+     *
+     * @return the identity entry
+     */
     PatchEntry getIdentityEntry() {
         return identityEntry;
     }
@@ -101,7 +125,10 @@ class IdentityPatchContext implements PatchContentProvider {
 
     @Override
     public void cleanup() {
-        // TODO
+        // If cleanup gets called before we return, something went wrong
+        if (state != State.FINISHED) {
+            undoChanges();
+        }
     }
 
     @Override
@@ -110,6 +137,7 @@ class IdentityPatchContext implements PatchContentProvider {
     }
 
     protected PatchEntry resolveForElement(final PatchElement element) throws PatchingException {
+        assert state == State.NEW;
         final PatchElementProvider provider = element.getProvider();
         final String layerName = provider.getName();
         final LayerType layerType = provider.getLayerType();
@@ -132,7 +160,15 @@ class IdentityPatchContext implements PatchContentProvider {
         return entry;
     }
 
+    /**
+     * Finalize the patch.
+     *
+     * @param callback the finalize callback
+     * @return the result
+     * @throws Exception
+     */
     protected PatchingResult finalize(final FinalizeCallback callback) throws Exception {
+        assert state == State.NEW;
         final Patch.PatchType patchType = callback.getPatchType();
         final String patchId;
         if (patchType == Patch.PatchType.CUMULATIVE) {
@@ -142,6 +178,7 @@ class IdentityPatchContext implements PatchContentProvider {
         }
         final Patch rollbackPatch = createRollbackPatch(patchId, patchType, modification.getVersion());
         callback.finishPatch(rollbackPatch, this);
+        state = State.FINISHED;
         return new PatchingResult() {
             @Override
             public String getPatchId() {
@@ -171,24 +208,73 @@ class IdentityPatchContext implements PatchContentProvider {
 
             @Override
             public void commit() {
-                try {
-                    modification.complete();
-                    callback.commit();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+                if (state == State.FINISHED) {
+                    try {
+                        callback.commit();
+                        modification.complete();
+                        state = State.COMPLETED;
+                    } catch (Exception e) {
+                        undoChanges(); // Hmm, is this right here?
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    undoChanges();
+                    throw new IllegalStateException();
                 }
-
             }
 
             @Override
             public void rollback() {
-                try {
-                    callback.rollback();
-                } finally {
-                    modification.cancel();
+                if (undoChanges()) {
+                    try {
+                        callback.rollback();
+                    } finally {
+                        modification.cancel();
+                    }
                 }
             }
         };
+    }
+
+    /**
+     * Internally undo recorded changes we did so far.
+     *
+     * @return whether the state required undo actions
+     */
+    boolean undoChanges() {
+        final State state = stateUpdater.getAndSet(this, State.ROLLBACK_ONLY);
+        if (state == State.COMPLETED || state == State.ROLLBACK_ONLY) {
+            // Was actually completed already
+            return false;
+        }
+        final PatchContentLoader loader = new PatchContentLoader(miscBackup, null, null);
+        // Undo changes for the identity
+        undoChanges(identityEntry, loader);
+        // TODO maybe check if we need to do something for the layers too !?
+        return true;
+    }
+
+    /**
+     * Undo changes for a single patch entry.
+     *
+     * @param entry  the patch entry
+     * @param loader the content loader
+     */
+    static void undoChanges(final PatchEntry entry, final PatchContentLoader loader) {
+        for (final ContentModification modification : entry.rollbackActions) {
+            final ContentItem item = modification.getItem();
+            if (item.getContentType() != ContentType.MISC) {
+                // Skip modules and bundles they should be removed as part of the {@link FinalizeCallback}
+                continue;
+            }
+            final PatchingTaskDescription description = new PatchingTaskDescription(entry.applyPatchId, modification, loader, false, false);
+            try {
+                final PatchingTask task = PatchingTask.Factory.create(description, entry);
+                task.execute(entry);
+            } catch (Exception e) {
+                PatchLogger.ROOT_LOGGER.warnf(e, "failed to undo change (%s)", modification);
+            }
+        }
     }
 
     /**
@@ -239,14 +325,20 @@ class IdentityPatchContext implements PatchContentProvider {
      * @return the target location
      */
     public File getTargetFile(final MiscContentItem item) {
-        return getTargetFile(miscTargetRoot, item);
+        final State state = this.state;
+        if (state == State.NEW || state == State.ROLLBACK_ONLY) {
+            return getTargetFile(miscTargetRoot, item);
+        } else {
+            throw new IllegalStateException();
+        }
+
     }
 
     static File getTargetFile(final File root, final MiscContentItem item) {
         return PatchContentLoader.getMiscPath(root, item);
     }
 
-    public static void writePatch(final Patch rollbackPatch, final File file) throws IOException {
+    static void writePatch(final Patch rollbackPatch, final File file) throws IOException {
         final File parent = file.getParentFile();
         if (!parent.isDirectory()) {
             if (!parent.mkdirs() && !parent.exists()) {
@@ -332,7 +424,13 @@ class IdentityPatchContext implements PatchContentProvider {
 
         @Override
         public File getBackupFile(MiscContentItem item) {
-            return IdentityPatchContext.this.getTargetFile(miscBackup, item);
+            if (state == State.NEW) {
+                return IdentityPatchContext.this.getTargetFile(miscBackup, item);
+            } else if (state == State.ROLLBACK_ONLY) {
+                return null;
+            } else {
+                throw new IllegalStateException();
+            }
         }
 
         @Override
@@ -371,7 +469,7 @@ class IdentityPatchContext implements PatchContentProvider {
             if (item.getContentType() == ContentType.MISC) {
                 return IdentityPatchContext.this.getTargetFile((MiscContentItem) item);
             }
-            if (applyPatchId == null) {
+            if (applyPatchId == null || state == State.ROLLBACK_ONLY) {
                 throw new IllegalStateException("cannot process rollback tasks for modules/bundles");
             }
             final File root;
@@ -467,7 +565,14 @@ class IdentityPatchContext implements PatchContentProvider {
         void rollback();
     }
 
-
+    /**
+     * Create a rollback patch based on the recorded actions.
+     *
+     * @param patchId          the new patch id, depending on cumulative or one-off
+     * @param patchType        the current patch type
+     * @param resultingVersion the resulting version
+     * @return the rollback patch
+     */
     protected Patch createRollbackPatch(final String patchId, final Patch.PatchType patchType, final String resultingVersion) {
         // Process elements
         final List<PatchElement> elements = new ArrayList<PatchElement>();

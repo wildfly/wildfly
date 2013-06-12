@@ -25,18 +25,14 @@ package org.jboss.as.patching.installation;
 import static org.jboss.as.patching.Constants.PATCHES;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
-import org.jboss.as.patching.runner.PatchUtils;
 
 /**
  * @author Emanuel Muckenhuber
  */
-abstract class AbstractPatchableTarget extends DirectoryStructure implements Layer, AddOn {
+abstract class LayerDirectoryStructure extends DirectoryStructure {
 
     protected File getPatchesMetadata() {
         File root = getModuleRoot();
@@ -74,34 +70,31 @@ abstract class AbstractPatchableTarget extends DirectoryStructure implements Lay
         return new File(patches, patchId);
     }
 
-    @Override
-    public TargetInfo loadTargetInfo() throws IOException {
-        final Properties properties = PatchUtils.loadProperties(getInstallationInfo());
-        final String ref = PatchUtils.readRef(properties, Constants.CUMULATIVE);
-        final List<String> patches = PatchUtils.readRefs(properties);
-        return new TargetInfo() {
+    /**
+     * Specific directory structure implementation for the identity.
+     */
+    abstract static class IdentityDirectoryStructure extends LayerDirectoryStructure {
 
-            @Override
-            public String getCumulativeID() {
-                return ref;
-            }
+        @Override
+        public final File getBundleRepositoryRoot() {
+            return null; // no bundle root associated with the identity
+        }
 
-            @Override
-            public List<String> getPatchIDs() {
-                return patches;
-            }
+        @Override
+        public final File getModuleRoot() {
+            return null; // no module root associated with the identity
+        }
 
-            @Override
-            public Properties getProperties() {
-                return properties;
-            }
+        @Override
+        public File getInstallationInfo() {
+            return new File(getPatchesMetadata(), Constants.IDENTITY_METADATA);
+        }
 
-            @Override
-            public DirectoryStructure getDirectoryStructure() {
-                return AbstractPatchableTarget.this;
-            }
+        @Override
+        protected File getPatchesMetadata() {
+            return getInstalledImage().getInstallationMetadata();
+        }
 
-        };
     }
 
 }

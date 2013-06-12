@@ -1,42 +1,62 @@
 package org.jboss.as.patching.installation;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jboss.as.patching.DirectoryStructure;
+
 /**
+ * The installation manager.
+ *
  * @author Emanuel Muckenhuber
  */
-public class InstallationManagerImpl implements InstallationManager {
+public class InstallationManagerImpl extends InstallationManager {
 
+    // The basic concurrency contract is copy on write
     private volatile InstalledIdentity installedIdentity;
-    private final Identity identity;
-    private volatile InstallationModificationImpl.InstallationState state;
+    // TODO track this state a better way
     private final AtomicBoolean writable = new AtomicBoolean(true);
 
-    public InstallationManagerImpl(InstalledIdentity installedIdentity) throws IOException {
+    public InstallationManagerImpl(InstalledIdentity installedIdentity) {
         this.installedIdentity = installedIdentity;
-        this.identity = installedIdentity.getIdentity();
-        this.state = load(installedIdentity);
-    }
-
-    protected InstallationModificationImpl.InstallationState load(final InstalledIdentity installedIdentity) throws IOException {
-        final InstallationModificationImpl.InstallationState state = new InstallationModificationImpl.InstallationState();
-        for (final Layer layer : installedIdentity.getLayers()) {
-            state.putLayer(layer);
-        }
-        for (final AddOn addOn : installedIdentity.getAddOns()) {
-            state.putAddOn(addOn);
-        }
-        return state;
-    }
-
-    public InstalledIdentity getInstalledIdentity() {
-        return installedIdentity;
     }
 
     @Override
     public Identity getIdentity() {
-        return identity;
+        return installedIdentity.getIdentity();
+    }
+
+    @Override
+    public List<String> getLayerNames() {
+        return installedIdentity.getLayerNames();
+    }
+
+    @Override
+    public Layer getLayer(String layerName) {
+        return installedIdentity.getLayer(layerName);
+    }
+
+    @Override
+    public List<Layer> getLayers() {
+        return installedIdentity.getLayers();
+    }
+
+    @Override
+    public Collection<String> getAddOnNames() {
+        return installedIdentity.getAddOnNames();
+    }
+
+    @Override
+    public AddOn getAddOn(String addOnName) {
+        return installedIdentity.getAddOn(addOnName);
+    }
+
+    @Override
+    public Collection<AddOn> getAddOns() {
+        return installedIdentity.getAddOns();
     }
 
     @Override
@@ -46,31 +66,35 @@ public class InstallationManagerImpl implements InstallationManager {
             throw new IllegalStateException();
         }
         try {
-            // Load the state from the disk
+            // Load the state
+            final InstalledIdentity installedIdentity = this.installedIdentity;
+            final Identity identity = installedIdentity.getIdentity();
             final PatchableTarget.TargetInfo identityInfo = identity.loadTargetInfo();
-            final InstallationModificationImpl.InstallationState state = this.state;
+            final InstallationModificationImpl.InstallationState state = load(installedIdentity);
 
             return new InstallationModificationImpl(identityInfo, identity.getVersion(), state) {
                 @Override
                 public void complete() {
                     try {
-
-                        final InstallationState newState = internalComplete();
-                        // TODO update state
-                        callback.completed();
-                        InstallationManagerImpl.this.state = newState;
+                        // Update the state
+                        InstallationManagerImpl.this.installedIdentity = updateState(identity.getName(), this, internalComplete());
                         writable.set(true);
                     } catch (Exception e) {
                         cancel();
                         throw new RuntimeException(e);
                     }
-
+                    if (callback != null) {
+                        callback.completed();
+                    }
                 }
 
                 @Override
                 public void cancel() {
+                    assert setDone();
                     try {
-                        callback.canceled();
+                        if (callback != null) {
+                            callback.canceled();
+                        }
                     } finally {
                         writable.set(true);
                     }
@@ -82,5 +106,61 @@ public class InstallationManagerImpl implements InstallationManager {
         }
     }
 
+    protected static InstallationModificationImpl.InstallationState load(final InstalledIdentity installedIdentity) throws IOException {
+        final InstallationModificationImpl.InstallationState state = new InstallationModificationImpl.InstallationState();
+        for (final Layer layer : installedIdentity.getLayers()) {
+            state.putLayer(layer);
+        }
+        for (final AddOn addOn : installedIdentity.getAddOns()) {
+            state.putAddOn(addOn);
+        }
+        return state;
+    }
+
+    /**
+     * Update the installed identity using the modified state from the modfication.
+     *
+     * @param name the identity name
+     * @param modification the modification
+     * @param state the installation state
+     * @return
+     */
+    protected static InstalledIdentity updateState(final String name, final InstallationModificationImpl modification, final InstallationModificationImpl.InstallationState state) {
+        final PatchableTarget.TargetInfo identityInfo = modification.getModifiedState();
+        final Identity identity = new Identity() {
+            @Override
+            public String getVersion() {
+                return modification.getVersion();
+            }
+
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public TargetInfo loadTargetInfo() throws IOException {
+                return identityInfo;
+            }
+
+            @Override
+            public DirectoryStructure getDirectoryStructure() {
+                return modification.getDirectoryStructure();
+            }
+        };
+
+        final InstalledIdentityImpl installedIdentity = new InstalledIdentityImpl(identity);
+        for (final Map.Entry<String, MutableTargetImpl> entry : state.getLayers().entrySet()) {
+            final String layerName = entry.getKey();
+            final MutableTargetImpl target = entry.getValue();
+            installedIdentity.putLayer(layerName, new LayerInfo(layerName, target.getModifiedState(), target.getDirectoryStructure()));
+        }
+        for (final Map.Entry<String, MutableTargetImpl> entry : state.getAddOns().entrySet()) {
+            final String addOnName = entry.getKey();
+            final MutableTargetImpl target = entry.getValue();
+            installedIdentity.putAddOn(addOnName, new LayerInfo(addOnName, target.getModifiedState(), target.getDirectoryStructure()));
+        }
+        return installedIdentity;
+    }
 
 }
