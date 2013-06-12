@@ -32,6 +32,7 @@ import java.util.Map;
 
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.ContentType;
 import org.jboss.as.patching.metadata.ModificationType;
 
 /**
@@ -74,7 +75,10 @@ class PatchingTasks {
             if (!filter.accepts(item)) {
                 continue;
             }
-
+            // Modules and bundles are just getting invalidated on a rollback, therefore we don't need to do anything
+            if (item.getContentType() == ContentType.MODULE || item.getContentType() == ContentType.BUNDLE) {
+                continue;
+            }
             final Location location = new Location(item);
             final ContentModification original = originalModifications.remove(location);
             if (original == null) {

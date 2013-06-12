@@ -365,12 +365,18 @@ class IdentityPatchContext implements PatchContentProvider {
 
         @Override
         public File[] getTargetBundlePath() {
-            return PatchUtils.getBundlePath(delegate.getDirectoryStructure(), delegate);
+            // We need the updated state for invalidating one-off patches
+            // When applying the overlay directory should not exist yet (in theory)
+            final PatchableTarget.TargetInfo updated = delegate.getModifiedState();
+            return PatchUtils.getBundlePath(delegate.getDirectoryStructure(), updated);
         }
 
         @Override
         public File[] getTargetModulePath() {
-            return PatchUtils.getModulePath(delegate.getDirectoryStructure(), delegate);
+            // We need the updated state for invalidating one-off patches
+            // When applying the overlay directory should not exist yet (in theory)
+            final PatchableTarget.TargetInfo updated = delegate.getModifiedState();
+            return PatchUtils.getModulePath(delegate.getDirectoryStructure(), updated);
         }
 
         @Override
