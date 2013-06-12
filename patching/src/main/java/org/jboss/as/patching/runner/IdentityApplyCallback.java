@@ -45,14 +45,12 @@ class IdentityApplyCallback implements IdentityPatchContext.FinalizeCallback {
         }
 
         // Backup the current active patch Info
-        final File cumulativeBackup = new File(historyDir, Constants.CUMULATIVE);
-        final File referencesBackup = new File(historyDir, Constants.REFERENCES);
+        final File installationInfo = new File(historyDir, Constants.INSTALLATION_METADATA);
         final File timestamp = new File(historyDir, Constants.TIMESTAMP);
 
         // Backup identity information
         final IdentityPatchContext.PatchEntry identity = context.getIdentityEntry();
-        PatchUtils.writeRef(cumulativeBackup, identity.getCumulativeID());
-        PatchUtils.writeRefs(referencesBackup, identity.getPatchIDs());
+        PatchUtils.writeProperties(installationInfo, identity.getProperties());
         PatchUtils.writeRef(timestamp, generateTimestamp());
 
         // Persist the patch.xml in the patch directory

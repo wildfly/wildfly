@@ -24,6 +24,7 @@ package org.jboss.as.patching.installation;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 
 import org.jboss.as.patching.DirectoryStructure;
 
@@ -63,6 +64,13 @@ public interface PatchableTarget {
          * @return the active one-off patches
          */
         List<String> getPatchIDs();
+
+        /**
+         * Get the layer properties.
+         *
+         * @return the layer properties
+         */
+        Properties getProperties();
 
         /**
          * The directory structure for this target.

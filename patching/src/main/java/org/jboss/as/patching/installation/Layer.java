@@ -44,9 +44,7 @@ package org.jboss.as.patching.installation;
  *     `-- patches
  *         `-- layers
  *             `-- &lt;name>
- *                 |-- cumulative => {@link org.jboss.as.patching.DirectoryStructure#getCumulativeLink()}
- *                 `-- references
- *                     `-- &lt;patchId> => {@link org.jboss.as.patching.DirectoryStructure#getCumulativeRefs(String)}
+ *                 `-- layers.conf => {@link org.jboss.as.patching.DirectoryStructure#getInstallationInfo()}
  * <code>
  * </pre>
  *
