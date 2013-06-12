@@ -49,6 +49,13 @@ public interface PatchableTarget {
      */
     TargetInfo loadTargetInfo() throws IOException;
 
+    /**
+     * The directory structure for this target.
+     *
+     * @return the directory structure
+     */
+    DirectoryStructure getDirectoryStructure();
+
     public interface TargetInfo {
 
         /**

@@ -54,12 +54,9 @@ public class InstallationManagerService implements Service<InstallationManager> 
     @Override
     public synchronized void start(StartContext startContext) throws StartException {
         try {
-
             final File jbossHome = new File(System.getProperty("jboss.home.dir"));
             final ProductConfig productConfig = this.productConfig.getValue();
-
             this.manager = load(jbossHome, productConfig);
-
         } catch (Exception e) {
             throw new StartException(e);
         }
