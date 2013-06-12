@@ -105,7 +105,7 @@ public class AddOnTestCase extends AbstractTaskTestCase {
         String addOnPatchID = randomString();
         String moduleName = randomString();
         ContentModification moduleAdded = ContentModificationUtils.addModule(patchDir, addOnPatchID, moduleName);
-        ContentModification fileAdded = ContentModificationUtils.addMisc(patchDir, "new file resource", "bin", "my-new-standalone.sh");
+        ContentModification fileAdded = ContentModificationUtils.addMisc(patchDir, patchID, "new file resource", "bin", "my-new-standalone.sh");
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
@@ -161,7 +161,7 @@ public class AddOnTestCase extends AbstractTaskTestCase {
         String addOnPatchID = randomString();
         String moduleName = randomString();
         ContentModification moduleAdded = ContentModificationUtils.addModule(patchDir, addOnPatchID, moduleName);
-        ContentModification fileAdded = ContentModificationUtils.addMisc(patchDir, "new file resource", "bin", "my-new-standalone.sh");
+        ContentModification fileAdded = ContentModificationUtils.addMisc(patchDir, patchID, "new file resource", "bin", "my-new-standalone.sh");
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)

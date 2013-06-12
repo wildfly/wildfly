@@ -111,6 +111,8 @@ public class PatchToolImpl implements PatchTool {
                     PatchLogger.ROOT_LOGGER.debugf(e, "failed to close input stream");
                 }
             }
+        } catch (PatchingException e) {
+            throw e;
         } catch (Exception e) {
             throw new PatchingException(e);
         }
@@ -149,6 +151,8 @@ public class PatchToolImpl implements PatchTool {
 
             // Execute
             return execute(workDir, contentPolicy);
+        } catch (PatchingException e) {
+            throw e;
         } catch (Exception e) {
             throw new PatchingException(e);
         } finally {

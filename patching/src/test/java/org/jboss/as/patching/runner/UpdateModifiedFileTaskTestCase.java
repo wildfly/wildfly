@@ -40,18 +40,22 @@ import java.util.Collections;
 
 import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.installation.InstallationManager;
+import org.jboss.as.patching.installation.InstallationManagerImpl;
+import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.patching.metadata.impl.IdentityImpl;
+import org.jboss.as.patching.tool.PatchTool;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
 
-    private PatchingRunnerWrapper runner;
+    private PatchTool runner;
     private File zippedPatch;
     private Patch patch;
     private ContentModification fileUpdated;
@@ -63,7 +67,7 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
     @Before
     public void setUp() throws Exception{
         // start from a base installation
-        PatchInfo info = new LocalPatchInfo(randomString(), PatchInfo.BASE, Collections.<String>emptyList(), env);
+        final InstalledIdentity identity = loadInstalledIdentity();
         // with a file in it
         File binDir = mkdir(env.getInstalledImage().getJbossHome(), "bin");
         String fileName = "standalone.sh";
@@ -78,7 +82,7 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
         String patchID = randomString();
         File patchDir = mkdir(tempDir, patchID);
 
-        File updatedFile = touch(patchDir, "misc", "bin", fileName);
+        File updatedFile = touch(patchDir, patchID, "misc", "bin", fileName);
         dump(updatedFile, "updated script");
         updatedHash = hashFile(updatedFile);
         fileUpdated = new ContentModification(new MiscContentItem(fileName, new String[] { "bin" }, updatedHash), unmodifiedHash, MODIFY);
@@ -86,7 +90,7 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
         PatchBuilder builder = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setIdentity(new IdentityImpl("eap", info.getVersion()))
+                .setIdentity(new IdentityImpl("eap", identity.getIdentity().getVersion()))
                 .setNoUpgrade();
 
 //        PatchElementImpl element = new PatchElementImpl("patch element 01");
@@ -106,7 +110,8 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
         createPatchXMLFile(patchDir, patch);
         zippedPatch = createZippedPatchFile(patchDir, patch.getPatchId());
 
-        runner = PatchingRunnerWrapper.Factory.create(info, env);
+        final InstallationManager manager = new InstallationManagerImpl(identity);
+        runner = PatchTool.Factory.create(manager);
     }
 
     @After
@@ -123,7 +128,7 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
     @Test
     public void testUpdateModifiedFileWithSTRICT() throws Exception {
         try {
-            runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.STRICT);
+            runner.applyPatch(zippedPatch, ContentVerificationPolicy.STRICT);
         } catch (PatchingException e) {
             assertPatchHasNotBeenApplied(e, patch, fileUpdated.getItem(), env);
 
@@ -135,7 +140,7 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
 
     @Test
     public void testUpdateModifiedFileWithOVERRIDE_ALL() throws Exception {
-        PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.OVERRIDE_ALL);
+        PatchingResult result = runner.applyPatch(zippedPatch, ContentVerificationPolicy.OVERRIDE_ALL);
 
         assertPatchHasBeenApplied(result, patch);
 
@@ -151,7 +156,7 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
     @Test
     public void testUpdateModifiedFileWithPRESERVE_ALL() throws Exception {
         try {
-            runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.PRESERVE_ALL);
+            runner.applyPatch(zippedPatch, ContentVerificationPolicy.PRESERVE_ALL);
         } catch (PatchingException e) {
             assertPatchHasNotBeenApplied(e, patch, fileUpdated.getItem(), env);
 

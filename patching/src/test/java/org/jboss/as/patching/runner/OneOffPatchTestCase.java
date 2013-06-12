@@ -118,7 +118,7 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         String moduleName = randomString();
         ContentModification moduleAdded = ContentModificationUtils.addModule(patchDir, layerPatchID, moduleName);
 
-        ContentModification fileUpdated = ContentModificationUtils.modifyMisc(patchDir, "updated script", standaloneShellFile, "bin", "standalone.sh");
+        ContentModification fileUpdated = ContentModificationUtils.modifyMisc(patchDir, patchID, "updated script", standaloneShellFile, "bin", "standalone.sh");
 
         Identity identityBeforePatch = loadInstalledIdentity().getIdentity();
 
@@ -176,7 +176,7 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         String moduleName = randomString();
         ContentModification moduleAdded = ContentModificationUtils.addModule(patchDir, layerPatchID, moduleName);
 
-        ContentModification fileUpdated = ContentModificationUtils.modifyMisc(patchDir, "updated script", standaloneShellFile, "bin", "standalone.sh");
+        ContentModification fileUpdated = ContentModificationUtils.modifyMisc(patchDir, patchID, "updated script", standaloneShellFile, "bin", "standalone.sh");
 
         Identity identityBeforePatch = loadInstalledIdentity().getIdentity();
 
@@ -208,7 +208,7 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         String patchID_2 = "patch-2-" + randomString();
         File patchDir_2 = mkdir(tempDir, patchID_2);
 
-        ContentModification otherFileUpdated = ContentModificationUtils.modifyMisc(patchDir_2, "updated domain script", domainShellFile, "bin", "domain.sh");
+        ContentModification otherFileUpdated = ContentModificationUtils.modifyMisc(patchDir_2, patchID_2, "updated domain script", domainShellFile, "bin", "domain.sh");
 
         Patch patch_2 = PatchBuilder.create()
                 .setPatchId(patchID_2)

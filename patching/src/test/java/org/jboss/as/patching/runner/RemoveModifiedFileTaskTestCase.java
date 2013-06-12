@@ -42,17 +42,21 @@ import java.util.Collections;
 
 import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.installation.InstallationManager;
+import org.jboss.as.patching.installation.InstallationManagerImpl;
+import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
+import org.jboss.as.patching.tool.PatchTool;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class RemoveModifiedFileTaskTestCase extends AbstractTaskTestCase {
 
-    private PatchingRunnerWrapper runner;
+    private PatchTool runner;
     private File zippedPatch;
     private Patch patch;
     private ContentModification fileRemoved;
@@ -63,7 +67,7 @@ public class RemoveModifiedFileTaskTestCase extends AbstractTaskTestCase {
     @Before
     public void setUp() throws Exception{
         // start from a base installation
-        PatchInfo info = new LocalPatchInfo(randomString(), PatchInfo.BASE, Collections.<String>emptyList(), env);
+        final InstalledIdentity identity = loadInstalledIdentity();
         // with a file in it
         File binDir = mkdir(env.getInstalledImage().getJbossHome(), "bin");
         String fileName = "standalone.sh";
@@ -85,7 +89,7 @@ public class RemoveModifiedFileTaskTestCase extends AbstractTaskTestCase {
         patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setOneOffType(info.getVersion())
+                .setOneOffType(identity.getIdentity().getVersion())
                 .addContentModification(fileRemoved)
                 .build();
 
@@ -93,7 +97,8 @@ public class RemoveModifiedFileTaskTestCase extends AbstractTaskTestCase {
         createPatchXMLFile(patchDir, patch);
         zippedPatch = createZippedPatchFile(patchDir, patch.getPatchId());
 
-        runner = PatchingRunnerWrapper.Factory.create(info, env);
+        final InstallationManager manager = new InstallationManagerImpl(identity);
+        runner = PatchTool.Factory.create(manager);
     }
 
     @After
@@ -109,7 +114,7 @@ public class RemoveModifiedFileTaskTestCase extends AbstractTaskTestCase {
     @Test
     public void testRemoveModifiedFileWithSTRICT() throws Exception {
         try {
-            PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.STRICT);
+            PatchingResult result = runner.applyPatch(zippedPatch, ContentVerificationPolicy.STRICT);
         } catch (PatchingException e) {
             assertPatchHasNotBeenApplied(e, patch, fileRemoved.getItem(), env);
 
@@ -122,7 +127,7 @@ public class RemoveModifiedFileTaskTestCase extends AbstractTaskTestCase {
 
     @Test
     public void testRemovedModifiedFileWithOVERRIDE_ALL() throws Exception {
-        PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.OVERRIDE_ALL);
+        PatchingResult result = runner.applyPatch(zippedPatch, ContentVerificationPolicy.OVERRIDE_ALL);
 
         assertPatchHasBeenApplied(result, patch);
 
@@ -137,7 +142,7 @@ public class RemoveModifiedFileTaskTestCase extends AbstractTaskTestCase {
     @Test
     public void testRemoveModifiedFileWithPRESERVE_ALL() throws Exception {
         try {
-            PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.PRESERVE_ALL);
+            PatchingResult result = runner.applyPatch(zippedPatch, ContentVerificationPolicy.PRESERVE_ALL);
         } catch (PatchingException e) {
             assertPatchHasNotBeenApplied(e, patch, fileRemoved.getItem(), env);
 

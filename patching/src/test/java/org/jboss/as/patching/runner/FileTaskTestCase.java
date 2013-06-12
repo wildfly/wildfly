@@ -58,7 +58,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         String patchID = randomString();
         File patchDir = mkdir(tempDir, patchID);
 
-        ContentModification fileAdded = ContentModificationUtils.addMisc(patchDir, "new file resource", "bin", "my-new-standalone.sh");
+        ContentModification fileAdded = ContentModificationUtils.addMisc(patchDir, patchID, "new file resource", "bin", "my-new-standalone.sh");
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
@@ -128,7 +128,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         String patchID = randomString();
         File patchDir = mkdir(tempDir, patchID);
 
-        ContentModification fileModified = ContentModificationUtils.modifyMisc(patchDir, "updated script", standaloneShellFile, "bin", "standalone.sh");
+        ContentModification fileModified = ContentModificationUtils.modifyMisc(patchDir, patchID, "updated script", standaloneShellFile, "bin", "standalone.sh");
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
