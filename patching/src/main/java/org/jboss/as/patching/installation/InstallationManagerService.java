@@ -4,6 +4,7 @@ import static org.jboss.as.patching.Constants.JBOSS_PATCHING;
 import static org.jboss.as.patching.Constants.JBOSS_PRODUCT_CONFIG_SERVICE;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -55,12 +56,9 @@ public class InstallationManagerService implements Service<InstallationManager> 
         try {
 
             final File jbossHome = new File(System.getProperty("jboss.home.dir"));
-            final InstalledImage installedImage = InstalledIdentity.installedImage(jbossHome);
-            final List<File> moduleRoots = getModulePath();
-            final List<File> bundlesRoots = getBundlePath(installedImage);
-            final InstalledIdentity identity = LayersFactory.load(installedImage, productConfig.getValue(), moduleRoots, bundlesRoots);
+            final ProductConfig productConfig = this.productConfig.getValue();
 
-            this.manager = new InstallationManagerImpl(identity);
+            this.manager = load(jbossHome, productConfig);
 
         } catch (Exception e) {
             throw new StartException(e);
@@ -79,6 +77,14 @@ public class InstallationManagerService implements Service<InstallationManager> 
             throw new IllegalStateException();
         }
         return manager;
+    }
+
+    public static InstallationManager load(final File jbossHome, final ProductConfig productConfig) throws IOException {
+        final InstalledImage installedImage = InstalledIdentity.installedImage(jbossHome);
+        final List<File> moduleRoots = getModulePath();
+        final List<File> bundlesRoots = getBundlePath(installedImage);
+        final InstalledIdentity identity = LayersFactory.load(installedImage, productConfig, moduleRoots, bundlesRoots);
+        return new InstallationManagerImpl(identity);
     }
 
     private static List<File> getModulePath() {

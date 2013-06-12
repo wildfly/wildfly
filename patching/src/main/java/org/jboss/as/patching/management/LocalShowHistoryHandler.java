@@ -33,8 +33,10 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.patching.Constants;
-import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.installation.InstallationManager;
+import org.jboss.as.patching.installation.InstallationManagerService;
 import org.jboss.as.patching.installation.InstalledImage;
+import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.runner.PatchUtils;
 import org.jboss.dmr.ModelNode;
@@ -49,21 +51,20 @@ public final class LocalShowHistoryHandler implements OperationStepHandler {
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         context.acquireControllerLock();
         // Setup
-        final PatchInfoService service = (PatchInfoService) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME).getValue();
-
+        final InstallationManager installationManager = (InstallationManager) context.getServiceRegistry(false).getRequiredService(InstallationManagerService.NAME).getValue();
         try {
-            final PatchInfo info = service.getPatchInfo();
-            final InstalledImage installedImage =  service.getStructure().getInstalledImage();
+            final PatchableTarget.TargetInfo info = installationManager.getIdentity().loadTargetInfo();
+            final InstalledImage installedImage = info.getDirectoryStructure().getInstalledImage();
 
-            ModelNode result = new ModelNode();
+            final ModelNode result = new ModelNode();
             result.setEmptyList();
 
-            String cumulativePatchID = info.getCumulativeID();
+            final String cumulativePatchID = info.getCumulativeID();
             if (!BASE.equals(cumulativePatchID)) {
                 fillHistory(result, CUMULATIVE, cumulativePatchID, installedImage.getPatchHistoryDir(cumulativePatchID));
             }
 
-            List<String> oneOffPatchIDs = info.getPatchIDs();
+            final List<String> oneOffPatchIDs = info.getPatchIDs();
             for (String oneOffPatchID : oneOffPatchIDs) {
                 File historyDir = installedImage.getPatchHistoryDir(oneOffPatchID);
                 fillHistory(result, ONE_OFF, oneOffPatchID, historyDir);

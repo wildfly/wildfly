@@ -22,14 +22,12 @@
 
 package org.jboss.as.patching.management;
 
-import static org.jboss.as.patching.PatchMessages.MESSAGES;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.patching.Constants;
-import org.jboss.as.patching.DirectoryStructure;
-import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.installation.InstallationManager;
+import org.jboss.as.patching.installation.InstallationManagerService;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentType;
 import org.jboss.as.patching.runner.ContentVerificationPolicy;
@@ -51,21 +49,13 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
         final boolean rollbackTo = PatchResourceDefinition.ROLLBACK_TO.resolveModelAttribute(context, operation).asBoolean();
         final boolean restoreConfiguration = PatchResourceDefinition.RESTORE_CONFIGURATION.resolveModelAttribute(context, operation).asBoolean();
 
-        // FIXME can we check whether the process is reload-required directly from the operation context?
         context.acquireControllerLock();
-        final PatchInfoService service = (PatchInfoService) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME).getValue();
-        if (service.requiresRestart()) {
-            throw MESSAGES.serverRequiresRestart();
-        }
-
-        final PatchInfo info = service.getPatchInfo();
-        final DirectoryStructure structure = service.getStructure();
-        final PatchTool runner = PatchTool.Factory.create(info, structure);
+        final InstallationManager installationManager = (InstallationManager) context.getServiceRegistry(false).getRequiredService(InstallationManagerService.NAME).getValue();
+        final PatchTool runner = PatchTool.Factory.create(installationManager);
         final ContentVerificationPolicy policy = PatchTool.Factory.create(operation);
         try {
             // Rollback
             final PatchingResult result = runner.rollback(patchId, policy, rollbackTo, restoreConfiguration);
-            service.restartRequired();
             context.restartRequired();
             context.completeStep(new OperationContext.ResultHandler() {
 
@@ -74,7 +64,6 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
                     if(resultAction == OperationContext.ResultAction.KEEP) {
                         result.commit();
                     } else {
-                        service.clearRestartRequired();
                         context.revertRestartRequired();
                         result.rollback();
                     }
