@@ -96,12 +96,14 @@ public class CustomHandlerTestCase extends AbstractLoggingOperationsTestCase {
     @Test
     @RunAsClient
     public void disabledLoggerTest() throws Exception {
-        // Disable the handler
-        final ModelNode op = Operations.createWriteAttributeOperation(CUSTOM_HANDLER_ADDRESS.toModelNode(), ModelDescriptionConstants.ENABLED, false);
-        executeOperation(op);
+        setEnabled(CUSTOM_HANDLER_ADDRESS, false);
 
-        final String msg = "Logging Test: CustomHandlerTestCase.disabledLoggerTest";
-        searchLog(msg, false);
+        try {
+            final String msg = "Logging Test: CustomHandlerTestCase.disabledLoggerTest";
+            searchLog(msg, false);
+        } finally {
+            setEnabled(CUSTOM_HANDLER_ADDRESS, true);
+        }
     }
 
     private void searchLog(final String msg, final boolean expected) throws Exception {
@@ -142,12 +144,12 @@ public class CustomHandlerTestCase extends AbstractLoggingOperationsTestCase {
             ModelNode opProperties = op.get("properties").setEmptyObject();
             opProperties.get("fileName").set(logFile.getAbsolutePath());
             opProperties.get("autoFlush").set(true);
-            client.execute(op);
+            execute(client, op);
 
             // Add the handler to the root-logger
             op = Operations.createOperation("add-handler", createRootLoggerAddress().toModelNode());
             op.get(ModelDescriptionConstants.NAME).set(CUSTOM_HANDLER_NAME);
-            client.execute(op);
+            execute(client, op);
         }
 
         @Override
