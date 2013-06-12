@@ -1,14 +1,15 @@
 package org.jboss.as.patching.installation;
 
-import static org.jboss.as.patching.runner.PatchUtils.writeRef;
-import static org.jboss.as.patching.runner.PatchUtils.writeRefs;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
+import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
+import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.runner.PatchUtils;
 
 /**
  * @author Emanuel Muckenhuber
@@ -19,13 +20,16 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
     private final PatchableTarget.TargetInfo current;
     // The mutable state
     private final List<String> patchIds;
+    private final Properties properties;
     private String cumulative;
+
 
     MutableTargetImpl(PatchableTarget.TargetInfo current) {
         this.current = current;
         this.structure = current.getDirectoryStructure();
         this.cumulative = current.getCumulativeID();
         this.patchIds = new ArrayList<String>(current.getPatchIDs());
+        this.properties = new Properties(current.getProperties());
     }
 
     @Override
@@ -60,6 +64,11 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
     }
 
     @Override
+    public Properties getProperties() {
+        return current.getProperties();
+    }
+
+    @Override
     public DirectoryStructure getDirectoryStructure() {
         return structure;
     }
@@ -75,8 +84,15 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
     }
 
     private void persist(final String cumulative, final List<String> patches) throws IOException {
-        writeRef(structure.getCumulativeLink(), cumulative);
-        writeRefs(structure.getCumulativeRefs(cumulative), patches);
+        // Create the parent
+        IoUtils.mkdir(structure.getInstallationInfo().getParentFile());
+
+        // Update the properties
+        properties.put(Constants.CUMULATIVE, cumulative);
+        properties.put(Constants.PATCHES, PatchUtils.asString(patches));
+
+        // Write layer.conf
+        PatchUtils.writeProperties(structure.getInstallationInfo(), properties);
     }
 
     @Override
@@ -96,6 +112,12 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
             public DirectoryStructure getDirectoryStructure() {
                 return structure;
             }
+
+            @Override
+            public Properties getProperties() {
+                return properties;
+            }
         };
     }
+
 }

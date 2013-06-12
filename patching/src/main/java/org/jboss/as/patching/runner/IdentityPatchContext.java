@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
@@ -332,6 +333,11 @@ class IdentityPatchContext implements PatchContentProvider {
         @Override
         public List<String> getPatchIDs() {
             return delegate.getPatchIDs();
+        }
+
+        @Override
+        public Properties getProperties() {
+            return delegate.getProperties();
         }
 
         @Override

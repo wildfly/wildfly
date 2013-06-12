@@ -22,9 +22,7 @@ package org.jboss.as.patching.installation;
  * |                `-- patches
  * |                   `-- &lt;patchId> => {@link org.jboss.as.patching.DirectoryStructure#getModulePatchDirectory(String)}
  * `-- .installation
- *     |-- cumulative
- *     `-- references
- *         `-- patch-identity-1
+ *     `-- identity.conf => {@link org.jboss.as.patching.DirectoryStructure#getInstallationInfo()}
  * <code>
  * </pre>
  *

@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.PatchInfo;
@@ -60,6 +61,11 @@ public interface PatchingRunnerWrapper {
                                 @Override
                                 public List<String> getPatchIDs() {
                                     return patchInfo.getPatchIDs();
+                                }
+
+                                @Override
+                                public Properties getProperties() {
+                                    return new Properties();
                                 }
 
                                 @Override

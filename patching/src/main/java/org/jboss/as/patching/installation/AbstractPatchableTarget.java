@@ -27,6 +27,7 @@ import static org.jboss.as.patching.Constants.PATCHES;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
@@ -49,14 +50,8 @@ abstract class AbstractPatchableTarget extends DirectoryStructure implements Lay
     }
 
     @Override
-    public File getCumulativeLink() {
-        return new File(getPatchesMetadata(), Constants.CUMULATIVE);
-    }
-
-    @Override
-    public File getCumulativeRefs(final String cumulativeId) {
-        final File references = new File(getPatchesMetadata(), Constants.REFERENCES);
-        return new File(references, cumulativeId);
+    public File getInstallationInfo() {
+        return new File(getPatchesMetadata(), Constants.INSTALLATION_METADATA);
     }
 
     @Override
@@ -81,8 +76,9 @@ abstract class AbstractPatchableTarget extends DirectoryStructure implements Lay
 
     @Override
     public TargetInfo loadTargetInfo() throws IOException {
-        final String ref = PatchUtils.readRef(getCumulativeLink());
-        final List<String> patches = PatchUtils.readRefs(getCumulativeRefs(ref));
+        final Properties properties = PatchUtils.loadProperties(getInstallationInfo());
+        final String ref = PatchUtils.readRef(properties, Constants.CUMULATIVE);
+        final List<String> patches = PatchUtils.readRefs(properties);
         return new TargetInfo() {
 
             @Override
@@ -93,6 +89,11 @@ abstract class AbstractPatchableTarget extends DirectoryStructure implements Lay
             @Override
             public List<String> getPatchIDs() {
                 return patches;
+            }
+
+            @Override
+            public Properties getProperties() {
+                return properties;
             }
 
             @Override
