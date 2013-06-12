@@ -23,13 +23,17 @@
 package org.jboss.as.patching.management;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.installation.InstallationManager;
+import org.jboss.as.patching.installation.InstallationManagerService;
 import org.jboss.as.patching.installation.InstalledImage;
+import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Emanuel Muckenhuber
@@ -45,15 +49,21 @@ public class LocalPatchGarbageCollectionHandler implements OperationStepHandler 
         final String patchId = operation.require(PATCH_ID).asString();
         //
         context.acquireControllerLock();
-        final PatchInfoService service = (PatchInfoService) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME).getValue();
-        final PatchInfo info = service.getPatchInfo();
+        final ServiceController<?> mgrService = context.getServiceRegistry(false).getRequiredService(InstallationManagerService.NAME);
+        final InstallationManager mgr = (InstallationManager) mgrService.getValue();
+        final PatchableTarget.TargetInfo info;
+        try {
+            info = mgr.getIdentity().loadTargetInfo();
+        } catch (IOException e) {
+            throw new OperationFailedException("failed to load identity info", e);
+        }
         if(info.getCumulativeID().equals(patchId)) {
             throw PatchManagementMessages.MESSAGES.patchActive(patchId);
         }
         if(info.getPatchIDs().contains(patchId)) {
             throw PatchManagementMessages.MESSAGES.patchActive(patchId);
         }
-        final InstalledImage installedImage = service.getStructure().getInstalledImage();
+        final InstalledImage installedImage = info.getDirectoryStructure().getInstalledImage();
 
         // Remove directories
         final File history = installedImage.getPatchHistoryDir(patchId);

@@ -38,7 +38,7 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.patching.Constants;
-import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.installation.Identity;
 import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -132,21 +132,21 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
 
         registry.registerReadOnlyAttribute(VERSION, new PatchAttributeReadHandler() {
             @Override
-            void handle(ModelNode result, PatchInfo info) {
+            void handle(ModelNode result, Identity info) {
                 result.set(info.getVersion());
             }
         });
         registry.registerReadOnlyAttribute(CUMULATIVE, new PatchAttributeReadHandler() {
             @Override
-            void handle(ModelNode result, PatchInfo info) {
-                result.set(info.getCumulativeID());
+            void handle(ModelNode result, Identity info) throws IOException {
+                result.set(info.loadTargetInfo().getCumulativeID());
             }
         });
         registry.registerReadOnlyAttribute(PATCHES, new PatchAttributeReadHandler() {
             @Override
-            void handle(ModelNode result, PatchInfo info) {
+            void handle(ModelNode result, Identity info) throws IOException {
                 result.setEmptyList();
-                for(final String id : info.getPatchIDs()) {
+                for (final String id : info.loadTargetInfo().getPatchIDs()) {
                     result.add(id);
                 }
             }
@@ -156,7 +156,7 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
         registry.registerSubModel(new SimpleResourceDefinition(PathElement.pathElement("layer"), resolver) {
             @Override
             public void registerAttributes(final ManagementResourceRegistration resource) {
-                resource.registerReadOnlyAttribute(CUMULATIVE, new LayerAttributeReadHandler(){
+                resource.registerReadOnlyAttribute(CUMULATIVE, new ElementProviderAttributeReadHandler.LayerAttributeReadHandler() {
                     @Override
                     void handle(ModelNode result, PatchableTarget layer) throws OperationFailedException {
                         try {
@@ -164,19 +164,21 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
                         } catch (IOException e) {
                             throw new OperationFailedException("Failed to load layer info", e);
                         }
-                    }});
-                resource.registerReadOnlyAttribute(PATCHES, new LayerAttributeReadHandler(){
+                    }
+                });
+                resource.registerReadOnlyAttribute(PATCHES, new ElementProviderAttributeReadHandler.LayerAttributeReadHandler() {
                     @Override
                     void handle(ModelNode result, PatchableTarget layer) throws OperationFailedException {
                         result.setEmptyList();
                         try {
-                            for(final String id : layer.loadTargetInfo().getPatchIDs()) {
+                            for (final String id : layer.loadTargetInfo().getPatchIDs()) {
                                 result.add(id);
                             }
                         } catch (IOException e) {
                             throw new OperationFailedException("Failed to load layer info", e);
                         }
-                    }});
+                    }
+                });
             }
         });
 
@@ -184,7 +186,7 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
         registry.registerSubModel(new SimpleResourceDefinition(PathElement.pathElement("addon"), resolver) {
             @Override
             public void registerAttributes(final ManagementResourceRegistration resource) {
-                resource.registerReadOnlyAttribute(CUMULATIVE, new AddOnAttributeReadHandler(){
+                resource.registerReadOnlyAttribute(CUMULATIVE, new ElementProviderAttributeReadHandler.AddOnAttributeReadHandler() {
                     @Override
                     void handle(ModelNode result, PatchableTarget addon) throws OperationFailedException {
                         try {
@@ -192,19 +194,21 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
                         } catch (IOException e) {
                             throw new OperationFailedException("Failed to load add-on info", e);
                         }
-                    }});
-                resource.registerReadOnlyAttribute(PATCHES, new AddOnAttributeReadHandler(){
+                    }
+                });
+                resource.registerReadOnlyAttribute(PATCHES, new ElementProviderAttributeReadHandler.AddOnAttributeReadHandler() {
                     @Override
                     void handle(ModelNode result, PatchableTarget addon) throws OperationFailedException {
                         result.setEmptyList();
                         try {
-                            for(final String id : addon.loadTargetInfo().getPatchIDs()) {
+                            for (final String id : addon.loadTargetInfo().getPatchIDs()) {
                                 result.add(id);
                             }
                         } catch (IOException e) {
                             throw new OperationFailedException("Failed to load add-on info", e);
                         }
-                    }});
+                    }
+                });
             }
         });
     }

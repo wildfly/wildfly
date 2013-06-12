@@ -23,15 +23,20 @@
 package org.jboss.as.patching.management;
 
 
+import java.util.Collection;
+import java.util.List;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.patching.installation.AddOn;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerService;
 import org.jboss.as.patching.installation.InstalledIdentity;
+import org.jboss.as.patching.installation.Layer;
 import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -59,4 +64,54 @@ abstract class ElementProviderAttributeReadHandler implements OperationStepHandl
     protected abstract PatchableTarget getProvider(final String name, final InstalledIdentity identity) throws OperationFailedException;
 
     abstract void handle(ModelNode result, PatchableTarget layer) throws OperationFailedException;
+
+    /**
+     * @author Alexey Loubyansky
+     */
+    abstract static class AddOnAttributeReadHandler extends ElementProviderAttributeReadHandler {
+
+        @Override
+        protected PatchableTarget getProvider(final String name, final InstalledIdentity identity) throws OperationFailedException {
+            final Collection<AddOn> addons = identity.getAddOns();
+            if (addons == null) {
+                throw new OperationFailedException("no layers for " + name);
+            }
+            AddOn target = null;
+            for (AddOn addon : addons) {
+                if (addon.getName().equals(name)) {
+                    target = addon;
+                    break;
+                }
+            }
+            if (target == null) {
+                throw new OperationFailedException("Target add-on not found: " + name);
+            }
+            return target;
+        }
+    }
+
+    /**
+     * @author Alexey Loubyansky
+     */
+    abstract static class LayerAttributeReadHandler extends ElementProviderAttributeReadHandler {
+
+        @Override
+        protected Layer getProvider(final String name, final InstalledIdentity identity) throws OperationFailedException {
+            final List<Layer> layers = identity.getLayers();
+            if (layers == null) {
+                throw new OperationFailedException("no layers for " + name);
+            }
+            Layer target = null;
+            for (Layer layer : layers) {
+                if (layer.getName().equals(name)) {
+                    target = layer;
+                    break;
+                }
+            }
+            if (target == null) {
+                throw new OperationFailedException("Target layer not found: " + name);
+            }
+            return target;
+        }
+    }
 }

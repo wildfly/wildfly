@@ -22,22 +22,33 @@
 
 package org.jboss.as.patching.management;
 
+import java.io.IOException;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.installation.Identity;
+import org.jboss.as.patching.installation.InstallationManager;
+import org.jboss.as.patching.installation.InstallationManagerService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 abstract class PatchAttributeReadHandler implements OperationStepHandler {
 
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final PatchInfoService service = (PatchInfoService) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME).getValue();
-        PatchInfo info = service.getPatchInfo();
+
+        final ServiceController<?> mgrService = context.getServiceRegistry(false).getRequiredService(InstallationManagerService.NAME);
+        final InstallationManager mgr = (InstallationManager) mgrService.getValue();
         final ModelNode result = context.getResult();
-        handle(result, info);
+        final Identity info = mgr.getIdentity();
+        try {
+            handle(result, info);
+        } catch (IOException e) {
+            throw new OperationFailedException("failed to load identity info");
+        }
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
-    abstract void handle(ModelNode result, PatchInfo info);
+    abstract void handle(ModelNode result, Identity info) throws IOException;
 }
