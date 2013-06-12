@@ -22,6 +22,12 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import java.io.IOException;
+
+import javax.resource.spi.XATerminator;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManager;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.XATerminatorImple;
@@ -30,12 +36,6 @@ import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.marshalling.MarshallerFactory;
 import org.xnio.IoUtils;
-
-import javax.resource.spi.XATerminator;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.xa.XAResource;
-import java.io.IOException;
 
 
 /**
@@ -105,8 +105,6 @@ abstract class XidTransactionManagementTask implements Runnable {
             // As for null for parentNodeName, we do that intentionally since we aren't aware of the parent node on which
             // the transaction originated
             ((XATerminatorImple) xaTerminator).doRecover(null, null);
-        } else {
-            xaTerminator.recover(XAResource.TMSTARTRSCAN);
         }
         // now that recovery has been completed via the XATerminator, it's possible that the subordinate tx will have been loaded
         return SubordinationManager.getTransactionImporter().getImportedTransaction(this.xidTransactionID.getXid());
