@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.jboss.as.patching.runner.PatchUtils;
@@ -87,8 +88,9 @@ public class LocalPatchInfo implements PatchInfo {
      * @throws IOException
      */
     static LocalPatchInfo load(final String version, final DirectoryStructure environment) throws IOException {
-        final String ref = PatchUtils.readRef(environment.getCumulativeLink());
-        final List<String> patches = PatchUtils.readRefs(environment.getCumulativeRefs(ref));
+        final Properties properties = PatchUtils.loadProperties(environment.getInstallationInfo());
+        final String ref = PatchUtils.readRef(properties, Constants.CUMULATIVE);
+        final List<String> patches = PatchUtils.readRefs(properties);
         return new LocalPatchInfo(version, ref, patches, environment);
     }
 

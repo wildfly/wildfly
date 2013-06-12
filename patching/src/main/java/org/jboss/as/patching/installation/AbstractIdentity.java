@@ -2,6 +2,8 @@ package org.jboss.as.patching.installation;
 
 import java.io.File;
 
+import org.jboss.as.patching.Constants;
+
 /**
  * @author Emanuel Muckenhuber
  */
@@ -15,6 +17,11 @@ abstract class AbstractIdentity extends AbstractPatchableTarget implements Ident
     @Override
     public final File getModuleRoot() {
         return null; // no module root associated with the identity
+    }
+
+    @Override
+    public File getInstallationInfo() {
+        return new File(getPatchesMetadata(), Constants.IDENTITY_METADATA);
     }
 
     @Override

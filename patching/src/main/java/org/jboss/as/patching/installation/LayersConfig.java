@@ -3,17 +3,16 @@ package org.jboss.as.patching.installation;
 import static org.jboss.as.patching.Constants.DEFAULT_ADD_ONS_PATH;
 import static org.jboss.as.patching.Constants.DEFAULT_LAYERS_PATH;
 import static org.jboss.as.patching.Constants.LAYERS_CONF;
-import static org.jboss.as.patching.IoUtils.safeClose;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+
+import org.jboss.as.patching.Constants;
+import org.jboss.as.patching.runner.PatchUtils;
 
 /**
  * @author Brian Stansberry
@@ -29,33 +28,33 @@ public class LayersConfig {
         configured = false;
         layersPath = DEFAULT_LAYERS_PATH;
         addOnsPath = DEFAULT_ADD_ONS_PATH;
-        layers = Collections.singletonList("base");
+        layers = Collections.singletonList(Constants.BASE);
     }
 
     LayersConfig(Properties properties) {
         configured = true;
         layersPath = properties.getProperty("layers.path", DEFAULT_LAYERS_PATH);
         addOnsPath = properties.getProperty("add-ons.path", DEFAULT_ADD_ONS_PATH);
-        boolean excludeBase = Boolean.valueOf(properties.getProperty("exclude.base.layer", "false"));
-        String layersProp = (String) properties.get("layers");
+        final boolean excludeBase = Boolean.valueOf(properties.getProperty(Constants.EXCLUDE_LAYER_BASE, "false"));
+        String layersProp = (String) properties.get(Constants.LAYERS);
         if (layersProp == null || (layersProp = layersProp.trim()).length() == 0) {
             if (excludeBase) {
                 layers = Collections.emptyList();
             } else {
-                layers = Collections.singletonList("base");
+                layers = Collections.singletonList(Constants.BASE);
             }
         } else {
-            String[] layerNames = layersProp.split(",");
+            final String[] layerNames = layersProp.split(",");
             final List<String> layers = new ArrayList<String>();
             boolean hasBase = false;
             for (String layerName : layerNames) {
-                if ("base".equals(layerName)) {
+                if (Constants.BASE.equals(layerName)) {
                     hasBase = true;
                 }
                 layers.add(layerName);
             }
             if (!hasBase && !excludeBase) {
-                layers.add("base");
+                layers.add(Constants.BASE);
             }
             this.layers = Collections.unmodifiableList(layers);
         }
@@ -89,20 +88,8 @@ public class LayersConfig {
         if (!layersList.exists()) {
             return new LayersConfig();
         }
-        final Properties properties = loadProperties(layersList);
+        final Properties properties = PatchUtils.loadProperties(layersList);
         return new LayersConfig(properties);
-    }
-
-    static Properties loadProperties(final File file) throws IOException {
-        Reader reader = null;
-        try {
-            reader = new InputStreamReader(new FileInputStream(file), "UTF-8");
-            final Properties props = new Properties();
-            props.load(reader);
-            return props;
-        } finally {
-            safeClose(reader);
-        }
     }
 
 }

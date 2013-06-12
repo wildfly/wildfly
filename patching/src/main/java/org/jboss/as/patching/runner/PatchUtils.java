@@ -31,13 +31,19 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
+import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.installation.PatchableTarget;
@@ -53,6 +59,40 @@ public final class PatchUtils {
             //
         }
     };
+
+    public static String readRef(final Properties properties, final String name) {
+        final String ref = (String) properties.get(name);
+        if(ref == null) {
+            return PatchInfo.BASE;
+        }
+        return ref;
+    }
+
+    public static List<String> readRefs(final Properties properties) throws IOException {
+        String layersProp = (String) properties.get(Constants.PATCHES);
+        if (layersProp == null || (layersProp = layersProp.trim()).length() == 0) {
+            return Collections.emptyList();
+        } else {
+            final String[] names = layersProp.split(",");
+            final List<String> patches = new ArrayList<String>();
+            for (final String name : names) {
+                patches.add(name);
+            }
+            return Collections.unmodifiableList(patches);
+        }
+    }
+
+    public static String asString(final List<String> values) {
+        final StringBuilder builder = new StringBuilder();
+        for (final String value : values) {
+            builder.append(value);
+            builder.append(',');
+        }
+        if (builder.length() > 0) {
+            builder.setLength(builder.length() - 1);
+        }
+        return builder.toString();
+    }
 
     public static String readRef(final File file) throws IOException {
         if(! file.exists()) {
@@ -182,4 +222,29 @@ public final class PatchUtils {
         return path.toArray(new File[path.size()]);
     }
 
+    public static void writeProperties(final File file, final Properties properties) throws IOException {
+        final OutputStream os = new FileOutputStream(file);
+        try {
+            final Writer writer = new OutputStreamWriter(os, "UTF-8");
+            properties.store(writer, "read only");
+            writer.close();
+        } finally {
+            safeClose(os);
+        }
+    }
+
+    public static Properties loadProperties(final File file) throws IOException {
+        if (! file.exists()) {
+            return new Properties();
+        }
+        Reader reader = null;
+        try {
+            reader = new InputStreamReader(new FileInputStream(file), "UTF-8");
+            final Properties props = new Properties();
+            props.load(reader);
+            return props;
+        } finally {
+            safeClose(reader);
+        }
+    }
 }

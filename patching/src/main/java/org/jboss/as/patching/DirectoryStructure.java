@@ -24,12 +24,11 @@ package org.jboss.as.patching;
 
 import static org.jboss.as.patching.Constants.APP_CLIENT;
 import static org.jboss.as.patching.Constants.BUNDLES;
-import static org.jboss.as.patching.Constants.CUMULATIVE;
 import static org.jboss.as.patching.Constants.DOMAIN;
+import static org.jboss.as.patching.Constants.INSTALLATION_METADATA;
 import static org.jboss.as.patching.Constants.METADATA;
 import static org.jboss.as.patching.Constants.MODULES;
 import static org.jboss.as.patching.Constants.PATCHES;
-import static org.jboss.as.patching.Constants.REFERENCES;
 import static org.jboss.as.patching.Constants.STANDALONE;
 import static org.jboss.as.patching.IoUtils.newFile;
 
@@ -107,25 +106,14 @@ import org.jboss.as.patching.installation.InstalledImage;
  * |           `-- misc            (misc backup)
  * |       |-- layers (metadata for patched layers)
  * |       |   |-- base
- * |       |   |   |-- cumulative (cumulative link)
- * |       |   |   `-- references
- * |       |   |       |-- patch-base-1 (list of one-off patches)
- * |       |   |       `-- patch-base-2
+ * |       |   |   `-- layer.conf
  * |       |   |-- xyz
- * |       |   |   |-- cumulative
- * |       |   |   `-- references
- * |       |   |       |-- patch-xyz-1
- * |       |   |       `-- patch-xyz-2
+ * |       |   |   `-- layer.conf
  * |       |   |-- vuw
- * |       |   |   |-- cumulative
- * |       |   |   `-- references
- * |       |   |       `-- patch-vuw-1
+ * |       |   |   `-- layer.conf
  * |       `-- add-ons (metadata for patched add-ons)
  * |           `-- def
- * |               |-- cumulative
- * |               `-- references
- * |                  |-- patch-def-1
- * |                  `-- patch-def-2
+ * |               `-- layer.conf
  * `-- jboss-modules.jar
  * </code>
  * </pre>
@@ -136,18 +124,18 @@ import org.jboss.as.patching.installation.InstalledImage;
  *     <li>let paths be a list of File</li>
  *     <li>for each layer in {@link org.jboss.as.patching.installation.InstalledImage#getLayersConf()} file and "base":</li>
  *     <ol>
- *        <li>read the cumulativeID in {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getCumulativeLink()}</li>
+ *        <li>read the cumulativeID in {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getInstallationInfo()}</li>
  *        <li>append {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getModulePatchDirectory(String)} for the cumulativeID (if it exists) to the paths</li>
- *        <li>for each one-off patchIDs in {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getCumulativeRefs(String)}</li>
+ *        <li>for each one-off patchIDs in {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getInstallationInfo()}</li>
  *        <ol>
  *            <li>append {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getModulePatchDirectory(String)} (if it exists) to the paths</li>
  *        </ol>
  *     </ol>
  *     <li>for each addOn in {@link InstalledImage#getModulesDir()}}/system/add-ons</li>
  *     <ol>
- *        <li>read the cumulativeID in {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getCumulativeLink()}</li>
+ *        <li>read the cumulativeID in {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getInstallationInfo()}</li>
  *        <li>append {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getModulePatchDirectory(String)} for the cumulativeID (if it exists) to the paths</li>
- *        <li>for each one-off patchIDs in {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getCumulativeRefs(String)}</li>
+ *        <li>for each one-off patchIDs in {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getInstallationInfo()}</li>
  *        <ol>
  *            <li>append {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getModulePatchDirectory(String)} (if it exists) to the paths</li>
  *        </ol>
@@ -169,20 +157,11 @@ public abstract class DirectoryStructure {
     public abstract InstalledImage getInstalledImage();
 
     /**
-     * Get the cumulative patch symlink file.
+     * Get the installation metadata.
      *
-     * @return the cumulative patch id
+     * @return the installation metadata file
      */
-    public abstract File getCumulativeLink();
-
-    /**
-     * Get the references file, containing all active patches for a given
-     * cumulative patch release.
-     *
-     * @param cumulativeId the cumulative patch id
-     * @return the cumulative references file
-     */
-    public abstract File getCumulativeRefs(final String cumulativeId);
+    public abstract File getInstallationInfo();
 
     /**
      * Get the bundles repository root.
@@ -300,14 +279,8 @@ public abstract class DirectoryStructure {
         }
 
         @Override
-        public File getCumulativeLink() {
-            return new File(getPatchesMetadata(), CUMULATIVE);
-        }
-
-        @Override
-        public File getCumulativeRefs(final String cumulativeId) {
-            final File references = new File(getPatchesMetadata(), REFERENCES);
-            return new File(references, cumulativeId);
+        public File getInstallationInfo() {
+            return new File(getPatchesMetadata(), INSTALLATION_METADATA);
         }
 
         public File getPatchDirectory(final String patchId) {
