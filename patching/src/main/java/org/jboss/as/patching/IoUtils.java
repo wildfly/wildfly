@@ -178,6 +178,9 @@ public class IoUtils {
     }
 
     public static boolean recursiveDelete(File root) {
+        if (root == null) {
+            return true;
+        }
         boolean ok = true;
         if (root.isDirectory()) {
             final File[] files = root.listFiles();
