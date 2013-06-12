@@ -34,6 +34,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -89,15 +90,24 @@ abstract class AbstractLoggingOperationsTestCase {
         }
     }
 
-    ModelNode executeOperation(final ModelNode op) throws IOException {
-        ModelNode result = getManagementClient().getControllerClient().execute(op);
+    static ModelNode execute(final ModelControllerClient client, final ModelNode op) throws IOException {
+        ModelNode result = client.execute(op);
         if (!Operations.isSuccessfulOutcome(result)) {
             Assert.assertTrue(Operations.getFailureDescription(result).toString(), false);
         }
         return result;
     }
 
+    ModelNode executeOperation(final ModelNode op) throws IOException {
+        return execute(getManagementClient().getControllerClient(), op);
+    }
+
     protected abstract ManagementClient getManagementClient();
+
+    protected void setEnabled(final PathAddress address, final boolean enabled) throws IOException {
+        final ModelNode op = Operations.createWriteAttributeOperation(address.toModelNode(), ModelDescriptionConstants.ENABLED, enabled);
+        executeOperation(op);
+    }
 
     protected void testWrite(final ModelNode address, final String attribute, final String value) throws IOException {
         final ModelNode writeOp = Operations.createWriteAttributeOperation(address, attribute, value);
