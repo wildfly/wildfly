@@ -29,11 +29,12 @@ import java.net.URL;
 import java.util.Collections;
 
 import org.jboss.as.patching.Constants;
-import org.jboss.as.patching.DirectoryStructure;
-import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.installation.InstallationManager;
+import org.jboss.as.patching.installation.InstallationManagerService;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.runner.ContentVerificationPolicy;
+import org.jboss.as.patching.runner.PatchToolImpl;
 import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.as.version.ProductConfig;
@@ -150,23 +151,21 @@ public interface PatchTool {
          * @return the patch tool
          * @throws IOException
          */
-        public static PatchTool create(final File jbossHome) throws IOException {
-            final DirectoryStructure structure = DirectoryStructure.createLegacy(jbossHome.getAbsoluteFile());
+        public static PatchTool loadFromRoot(final File jbossHome) throws IOException {
             final ModuleLoader loader = ModuleLoader.forClass(PatchTool.class);
             final ProductConfig config = new ProductConfig(loader, jbossHome.getAbsolutePath(), Collections.emptyMap());
-            final PatchInfo info = LocalPatchInfo.load(config, structure);
-            return create(info, structure);
+            final InstallationManager manager = InstallationManagerService.load(jbossHome, config);
+            return create(manager);
         }
 
         /**
-         * Create an offline local patch tool.
+         * Create a offline local patch tool.
          *
-         * @param patchInfo the patch info
-         * @param structure the directory structure
+         * @param manager the installation manager
          * @return the patch tool
          */
-        public static PatchTool create(final PatchInfo patchInfo, final DirectoryStructure structure) {
-            return new LocalPatchTool(patchInfo, structure);
+        public static PatchTool create(final InstallationManager manager) {
+            return new PatchToolImpl(manager);
         }
 
     }

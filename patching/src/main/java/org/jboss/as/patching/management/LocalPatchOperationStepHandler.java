@@ -22,9 +22,6 @@
 
 package org.jboss.as.patching.management;
 
-import static org.jboss.as.patching.PatchMessages.MESSAGES;
-
-import java.io.IOException;
 import java.io.InputStream;
 
 import org.jboss.as.controller.OperationContext;
@@ -34,12 +31,9 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerService;
-import org.jboss.as.patching.installation.InstalledIdentity;
-import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentType;
 import org.jboss.as.patching.runner.ContentVerificationPolicy;
-import org.jboss.as.patching.runner.LegacyPatchRunner;
 import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.as.patching.tool.PatchTool;
@@ -55,24 +49,14 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         context.acquireControllerLock();
         // Setup
-        final PatchInfoService service = (PatchInfoService) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME).getValue();
         final InstallationManager installationManager = (InstallationManager) context.getServiceRegistry(false).getRequiredService(InstallationManagerService.NAME).getValue();
-
-        // FIXME can we check whether the process is reload-required directly from the operation context?
-        if (service.requiresRestart()) {
-            throw MESSAGES.serverRequiresRestart();
-        }
-
         try {
-            InstalledImage installedImage = installationManager.getIdentity().loadTargetInfo().getDirectoryStructure().getInstalledImage();
-            InstalledIdentity installedIdentity = installationManager.getInstalledIdentity();
-            LegacyPatchRunner runner = new LegacyPatchRunner(installedImage, installedIdentity);
+            final PatchTool runner = PatchTool.Factory.create(installationManager);
             final ContentVerificationPolicy policy = PatchTool.Factory.create(operation);
 
             final int index = operation.get(ModelDescriptionConstants.INPUT_STREAM_INDEX).asInt(0);
             final InputStream is = context.getAttachmentStream(index);
-            final PatchingResult result = runner.executeDirect(is, policy);
-            service.restartRequired();
+            final PatchingResult result = runner.applyPatch(is, policy);
             context.restartRequired();
             context.completeStep(new OperationContext.ResultHandler() {
 
@@ -81,7 +65,6 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
                     if(resultAction == OperationContext.ResultAction.KEEP) {
                         result.commit();
                     } else {
-                        service.clearRestartRequired();
                         context.revertRestartRequired();
                         result.rollback();
                     }
@@ -109,8 +92,6 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
             } else {
                 throw new OperationFailedException(e.getMessage(), e);
             }
-        } catch (IOException e) {
-            throw new OperationFailedException(e.getMessage(), e);
         }
     }
 

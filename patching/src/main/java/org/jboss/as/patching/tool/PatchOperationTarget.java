@@ -67,7 +67,7 @@ public abstract class PatchOperationTarget {
      * @throws IOException
      */
     public static final PatchOperationTarget createLocal(final File jbossHome) throws IOException {
-        final PatchTool tool = PatchTool.Factory.create(jbossHome);
+        final PatchTool tool = PatchTool.Factory.loadFromRoot(jbossHome);
         return new LocalPatchOperationTarget(tool);
     }
 

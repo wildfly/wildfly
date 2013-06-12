@@ -48,9 +48,6 @@ public final class PatchIntegrationFactory implements ModelControllerServiceInit
 
     protected void initializeCoreServices(final ServiceTarget serviceTarget, final ManagementResourceRegistration registration, final Resource resource) {
 
-        // Install the patch service
-        PatchInfoService.installService(serviceTarget);
-
         // Install the installation manager service
         final ServiceController<InstallationManager> imController = InstallationManagerService.installService(serviceTarget);
 
