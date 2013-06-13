@@ -25,7 +25,7 @@
 
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
-   <extension-module>org.wildfly.clustering.subsystem</extension-module>
+   <extension-module>org.wildfly.extension.cluster</extension-module>
    <subsystem xmlns="urn:jboss:domain:cluster:1.0">
        <management-client socket-binding="management-native"/>
    </subsystem>
