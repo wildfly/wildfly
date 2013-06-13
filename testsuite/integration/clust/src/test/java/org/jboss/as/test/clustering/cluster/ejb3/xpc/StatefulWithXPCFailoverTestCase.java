@@ -206,7 +206,6 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
 
         } finally {
             org.apache.http.client.utils.HttpClientUtils.closeQuietly(client);
-            client.getConnectionManager().shutdown();
         }
     }
 
@@ -215,9 +214,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
     public void testBasicXPC(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, InterruptedException {
-
-        stop(CONTAINER_2);
+            throws IOException, InterruptedException, URISyntaxException {
 
         DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
 
@@ -229,6 +226,10 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
         String xpc2_getdestroy_url = baseURL2 + "count?command=destroy";
 
         try {
+            stop(CONTAINER_2);
+
+            this.establishView(client, baseURL1, NODE_1);
+
             // extended persistence context is available on node1
 
             log.info(new Date() + "create employee entity ");
@@ -244,6 +245,8 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
 
             start(CONTAINER_2);
 
+            this.establishView(client, baseURL1, NODE_1, NODE_2);
+
             log.info(new Date() + "2. started node2 + deployed, about to read entity on node1");
 
             employeeName = executeUrlWithAnswer(client, xpc2_get_url, "2. started node2, xpc on node1, node1 should be able to read entity on node1");
@@ -253,6 +256,8 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
 
             // failover to deployment2
             stop(CONTAINER_1); // failover #1 to node 2
+
+            this.establishView(client, baseURL2, NODE_2);
 
             log.info(new Date() + "3. stopped node1 to force failover, about to read entity on node2");
 
@@ -266,7 +271,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
             log.info(new Date() + "4. test is done");
 
         } finally {
-            client.getConnectionManager().shutdown();
+            org.apache.http.client.utils.HttpClientUtils.closeQuietly(client);
         }
     }
 
