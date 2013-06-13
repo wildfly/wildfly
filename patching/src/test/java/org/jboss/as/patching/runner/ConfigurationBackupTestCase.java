@@ -26,7 +26,7 @@ import static junit.framework.Assert.assertEquals;
 import static org.jboss.as.patching.HashUtils.bytesToHexString;
 import static org.jboss.as.patching.HashUtils.hashFile;
 import static org.jboss.as.patching.IoUtils.mkdir;
-import static org.jboss.as.patching.PatchInfo.BASE;
+import static org.jboss.as.patching.Constants.BASE;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileContent;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenApplied;

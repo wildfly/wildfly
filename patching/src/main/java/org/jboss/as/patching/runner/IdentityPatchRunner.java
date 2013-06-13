@@ -2,6 +2,7 @@ package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.runner.PatchingTasks.ContentTaskDefinition;
 import static org.jboss.as.patching.runner.PatchingTasks.apply;
+import static org.jboss.as.patching.runner.PatchingTasks.rollback;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
@@ -188,12 +189,12 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
 
     @Override
     public void completed() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // nothing here
     }
 
     @Override
     public void canceled() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // nothing here
     }
 
     /**
@@ -258,7 +259,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
                 final IdentityPatchContext.PatchEntry entry = context.resolveForElement(patchElement);
                 final Map<Location, ContentTaskDefinition> modifications = entry.getModifications();
                 // Create the rollback
-                PatchingTasks.rollback(elementPatchId, original.getModifications(), patchElement.getModifications(), modifications, ContentItemFilter.ALL_BUT_MISC);
+                PatchingTasks.rollback(elementPatchId, original.getModifications(), patchElement.getModifications(), modifications, ContentItemFilter.MISC_ONLY);
                 entry.rollback(elementPatchId);
             }
             if (!originalLayers.isEmpty() || !originalAddOns.isEmpty()) {

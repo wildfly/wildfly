@@ -57,11 +57,7 @@ public class PatchToolImpl implements PatchTool {
 
     public PatchToolImpl(final InstallationManager manager) {
         this.manager = manager;
-        try {
-            this.image = manager.getIdentity().loadTargetInfo().getDirectoryStructure().getInstalledImage();
-        } catch (IOException e) {
-            throw new RuntimeException(e); // TODO manager.getInstalledImage()
-        }
+        this.image = manager.getInstalledImage();
         this.runner = new IdentityPatchRunner(image);
     }
 

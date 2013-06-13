@@ -31,9 +31,6 @@ import java.util.List;
  */
 public interface PatchInfo {
 
-    /** The default if no patches are active. */
-    String BASE = Constants.BASE;
-
     /**
      * Get the current version.
      *

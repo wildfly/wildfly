@@ -35,11 +35,13 @@ import java.util.Map;
 class InstalledIdentityImpl extends InstalledIdentity {
 
     private final Identity identity;
+    private final InstalledImage installedImage;
     private final Map<String, Layer> layers = new LinkedHashMap<String, Layer>();
     private final Map<String, AddOn> addOns = new LinkedHashMap<String, AddOn>();
 
-    protected InstalledIdentityImpl(final Identity identity) {
+    protected InstalledIdentityImpl(final Identity identity, final InstalledImage installedImage) {
         this.identity = identity;
+        this.installedImage = installedImage;
     }
 
     @Override
@@ -77,6 +79,11 @@ class InstalledIdentityImpl extends InstalledIdentity {
     @Override
     public Collection<AddOn> getAddOns() {
         return Collections.unmodifiableCollection(this.addOns.values());
+    }
+
+    @Override
+    public InstalledImage getInstalledImage() {
+        return installedImage;
     }
 
     protected Layer putLayer(final String name, final Layer layer) {
