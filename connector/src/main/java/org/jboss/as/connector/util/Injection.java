@@ -151,6 +151,26 @@ public class Injection {
     }
 
     /**
+     * Compare a class name to the argument type of a Method, taking account of primitives
+     * @param propertyType the class name to check
+     * @param methodPropertyType the actual type of the property in the method
+     * @return <code>true</code> if they match
+     */
+    private boolean argumentMatches(String classType, String methodArgumentType)
+    {
+        return (classType.equals(methodArgumentType))
+            || (classType.equals("java.lang.Byte") && methodArgumentType.equals("byte"))
+            || (classType.equals("java.lang.Short") && methodArgumentType.equals("short"))
+            || (classType.equals("java.lang.Integer") && methodArgumentType.equals("int"))
+            || (classType.equals("java.lang.Long") && methodArgumentType.equals("long"))
+            || (classType.equals("java.lang.Float") && methodArgumentType.equals("float"))
+            || (classType.equals("java.lang.Double") && methodArgumentType.equals("double"))
+            || (classType.equals("java.lang.Boolean") && methodArgumentType.equals("boolean"))
+            || (classType.equals("java.lang.Character") && methodArgumentType.equals("char"))
+            ;
+    }
+
+    /**
      * Find a method
      * @param clz The class
      * @param methodName The method name
@@ -164,7 +184,7 @@ public class Injection {
             for (int i = 0; i < methods.length; i++) {
                 Method method = methods[i];
                 if (methodName.equals(method.getName()) && method.getParameterTypes().length == 1) {
-                    if (propertyType == null || propertyType.equals(method.getParameterTypes()[0].getName())) {
+                    if (propertyType == null || argumentMatches(propertyType,method.getParameterTypes()[0].getName())) {
                         if (hits == null)
                             hits = new ArrayList<Method>(1);
 
