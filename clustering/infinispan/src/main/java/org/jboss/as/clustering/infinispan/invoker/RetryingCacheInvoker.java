@@ -28,6 +28,8 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 
+import javax.transaction.xa.XAException;
+
 import org.infinispan.Cache;
 import org.infinispan.CacheException;
 import org.infinispan.context.Flag;
@@ -61,7 +63,7 @@ public class RetryingCacheInvoker implements CacheInvoker {
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.as.clustering.infinispan.invoker.CacheInvoker#invoke(org.infinispan.Cache, org.jboss.as.clustering.infinispan.invoker.CacheInvoker.Operation)
+     * @see org.jboss.as.clustering.infinispan.invoker.CacheInvoker#invoke(org.infinispan.Cache, org.jboss.as.clustering.infinispan.invoker.CacheInvoker.Operation, org.infinispan.context.Flag...)
      */
     @Override
     public <K, V, R> R invoke(Cache<K, V> cache, Operation<K, V, R> operation, Flag... allFlags) {
@@ -78,36 +80,50 @@ public class RetryingCacheInvoker implements CacheInvoker {
 
         for (int i = 0; i <= this.backOffIntervals.length; ++i) {
             // Make sure Flag.FAIL_SILENTLY, if specified, is applied to the last try only
+            boolean retry = (i < this.backOffIntervals.length);
             try {
-                return this.invoker.invoke(cache, operation, (i < this.backOffIntervals.length) ? attemptFlags : allFlags);
+                return this.invoker.invoke(cache, operation, retry ? attemptFlags : allFlags);
+            } catch (TimeoutException e) {
+                exception = e;
+            } catch (SuspectException e) {
+                exception = e;
             } catch (CacheException e) {
-                if (!allowRetry(e)) {
+                // If the tx commit (e.g. Cache.endBatch(true)) was rolled back due to failure on prepare, then retry
+                Throwable cause = e.getCause();
+                if (cause instanceof XAException) {
+                    XAException xaCause = (XAException) cause;
+                    // TimeoutException/SuspectException on prepare throws XAException.XA_RBROLLBACK
+                    // See org.infinispan.transaction.TransactionCoordinator.prepare(...)
+                    if (xaCause.errorCode == XAException.XA_RBROLLBACK) {
+                        exception = e;
+                    } else {
+                        throw e;
+                    }
+                } else {
                     throw e;
                 }
-                exception = e;
             }
 
-            if (i < this.backOffIntervals.length) {
+            if (retry) {
                 int delay = this.backOffIntervals[i];
 
-                try {
-                    if (ROOT_LOGGER.isTraceEnabled()) {
-                        ROOT_LOGGER.tracef(exception, "Cache operation failed.  Retrying in %d ms", Integer.valueOf(delay));
-                    }
-
-                    Thread.sleep(delay);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                if (ROOT_LOGGER.isTraceEnabled()) {
+                    ROOT_LOGGER.tracef(exception, "Cache operation failed.  Retrying in %d ms", delay);
                 }
+
+                if (delay > 0) {
+                    try {
+                        Thread.sleep(delay);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                } else {
+                    Thread.yield();
+                }
+                if (Thread.currentThread().isInterrupted()) break;
             }
         }
 
-        throw MESSAGES.abortingCacheOperation(exception, Integer.valueOf(this.backOffIntervals.length + 1));
-    }
-
-    private static boolean allowRetry(Throwable e) {
-        if ((e instanceof SuspectException) || (e instanceof TimeoutException)) return true;
-        Throwable cause = e.getCause();
-        return (cause != null) ? allowRetry(cause) : false;
+        throw MESSAGES.abortingCacheOperation(exception, this.backOffIntervals.length);
     }
 }
