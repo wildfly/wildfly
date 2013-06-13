@@ -161,6 +161,32 @@ public class SessionManagerFacadeTestCase {
     }
 
     @Test
+    public void createSessionAlreadyExists() {
+        HttpServerExchange exchange = new HttpServerExchange(null);
+        Batcher batcher = mock(Batcher.class);
+        SessionConfig config = mock(SessionConfig.class);
+        @SuppressWarnings("unchecked")
+        Session<Void> session = mock(Session.class);
+        String requestedSessionId = "session.route1";
+        String sessionId = "session";
+        
+        when(this.manager.getBatcher()).thenReturn(batcher);
+        when(batcher.startBatch()).thenReturn(true);
+        when(config.findSessionId(exchange)).thenReturn(requestedSessionId);
+        when(this.manager.findSession(sessionId)).thenReturn(session);
+        
+        IllegalStateException exception = null;
+        try {
+            this.facade.createSession(exchange, config);
+        } catch (IllegalStateException e) {
+            exception = e;
+        }
+        assertNotNull(exception);
+        
+        verify(batcher).endBatch(false);
+    }
+
+    @Test
     public void getSession() {
         HttpServerExchange exchange = new HttpServerExchange(null);
         Batcher batcher = mock(Batcher.class);

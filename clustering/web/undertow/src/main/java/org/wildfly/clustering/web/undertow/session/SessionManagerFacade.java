@@ -95,15 +95,20 @@ public class SessionManagerFacade implements UndertowSessionManager {
             throw UndertowMessages.MESSAGES.couldNotFindSessionCookieConfig();
         }
         String id = this.findSessionId(exchange, config);
+        Batcher batcher = this.manager.getBatcher();
+        boolean started = batcher.startBatch();
+
         if (id != null) {
             if (this.manager.findSession(id) != null) {
+                if (started) {
+                    batcher.endBatch(false);
+                }
                 throw UndertowMessages.MESSAGES.sessionAlreadyExists(id);
             }
         } else {
             id = this.manager.createSessionId();
         }
 
-        this.manager.getBatcher().startBatch();
         Session<Void> session = this.manager.createSession(id);
         io.undertow.server.session.Session facade = this.getSession(session, exchange, config);
         this.sessionListeners.sessionCreated(facade, exchange);
