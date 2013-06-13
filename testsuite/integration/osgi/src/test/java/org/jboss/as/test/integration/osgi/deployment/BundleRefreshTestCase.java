@@ -29,7 +29,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.osgi.deployment.bundle.ServletV200;
 import org.jboss.as.test.integration.osgi.deployment.suba.ResourceRevisionAccess;
@@ -74,7 +73,7 @@ public class BundleRefreshTestCase {
     @Deployment
     public static Archive<?> getDeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "deployment-refresh-tests");
-        archive.addClasses(ServerDeploymentHelper.class, HttpRequest.class, FrameworkUtils.class);
+        archive.addClasses(HttpRequest.class, FrameworkUtils.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
