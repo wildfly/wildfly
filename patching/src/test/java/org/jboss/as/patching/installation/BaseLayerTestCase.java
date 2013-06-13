@@ -69,7 +69,7 @@ public class BaseLayerTestCase extends AbstractTaskTestCase {
         assertEquals(BASE, layer.getName());
 
         PatchableTarget.TargetInfo targetInfo = layer.loadTargetInfo();
-        assertEquals(BASE, targetInfo.getCumulativeID());
+        assertEquals(BASE, targetInfo.getReleasePatchID());
         assertTrue(targetInfo.getPatchIDs().isEmpty());
         DirectoryStructure directoryStructure = targetInfo.getDirectoryStructure();
         assertEquals(newFile(env.getBundleRepositoryRoot(), "system", LAYERS, BASE), directoryStructure.getBundleRepositoryRoot());

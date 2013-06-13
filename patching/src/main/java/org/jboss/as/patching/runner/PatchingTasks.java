@@ -38,7 +38,7 @@ import org.jboss.as.patching.metadata.ModificationType;
 /**
  * Utility class to auto resolve conflicts when rolling back/invalidating patches.
  *
- * The base for determining whether a cumulative patch can be applied cleanly (no conflicts) is when all one-patches
+ * The base for determining whether a release or cumulative patch can be applied cleanly (no conflicts) is when all one-patches
  * have been rolled back. For a rollback we go through the recorded history and update the target (current state), so
  * that we are left with a single transition. Additionally we track whether conflicts had to be resolved when applying
  * a previous patch and mark this as a conflict to be resolved when applying this patch.

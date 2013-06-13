@@ -23,11 +23,9 @@
 package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.HashUtils.hashFile;
-import static org.jboss.as.patching.IoUtils.NO_CONTENT;
+import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.patching.PatchInfo.BASE;
-import static org.jboss.as.patching.metadata.ModificationType.ADD;
-import static org.jboss.as.patching.metadata.ModificationType.MODIFY;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDefinedModule;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDirDoesNotExist;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDirExists;
@@ -35,29 +33,18 @@ import static org.jboss.as.patching.runner.PatchingAssert.assertFileContent;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenApplied;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenRolledBack;
-import static org.jboss.as.patching.runner.TestUtils.createModule;
 import static org.jboss.as.patching.runner.TestUtils.createPatchXMLFile;
 import static org.jboss.as.patching.runner.TestUtils.createZippedPatchFile;
 import static org.jboss.as.patching.runner.TestUtils.dump;
-import static org.jboss.as.patching.runner.TestUtils.getModulePath;
-import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
 import static org.jboss.as.patching.runner.TestUtils.tree;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-import java.util.Collections;
 
-import org.jboss.as.patching.LocalPatchInfo;
-import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.installation.Identity;
-import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.metadata.ContentModification;
-import org.jboss.as.patching.metadata.MiscContentItem;
-import org.jboss.as.patching.metadata.ModuleItem;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.patching.metadata.impl.IdentityImpl;
@@ -69,11 +56,11 @@ import org.junit.Test;
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012, Red Hat Inc
  */
-public class CumulativePatchTestCase extends AbstractTaskTestCase {
+public class UpgradePatchTestCase extends AbstractTaskTestCase {
 
     @Test
-    public void testApplyCumulativePatch() throws Exception {
-        // build a CP patch for the base installation
+    public void testApplyReleasePatch() throws Exception {
+        // build a Release patch for the base installation
         // with 1 added module
         String patchID = randomString();
         String layerPatchID = randomString();
@@ -87,7 +74,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
                 .setPatchId(patchID)
                 .setDescription(randomString())
                 .setIdentity(new IdentityImpl(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion()))
-                .setUpgrade(productConfig.getProductVersion() + "-CP1")
+                .setUpgrade(productConfig.getProductVersion() + "-Release1")
                 .addElement(new PatchElementImpl(layerPatchID)
                         .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
                         .setNoUpgrade()
@@ -107,7 +94,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
     }
 
     @Test
-    public void testApplyCumulativePatchAndRollback() throws Exception {
+    public void testApplyReleasePatchAndRollback() throws Exception {
         // start from a base installation
         // create an existing file in the AS7 installation
         File binDir = mkdir(env.getInstalledImage().getJbossHome(), "bin");
@@ -116,7 +103,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         dump(standaloneShellFile, "original script to run standalone AS7");
         byte[] existingHash = hashFile(standaloneShellFile);
 
-        // build a CP patch for the base installation
+        // build a Release patch for the base installation
         // with 1 added module
         // and 1 updated file
         String patchID = randomString();
@@ -133,7 +120,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
                 .setPatchId(patchID)
                 .setDescription(randomString())
                 .setIdentity(new IdentityImpl(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion()))
-                .setUpgrade(productConfig.getProductVersion() + "-CP1")
+                .setUpgrade(productConfig.getProductVersion() + "-Release1")
                 .addElement(new PatchElementImpl(layerPatchID)
                         .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
                         .setNoUpgrade()
@@ -166,41 +153,41 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
     }
 
     @Test
-    public void testApplyCumulativePatchThenOneOffPatch() throws Exception {
-        // build a CP patch for the base installation
+    public void testApplyReleasePatchThenOneOffPatch() throws Exception {
+        // build a Release patch for the base installation
         // with 1 added module
-        String cumulativePatchID = randomString();
-        String cumulativeLayerPatchID = randomString();
-        File cumulativePatchDir = mkdir(tempDir, cumulativePatchID);
+        String releasePatchID = randomString();
+        String releaseLayerPatchID = randomString();
+        File releasePatchDir = mkdir(tempDir, releasePatchID);
         String moduleName = randomString();
 
-        ContentModification moduleAdded = ContentModificationUtils.addModule(cumulativePatchDir, cumulativeLayerPatchID, moduleName);
+        ContentModification moduleAdded = ContentModificationUtils.addModule(releasePatchDir, releaseLayerPatchID, moduleName);
 
         InstalledIdentity installedIdentity = loadInstalledIdentity();
 
-        Patch cumulativePatch = PatchBuilder.create()
-                .setPatchId(cumulativePatchID)
+        Patch releasePatch = PatchBuilder.create()
+                .setPatchId(releasePatchID)
                 .setDescription(randomString())
                 .setIdentity(new IdentityImpl(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion()))
-                .setUpgrade(installedIdentity.getIdentity().getVersion() + "-CP1")
-                .addElement(new PatchElementImpl(cumulativeLayerPatchID)
+                .setUpgrade(installedIdentity.getIdentity().getVersion() + "-Release1")
+                .addElement(new PatchElementImpl(releaseLayerPatchID)
                         .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
                         .setNoUpgrade()
                         .addContentModification(moduleAdded))
                 .build();
 
-        createPatchXMLFile(cumulativePatchDir, cumulativePatch);
-        File zippedCumulativePatch = createZippedPatchFile(cumulativePatchDir, cumulativePatchID);
+        createPatchXMLFile(releasePatchDir, releasePatch);
+        File zippedReleasePatch = createZippedPatchFile(releasePatchDir, releasePatchID);
 
-        PatchingResult resultOfCumulativePatch = executePatch(zippedCumulativePatch);
-        assertPatchHasBeenApplied(resultOfCumulativePatch, cumulativePatch);
+        PatchingResult resultOfReleasePatch = executePatch(zippedReleasePatch);
+        assertPatchHasBeenApplied(resultOfReleasePatch, releasePatch);
 
-        // FIXME when is the product version persisted when the cumulative is applied?
-        productConfig = new ProductConfig(productConfig.getProductName(), productConfig.getProductVersion() + "-CP1", productConfig.getConsoleSlot());
+        // FIXME when is the product version persisted when the release is applied?
+        productConfig = new ProductConfig(productConfig.getProductName(), productConfig.getProductVersion() + "-Release1", productConfig.getConsoleSlot());
 
         InstalledIdentity updatedInstalledIdentity = loadInstalledIdentity();
 
-        File modulePatchDirectory = updatedInstalledIdentity.getLayers().get(0).loadTargetInfo().getDirectoryStructure().getModulePatchDirectory(cumulativeLayerPatchID);
+        File modulePatchDirectory = updatedInstalledIdentity.getLayers().get(0).loadTargetInfo().getDirectoryStructure().getModulePatchDirectory(releaseLayerPatchID);
         assertDirExists(modulePatchDirectory);
         assertDefinedModule(modulePatchDirectory, moduleName, moduleAdded.getItem().getContentHash());
 
@@ -214,8 +201,8 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         Patch oneOffPatch = PatchBuilder.create()
                 .setPatchId(oneOffPatchID)
                 .setDescription(randomString())
-                // one-off patch can be applied to CP
-                .setOneOffType(cumulativePatch.getResultingVersion())
+                // one-off patch can be applied to Release
+                .setOneOffType(releasePatch.getResultingVersion())
                 .addElement(new PatchElementImpl(oneOffLayerPatchID)
                         .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
                         .addContentModification(moduleModified))
@@ -234,39 +221,39 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
     }
 
     @Test
-    public void testApplyCumulativePatchThenOneOffPatchThenRollbackCumulativePatch() throws Exception {
-        // build a CP patch for the base installation
+    public void testApplyReleasePatchThenOneOffPatchThenRollbackReleasePatch() throws Exception {
+        // build a Release patch for the base installation
         // with 1 added module
-        String cumulativePatchID = randomString();
-        String cumulativeLayerPatchID = randomString();
-        File cumulativePatchDir = mkdir(tempDir, cumulativePatchID);
+        String releasePatchID = randomString();
+        String releaseLayerPatchID = randomString();
+        File releasePatchDir = mkdir(tempDir, releasePatchID);
         String moduleName = randomString();
 
-        ContentModification moduleAdded = ContentModificationUtils.addModule(cumulativePatchDir, cumulativeLayerPatchID, moduleName);
+        ContentModification moduleAdded = ContentModificationUtils.addModule(releasePatchDir, releaseLayerPatchID, moduleName);
 
         InstalledIdentity identityBeforePatch = loadInstalledIdentity();
 
-        Patch cumulativePatch = PatchBuilder.create()
-                .setPatchId(cumulativePatchID)
+        Patch releasePatch = PatchBuilder.create()
+                .setPatchId(releasePatchID)
                 .setDescription(randomString())
                 .setIdentity(new IdentityImpl(identityBeforePatch.getIdentity().getName(), identityBeforePatch.getIdentity().getVersion()))
-                .setUpgrade(identityBeforePatch.getIdentity().getVersion() + "-CP1")
-                .addElement(new PatchElementImpl(cumulativeLayerPatchID)
+                .setUpgrade(identityBeforePatch.getIdentity().getVersion() + "-Release1")
+                .addElement(new PatchElementImpl(releaseLayerPatchID)
                         .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
                         .setNoUpgrade()
                         .addContentModification(moduleAdded))
                 .build();
-        createPatchXMLFile(cumulativePatchDir, cumulativePatch);
-        File zippedCumulativePatch = createZippedPatchFile(cumulativePatchDir, cumulativePatchID);
+        createPatchXMLFile(releasePatchDir, releasePatch);
+        File zippedReleasePatch = createZippedPatchFile(releasePatchDir, releasePatchID);
 
-        PatchingResult resultOfCumulativePatch = executePatch(zippedCumulativePatch);
-        assertPatchHasBeenApplied(resultOfCumulativePatch, cumulativePatch);
+        PatchingResult resultOfReleasePatch = executePatch(zippedReleasePatch);
+        assertPatchHasBeenApplied(resultOfReleasePatch, releasePatch);
 
-        // FIXME when is the product version persisted when the cumulative is applied?
-        productConfig = new ProductConfig(productConfig.getProductName(), productConfig.getProductVersion() + "-CP1", productConfig.getConsoleSlot());
+        // FIXME when is the product version persisted when the release is applied?
+        productConfig = new ProductConfig(productConfig.getProductName(), productConfig.getProductVersion() + "-Release1", productConfig.getConsoleSlot());
 
         InstalledIdentity updatedInstalledIdentity = loadInstalledIdentity();
-        File modulePatchDirectory = updatedInstalledIdentity.getLayers().get(0).loadTargetInfo().getDirectoryStructure().getModulePatchDirectory(cumulativeLayerPatchID);
+        File modulePatchDirectory = updatedInstalledIdentity.getLayers().get(0).loadTargetInfo().getDirectoryStructure().getModulePatchDirectory(releaseLayerPatchID);
         assertDirExists(modulePatchDirectory);
         assertDefinedModule(modulePatchDirectory, moduleName, moduleAdded.getItem().getContentHash());
 
@@ -280,8 +267,8 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         Patch oneOffPatch = PatchBuilder.create()
                 .setPatchId(oneOffPatchID)
                 .setDescription(randomString())
-                        // one-off patch can be applied to CP
-                .setOneOffType(cumulativePatch.getResultingVersion())
+                        // one-off patch can be applied to Release
+                .setOneOffType(releasePatch.getResultingVersion())
                 .addElement(new PatchElementImpl(oneOffLayerPatchID)
                         .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
                         .addContentModification(moduleModified))
@@ -298,11 +285,11 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         assertDirExists(modulePatchDirectory);
         assertDefinedModule(modulePatchDirectory, moduleName, moduleModified.getItem().getContentHash());
 
-        // rollback the cumulative patch, this should also rollback the one-off patch
-        PatchingResult resultOfCumulativePatchRollback = rollback(cumulativePatchID);
+        // rollback the release patch, this should also rollback the one-off patch
+        PatchingResult resultOfReleasePatchRollback = rollback(releasePatchID);
 
         tree(env.getInstalledImage().getJbossHome());
-        assertPatchHasBeenRolledBack(resultOfCumulativePatchRollback, identityBeforePatch.getIdentity());
+        assertPatchHasBeenRolledBack(resultOfReleasePatchRollback, identityBeforePatch.getIdentity());
 
         updatedInstalledIdentity = loadInstalledIdentity();
         File layerModuleRoot = updatedInstalledIdentity.getLayers().get(0).loadTargetInfo().getDirectoryStructure().getModuleRoot();
@@ -325,7 +312,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         Patch oneOffPatch = PatchBuilder.create()
                 .setPatchId(oneOffPatchID)
                 .setDescription(randomString())
-                        // one-off patch can be applied to CP
+                        // one-off patch can be applied to Release
                 .setOneOffType(productConfig.getProductVersion())
                 .addElement(new PatchElementImpl(oneOffLayerPatchID)
                         .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
@@ -343,33 +330,33 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         assertDirExists(modulePatchDirectory);
         assertDefinedModule(modulePatchDirectory, moduleName, moduleAdded.getItem().getContentHash());
 
-        // build a CP patch for the base installation
-        String cumulativePatchID = "cumulativePatchID";// randomString() + "-CP";
-        String cumulativeLayerPatchID = "cumulativeLayerPatchID";//randomString();
-        File cumulativePatchDir = mkdir(tempDir, cumulativePatchID);
+        // build a Release patch for the base installation
+        String releasePatchID = "releasePatchID";// randomString() + "-Release";
+        String releaseLayerPatchID = "releaseLayerPatchID";//randomString();
+        File releasePatchDir = mkdir(tempDir, releasePatchID);
 
-        ContentModification moduleAddedInCumulativePatch = ContentModificationUtils.addModule(cumulativePatchDir, cumulativeLayerPatchID, moduleName, "different content in the module");
+        ContentModification moduleAddedInReleasePatch = ContentModificationUtils.addModule(releasePatchDir, releaseLayerPatchID, moduleName, "different content in the module");
 
-        Patch cumulativePatch = PatchBuilder.create()
-                .setPatchId(cumulativePatchID)
+        Patch releasePatch = PatchBuilder.create()
+                .setPatchId(releasePatchID)
                 .setDescription(randomString())
                 .setIdentity(new IdentityImpl(identityBeforePatch.getIdentity().getName(), identityBeforePatch.getIdentity().getVersion()))
-                .setUpgrade(identityBeforePatch.getIdentity().getVersion() + "-CP1")
-                .addElement(new PatchElementImpl(cumulativeLayerPatchID)
+                .setUpgrade(identityBeforePatch.getIdentity().getVersion() + "-Release1")
+                .addElement(new PatchElementImpl(releaseLayerPatchID)
                         .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
                         .setNoUpgrade()
-                        .addContentModification(moduleAddedInCumulativePatch))
+                        .addContentModification(moduleAddedInReleasePatch))
                 .build();
-        createPatchXMLFile(cumulativePatchDir, cumulativePatch);
-        File zippedCumulativePatch = createZippedPatchFile(cumulativePatchDir, cumulativePatchID);
+        createPatchXMLFile(releasePatchDir, releasePatch);
+        File zippedReleasePatch = createZippedPatchFile(releasePatchDir, releasePatchID);
 
-        PatchingResult resultOfCumulativePatch = executePatch(zippedCumulativePatch);
-        assertPatchHasBeenApplied(resultOfCumulativePatch, cumulativePatch);
+        PatchingResult resultOfReleasePatch = executePatch(zippedReleasePatch);
+        assertPatchHasBeenApplied(resultOfReleasePatch, releasePatch);
 
         tree(env.getInstalledImage().getJbossHome());
-        modulePatchDirectory = installedIdentityAfterOneOffPatch.getLayers().get(0).loadTargetInfo().getDirectoryStructure().getModulePatchDirectory(cumulativeLayerPatchID);
+        modulePatchDirectory = installedIdentityAfterOneOffPatch.getLayers().get(0).loadTargetInfo().getDirectoryStructure().getModulePatchDirectory(releaseLayerPatchID);
         assertDirExists(modulePatchDirectory);
-        assertDefinedModule(modulePatchDirectory, moduleName, moduleAddedInCumulativePatch.getItem().getContentHash());
+        assertDefinedModule(modulePatchDirectory, moduleName, moduleAddedInReleasePatch.getItem().getContentHash());
     }
 
 }

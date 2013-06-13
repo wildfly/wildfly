@@ -171,8 +171,8 @@ class IdentityPatchContext implements PatchContentProvider {
         assert state == State.NEW;
         final Patch.PatchType patchType = callback.getPatchType();
         final String patchId;
-        if (patchType == Patch.PatchType.CUMULATIVE) {
-            patchId = modification.getCumulativeID();
+        if (patchType == Patch.PatchType.UPGRADE) {
+            patchId = modification.getReleasePatchID();
         } else {
             patchId = callback.getPatchId();
         }
@@ -194,8 +194,8 @@ class IdentityPatchContext implements PatchContentProvider {
                     }
 
                     @Override
-                    public String getCumulativeID() {
-                        return identityEntry.delegate.getModifiedState().getCumulativeID();
+                    public String getReleasePatchID() {
+                        return identityEntry.delegate.getModifiedState().getReleasePatchID();
                     }
 
                     @Override
@@ -399,8 +399,8 @@ class IdentityPatchContext implements PatchContentProvider {
         }
 
         @Override
-        public String getCumulativeID() {
-            return delegate.getCumulativeID();
+        public String getReleasePatchID() {
+            return delegate.getReleasePatchID();
         }
 
         @Override
@@ -568,7 +568,7 @@ class IdentityPatchContext implements PatchContentProvider {
     /**
      * Create a rollback patch based on the recorded actions.
      *
-     * @param patchId          the new patch id, depending on cumulative or one-off
+     * @param patchId          the new patch id, depending on release or one-off
      * @param patchType        the current patch type
      * @param resultingVersion the resulting version
      * @return the rollback patch
@@ -639,14 +639,14 @@ class IdentityPatchContext implements PatchContentProvider {
         final PatchElement patchElement = entry.element;
         final Patch.PatchType patchType = patchElement.getPatchType();
         final String patchId;
-        if (patchType == Patch.PatchType.CUMULATIVE) {
-            patchId = entry.getCumulativeID();
+        if (patchType == Patch.PatchType.UPGRADE) {
+            patchId = entry.getReleasePatchID();
         } else {
             patchId = patchElement.getId();
         }
         final PatchElementImpl element = new PatchElementImpl(patchId);
         element.setProvider(patchElement.getProvider());
-        if (patchType == Patch.PatchType.CUMULATIVE) {
+        if (patchType == Patch.PatchType.UPGRADE) {
             element.setUpgrade(""); // no versions for patch-elements for nwo
         } else {
             element.setNoUpgrade();

@@ -39,10 +39,7 @@ import static org.jboss.as.patching.runner.TestUtils.touch;
 import static org.jboss.as.patching.runner.TestUtils.tree;
 
 import java.io.File;
-import java.util.Collections;
 
-import org.jboss.as.patching.LocalPatchInfo;
-import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.installation.Identity;
 import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.metadata.ContentModification;
@@ -60,7 +57,6 @@ import org.junit.Test;
  */
 public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
 
-    private LocalPatchInfo info;
     private byte[] originalAppClientHash;
     private byte[] originalStandaloneHash;
     private byte[] originalDomainHash;
@@ -68,8 +64,6 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
 
     @Before
     public void setUp() throws Exception {
-        // start from a base installation
-        info = new LocalPatchInfo(randomString(), PatchInfo.BASE, Collections.<String>emptyList(), env);
         // with some files in the configuration directories
         File appClientXmlFile = touch(env.getInstalledImage().getAppClientDir(), "configuration", "appclient.xml");
         dump(appClientXmlFile, "<original content of appclient configuration>");
@@ -84,7 +78,6 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
 
     @After
     public void tearDown() {
-        info = null;
         originalAppClientHash = null;
         originalStandaloneHash = null;
         originalDomainHash = null;

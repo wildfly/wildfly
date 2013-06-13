@@ -200,7 +200,7 @@ public final class PatchUtils {
         for (final String patch : patches) {
             path.add(structure.getModulePatchDirectory(patch));
         }
-        final String ref = info.getCumulativeID();
+        final String ref = info.getReleasePatchID();
         if (!BASE.equals(ref)) {
             path.add(structure.getModulePatchDirectory(ref));
         }
@@ -214,7 +214,7 @@ public final class PatchUtils {
         for (final String patch : patches) {
             path.add(structure.getBundlesPatchDirectory(patch));
         }
-        final String ref = info.getCumulativeID();
+        final String ref = info.getReleasePatchID();
         if (!BASE.equals(ref)) {
             path.add(structure.getBundlesPatchDirectory(ref));
         }
