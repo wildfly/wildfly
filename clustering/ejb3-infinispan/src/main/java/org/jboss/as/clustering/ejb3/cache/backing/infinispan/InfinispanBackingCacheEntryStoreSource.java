@@ -81,7 +81,7 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
     private boolean passivateEventsOnReplicate = DEFAULT_PASSIVATE_EVENTS_ON_REPLICATE;
 
     private final MarshallerFactory factory = Marshalling.getMarshallerFactory("river", MarshallerFactory.class.getClassLoader());
-    private CacheInvoker invoker = new RetryingCacheInvoker(new BatchCacheInvoker(), 0, 0);
+    private CacheInvoker invoker = new RetryingCacheInvoker(new BatchCacheInvoker(), 10, 100);
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> groupCache = new InjectedValue<Cache>();
     private final InjectedValue<SharedLocalYieldingClusterLockManager> lockManager = new InjectedValue<SharedLocalYieldingClusterLockManager>();
