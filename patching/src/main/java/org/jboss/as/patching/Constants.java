@@ -68,8 +68,7 @@ public class Constants {
     public static final String EXCLUDE_LAYER_BASE = "exclude.base.layer";
 
     // Files
-    public static final String CUMULATIVE = "cumulative";
-    public static final String REFERENCES = "references";
+    public static final String RELEASE_PATCH_ID = "release-patch-id";
     public static final String IDENTITY_METADATA = "identity.conf";    // .installation/identity.conf
     public static final String INSTALLATION_METADATA = "layer.conf";   // .installation/layer/xxx/layer.conf
     public static final String LAYERS_CONF = "layers.conf";            // modules/layers.conf

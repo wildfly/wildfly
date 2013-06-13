@@ -60,7 +60,7 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
         BUNDLES("bundles"),
         BUNDLE_SEARCH_PATH("bundle-search-path"),
         BUNDLE_SEARCH_PATHS("bundle-search-paths"),
-        CUMULATIVE("cumulative"),
+        UPGRADE("upgrade"),
         DESCRIPTION("description"),
         DISTRIBUTION_STRUCTURE("distribution-structure"),
         EXCLUDE_DEFAULT("exclude-default"),
@@ -161,7 +161,7 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
                 case DISTRIBUTION_STRUCTURE:
                     parseDistributionStructure(reader, patchConfigBuilder);
                     break;
-                case CUMULATIVE:
+                case UPGRADE:
                     parseCumulativePatchType(reader, patchConfigBuilder);
                     break;
                 case ONE_OFF:
@@ -191,7 +191,7 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
     private void parseDistributionStructure(XMLExtendedStreamReader reader, PatchConfigBuilder patchConfigBuilder) throws XMLStreamException {
 
         if (!patchTypeConfigured) {
-            throw missingOneOf(reader, EnumSet.of(Element.CUMULATIVE, Element.ONE_OFF));
+            throw missingOneOf(reader, EnumSet.of(Element.UPGRADE, Element.ONE_OFF));
         }
 
         requireNoAttributes(reader);

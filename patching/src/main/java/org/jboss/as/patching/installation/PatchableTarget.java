@@ -59,11 +59,11 @@ public interface PatchableTarget {
     public interface TargetInfo {
 
         /**
-         * Get the cumulative patch id.
+         * Get the release patch id.
          *
-         * @return the cumulative patch id
+         * @return the release patch id
          */
-        String getCumulativeID();
+        String getReleasePatchID();
 
         /**
          * Get the active one-off patches.

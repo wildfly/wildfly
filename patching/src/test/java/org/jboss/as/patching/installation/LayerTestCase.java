@@ -47,8 +47,6 @@ import java.util.Properties;
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
-import org.jboss.as.patching.LocalPatchInfo;
-import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
@@ -98,7 +96,7 @@ public class LayerTestCase extends AbstractTaskTestCase {
         assertEquals(BASE, layers.get(1).getName()); // base layer is always appended
 
         PatchableTarget.TargetInfo targetInfo = layer.loadTargetInfo();
-        assertEquals(BASE, targetInfo.getCumulativeID());
+        assertEquals(BASE, targetInfo.getReleasePatchID());
         assertTrue(targetInfo.getPatchIDs().isEmpty());
         DirectoryStructure directoryStructure = targetInfo.getDirectoryStructure();
         assertEquals(newFile(env.getModuleRoot(), "system", "layers", layerName), directoryStructure.getModuleRoot());
@@ -164,9 +162,9 @@ public class LayerTestCase extends AbstractTaskTestCase {
 
         InstalledIdentity installedIdentity = loadInstalledIdentity();
 
-        PatchInfo originalPatchInfo = LocalPatchInfo.load(productConfig, env);
-        assertEquals(BASE, originalPatchInfo.getCumulativeID());
-        assertTrue(originalPatchInfo.getPatchIDs().isEmpty());
+        PatchableTarget.TargetInfo identityInfo = installedIdentity.getIdentity().loadTargetInfo();
+        assertEquals(BASE, identityInfo.getReleasePatchID());
+        assertTrue(identityInfo.getPatchIDs().isEmpty());
 
         System.out.println("installation =>>");
         tree(env.getInstalledImage().getJbossHome());

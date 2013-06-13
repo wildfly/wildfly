@@ -42,14 +42,14 @@ public interface PatchInfo {
     String getVersion();
 
     /**
-     * The cumulative patch id.
+     * The release patch id.
      *
-     * @return the cp id
+     * @return the release patch id
      */
-    String getCumulativeID();
+    String getReleasePatchID();
 
     /**
-     * Get cumulative patch ids.
+     * Get active patch ids.
      *
      * @return the patch ids
      */

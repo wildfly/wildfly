@@ -113,7 +113,7 @@ public abstract class PatchOperationTarget {
             final PatchInfo info = tool.getPatchInfo();
             final ModelNode result = new ModelNode();
             result.get(OUTCOME).set(SUCCESS);
-            result.get(RESULT, Constants.CUMULATIVE).set(info.getCumulativeID());
+            result.get(RESULT, Constants.RELEASE_PATCH_ID).set(info.getReleasePatchID());
             result.get(RESULT, Constants.PATCHES).setEmptyList();
             for(final String patch : info.getPatchIDs()) {
                 result.get(RESULT, Constants.PATCHES).add(patch);
