@@ -19,9 +19,11 @@ public class InstallationManagerImpl extends InstallationManager {
     private volatile InstalledIdentity installedIdentity;
     // TODO track this state a better way
     private final AtomicBoolean writable = new AtomicBoolean(true);
+    private final InstalledImage installedImage;
 
     public InstallationManagerImpl(InstalledIdentity installedIdentity) {
         this.installedIdentity = installedIdentity;
+        this.installedImage = installedIdentity.getInstalledImage();
     }
 
     @Override
@@ -57,6 +59,11 @@ public class InstallationManagerImpl extends InstallationManager {
     @Override
     public Collection<AddOn> getAddOns() {
         return installedIdentity.getAddOns();
+    }
+
+    @Override
+    public InstalledImage getInstalledImage() {
+        return installedImage;
     }
 
     @Override
@@ -125,7 +132,7 @@ public class InstallationManagerImpl extends InstallationManager {
      * @param state the installation state
      * @return
      */
-    protected static InstalledIdentity updateState(final String name, final InstallationModificationImpl modification, final InstallationModificationImpl.InstallationState state) {
+    protected InstalledIdentity updateState(final String name, final InstallationModificationImpl modification, final InstallationModificationImpl.InstallationState state) {
         final PatchableTarget.TargetInfo identityInfo = modification.getModifiedState();
         final Identity identity = new Identity() {
             @Override
@@ -149,7 +156,7 @@ public class InstallationManagerImpl extends InstallationManager {
             }
         };
 
-        final InstalledIdentityImpl installedIdentity = new InstalledIdentityImpl(identity);
+        final InstalledIdentityImpl installedIdentity = new InstalledIdentityImpl(identity, installedImage);
         for (final Map.Entry<String, MutableTargetImpl> entry : state.getLayers().entrySet()) {
             final String layerName = entry.getKey();
             final MutableTargetImpl target = entry.getValue();

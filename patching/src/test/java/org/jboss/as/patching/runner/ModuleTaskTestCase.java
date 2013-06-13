@@ -26,7 +26,7 @@ import static org.jboss.as.patching.Constants.LAYERS;
 import static org.jboss.as.patching.Constants.SYSTEM;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
-import static org.jboss.as.patching.PatchInfo.BASE;
+import static org.jboss.as.patching.Constants.BASE;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDefinedAbsentModule;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDefinedModule;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDirExists;

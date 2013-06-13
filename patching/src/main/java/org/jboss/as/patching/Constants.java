@@ -38,6 +38,7 @@ public class Constants {
     public static final String PATCH = "patch";
     public static final String PATCH_ID = "patch-id";
     public static final String ROLLBACK = "rollback";
+    /** The default if no patches are active. */
     public static final String BASE = "base";
 
     public static final String OVERRIDE_MODULES = "override-modules";
@@ -47,14 +48,11 @@ public class Constants {
 
     public static final String APPLIED_AT = "applied-at";
     public static final String TIMESTAMP = "timestamp";
-    public static final String MODULE_PATH = "module-path";
-    public static final String BUNDLE_PATH = "bundle-path";
 
     // Directories
     public static final String APP_CLIENT = "appclient";
     public static final String CONFIGURATION = "configuration";
     public static final String DOMAIN = "domain";
-    public static final String HISTORY = "history";
     public static final String INSTALLATION = ".installation";
     public static final String METADATA = ".metadata";
     public static final String PATCHES = "patches";
@@ -63,7 +61,6 @@ public class Constants {
     public static final String LAYERS = "layers";
     public static final String ADD_ONS = "add-ons";
     public static final String DEFAULT_LAYERS_PATH = "system/layers";
-    public static final String DEFAULT_BASE_PATH = "system/base";
     public static final String DEFAULT_ADD_ONS_PATH = "system/add-ons";
     public static final String EXCLUDE_LAYER_BASE = "exclude.base.layer";
 

@@ -91,6 +91,13 @@ public abstract class InstalledIdentity {
     public abstract Collection<AddOn> getAddOns();
 
     /**
+     * Get the installed image.
+     *
+     * @return the installed image
+     */
+    public abstract InstalledImage getInstalledImage();
+
+    /**
      * Load the layers based on the default setup.
      *
      * @param jbossHome     the jboss home directory

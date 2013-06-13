@@ -45,7 +45,6 @@ import java.util.Properties;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
-import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.installation.PatchableTarget;
 
 /**
@@ -63,7 +62,7 @@ public final class PatchUtils {
     public static String readRef(final Properties properties, final String name) {
         final String ref = (String) properties.get(name);
         if(ref == null) {
-            return PatchInfo.BASE;
+            return Constants.BASE;
         }
         return ref;
     }
@@ -96,7 +95,7 @@ public final class PatchUtils {
 
     public static String readRef(final File file) throws IOException {
         if(! file.exists()) {
-            return PatchInfo.BASE;
+            return Constants.BASE;
         }
         final InputStream is = new FileInputStream(file);
         try {
