@@ -26,15 +26,11 @@ package org.jboss.as.test.integration.ejb.pool.lifecycle;
  * @author baranowb
  *
  */
-public interface LifecycleCounter {
+public interface LifecycleTracker {
 
-    int getPreDestroyCount();
-
-    int getPostCreateCount();
-
-    void incrementPreDestroyCount();
-
-    void incrementPostCreateCount();
-
-    void reset();
+    void trackPostConstructOn(final String beanImplementationClassName);
+    void trackPreDestroyOn(final String beanImplementationClassName);
+    void clearState();
+    boolean wasPostConstructInvokedOn(final String beanImplClassName);
+    boolean wasPreDestroyInvokedOn(final String beanImplClassName);
 }
