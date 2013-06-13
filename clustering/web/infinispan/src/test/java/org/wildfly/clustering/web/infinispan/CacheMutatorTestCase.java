@@ -68,7 +68,7 @@ public class CacheMutatorTestCase {
         assertTrue(CacheMutator.isMutable(new Date()));
         assertFalse(CacheMutator.isMutable(Boolean.TRUE));
         assertFalse(CacheMutator.isMutable(Character.valueOf('a')));
-        assertFalse(CacheMutator.isMutable(Currency.getInstance(Locale.getDefault())));
+        assertFalse(CacheMutator.isMutable(Currency.getInstance(Locale.US)));
         assertFalse(CacheMutator.isMutable(AuthenticationType.BASIC));
         assertFalse(CacheMutator.isMutable(Locale.getDefault()));
         assertFalse(CacheMutator.isMutable(Byte.valueOf(Integer.valueOf(1).byteValue())));
