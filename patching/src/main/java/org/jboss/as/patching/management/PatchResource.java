@@ -68,6 +68,11 @@ public class PatchResource extends AbstractModelResource {
         return model.isDefined();
     }
 
+    @Override
+    public boolean isRuntime() {
+        return true;
+    }
+
     @SuppressWarnings({"CloneDoesntCallSuperClone"})
     @Override
     public Resource clone() {

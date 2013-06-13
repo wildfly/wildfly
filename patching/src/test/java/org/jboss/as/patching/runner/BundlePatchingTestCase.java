@@ -27,7 +27,7 @@ import static org.jboss.as.patching.Constants.SYSTEM;
 import static org.jboss.as.patching.HashUtils.hashFile;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
-import static org.jboss.as.patching.PatchInfo.BASE;
+import static org.jboss.as.patching.Constants.BASE;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDefinedAbsentBundle;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDefinedBundle;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDirExists;
