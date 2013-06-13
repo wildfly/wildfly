@@ -21,58 +21,41 @@
  */
 package org.jboss.as.test.integration.ejb.pool.lifecycle;
 
-import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
-import javax.ejb.Singleton;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.jms.JMSException;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.jboss.logging.Logger;
 
 
 /**
  * @author baranowb
  */
 @Stateless
-public class LifecycleCounterSLSB implements PointlesMathInterface {
-    //TODO: If declared as @Singleton, Arquilian throws exception at deployment stating that its already deployed...
-    private static final Logger log = Logger.getLogger(LifecycleCounterSLSB.class.getName());
+public class PointLessMathBean implements PointlesMathInterface {
+    private static final Logger log = Logger.getLogger(PointLessMathBean.class);
 
-    // TODO: injection here does not work.
-    // @EJB
-    private LifecycleCounter lifeCycleCounter;
-
-    @Resource
-    private SessionContext context;
+    @EJB(lookup = "java:global/pool-ejb-callbacks-singleton/LifecycleTrackerBean!org.jboss.as.test.integration.ejb.pool.lifecycle.LifecycleTracker")
+    private LifecycleTracker lifeCycleTracker;
 
     @Override
     public double pointlesMathOperation(double a, double b, double c) {
-        return b*b - 4*a*c;
-    }
-
-    @PreDestroy
-    protected void preDestroy() throws JMSException {
-
-        this.log.info("SLSB about to be gone, releasing resources");
-        this.lifeCycleCounter.incrementPreDestroyCount();
+        return b * b - 4 * a * c;
     }
 
     @PostConstruct
-    protected void postConstruct() throws JMSException, NamingException {
-        this.log.info("SLSB created, initializing");
+    private void postConstruct() throws JMSException, NamingException {
+        this.lifeCycleTracker.trackPostConstructOn(this.getClass().getName());
+        this.log.info("@PostConstruct invoked on " + this);
+    }
 
-        try {
-            this.lifeCycleCounter = (LifecycleCounter) new InitialContext()
-                    .lookup("java:global/pool-ejb-callbacks-singleton/LifecycleCounterBean!org.jboss.as.test.integration.ejb.pool.lifecycle.LifecycleCounter");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        this.lifeCycleCounter.incrementPostCreateCount();
+    @PreDestroy
+    private void preDestroy() {
+        lifeCycleTracker.trackPreDestroyOn(this.getClass().getName());
+        this.log.info("@PreDestroy invoked on " + this);
     }
 }
