@@ -94,9 +94,7 @@ import org.jboss.as.patching.installation.InstalledImage;
  * |   `-- my/own/module/root/repo
  * |
  * |-- .installation (metadata directory for the installation)
- * |   |-- cumulative (cumulative link for the installed identity)
- * |   |-- references
- * |   |   `-- patch-identity-1  (list of one-off patches for the installed identity)
+ * |   |-- identity.conf (patched state for the installed identity)
  * |   `-- patches  (history of the patches applied to the identity)
  * |       `-- patch-identity-1
  * |           |-- patch.xml
@@ -106,7 +104,7 @@ import org.jboss.as.patching.installation.InstalledImage;
  * |           `-- misc            (misc backup)
  * |       |-- layers (metadata for patched layers)
  * |       |   |-- base
- * |       |   |   `-- layer.conf
+ * |       |   |   `-- layer.conf (patched state for the layer)
  * |       |   |-- xyz
  * |       |   |   `-- layer.conf
  * |       |   |-- vuw
@@ -124,8 +122,8 @@ import org.jboss.as.patching.installation.InstalledImage;
  *     <li>let paths be a list of File</li>
  *     <li>for each layer in {@link org.jboss.as.patching.installation.InstalledImage#getLayersConf()} file and "base":</li>
  *     <ol>
- *        <li>read the cumulativeID in {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getInstallationInfo()}</li>
- *        <li>append {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getModulePatchDirectory(String)} for the cumulativeID (if it exists) to the paths</li>
+ *        <li>read the release-patch-id in {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getInstallationInfo()}</li>
+ *        <li>append {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getModulePatchDirectory(String)} for the release-patch-id (if it exists) to the paths</li>
  *        <li>for each one-off patchIDs in {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getInstallationInfo()}</li>
  *        <ol>
  *            <li>append {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getModulePatchDirectory(String)} (if it exists) to the paths</li>
@@ -133,8 +131,8 @@ import org.jboss.as.patching.installation.InstalledImage;
  *     </ol>
  *     <li>for each addOn in {@link InstalledImage#getModulesDir()}}/system/add-ons</li>
  *     <ol>
- *        <li>read the cumulativeID in {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getInstallationInfo()}</li>
- *        <li>append {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getModulePatchDirectory(String)} for the cumulativeID (if it exists) to the paths</li>
+ *        <li>read the release-patch-id in {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getInstallationInfo()}</li>
+ *        <li>append {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getModulePatchDirectory(String)} for the release-patch-id (if it exists) to the paths</li>
  *        <li>for each one-off patchIDs in {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getInstallationInfo()}</li>
  *        <ol>
  *            <li>append {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getModulePatchDirectory(String)} (if it exists) to the paths</li>

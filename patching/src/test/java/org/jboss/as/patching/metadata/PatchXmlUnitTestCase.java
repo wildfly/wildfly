@@ -49,7 +49,7 @@ public class PatchXmlUnitTestCase {
         assertNotNull(patch.getPatchId());
         assertNotNull(patch.getDescription());
         assertNotNull(patch.getPatchType());
-        assertEquals(Patch.PatchType.CUMULATIVE, patch.getPatchType());
+        assertEquals(Patch.PatchType.UPGRADE, patch.getPatchType());
         assertNotNull(patch.getResultingVersion());
         assertNotNull(patch.getAppliesTo().get(0));
     }

@@ -57,7 +57,7 @@ public class LocalPatchGarbageCollectionHandler implements OperationStepHandler 
         } catch (IOException e) {
             throw new OperationFailedException("failed to load identity info", e);
         }
-        if(info.getCumulativeID().equals(patchId)) {
+        if(info.getReleasePatchID().equals(patchId)) {
             throw PatchManagementMessages.MESSAGES.patchActive(patchId);
         }
         if(info.getPatchIDs().contains(patchId)) {

@@ -55,7 +55,7 @@ public class PatchElementBuilder extends AbstractModificationBuilderTarget<Patch
         assert provider != null;
 
         if (element.getPatchType() == null) {
-            if (patchType == Patch.PatchType.CUMULATIVE) {
+            if (patchType == Patch.PatchType.UPGRADE) {
                 element.setUpgrade("unknown");
             } else {
                 element.setNoUpgrade();

@@ -22,6 +22,7 @@
 package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.HashUtils.hashFile;
+import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.metadata.ModificationType.MODIFY;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenApplied;
@@ -29,17 +30,12 @@ import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasNotBeenA
 import static org.jboss.as.patching.runner.TestUtils.createPatchXMLFile;
 import static org.jboss.as.patching.runner.TestUtils.createZippedPatchFile;
 import static org.jboss.as.patching.runner.TestUtils.dump;
-import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
 import static org.junit.Assert.assertArrayEquals;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.util.Collections;
 
-import org.jboss.as.patching.LocalPatchInfo;
-import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerImpl;
 import org.jboss.as.patching.installation.InstalledIdentity;

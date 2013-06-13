@@ -101,13 +101,13 @@ class PatchHistory {
 
         // Load the information from the disk
         final Properties properties = PatchUtils.loadProperties(previous);
-        final String cumulative = PatchUtils.readRef(properties, Constants.CUMULATIVE);
+        final String releaseId = PatchUtils.readRef(properties, Constants.RELEASE_PATCH_ID);
         final List<String> patches = PatchUtils.readRefs(properties);
 
         final File timestampFile = new File(history, Constants.TIMESTAMP);
         final String timestamp = PatchUtils.readRef(timestampFile);
 
-        return new PatchHistoryEntry(patchID, cumulative, timestamp, patches);
+        return new PatchHistoryEntry(patchID, releaseId, timestamp, patches);
     }
 
 }

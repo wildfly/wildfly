@@ -132,7 +132,7 @@ public class PatchElementImpl implements PatchElement, UpgradeCallback {
             throw new IllegalArgumentException("version is null");
         }
         this.resultingVersion = version;
-        this.patchType = PatchType.CUMULATIVE;
+        this.patchType = PatchType.UPGRADE;
         return this;
     }
 

@@ -32,7 +32,7 @@ import java.util.List;
 public interface Patch {
 
     public enum PatchType {
-        CUMULATIVE("cumulative"),
+        UPGRADE("upgrade"),
         ONE_OFF("one-off"),
         ;
 
@@ -76,7 +76,7 @@ public interface Patch {
     Identity getIdentity();
 
     /**
-     * Get the resulting version of a CP or {@code null} for a one-off patch
+     * Get the resulting version of a release or {@code null} for other patches
      *
      * @return the resulting version
      */

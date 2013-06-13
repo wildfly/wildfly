@@ -71,7 +71,7 @@ class PatchConfigBuilder {
     }
 
     PatchConfigBuilder setCumulativeType(String appliesToVersion, String resultingVersion) {
-        this.patchType = Patch.PatchType.CUMULATIVE;
+        this.patchType = Patch.PatchType.UPGRADE;
         this.appliesTo = Collections.singletonList(appliesToVersion);
         this.resultingVersion = resultingVersion;
         this.updatedStructure = DistributionStructure.Factory.create(resultingVersion);

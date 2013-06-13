@@ -59,9 +59,8 @@ public class PatchInfoUnitTestCase extends ContainerResourceMgmtTestBase {
         operation.get(RECURSIVE).set(false);
         operation.get(INCLUDE_RUNTIME).set(true);
 
-
         final ModelNode result = executeOperation(operation, true);
-        Assert.assertTrue(result.hasDefined("cumulative"));
+        Assert.assertTrue(result.hasDefined("release-patch-id"));
         Assert.assertTrue(result.hasDefined("patches"));
 
     }
@@ -75,9 +74,8 @@ public class PatchInfoUnitTestCase extends ContainerResourceMgmtTestBase {
         operation.get(RECURSIVE).set(false);
         operation.get(INCLUDE_RUNTIME).set(true);
 
-
         final ModelNode result = executeOperation(operation, true);
-        Assert.assertTrue(result.hasDefined("cumulative"));
+        Assert.assertTrue(result.hasDefined("release-patch-id"));
         Assert.assertTrue(result.hasDefined("patches"));
 
     }

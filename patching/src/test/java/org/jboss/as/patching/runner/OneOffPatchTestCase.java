@@ -23,39 +23,25 @@
 package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.HashUtils.hashFile;
-import static org.jboss.as.patching.IoUtils.NO_CONTENT;
-import static org.jboss.as.patching.IoUtils.newFile;
+import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.PatchInfo.BASE;
-import static org.jboss.as.patching.metadata.ModificationType.ADD;
-import static org.jboss.as.patching.metadata.ModificationType.MODIFY;
-import static org.jboss.as.patching.runner.PatchingAssert.assertDefinedBundle;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDefinedModule;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDirExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileContent;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenApplied;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenRolledBack;
-import static org.jboss.as.patching.runner.TestUtils.createModule;
 import static org.jboss.as.patching.runner.TestUtils.createPatchXMLFile;
 import static org.jboss.as.patching.runner.TestUtils.createZippedPatchFile;
 import static org.jboss.as.patching.runner.TestUtils.dump;
-import static org.jboss.as.patching.runner.TestUtils.getModulePath;
-import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
-import static org.jboss.as.patching.runner.TestUtils.tree;
-import static org.junit.Assert.assertArrayEquals;
 
 import java.io.File;
-import java.util.Collections;
 
-import org.jboss.as.patching.LocalPatchInfo;
-import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.installation.Identity;
 import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.metadata.ContentModification;
-import org.jboss.as.patching.metadata.MiscContentItem;
-import org.jboss.as.patching.metadata.ModuleItem;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.patching.metadata.impl.PatchElementImpl;

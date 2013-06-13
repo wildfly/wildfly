@@ -67,7 +67,7 @@ public class PatchBuilder extends AbstractModificationBuilderTarget<PatchBuilder
 
     @Override
     public PatchBuilder setUpgrade(String toVersion) {
-        this.patchType = PatchType.CUMULATIVE;
+        this.patchType = PatchType.UPGRADE;
         this.resultingVersion = toVersion;
         return this;
     }
@@ -122,7 +122,7 @@ public class PatchBuilder extends AbstractModificationBuilderTarget<PatchBuilder
             @Override
             public PatchElement createElement(PatchType patchType) {
                 if (element.getPatchType() == null && element instanceof PatchElementImpl) {
-                    if (patchType == PatchType.CUMULATIVE) {
+                    if (patchType == PatchType.UPGRADE) {
                         ((PatchElementImpl)element).setUpgrade(resultingVersion);
                     } else {
                         ((PatchElementImpl)element).setNoUpgrade();

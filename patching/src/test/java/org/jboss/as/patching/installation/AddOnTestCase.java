@@ -45,8 +45,6 @@ import java.util.Collection;
 
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
-import org.jboss.as.patching.LocalPatchInfo;
-import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
@@ -79,7 +77,7 @@ public class AddOnTestCase extends AbstractTaskTestCase {
         assertEquals(addOnName, addOn.getName());
 
         PatchableTarget.TargetInfo targetInfo = addOn.loadTargetInfo();
-        assertEquals(BASE, targetInfo.getCumulativeID());
+        assertEquals(BASE, targetInfo.getReleasePatchID());
         assertTrue(targetInfo.getPatchIDs().isEmpty());
         DirectoryStructure directoryStructure = targetInfo.getDirectoryStructure();
         assertEquals(newFile(env.getModuleRoot(), "system", ADD_ONS, addOnName), directoryStructure.getModuleRoot());
@@ -147,9 +145,9 @@ public class AddOnTestCase extends AbstractTaskTestCase {
 
         InstalledIdentity installedIdentity = loadInstalledIdentity();
 
-        PatchInfo originalPatchInfo = LocalPatchInfo.load(productConfig, env);
-        assertEquals(BASE, originalPatchInfo.getCumulativeID());
-        assertTrue(originalPatchInfo.getPatchIDs().isEmpty());
+        PatchableTarget.TargetInfo identityInfo = installedIdentity.getIdentity().loadTargetInfo();
+        assertEquals(BASE, identityInfo.getReleasePatchID());
+        assertTrue(identityInfo.getPatchIDs().isEmpty());
 
         System.out.println("installation =>>");
         tree(env.getInstalledImage().getJbossHome());
@@ -196,7 +194,7 @@ public class AddOnTestCase extends AbstractTaskTestCase {
 
         // rollback the patch
         PatchingResult rollbackResult = rollback(patchID);
-        assertPatchHasBeenRolledBack(rollbackResult, patch, originalPatchInfo);
+        assertPatchHasBeenRolledBack(rollbackResult, patch, identityInfo);
 
         tree(env.getInstalledImage().getJbossHome());
 
