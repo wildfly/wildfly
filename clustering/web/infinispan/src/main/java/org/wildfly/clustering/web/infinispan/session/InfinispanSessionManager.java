@@ -79,6 +79,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
     private volatile Time defaultMaxInactiveInterval = new Time(30, TimeUnit.MINUTES);
     private final Set<String> activeSessions = new ConcurrentHashSet<String>();
     private final int maxActiveSessions;
+    private final ExpiredSessionRemover expiredSessionRemover;
 
     public InfinispanSessionManager(SessionContext context, SessionIdentifierFactory idFactory, Cache<String, V> cache, SessionFactory<V, L> factory, KeyAffinityServiceFactory affinityFactory, Registry<String, Void> registry, JBossWebMetaData metaData) {
         this.context = context;
@@ -88,13 +89,15 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
         this.affinity = affinityFactory.createService(this.cache, this);
         this.registry = registry;
         this.maxActiveSessions = metaData.getMaxActiveSessions().intValue();
+
+        this.expiredSessionRemover = new ExpiredSessionRemover(this.factory);
     }
 
     @Override
     public void start() {
         this.cache.addListener(this);
         this.affinity.start();
-        this.schedulers.add(new SessionExpirationScheduler<L>(this, new ExpiredSessionRemover<>(this.factory)));
+        this.schedulers.add(new SessionExpirationScheduler<L>(this, this.expiredSessionRemover));
         if (this.maxActiveSessions > 0) {
             this.schedulers.add(new SessionEvictionScheduler<L>(this, this.factory, this.maxActiveSessions));
         }
@@ -178,7 +181,8 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
         Session<L> session = this.factory.createSession(id, value);
         if (session.getMetaData().isExpired()) {
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was found, but has expired", id);
-            session.invalidate();
+            // use the ExpiryRemoveHandler so that it can handle the expiry/invalidation
+            this.expiredSessionRemover.remove(id);
             return null;
         }
         for (Scheduler<Session<L>> scheduler: this.schedulers) {
@@ -203,11 +207,15 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
     }
 
     @CacheEntryActivated
-    public void activated(CacheEntryActivatedEvent<String, ?> event) {
+    public void activated(CacheEntryActivatedEvent<String, V> event) {
         if (!event.isPre() && event.isOriginLocal() && (event.getKey() instanceof String)) {
             String id = event.getKey();
+            final V activatedValue = event.getValue();
+            if (activatedValue == null) {
+                return;
+            }
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
-            ImmutableSession session = this.factory.createImmutableSession(id, this.factory.findValue(id));
+            ImmutableSession session = this.factory.createImmutableSession(id, activatedValue);
             ImmutableSessionAttributes attributes = session.getAttributes();
 
             HttpSessionEvent sessionEvent = new HttpSessionEvent(new ImmutableHttpSessionAdapter(session));
@@ -222,13 +230,17 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
     }
 
     @CacheEntryPassivated
-    public void passivated(CacheEntryPassivatedEvent<String, ?> event) {
+    public void passivated(CacheEntryPassivatedEvent<String, V> event) {
         if (event.isPre() && (event.getKey() instanceof String)) {
             String id = event.getKey();
             this.activeSessions.remove(id);
             if (event.isOriginLocal()) {
+                final V passivatedValue = event.getValue();
+                if (passivatedValue == null) {
+                    return;
+                }
                 InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
-                ImmutableSession session = this.factory.createSession(id, this.factory.findValue(id));
+                ImmutableSession session = this.factory.createSession(id, passivatedValue);
                 ImmutableSessionAttributes attributes = session.getAttributes();
 
                 HttpSessionEvent sessionEvent = new HttpSessionEvent(new ImmutableHttpSessionAdapter(session));
@@ -244,13 +256,17 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
     }
 
     @CacheEntryRemoved
-    public void removed(CacheEntryRemovedEvent<String, ?> event) {
+    public void removed(CacheEntryRemovedEvent<String, V> event) {
         if (event.isPre() && event.isOriginLocal() && (event.getKey() instanceof String)) {
             String id = event.getKey();
             this.activeSessions.remove(id);
             if (event.isOriginLocal()) {
+                final V removedValue = event.getValue();
+                if (removedValue == null) {
+                    return;
+                }
                 InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
-                ImmutableSession session = this.factory.createImmutableSession(id, this.factory.findValue(id));
+                ImmutableSession session = this.factory.createImmutableSession(id, removedValue);
                 ImmutableSessionAttributes attributes = session.getAttributes();
 
                 HttpSession httpSession = new ImmutableHttpSessionAdapter(session);
