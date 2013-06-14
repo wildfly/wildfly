@@ -45,7 +45,9 @@ class ProtocolConfigurationFactory {
         final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
 
         if(client.getProtocol() == null) {
-            configuration.setUri(new URI("http-remoting://" + formatPossibleIpv6Address(client.getHost()) +  ":" + client.getPort()));
+            // WFLY-1462 for compatibility assume remoting if the standard native port is configured
+            String protocol = client.getPort() == 9999 ? "remote://" : "http-remoting://";
+            configuration.setUri(new URI(protocol + formatPossibleIpv6Address(client.getHost()) +  ":" + client.getPort()));
         } else  {
             configuration.setUri(new URI(client.getProtocol() + "://" + formatPossibleIpv6Address(client.getHost()) +  ":" + client.getPort()));
         }
