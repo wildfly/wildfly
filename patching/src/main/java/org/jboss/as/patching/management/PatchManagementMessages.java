@@ -50,4 +50,7 @@ public interface PatchManagementMessages {
     @Message(id = 16941, value = "Failed to show history of patches")
     OperationFailedException failedToShowHistory(@Cause Throwable cause);
 
+    @Message(id = 16942, value = "Unable to apply or rollback a patch when the server is in a restart-required state.")
+    OperationFailedException serverRequiresRestart();
+
 }
