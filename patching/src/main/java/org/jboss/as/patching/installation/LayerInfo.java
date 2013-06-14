@@ -67,12 +67,14 @@ class LayerInfo implements Layer, AddOn {
 
         private final Properties properties;
         private final String releaseID;
+        private final String cumulativeID;
         private final List<String> patches;
         private final DirectoryStructure structure;
 
-        TargetInfoImpl(Properties properties, String releaseID, List<String> patches, DirectoryStructure structure) {
+        TargetInfoImpl(Properties properties, String releaseID, String cumulativeID, List<String> patches, DirectoryStructure structure) {
             this.properties = properties;
             this.releaseID = releaseID;
+            this.cumulativeID = cumulativeID;
             this.patches = Collections.unmodifiableList(patches);
             this.structure = structure;
         }
@@ -80,6 +82,11 @@ class LayerInfo implements Layer, AddOn {
         @Override
         public String getReleasePatchID() {
             return releaseID;
+        }
+
+        @Override
+        public String getCumulativeID() {
+            return cumulativeID;
         }
 
         @Override
@@ -101,8 +108,9 @@ class LayerInfo implements Layer, AddOn {
     static TargetInfo loadTargetInfoFromDisk(final DirectoryStructure structure) throws IOException {
         final Properties properties = PatchUtils.loadProperties(structure.getInstallationInfo());
         final String ref = PatchUtils.readRef(properties, Constants.RELEASE_PATCH_ID);
+        final String cumulative = PatchUtils.readRef(properties, Constants.CUMULATIVE);
         final List<String> patches = PatchUtils.readRefs(properties);
-        return new TargetInfoImpl(properties, ref, patches, structure);
+        return new TargetInfoImpl(properties, ref, cumulative, patches, structure);
     }
 
 }

@@ -25,7 +25,7 @@ package org.jboss.as.patching;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
 
 import org.jboss.as.patching.runner.PatchingException;
@@ -84,7 +84,7 @@ public interface PatchMessages {
     String argVersion();
 
     @Message(id = 16840, value = "Patch does not apply - expected (%s), but was (%s)")
-    PatchingException doesNotApply(List<String> appliesTo, String version);
+    PatchingException doesNotApply(Collection<String> appliesTo, String version);
 
     @Message(id = 16841, value = "Failed to delete (%s)")
     IOException failedToDelete(String path);
@@ -122,5 +122,11 @@ public interface PatchMessages {
 
     @Message(id = 16850, value = "Illegal value %s for attribute affects-type")
     XMLStreamException illegalAffectsType(String value, @Param Location location);
+
+    @Message(id = 16852, value = "Requires patch '%s'")
+    PatchingException requiresPatch(String patchId);
+
+    @Message(id = 16853, value = "Patch is incompatible with patch '%s'")
+    PatchingException incompatibePatch(String patchId);
 
 }

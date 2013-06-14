@@ -23,6 +23,7 @@
 package org.jboss.as.patching.runner;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -205,6 +206,11 @@ public class PatchMergeUnitTestCase {
             @Override
             public List<ContentModification> getModifications() {
                 return Arrays.asList(item);
+            }
+
+            @Override
+            public Collection<String> getIncompatibleWith() {
+                return Collections.emptyList();
             }
 
             @Override

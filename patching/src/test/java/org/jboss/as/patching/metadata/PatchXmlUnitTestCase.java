@@ -51,7 +51,7 @@ public class PatchXmlUnitTestCase {
         assertNotNull(patch.getPatchType());
         assertEquals(Patch.PatchType.UPGRADE, patch.getPatchType());
         assertNotNull(patch.getResultingVersion());
-        assertNotNull(patch.getAppliesTo().get(0));
+        assertNotNull(patch.getAppliesTo().iterator().next());
     }
 
 
@@ -67,7 +67,7 @@ public class PatchXmlUnitTestCase {
         assertNotNull(patch.getPatchType());
         assertEquals(Patch.PatchType.ONE_OFF, patch.getPatchType());
         assertNull(patch.getResultingVersion());
-        assertNotNull(patch.getAppliesTo().get(0));
+        assertNotNull(patch.getAppliesTo().iterator().next());
     }
 
     @Test
