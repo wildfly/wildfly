@@ -93,7 +93,11 @@ call :SearchForJars "%JBOSS_MODULEPATH%\system\layers\base\org\wildfly\security\
 
 rem echo %CLASSPATH%
 
-"%JAVA_HOME%\bin\jconsole.exe" -J"-Djava.class.path=%CLASSPATH%"
+if "%*" == "" (
+    "%JAVA_HOME%\bin\jconsole.exe" -J"-Djava.class.path=%CLASSPATH%"
+) else (
+    "%JAVA_HOME%\bin\jconsole.exe" -J"-Djava.class.path=%CLASSPATH%" %*
+)
 
 :END
 goto :EOF
