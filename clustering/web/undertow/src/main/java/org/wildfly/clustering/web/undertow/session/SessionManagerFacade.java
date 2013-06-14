@@ -95,40 +95,46 @@ public class SessionManagerFacade implements UndertowSessionManager {
             throw UndertowMessages.MESSAGES.couldNotFindSessionCookieConfig();
         }
         String id = this.findSessionId(exchange, config);
-        Batcher batcher = this.manager.getBatcher();
-        boolean started = batcher.startBatch();
 
         if (id != null) {
-            if (this.manager.findSession(id) != null) {
-                if (started) {
-                    batcher.endBatch(false);
-                }
+            if (this.manager.containsSession(id)) {
                 throw UndertowMessages.MESSAGES.sessionAlreadyExists(id);
             }
         } else {
             id = this.manager.createSessionId();
         }
 
-        Session<Void> session = this.manager.createSession(id);
-        io.undertow.server.session.Session facade = this.getSession(session, exchange, config);
-        this.sessionListeners.sessionCreated(facade, exchange);
-        return facade;
+        Batcher batcher = this.manager.getBatcher();
+        boolean started = batcher.startBatch();
+        try {
+            Session<Void> session = this.manager.createSession(id);
+            io.undertow.server.session.Session facade = this.getSession(session, exchange, config);
+            this.sessionListeners.sessionCreated(facade, exchange);
+            return facade;
+        } catch (RuntimeException | Error e) {
+            if (started) {
+                batcher.endBatch(false);
+            }
+            throw e;
+        }
     }
 
     @Override
     public io.undertow.server.session.Session getSession(HttpServerExchange exchange, SessionConfig config) {
         String id = this.findSessionId(exchange, config);
         if (id == null) return null;
+
         Batcher batcher = this.manager.getBatcher();
         boolean started = batcher.startBatch();
-        Session<Void> session = this.manager.findSession(id);
-        if (session == null) {
-            if (started) {
+        Session<Void> session = null;
+        try {
+            session = this.manager.findSession(id);
+            return (session != null) ? this.getSession(session, exchange, config) : null;
+        } finally {
+            if (started && (session == null)) {
                 batcher.endBatch(false);
             }
-            return null;
         }
-        return this.getSession(session, exchange, config);
     }
 
     /**

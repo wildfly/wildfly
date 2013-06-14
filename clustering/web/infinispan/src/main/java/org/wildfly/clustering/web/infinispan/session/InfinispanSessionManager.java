@@ -169,6 +169,11 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
     }
 
     @Override
+    public boolean containsSession(String id) {
+        return this.cache.containsKey(id);
+    }
+
+    @Override
     public Session<L> findSession(String id) {
         V value = this.factory.findValue(id);
         if (value == null) {

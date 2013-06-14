@@ -175,21 +175,30 @@ public class ManagerFacade extends ManagerBase implements Lifecycle, RoutingSupp
     public org.apache.catalina.Session findSession(String id) {
         Batcher batcher = this.manager.getBatcher();
         boolean started = batcher.startBatch();
-        Session<LocalSessionContext> session = this.manager.findSession(this.getSessionId(id));
-        if (session == null) {
-            if (started) {
+        Session<LocalSessionContext> session = null;
+        try {
+            session = this.manager.findSession(this.getSessionId(id));
+            return (session != null) ? this.getSession(session) : null;
+        } finally {
+            if (started && (session == null)) {
                 batcher.endBatch(false);
             }
-            return null;
         }
-        return this.getSession(session);
     }
 
     @Override
     public org.apache.catalina.Session createSession(String sessionId, Random random) {
         String id = (sessionId != null) ? this.getSessionId(sessionId) : this.manager.createSessionId();
-        this.manager.getBatcher().startBatch();
-        return this.getSession(this.manager.createSession(id));
+        Batcher batcher = this.manager.getBatcher();
+        boolean started = batcher.startBatch();
+        try {
+            return this.getSession(this.manager.createSession(id));
+        } catch (RuntimeException | Error e) {
+            if (started) {
+                batcher.endBatch(false);
+            }
+            throw e;
+        }
     }
 
     @Override

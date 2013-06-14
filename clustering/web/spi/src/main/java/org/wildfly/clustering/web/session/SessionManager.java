@@ -36,6 +36,8 @@ public interface SessionManager<L> extends SessionIdentifierFactory, RouteLocato
      */
     void stop();
 
+    boolean containsSession(String id);
+
     /**
      * Returns the session with the specified identifier, or null if none exists
      * @param id a session identifier
