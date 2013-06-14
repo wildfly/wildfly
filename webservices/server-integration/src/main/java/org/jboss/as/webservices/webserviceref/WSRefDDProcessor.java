@@ -93,9 +93,18 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
         translate(serviceRefMD, serviceRefUMDM);
         processWSFeatures(unit, serviceRefMD.getInjectionTargets(), serviceRefUMDM);
         final WSRefRegistry wsRefRegistry = ASHelper.getWSRefRegistry(unit);
-        wsRefRegistry.add(serviceRefUMDM.getServiceRefName(), serviceRefUMDM);
+        wsRefRegistry.add(getCacheKey(componentDescription, serviceRefUMDM), serviceRefUMDM);
         return serviceRefUMDM;
     }
+
+    private static String getCacheKey(final ComponentDescription componentDescription, final UnifiedServiceRefMetaData serviceRefUMMD) {
+        if (componentDescription == null) {
+            return serviceRefUMMD.getServiceRefName();
+        } else {
+            return componentDescription.getComponentName() + "/" + serviceRefUMMD.getServiceRefName();
+        }
+    }
+
 
     private static void processWSFeatures(final DeploymentUnit unit, final Set<ResourceInjectionTargetMetaData> injectionTargets, final UnifiedServiceRefMetaData serviceRefUMDM) throws DeploymentUnitProcessingException {
         if (injectionTargets == null || injectionTargets.size() == 0) return;
