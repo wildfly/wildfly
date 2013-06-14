@@ -26,8 +26,11 @@ import static java.util.Collections.unmodifiableList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.metadata.impl.IdentityImpl;
@@ -45,6 +48,7 @@ public class PatchBuilder extends AbstractModificationBuilderTarget<PatchBuilder
     private PatchType patchType;
     private Identity identity;
 
+    private final Set<String> incompatibleWith = new HashSet<String>();
     private final List<ContentModification> modifications = new ArrayList<ContentModification>();
     private final List<PatchElementHolder> elements = new ArrayList<PatchElementHolder>();
 
@@ -100,6 +104,11 @@ public class PatchBuilder extends AbstractModificationBuilderTarget<PatchBuilder
         this.identity = new IdentityImpl("", appliesTo.get(0));
         setNoUpgrade();
         return this;
+    }
+
+    public PatchBuilder addIncompatibleWith(final String patchId) {
+        incompatibleWith.add(patchId);
+        return returnThis();
     }
 
     public PatchBuilder setOneOffType(String... appliesTo) {
@@ -180,6 +189,11 @@ public class PatchBuilder extends AbstractModificationBuilderTarget<PatchBuilder
             @Override
             public List<String> getAppliesTo() {
                 return Collections.singletonList(identity.getVersion());
+            }
+
+            @Override
+            public Collection<String> getIncompatibleWith() {
+                return incompatibleWith;
             }
 
             @Override

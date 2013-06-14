@@ -62,6 +62,9 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
     static final AttributeDefinition RELEASE_PATCH_ID = SimpleAttributeDefinitionBuilder.create(Constants.RELEASE_PATCH_ID, ModelType.STRING)
             .setStorageRuntime()
             .build();
+    static final AttributeDefinition CUMULATIVE_PATCH_ID = SimpleAttributeDefinitionBuilder.create(Constants.CUMULATIVE, ModelType.STRING)
+            .setStorageRuntime()
+            .build();
     static final AttributeDefinition PATCHES = PrimitiveListAttributeDefinition.Builder.of(Constants.PATCHES, ModelType.STRING)
             .setStorageRuntime()
             .build();
@@ -142,6 +145,12 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
                 result.set(info.loadTargetInfo().getReleasePatchID());
             }
         });
+        registry.registerReadOnlyAttribute(CUMULATIVE_PATCH_ID, new PatchAttributeReadHandler() {
+            @Override
+            void handle(ModelNode result, Identity info) throws IOException {
+                result.set(info.loadTargetInfo().getCumulativeID());
+            }
+        });
         registry.registerReadOnlyAttribute(PATCHES, new PatchAttributeReadHandler() {
             @Override
             void handle(ModelNode result, Identity info) throws IOException {
@@ -161,6 +170,16 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
                     void handle(ModelNode result, PatchableTarget layer) throws OperationFailedException {
                         try {
                             result.set(layer.loadTargetInfo().getReleasePatchID());
+                        } catch (IOException e) {
+                            throw new OperationFailedException("Failed to load layer info", e);
+                        }
+                    }
+                });
+                resource.registerReadOnlyAttribute(CUMULATIVE_PATCH_ID, new ElementProviderAttributeReadHandler.LayerAttributeReadHandler() {
+                    @Override
+                    void handle(ModelNode result, PatchableTarget layer) throws OperationFailedException {
+                        try {
+                            result.set(layer.loadTargetInfo().getCumulativeID());
                         } catch (IOException e) {
                             throw new OperationFailedException("Failed to load layer info", e);
                         }
@@ -191,6 +210,16 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
                     void handle(ModelNode result, PatchableTarget addon) throws OperationFailedException {
                         try {
                             result.set(addon.loadTargetInfo().getReleasePatchID());
+                        } catch (IOException e) {
+                            throw new OperationFailedException("Failed to load add-on info", e);
+                        }
+                    }
+                });
+                resource.registerReadOnlyAttribute(CUMULATIVE_PATCH_ID, new ElementProviderAttributeReadHandler.LayerAttributeReadHandler() {
+                    @Override
+                    void handle(ModelNode result, PatchableTarget addon) throws OperationFailedException {
+                        try {
+                            result.set(addon.loadTargetInfo().getCumulativeID());
                         } catch (IOException e) {
                             throw new OperationFailedException("Failed to load add-on info", e);
                         }

@@ -22,6 +22,7 @@
 
 package org.jboss.as.patching.metadata;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -33,6 +34,7 @@ public interface Patch {
 
     public enum PatchType {
         UPGRADE("upgrade"),
+        CUMULATIVE("cumulative"),
         ONE_OFF("one-off"),
         ;
 
@@ -87,7 +89,14 @@ public interface Patch {
      *
      * @return the versions the patch can be applied
      */
-    List<String> getAppliesTo();
+    Collection<String> getAppliesTo();
+
+    /**
+     * Get a list of patch-ids, this patch is incompatible with.
+     *
+     * @return a list of incompatible patches
+     */
+    Collection<String> getIncompatibleWith();
 
     /**
      * List of patch elements.

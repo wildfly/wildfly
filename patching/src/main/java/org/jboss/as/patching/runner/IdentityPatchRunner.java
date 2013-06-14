@@ -8,6 +8,7 @@ import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,7 +18,6 @@ import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstalledImage;
-import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.LayerType;
 import org.jboss.as.patching.metadata.Patch;
@@ -52,15 +52,25 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         try {
             // Check if we can apply this patch
             final String patchId = patch.getPatchId();
-            final List<String> appliesTo = patch.getAppliesTo();
+            final Collection<String> appliesTo = patch.getAppliesTo();
             if (!appliesTo.contains(modification.getVersion())) {
                 throw PatchMessages.MESSAGES.doesNotApply(appliesTo, modification.getVersion());
             }
-            if (modification.getReleasePatchID().equals(patchId)) {
+            // Cannot apply the same patch twice
+            if (modification.isApplied(patchId)) {
                 throw PatchMessages.MESSAGES.alreadyApplied(patchId);
             }
-            if (modification.getPatchIDs().contains(patchId)) {
-                throw PatchMessages.MESSAGES.alreadyApplied(patchId);
+            // See if the prerequisites are met
+            for (final String required : patch.getIdentity().getRequires()) {
+                if (!modification.isApplied(required)) {
+                    throw PatchMessages.MESSAGES.requiresPatch(required);
+                }
+            }
+            // Check for incompatibilities
+            for (final String incompatible : patch.getIncompatibleWith()) {
+                if (modification.isApplied(incompatible)) {
+                    throw PatchMessages.MESSAGES.incompatibePatch(incompatible);
+                }
             }
             // Apply the patch
             final File backup = installedImage.getPatchHistoryDir(patchId);
@@ -89,30 +99,64 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
      */
     private PatchingResult applyPatch(final String patchId, final Patch patch, final IdentityPatchContext context) throws PatchingException, IOException, XMLStreamException {
 
-        final List<String> rollbacks;
+        final List<String> invalidation;
         final Patch.PatchType patchType = patch.getPatchType();
-        if (patchType == Patch.PatchType.UPGRADE) {
-            rollbacks = context.getModification().getPatchIDs();
+        final InstallationManager.InstallationModification modification = context.getModification();
+        if (patchType == Patch.PatchType.ONE_OFF) {
+            // We don't need to invalidate anything
+            invalidation = Collections.emptyList();
+            // Check whether the patch applies to the current cumulative patch id
+            if (patch.getAppliesTo().contains(modification.getCumulativeID())) {
+                throw PatchMessages.MESSAGES.doesNotApply(patch.getAppliesTo(), modification.getCumulativeID());
+            }
         } else {
-            rollbacks = Collections.emptyList();
+            // Invalidate all installed patches (one-off, cumulative) - we never need to invalidate the release base
+            invalidation = new ArrayList<String>(modification.getPatchIDs());
+            if (!Constants.BASE.equals(modification.getCumulativeID())) {
+                invalidation.add(modification.getCumulativeID());
+            }
         }
         // Record the rollbacks first
-        for (final String rollback : rollbacks) {
+        for (final String rollback : invalidation) {
             rollback(rollback, context);
         }
         // Then apply the current patch
         for (final PatchElement element : patch.getElements()) {
             // Apply the content modifications
             final IdentityPatchContext.PatchEntry target = context.resolveForElement(element);
+            final Patch.PatchType elementPatchType = element.getPatchType();
             final String elementPatchId = element.getId();
-            checkApplied(elementPatchId, target);
+            // See if we can skip this element
+            if (target.isApplied(elementPatchId)) {
+                // TODO if it is already applied, we can just skip the entry (maybe based ont the type of the patch)
+                // This needs some further testing, maybe we need to compare our history with the patch if they are consistent
+                throw PatchMessages.MESSAGES.alreadyApplied(elementPatchId);
+            }
+            // Check requirements
+            final PatchElementProvider provider = element.getProvider();
+            for (final String required : provider.getRequires()) {
+                if (!target.isApplied(required)) {
+                    throw PatchMessages.MESSAGES.requiresPatch(required);
+                }
+            }
+            // Check for incompatibilities
+            for (final String incompatible : element.getIncompatibleWith()) {
+                if (target.isApplied(incompatible)) {
+                    throw PatchMessages.MESSAGES.incompatibePatch(incompatible);
+                }
+            }
+            if (elementPatchType == Patch.PatchType.ONE_OFF) {
+                // TODO check whether the element applies to the cumulative ID
+            }
             apply(elementPatchId, element.getModifications(), target.getModifications());
-            target.apply(elementPatchId, patchType);
+            target.apply(elementPatchId, elementPatchType);
         }
         // Apply the patch to the identity
         final IdentityPatchContext.PatchEntry identity = context.getIdentityEntry();
         apply(patchId, patch.getModifications(), identity.getModifications());
         identity.apply(patchId, patchType);
+
+        // We need the resulting version for rollback
         if (patchType == Patch.PatchType.UPGRADE) {
             identity.setResultingVersion(patch.getResultingVersion());
         }
@@ -122,27 +166,34 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         try {
             return executeTasks(context, callback);
         } catch (Exception e) {
-            e.printStackTrace();
             callback.rollback();
             throw rethrowException(e);
         }
     }
 
     public PatchingResult rollbackPatch(final String patchId, final ContentVerificationPolicy contentPolicy, final boolean rollbackTo, final boolean restoreConfiguration, InstallationManager.InstallationModification modification) throws PatchingException {
-        // Check if the patch is currently active
-        final int index = modification.getPatchIDs().indexOf(patchId);
-        if (index == -1) {
-            if (!modification.getReleasePatchID().equals(patchId)) {
-                throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
-            }
+        if (Constants.BASE.equals(patchId)) {
+            throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
         }
+
         // Figure out what to do
         final List<String> patches = new ArrayList<String>();
         final List<String> oneOffs = modification.getPatchIDs();
+        final int index = oneOffs.indexOf(patchId);
+
         if (index == -1) {
-            // Means we rollback a Release and all installed patches
-            patches.addAll(oneOffs);
-            patches.add(patchId);
+            if (patchId.equals(modification.getReleasePatchID())) {
+                // Rollback all active
+                patches.addAll(oneOffs);
+                patches.add(modification.getCumulativeID());
+                patches.add(modification.getReleasePatchID());
+            } else if (patchId.equals(modification.getCumulativeID())) {
+                // Rollback all active
+                patches.addAll(oneOffs);
+                patches.add(modification.getCumulativeID());
+            } else {
+                throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
+            }
         } else if (index == 0) {
             patches.add(patchId);
         } else {
@@ -170,11 +221,12 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         try {
             // Rollback patches
             for (final String rollback : patches) {
-                rollback(rollback, context);
+                if (!Constants.BASE.equals(rollback)) {
+                    rollback(rollback, context);
+                }
             }
             // Execute the tasks
             final IdentityPatchContext.PatchEntry identity = context.getIdentityEntry();
-
             final IdentityRollbackCallback callback = new IdentityRollbackCallback(patchId, patches, restoreConfiguration, identity.getDirectoryStructure());
             try {
                 return executeTasks(context, callback);
@@ -261,6 +313,12 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
                 // Create the rollback
                 PatchingTasks.rollback(elementPatchId, original.getModifications(), patchElement.getModifications(), modifications, ContentItemFilter.MISC_ONLY);
                 entry.rollback(elementPatchId);
+                // We need to restore the previous state
+                final Patch.PatchType elementPatchType = patchElement.getPatchType();
+                if (elementPatchType == Patch.PatchType.UPGRADE || elementPatchType == Patch.PatchType.CUMULATIVE) {
+                    // TODO does this make sense !?
+                    entry.apply(elementPatchId, elementPatchType);
+                }
             }
             if (!originalLayers.isEmpty() || !originalAddOns.isEmpty()) {
                 throw new PatchingException("rollback did not contain all layers");
@@ -270,13 +328,12 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
             PatchingTasks.rollback(patchID, originalPatch.getModifications(), rollbackPatch.getModifications(), identity.getModifications(), ContentItemFilter.MISC_ONLY);
             identity.rollback(patchID);
 
-            if (patchType == Patch.PatchType.UPGRADE) {
+            if (patchType == Patch.PatchType.UPGRADE || patchType == Patch.PatchType.CUMULATIVE) {
                 assert identity.getModifiedState().getPatchIDs().isEmpty();
 
                 // TODO does this make sense !?
-                identity.rollback(patchID);
                 final String rollbackPatchId = rollbackPatch.getPatchId();
-                identity.apply(rollbackPatchId, Patch.PatchType.UPGRADE);
+                identity.apply(rollbackPatchId, patchType);
 
                 // TODO does this make sense !?
                 identity.setResultingVersion(rollbackPatch.getResultingVersion());
@@ -397,15 +454,6 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         final File historyDir = installedImage.getPatchHistoryDir(patchId);
         final File patchXml = new File(historyDir, Constants.ROLLBACK_XML);
         return PatchXml.parse(patchXml);
-    }
-
-    static void checkApplied(final String patchId, final PatchableTarget.TargetInfo info) throws PatchingException {
-        if (info.getReleasePatchID().equals(patchId)) {
-            throw PatchMessages.MESSAGES.alreadyApplied(patchId);
-        }
-        if (info.getPatchIDs().contains(patchId)) {
-            throw PatchMessages.MESSAGES.alreadyApplied(patchId);
-        }
     }
 
     static File createTempDir() throws PatchingException {
