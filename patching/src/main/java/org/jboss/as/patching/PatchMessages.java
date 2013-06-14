@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Message;
@@ -115,16 +114,13 @@ public interface PatchMessages {
     @Message(id = 16847, value = "File at path specified by argument %s is a directory")
     String fileIsADirectory(String arg);
 
-    @Message(id = 16848, value = "Unable to apply or rollback a patch when the server is in a restart-required state.")
-    OperationFailedException serverRequiresRestart();
-
-    @Message(id = 16849, value = "Cannot rollback patch (%s)")
+    @Message(id = 16848, value = "Cannot rollback patch (%s)")
     PatchingException cannotRollbackPatch(String id);
 
-    @Message(id = 16850, value = "Patch '%s' already applied")
+    @Message(id = 16849, value = "Patch '%s' already applied")
     PatchingException alreadyApplied(String patchId);
 
-    @Message(id = 16851, value = "Illegal value %s for attribute affects-type")
+    @Message(id = 16850, value = "Illegal value %s for attribute affects-type")
     XMLStreamException illegalAffectsType(String value, @Param Location location);
 
 }

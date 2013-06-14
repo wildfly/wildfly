@@ -18,6 +18,22 @@ public abstract class InstallationManager extends InstalledIdentity {
      */
     public abstract InstallationModification modifyInstallation(ModificationCompletion callback);
 
+    public abstract boolean requiresRestart();
+
+    /**
+     * Require a restart. This will set the patching service to read-only
+     * and the server has to be restarted in order to execute the next
+     * patch operation.
+     *
+     * In case the patch operation does not succeed it needs to clear the
+     * reload required state using {@link #clearRestartRequired()}.
+     *
+     * @return this will return {@code true}
+     */
+    public abstract boolean restartRequired();
+
+    public abstract void clearRestartRequired();
+
     public interface InstallationModification extends MutablePatchingTarget {
 
         /**

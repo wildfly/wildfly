@@ -21,6 +21,15 @@ public class InstallationManagerImpl extends InstallationManager {
     private final AtomicBoolean writable = new AtomicBoolean(true);
     private final InstalledImage installedImage;
 
+    /**
+     * This field is set to true when a patch is applied/rolled back at runtime.
+     * It prevents another patch to be applied and overrides the modifications brought by the previous one
+     * unless the process is restarted first
+     *
+     * This field has to be {@code static} in order to survive server reloads.
+     */
+    private static final AtomicBoolean restartRequired = new AtomicBoolean(false);
+
     public InstallationManagerImpl(InstalledIdentity installedIdentity) {
         this.installedIdentity = installedIdentity;
         this.installedImage = installedIdentity.getInstalledImage();
@@ -170,4 +179,26 @@ public class InstallationManagerImpl extends InstallationManager {
         return installedIdentity;
     }
 
+
+    public boolean requiresRestart() {
+        return restartRequired.get();
+    }
+
+    /**
+     * Require a restart. This will set the patching service to read-only
+     * and the server has to be restarted in order to execute the next
+     * patch operation.
+     *
+     * In case the patch operation does not succeed it needs to clear the
+     * reload required state using {@link #clearRestartRequired()}.
+     *
+     * @return this will return {@code true}
+     */
+    public boolean restartRequired() {
+        return restartRequired.compareAndSet(false, true);
+    }
+
+    public void clearRestartRequired() {
+        restartRequired.set(false);
+    }
 }
