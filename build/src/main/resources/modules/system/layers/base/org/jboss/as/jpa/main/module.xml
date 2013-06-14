@@ -73,5 +73,6 @@
         <module name="org.jboss.threads"/>
         <module name="org.jboss.metadata"/>
         <module name="org.jboss.vfs"/>
+        <module name="org.jboss.weld.core"/>
     </dependencies>
 </module>

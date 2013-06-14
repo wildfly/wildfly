@@ -53,19 +53,6 @@ public class BikeRace {
         return bikeShop.createMotorBike(id, name);
     }
 
-    public Motorbike downPaymentOnBikeNoTx(int id, String name) {
-        return bikeShop.downPaymentOnBikeNoTx(id, name);
-    }
-
-
-    public void purchaseNowAndFlushDbChanges() {
-        bikeShop.purchaseNowAndFlushDbChanges();
-    }
-
-    public void forceRollback(int id) {
-        bikeShop.forceRollback(id);
-    }
-
     public Motorbike find(int id) {
         return bikeShop.find(id);
     }
