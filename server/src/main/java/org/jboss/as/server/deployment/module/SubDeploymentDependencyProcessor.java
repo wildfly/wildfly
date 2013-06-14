@@ -62,6 +62,11 @@ public class SubDeploymentDependencyProcessor implements DeploymentUnitProcessor
             }
         }
 
+        //make the deployment content availble to any additional modules
+        for(AdditionalModuleSpecification module : deploymentUnit.getAttachmentList(Attachments.ADDITIONAL_MODULES)) {
+            module.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
+        }
+
         //If the sub deployments aren't isolated, then we need to set up dependencies between the sub deployments
         if (!parentModuleSpec.isSubDeploymentModulesIsolated()) {
             final List<DeploymentUnit> subDeployments = parent.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
