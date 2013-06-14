@@ -144,7 +144,7 @@ public class ChannelMetricsHandler extends AbstractRuntimeOnlyHandler {
                     result.set(channel.statsEnabled());
                     break;
                 case VERSION:
-                    result.set(channel.getVersion());
+                    result.set(JChannel.getVersion());
                     break;
                 case VIEW:
                     result.set(channel.getViewAsString());

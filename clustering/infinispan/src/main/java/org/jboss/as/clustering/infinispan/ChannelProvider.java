@@ -32,6 +32,7 @@ import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StartException;
 import org.jgroups.Channel;
 
@@ -60,9 +61,10 @@ public class ChannelProvider implements JGroupsChannelLookup {
             throw MESSAGES.invalidTransportProperty(CHANNEL, properties);
         }
         ServiceName name = ServiceName.parse(channel);
-        ServiceController<?> service = ServiceContainerHelper.getCurrentServiceContainer().getRequiredService(name);
+        ServiceRegistry registry = ServiceContainerHelper.getCurrentServiceContainer();
+        ServiceController<Channel> service = ServiceContainerHelper.getService(registry, name);
         try {
-            return ServiceContainerHelper.getValue(service, Channel.class);
+            return ServiceContainerHelper.getValue(service);
         } catch (StartException e) {
             throw new IllegalStateException(e);
         }

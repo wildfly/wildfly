@@ -30,6 +30,8 @@ import java.util.Map;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
@@ -78,14 +80,26 @@ public class ServiceContainerHelper {
     }
 
     /**
-     * Returns the service value of the specified service, starting it if necessary.
-     * @param controller a service controller
-     * @param targetClass the service value class
-     * @return the service value of the specified service
-     * @throws StartException if the specified service could not be started
+     * Generics friendly version of {@link ServiceRegistry#getService(ServiceName)}
+     * @param registry service registry
+     * @param name service name
+     * @return the service controller with the specified name, or null if the service does not exist
      */
-    public static <T> T getValue(ServiceController<?> controller, Class<T> targetClass) throws StartException {
-        return targetClass.cast(getValue(controller));
+    @SuppressWarnings("unchecked")
+    public static <T> ServiceController<T> findService(ServiceRegistry registry, ServiceName name) {
+        return (ServiceController<T>) registry.getService(name);
+    }
+
+    /**
+     * Generics friendly version of {@link ServiceRegistry#getRequiredService(ServiceName)}
+     * @param registry service registry
+     * @param name service name
+     * @return the service controller with the specified name
+     * @throws org.jboss.msc.ServiceNotFoundException if the service was not found
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> ServiceController<T> getService(ServiceRegistry registry, ServiceName name) {
+        return (ServiceController<T>) registry.getRequiredService(name);
     }
 
     /**
