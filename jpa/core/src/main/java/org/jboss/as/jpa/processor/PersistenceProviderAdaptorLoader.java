@@ -28,6 +28,8 @@ import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 import java.util.Map;
 import java.util.ServiceLoader;
 
+import javax.persistence.spi.PersistenceProvider;
+
 import org.jboss.as.jpa.transaction.JtaManagerImpl;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -117,4 +119,38 @@ public class PersistenceProviderAdaptorLoader {
 
         return persistenceProviderAdaptor;
     }
+
+    /**
+     * Loads the persistence provider adapter
+     *
+     * @param persistenceProvider classloader will be used to load the persistence provider adapter
+     * @return the persistence provider adaptor for the provider class
+     */
+    public static PersistenceProviderAdaptor loadPersistenceAdapter(PersistenceProvider persistenceProvider)
+        {
+        PersistenceProviderAdaptor persistenceProviderAdaptor=null;
+
+        final ServiceLoader<PersistenceProviderAdaptor> serviceLoader =
+                ServiceLoader.load(PersistenceProviderAdaptor.class, persistenceProvider.getClass().getClassLoader());
+
+        if (serviceLoader != null) {
+            for (PersistenceProviderAdaptor adaptor : serviceLoader) {
+                if (persistenceProviderAdaptor != null) {
+                    throw MESSAGES.classloaderHasMultipleAdapters(persistenceProvider.getClass().getClassLoader().toString());
+                }
+                persistenceProviderAdaptor = adaptor;
+                JPA_LOGGER.debugf("loaded persistence provider adapter %s from classloader %s",
+                        persistenceProviderAdaptor.getClass().getName(),
+                        persistenceProvider.getClass().getClassLoader().toString());
+            }
+            if (persistenceProviderAdaptor != null) {
+                persistenceProviderAdaptor.injectJtaManager(JtaManagerImpl.getInstance());
+            }
+        }
+
+        return persistenceProviderAdaptor == null ?
+                noopAdaptor:
+                persistenceProviderAdaptor;
+    }
+
 }

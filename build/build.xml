@@ -700,17 +700,40 @@
 
         <module-def name="org.hibernate">
             <maven-resource group="org.hibernate" artifact="hibernate-core" />
+            <maven-resource group="org.hibernate" artifact="hibernate-envers"/>
             <maven-resource group="org.hibernate" artifact="hibernate-entitymanager" />
             <maven-resource group="org.hibernate" artifact="hibernate-infinispan"/>
+            <maven-resource group="org.jipijapa"  artifact="jipijapa-hibernate4-3"/>
         </module-def>
 
         <module-def name="org.hibernate.commons-annotations">
             <maven-resource group="org.hibernate.common" artifact="hibernate-commons-annotations"/>
         </module-def>
 
+        <!-- envers is 1-1 with hibernate orm, so move into hibernate but leave empty module for apps that might depend on it -->
         <module-def name="org.hibernate.envers">
-            <maven-resource group="org.hibernate" artifact="hibernate-envers"/>
         </module-def>
+
+        <!-- create empty slot for Hibernate 3.x jars -->
+        <module-def name="org.hibernate" slot="3">
+            <maven-resource group="org.jipijapa" artifact="jipijapa-hibernate3"/>
+        </module-def>
+
+        <!-- create empty slot for Hibernate 4.1.x or 4.2.x jars -->
+        <module-def name="org.hibernate" slot="4.1">
+            <maven-resource group="org.jipijapa" artifact="jipijapa-hibernate4-1"/>
+        </module-def>
+        
+        <!-- create empty slot for OpenJPA jars -->
+        <module-def name="org.apache.openjpa">
+            <maven-resource group="org.jipijapa" artifact="jipijapa-openjpa"/>
+        </module-def>
+
+        <!-- create empty slot for EclipseLink jars -->        
+        <module-def name="org.eclipse.persistence">
+            <maven-resource group="org.jipijapa" artifact="jipijapa-eclipselink"/>
+        </module-def>
+
         <module-def name="org.hibernate.validator">
             <maven-resource group="org.hibernate" artifact="hibernate-validator"/>
         </module-def>
@@ -889,22 +912,20 @@
         <module-def name="org.jboss.as.jpa">
             <maven-resource group="org.wildfly" artifact="wildfly-jpa"/>
         </module-def>
-
+        
+        <!-- legacy Hibernate 3.x JPA integration module for applications that include Hibernate 3 jars may depend on -->
         <module-def name="org.jboss.as.jpa.hibernate" slot="3">
-            <maven-resource group="org.jipijapa" artifact="hibernate3"/>
+            <maven-resource group="org.jipijapa" artifact="jipijapa-hibernate3"/>
         </module-def>
 
+        <!-- legacy Hibernate 4.x JPA module that applications may have dependencies on still 
+             (they will likely use Hibernate 4.3.x which already contains the integration classes) 
+        -->
         <module-def name="org.jboss.as.jpa.hibernate" slot="4">
-            <maven-resource group="org.jipijapa" artifact="hibernate4-3"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.jpa.openjpa">
-            <maven-resource group="org.jipijapa" artifact="openjpa"/>
         </module-def>
 
         <module-def name="org.jboss.as.jpa.spi">
-            <maven-resource group="org.jipijapa" artifact="core"/>
-            <maven-resource group="org.jipijapa" artifact="spi"/>
+            <maven-resource group="org.jipijapa" artifact="jipijapa-spi"/>
         </module-def>
 
         <module-def name="org.jboss.as.jpa.util">

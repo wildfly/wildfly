@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,29 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jpa.processor;
+package org.jboss.as.test.integration.jpa.transaction;
 
-import org.jboss.as.jpa.processor.secondLevelCache.CacheDeploymentListener;
-import org.jipijapa.event.impl.EventListenerRegistration;
+import javax.ejb.Stateful;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.SynchronizationType;
 
 /**
- * CacheDeploymentHelper
+ * stateful session bean
  *
  * @author Scott Marlow
  */
-public class CacheDeploymentHelper {
+@Stateful
+public class InnerUnsynchronizedSFSB {
+    @PersistenceContext(unitName = "unsynchronized", synchronization = SynchronizationType.UNSYNCHRONIZED)
+        EntityManager em;
 
-    private volatile CacheDeploymentListener listener;
-
-    public void register() {
-        listener = new CacheDeploymentListener();
-        EventListenerRegistration.add(listener);
+    public Employee find(int id) {
+        return em.find(Employee.class, id);
     }
 
-    public void unregister() {
-        if (listener != null) {
-            EventListenerRegistration.remove(listener);
-            listener = null;
-        }
+    // join persistence context to jta transaction to save pending changes to database
+    public void joinTransaction() {
+        em.joinTransaction();
     }
 }

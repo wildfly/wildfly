@@ -22,19 +22,4 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="org.hibernate.envers">
-    <resources>
-        <!-- Insert resources here -->
-    </resources>
-
-    <dependencies>
-        <module name="org.hibernate"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.dom4j"/>
-        <module name="javax.api"/>
-        <module name="javax.persistence.api"/>
-        <module name="javax.transaction.api"/>
-	<module name="org.hibernate.commons-annotations"/>
-        <module name="org.javassist"/>
-    </dependencies>
-</module>
+<module-alias xmlns="urn:jboss:module:1.1" name="org.hibernate.envers" target-name="org.hibernate"/>
