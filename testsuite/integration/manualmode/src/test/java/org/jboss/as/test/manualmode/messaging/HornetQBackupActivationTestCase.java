@@ -41,6 +41,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.ExecutionException;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -250,7 +251,16 @@ public class HornetQBackupActivationTestCase {
         operation.get(OP_ADDR).setEmptyList();
         operation.get(OP).set("reload");
         operation.get("blocking").set(true);
-        execute(client, operation);
+        try {
+            execute(client, operation);
+        } catch(IOException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof ExecutionException) {
+                // ignore, this might happen if the channel gets closed before we got the response
+            } else {
+                throw e;
+            }
+        }
     }
 
     private static void waitForHornetQServerActivation(ModelControllerClient client, boolean expectedActive, int timeout) throws IOException {
