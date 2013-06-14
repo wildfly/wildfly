@@ -23,11 +23,14 @@ package org.jboss.as.webservices.webserviceref;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.AnnotatedElement;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.FieldInjectionTarget;
@@ -37,6 +40,7 @@ import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.MethodInjectionTarget;
 import org.jboss.as.ee.component.ResourceInjectionConfiguration;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -131,22 +135,36 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
     private static void processRef(final DeploymentUnit unit, final String type, final WSRefAnnotationWrapper annotation, final ClassInfo classInfo, final InjectionTarget injectionTarget, final String bindingName) throws DeploymentUnitProcessingException {
 
         final EEModuleDescription moduleDescription = unit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-
         final AnnotatedElement target = createAnnotatedElement(unit, classInfo, injectionTarget);
-
-        ManagedReferenceFactory factory = WebServiceReferences.createWebServiceFactory(unit, type, annotation, target, bindingName);
-
-        final EEModuleClassDescription classDescription = moduleDescription.addOrGetLocalClassDescription(classInfo.name().toString());
-        // Create the binding from whence our injection comes.
-        final InjectionSource serviceRefSource = new FixedInjectionSource(factory, factory);
-        final BindingConfiguration bindingConfiguration = new BindingConfiguration(bindingName, serviceRefSource);
-        classDescription.getBindingConfigurations().add(bindingConfiguration);
-        // our injection comes from the local lookup, no matter what.
-        final ResourceInjectionConfiguration injectionConfiguration = injectionTarget != null ?
-                new ResourceInjectionConfiguration(injectionTarget, new LookupInjectionSource(bindingName)) : null;
-        if (injectionConfiguration != null) {
-            classDescription.addResourceInjection(injectionConfiguration);
+        final String componentClassName = classInfo.name().toString();
+        final Map<String, String> bindingMap = new HashMap<String, String>();
+        boolean isEJB = false;
+        for (final ComponentDescription componentDescription : moduleDescription.getComponentsByClassName(componentClassName)) {
+            if (componentDescription instanceof SessionBeanComponentDescription) {
+                isEJB = true;
+                bindingMap.put(componentDescription.getComponentName() + "/" + bindingName, bindingName);
+            }
         }
+        if (!isEJB) {
+            bindingMap.put(bindingName, bindingName);
+        }
+
+        for (String refKey : bindingMap.keySet()) {
+            String refName = bindingMap.get(refKey);
+            ManagedReferenceFactory factory = WebServiceReferences.createWebServiceFactory(unit, type, annotation, target, refName, refKey);
+            final EEModuleClassDescription classDescription = moduleDescription.addOrGetLocalClassDescription(classInfo.name().toString());
+            // Create the binding from whence our injection comes.
+            final InjectionSource serviceRefSource = new FixedInjectionSource(factory, factory);
+            final BindingConfiguration bindingConfiguration = new BindingConfiguration(refName, serviceRefSource);
+            classDescription.getBindingConfigurations().add(bindingConfiguration);
+            // our injection comes from the local lookup, no matter what.
+            final ResourceInjectionConfiguration injectionConfiguration = injectionTarget != null ?
+                    new ResourceInjectionConfiguration(injectionTarget, new LookupInjectionSource(refName)) : null;
+            if (injectionConfiguration != null) {
+                classDescription.addResourceInjection(injectionConfiguration);
+            }
+        }
+
     }
 
     private static AnnotatedElement createAnnotatedElement(final DeploymentUnit unit, final ClassInfo classInfo, final InjectionTarget injectionTarget) throws DeploymentUnitProcessingException {

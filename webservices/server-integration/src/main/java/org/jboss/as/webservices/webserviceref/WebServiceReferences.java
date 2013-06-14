@@ -30,18 +30,24 @@ public class WebServiceReferences {
 
 
     public static ManagedReferenceFactory createWebServiceFactory(final DeploymentUnit deploymentUnit, final String targetType, final WSRefAnnotationWrapper wsRefDescription, final AnnotatedElement target, String bindingName) throws DeploymentUnitProcessingException {
-        final UnifiedServiceRefMetaData serviceRefUMDM = createServiceRef(deploymentUnit, targetType, wsRefDescription, target, bindingName);
+        final UnifiedServiceRefMetaData serviceRefUMDM = createServiceRef(deploymentUnit, targetType, wsRefDescription, target, bindingName, bindingName);
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         return new WebServiceManagedReferenceFactory(serviceRefUMDM, module.getClassLoader());
     }
 
-    private static UnifiedServiceRefMetaData createServiceRef(final DeploymentUnit unit, final String type, final WSRefAnnotationWrapper annotation, final AnnotatedElement annotatedElement, final String bindingName) throws DeploymentUnitProcessingException {
+    public static ManagedReferenceFactory createWebServiceFactory(final DeploymentUnit deploymentUnit, final String targetType, final WSRefAnnotationWrapper wsRefDescription, final AnnotatedElement target, String bindingName, final String refKey) throws DeploymentUnitProcessingException {
+        final UnifiedServiceRefMetaData serviceRefUMDM = createServiceRef(deploymentUnit, targetType, wsRefDescription, target, bindingName, refKey);
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        return new WebServiceManagedReferenceFactory(serviceRefUMDM, module.getClassLoader());
+    }
+
+    private static UnifiedServiceRefMetaData createServiceRef(final DeploymentUnit unit, final String type, final WSRefAnnotationWrapper annotation, final AnnotatedElement annotatedElement, final String bindingName, final String refKey) throws DeploymentUnitProcessingException {
         final WSRefRegistry wsRefRegistry = ASHelper.getWSRefRegistry(unit);
-        UnifiedServiceRefMetaData serviceRefUMDM = wsRefRegistry.get(bindingName);
+        UnifiedServiceRefMetaData serviceRefUMDM = wsRefRegistry.get(refKey);
         if (serviceRefUMDM == null) {
             serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(unit));
             serviceRefUMDM.setServiceRefName(bindingName);
-            wsRefRegistry.add(bindingName, serviceRefUMDM);
+            wsRefRegistry.add(refKey, serviceRefUMDM);
         }
         initServiceRef(unit, serviceRefUMDM, type, annotation);
         processWSFeatures(serviceRefUMDM, annotatedElement);
