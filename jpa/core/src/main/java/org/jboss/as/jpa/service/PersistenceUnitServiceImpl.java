@@ -62,6 +62,9 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private final InjectedValue<DataSource> nonJtaDataSource = new InjectedValue<DataSource>();
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
     private final InjectedValue<BeanManager> beanManagerInjector = new InjectedValue<>();
+    private final InjectedValue<PhaseOnePersistenceUnitServiceImpl> phaseOnePersistenceUnitServiceInjectedValue = new InjectedValue<>();
+
+    private static final String CDI_BEAN_MANAGER = "javax.persistence.bean.manager";
 
     private final PersistenceProviderAdaptor persistenceProviderAdaptor;
     private final PersistenceProvider persistenceProvider;
@@ -95,17 +98,32 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             @Override
             public void run() {
                 try {
-                    JPA_LOGGER.startingService("Persistence Unit", pu.getScopedPersistenceUnitName());
-                    pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
-                    pu.setJtaDataSource(jtaDataSource.getOptionalValue());
-                    pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
-
-                    if (beanManagerInjector.getOptionalValue() != null) {
-                        properties.getValue().put("javax.persistence.bean.manager", beanManagerInjector.getOptionalValue());
-                    }
-
+                    PhaseOnePersistenceUnitServiceImpl phaseOnePersistenceUnitService = phaseOnePersistenceUnitServiceInjectedValue.getOptionalValue();
                     WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
-                    entityManagerFactory = createContainerEntityManagerFactory();
+
+                    // handle phase 2 of 2 of bootstrapping the persistence unit
+                    if (phaseOnePersistenceUnitService != null) {
+                        JPA_LOGGER.startingPersistenceUnitService(2, pu.getScopedPersistenceUnitName());
+                        // indicate that the second phase of bootstrapping the persistence unit has started
+                        phaseOnePersistenceUnitService.setSecondPhaseStarted(true);
+                        if (beanManagerInjector.getOptionalValue() != null) {
+                            // update the bean manager proxy to the actual CDI bean manager
+                            phaseOnePersistenceUnitService.getBeanManager().setDelegate(beanManagerInjector.getOptionalValue());
+                        }
+                        entityManagerFactory = phaseOnePersistenceUnitService.getEntityManagerFactoryBuilder().build();
+                    }
+                    else {
+                        JPA_LOGGER.startingService("Persistence Unit", pu.getScopedPersistenceUnitName());
+                        // start the persistence unit in one pass (1 of 1)
+                        pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
+                        pu.setJtaDataSource(jtaDataSource.getOptionalValue());
+                        pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
+
+                        if (beanManagerInjector.getOptionalValue() != null) {
+                            properties.getValue().put(CDI_BEAN_MANAGER, beanManagerInjector.getOptionalValue());
+                        }
+                        entityManagerFactory = createContainerEntityManagerFactory();
+                    }
                     persistenceUnitRegistry.add(getScopedPersistenceUnitName(), getValue());
                     context.complete();
                 } catch (Throwable t) {
@@ -126,7 +144,12 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
         final Runnable task = new Runnable() {
             @Override
             public void run() {
-                JPA_LOGGER.stoppingService("Persistence Unit", pu.getScopedPersistenceUnitName());
+
+                if (phaseOnePersistenceUnitServiceInjectedValue.getOptionalValue() != null) {
+                    JPA_LOGGER.stoppingPersistenceUnitService(2, pu.getScopedPersistenceUnitName());
+                } else {
+                    JPA_LOGGER.stoppingService("Persistence Unit", pu.getScopedPersistenceUnitName());
+                }
                 if (entityManagerFactory != null) {
                     WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
                     try {
@@ -221,5 +244,9 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                 //pu.setTempClassLoaderFactory(null);    // close reference to temp classloader factory (only needed during call to createEntityManagerFactory)
             }
         }
+    }
+
+    public Injector<PhaseOnePersistenceUnitServiceImpl> getPhaseOnePersistenceUnitServiceImplInjector() {
+        return phaseOnePersistenceUnitServiceInjectedValue;
     }
 }
