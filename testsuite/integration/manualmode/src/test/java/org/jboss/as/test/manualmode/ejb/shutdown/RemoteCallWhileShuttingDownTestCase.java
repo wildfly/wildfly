@@ -43,6 +43,7 @@ import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.ContextSelector;
+import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
@@ -135,7 +136,12 @@ public class RemoteCallWhileShuttingDownTestCase {
             //to make it more likely to pick up a dependency problem
             Thread.sleep(1000);
             Assert.assertEquals("Real hello", latch.getEchoMessage());
-            latch.testDone();
+            // we don't want to "wait" for a response since the server is in shutdown mode and waiting for a result can result in intermittent connection/channel close issues
+            // where when the client has sent a request and is waiting for a server response and the server in the meantime closed the channel.
+            // So create a asynchronous proxy and invoke the "void" method which acts as fully asynchronous by *not* waiting for a response from the server. Kind of fire and forget.
+            // see https://issues.jboss.org/browse/WFLY-1532 for more details.
+            final RemoteLatch asynchronousProxy = EJBClient.asynchronous(latch);
+            asynchronousProxy.testDone();
 
             while (managementClient.isServerInRunningState()) {
                 Thread.sleep(50);
