@@ -13,6 +13,7 @@ import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InjectionPoint;
+import javax.enterprise.inject.spi.PassivationCapable;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
@@ -41,7 +42,7 @@ public class HackValidationExtension implements Extension {
     }
 
 
-    public static final class ValidatorBean implements Bean<Validator> {
+    public static final class ValidatorBean implements Bean<Validator>, PassivationCapable {
 
         private final ValidatorFactory factory;
 
@@ -109,9 +110,14 @@ public class HackValidationExtension implements Extension {
         public void destroy(final Validator instance, final CreationalContext<Validator> creationalContext) {
 
         }
+
+        @Override
+        public String getId() {
+            return HackValidationExtension.class.getName() + ".validator";
+        }
     }
 
-    public static final class ValidatorFactoryBean implements Bean<ValidatorFactory> {
+    public static final class ValidatorFactoryBean implements Bean<ValidatorFactory>, PassivationCapable {
 
         private final ValidatorFactory factory;
 
@@ -178,6 +184,11 @@ public class HackValidationExtension implements Extension {
         @Override
         public void destroy(final ValidatorFactory instance, final CreationalContext<ValidatorFactory> creationalContext) {
 
+        }
+
+        @Override
+        public String getId() {
+            return HackValidationExtension.class.getName() + ".validator";
         }
     }
 }
