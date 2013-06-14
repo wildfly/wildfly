@@ -106,7 +106,6 @@ public class InstallationManagerImpl extends InstallationManager {
 
                 @Override
                 public void cancel() {
-                    assert setDone();
                     try {
                         if (callback != null) {
                             callback.canceled();

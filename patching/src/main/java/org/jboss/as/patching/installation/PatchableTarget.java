@@ -66,6 +66,13 @@ public interface PatchableTarget {
         String getReleasePatchID();
 
         /**
+         * Get the cumulative patch id.
+         *
+         * @return the cumulative id
+         */
+        String getCumulativeID();
+
+        /**
          * Get the active one-off patches.
          *
          * @return the active one-off patches

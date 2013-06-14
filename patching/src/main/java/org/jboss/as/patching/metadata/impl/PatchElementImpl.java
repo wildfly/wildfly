@@ -23,7 +23,10 @@
 package org.jboss.as.patching.metadata.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch.PatchType;
@@ -42,6 +45,7 @@ public class PatchElementImpl implements PatchElement, UpgradeCallback {
     private PatchType patchType;
     private String resultingVersion;
 
+    private final Set<String> incompatibleWith = new HashSet<String>();
     private final List<ContentModification> modifications = new ArrayList<ContentModification>();
 
     public PatchElementImpl(String id) {
@@ -119,6 +123,15 @@ public class PatchElementImpl implements PatchElement, UpgradeCallback {
     @Override
     public List<ContentModification> getModifications() {
         return modifications;
+    }
+
+    @Override
+    public Collection<String> getIncompatibleWith() {
+        return incompatibleWith;
+    }
+
+    public void addIncompatibleWith(final String patchId) {
+        incompatibleWith.add(patchId);
     }
 
     public PatchElementImpl addContentModification(ContentModification modification) {

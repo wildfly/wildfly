@@ -67,6 +67,13 @@ public interface PatchElement {
     String getResultingVersion();
 
     /**
+     * Get a list of patch-ids, this patch is incompatible with.
+     *
+     * @return a list of incompatible patches
+     */
+    Collection<String> getIncompatibleWith();
+
+    /**
      * Get the content modifications.
      *
      * @return the modifications

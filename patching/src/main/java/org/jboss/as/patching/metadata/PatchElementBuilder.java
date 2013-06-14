@@ -50,6 +50,11 @@ public class PatchElementBuilder extends AbstractModificationBuilderTarget<Patch
         return returnThis();
     }
 
+    public PatchElementBuilder addIncompatibleWith(final String patchId) {
+        element.addIncompatibleWith(patchId);
+        return returnThis();
+    }
+
     public PatchElement createElement(Patch.PatchType patchType) {
         assert patchId != null;
         assert provider != null;

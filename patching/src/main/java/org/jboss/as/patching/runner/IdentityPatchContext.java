@@ -382,6 +382,11 @@ class IdentityPatchContext implements PatchContentProvider {
         }
 
         @Override
+        public boolean isApplied(String patchId) {
+            return delegate.isApplied(patchId);
+        }
+
+        @Override
         public void rollback(String patchId) {
             // Rollback
             delegate.rollback(patchId);
@@ -401,6 +406,11 @@ class IdentityPatchContext implements PatchContentProvider {
         @Override
         public String getReleasePatchID() {
             return delegate.getReleasePatchID();
+        }
+
+        @Override
+        public String getCumulativeID() {
+            return delegate.getCumulativeID();
         }
 
         @Override
@@ -624,6 +634,11 @@ class IdentityPatchContext implements PatchContentProvider {
             @Override
             public List<String> getAppliesTo() {
                 return Collections.singletonList(modification.getVersion());
+            }
+
+            @Override
+            public Collection<String> getIncompatibleWith() {
+                return Collections.emptyList(); // TODO
             }
 
             @Override
