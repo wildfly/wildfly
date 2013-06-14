@@ -190,4 +190,3 @@ exec "$JAVACMD" \
   "-Dmaven.home=${M2_HOME}"  \
   ${CLASSWORLDS_LAUNCHER} $QUOTED_ARGS
 
-
