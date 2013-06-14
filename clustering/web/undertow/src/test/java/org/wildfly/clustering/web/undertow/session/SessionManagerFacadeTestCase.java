@@ -105,7 +105,7 @@ public class SessionManagerFacadeTestCase {
         String routingSessionId = "session.route";
         
         when(this.manager.createSessionId()).thenReturn(sessionId);
-        when(this.manager.findSession(sessionId)).thenReturn(null);
+        when(this.manager.containsSession(sessionId)).thenReturn(false);
         when(this.manager.createSession(sessionId)).thenReturn(session);
         when(this.manager.locate(sessionId)).thenReturn(route);
         when(this.manager.getBatcher()).thenReturn(batcher);
@@ -139,7 +139,7 @@ public class SessionManagerFacadeTestCase {
         String routingSessionId = "session.route";
         
         when(config.findSessionId(exchange)).thenReturn(requestedSessionId);
-        when(this.manager.findSession(sessionId)).thenReturn(null);
+        when(this.manager.containsSession(sessionId)).thenReturn(false);
         when(this.manager.createSession(sessionId)).thenReturn(session);
         when(this.manager.locate(sessionId)).thenReturn(route);
         when(this.manager.getBatcher()).thenReturn(batcher);
@@ -163,17 +163,12 @@ public class SessionManagerFacadeTestCase {
     @Test
     public void createSessionAlreadyExists() {
         HttpServerExchange exchange = new HttpServerExchange(null);
-        Batcher batcher = mock(Batcher.class);
         SessionConfig config = mock(SessionConfig.class);
-        @SuppressWarnings("unchecked")
-        Session<Void> session = mock(Session.class);
         String requestedSessionId = "session.route1";
         String sessionId = "session";
         
-        when(this.manager.getBatcher()).thenReturn(batcher);
-        when(batcher.startBatch()).thenReturn(true);
         when(config.findSessionId(exchange)).thenReturn(requestedSessionId);
-        when(this.manager.findSession(sessionId)).thenReturn(session);
+        when(this.manager.containsSession(sessionId)).thenReturn(true);
         
         IllegalStateException exception = null;
         try {
@@ -182,8 +177,6 @@ public class SessionManagerFacadeTestCase {
             exception = e;
         }
         assertNotNull(exception);
-        
-        verify(batcher).endBatch(false);
     }
 
     @Test
