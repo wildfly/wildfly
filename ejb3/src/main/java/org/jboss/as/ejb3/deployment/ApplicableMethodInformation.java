@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.deployment;
 
+import java.lang.reflect.Method;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.util.MethodInfoHelper;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
@@ -107,10 +111,14 @@ public class ApplicableMethodInformation<T> {
         }
     };
 
-    public T getAttribute(MethodIntf methodIntf, String className, String methodName, String... methodParams) {
+    public T getAttribute(MethodIntf methodIntf, Method method) {
         assert methodIntf != null : "methodIntf is null";
-        assert methodName != null : "methodName is null";
-        assert methodParams != null : "methodParams is null";
+        assert method != null : "method is null";
+
+        Method classMethod = resolveRealMethod(method);
+        String[] methodParams = MethodInfoHelper.getCanonicalParameterTypes(classMethod);
+        final String methodName = classMethod.getName();
+        final String className = classMethod.getDeclaringClass().getName();
 
         ArrayKey methodParamsKey = new ArrayKey((Object[]) methodParams);
         T attr = get(get(get(perViewStyle3, methodIntf), methodName), methodParamsKey);
@@ -134,10 +142,15 @@ public class ApplicableMethodInformation<T> {
         return defaultAttribute;
     }
 
-    public List<T> getAllAttributes(MethodIntf methodIntf, String className, String methodName, String... methodParams) {
+    public List<T> getAllAttributes(MethodIntf methodIntf, Method method) {
         assert methodIntf != null : "methodIntf is null";
-        assert methodName != null : "methodName is null";
-        assert methodParams != null : "methodParams is null";
+
+
+        Method classMethod = resolveRealMethod(method);
+        String[] methodParams = MethodInfoHelper.getCanonicalParameterTypes(classMethod);
+        final String methodName = classMethod.getName();
+        final String className = classMethod.getDeclaringClass().getName();
+
         final List<T> ret = new ArrayList<T>();
         ArrayKey methodParamsKey = new ArrayKey((Object[]) methodParams);
         T attr = get(get(get(perViewStyle3, methodIntf), methodName), methodParamsKey);
@@ -161,12 +174,41 @@ public class ApplicableMethodInformation<T> {
         return ret;
     }
 
+    private Method resolveRealMethod(final Method method) {
+        if (method.isBridge() || method.isSynthetic()) {
+            Method[] declaredMethods =  WildFlySecurityManager.doUnchecked(new PrivilegedAction<Method[]>() {
+                @Override
+                public Method[] run() {
+                    return method.getDeclaringClass().getDeclaredMethods();
+                }
+            });
+            for (Method m : declaredMethods) {
+                if (m.getName().equals(method.getName())
+                        && m.getParameterTypes().length == method.getParameterTypes().length
+                        && !m.isBridge()
+                        && !m.isSynthetic()) {
+                    if(!method.getReturnType().isAssignableFrom(m.getReturnType())) {
+                        continue;
+                    }
+                    for(int i = 0; i < method.getParameterTypes().length; ++i) {
+                        if(!method.getParameterTypes()[i].isAssignableFrom(m.getParameterTypes()[i])) {
+                            continue;
+                        }
+                    }
+                    return m;
+                }
+            }
+        }
+        return method;
+    }
 
 
-    public T getViewAttribute(MethodIntf methodIntf, String methodName, String... methodParams) {
+    public T getViewAttribute(MethodIntf methodIntf, final Method method) {
         assert methodIntf != null : "methodIntf is null";
-        assert methodName != null : "methodName is null";
-        assert methodParams != null : "methodParams is null";
+
+        Method classMethod = resolveRealMethod(method);
+        String[] methodParams = MethodInfoHelper.getCanonicalParameterTypes(classMethod);
+        final String methodName = classMethod.getName();
 
         ArrayKey methodParamsKey = new ArrayKey((Object[]) methodParams);
         T attr = get(get(get(perViewStyle3, methodIntf), methodName), methodParamsKey);
