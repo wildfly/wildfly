@@ -22,6 +22,8 @@
 
 package org.jboss.as.patching.management;
 
+import static org.jboss.as.patching.management.PatchManagementMessages.MESSAGES;
+
 import java.io.InputStream;
 
 import org.jboss.as.controller.OperationContext;
@@ -50,12 +52,19 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
         context.acquireControllerLock();
         // Setup
         final InstallationManager installationManager = (InstallationManager) context.getServiceRegistry(false).getRequiredService(InstallationManagerService.NAME).getValue();
+
+        // FIXME can we check whether the process is reload-required directly from the operation context?
+        if (installationManager.requiresRestart()) {
+            throw MESSAGES.serverRequiresRestart();
+        }
+
         try {
             final PatchTool runner = PatchTool.Factory.create(installationManager);
             final ContentVerificationPolicy policy = PatchTool.Factory.create(operation);
 
             final int index = operation.get(ModelDescriptionConstants.INPUT_STREAM_INDEX).asInt(0);
             final InputStream is = context.getAttachmentStream(index);
+            installationManager.restartRequired();
             final PatchingResult result = runner.applyPatch(is, policy);
             context.restartRequired();
             context.completeStep(new OperationContext.ResultHandler() {
@@ -65,6 +74,7 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
                     if(resultAction == OperationContext.ResultAction.KEEP) {
                         result.commit();
                     } else {
+                        installationManager.clearRestartRequired();
                         context.revertRestartRequired();
                         result.rollback();
                     }

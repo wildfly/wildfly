@@ -22,6 +22,8 @@
 
 package org.jboss.as.patching.management;
 
+import static org.jboss.as.patching.management.PatchManagementMessages.MESSAGES;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -51,11 +53,18 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
 
         context.acquireControllerLock();
         final InstallationManager installationManager = (InstallationManager) context.getServiceRegistry(false).getRequiredService(InstallationManagerService.NAME).getValue();
+
+        // FIXME can we check whether the process is reload-required directly from the operation context?
+        if (installationManager.requiresRestart()) {
+            throw MESSAGES.serverRequiresRestart();
+        }
+
         final PatchTool runner = PatchTool.Factory.create(installationManager);
         final ContentVerificationPolicy policy = PatchTool.Factory.create(operation);
         try {
             // Rollback
             final PatchingResult result = runner.rollback(patchId, policy, rollbackTo, restoreConfiguration);
+            installationManager.restartRequired();
             context.restartRequired();
             context.completeStep(new OperationContext.ResultHandler() {
 
@@ -64,6 +73,7 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
                     if(resultAction == OperationContext.ResultAction.KEEP) {
                         result.commit();
                     } else {
+                        installationManager.clearRestartRequired();
                         context.revertRestartRequired();
                         result.rollback();
                     }
