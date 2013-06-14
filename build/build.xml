@@ -90,9 +90,11 @@
         <mkdir dir="${output.dir}/standalone/lib/ext"/>
         <mkdir dir="${output.dir}/domain/tmp/auth"/>
         <mkdir dir="${output.dir}/standalone/tmp/auth"/>
+        <mkdir dir="${output.dir}/.installation"/>
          <!-- This is directory is used by the SASL transparent auth mechanism to validate local user access -->
         <chmod perm="700" dir="${output.dir}/domain/tmp/auth"/>
         <chmod perm="700" dir="${output.dir}/standalone/tmp/auth"/>
+        <chmod perm="700" dir="${output.dir}/.installation"/>
     </target>
 
     <target name="create-ext-content">
