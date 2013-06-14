@@ -267,7 +267,13 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             return null;
         }
         final String op = operation.getValue(args);
-        return getHandler(ctx, op).getArgument(ctx, name);
+        OperationCommand handler;
+        try {
+            handler = getHandler(ctx, op);
+        } catch (CommandLineException e) {
+            return null;
+        }
+        return handler.getArgument(ctx, name);
     }
 
     @Override
@@ -281,19 +287,20 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             return Collections.emptyList();
         }
         final String op = operation.getValue(args);
-        return getHandler(ctx, op).getArguments(ctx);
+        OperationCommand handler;
+        try {
+            handler = getHandler(ctx, op);
+        } catch (CommandLineException e) {
+            return null;
+        }
+        return handler.getArguments(ctx);
     }
 
-    private OperationCommand getHandler(CommandContext ctx, String op) {
+    private OperationCommand getHandler(CommandContext ctx, String op) throws CommandLineException {
         if(op == null) {
             if(writePropHandler == null) {
+                final List<Property> propList = getNodeProperties(ctx);
                 writePropHandler = new WritePropertyHandler();
-                List<Property> propList;
-                try {
-                    propList = getNodeProperties(ctx);
-                } catch (CommandFormatException e) {
-                    propList = Collections.emptyList();
-                }
                 for(int i = 0; i < propList.size(); ++i) {
                     final Property prop = propList.get(i);
                     final ModelNode propDescr = prop.getValue();
@@ -347,13 +354,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                 }
             }
 
-            final ModelNode descr;
-            try {
-                descr = getOperationDescription(ctx, op);
-            } catch (CommandLineException e) {
-                return null;
-            }
-
+            final ModelNode descr = getOperationDescription(ctx, op);
             if(opHandlers == null) {
                 opHandlers = new HashMap<String, OperationCommand>();
             }
@@ -423,9 +424,13 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     @Override
     public ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
         final String operation = this.operation.getValue(ctx.getParsedCommandLine());
-        final OperationCommand opHandler = getHandler(ctx, operation);
-        if(opHandler == null) {
-            throw new CommandFormatException("Unexpected command '" + operation + "'");
+        OperationCommand opHandler;
+        try {
+            opHandler = getHandler(ctx, operation);
+        } catch (CommandFormatException e) {
+            throw e;
+        } catch (CommandLineException e) {
+            throw new CommandFormatException("Command is not supported or unavailable in the current context", e);
         }
         return opHandler.buildRequest(ctx);
     }
@@ -632,6 +637,10 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             buf.append("(Execute '");
             buf.append(commandName).append(" --profile=<profile_name> --help' to include the resource description here.)");
             formatText(ctx, buf, offset);
+        } else if(ctx.getModelControllerClient() == null) {
+            buf.setLength(0);
+            buf.append("(Connection to the controller is required to be able to load the resource description)");
+            formatText(ctx, buf, offset);
         } else {
             ModelNode request = initRequest(ctx);
             if(request == null) {
@@ -655,7 +664,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             if(result != null) {
                 buf.append(result.get(Util.DESCRIPTION).asString());
             } else {
-                buf.append("N/A. Please, open a jira issue at https://issues.jboss.org/browse/AS7 to get this fixed. Thanks!");
+                buf.append("N/A. Please, open a jira issue at https://issues.jboss.org/browse/WFLY to get this fixed. Thanks!");
             }
             formatText(ctx, buf, offset);
         }
@@ -846,7 +855,10 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         return supportedCommands;
     }
 
-    protected List<Property> getNodeProperties(CommandContext ctx) throws CommandFormatException {
+    protected List<Property> getNodeProperties(CommandContext ctx) throws CommandLineException {
+        if(ctx.getModelControllerClient() == null) {
+            throw new CommandLineException("Failed to load target attributes: not connected");
+        }
         ModelNode request = initRequest(ctx);
         if(request == null) {
             return Collections.emptyList();
@@ -875,6 +887,10 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                 return handler.getOperationDescription(ctx);
             }
         }
+        if(ctx.getModelControllerClient() == null) {
+            throw new CommandLineException("Failed to load operation description: not connected");
+        }
+
         ModelNode request = initRequest(ctx);
         if(request == null) {
             return null;
@@ -888,7 +904,11 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             throw new CommandFormatException("Failed to execute read-operation-description.", e);
         }
         if (!result.hasDefined(Util.RESULT)) {
-            return null;
+            String msg = Util.getFailureDescription(result);
+            if(msg == null) {
+                msg = "Failed to load description for '" + operationName + "': " + result;
+            }
+            throw new CommandLineException(msg);
         }
         return result.get(Util.RESULT);
     }
