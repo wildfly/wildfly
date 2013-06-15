@@ -72,7 +72,6 @@ public interface ExpressionResolver {
      * that all expression have already been resolved.
      */
     ExpressionResolver REJECTING = new ExpressionResolverImpl() {
-        private final Pattern EXPRESSION_PATTERN = Pattern.compile(".*\\$\\{.*\\}.*");
         @Override
         protected void resolvePluggableExpression(ModelNode node) throws OperationFailedException {
             String expression = node.asString();

@@ -37,38 +37,38 @@ public class ExpressionResolverImpl implements ExpressionResolver {
 
     @Override
     public final ModelNode resolveExpressions(final ModelNode node) throws OperationFailedException {
-        ModelNode resolved = resolveExpressionsRecursively(node);
-        try {
-            return resolved.resolve();
-        } catch (SecurityException e) {
-            throw new OperationFailedException(new ModelNode().set(ControllerMessages.MESSAGES.noPermissionToResolveExpression(resolved, e)));
-        } catch (IllegalStateException e) {
-            throw new OperationFailedException(new ModelNode().set(ControllerMessages.MESSAGES.cannotResolveExpression(resolved, e)));
-        }
+        return resolveExpressionsRecursively(node);
     }
 
+    /**
+     * Examine the given model node, resolving any expressions found within, including within child nodes.
+     *
+     * @param node the node
+     * @return a node with all expressions resolved
+     * @throws OperationFailedException if an expression cannot be resolved
+     */
     private ModelNode resolveExpressionsRecursively(final ModelNode node) throws OperationFailedException {
         if (!node.isDefined()) {
             return node;
         }
 
+        ModelType type = node.getType();
         ModelNode resolved;
-        if (node.getType() == ModelType.EXPRESSION) {
-            resolved = node.clone();
-            resolvePluggableExpression(resolved);
-        } else if (node.getType() == ModelType.OBJECT) {
+        if (type == ModelType.EXPRESSION) {
+            resolved = resolveExpressionType(node, false);
+        } else if (type == ModelType.OBJECT) {
             resolved = node.clone();
             for (Property prop : resolved.asPropertyList()) {
                 resolved.get(prop.getName()).set(resolveExpressionsRecursively(prop.getValue()));
             }
-        } else if (node.getType() == ModelType.LIST) {
+        } else if (type == ModelType.LIST) {
             resolved = node.clone();
             ModelNode list = new ModelNode();
             for (ModelNode current : resolved.asList()) {
                 list.add(resolveExpressionsRecursively(current));
             }
             resolved = list;
-        } else if (node.getType() == ModelType.PROPERTY) {
+        } else if (type == ModelType.PROPERTY) {
             resolved = node.clone();
             resolved.set(resolved.asProperty().getName(), resolveExpressionsRecursively(resolved.asProperty().getValue()));
         } else {
@@ -78,7 +78,95 @@ public class ExpressionResolverImpl implements ExpressionResolver {
         return resolved;
     }
 
+    /**
+     * Attempt to resolve the expression {@link org.jboss.dmr.ModelNode#asString() encapsulated in the given node},
+     * setting the value of {@code node} to the resolved string if successful, or leaving {@code node} unaltered
+     * if the expression is not of a form resolvable by this method. When this method returns, the type of {@code node}
+     * should either be {@link ModelType#STRING} if this method was able to resolve, or {@link ModelType#EXPRESSION} if
+     * not.
+     * <p>
+     * The default implementation does nothing.
+     * </p>
+     *
+     * @param node a node of type {@link ModelType#EXPRESSION}
+     *
+     * @throws OperationFailedException if the expression in {@code node} is of a form that should be resolvable by this
+     *                                  method but some resolution failure occurs
+     */
     protected void resolvePluggableExpression(ModelNode node) throws OperationFailedException {
+    }
+
+    /**
+     * Attempt to resolve the expression {@link org.jboss.dmr.ModelNode#asString() encapsulated in the given node}.
+     *
+     * @param expressionType a node of {@link ModelType#EXPRESSION}
+     * @param ignoreDMRResolutionFailure {@code false} if {@link org.jboss.dmr.ModelNode#resolve() basic DMR resolution}
+     *                            failures should be ignored, and {@code new ModelNode(expressionType.asString())} returned
+     *
+     * @return a node of {@link ModelType#STRING} where the encapsulated string is the resolved expression
+     *
+     * @throws OperationFailedException if the expression cannot be resolved
+     */
+    private ModelNode resolveExpressionType(final ModelNode expressionType, final boolean ignoreDMRResolutionFailure) throws OperationFailedException {
+
+        ModelNode resolved = expressionType.clone();
+
+        // Try plug-in resolution; i.e. vault
+        resolvePluggableExpression(resolved);
+
+        if (resolved.getType() == ModelType.EXPRESSION ) {
+            // resolvePluggableExpression did nothing. Try standard resolution
+            String unresolvedString = expressionType.asString();
+            resolved = resolveStandardExpression(resolved, ignoreDMRResolutionFailure);
+            String resolvedString = resolved.asString();
+            if (!unresolvedString.equals(resolvedString)) {
+                // resolveStandardExpression made progress; keep resolving
+                resolved = convertAndResolve(resolvedString);
+            } // else there is nothing more we can do with this string
+        } else {
+            // resolvePluggableExpression made progress; keep resolving
+            resolved = convertAndResolve(resolved.asString());
+        }
+
+        return resolved;
+    }
+
+    private ModelNode convertAndResolve(String possibleExpression) throws OperationFailedException {
+        if (EXPRESSION_PATTERN.matcher(possibleExpression).matches()) {
+            // Keep resolving, but don't fail on unresolvable strings
+            ModelNode expression = new ModelNode();
+            expression.setExpression(possibleExpression);
+            return resolveExpressionType(expression, true);
+        }
+        return new ModelNode(possibleExpression);
+    }
+
+    /**
+     * Perform a standard {@link org.jboss.dmr.ModelNode#resolve()} on the given {@code unresolved} node.
+     * @param unresolved  the unresolved node, which should be of type {@link ModelType#EXPRESSION}
+     * @param ignoreUnresolvable {@code true} if resolution failures due to unknown properties should be ignored,
+     *                                       and {@code new ModelNode(unresolved.asString())} returned
+     *
+     * @return a node of type {@link ModelType#STRING}
+     *
+     * @throws OperationFailedException if {@code ignoreFailures} is {@code false} and the expression cannot be resolved
+     */
+    private static ModelNode resolveStandardExpression(final ModelNode unresolved, final boolean ignoreUnresolvable) throws OperationFailedException {
+        try {
+            return unresolved.resolve();
+        } catch (SecurityException e) {
+            // A security exception should propagate no matter what the value of ignoreUnresolvable is. The first call to
+            // this method for any expression will have ignoreUnresolvable set to 'false' which means a basic test of
+            // ability to read system properties will have already passed. So a failure with ignoreUnresolvable set to
+            // true means a specific property caused the failure, and that should not be ignored
+            throw new OperationFailedException(new ModelNode(ControllerMessages.MESSAGES.noPermissionToResolveExpression(unresolved, e)));
+        } catch (IllegalStateException e) {
+            if (ignoreUnresolvable) {
+                return new ModelNode(unresolved.asString());
+            }
+            throw new OperationFailedException(new ModelNode(ControllerMessages.MESSAGES.cannotResolveExpression(unresolved, e)));
+        }
+
     }
 
 }
