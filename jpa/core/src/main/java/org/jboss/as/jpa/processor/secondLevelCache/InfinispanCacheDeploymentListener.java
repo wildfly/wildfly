@@ -108,6 +108,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         String collection = properties.getProperty(COLLECTION);
         String query = properties.getProperty(QUERY);
         String timestamps  = properties.getProperty(TIMESTAMPS);
+        CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(EmbeddedCacheManagerService.getServiceName(container));
         CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(ServiceBuilder.DependencyType.OPTIONAL, ChannelService.getServiceName(container));
         CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheConfigurationService.getServiceName(container, entity));
         CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheConfigurationService.getServiceName(container, collection));
