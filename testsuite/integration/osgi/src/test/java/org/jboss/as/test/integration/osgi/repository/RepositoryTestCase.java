@@ -28,10 +28,10 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.osgi.FrameworkUtils;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.osgi.repository.XRepository;
-import org.jboss.osgi.repository.XRequirementBuilder;
 import org.jboss.osgi.resolver.MavenCoordinates;
 import org.jboss.osgi.resolver.XIdentityCapability;
 import org.jboss.osgi.resolver.XRequirement;
+import org.jboss.osgi.resolver.XRequirementBuilder;
 import org.jboss.osgi.resolver.XResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -72,7 +72,7 @@ public class RepositoryTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(BundleActivator.class, Repository.class, Resource.class);
-                builder.addImportPackages(XRequirementBuilder.class, XRequirement.class);
+                builder.addImportPackages(XRequirementBuilder.class, XRequirement.class, XRepository.class);
                 builder.addImportPackages(ServiceTracker.class);
                 return builder.openStream();
             }
@@ -94,10 +94,10 @@ public class RepositoryTestCase {
         Capability cap = caps.iterator().next();
         XResource resource = (XResource) cap.getResource();
         XIdentityCapability xcap = resource.getIdentityCapability();
-        assertEquals("org.apache.felix.eventadmin", xcap.getSymbolicName());
+        assertEquals("org.apache.felix.eventadmin", xcap.getName());
         InputStream content = ((RepositoryContent)xcap.getResource()).getContent();
         try {
-            Bundle bundle = context.installBundle(xcap.getSymbolicName(), content);
+            Bundle bundle = context.installBundle(xcap.getName(), content);
             try {
                 bundle.start();
                 Assert.assertEquals(Bundle.ACTIVE, bundle.getState());

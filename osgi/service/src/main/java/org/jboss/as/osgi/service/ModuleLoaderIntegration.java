@@ -150,7 +150,7 @@ final class ModuleLoaderIntegration extends FrameworkModuleLoaderPlugin {
                 XIdentityCapability icap = brev.getIdentityCapability();
                 BundleRevisions brevs = bundle.adapt(BundleRevisions.class);
                 int revsize = brevs.getRevisions().size();
-                String name = icap.getSymbolicName();
+                String name = icap.getName();
                 if (revsize > 1) {
                     name += "-rev" + (revsize - 1);
                 }
