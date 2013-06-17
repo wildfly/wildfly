@@ -150,12 +150,10 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
          * This would happen when the OSGi webapp gets explicitly started.
          */
         public synchronized boolean start(long timeout, TimeUnit unit) throws TimeoutException {
-            if (controller.getMode() == ServiceController.Mode.NEVER) {
-                controller.setMode(ServiceController.Mode.ACTIVE);
-            }
-            final StabilityMonitor monitor = new StabilityMonitor();
+            StabilityMonitor monitor = new StabilityMonitor();
             monitor.addController(controller);
             try {
+                controller.setMode(ServiceController.Mode.ACTIVE);
                 if (!monitor.awaitStability(timeout, unit)) {
                     throw UndertowMessages.MESSAGES.timeoutContextActivation(controller.getName());
                 }
@@ -173,13 +171,10 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
          * This would happen when the OSGi webapp gets explicitly stops.
          */
         public synchronized boolean stop(long timeout, TimeUnit unit) {
-            boolean result = true;
-            if (controller.getMode() == ServiceController.Mode.ACTIVE) {
-                controller.setMode(ServiceController.Mode.NEVER);
-            }
-            final StabilityMonitor monitor = new StabilityMonitor();
+            StabilityMonitor monitor = new StabilityMonitor();
             monitor.addController(controller);
             try {
+                controller.setMode(ServiceController.Mode.NEVER);
                 if (!monitor.awaitStability(timeout, unit)) {
                     UndertowLogger.ROOT_LOGGER.debugf("Timeout stopping context: %s", controller.getName());
                 }
@@ -188,7 +183,7 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
             } finally {
                 monitor.removeController(controller);
             }
-            return result;
+            return true;
         }
 
         @Override
