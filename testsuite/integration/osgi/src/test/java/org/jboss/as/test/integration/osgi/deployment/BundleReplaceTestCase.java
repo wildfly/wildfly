@@ -137,7 +137,7 @@ public class BundleReplaceTestCase {
         String runtimeName = server.deploy(V200_JAR, deployer.getDeployment(V200_JAR));
         try {
             try {
-                context.installBundle(V200_JAR, deployer.getDeployment(V100_JAR));
+                context.installBundle(V200_JAR, deployer.getDeployment(V201_JAR));
                 Assert.fail("BundleException expected");
             } catch (BundleException ex) {
                 // expected

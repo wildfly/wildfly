@@ -48,13 +48,13 @@ import org.jboss.as.server.ServerEnvironment;
  *
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
-class LayeredBundlePathFactory {
+public final class LayeredBundlePathFactory {
 
     /**
      * Provides a precedence-ordered list of locations from which bundles can be loaded based on the given
      * {@link ServerEnvironment}.
      */
-    static List<File> resolveLayeredBundlePath(final ServerEnvironment serverEnvironment) {
+    public static List<File> resolveLayeredBundlePath(final ServerEnvironment serverEnvironment) {
 
         File bundlesDir = serverEnvironment.getBundlesDir();
 
@@ -74,7 +74,7 @@ class LayeredBundlePathFactory {
      *
      * @return a new bundle path, including any layers and add-ons, if found
      */
-    static List<File> resolveLayeredBundlePath(final File... bundlePath) {
+    public static List<File> resolveLayeredBundlePath(final File... bundlePath) {
 
         List<File> layeredPath = new ArrayList<File>();
 

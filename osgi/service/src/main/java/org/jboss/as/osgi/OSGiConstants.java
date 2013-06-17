@@ -76,6 +76,9 @@ public interface OSGiConstants {
     /** The {@link org.jboss.as.osgi.parser.SubsystemState} service */
     ServiceName SUBSYSTEM_STATE_SERVICE_NAME = SERVICE_BASE_NAME.append("SubsystemState");
 
+    /** The {@link org.jboss.osgi.provision.XResourceProvisioner} service */
+    ServiceName PROVISIONER_SERVICE_NAME = SERVICE_BASE_NAME.append("XResourceProvisioner");
+
     /** The {@link org.jboss.osgi.resolver.XEnvironment} service */
     ServiceName ENVIRONMENT_SERVICE_NAME = SERVICE_BASE_NAME.append("XEnvironment");
 

@@ -25,7 +25,6 @@
   Set these VM properties in your IDE debugger
 
   -Dmodule.path=${workspace_loc:jboss-as-osgi/target/test-modules}
-  -Djava.util.logging.config.file=${workspace_loc:jboss-as-osgi/src/test/resources}/console-logging.properties
 -->
 <project
     xmlns="http://maven.apache.org/POM/4.0.0"
@@ -78,12 +77,12 @@
             <artifactId>jbosgi-metadata</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.osgi.resolver</groupId>
-            <artifactId>jbosgi-resolver-api</artifactId>
+            <groupId>org.jboss.osgi.provision</groupId>
+            <artifactId>jbosgi-provision-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.osgi.repository</groupId>
-            <artifactId>jbosgi-repository-api</artifactId>
+            <groupId>org.jboss.osgi.resolver</groupId>
+            <artifactId>jbosgi-resolver-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.osgi.spi</groupId>
