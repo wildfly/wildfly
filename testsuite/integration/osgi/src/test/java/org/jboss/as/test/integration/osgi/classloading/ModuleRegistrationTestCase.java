@@ -16,11 +16,6 @@
  */
 package org.jboss.as.test.integration.osgi.classloading;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.osgi.framework.namespace.IdentityNamespace.IDENTITY_NAMESPACE;
-import static org.osgi.framework.namespace.PackageNamespace.PACKAGE_NAMESPACE;
-
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +24,7 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.osgi.core.bundle.SimpleService;
+import org.jboss.as.test.integration.osgi.classloading.suba.TypeA;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.metadata.ManifestBuilder;
@@ -44,11 +39,14 @@ import org.jboss.osgi.resolver.XResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.framework.wiring.BundleWire;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.framework.wiring.FrameworkWiring;
@@ -63,6 +61,7 @@ import org.osgi.resource.Capability;
 public class ModuleRegistrationTestCase {
 
     static final String BUNDLE_A = "bundle-a";
+    static final String MODULE_A = "module-a";
 
     @ArquillianResource
     ServiceContainer serviceContainer;
@@ -76,12 +75,11 @@ public class ModuleRegistrationTestCase {
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-module-reg");
-        archive.addClass(SimpleService.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.osgi.core,org.jboss.osgi.framework,org.jboss.as.osgi");
+                builder.addManifestHeader("Dependencies", "org.osgi.core,org.jboss.osgi.framework");
                 return builder.openStream();
             }
         });
@@ -89,50 +87,69 @@ public class ModuleRegistrationTestCase {
     }
 
     @Test
-    public void testFindPackageCapability() throws Exception {
+    public void testResourceCapabilities() throws Exception {
+        deployer.deploy(MODULE_A);
+        try {
+            // Build a package requirement
+            XBundleRevisionBuilder builder = XBundleRevisionBuilderFactory.create();
+            builder.addCapability(IdentityNamespace.IDENTITY_NAMESPACE, "somename");
+            XRequirement req = builder.addRequirement(PackageNamespace.PACKAGE_NAMESPACE, "org.jboss.as.test.integration.osgi.classloading.suba");
+            builder.getResource();
 
-        // Build a package requirement
-        XBundleRevisionBuilder builder = XBundleRevisionBuilderFactory.create();
-        builder.addCapability(IDENTITY_NAMESPACE, "somename");
-        XRequirement req = builder.addRequirement(PACKAGE_NAMESPACE, SimpleService.class.getPackage().getName());
-        builder.getResource();
+            // Find the providers for the requirement
+            List<Capability> caps = getEnvironment().findProviders(req);
+            Assert.assertEquals(1, caps.size());
 
-        // Find the providers for the requirement
-        List<Capability> caps = getEnvironment().findProviders(req);
-        assertEquals(1, caps.size());
+            // Verify resource identity
+            XBundleRevision brev = (XBundleRevision) caps.get(0).getResource();
+            XIdentityCapability icap = brev.getIdentityCapability();
+            Assert.assertEquals("deployment.module-a", icap.getName());
+            Assert.assertEquals(Version.emptyVersion, icap.getVersion());
+            Assert.assertEquals(XResource.TYPE_MODULE, icap.getType());
 
-        // Verify resource identity
-        XResource xres = (XResource) caps.get(0).getResource();
-        XIdentityCapability icap = xres.getIdentityCapability();
-        assertEquals("deployment.example-module-reg", icap.getSymbolicName());
-        assertEquals(Version.emptyVersion, icap.getVersion());
-        assertEquals("unknown", icap.getType());
+            caps = brev.getCapabilities(PackageNamespace.PACKAGE_NAMESPACE);
+            Assert.assertEquals("One exported package capability", 1, caps.size());
+        } finally {
+            deployer.undeploy(MODULE_A);
+        }
     }
 
     @Test
     public void testResolveModule() throws Exception {
-        // Install a Bundle that has a package requirement on
-        // on a capability exported from the modeule deployment
-        InputStream inputA = deployer.getDeployment(BUNDLE_A);
-        Bundle bundleA = context.installBundle(BUNDLE_A, inputA);
+        deployer.deploy(MODULE_A);
         try {
-            FrameworkWiring fwkWiring = context.getBundle().adapt(FrameworkWiring.class);
-            assertTrue(fwkWiring.resolveBundles(Collections.singleton(bundleA)));
-            BundleWiring wiringA = bundleA.adapt(BundleWiring.class);
-            List<BundleWire> wires = wiringA.getRequiredWires(PACKAGE_NAMESPACE);
-            assertEquals(1, wires.size());
-            BundleWire wire = wires.get(0);
-            assertEquals(bundleA, wire.getRequirer().getBundle());
-            XBundleRevision provider = (XBundleRevision) wire.getProvider();
-            XIdentityCapability icap = provider.getIdentityCapability();
-            assertEquals("deployment.example-module-reg", icap.getSymbolicName());
+            // Install a Bundle that has a package requirement on
+            // on a capability exported from the module deployment
+            InputStream inputA = deployer.getDeployment(BUNDLE_A);
+            Bundle bundleA = context.installBundle(BUNDLE_A, inputA);
+            try {
+                FrameworkWiring fwkWiring = context.getBundle().adapt(FrameworkWiring.class);
+                Assert.assertTrue(fwkWiring.resolveBundles(Collections.singleton(bundleA)));
+                BundleWiring wiringA = bundleA.adapt(BundleWiring.class);
+                List<BundleWire> wires = wiringA.getRequiredWires(PackageNamespace.PACKAGE_NAMESPACE);
+                Assert.assertEquals(1, wires.size());
+                BundleWire wire = wires.get(0);
+                Assert.assertEquals(bundleA, wire.getRequirer().getBundle());
+                XBundleRevision provider = (XBundleRevision) wire.getProvider();
+                XIdentityCapability icap = provider.getIdentityCapability();
+                Assert.assertEquals("deployment.module-a", icap.getName());
+            } finally {
+                bundleA.uninstall();
+            }
         } finally {
-            bundleA.uninstall();
+            deployer.undeploy(MODULE_A);
         }
     }
 
     private XEnvironment getEnvironment() {
         return (XEnvironment) serviceContainer.getRequiredService(Services.ENVIRONMENT).getValue();
+    }
+
+    @Deployment(name = MODULE_A, managed = false, testable = false)
+    public static JavaArchive getModuleA() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, MODULE_A);
+        archive.addClass(TypeA.class);
+        return archive;
     }
 
     @Deployment(name = BUNDLE_A, managed = false, testable = false)
@@ -144,7 +161,7 @@ public class ModuleRegistrationTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(SimpleService.class);
+                builder.addImportPackages(TypeA.class);
                 return builder.openStream();
             }
         });
