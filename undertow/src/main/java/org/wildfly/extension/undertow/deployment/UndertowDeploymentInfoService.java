@@ -365,7 +365,11 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             HashMap<String, JspPropertyGroup> propertyGroups = createJspConfig(mergedMetaData);
 
             JspServletBuilder.setupDeployment(d, propertyGroups, tldInfo, new UndertowJSPInstanceManager(injectionContainer));
-            d.setJspConfigDescriptor(new JspConfigDescriptorImpl(tldInfo.values(), propertyGroups.values()));
+
+            if(mergedMetaData.getJspConfig() != null) {
+                d.setJspConfigDescriptor(new JspConfigDescriptorImpl(tldInfo.values(), propertyGroups.values()));
+            }
+
             d.setDefaultServletConfig(new DefaultServletConfig(true, Collections.<String>emptySet()));
 
             //default JSP servlet
