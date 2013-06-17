@@ -92,7 +92,7 @@ public class CachedConnectionManagerSetupProcessor implements DeploymentUnitProc
             try {
                 final CachedConnectionManager connectionManager = cachedConnectionManager.getOptionalValue();
                 if (connectionManager != null) {
-                    cachedConnectionManager.getValue().pushMetaAwareObject(this, unsharable);
+                    connectionManager.pushMetaAwareObject(this, unsharable);
                 }
             } catch (ResourceException e) {
                 throw new RuntimeException(e);

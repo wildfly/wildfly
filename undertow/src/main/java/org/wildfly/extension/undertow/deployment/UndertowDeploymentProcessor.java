@@ -179,6 +179,14 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(hostName,pathName);
 
+        final Set<ServiceName> additionalDependencies = new HashSet<>();
+        for(final SetupAction setupAction : setupActions) {
+            Set<ServiceName> dependencies = setupAction.dependencies();
+            if(dependencies != null) {
+                additionalDependencies.addAll(dependencies);
+            }
+        }
+
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
                         .setAttributes(deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY))
@@ -206,7 +214,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class, undertowDeploymentInfoService.getSecurityDomainContextValue())
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, undertowDeploymentInfoService.getUndertowService())
                 .addDependency(ServiceBuilder.DependencyType.OPTIONAL, BufferCacheService.SERVICE_NAME.append("default"), DirectBufferCache.class, undertowDeploymentInfoService.getBufferCacheInjectedValue())
-                .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES));
+                .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
+                .addDependencies(additionalDependencies);
 
         if (metaData.getDistributable() != null) {
             SessionManagerFactoryBuilderService factoryBuilderService = new SessionManagerFactoryBuilderService();
