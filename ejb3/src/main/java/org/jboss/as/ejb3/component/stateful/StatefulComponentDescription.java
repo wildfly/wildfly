@@ -398,4 +398,28 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     public void setPassivationApplicable(final boolean passivationApplicable) {
         this.passivationApplicable = passivationApplicable;
     }
+
+    /**
+     * EJB 3.2 spec allows the TimeService to be injected/looked up/accessed from the stateful bean so as to allow access to the {@link javax.ejb.TimerService#getAllTimers()}
+     * method from a stateful bean. Hence we make timerservice applicable for stateful beans too. However, we return <code>false</code> in {@link #isTimerServiceRequired()} so that a {@link org.jboss.as.ejb3.timerservice.NonFunctionalTimerService}
+     * is made available for the stateful bean. The {@link org.jboss.as.ejb3.timerservice.NonFunctionalTimerService} only allows access to {@link javax.ejb.TimerService#getAllTimers()} and {@link javax.ejb.TimerService#getTimers()}
+     * methods and throws an {@link IllegalStateException} for all othre methods on the timerservice and that's exactly how we want it to behave for stateful beans
+     *
+     * @return
+     * @see {@link #isTimerServiceRequired()}
+     */
+    @Override
+    public boolean isTimerServiceApplicable() {
+        return true;
+    }
+
+    /**
+     * Timeout methods and auto timer methods aren't applicable for stateful beans, hence we return false.
+     * @return
+     * @see {@link #isTimerServiceApplicable()}
+     */
+    @Override
+    public boolean isTimerServiceRequired() {
+        return false;
+    }
 }

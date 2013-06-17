@@ -98,6 +98,8 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
      */
     private final Set<Object> serialiableInterceptorContextKeys;
 
+    private final TimerService timerService;
+
     /**
      * Construct a new instance.
      *
@@ -120,6 +122,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         this.currentMarshallingVersion = ejbComponentCreateService.getCurrentMarshallingVersion();
         this.marshallingConfigurations = ejbComponentCreateService.getMarshallingConfigurations();
         this.serialiableInterceptorContextKeys = ejbComponentCreateService.getSerializableInterceptorContextKeys();
+        this.timerService = ejbComponentCreateService.getTimerService();
 
         String beanName = ejbComponentCreateService.getComponentClass().getName();
         StatefulObjectFactory<StatefulSessionComponentInstance> factory = new TransactionAwareObjectFactory<StatefulSessionComponentInstance>(this, this.getTransactionManager());
@@ -206,7 +209,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
 
     @Override
     public TimerService getTimerService() throws IllegalStateException {
-        throw MESSAGES.timerServiceNotSupportedForSFSB(this.getComponentName());
+        return this.timerService;
     }
 
     /**

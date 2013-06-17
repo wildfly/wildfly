@@ -2482,6 +2482,9 @@ public interface EjbMessages {
     @Message(id = 14586, value = "Transaction '%s' is in unexpected state (%s)")
     EJBException transactionInUnexpectedState(Transaction tx, String txStatus);
 
+    @Message(id = 14587, value = "Timerservice API is not allowed on stateful session bean %s")
+    String timerServiceMethodNotAllowedForSFSB(final String ejbComponent);
+
 
     // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is
