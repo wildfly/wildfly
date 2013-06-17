@@ -30,27 +30,33 @@ package org.jboss.as.controller.access.constraint;
  */
 public class ApplicationTypeConfig {
 
+
+    /** Core configurations */
+    //TODO Come up with an authoritative list and use the correct settings - this one is just here so I have something to test
+    public static final ApplicationTypeConfig DEPLOYMENT = new ApplicationTypeConfig("DEPLOYMENT", true);
+
+
     private final boolean core;
 
     private final String subsystem;
     private final String name;
-    private final boolean defaultValue;
-    private volatile Boolean configuredValue;
+    private final boolean application;
+    private volatile Boolean configuredApplication;
 
-    public ApplicationTypeConfig(String subsystem, String name, boolean defaultValue) {
+    public ApplicationTypeConfig(String subsystem, String name, boolean application) {
         assert subsystem != null : "subsystem is null";
         assert name != null : "name is null";
         this.subsystem = subsystem;
         this.name = name;
-        this.defaultValue = defaultValue;
+        this.application = application;
         this.core = false;
     }
 
-    private ApplicationTypeConfig(String name, boolean defaultValue) {
+    private ApplicationTypeConfig(String name, boolean application) {
         this.core = true;
         this.subsystem = null;
         this.name = name;
-        this.defaultValue = defaultValue;
+        this.application = application;
     }
 
     public boolean isCore() {
@@ -65,21 +71,21 @@ public class ApplicationTypeConfig {
         return name;
     }
 
-    public boolean getDefaultValue() {
-        return defaultValue;
+    public boolean isDefaultApplication() {
+        return application;
     }
 
-    public Boolean getConfiguredValue() {
-        return configuredValue;
+    public Boolean getConfiguredApplication() {
+        return configuredApplication;
     }
 
     public boolean isApplicationType() {
-        final Boolean app = configuredValue;
-        return app == null ? defaultValue : app;
+        final Boolean app = configuredApplication;
+        return app == null ? application : app;
     }
 
-    void setConfiguredValue(boolean configuredValue) {
-        this.configuredValue = configuredValue;
+    void setConfiguredApplication(boolean configuredApplication) {
+        this.configuredApplication = configuredApplication;
     }
 
     Key getKey() {
@@ -87,7 +93,7 @@ public class ApplicationTypeConfig {
     }
 
     boolean isCompatibleWith(ApplicationTypeConfig other) {
-        return !equals(other) || defaultValue == other.defaultValue;
+        return !equals(other) || application == other.application;
     }
 
     class Key {

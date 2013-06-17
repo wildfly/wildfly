@@ -30,6 +30,7 @@ import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.MapValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -69,8 +70,10 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
 
     protected MapAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
             final int minSize, final int maxSize, final ParameterCorrector corrector, final ParameterValidator elementValidator,
-            final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, null, ModelType.OBJECT, allowNull, allowExpression, null, corrector, new MapValidator(elementValidator, allowNull, minSize, maxSize), false, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
+            final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated,
+            final AccessConstraintDefinition[] accessConstraints, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, null, ModelType.OBJECT, allowNull, allowExpression, null, corrector, new MapValidator(elementValidator, allowNull, minSize, maxSize), false,
+                alternatives, requires, attributeMarshaller, resourceOnly, deprecated, accessConstraints, flags);
         this.elementValidator = elementValidator;
     }
 

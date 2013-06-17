@@ -248,10 +248,10 @@ public class SimpleResourceDefinition implements ConstrainedResourceDefinition {
         return SimpleOperationDefinitionBuilder.getFlagsSet(vararg);
     }
 
-    @Override
-    public void registerContraints(ManagementResourceRegistration resourceRegistration) {
-        // no-op;
-    }
+//    @Override
+//    public void registerContraints(ManagementResourceRegistration resourceRegistration) {
+//        // no-op;
+//    }
 
     @Override
     public List<AccessConstraintDefinition> getAccessConstraints() {

@@ -37,6 +37,20 @@ import org.jboss.dmr.ModelNode;
 public interface AccessConstraintDefinition {
 
     /**
+     * Get the name of the constraint
+     *
+     * @return the name
+     */
+    String getName();
+
+    /**
+     * Get the type of constraint
+     *
+     * @return the type of constraint
+     */
+    Type getType();
+
+    /**
      * Get descriptive information about the constraint for inclusion in the reaa-xxx-description metadata
      * TODO flesh this out.
      *
@@ -51,4 +65,9 @@ public interface AccessConstraintDefinition {
      * @return the factory. Cannot return {@code null}
      */
     ConstraintFactory getConstraintFactory();
+
+    enum Type {
+        SENSITIVE,
+        APPLICATION;
+    }
 }

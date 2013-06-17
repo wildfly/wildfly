@@ -27,6 +27,7 @@ package org.jboss.as.controller;
 import java.util.EnumSet;
 import java.util.Locale;
 
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -83,12 +84,30 @@ public class SimpleOperationDefinition extends OperationDefinition {
         this.attributeResolver = attributeResolver;
     }
 
+    protected SimpleOperationDefinition(final String name,
+            final ResourceDescriptionResolver resolver,
+            final ResourceDescriptionResolver attributeResolver,
+            final OperationEntry.EntryType entryType,
+            final EnumSet<OperationEntry.Flag> flags,
+            final ModelType replyType,
+            final ModelType replyValueType,
+            final boolean replyAllowNull,
+            final DeprecationData deprecationData,
+            final AttributeDefinition[] replyParameters,
+            final AttributeDefinition[] parameters,
+            final AccessConstraintDefinition[] accessConstraints) {
+        super(name, entryType, flags, replyType, replyValueType, replyAllowNull, deprecationData, replyParameters, parameters, accessConstraints);
+        this.resolver = resolver;
+        this.attributeResolver = attributeResolver;
+    }
+
+
     @Override
     public DescriptionProvider getDescriptionProvider() {
         if (entryType == EntryType.PRIVATE) {
             return PRIVATE_PROVIDER;
         }
-        return new DefaultOperationDescriptionProvider(getName(), resolver, attributeResolver, replyType, replyValueType, replyAllowNull, deprecationData, replyParameters, parameters);
+        return new DefaultOperationDescriptionProvider(getName(), resolver, attributeResolver, replyType, replyValueType, replyAllowNull, deprecationData, replyParameters, parameters, accessConstraints);
     }
 
     private static DescriptionProvider PRIVATE_PROVIDER = new DescriptionProvider() {
