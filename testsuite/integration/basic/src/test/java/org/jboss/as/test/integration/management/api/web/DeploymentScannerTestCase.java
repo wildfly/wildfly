@@ -30,6 +30,7 @@ import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
@@ -58,7 +59,6 @@ import static org.junit.Assert.assertTrue;
 public class DeploymentScannerTestCase extends ContainerResourceMgmtTestBase {
 
     private static final String tempDir = System.getProperty("java.io.tmpdir");
-    private static WebArchive war;
     private static File warFile;
     private static File deployDir;
 
@@ -87,6 +87,7 @@ public class DeploymentScannerTestCase extends ContainerResourceMgmtTestBase {
     }
 
     @Test
+    @InSequence(1)
     public void testAddRemove() throws Exception {
 
         prepareDeployment();
@@ -95,13 +96,12 @@ public class DeploymentScannerTestCase extends ContainerResourceMgmtTestBase {
     }
 
     @Test
+    @InSequence(2)
     public void testAddWrongPath() throws Exception {
-
-        prepareDeployment();
 
         // add DS with non existing path
         ModelNode op = createOpNode("subsystem=deployment-scanner/scanner=testScanner", "add");
-        op.get("scan-interval").set(2000);
+        op.get("scan-interval").set(1000);
         op.get("path").set("/tmp/DeploymentScannerTestCase/nonExistingPath");
 
         ModelNode ret = executeOperation(op, false);
@@ -115,6 +115,7 @@ public class DeploymentScannerTestCase extends ContainerResourceMgmtTestBase {
     }
 
     @Test
+    @InSequence(3)
     public void testAddRemoveRollbacks() throws Exception {
 
         prepareDeployment();
@@ -183,7 +184,7 @@ public class DeploymentScannerTestCase extends ContainerResourceMgmtTestBase {
         path = path.replaceAll("\\\\", "/");
 
         ModelNode op = createOpNode("subsystem=deployment-scanner/scanner=testScanner", "add");
-        op.get("scan-interval").set(2000);
+        op.get("scan-interval").set(1000);
         op.get("path").set(path);
         return op;
     }
@@ -193,7 +194,7 @@ public class DeploymentScannerTestCase extends ContainerResourceMgmtTestBase {
     }
 
     private void prepareDeployment() {
-        war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
         war.addClass(SimpleServlet.class);
         warFile = new File(deployDir.getAbsolutePath() + File.separator + "SimpleServlet.war");
         new ZipExporterImpl(war).exportTo(warFile, true);

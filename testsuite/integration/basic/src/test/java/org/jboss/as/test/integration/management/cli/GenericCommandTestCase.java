@@ -112,6 +112,7 @@ public class GenericCommandTestCase extends AbstractCliTestBase {
         // test deployment scanner remove command
         cli.sendLine("deployment-scanner remove --name=testScanner");
 
+        Thread.sleep(2000);
         // check that the scanner was removed
         cli.sendLine("/subsystem=deployment-scanner/scanner=testScanner:read-resource", true);
         CLIOpResult res = cli.readAllAsOpResult();
