@@ -36,13 +36,13 @@ import org.jboss.as.patching.runner.PatchUtils;
  *
  * @author Emanuel Muckenhuber
  */
-class LayerInfo implements Layer, AddOn {
+public class LayerInfo implements Layer, AddOn {
 
     private final String name;
     private final TargetInfo targetInfo;
     private final DirectoryStructure structure;
 
-    LayerInfo(String name, TargetInfo targetInfo, DirectoryStructure structure) {
+    public LayerInfo(String name, TargetInfo targetInfo, DirectoryStructure structure) {
         this.name = name;
         this.targetInfo = targetInfo;
         this.structure = structure;
@@ -107,6 +107,10 @@ class LayerInfo implements Layer, AddOn {
 
     static TargetInfo loadTargetInfoFromDisk(final DirectoryStructure structure) throws IOException {
         final Properties properties = PatchUtils.loadProperties(structure.getInstallationInfo());
+        return loadTargetInfo(properties, structure);
+    }
+
+    public static TargetInfo loadTargetInfo(final Properties properties, final DirectoryStructure structure) {
         final String ref = PatchUtils.readRef(properties, Constants.RELEASE_PATCH_ID);
         final String cumulative = PatchUtils.readRef(properties, Constants.CUMULATIVE);
         final List<String> patches = PatchUtils.readRefs(properties);

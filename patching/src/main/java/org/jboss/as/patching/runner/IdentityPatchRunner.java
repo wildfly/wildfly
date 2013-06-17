@@ -17,13 +17,16 @@ import java.util.Map;
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.installation.InstallationManager;
+import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.installation.InstalledImage;
+import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.LayerType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchElement;
 import org.jboss.as.patching.metadata.PatchElementProvider;
 import org.jboss.as.patching.metadata.PatchXml;
+import org.jboss.as.patching.metadata.RollbackPatch;
 
 /**
  * @author Emanuel Muckenhuber
@@ -260,7 +263,8 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         try {
             // Load the patch history
             final Patch originalPatch = loadPatchInformation(patchID, installedImage);
-            final Patch rollbackPatch = loadRollbackInformation(patchID, installedImage);
+            final RollbackPatch rollbackPatch = loadRollbackInformation(patchID, installedImage);
+            final InstalledIdentity history = rollbackPatch.getIdentityState();
             final Patch.PatchType patchType = rollbackPatch.getPatchType();
 
             // Process originals by type first
@@ -313,36 +317,67 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
                 // Create the rollback
                 PatchingTasks.rollback(elementPatchId, original.getModifications(), patchElement.getModifications(), modifications, ContentItemFilter.MISC_ONLY);
                 entry.rollback(elementPatchId);
+
                 // We need to restore the previous state
                 final Patch.PatchType elementPatchType = patchElement.getPatchType();
-                if (elementPatchType == Patch.PatchType.UPGRADE || elementPatchType == Patch.PatchType.CUMULATIVE) {
-                    // TODO does this make sense !?
-                    entry.apply(elementPatchId, elementPatchType);
+                if (elementPatchType != Patch.PatchType.ONE_OFF) {
+                    final PatchableTarget.TargetInfo info;
+                    if (layerType == LayerType.AddOn) {
+                        info = history.getAddOn(layerName).loadTargetInfo();
+                    } else {
+                        info = history.getLayer(layerName).loadTargetInfo();
+                    }
+                    restoreFromHistory(entry, elementPatchId, elementPatchType, info);
                 }
+
             }
             if (!originalLayers.isEmpty() || !originalAddOns.isEmpty()) {
                 throw new PatchingException("rollback did not contain all layers");
             }
 
+            // Rollback the patch
             final IdentityPatchContext.PatchEntry identity = context.getIdentityEntry();
             PatchingTasks.rollback(patchID, originalPatch.getModifications(), rollbackPatch.getModifications(), identity.getModifications(), ContentItemFilter.MISC_ONLY);
             identity.rollback(patchID);
 
-            if (patchType == Patch.PatchType.UPGRADE || patchType == Patch.PatchType.CUMULATIVE) {
-                assert identity.getModifiedState().getPatchIDs().isEmpty();
-
-                // TODO does this make sense !?
-                final String rollbackPatchId = rollbackPatch.getPatchId();
-                identity.apply(rollbackPatchId, patchType);
-
-                // TODO does this make sense !?
+            // Restore previous state
+            final PatchableTarget.TargetInfo identityHistory = history.getIdentity().loadTargetInfo();
+            restoreFromHistory(identity, rollbackPatch.getPatchId(), patchType, identityHistory);
+            if (patchType == Patch.PatchType.UPGRADE) {
                 identity.setResultingVersion(rollbackPatch.getResultingVersion());
-
             }
 
         } catch (Exception e) {
             throw rethrowException(e);
         }
+    }
+
+    static void restoreFromHistory(final InstallationManager.MutablePatchingTarget target, final String rollbackPatchId,
+                                   final Patch.PatchType patchType, final PatchableTarget.TargetInfo history) throws PatchingException {
+        if (patchType == Patch.PatchType.UPGRADE) {
+            assert history.getReleasePatchID().equals(rollbackPatchId);
+            target.apply(rollbackPatchId, patchType);
+            // Restore previous CP state
+            target.apply(history.getCumulativeID(), Patch.PatchType.CUMULATIVE);
+        } else if (patchType == Patch.PatchType.CUMULATIVE) {
+            assert history.getCumulativeID().equals(rollbackPatchId);
+            target.apply(rollbackPatchId, patchType);
+        }
+        if (patchType != Patch.PatchType.ONE_OFF) {
+            // Restore one off state
+            final List<String> oneOffs = new ArrayList<String>(history.getPatchIDs());
+            Collections.reverse(oneOffs);
+            for (final String oneOff : oneOffs) {
+                target.apply(oneOff, Patch.PatchType.ONE_OFF);
+            }
+        }
+        checkState(history, history); // The rollback should restore the old state
+    }
+
+    static void checkState(final PatchableTarget.TargetInfo o, final PatchableTarget.TargetInfo n) {
+        assert n.getPatchIDs().equals(o.getPatchIDs());
+        assert n.getCumulativeID().equals(o.getCumulativeID());
+        assert n.getReleasePatchID().equals(o.getReleasePatchID());
     }
 
     /**
@@ -450,10 +485,10 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         return PatchXml.parse(patchXml);
     }
 
-    static Patch loadRollbackInformation(final String patchId, final InstalledImage installedImage) throws IOException, XMLStreamException {
+    static RollbackPatch loadRollbackInformation(final String patchId, final InstalledImage installedImage) throws IOException, XMLStreamException {
         final File historyDir = installedImage.getPatchHistoryDir(patchId);
         final File patchXml = new File(historyDir, Constants.ROLLBACK_XML);
-        return PatchXml.parse(patchXml);
+        return (RollbackPatch) PatchXml.parse(patchXml);
     }
 
     static File createTempDir() throws PatchingException {

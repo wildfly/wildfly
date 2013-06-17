@@ -89,6 +89,12 @@ public class InstallationManagerImpl extends InstallationManager {
             final InstallationModificationImpl.InstallationState state = load(installedIdentity);
 
             return new InstallationModificationImpl(identityInfo, identity.getVersion(), state) {
+
+                @Override
+                public InstalledIdentity getUnmodifiedInstallationState() {
+                    return installedIdentity;
+                }
+
                 @Override
                 public void complete() {
                     try {

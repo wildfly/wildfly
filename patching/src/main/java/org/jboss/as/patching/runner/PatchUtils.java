@@ -67,7 +67,7 @@ public final class PatchUtils {
         return ref;
     }
 
-    public static List<String> readRefs(final Properties properties) throws IOException {
+    public static List<String> readRefs(final Properties properties) {
         String layersProp = (String) properties.get(Constants.PATCHES);
         if (layersProp == null || (layersProp = layersProp.trim()).length() == 0) {
             return Collections.emptyList();
