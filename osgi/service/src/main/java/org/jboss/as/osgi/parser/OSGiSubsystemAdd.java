@@ -53,9 +53,12 @@ import org.jboss.as.osgi.deployment.OSGiMetaDataStructureProcessor;
 import org.jboss.as.osgi.deployment.OSGiXServiceParseProcessor;
 import org.jboss.as.osgi.management.OSGiRuntimeResource;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
+import org.jboss.as.osgi.service.AbstractResolverService;
+import org.jboss.as.osgi.service.EnvironmentService;
 import org.jboss.as.osgi.service.FrameworkBootstrapService;
 import org.jboss.as.osgi.service.InitialDeploymentTracker;
 import org.jboss.as.osgi.service.ModuleRegistrationTracker;
+import org.jboss.as.osgi.service.RepositoryService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -115,6 +118,12 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 newControllers.add(FrameworkBootstrapService.addService(serviceTarget, resource, deploymentTracker, extensions, verificationHandler));
                 newControllers.add(registrationTracker.install(serviceTarget, verificationHandler));
+
+                // Add the resource provisioning services
+                newControllers.add(AbstractResolverService.addService(serviceTarget));
+                newControllers.add(EnvironmentService.addService(serviceTarget));
+                newControllers.add(RepositoryService.addService(serviceTarget));
+
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);

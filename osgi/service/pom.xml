@@ -86,10 +86,6 @@
             <artifactId>jbosgi-repository-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.osgi.repository</groupId>
-            <artifactId>jbosgi-repository-core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.osgi.spi</groupId>
             <artifactId>jbosgi-spi</artifactId>
         </dependency>

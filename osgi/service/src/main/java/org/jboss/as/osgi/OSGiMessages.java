@@ -65,8 +65,8 @@ public interface OSGiMessages {
     @Message(id = 11954, value = "Cannot parse OSGi metadata: %s")
     DeploymentUnitProcessingException cannotParseOSGiMetadata(@Cause Throwable th, VirtualFile file);
 
-    @Message(id = 11955, value = "Failed to process initial capabilities")
-    StartException startFailedToProcessInitialCapabilites(@Cause Throwable th);
+    @Message(id = 11955, value = "Failed to process initial capability: %s")
+    StartException startFailedToProcessInitialCapability(@Cause Throwable th, String identifier);
 
     @Message(id = 11956, value = "Failed to create Framework services")
     StartException startFailedToCreateFrameworkServices(@Cause Throwable th);
