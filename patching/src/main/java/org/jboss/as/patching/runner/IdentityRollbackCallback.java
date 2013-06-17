@@ -7,6 +7,7 @@ import java.util.Collection;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.metadata.RollbackPatch;
 
 /**
  * @author Emanuel Muckenhuber
@@ -36,7 +37,7 @@ class IdentityRollbackCallback implements IdentityPatchContext.FinalizeCallback 
     }
 
     @Override
-    public void finishPatch(final Patch patch, final IdentityPatchContext context) throws Exception {
+    public void finishPatch(final RollbackPatch patch, final IdentityPatchContext context) throws Exception {
         if (restoreConfiguration) {
             context.restoreConfiguration(patchId);
         }

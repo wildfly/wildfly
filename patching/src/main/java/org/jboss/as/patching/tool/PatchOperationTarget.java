@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
@@ -114,6 +115,7 @@ public abstract class PatchOperationTarget {
             final ModelNode result = new ModelNode();
             result.get(OUTCOME).set(SUCCESS);
             result.get(RESULT, Constants.RELEASE_PATCH_ID).set(info.getReleasePatchID());
+            result.get(RESULT, Constants.CUMULATIVE).set(info.getCumulativePatchID());
             result.get(RESULT, Constants.PATCHES).setEmptyList();
             for(final String patch : info.getPatchIDs()) {
                 result.get(RESULT, Constants.PATCHES).add(patch);
@@ -168,6 +170,7 @@ public abstract class PatchOperationTarget {
             final ModelNode operation = new ModelNode();
             operation.get(OP).set(READ_RESOURCE_OPERATION);
             operation.get(OP_ADDR).set(address.toModelNode());
+            operation.get(RECURSIVE).set(true);
             operation.get(INCLUDE_RUNTIME).set(true);
             return client.execute(operation);
         }

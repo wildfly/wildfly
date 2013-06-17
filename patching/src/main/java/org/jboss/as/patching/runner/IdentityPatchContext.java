@@ -23,6 +23,7 @@ import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.installation.InstallationManager;
+import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.metadata.ContentItem;
@@ -36,6 +37,7 @@ import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchElement;
 import org.jboss.as.patching.metadata.PatchElementProvider;
 import org.jboss.as.patching.metadata.PatchXml;
+import org.jboss.as.patching.metadata.RollbackPatch;
 import org.jboss.as.patching.metadata.impl.IdentityImpl;
 import org.jboss.as.patching.metadata.impl.PatchElementImpl;
 
@@ -157,6 +159,8 @@ class IdentityPatchContext implements PatchContentProvider {
         if (entry == null) {
             throw new PatchingException("failed to resolve target for " + element);
         }
+        // Maintain the most recent element
+        entry.updateElement(element);
         return entry;
     }
 
@@ -173,11 +177,20 @@ class IdentityPatchContext implements PatchContentProvider {
         final String patchId;
         if (patchType == Patch.PatchType.UPGRADE) {
             patchId = modification.getReleasePatchID();
+        } else if (patchType == Patch.PatchType.CUMULATIVE) {
+            patchId = modification.getCumulativeID();
         } else {
             patchId = callback.getPatchId();
         }
-        final Patch rollbackPatch = createRollbackPatch(patchId, patchType, modification.getVersion());
-        callback.finishPatch(rollbackPatch, this);
+        try {
+            final RollbackPatch rollbackPatch = createRollbackPatch(patchId, patchType, modification.getVersion());
+            callback.finishPatch(rollbackPatch, this);
+        } catch (Exception e) {
+            if (undoChanges()) {
+                callback.rollback();
+            }
+            throw e;
+        }
         state = State.FINISHED;
         return new PatchingResult() {
             @Override
@@ -196,6 +209,11 @@ class IdentityPatchContext implements PatchContentProvider {
                     @Override
                     public String getReleasePatchID() {
                         return identityEntry.delegate.getModifiedState().getReleasePatchID();
+                    }
+
+                    @Override
+                    public String getCumulativePatchID() {
+                        return identityEntry.delegate.getModifiedState().getCumulativeID();
                     }
 
                     @Override
@@ -361,7 +379,7 @@ class IdentityPatchContext implements PatchContentProvider {
 
         private String applyPatchId;
         private String resultingVersion;
-        private final PatchElement element;
+        private PatchElement element;
         private final InstallationManager.MutablePatchingTarget delegate;
         private final List<ContentModification> rollbackActions = new ArrayList<ContentModification>();
         private final Map<Location, PatchingTasks.ContentTaskDefinition> modifications = new LinkedHashMap<Location, PatchingTasks.ContentTaskDefinition>();
@@ -371,6 +389,10 @@ class IdentityPatchContext implements PatchContentProvider {
             this.delegate = delegate;
             this.element = element;
             this.resultingVersion = modification.getVersion();
+        }
+
+        protected void updateElement(final PatchElement element) {
+            this.element = element;
         }
 
         protected String getResultingVersion() {
@@ -396,9 +418,9 @@ class IdentityPatchContext implements PatchContentProvider {
 
         @Override
         public void apply(String patchId, Patch.PatchType patchType) {
-            if (applyPatchId != null) {
-                throw new IllegalStateException("can only apply a single patch to a layer");
-            }
+//            if (applyPatchId != null) {
+//                throw new IllegalStateException("can only apply a single patch to a layer");
+//            }
             delegate.apply(patchId, patchType);
             applyPatchId = patchId;
         }
@@ -568,7 +590,7 @@ class IdentityPatchContext implements PatchContentProvider {
 
         Patch.PatchType getPatchType();
 
-        void finishPatch(final Patch patch, IdentityPatchContext context) throws Exception;
+        void finishPatch(final RollbackPatch patch, IdentityPatchContext context) throws Exception;
 
         void commit();
 
@@ -583,7 +605,7 @@ class IdentityPatchContext implements PatchContentProvider {
      * @param resultingVersion the resulting version
      * @return the rollback patch
      */
-    protected Patch createRollbackPatch(final String patchId, final Patch.PatchType patchType, final String resultingVersion) {
+    protected RollbackPatch createRollbackPatch(final String patchId, final Patch.PatchType patchType, final String resultingVersion) {
         // Process elements
         final List<PatchElement> elements = new ArrayList<PatchElement>();
         // Process layers
@@ -597,13 +619,18 @@ class IdentityPatchContext implements PatchContentProvider {
             elements.add(element);
         }
 
-        return new Patch() {
+        return new RollbackPatch() {
+
+            @Override
+            public InstalledIdentity getIdentityState() {
+                return modification.getUnmodifiedInstallationState();
+            }
 
             @Override
             public Identity getIdentity() {
-                // TODO get identity name !!
                 // TODO see if we need to add some requires, we probably need to maintain incompatible-with
-                return new IdentityImpl("", modification.getVersion());
+                final String name =  getIdentityState().getIdentity().getName();
+                return new IdentityImpl(name, modification.getVersion());
             }
 
             @Override
@@ -652,10 +679,12 @@ class IdentityPatchContext implements PatchContentProvider {
     protected PatchElement createRollbackElement(final PatchEntry entry) {
 
         final PatchElement patchElement = entry.element;
-        final Patch.PatchType patchType = patchElement.getPatchType();
         final String patchId;
+        final Patch.PatchType patchType = patchElement.getPatchType();
         if (patchType == Patch.PatchType.UPGRADE) {
             patchId = entry.getReleasePatchID();
+        } else if (patchType == Patch.PatchType.CUMULATIVE) {
+            patchId = entry.getCumulativeID();
         } else {
             patchId = patchElement.getId();
         }

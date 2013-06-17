@@ -1,5 +1,6 @@
 package org.jboss.as.patching.installation;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +51,7 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
             if (patchId.equals(cumulativeID)) {
                 cumulativeID = null;
             } else if (patchId.equals(releaseID)) {
-                releaseID = Constants.BASE; // TODO this is not right! we need to properly restore the state in the runner
+                releaseID = null;
             } else {
                 throw new IllegalStateException("cannot rollback not-applied patch " + patchId);
             }
@@ -124,6 +125,21 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
         }
         // Create the parent
         IoUtils.mkdir(structure.getInstallationInfo().getParentFile());
+
+        final List<String> consolidate = new ArrayList<String>();
+        consolidate.addAll(patches);
+        if (! Constants.BASE.equals(cumulativeID)) {
+            consolidate.add(cumulativeID);
+        }
+        if (!Constants.BASE.equals(releaseID)) {
+            consolidate.add(releaseID);
+        }
+
+        if (structure.getModuleRoot() != null) {
+            final File overlays = new File(structure.getModuleRoot(), Constants.PATCHES);
+            final File refs = new File(overlays, Constants.PATCHES);
+            PatchUtils.writeRefs(refs, consolidate);
+        }
 
         // Update the properties
         properties.put(Constants.RELEASE_PATCH_ID, releaseID);
