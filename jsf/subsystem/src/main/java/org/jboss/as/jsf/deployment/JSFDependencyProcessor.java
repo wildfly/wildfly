@@ -38,7 +38,7 @@ import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
-import org.jboss.metadata.web.spec.WebMetaData;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -144,13 +144,13 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
     // Add a flag to the sevlet context so that we know if we need to instantiate
     // a CDI ViewHandler.
     private void addCDIFlag(WarMetaData warMetaData, DeploymentUnit topLevelDeployment) {
-        WebMetaData webMetaData = warMetaData.getWebMetaData();
+        JBossWebMetaData webMetaData = warMetaData.getMergedJBossWebMetaData();
         if (webMetaData == null) {
-            webMetaData = new WebMetaData();
-            warMetaData.setWebMetaData(webMetaData);
+            webMetaData = new JBossWebMetaData();
+            warMetaData.setMergedJBossWebMetaData(webMetaData);
         }
 
-        List<ParamValueMetaData> contextParams = warMetaData.getWebMetaData().getContextParams();
+        List<ParamValueMetaData> contextParams = webMetaData.getContextParams();
         if (contextParams == null) {
             contextParams = new ArrayList<ParamValueMetaData>();
         }
