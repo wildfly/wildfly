@@ -406,6 +406,24 @@ public class JMSQueueManagementTestCase {
         }
     }
 
+    @Test
+    public void removeJMSQueueRemovesAllMessages() throws Exception {
+        MessageProducer producer = session.createProducer(queue);
+        producer.send(session.createTextMessage("A"));
+
+        ModelNode result = execute(getQueueOperation("count-messages"), true);
+        Assert.assertTrue(result.isDefined());
+        Assert.assertEquals(1, result.asInt());
+
+        // remove and add the queue
+        adminSupport.removeJmsQueue(getQueueName());
+        adminSupport.createJmsQueue(getQueueName(), getQueueJndiName());
+
+        result = execute(getQueueOperation("count-messages"), true);
+        Assert.assertTrue(result.isDefined());
+        Assert.assertEquals(0, result.asInt());
+    }
+
     private String getQueueName() {
         return getClass().getSimpleName() + count;
     }
