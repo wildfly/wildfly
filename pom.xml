@@ -190,7 +190,7 @@
         <version.org.jboss.modules.jboss-modules>1.2.2.Final</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.2.0.Beta1</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.osgi.deployment>2.0.0.CR4</version.org.jboss.osgi.deployment>
-        <version.org.jboss.osgi.framework>3.0.0.CR27</version.org.jboss.osgi.framework>
+        <version.org.jboss.osgi.framework>3.0.0.CR28</version.org.jboss.osgi.framework>
         <version.org.jboss.osgi.logging>1.0.0.Final</version.org.jboss.osgi.logging>
         <version.org.jboss.osgi.metadata>3.0.0.CR1</version.org.jboss.osgi.metadata>
         <version.org.jboss.osgi.resolver>4.0.0.CR17</version.org.jboss.osgi.resolver>
