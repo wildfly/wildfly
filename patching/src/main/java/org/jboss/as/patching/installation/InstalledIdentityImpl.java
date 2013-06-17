@@ -32,7 +32,7 @@ import java.util.Map;
 /**
  * @author Emanuel Muckenhuber
  */
-class InstalledIdentityImpl extends InstalledIdentity {
+public class InstalledIdentityImpl extends InstalledIdentity {
 
     private final Identity identity;
     private final InstalledImage installedImage;

@@ -78,6 +78,11 @@ public class PatchToolImpl implements PatchTool {
                 }
 
                 @Override
+                public String getCumulativePatchID() {
+                    return info.getCumulativeID();
+                }
+
+                @Override
                 public List<String> getPatchIDs() {
                     return info.getPatchIDs();
                 }
@@ -107,10 +112,8 @@ public class PatchToolImpl implements PatchTool {
                     PatchLogger.ROOT_LOGGER.debugf(e, "failed to close input stream");
                 }
             }
-        } catch (PatchingException e) {
-            throw e;
         } catch (Exception e) {
-            throw new PatchingException(e);
+            throw rethrowException(e);
         }
     }
 
@@ -147,10 +150,8 @@ public class PatchToolImpl implements PatchTool {
 
             // Execute
             return execute(workDir, contentPolicy);
-        } catch (PatchingException e) {
-            throw e;
         } catch (Exception e) {
-            throw new PatchingException(e);
+            throw rethrowException(e);
         } finally {
             if (workDir != null && !IoUtils.recursiveDelete(workDir)) {
                 PatchLogger.ROOT_LOGGER.debugf("failed to remove work directory (%s)", workDir);

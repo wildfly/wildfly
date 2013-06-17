@@ -10,6 +10,7 @@ import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
+import org.jboss.as.patching.metadata.RollbackPatch;
 
 /**
  * @author Emanuel Muckenhuber
@@ -37,7 +38,7 @@ class IdentityApplyCallback implements IdentityPatchContext.FinalizeCallback {
     }
 
     @Override
-    public void finishPatch(final Patch rollbackPatch, final IdentityPatchContext context) throws Exception {
+    public void finishPatch(final RollbackPatch rollbackPatch, final IdentityPatchContext context) throws Exception {
         final File historyDir = structure.getInstalledImage().getPatchHistoryDir(patchId);
 
         if (!historyDir.exists()) {
@@ -45,12 +46,7 @@ class IdentityApplyCallback implements IdentityPatchContext.FinalizeCallback {
         }
 
         // Backup the current active patch Info
-        final File installationInfo = new File(historyDir, Constants.INSTALLATION_METADATA);
         final File timestamp = new File(historyDir, Constants.TIMESTAMP);
-
-        // Backup identity information
-        final IdentityPatchContext.PatchEntry identity = context.getIdentityEntry();
-        PatchUtils.writeProperties(installationInfo, identity.getProperties());
         PatchUtils.writeRef(timestamp, generateTimestamp());
 
         // Persist the patch.xml in the patch directory

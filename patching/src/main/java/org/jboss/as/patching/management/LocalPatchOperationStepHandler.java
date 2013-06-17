@@ -82,6 +82,7 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
 
             });
         } catch (PatchingException e) {
+            installationManager.clearRestartRequired();
             if(e.hasConflicts()) {
                 final ModelNode failureDescription = context.getFailureDescription();
                 for(final ContentItem item : e.getConflicts()) {

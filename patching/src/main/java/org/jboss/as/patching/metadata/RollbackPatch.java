@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,21 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.patching.metadata;
 
+import org.jboss.as.patching.installation.InstalledIdentity;
+
 /**
+ * Additional patch information for a rollback
  *
- * @author Alexey Loubyansky
+ * @author Emanuel Muckenhuber
  */
-public class PatchBuilderFactory {
+public interface RollbackPatch extends Patch {
 
-    private PatchBuilder builder;
+    /**
+     * Get the backed up identity state.
+     *
+     * @return the installed identity state
+     */
+    InstalledIdentity getIdentityState();
 
-    public void setBuilder(PatchBuilder builder) {
-        this.builder = builder;
-    }
-
-    public PatchBuilder getBuilder() {
-        return builder;
-    }
 }

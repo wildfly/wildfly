@@ -37,6 +37,13 @@ public abstract class InstallationManager extends InstalledIdentity {
     public interface InstallationModification extends MutablePatchingTarget {
 
         /**
+         * Get the unmodified state.
+         *
+         * @return the originals tate
+         */
+        InstalledIdentity getUnmodifiedInstallationState();
+
+        /**
          * Get the current version of the identity.
          *
          * @return the identity version

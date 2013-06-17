@@ -48,19 +48,23 @@ import org.jboss.staxmapper.XMLMapper;
 public class PatchXml {
 
     public static final String PATCH_XML = "patch.xml";
+    public static final String ROLLBACK_XML = "rollback.xml";
 
     private static final XMLMapper MAPPER = XMLMapper.Factory.create();
     private static final PatchXml_1_0 XML1_0 = new PatchXml_1_0();
+    private static final RollbackPatchXml_1_0 ROLLBACK_1_0 = new RollbackPatchXml_1_0();
     private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
     private static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newFactory();
 
     static {
         MAPPER.registerRootElement(new QName(Namespace.PATCH_1_0.getNamespace(), PatchXml_1_0.Element.PATCH.name), XML1_0);
+        MAPPER.registerRootElement(new QName(Namespace.ROLLBACK_1_0.getNamespace(), PatchXml_1_0.Element.PATCH.name), ROLLBACK_1_0);
     }
 
     public enum Namespace {
 
         PATCH_1_0("urn:jboss:patch:1.0"),
+        ROLLBACK_1_0("urn:jboss:patch:rollback:1.0"),
         UNKNOWN(null),
         ;
 
@@ -102,7 +106,11 @@ public class PatchXml {
     }
 
     public static void marshal(final OutputStream os, final Patch patch) throws XMLStreamException {
-        marshal(os, patch, XML1_0);
+        marshal(os, patch, patch instanceof RollbackPatch ? ROLLBACK_1_0 : XML1_0);
+    }
+
+    public static void marshal(final OutputStream os, final RollbackPatch patch) throws XMLStreamException {
+        marshal(os, patch, ROLLBACK_1_0);
     }
 
     protected static void marshal(final OutputStream os, final Patch patch, final XMLElementWriter<? extends Patch> xmlWriter) throws XMLStreamException {

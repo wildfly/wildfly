@@ -55,7 +55,7 @@ class LayersFactory {
 
         // build the identity information
         final String productVersion = productConfig.resolveVersion();
-        final String productName = productConfig.getProductName();
+        final String productName = productConfig.resolveName();
         final Identity identity = new AbstractLazyIdentity() {
             @Override
             public String getName() {

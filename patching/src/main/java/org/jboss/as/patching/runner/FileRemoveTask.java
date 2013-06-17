@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.patching.HashUtils;
@@ -72,7 +71,7 @@ class FileRemoveTask implements PatchingTask {
         // we create the backup in any case, since it is possible that the task
         // will be processed anyhow if the user specified OVERRIDE_ALL policy.
         // If the task is undone, the patch history will be deleted (including this backup).
-        backup(target, backup, Collections.<String>emptyList(), rollback);
+        backup(target, backup, Arrays.asList(item.getPath()), rollback);
         // See if the hash matches the metadata
 
         final byte[] expected = description.getModification().getTargetHash();
