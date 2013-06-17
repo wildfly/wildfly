@@ -24,8 +24,11 @@ package org.jboss.as.osgi.service;
 import static org.jboss.as.network.SocketBinding.JBOSS_BINDING_NAME;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
 
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -54,11 +57,17 @@ import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.jboss.osgi.framework.spi.SystemServices;
 import org.jboss.osgi.framework.spi.SystemServicesPlugin;
+import org.jboss.osgi.provision.AbstractResourceProvisioner;
+import org.jboss.osgi.provision.ProvisionException;
+import org.jboss.osgi.provision.XResourceProvisioner;
 import org.jboss.osgi.repository.XPersistentRepository;
 import org.jboss.osgi.repository.XRepository;
 import org.jboss.osgi.resolver.XResolver;
+import org.jboss.osgi.resolver.XResource;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
+import org.osgi.service.repository.RepositoryContent;
 import org.osgi.util.xml.XMLParserActivator;
 
 /**
@@ -141,6 +150,7 @@ final class SystemServicesIntegration extends SystemServicesPlugin {
                 registerServiceContainer(syscontext);
                 registerSocketBindings(syscontext);
                 registerRepository(syscontext);
+                registerResourceProvisioner(syscontext);
                 registerModelControllerClient(syscontext);
             }
 
@@ -175,6 +185,33 @@ final class SystemServicesIntegration extends SystemServicesPlugin {
     private void registerRepository(BundleContext syscontext) {
         XRepository repository = injectedRepository.getValue();
         syscontext.registerService(XRepository.class, repository, null);
+    }
+
+    private void registerResourceProvisioner(final BundleContext syscontext) {
+        XResolver resolver = injectedResolver.getValue();
+        XPersistentRepository repository = injectedRepository.getValue();
+        XResourceProvisioner provisioner = new AbstractResourceProvisioner(resolver, repository, XResource.TYPE_BUNDLE) {
+            @Override
+            @SuppressWarnings("unchecked")
+            public <T> List<T> installResources(List<XResource> resources, Class<T> type) throws ProvisionException {
+                List<T> result = new ArrayList<T>();
+                for (XResource res : resources) {
+                    String name = res.getIdentityCapability().getName();
+                    String location = "provisioned-resource/" + name;
+                    InputStream input = ((RepositoryContent) res).getContent();
+                    try {
+                        Bundle bundle = syscontext.installBundle(location, input);
+                        result.add((T) bundle);
+                    } catch (BundleException ex) {
+                        throw new ProvisionException(ex);
+                    }
+                }
+                return Collections.unmodifiableList(result);
+            }
+        };
+        Dictionary<String, String> props = new Hashtable<String, String>();
+        props.put("type", XResource.TYPE_BUNDLE);
+        syscontext.registerService(XResourceProvisioner.class, provisioner, props);
     }
 
     private void registerModelControllerClient(final BundleContext syscontext) {

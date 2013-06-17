@@ -1144,6 +1144,10 @@
             <maven-resource group="org.jboss.osgi.framework" artifact="jbosgi-framework-core"/>
         </module-def>
 
+        <module-def name="org.jboss.osgi.provision">
+            <maven-resource group="org.jboss.osgi.provision" artifact="jbosgi-provision-core"/>
+        </module-def>
+
         <module-def name="org.jboss.osgi.repository">
             <maven-resource group="org.jboss.osgi.repository" artifact="jbosgi-repository-api"/>
         </module-def>
