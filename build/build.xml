@@ -1146,7 +1146,6 @@
 
         <module-def name="org.jboss.osgi.repository">
             <maven-resource group="org.jboss.osgi.repository" artifact="jbosgi-repository-api"/>
-            <maven-resource group="org.jboss.osgi.repository" artifact="jbosgi-repository-core"/>
         </module-def>
 
         <module-def name="org.jboss.osgi.resolver">

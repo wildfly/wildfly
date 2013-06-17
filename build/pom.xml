@@ -1456,11 +1456,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.osgi.repository</groupId>
-                    <artifactId>jbosgi-repository-core</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.jboss.osgi.resolver</groupId>
                     <artifactId>jbosgi-resolver-api</artifactId>
                 </dependency>
@@ -2386,7 +2381,6 @@
                                         <exclude>org.jboss.osgi.framework:jbosgi-framework-core</exclude>
                                         <exclude>org.jboss.osgi.metadata:jbosgi-metadata</exclude>
                                         <exclude>org.jboss.osgi.repository:jbosgi-repository-api</exclude>
-                                        <exclude>org.jboss.osgi.repository:jbosgi-repository-core</exclude>
                                         <exclude>org.jboss.osgi.resolver:jbosgi-resolver-api</exclude>
                                         <exclude>org.jboss.osgi.resolver:jbosgi-resolver-felix</exclude>
                                         <exclude>org.jboss.osgi.spi:jbosgi-spi</exclude>
