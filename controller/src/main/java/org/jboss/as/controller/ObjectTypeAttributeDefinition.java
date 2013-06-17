@@ -26,10 +26,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.ResourceBundle;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -55,12 +57,20 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
 
     protected ObjectTypeAttributeDefinition(final String name, final AttributeDefinition[] valueTypes, final boolean allowNull,
                                             final ParameterCorrector corrector) {
-        this(name, name, null, valueTypes, allowNull, new ObjectTypeValidator(allowNull, valueTypes), corrector, null, null, null, false, null);
+        this(name, name, null, valueTypes, allowNull, new ObjectTypeValidator(allowNull, valueTypes), corrector, null, null, null, false, null, null);
+    }
+
+    protected ObjectTypeAttributeDefinition(final String name, final String xmlName, final String suffix, final AttributeDefinition[] valueTypes, final boolean allowNull,
+            final ParameterValidator validator, final ParameterCorrector corrector, final String[] alternatives, final String[] requires,
+            final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated,
+            final AttributeAccess.Flag... flags) {
+        this(name, xmlName, suffix, valueTypes, allowNull, validator, corrector, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, null, flags);
     }
 
     protected ObjectTypeAttributeDefinition(final String name, final String xmlName, final String suffix, final AttributeDefinition[] valueTypes, final boolean allowNull,
                                             final ParameterValidator validator, final ParameterCorrector corrector, final String[] alternatives, final String[] requires,
-                                            final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
+                                            final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated,
+                                            final AccessConstraintDefinition[] accessConstraints, final AttributeAccess.Flag... flags) {
         super(name, xmlName, null, ModelType.OBJECT, allowNull, false, null, corrector, validator, false, alternatives,
                 requires, getAttributeMarshaller(attributeMarshaller, valueTypes), resourceOnly, deprecated, flags);
         this.valueTypes = valueTypes;
@@ -284,7 +294,8 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
         public ObjectTypeAttributeDefinition build() {
             if (xmlName == null) { xmlName = name; }
             if (validator == null) { validator = new ObjectTypeValidator(allowNull, valueTypes); }
-            return new ObjectTypeAttributeDefinition(name, xmlName, suffix, valueTypes, allowNull, validator, corrector, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
+            return new ObjectTypeAttributeDefinition(name, xmlName, suffix, valueTypes, allowNull, validator, corrector, alternatives, requires,
+                    attributeMarshaller, resourceOnly, deprecated, accessConstraints, flags);
         }
 
         public Builder setSuffix(final String suffix) {

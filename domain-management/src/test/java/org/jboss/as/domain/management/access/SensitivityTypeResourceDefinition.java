@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,23 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.domain.management.access;
 
-package org.jboss.as.controller.access.constraint.management;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SENSITIVITY_CLASSIFICATION;
 
-import java.util.List;
-
-import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 
 /**
- * TODO: temporary workaround for the need to avoid adding methods to ResourceDefinition in EAP 6.x.
- * In WildFly these methods should be moved to ResourceDefinition one porting of RBAC to EAP is complete.
  *
- * @author Brian Stansberry (c) 2013 Red Hat Inc.
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public interface ConstrainedResourceDefinition extends ResourceDefinition {
+public class SensitivityTypeResourceDefinition extends SimpleResourceDefinition {
 
-    //TODO I don't think this is necessary?
-    //void registerConstraints(final ManagementResourceRegistration resourceRegistration);
+    public static PathElement PATH_ELEMENT = PathElement.pathElement(SENSITIVITY_CLASSIFICATION);
 
-    List<AccessConstraintDefinition> getAccessConstraints();
+    public SensitivityTypeResourceDefinition() {
+        //TODO use proper description resolver
+        super(PATH_ELEMENT, new NonResolvingResourceDescriptionResolver());
+    }
+
 }

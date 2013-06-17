@@ -28,6 +28,7 @@ import java.util.ResourceBundle;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -51,8 +52,9 @@ public class ObjectListAttributeDefinition extends ListAttributeDefinition {
     private final ObjectTypeAttributeDefinition valueType;
 
     private ObjectListAttributeDefinition(final String name, final String xmlName, final ObjectTypeAttributeDefinition valueType, final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires,
-                                          final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, false, minSize, maxSize, valueType.getValidator(), alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
+                                          final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated,
+                                          final AccessConstraintDefinition[] accessConstaints, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, allowNull, false, minSize, maxSize, valueType.getValidator(), alternatives, requires, attributeMarshaller, resourceOnly, deprecated, accessConstaints, flags);
         this.valueType = valueType;
     }
 
@@ -62,6 +64,7 @@ public class ObjectListAttributeDefinition extends ListAttributeDefinition {
         attr.get(ModelDescriptionConstants.DESCRIPTION).set(getAttributeTextDescription(bundle, prefix));
         final ModelNode result = resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES, getName()).set(attr);
         addValueTypeDescription(result, prefix, bundle, false,null,null);
+        addAccessConstraints(result, bundle.getLocale());
         return result;
     }
 
@@ -190,7 +193,7 @@ public class ObjectListAttributeDefinition extends ListAttributeDefinition {
         public ObjectListAttributeDefinition build() {
             if (xmlName == null) { xmlName = name; }
             if (maxSize < 1) { maxSize = Integer.MAX_VALUE; }
-            return new ObjectListAttributeDefinition(name, xmlName, valueType, allowNull, minSize, maxSize, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
+            return new ObjectListAttributeDefinition(name, xmlName, valueType, allowNull, minSize, maxSize, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, accessConstraints, flags);
         }
 
         /*

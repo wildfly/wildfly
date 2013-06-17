@@ -80,7 +80,10 @@ public class DefaultResourceAddDescriptionProvider implements DescriptionProvide
             }
         }
 
+        //This is auto-generated so don't add any access constraints
+
         result.get(REPLY_PROPERTIES).setEmptyObject();
+
 
         return result;
     }

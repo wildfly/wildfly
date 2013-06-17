@@ -33,6 +33,7 @@ import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.ParameterCorrector;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -49,8 +50,9 @@ class OptionAttributeDefinition extends SimpleAttributeDefinition {
     private OptionAttributeDefinition(String name, String xmlName, ModelNode defaultValue, ModelType type, boolean allowNull, boolean allowExpression,
                                       MeasurementUnit measurementUnit, ParameterCorrector corrector, ParameterValidator validator, boolean validateNull,
                                       String[] alternatives, String[] requires, AttributeMarshaller attributeMarshaller, boolean resourceOnly,
-                                      DeprecationData deprecated, Option<?> option, AttributeAccess.Flag... flags) {
-        super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, corrector, validator, validateNull, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
+                                      DeprecationData deprecated, Option<?> option, AccessConstraintDefinition[] accessConstraints, AttributeAccess.Flag... flags) {
+        super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, corrector, validator, validateNull, alternatives, requires,
+                attributeMarshaller, resourceOnly, deprecated, accessConstraints, flags);
         this.option = option;
     }
 
@@ -70,7 +72,7 @@ class OptionAttributeDefinition extends SimpleAttributeDefinition {
         @Override
         public OptionAttributeDefinition build() {
             return new OptionAttributeDefinition(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                    corrector, validator, validateNull, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, option, flags);
+                    corrector, validator, validateNull, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, option, accessConstraints, flags);
         }
 
         private static ModelType getType(Option<?> option) {

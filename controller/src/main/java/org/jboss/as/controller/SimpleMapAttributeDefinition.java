@@ -33,6 +33,7 @@ import java.util.ResourceBundle;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -52,8 +53,9 @@ public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
 
     private SimpleMapAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
                                          final int minSize, final int maxSize, final ParameterCorrector corrector, final ParameterValidator elementValidator,
-                                         final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller,final boolean resourceOnly,final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, allowExpression, minSize, maxSize, corrector, elementValidator, alternatives, requires, attributeMarshaller, resourceOnly,deprecated, flags);
+                                         final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller,final boolean resourceOnly,
+                                         final DeprecationData deprecated, final AccessConstraintDefinition[] accessConstraints, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, allowNull, allowExpression, minSize, maxSize, corrector, elementValidator, alternatives, requires, attributeMarshaller, resourceOnly,deprecated, accessConstraints, flags);
     }
 
     @Override
@@ -120,7 +122,8 @@ public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
             if (attributeMarshaller == null) {
                 attributeMarshaller = new MapAttributeMarshaller();
             }
-            return new SimpleMapAttributeDefinition(name, xmlName, allowNull, allowExpression, minSize, maxSize, corrector, validator, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
+            return new SimpleMapAttributeDefinition(name, xmlName, allowNull, allowExpression, minSize, maxSize, corrector, validator, alternatives, requires,
+                    attributeMarshaller, resourceOnly, deprecated, accessConstraints, flags);
         }
     }
 }

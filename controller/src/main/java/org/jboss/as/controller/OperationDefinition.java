@@ -72,7 +72,11 @@ public abstract class OperationDefinition {
         this.replyAllowNull = replyAllowNull;
         this.deprecationData = deprecationData;
         this.replyParameters = replyParameters;
-        this.accessConstraints = Collections.unmodifiableList(Arrays.asList(accessConstraints));
+        if (accessConstraints == null) {
+            this.accessConstraints = Collections.<AccessConstraintDefinition>emptyList();
+        } else {
+            this.accessConstraints = Collections.unmodifiableList(Arrays.asList(accessConstraints));
+        }
     }
 
     public String getName() {

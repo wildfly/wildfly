@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -33,6 +34,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDescriptionProviderUtil;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -71,7 +73,7 @@ public abstract class AttributeDefinition {
     protected final AttributeMarshaller attributeMarshaller;
     private final boolean resourceOnly;
     private final DeprecationData deprecationData;
-    private final List<AccessConstraintDefinition> accessConstraints = Collections.emptyList(); // TODO provide these!
+    private final List<AccessConstraintDefinition> accessConstraints;
 
 
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
@@ -79,14 +81,25 @@ public abstract class AttributeDefinition {
                                final ParameterValidator validator, final String[] alternatives, final String[] requires,
                                final AttributeAccess.Flag... flags) {
         this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                null, validator, true, alternatives, requires, null, false, null, flags);
+                null, validator, true, alternatives, requires, null, false, null, null, flags);
+    }
+
+    protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
+            final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
+            final ParameterCorrector valueCorrector, final ParameterValidator validator,
+            boolean validateNull, final String[] alternatives, final String[] requires, AttributeMarshaller attributeMarshaller,
+            boolean resourceOnly, DeprecationData deprecationData, final AttributeAccess.Flag... flags) {
+        this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, valueCorrector, validator,
+                validateNull, alternatives, requires, attributeMarshaller, resourceOnly, deprecationData,
+                null, flags);
     }
 
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                   final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                   final ParameterCorrector valueCorrector, final ParameterValidator validator,
                                   boolean validateNull, final String[] alternatives, final String[] requires, AttributeMarshaller attributeMarshaller,
-                                  boolean resourceOnly, DeprecationData deprecationData, final AttributeAccess.Flag... flags) {
+                                  boolean resourceOnly, DeprecationData deprecationData, final AccessConstraintDefinition[] accessConstraints,
+                                  final AttributeAccess.Flag... flags) {
 
         this.name = name;
         this.xmlName = xmlName;
@@ -121,6 +134,11 @@ public abstract class AttributeDefinition {
             this.attributeMarshaller = new DefaultAttributeMarshaller();
         }
         this.resourceOnly = resourceOnly;
+        if (accessConstraints == null) {
+            this.accessConstraints = Collections.<AccessConstraintDefinition>emptyList();
+        } else {
+            this.accessConstraints = Collections.unmodifiableList(Arrays.asList(accessConstraints));
+        }
         this.deprecationData = deprecationData;
     }
 
@@ -387,6 +405,7 @@ public abstract class AttributeDefinition {
         if (deprecated != null) {
             deprecated.get(ModelDescriptionConstants.REASON).set(getAttributeDeprecatedDescription(bundle, prefix));
         }
+        addAccessConstraints(result, bundle.getLocale());
         return result;
     }
 
@@ -411,6 +430,7 @@ public abstract class AttributeDefinition {
         if (deprecated != null) {
             deprecated.get(ModelDescriptionConstants.REASON).set(resolver.getResourceAttributeDeprecatedDescription(getName(), locale, bundle));
         }
+        addAccessConstraints(result, locale);
         return result;
     }
 
@@ -538,6 +558,7 @@ public abstract class AttributeDefinition {
             }
         }
         addAllowedValuesToDescription(result, validator);
+
         return result;
     }
 
@@ -672,5 +693,9 @@ public abstract class AttributeDefinition {
 
     public List<AccessConstraintDefinition> getAccessConstraints() {
         return accessConstraints;
+    }
+
+    protected void addAccessConstraints(ModelNode result, Locale locale) {
+        AccessConstraintDescriptionProviderUtil.addAccessConstraints(result, accessConstraints, locale);
     }
 }

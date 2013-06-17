@@ -25,14 +25,26 @@ package org.jboss.as.controller.access.constraint;
 import org.jboss.as.controller.access.Action;
 
 /**
- * TODO class javadoc.
+ * Configuration of sensitive data. Typically {@link org.jboss.as.controller.AttributeDefinition}, {@link org.jboss.as.controller.OperationDefinition}
+ * and {@link org.jboss.as.controller.ResourceDefinition} will be annotated with zero or more
+ * {@link org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition} containing this information. The purpose of this
+ * class is to establish a default behaviour regarding sensitivity for
+ * <ul>
+ *      <li><b>access</b> - to be able to even be aware of the target's existence</li>
+ *      <li><b>read</b> - to be able to read the target's data</li>
+ *      <li><b>write</b> - to be able to write to the target</li>
+ * </ul>
+ * when registering a resource, attribute or operation. This default behaviour can then be tweaked.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
 public class AbstractSensitivity {
 
+    /** If {@code true} access (awareness) is considered sensitive by default*/
     private final boolean defaultRequiresAccessPermission;
+    /** If {@code true} reading is considered sensitive by default*/
     private final boolean defaultRequiresReadPermission;
+    /** If {@code true} writing is considered sensitive by default*/
     private final boolean defaultRequiresWritePermission;
     private volatile Boolean configuredRequiresAccessPermission;
     private volatile Boolean configuredRequiresReadPermission;

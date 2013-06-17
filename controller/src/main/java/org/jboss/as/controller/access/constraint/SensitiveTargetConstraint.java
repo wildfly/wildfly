@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.access.constraint;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -144,7 +145,10 @@ public class SensitiveTargetConstraint extends AllowAllowNotConstraint {
                 // differing default settings
                 throw new IllegalStateException("incompatible Sensitivity");
             }
+        }
 
+        public Collection<SensitivityClassification> getSensitivities(){
+            return Collections.unmodifiableCollection(sensitivities.values());
         }
     }
 }

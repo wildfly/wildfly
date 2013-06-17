@@ -32,6 +32,8 @@ public class ModelDescriptionConstants {
 
     // KEEP THESE IN ALPHABETICAL ORDER!
 
+    public static final String ACCESS_CONSTRAINT = "access-contstraint";
+    public static final String ACCESS_CONSTRAINTS = "access-constraints";
     /** The key for {@link org.jboss.as.controller.registry.AttributeAccess.AccessType} fields. */
     public static final String ACCESS_TYPE = "access-type";
     public static final String ADD = "add";
@@ -47,6 +49,7 @@ public class ModelDescriptionConstants {
     public static final String ANY_IPV4_ADDRESS = "any-ipv4-address";
     public static final String ANY_IPV6_ADDRESS = "any-ipv6-address";
     public static final String APPCLIENT = "appclient";
+    public static final String APPLICATION = "application";
     public static final String ARCHIVE = "archive";
     public static final String ATTRIBUTES = "attributes";
     public static final String ATTRIBUTES_ONLY = "attributes-only";
@@ -69,6 +72,7 @@ public class ModelDescriptionConstants {
     public static final String CONNECTIONS = "connections";
     public static final String CONSOLE_ENABLED = "console-enabled";
     public static final String CONTENT = "content";
+    public static final String CORE = "core";
     public static final String CORE_SERVICE = "core-service";
     public static final String CPU_AFFINITY = "cpu-affinity";
     public static final String CRITERIA = "criteria";
@@ -255,6 +259,8 @@ public class ModelDescriptionConstants {
     public static final String SECURE_SOCKET_BINDING = "secure-socket-binding";
     public static final String SECURITY_REALM = "security-realm";
     public static final String SECURITY_REALMS = "security-realms";
+    public static final String SENSITIVE = "sensitive";
+    public static final String SENSITIVITY_CLASSIFICATION = "sensitivity-classification";
     public static final String SERVER = "server";
     public static final String SERVERS = "servers";
     public static final String SERVER_CONFIG = "server-config";
