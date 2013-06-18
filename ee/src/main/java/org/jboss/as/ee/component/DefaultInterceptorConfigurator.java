@@ -1,5 +1,8 @@
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
@@ -12,7 +15,6 @@ import java.util.Set;
 
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ee.component.interceptors.OrderedItemContainer;
 import org.jboss.as.ee.component.interceptors.UserInterceptorFactory;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -27,9 +29,6 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
  * @author Stuart Douglas
@@ -216,8 +215,6 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
             }
         }
 
-        final OrderedItemContainer<InterceptorFactory> aroundConstructInterceptors = new OrderedItemContainer<>();
-
         // Apply post-construct
 
         if (!injectors.isEmpty()) {
@@ -227,12 +224,12 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
             configuration.addPostConstructInterceptor(weaved(instantiators), InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_INSTANTIATION_INTERCEPTORS);
         }
         if (!userAroundConstruct.isEmpty()) {
-            aroundConstructInterceptors.add(weaved(userAroundConstruct), InterceptorOrder.AroundConstruct.INTERCEPTOR_AROUND_CONSTRUCT);
+            configuration.addAroundConstructInterceptor(weaved(userAroundConstruct), InterceptorOrder.AroundConstruct.INTERCEPTOR_AROUND_CONSTRUCT);
         }
-        aroundConstructInterceptors.add(instantiator, InterceptorOrder.AroundConstruct.CONSTRUCT_COMPONENT);
-        aroundConstructInterceptors.add(new ImmediateInterceptorFactory(Interceptors.getTerminalInterceptor()), InterceptorOrder.AroundConstruct.TERMINAL_INTERCEPTOR);
+        configuration.addAroundConstructInterceptor(instantiator, InterceptorOrder.AroundConstruct.CONSTRUCT_COMPONENT);
+        configuration.addAroundConstructInterceptor(new ImmediateInterceptorFactory(Interceptors.getTerminalInterceptor()), InterceptorOrder.AroundConstruct.TERMINAL_INTERCEPTOR);
 
-        configuration.addPostConstructInterceptor(new AroundConstructInterceptorFactory(weaved(aroundConstructInterceptors.getSortedItems())), InterceptorOrder.ComponentPostConstruct.AROUND_CONSTRUCT_CHAIN);
+        configuration.addPostConstructInterceptor(new AroundConstructInterceptorFactory(weaved(configuration.getAroundConstructInterceptors())), InterceptorOrder.ComponentPostConstruct.AROUND_CONSTRUCT_CHAIN);
 
         if (!userPostConstruct.isEmpty()) {
             configuration.addPostConstructInterceptor(weaved(userPostConstruct), InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_USER_INTERCEPTORS);
