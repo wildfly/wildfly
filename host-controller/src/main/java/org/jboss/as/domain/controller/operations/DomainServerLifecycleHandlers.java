@@ -97,6 +97,7 @@ public class DomainServerLifecycleHandlers {
         return new SimpleOperationDefinitionBuilder(operationName,
                 DomainResolver.getResolver(serverGroup ? ModelDescriptionConstants.SERVER_GROUP : ModelDescriptionConstants.DOMAIN))
                 .addParameter(blocking)
+                .setRuntimeOnly()
                 .build();
     }
 
@@ -154,6 +155,8 @@ public class DomainServerLifecycleHandlers {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    // Even though we don't read from the service registry, we are modifying a service
+                    context.getServiceRegistry(true);
                     if (group != null) {
                         final Set<String> waitForServers = new HashSet<String>();
                         final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
@@ -194,6 +197,8 @@ public class DomainServerLifecycleHandlers {
                     final Set<String> serversInGroup = getServersForGroup(model, group);
                     final Set<String> waitForServers = new HashSet<String>();
                     if(serverConfig.isDefined()) {
+                        // Even though we don't read from the service registry, we are modifying a service
+                        context.getServiceRegistry(true);
                         for (Property config : serverConfig.asPropertyList()) {
                             final ServerStatus status = serverInventory.determineServerStatus(config.getName());
                             if (status != ServerStatus.STARTING && status != ServerStatus.STARTED) {
@@ -232,6 +237,8 @@ public class DomainServerLifecycleHandlers {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    // Even though we don't read from the service registry, we are modifying a service
+                    context.getServiceRegistry(true);
                     Map<String, ProcessInfo> processes = serverInventory.determineRunningProcesses(true);
                     final Set<String> serversInGroup = getServersForGroup(model, group);
                     final Set<String> waitForServers = new HashSet<String>();
@@ -267,6 +274,8 @@ public class DomainServerLifecycleHandlers {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    // Even though we don't read from the service registry, we are modifying a service
+                    context.getServiceRegistry(true);
                     Map<String, ProcessInfo> processes = serverInventory.determineRunningProcesses(true);
                     final Set<String> serversInGroup = getServersForGroup(model, group);
                     final Set<String> waitForServers = new HashSet<String>();

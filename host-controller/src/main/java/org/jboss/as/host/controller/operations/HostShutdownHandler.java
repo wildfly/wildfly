@@ -51,6 +51,7 @@ public class HostShutdownHandler implements OperationStepHandler {
     public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostResolver.getResolver("host"))
             .addParameter(RESTART)
             .withFlag(OperationEntry.Flag.HOST_CONTROLLER_ONLY)
+            .setRuntimeOnly()
             .build();
 
     /**
@@ -69,6 +70,8 @@ public class HostShutdownHandler implements OperationStepHandler {
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                // Even though we don't read from the service registry, we are modifying a service
+                context.getServiceRegistry(true);
                 if (restart) {
                     //Add the exit code so that we get respawned
                     domainController.stopLocalHost(ExitCodes.RESTART_PROCESS_FROM_STARTUP_SCRIPT);
