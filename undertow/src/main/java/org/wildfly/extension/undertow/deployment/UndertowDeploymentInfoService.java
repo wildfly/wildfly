@@ -457,14 +457,14 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     if (servlet.getServletSecurity() != null) {
                         ServletSecurityInfo securityInfo = new ServletSecurityInfo();
                         s.setServletSecurityInfo(securityInfo);
-                        securityInfo.setEmptyRoleSemantic(servlet.getServletSecurity().getEmptyRoleSemantic() == EmptyRoleSemanticType.PERMIT ? PERMIT : DENY)
+                        securityInfo.setEmptyRoleSemantic(servlet.getServletSecurity().getEmptyRoleSemantic() == EmptyRoleSemanticType.DENY ? DENY : PERMIT)
                                 .setTransportGuaranteeType(transportGuaranteeType(servlet.getServletSecurity().getTransportGuarantee()))
                                 .addRolesAllowed(servlet.getServletSecurity().getRolesAllowed());
                         if (servlet.getServletSecurity().getHttpMethodConstraints() != null) {
                             for (HttpMethodConstraintMetaData method : servlet.getServletSecurity().getHttpMethodConstraints()) {
                                 securityInfo.addHttpMethodSecurityInfo(
                                         new HttpMethodSecurityInfo()
-                                                .setEmptyRoleSemantic(method.getEmptyRoleSemantic() == EmptyRoleSemanticType.PERMIT ? PERMIT : DENY)
+                                                .setEmptyRoleSemantic(method.getEmptyRoleSemantic() == EmptyRoleSemanticType.DENY ? DENY : PERMIT)
                                                 .setTransportGuaranteeType(transportGuaranteeType(method.getTransportGuarantee()))
                                                 .addRolesAllowed(method.getRolesAllowed())
                                                 .setMethod(method.getMethod()));
