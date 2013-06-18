@@ -49,6 +49,8 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.Param;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleNotFoundException;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
@@ -2626,5 +2628,27 @@ public interface ControllerMessages {
 
     @Message(id = 14899, value = "read only context")
     IllegalStateException readOnlyContext();
+
+    @Message(id = 13450, value = "We are trying to read data from the master host controller, which is currently busy executing another set of operations. This is a temporary situation, please retry")
+    String cannotGetControllerLock();
+
+    @Message(id = 13451, value = "Cannot configure an interface to use 'any-ipv6-address' when system property java.net.preferIPv4Stack is true")
+    String invalidAnyIPv6();
+
+    @Message(id = 13452, value = "Legacy extension '%s' is not supported on servers running this version. The extension " +
+            "is only supported for use by hosts running a previous release in a mixed-version managed domain")
+    String unsupportedLegacyExtension(String extensionName);
+
+    @Message(id = 13453, value = "Extension module %s not found")
+    OperationFailedException extensionModuleNotFound(@Cause ModuleNotFoundException cause, String module);
+
+    @Message(id = 13454, value = "Failed to load Extension module %s")
+    RuntimeException extensionModuleLoadingFailure(@Cause ModuleLoadException cause, String module);
+
+    @Message(id = 13455, value = "no context to delegate with id: %s")
+    IllegalStateException noContextToDelegateTo(int operationId);
+
+    @Message(id = 13456, value = "Unauthorized to execute operation '%s' for resource '%s' -- %s")
+    OperationFailedRuntimeException unauthorized(String name, PathAddress address, ModelNode explanation);
 
 }

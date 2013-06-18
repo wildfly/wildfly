@@ -22,6 +22,11 @@
 
 package org.jboss.as.controller.access.rbac;
 
+import java.util.EnumSet;
+import java.util.Set;
+
+import org.jboss.as.controller.access.Action;
+
 /**
  * The standard roles in the WildFly management access control mechanism.
  *
@@ -29,12 +34,31 @@ package org.jboss.as.controller.access.rbac;
  */
 public enum StandardRole {
 
-    MONITOR,
+    MONITOR(Action.ActionEffect.READ_CONFIG, Action.ActionEffect.READ_RUNTIME),
     //CONFIGURATOR,
-    OPERATOR,
-    MAINTAINER,
-    DEPLOYER,
-    ADMINISTRATOR,
-    AUDITOR,
-    SUPERUSER
+    OPERATOR(Action.ActionEffect.READ_CONFIG, Action.ActionEffect.READ_RUNTIME, Action.ActionEffect.WRITE_RUNTIME),
+    MAINTAINER(),
+    DEPLOYER(),
+    ADMINISTRATOR(),
+    AUDITOR(),
+    SUPERUSER();
+
+
+    private final Set<Action.ActionEffect> allowedActions;
+
+    private StandardRole() {
+        this(Action.ActionEffect.values());
+    }
+
+    private StandardRole(Action.ActionEffect... allowedExcludingAccess) {
+        this(EnumSet.of(Action.ActionEffect.ACCESS, allowedExcludingAccess));
+    }
+
+    private StandardRole(Set<Action.ActionEffect> allowedActions) {
+        this.allowedActions = allowedActions;
+    }
+
+    public boolean isActionEffectAllowed(Action.ActionEffect actionEffect) {
+        return allowedActions.contains(actionEffect);
+    }
 }

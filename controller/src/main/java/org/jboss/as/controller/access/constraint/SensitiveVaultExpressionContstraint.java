@@ -22,14 +22,20 @@
 
 package org.jboss.as.controller.access.constraint;
 
+import java.util.regex.Pattern;
+
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
 import org.jboss.as.controller.access.rbac.StandardRole;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 
 /**
- * TODO class javadoc.
+ * {@link Constraint} related to whether an attribute is considered security sensitive
+ * because it contains a vault expression.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
@@ -58,13 +64,13 @@ public class SensitiveVaultExpressionContstraint extends AllowAllowNotConstraint
 
     private static class Factory implements ConstraintFactory {
 
+        private static final Pattern VAULT_PATTERN = Pattern.compile("VAULT::.*::.*::.*");
+
         @Override
         public Constraint getStandardUserConstraint(StandardRole role, Action.ActionEffect actionEffect) {
             if (role == StandardRole.ADMINISTRATOR
                     || role == StandardRole.SUPERUSER
-                    || (role == StandardRole.AUDITOR
-                    && actionEffect != Action.ActionEffect.WRITE_CONFIG
-                    && actionEffect != Action.ActionEffect.WRITE_RUNTIME)) {
+                    || role == StandardRole.AUDITOR) {
                 return ALLOWS;
             }
             return DISALLOWS;
@@ -72,33 +78,36 @@ public class SensitiveVaultExpressionContstraint extends AllowAllowNotConstraint
 
         @Override
         public Constraint getRequiredConstraint(Action.ActionEffect actionEffect, Action action, TargetAttribute target) {
-            return (VaultExpressionSensitivityConfig.INSTANCE.isSensitive(actionEffect) && isSensitiveAttribute(target)) ? SENSITIVE : NOT_SENSITIVE;
+            return (VaultExpressionSensitivityConfig.INSTANCE.isSensitive(actionEffect)
+                    && isSensitiveValue(target.getCurrentValue())) ? SENSITIVE : NOT_SENSITIVE;
         }
 
         @Override
         public Constraint getRequiredConstraint(Action.ActionEffect actionEffect, Action action, TargetResource target) {
             return (VaultExpressionSensitivityConfig.INSTANCE.isSensitive(actionEffect) &&
-                    (isSensitiveAction(action, actionEffect) || isSensitiveResource(target))) ? SENSITIVE : NOT_SENSITIVE;
+                    isSensitiveAction(action, actionEffect)) ? SENSITIVE : NOT_SENSITIVE;
         }
 
         private boolean isSensitiveAction(Action action, Action.ActionEffect actionEffect) {
             if (actionEffect == Action.ActionEffect.WRITE_RUNTIME || actionEffect == Action.ActionEffect.WRITE_CONFIG) {
                 ModelNode operation = action.getOperation();
-                // TODO check for vault expressions
+                for (Property property : operation.asPropertyList()) {
+                    if (isSensitiveValue(property.getValue())) {
+                        return true;
+                    }
+                }
             }
             return false;
         }
 
-        private boolean isSensitiveAttribute(TargetAttribute target) {
-            ModelNode currentValue = target.getCurrentValue();
-            // TODO check for vault expressions
-            throw new UnsupportedOperationException("implement me");
-        }
-
-        private boolean isSensitiveResource(TargetResource target) {
-            ModelNode model = target.getResource().getModel();
-            // TODO check for vault expressions
-            throw new UnsupportedOperationException("implement me");
+        private boolean isSensitiveValue(ModelNode value) {
+            if (value.getType() == ModelType.EXPRESSION
+                    || value.getType() == ModelType.STRING) {
+                String valueString = value.asString();
+                return ExpressionResolver.EXPRESSION_PATTERN.matcher(valueString).matches()
+                        && VAULT_PATTERN.matcher(valueString).matches();
+            }
+            return false;
         }
     }
 }

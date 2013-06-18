@@ -33,6 +33,7 @@ import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * A {@link RoleMapper} for use in tests. Reads the set of roles from a request headers in the operation,
@@ -45,9 +46,15 @@ import org.jboss.dmr.ModelNode;
  * @deprecated Only for early prototyping use
  */
 @Deprecated
-public class MockRoleMapper implements RoleMapper{
+public class MockRoleMapper implements RoleMapper {
+
+    public static final MockRoleMapper INSTANCE = new MockRoleMapper();
 
     private final Set<String> SUPERUSER = Collections.singleton(StandardRole.SUPERUSER.toString());
+
+    private MockRoleMapper() {
+        // singleton
+    }
 
     @Override
     public Set<String> mapRoles(Caller caller, Environment callEnvironment, Action action, TargetAttribute attribute) {
@@ -63,9 +70,14 @@ public class MockRoleMapper implements RoleMapper{
         Set<String> result = SUPERUSER;
         ModelNode headers = operation.get(ModelDescriptionConstants.OPERATION_HEADERS);
         if (headers.isDefined() && headers.hasDefined("roles")) {
+            ModelNode rolesNode = headers.get("roles");
             Set<String> roleSet = new HashSet<String>();
-            for (ModelNode role : headers.get("roles").asList()) {
-                roleSet.add(role.asString());
+            if (rolesNode.getType() == ModelType.STRING) {
+                roleSet.add(rolesNode.asString().toUpperCase());
+            } else {
+                for (ModelNode role : headers.get("roles").asList()) {
+                    roleSet.add(role.asString().toUpperCase());
+                }
             }
             result = Collections.unmodifiableSet(roleSet);
         }

@@ -49,6 +49,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.controller.access.Authorizer;
+import org.jboss.as.controller.access.permission.CombinationPolicy;
+import org.jboss.as.controller.access.permission.ManagementPermissionAuthorizer;
+import org.jboss.as.controller.access.rbac.DefaultPermissionFactory;
+import org.jboss.as.controller.access.rbac.MockRoleMapper;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -89,6 +94,8 @@ class ModelControllerImpl implements ModelController {
     private final ControlledProcessState processState;
     private final ExecutorService executorService;
     private final ExpressionResolver expressionResolver;
+    // TODO wire in a proper Authorizer
+    private final Authorizer authorizer = new ManagementPermissionAuthorizer(new DefaultPermissionFactory(CombinationPolicy.PERMISSIVE, MockRoleMapper.INSTANCE));
 
     private final ConcurrentMap<Integer, OperationContext> activeOperations = new ConcurrentHashMap<Integer, OperationContext>();
 
@@ -535,6 +542,10 @@ class ModelControllerImpl implements ModelController {
 
     ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
         return expressionResolver.resolveExpressions(node);
+    }
+
+    Authorizer getAuthorizer() {
+        return authorizer;
     }
 
     private void logNoHandler(ParsedBootOp parsedOp) {

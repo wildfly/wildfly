@@ -30,6 +30,9 @@ package org.jboss.as.controller.access.constraint;
  */
 public class SensitivityClassification extends AbstractSensitivity {
 
+    public static final SensitivityClassification SECURITY_REALM = new SensitivityClassification("SECURITY_REALM", true, true);
+    public static final SensitivityClassification SOCKET_BINDING = new SensitivityClassification("SOCKET_BINDING", false, false);
+
     private final boolean core;
     private final String subsystem;
     private final String name;
