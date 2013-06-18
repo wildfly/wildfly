@@ -146,6 +146,8 @@ public class Jsr299BindingsInterceptor implements org.jboss.invocation.Intercept
                 }
             case POST_CONSTRUCT:
                 return doLifecycleInterception(context);
+            case AROUND_CONSTRUCT:
+                return doLifecycleInterception(context);
             default:
                 //should never happen
                 return context.proceed();
