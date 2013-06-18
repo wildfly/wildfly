@@ -7,7 +7,6 @@ import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionTarget;
 
-import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.weld.WeldMessages;
 import org.jboss.weld.bean.ManagedBean;
 
@@ -40,13 +39,11 @@ public class WeldInjectionContext implements Serializable {
         injectionTarget.inject(instance, context);
     }
 
-    public WeldManagedReference produce() {
+    public Object produce() {
         if (delegateProduce && bean instanceof ManagedBean) {
-            final Object instance = ((ManagedBean) bean).getInjectionTarget().produce(context);
-            return new WeldManagedReference(context, instance);
+            return ((ManagedBean) bean).getInjectionTarget().produce(context);
         } else {
-            final Object instance = injectionTarget.produce(context);
-            return new WeldManagedReference(context, instance);
+            return injectionTarget.produce(context);
         }
     }
 
@@ -70,25 +67,4 @@ public class WeldInjectionContext implements Serializable {
     public void release() {
         context.release();
     }
-
-    private static final class WeldManagedReference implements ManagedReference, Serializable {
-        private final CreationalContext<?> context;
-        private final Object instance;
-
-        private WeldManagedReference(final CreationalContext<?> context, final Object instance) {
-            this.context = context;
-            this.instance = instance;
-        }
-
-        @Override
-        public void release() {
-            context.release();
-        }
-
-        @Override
-        public Object getInstance() {
-            return instance;
-        }
-    }
-
 }

@@ -35,6 +35,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.interceptors.UserInterceptorFactory;
+import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.stateful.SerializedCdiInterceptorsKey;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
@@ -46,12 +47,12 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.weld.WeldBootstrapService;
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.WeldMessages;
 import org.jboss.as.weld.WeldStartService;
 import org.jboss.as.weld.ejb.EjbRequestScopeActivationInterceptor;
 import org.jboss.as.weld.ejb.Jsr299BindingsInterceptor;
 import org.jboss.as.weld.injection.WeldComponentService;
+import org.jboss.as.weld.injection.WeldConstructionStartInterceptor;
 import org.jboss.as.weld.injection.WeldInjectionContextInterceptor;
 import org.jboss.as.weld.injection.WeldInjectionInterceptor;
 import org.jboss.as.weld.injection.WeldInterceptorInjectionInterceptor;
@@ -175,6 +176,10 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
             builder.addDependency(weldServiceName, WeldBootstrapService.class, postConstruct.getWeldContainer());
             configuration.addPostConstructInterceptor(postConstruct, InterceptorOrder.ComponentPostConstruct.CDI_INTERCEPTORS);
 
+            final Jsr299BindingsInterceptor.Factory aroundConstruct = new Jsr299BindingsInterceptor.Factory(description.getBeanDeploymentArchiveId(), beanName, InterceptionType.AROUND_CONSTRUCT, classLoader);
+            builder.addDependency(weldServiceName, WeldBootstrapService.class, aroundConstruct.getWeldContainer());
+            configuration.addAroundConstructInterceptor(aroundConstruct, InterceptorOrder.AroundConstruct.WELD_AROUND_CONSTRUCT_INTERCEPTORS);
+
             /*
              * Add interceptor to activate the request scope for the @PostConstruct callback.
              * See https://issues.jboss.org/browse/CDI-219 for details
@@ -185,6 +190,8 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
         }
 
         builder.install();
+
+        configuration.addAroundConstructInterceptor(new ImmediateInterceptorFactory(WeldConstructionStartInterceptor.INSTANCE), InterceptorOrder.AroundConstruct.CONSTRUCTION_START_INTERCEPTOR);
 
         configuration.addPostConstructInterceptor(new ImmediateInterceptorFactory(new WeldInjectionContextInterceptor(weldComponentService)), InterceptorOrder.ComponentPostConstruct.WELD_INJECTION_CONTEXT_INTERCEPTOR);
         configuration.addPostConstructInterceptor(new WeldInterceptorInjectionInterceptor.Factory(configuration, interceptorClasses), InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_WELD_INJECTION);

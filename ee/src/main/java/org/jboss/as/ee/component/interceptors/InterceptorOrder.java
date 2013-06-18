@@ -74,10 +74,11 @@ public class InterceptorOrder {
 
     public static final class AroundConstruct {
 
-        public static final int INTERCEPTOR_AROUND_CONSTRUCT = 0xA00;
-        public static final int WELD_AROUND_CONSTRUCT_INTERCEPTORS = 0xB00;
-        public static final int CONSTRUCT_COMPONENT = 0xC00;
-        public static final int TERMINAL_INTERCEPTOR = 0xD00;
+        public static final int CONSTRUCTION_START_INTERCEPTOR = 0xA00;
+        public static final int INTERCEPTOR_AROUND_CONSTRUCT = 0xB00;
+        public static final int WELD_AROUND_CONSTRUCT_INTERCEPTORS = 0xC00;
+        public static final int CONSTRUCT_COMPONENT = 0xD00;
+        public static final int TERMINAL_INTERCEPTOR = 0xE00;
 
         private AroundConstruct() {
         }

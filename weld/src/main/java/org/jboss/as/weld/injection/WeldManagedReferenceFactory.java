@@ -21,9 +21,14 @@
  */
 package org.jboss.as.weld.injection;
 
+import java.io.Serializable;
+
+import javax.enterprise.context.spi.CreationalContext;
+
 import org.jboss.as.ee.component.ComponentFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.weld.construction.api.ConstructionHandle;
 
 /**
  * Managed reference factory that can be used to create and inject components.
@@ -35,13 +40,33 @@ public class WeldManagedReferenceFactory implements ComponentFactory {
     public static final WeldManagedReferenceFactory INSTANCE = new WeldManagedReferenceFactory();
 
     private WeldManagedReferenceFactory() {
-
     }
 
     @Override
     public ManagedReference create(final InterceptorContext context) {
-        WeldInjectionContext injectionContext = context.getPrivateData(WeldInjectionContext.class);
-        return injectionContext.produce();
+        ConstructionHandle<?> ctx = context.getPrivateData(ConstructionHandle.class);
+        CreationalContext<?> injectionCtx = context.getPrivateData(WeldInjectionContext.class).getContext();
+        Object instance = ctx.proceed(context.getParameters(), context.getContextData()); // let Weld create the instance now
+        return new WeldManagedReference(injectionCtx, instance);
     }
 
+    private static final class WeldManagedReference implements ManagedReference, Serializable {
+        private final CreationalContext<?> context;
+        private final Object instance;
+
+        private WeldManagedReference(final CreationalContext<?> context, final Object instance) {
+            this.context = context;
+            this.instance = instance;
+        }
+
+        @Override
+        public void release() {
+            context.release();
+        }
+
+        @Override
+        public Object getInstance() {
+            return instance;
+        }
+    }
 }
