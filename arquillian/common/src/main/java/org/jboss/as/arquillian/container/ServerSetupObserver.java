@@ -40,12 +40,14 @@ import org.jboss.arquillian.test.spi.context.ClassContext;
 import org.jboss.arquillian.test.spi.event.suite.AfterClass;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.logging.Logger;
 
 /**
  * @author Stuart Douglas
  */
 public class ServerSetupObserver {
 
+    private static final Logger log = Logger.getLogger(ServerSetupObserver.class);
 
     @Inject
     private Instance<ManagementClient> managementClient;
@@ -53,15 +55,18 @@ public class ServerSetupObserver {
     @Inject
     private Instance<ClassContext> classContextInstance;
 
-    private final List<ServerSetupTask> current = new ArrayList<ServerSetupTask>();
+    private final List<ServerSetupTask> setupTasksAll = new ArrayList<ServerSetupTask>();
+    private final List<ServerSetupTask> setupTasksInForce = new ArrayList<ServerSetupTask>();
     private final Map<String, ManagementClient> active = new HashMap<String, ManagementClient>();
     private Map<String, Integer> deployed;
     boolean afterClassRun = false;
 
     public synchronized void handleBeforeDeployment(@Observes BeforeDeploy event, Container container) throws Throwable {
+
         if (deployed == null) {
             deployed = new HashMap<String, Integer>();
-            current.clear();
+            setupTasksAll.clear();
+            setupTasksInForce.clear();
             afterClassRun = false;
         }
         if (deployed.containsKey(container.getName())) {
@@ -69,6 +74,7 @@ public class ServerSetupObserver {
         } else {
             deployed.put(container.getName(), 1);
         }
+
         if (active.containsKey(container.getName())) {
             return;
         }
@@ -86,37 +92,37 @@ public class ServerSetupObserver {
             return;
         }
         final Class<? extends ServerSetupTask>[] classes = setup.value();
-        if (current.isEmpty()) {
+        if (setupTasksAll.isEmpty()) {
             for (Class<? extends ServerSetupTask> clazz : classes) {
                 Constructor<? extends ServerSetupTask> ctor = clazz.getDeclaredConstructor();
                 ctor.setAccessible(true);
-                current.add(ctor.newInstance());
+                setupTasksAll.add(ctor.newInstance());
             }
         } else {
             //this should never happen
-            for (int i = 0; i < current.size(); ++i) {
-                if (classes[i] != current.get(i).getClass()) {
-                    throw new RuntimeException("Mismatched ServerSetupTask current is " + current + " but " + currentClass + " is expecting " + Arrays.asList(classes));
+            for (int i = 0; i < setupTasksAll.size(); ++i) {
+                if (classes[i] != setupTasksAll.get(i).getClass()) {
+                    throw new RuntimeException("Mismatched ServerSetupTask current is " + setupTasksAll + " but " + currentClass + " is expecting " + Arrays.asList(classes));
                 }
             }
         }
 
         final ManagementClient client = managementClient.get();
+        int index = 0;
         try {
-            for (ServerSetupTask instance : current) {
+            for (;index<setupTasksAll.size();index++) {
+                final ServerSetupTask instance = setupTasksAll.get(index);
+                setupTasksInForce.add(instance);
                 instance.setup(client, container.getName());
             }
         } catch (Throwable e) {
-            //setup failed, so clear the current map
-            current.clear();
-            throw e;
+            log.error("Setup task failed during setup. Offending class '"+setupTasksAll.get(index)+"'",e);
         }
-
         active.put(container.getName(), client);
     }
 
     public synchronized void afterTestClass(@Observes AfterClass afterClass) throws Exception {
-        if (current.isEmpty()) {
+        if (setupTasksInForce.isEmpty()) {
             return;
         }
         //clean up if there are no more deployments on the server
@@ -127,8 +133,12 @@ public class ServerSetupObserver {
             if (container.getValue() == 0) {
                 if (active.containsKey(container.getKey())) {
                     ManagementClient client = active.get(container.getKey());
-                    for (int i = current.size() - 1; i >= 0; i--) {
-                        current.get(i).tearDown(client, container.getKey());
+                    for (int i = setupTasksInForce.size() - 1; i >= 0; i--) {
+                        try {
+                            setupTasksInForce.get(i).tearDown(client, container.getKey());
+                        } catch (Exception e) {
+                            log.error("Setup task failed during tear down. Offending class '" + setupTasksAll.get(i) + "'", e);
+                        }
                     }
                     active.remove(container.getKey());
                     it.remove();
@@ -138,7 +148,8 @@ public class ServerSetupObserver {
         afterClassRun = true;
         if (deployed.isEmpty()) {
             deployed = null;
-            current.clear();
+            setupTasksAll.clear();
+            setupTasksInForce.clear();
             afterClassRun = false;
         }
     }
@@ -150,17 +161,23 @@ public class ServerSetupObserver {
         int count = deployed.get(container.getName());
         deployed.put(container.getName(), --count);
         if (count == 0 && afterClassRun) {
-            for (int i = current.size() - 1; i >= 0; i--) {
-                current.get(i).tearDown(managementClient.get(), container.getName());
+            for (int i = setupTasksInForce.size() - 1; i >= 0; i--) {
+                try {
+                    setupTasksInForce.get(i).tearDown(managementClient.get(), container.getName());
+                } catch (Exception e) {
+                    log.error("Setup task failed during tear down. Offending class '" + setupTasksAll.get(i) + "'", e);
+                }
             }
             active.remove(container.getName());
             deployed.remove(container.getName());
         }
         if (deployed.isEmpty()) {
             deployed = null;
-            current.clear();
+            setupTasksAll.clear();
+            setupTasksInForce.clear();
             afterClassRun = false;
         }
+
     }
 
 
@@ -193,6 +210,4 @@ public class ServerSetupObserver {
             return result;
         }
     }
-
-
 }
