@@ -106,7 +106,7 @@
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.1</version.javax.enterprise>
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
-        <version.javax.json-api>1.0-b04</version.javax.json-api>
+        <version.javax.json-api>1.0</version.javax.json-api>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail>1.5.0-b01</version.javax.mail>
         <version.javax.validation>1.0.0.GA</version.javax.validation>
@@ -936,7 +936,7 @@
                 <artifactId>wildfly-clustering-web-undertow</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-cmp</artifactId>
@@ -5601,7 +5601,7 @@
                     <exclusion>
                         <groupId>org.jboss.weld</groupId>
                         <artifactId>weld-core-impl</artifactId>
-                    </exclusion>                                        
+                    </exclusion>
                 </exclusions>
             </dependency>
 
