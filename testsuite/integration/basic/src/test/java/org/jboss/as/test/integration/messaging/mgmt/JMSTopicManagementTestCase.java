@@ -29,6 +29,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
+import javax.jms.TopicSubscriber;
 
 import org.junit.Assert;
 import org.hornetq.api.core.TransportConfiguration;
@@ -373,6 +374,31 @@ public class JMSTopicManagementTestCase {
                 return;
         }
         Assert.fail("topic/added" + count + " was not found");
+    }
+
+    @Test
+    public void removeJMSTopicRemovesAllMessages() throws Exception {
+        // create a durable subscriber
+        TopicSubscriber consumer = consumerSession.createDurableSubscriber(topic, "removeJMSTopicRemovesAllMessages");
+        consumer.close();
+        MessageProducer producer = session.createProducer(topic);
+        producer.send(session.createTextMessage("A"));
+
+        ModelNode operation = getTopicOperation("count-messages-for-subscription");
+        operation.get("client-id").set(consumerConnectionFactory.getClientID());
+        operation.get("subscription-name").set("removeJMSTopicRemovesAllMessages");
+
+        ModelNode result = execute(operation, true);
+        Assert.assertTrue(result.isDefined());
+        Assert.assertEquals(1, result.asInt());
+
+        // remove and add the topic
+        adminSupport.removeJmsTopic(getTopicName());
+        adminSupport.createJmsTopic(getTopicName(), getTopicJndiName());
+
+        result = execute(operation, true);
+        Assert.assertTrue(result.isDefined());
+        Assert.assertEquals(0, result.asInt());
     }
 
     private ModelNode getTopicOperation(String operationName) {
