@@ -40,7 +40,7 @@ import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -86,7 +86,10 @@ public class DomainServerLifecycleHandlers {
     }
 
     private static OperationDefinition getOperationDefinition(boolean serverGroup, String operationName) {
-        return new SimpleOperationDefinition(operationName, DomainResolver.getResolver(serverGroup ? ModelDescriptionConstants.SERVER_GROUP : ModelDescriptionConstants.DOMAIN));
+        return new SimpleOperationDefinitionBuilder(operationName,
+                DomainResolver.getResolver(serverGroup ? ModelDescriptionConstants.SERVER_GROUP : ModelDescriptionConstants.DOMAIN))
+                .setRuntimeOnly()
+                .build();
     }
 
     private abstract static class AbstractHackLifecycleHandler implements OperationStepHandler {
@@ -141,6 +144,8 @@ public class DomainServerLifecycleHandlers {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    // Even though we don't read from the service registry, we are modifying a service
+                    context.getServiceRegistry(true);
                     if (group != null) {
                         final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
                         for (String server : getServersForGroup(model, group)) {
@@ -173,6 +178,8 @@ public class DomainServerLifecycleHandlers {
                     final ModelNode serverConfig = model.get(HOST, hostName).get(SERVER_CONFIG);
                     final Set<String> serversInGroup = getServersForGroup(model, group);
                     if(serverConfig.isDefined()) {
+                        // Even though we don't read from the service registry, we are modifying a service
+                        context.getServiceRegistry(true);
                         for (Property config : serverConfig.asPropertyList()) {
                             final ServerStatus status = serverInventory.determineServerStatus(config.getName());
                             if (status != ServerStatus.STARTING && status != ServerStatus.STARTED) {
@@ -205,6 +212,8 @@ public class DomainServerLifecycleHandlers {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    // Even though we don't read from the service registry, we are modifying a service
+                    context.getServiceRegistry(true);
                     Map<String, ProcessInfo> processes = serverInventory.determineRunningProcesses(true);
                     final Set<String> serversInGroup = getServersForGroup(model, group);
                     for (String serverName : processes.keySet()) {

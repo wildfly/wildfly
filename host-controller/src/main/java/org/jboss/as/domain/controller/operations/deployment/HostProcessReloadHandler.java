@@ -70,6 +70,7 @@ public class HostProcessReloadHandler extends ProcessReloadHandler<HostRunningMo
         return new DeferredParametersOperationDefinitionBuilder(hostControllerInfo, OPERATION_NAME, HostModelUtil.getResourceDescriptionResolver())
             .setParameters(hostControllerInfo.isMasterDomainController() ? MASTER_ATTRIBUTES : SLAVE_ATTRIBUTES)
             .withFlag(OperationEntry.Flag.HOST_CONTROLLER_ONLY)
+            .setRuntimeOnly()
             .build();
     }
 
