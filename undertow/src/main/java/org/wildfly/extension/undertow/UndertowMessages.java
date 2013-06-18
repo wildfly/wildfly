@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.undertow;
 
-import java.util.concurrent.TimeoutException;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
@@ -152,10 +151,10 @@ public interface UndertowMessages {
     @Message(id = 17333, value = "Null parameter %s")
     IllegalArgumentException nullParamter(String id);
 
-    @Message(id = 17345, value = "Timeout context service activation: %s")
-    TimeoutException timeoutContextActivation(ServiceName service);
+    @Message(id = 17345, value = "Cannot activate context: %s")
+    IllegalStateException cannotActivateContext(@Cause Throwable th, ServiceName service);
 
     @Message(id = 17346, value = "Could not construct handler for class: %s. with parameters %s")
-    RuntimeException cannotCreateHttpHandler(Class handlerClass, ModelNode parameters, @Cause Throwable cause);
+    RuntimeException cannotCreateHttpHandler(Class<?> handlerClass, ModelNode parameters, @Cause Throwable cause);
 
 }

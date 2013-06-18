@@ -159,6 +159,7 @@ public class WebAppSpecTestCase {
     }
 
     @Test
+    @Ignore
     public void testLazyActivation() throws Exception {
         // The Web Extender should ensure that serving static content from the WAB
         // does not activate the WAB when it has a lazy activation policy.

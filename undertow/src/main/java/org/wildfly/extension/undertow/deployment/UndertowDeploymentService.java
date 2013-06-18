@@ -22,31 +22,26 @@
 
 package org.wildfly.extension.undertow.deployment;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-
 import io.undertow.server.HttpHandler;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
 
-import org.wildfly.extension.undertow.Host;
-import org.wildfly.extension.undertow.ServletContainerService;
-import org.wildfly.extension.undertow.UndertowLogger;
-import org.wildfly.extension.undertow.UndertowMessages;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+
 import org.jboss.as.web.common.StartupContext;
 import org.jboss.as.web.common.WebInjectionContainer;
 import org.jboss.as.web.host.ContextActivator;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.undertow.Host;
+import org.wildfly.extension.undertow.ServletContainerService;
+import org.wildfly.extension.undertow.UndertowMessages;
 
 /**
  * @author Stuart Douglas
@@ -57,29 +52,35 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
     private final WebInjectionContainer webInjectionContainer;
     private final InjectedValue<Host> host = new InjectedValue<>();
     private final InjectedValue<DeploymentInfo> deploymentInfoInjectedValue = new InjectedValue<>();
+    private final boolean autostart;
 
     private volatile DeploymentManager deploymentManager;
 
-    public UndertowDeploymentService(final WebInjectionContainer webInjectionContainer) {
+    public UndertowDeploymentService(final WebInjectionContainer webInjectionContainer, boolean autostart) {
         this.webInjectionContainer = webInjectionContainer;
+        this.autostart = autostart;
     }
 
     @Override
     public void start(final StartContext startContext) throws StartException {
-        DeploymentInfo deploymentInfo = deploymentInfoInjectedValue.getValue();
+        if (autostart) {
+            try {
+                startContext();
+            } catch (ServletException e) {
+                throw new StartException(e);
+            }
+        }
+    }
 
+    public void startContext() throws ServletException {
+        DeploymentInfo deploymentInfo = deploymentInfoInjectedValue.getValue();
         StartupContext.setInjectionContainer(webInjectionContainer);
         try {
             deploymentManager = container.getValue().getServletContainer().addDeployment(deploymentInfo);
             deploymentManager.deploy();
-
-            try {
-                HttpHandler handler = deploymentManager.start();
-                Deployment deployment = deploymentManager.getDeployment();
-                host.getValue().registerDeployment(deployment, handler);
-            } catch (ServletException e) {
-                throw new StartException(e);
-            }
+            HttpHandler handler = deploymentManager.start();
+            Deployment deployment = deploymentManager.getDeployment();
+            host.getValue().registerDeployment(deployment, handler);
         } finally {
             StartupContext.setInjectionContainer(null);
         }
@@ -87,14 +88,20 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
 
     @Override
     public void stop(final StopContext stopContext) {
-        Deployment deployment = deploymentManager.getDeployment();
-        try {
-            deploymentManager.stop();
-        } catch (ServletException e) {
-            throw new RuntimeException(e);
+        stopContext();
+    }
+
+    public void stopContext() {
+        if (deploymentManager != null) {
+            Deployment deployment = deploymentManager.getDeployment();
+            try {
+                deploymentManager.stop();
+            } catch (ServletException e) {
+                throw new RuntimeException(e);
+            }
+            deploymentManager.undeploy();
+            host.getValue().unregisterDeployment(deployment);
         }
-        deploymentManager.undeploy();
-        host.getValue().unregisterDeployment(deployment);
     }
 
     @Override
@@ -123,25 +130,8 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
 
         private final ServiceController<UndertowDeploymentService> controller;
 
-
         ContextActivatorImpl(ServiceController<UndertowDeploymentService> controller) {
             this.controller = controller;
-        }
-
-        /**
-         * Provide access to the Servlet Context.
-         */
-
-        /**
-         * Start the web context asynchronously.
-         * <p/>
-         * This would happen during OSGi webapp deployment.
-         * <p/>
-         * No DUP can assume that all dependencies are available to make a blocking call
-         * instead it should call this method.
-         */
-        public synchronized void startAsync() {
-            controller.setMode(ServiceController.Mode.ACTIVE);
         }
 
         /**
@@ -149,18 +139,13 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
          * <p/>
          * This would happen when the OSGi webapp gets explicitly started.
          */
-        public synchronized boolean start(long timeout, TimeUnit unit) throws TimeoutException {
-            StabilityMonitor monitor = new StabilityMonitor();
-            monitor.addController(controller);
+        @Override
+        public synchronized boolean startContext() {
             try {
-                controller.setMode(ServiceController.Mode.ACTIVE);
-                if (!monitor.awaitStability(timeout, unit)) {
-                    throw UndertowMessages.MESSAGES.timeoutContextActivation(controller.getName());
-                }
-            } catch (final InterruptedException e) {
-                // ignore
-            } finally {
-                monitor.removeController(controller);
+                UndertowDeploymentService service = controller.getValue();
+                service.startContext();
+            } catch (Exception ex) {
+                throw UndertowMessages.MESSAGES.cannotActivateContext(ex, controller.getName());
             }
             return true;
         }
@@ -170,19 +155,10 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
          * <p/>
          * This would happen when the OSGi webapp gets explicitly stops.
          */
-        public synchronized boolean stop(long timeout, TimeUnit unit) {
-            StabilityMonitor monitor = new StabilityMonitor();
-            monitor.addController(controller);
-            try {
-                controller.setMode(ServiceController.Mode.NEVER);
-                if (!monitor.awaitStability(timeout, unit)) {
-                    UndertowLogger.ROOT_LOGGER.debugf("Timeout stopping context: %s", controller.getName());
-                }
-            } catch (final InterruptedException e) {
-                // ignore
-            } finally {
-                monitor.removeController(controller);
-            }
+        @Override
+        public synchronized boolean stopContext() {
+            UndertowDeploymentService service = controller.getValue();
+            service.stopContext();
             return true;
         }
 
@@ -190,7 +166,8 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
         public ServletContext getServletContext() {
             //todo UndertowDeploymentService should be fully started before this method is called
             UndertowDeploymentService service = controller.getValue();
-            Deployment deployment = service.deploymentManager.getDeployment();
+            DeploymentManager manager = service.deploymentManager;
+            Deployment deployment = manager != null ? manager.getDeployment() : null;
             return deployment != null ? deployment.getServletContext() : null;
         }
     }

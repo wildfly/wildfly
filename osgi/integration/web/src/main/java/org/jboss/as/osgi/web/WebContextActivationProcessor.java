@@ -30,7 +30,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.host.ContextActivator;
-import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.resolver.XBundleRevision;
 
 /**
@@ -50,12 +49,6 @@ public class WebContextActivationProcessor implements DeploymentUnitProcessor {
         if (activator != null && brev != null) {
             // Add the {@link ContextActivator} to the {@link XBundleRevision}
             brev.putAttachment(WebExtension.CONTEXT_ACTIVATOR_KEY, activator);
-
-            // Start the context when the bundle will get started automatically
-            Deployment deployment = brev.getBundle().adapt(Deployment.class);
-            if (deployment.isAutoStart()) {
-                activator.startAsync();
-            }
         }
     }
 

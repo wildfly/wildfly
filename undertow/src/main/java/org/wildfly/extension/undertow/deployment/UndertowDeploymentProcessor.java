@@ -22,14 +22,15 @@
 
 package org.wildfly.extension.undertow.deployment;
 
+import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
+import io.undertow.server.handlers.cache.DirectBufferCache;
+import io.undertow.servlet.api.DeploymentInfo;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import io.undertow.server.handlers.cache.DirectBufferCache;
-import io.undertow.servlet.api.DeploymentInfo;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.component.ComponentRegistry;
@@ -43,7 +44,25 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
+import org.jboss.as.web.common.ServletContextAttribute;
+import org.jboss.as.web.common.WarMetaData;
+import org.jboss.as.web.common.WebComponentDescription;
+import org.jboss.as.web.common.WebInjectionContainer;
+import org.jboss.as.web.host.ContextActivator;
+import org.jboss.dmr.ModelNode;
+import org.jboss.metadata.ear.jboss.JBossAppMetaData;
+import org.jboss.metadata.ear.spec.EarMetaData;
+import org.jboss.metadata.web.jboss.JBossServletMetaData;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.TldMetaData;
+import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.security.SecurityConstants;
+import org.jboss.security.SecurityUtil;
+import org.jboss.vfs.VirtualFile;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderService;
@@ -55,26 +74,6 @@ import org.wildfly.extension.undertow.SessionCookieConfigService;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowLogger;
 import org.wildfly.extension.undertow.UndertowService;
-import org.jboss.as.web.common.ServletContextAttribute;
-import org.jboss.as.web.common.WarMetaData;
-import org.jboss.as.web.common.WebComponentDescription;
-import org.jboss.as.web.common.WebInjectionContainer;
-import org.jboss.as.web.host.ContextActivator;
-import org.jboss.dmr.ModelNode;
-import org.jboss.metadata.ear.jboss.JBossAppMetaData;
-import org.jboss.metadata.ear.spec.EarMetaData;
-import org.jboss.metadata.web.jboss.JBossServletMetaData;
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.modules.Module;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.security.SecurityConstants;
-import org.jboss.security.SecurityUtil;
-import org.jboss.vfs.VirtualFile;
-
-import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
 
 public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
@@ -234,8 +233,9 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         infoBuilder.install();
 
+        final boolean isWebappBundle = deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST);
         final ServiceName hostServiceName = UndertowService.virtualHostName(defaultServer, hostName);
-        final UndertowDeploymentService service = new UndertowDeploymentService(injectionContainer);
+        final UndertowDeploymentService service = new UndertowDeploymentService(injectionContainer, !isWebappBundle);
         final ServiceBuilder<UndertowDeploymentService> builder = serviceTarget.addService(deploymentServiceName, service)
                 .addDependencies(dependentComponents)
                 .addDependency(UndertowService.SERVLET_CONTAINER.append(defaultContainer), ServletContainerService.class, service.getContainer())
@@ -246,12 +246,11 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, deploymentServiceName);
 
         // OSGi web applications are activated in {@link WebContextActivationProcessor} according to bundle lifecycle changes
-        if (deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
-            builder.setInitialMode(Mode.NEVER);
+        if (isWebappBundle) {
             UndertowDeploymentService.ContextActivatorImpl activator = new UndertowDeploymentService.ContextActivatorImpl(builder.install());
             deploymentUnit.putAttachment(ContextActivator.ATTACHMENT_KEY, activator);
+            deploymentUnit.addToAttachmentList(Attachments.BUNDLE_ACTIVE_DEPENDENCIES, deploymentServiceName);
         } else {
-            builder.setInitialMode(Mode.ACTIVE);
             builder.install();
         }
 
