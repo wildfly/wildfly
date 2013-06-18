@@ -24,9 +24,6 @@ package org.jboss.as.web.deployment;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import javax.servlet.ServletContext;
 
 import org.apache.catalina.LifecycleException;
@@ -35,14 +32,10 @@ import org.apache.catalina.core.StandardContext;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.ThreadSetupBindingListener;
 import org.jboss.as.web.common.WebInjectionContainer;
-import org.jboss.as.web.host.ContextActivator;
 import org.jboss.msc.inject.Injector;
 import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.StartupContext;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -179,89 +172,5 @@ public class WebDeploymentService implements Service<StandardContext> {
             WEB_LOGGER.destroyContextFailed(e);
         }
 
-    }
-
-    /**
-     * Provides an API to start/stop the {@link WebDeploymentService}.
-     * This should register/deregister the web context.
-     */
-    public static class ContextActivatorImpl implements ContextActivator {
-
-        private final ServiceController<StandardContext> controller;
-
-        ContextActivatorImpl(ServiceController<StandardContext> controller) {
-            this.controller = controller;
-        }
-
-        /**
-         * Provide access to the Servlet Context.
-         */
-        public StandardContext getContext() {
-            return controller.getValue();
-        }
-
-        /**
-         * Start the web context asynchronously.
-         * <p/>
-         * This would happen during OSGi webapp deployment.
-         * <p/>
-         * No DUP can assume that all dependencies are available to make a blocking call
-         * instead it should call this method.
-         */
-        public synchronized void startAsync() {
-            controller.setMode(Mode.ACTIVE);
-        }
-
-        /**
-         * Start the web context synchronously.
-         * <p/>
-         * This would happen when the OSGi webapp gets explicitly started.
-         */
-        public synchronized boolean start(long timeout, TimeUnit unit) throws TimeoutException {
-            if (controller.getMode() == Mode.NEVER) {
-                controller.setMode(Mode.ACTIVE);
-                final StabilityMonitor monitor = new StabilityMonitor();
-                monitor.addController(controller);
-                try {
-                    if (!monitor.awaitStability(timeout, unit)) {
-                        throw MESSAGES.timeoutContextActivation(controller.getName());
-                    }
-                } catch (final InterruptedException e) {
-                    // ignore
-                } finally {
-                    monitor.removeController(controller);
-                }
-            }
-            return true;
-        }
-
-        /**
-         * Stop the web context synchronously.
-         * <p/>
-         * This would happen when the OSGi webapp gets explicitly stops.
-         */
-        public synchronized boolean stop(long timeout, TimeUnit unit) {
-            boolean result = true;
-            if (controller.getMode() == Mode.ACTIVE) {
-                controller.setMode(Mode.NEVER);
-                final StabilityMonitor monitor = new StabilityMonitor();
-                monitor.addController(controller);
-                try {
-                    if (!monitor.awaitStability(timeout, unit)) {
-                        WEB_LOGGER.debugf("Timeout stopping context: %s", controller.getName());
-                    }
-                } catch (final InterruptedException e) {
-                    // ignore
-                } finally {
-                    monitor.removeController(controller);
-                }
-            }
-            return result;
-        }
-
-        @Override
-        public ServletContext getServletContext() {
-            return getContext().getServletContext();
-        }
     }
 }

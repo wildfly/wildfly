@@ -290,6 +290,11 @@ public final class Attachments {
     public static final AttachmentKey<AttachmentList<SetupAction>> SETUP_ACTIONS = AttachmentKey.createList(SetupAction.class);
 
     /**
+     * Attachment key for services that the {@link BundleActivateService} depends on.
+     */
+    public static final AttachmentKey<AttachmentList<ServiceName>> BUNDLE_ACTIVE_DEPENDENCIES = AttachmentKey.createList(ServiceName.class);
+
+    /**
      * List of services that need to be up before we consider this deployment 'done'. This is used to manage initialize-in-order,
      * and inter deployment dependencies.
      *

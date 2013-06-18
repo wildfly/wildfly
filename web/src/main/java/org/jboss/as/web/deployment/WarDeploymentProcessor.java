@@ -65,7 +65,6 @@ import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.web.common.WebComponentDescription;
 import org.jboss.as.web.common.WebInjectionContainer;
 import org.jboss.as.web.ext.WebContextFactory;
-import org.jboss.as.web.host.ContextActivator;
 import org.jboss.as.web.security.JBossWebRealmService;
 import org.jboss.as.web.security.SecurityContextAssociationValve;
 import org.jboss.as.web.security.WarJaccService;
@@ -212,7 +211,6 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         final List<ServiceName> components = deploymentUnit.getAttachmentList(WebComponentDescription.WEB_COMPONENTS);
         final Set<ServiceName> failed = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.FAILED_COMPONENTS);
         for (final ServiceName component : components) {
-            boolean skip = false;
             if (!failed.contains(component)) {
                 dependentComponents.add(component);
             }
@@ -341,15 +339,8 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                 }
             }
 
-            // OSGi web applications are activated in {@link WebContextActivationProcessor} according to bundle lifecycle changes
-            if (deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
-                webappBuilder.setInitialMode(Mode.NEVER);
-                WebDeploymentService.ContextActivatorImpl activator = new WebDeploymentService.ContextActivatorImpl(webappBuilder.install());
-                deploymentUnit.putAttachment(ContextActivator.ATTACHMENT_KEY, activator);
-            } else {
-                webappBuilder.setInitialMode(Mode.ACTIVE);
-                webappBuilder.install();
-            }
+            webappBuilder.setInitialMode(Mode.ACTIVE);
+            webappBuilder.install();
 
             // adding JACC service
             AbstractSecurityDeployer<WarMetaData> deployer = new WarSecurityDeployer();

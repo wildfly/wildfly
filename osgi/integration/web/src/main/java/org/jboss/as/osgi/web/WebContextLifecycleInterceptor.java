@@ -23,9 +23,6 @@ package org.jboss.as.osgi.web;
 
 import java.util.Dictionary;
 import java.util.Hashtable;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import javax.servlet.ServletContext;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -64,8 +61,6 @@ class WebContextLifecycleInterceptor extends AbstractLifecycleInterceptor implem
 
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("as", "osgi", "web").append(WebContextLifecycleInterceptor.class.getSimpleName());
 
-    private static final long ACTIVATOR_TIMEOUT = 60000;
-
     private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
     private ServiceRegistration<LifecycleInterceptor> registration;
 
@@ -98,18 +93,14 @@ class WebContextLifecycleInterceptor extends AbstractLifecycleInterceptor implem
         if (activator != null) {
             switch (state) {
                 case Bundle.ACTIVE:
-                    try {
-                        if (!activator.start(ACTIVATOR_TIMEOUT, TimeUnit.MILLISECONDS)) {
-                            throw new LifecycleInterceptorException(OSGiMessages.MESSAGES.startContextFailed());
-                        }
-                        injectBundleContext(activator.getServletContext(), bundle.getBundleContext());
-                    } catch (TimeoutException ex) {
-                        throw new LifecycleInterceptorException(ex.getMessage(), ex);
+                    if (!activator.startContext()) {
+                        throw new LifecycleInterceptorException(OSGiMessages.MESSAGES.startContextFailed());
                     }
+                    injectBundleContext(activator.getServletContext(), bundle.getBundleContext());
                     break;
                 case Bundle.RESOLVED:
                     uninjectBundleContext(activator.getServletContext());
-                    activator.stop(ACTIVATOR_TIMEOUT, TimeUnit.MILLISECONDS);
+                    activator.stopContext();
                     break;
             }
         }
