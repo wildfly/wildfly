@@ -279,7 +279,6 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
         InputStream configStream = null;
         try {
             LoggingLogger.ROOT_LOGGER.debugf("Found logging configuration file: %s", configFile);
-            LoggingExtension.CONTEXT_SELECTOR.registerLogContext(classLoader, logContext);
 
             // Get the filname and open the stream
             final String fileName = configFile.getName();
@@ -302,6 +301,7 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
                     LoggingExtension.THREAD_LOCAL_CONTEXT_SELECTOR.getAndSet(CONTEXT_LOCK, old);
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
                 }
+                LoggingExtension.CONTEXT_SELECTOR.registerLogContext(classLoader, logContext);
             } else {
                 // Create a properties file
                 final Properties properties = new Properties();
@@ -313,6 +313,7 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
                     // Load non-log4j types
                     final PropertyConfigurator propertyConfigurator = new PropertyConfigurator(logContext);
                     propertyConfigurator.configure(properties);
+                    LoggingExtension.CONTEXT_SELECTOR.registerLogContext(classLoader, logContext);
                 }
             }
         } catch (Exception e) {
