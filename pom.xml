@@ -156,7 +156,7 @@
         <version.org.hornetq>2.3.1.Final</version.org.hornetq>
         <version.org.infinispan>5.3.0.CR1</version.org.infinispan>
         <version.org.jacorb>2.3.2.jbossorg-4</version.org.jacorb>
-        <version.org.javassist>3.17.1-GA</version.org.javassist>
+        <version.org.javassist>3.18.0-GA</version.org.javassist>
         <version.org.jdom>1.1.2</version.org.jdom>
         <version.org.jboss.aesh>0.33.3</version.org.jboss.aesh>
         <version.org.jboss.arquillian.core>1.0.3.Final</version.org.jboss.arquillian.core>
