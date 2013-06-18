@@ -38,7 +38,7 @@ import org.jboss.as.controller.access.rbac.StandardRole;
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public class SensitiveTargetConstraint extends AbstractConstraint {
+public class SensitiveTargetConstraint extends AllowAllowNotConstraint {
 
     public static final SensitiveTargetConstraint.Factory FACTORY = new Factory();
 
@@ -47,31 +47,12 @@ public class SensitiveTargetConstraint extends AbstractConstraint {
     private static final SensitiveTargetConstraint ALLOWS = new SensitiveTargetConstraint(true, true);
     private static final SensitiveTargetConstraint DISALLOWS = new SensitiveTargetConstraint(false, true);
 
-    private final boolean isSensitive;
-    private final boolean allowsSensitive;
-    private final boolean allowsNonSensitive;
-
-
     private SensitiveTargetConstraint(boolean isSensitive) {
-        super(ControlFlag.REQUIRED);
-        this.isSensitive = isSensitive;
-        allowsSensitive = allowsNonSensitive = false;
+        super(ControlFlag.REQUIRED, isSensitive);
     }
 
     private SensitiveTargetConstraint(boolean allowsSensitive, boolean allowsNonSensitive) {
-        super(ControlFlag.REQUIRED);
-        this.isSensitive = false;
-        this.allowsSensitive = allowsSensitive;
-        this.allowsNonSensitive = allowsNonSensitive;
-    }
-
-    @Override
-    public boolean violates(Constraint other) {
-        if (other instanceof SensitiveTargetConstraint) {
-            SensitiveTargetConstraint atc = (SensitiveTargetConstraint) other;
-            return isSensitive ? atc.allowsSensitive : atc.allowsNonSensitive;
-        }
-        return false;
+        super(ControlFlag.REQUIRED, allowsSensitive, allowsNonSensitive);
     }
 
     @Override
@@ -86,7 +67,10 @@ public class SensitiveTargetConstraint extends AbstractConstraint {
                 Collections.synchronizedMap(new HashMap<SensitivityClassification.Key, SensitivityClassification>());
 
         /** Singleton */
-        private Factory() {}
+        private Factory() {
+            addSensitivity(SensitivityClassification.SECURITY_REALM);
+            addSensitivity(SensitivityClassification.SOCKET_BINDING);
+        }
 
         @Override
         public Constraint getStandardUserConstraint(StandardRole role, Action.ActionEffect actionEffect) {
@@ -150,7 +134,7 @@ public class SensitiveTargetConstraint extends AbstractConstraint {
             return false;
         }
 
-        public void addSensitivity(SensitivityClassification sensitivity) {
+        public final void addSensitivity(SensitivityClassification sensitivity) {
             SensitivityClassification.Key key = sensitivity.getKey();
             SensitivityClassification existing = sensitivities.get(key);
             if (existing == null) {

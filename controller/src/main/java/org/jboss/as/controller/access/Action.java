@@ -57,6 +57,8 @@ public final class Action {
         }
     }
 
+    private static final List<AccessConstraintDefinition> NO_CONSTRAINTS = Collections.emptyList();
+
     private final ModelNode operation;
     private final OperationEntry operationEntry;
     private final Set<ActionEffect> actionEffects;
@@ -67,7 +69,16 @@ public final class Action {
         this.actionEffects = Collections.unmodifiableSet(determineActionEffects(operationEntry));
     }
 
+    public Action(ModelNode operation, OperationEntry operationEntry, Set<ActionEffect> effects) {
+        this.operation = operation;
+        this.operationEntry = operationEntry;
+        this.actionEffects = Collections.unmodifiableSet(effects);
+    }
+
     private static Set<ActionEffect> determineActionEffects(OperationEntry operationEntry) {
+        if (operationEntry == null) {
+            return Collections.emptySet();
+        }
         final EnumSet<ActionEffect> result;
         if (operationEntry.getFlags().contains(OperationEntry.Flag.RUNTIME_ONLY)) {
             result = EnumSet.of(ActionEffect.ACCESS, ActionEffect.READ_RUNTIME);
@@ -91,10 +102,18 @@ public final class Action {
     }
 
     public EnumSet<OperationEntry.Flag> getFlags() {
-        return operationEntry.getFlags();
+        return operationEntry != null ? operationEntry.getFlags() : EnumSet.noneOf(OperationEntry.Flag.class);
     }
 
     public List<AccessConstraintDefinition> getAccessConstraints() {
-        return operationEntry.getAccessConstraints();
+        return operationEntry != null ? operationEntry.getAccessConstraints() : NO_CONSTRAINTS;
+    }
+
+    public Action limitAction(ActionEffect requiredEffect) {
+        if (actionEffects.contains(requiredEffect) && actionEffects.size() == 1) {
+            return this;
+        } else {
+            return new Action(operation, operationEntry, EnumSet.of(requiredEffect));
+        }
     }
 }

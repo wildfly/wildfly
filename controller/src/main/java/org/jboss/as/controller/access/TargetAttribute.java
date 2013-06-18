@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.access;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -36,6 +37,8 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
 public final class TargetAttribute {
+
+    private static final List<AccessConstraintDefinition> NO_CONSTRAINTS = Collections.emptyList();
 
     private final TargetResource targetResource;
     private final AttributeAccess attributeAccess;
@@ -95,6 +98,7 @@ public final class TargetAttribute {
     }
 
     public List<AccessConstraintDefinition> getAccessConstraints() {
-        return getAttributeDefinition().getAccessConstraints();
+        AttributeDefinition def = getAttributeDefinition();
+        return def != null ? def.getAccessConstraints() : NO_CONSTRAINTS;
     }
 }

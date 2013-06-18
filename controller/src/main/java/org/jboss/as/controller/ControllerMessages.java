@@ -2659,4 +2659,7 @@ public interface ControllerMessages {
 
     @Message(id = 13455, value = "no context to delegate with id: %s")
     IllegalStateException noContextToDelegateTo(int operationId);
+
+    @Message(id = 13456, value = "Unauthorized to execute operation '%s' for resource '%s' -- %s")
+    OperationFailedRuntimeException unauthorized(String name, PathAddress address, ModelNode explanation);
 }

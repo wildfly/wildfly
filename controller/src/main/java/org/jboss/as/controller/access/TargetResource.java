@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.access;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -40,17 +41,30 @@ public final class TargetResource {
 
     private final Resource resource;
 
-    public TargetResource(ImmutableManagementResourceRegistration resourceRegistration, Resource resource) {
+    public static TargetResource forStandalone(ImmutableManagementResourceRegistration resourceRegistration, Resource resource) {
+        return new TargetResource(resourceRegistration, resource);
+    }
+
+    public static TargetResource forDomain(ImmutableManagementResourceRegistration resourceRegistration, Resource resource,
+                                           Set<String> serverGroups, Set<String> hosts) {
+        return new TargetResource(resourceRegistration, resource);
+    }
+
+    private TargetResource(ImmutableManagementResourceRegistration resourceRegistration, Resource resource) {
         this.resourceRegistration = resourceRegistration;
         this.resource = resource;
     }
 
     public Set<String> getServerGroups() {
-        throw new UnsupportedOperationException("implement me");
+        //TODO implement getServerGroups
+//        throw new UnsupportedOperationException();
+        return Collections.emptySet();
     }
 
     public Set<String> getHosts() {
-        throw new UnsupportedOperationException("implement me");
+        //TODO implement getHosts
+//        throw new UnsupportedOperationException();
+        return Collections.emptySet();
     }
 
     public List<AccessConstraintDefinition> getAccessConstraints() {
@@ -59,5 +73,9 @@ public final class TargetResource {
 
     public Resource getResource() {
         return resource;
+    }
+
+    public ImmutableManagementResourceRegistration getResourceRegistration() {
+        return resourceRegistration;
     }
 }

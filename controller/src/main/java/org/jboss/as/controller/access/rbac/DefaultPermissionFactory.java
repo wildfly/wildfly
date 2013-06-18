@@ -43,6 +43,7 @@ import org.jboss.as.controller.access.constraint.AuditConstraint;
 import org.jboss.as.controller.access.constraint.Constraint;
 import org.jboss.as.controller.access.constraint.ConstraintFactory;
 import org.jboss.as.controller.access.constraint.HostEffectConstraint;
+import org.jboss.as.controller.access.constraint.NonAuditConstraint;
 import org.jboss.as.controller.access.constraint.ScopingConstraint;
 import org.jboss.as.controller.access.constraint.SensitiveTargetConstraint;
 import org.jboss.as.controller.access.constraint.SensitiveVaultExpressionContstraint;
@@ -86,6 +87,7 @@ public class DefaultPermissionFactory implements PermissionFactory {
     }
 
     private PermissionCollection getUserPermissions(Set<String> user) {
+        configureRolePermissions();
         ManagementPermissionCollection simple = null;
         Map<Action.ActionEffect, CombinationManagementPermission> combined = null;
         for (String roleName : user) {
@@ -209,11 +211,13 @@ public class DefaultPermissionFactory implements PermissionFactory {
         for (StandardRole standardRole : StandardRole.values()) {
             ManagementPermissionCollection rolePerms = new ManagementPermissionCollection(SimpleManagementPermission.class);
             for (Action.ActionEffect actionEffect : Action.ActionEffect.values()) {
-                Set<Constraint> constraints = new TreeSet<Constraint>();
-                for (ConstraintFactory factory : factories) {
-                    constraints.add(factory.getStandardUserConstraint(standardRole, actionEffect));
+                if (standardRole.isActionEffectAllowed(actionEffect)) {
+                    Set<Constraint> constraints = new TreeSet<Constraint>();
+                    for (ConstraintFactory factory : factories) {
+                        constraints.add(factory.getStandardUserConstraint(standardRole, actionEffect));
+                    }
+                    rolePerms.add(new SimpleManagementPermission(actionEffect, constraints.toArray(new Constraint[constraints.size()])));
                 }
-                rolePerms.add(new SimpleManagementPermission(actionEffect, constraints.toArray(new Constraint[constraints.size()])));
             }
             result.put(standardRole.toString(), rolePerms);
         }
@@ -246,6 +250,7 @@ public class DefaultPermissionFactory implements PermissionFactory {
         final Set<ConstraintFactory> result = new LinkedHashSet<ConstraintFactory>();
         result.add(ApplicationTypeConstraint.FACTORY);
         result.add(AuditConstraint.FACTORY);
+        result.add(NonAuditConstraint.FACTORY);
         result.add(HostEffectConstraint.FACTORY);
         result.add(SensitiveTargetConstraint.FACTORY);
         result.add(SensitiveVaultExpressionContstraint.FACTORY);

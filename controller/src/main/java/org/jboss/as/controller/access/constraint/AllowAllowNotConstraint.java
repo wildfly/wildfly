@@ -29,19 +29,19 @@ package org.jboss.as.controller.access.constraint;
  */
 public abstract class AllowAllowNotConstraint extends AbstractConstraint {
 
-    private final boolean is;
-    private final boolean allows;
-    private final boolean allowsNot;
+    private final Boolean is;
+    private final Boolean allows;
+    private final Boolean allowsNot;
 
     protected AllowAllowNotConstraint(ControlFlag controlFlag, boolean is) {
         super(controlFlag);
         this.is = is;
-        this.allows = this.allowsNot = false;
+        this.allows = this.allowsNot = null;
     }
 
     protected AllowAllowNotConstraint(ControlFlag controlFlag, boolean allows, boolean allowsNot) {
         super(controlFlag);
-        this.is = false;
+        this.is = null;
         this.allows = allows;
         this.allowsNot = allowsNot;
     }
@@ -50,7 +50,13 @@ public abstract class AllowAllowNotConstraint extends AbstractConstraint {
     public boolean violates(Constraint other) {
         if (other.getClass() == getClass()) {
             AllowAllowNotConstraint aanc = (AllowAllowNotConstraint) other;
-            return is ? aanc.allows : aanc.allowsNot;
+            if (is == null) {
+                assert aanc.is != null : "incompatible comparison of user and required constraints";
+                return aanc.is ? !allows : !allowsNot;
+            } else {
+                assert aanc.is == null : "incompatible comparison of user and required constraints";
+                return is ? !aanc.allows : !aanc.allowsNot;
+            }
         }
         return false;
     }

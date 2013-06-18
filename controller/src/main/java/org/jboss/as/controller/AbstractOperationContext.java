@@ -91,8 +91,9 @@ abstract class AbstractOperationContext implements OperationContext {
     }
 
     AbstractOperationContext(final ProcessType processType, final RunningMode runningMode,
-            final ModelController.OperationTransactionControl transactionControl, final ControlledProcessState processState,
-            boolean booting) {
+                             final ModelController.OperationTransactionControl transactionControl,
+                             final ControlledProcessState processState,
+                             boolean booting) {
         this.processType = processType;
         this.runningMode = runningMode;
         this.transactionControl = transactionControl;
@@ -695,6 +696,7 @@ abstract class AbstractOperationContext implements OperationContext {
         final ModelNode response;
         final ModelNode operation;
         final PathAddress address;
+        final OperationId operationId;
         private Object restartStamp;
         private ResultHandler resultHandler;
         Step predecessor;
@@ -705,6 +707,8 @@ abstract class AbstractOperationContext implements OperationContext {
             this.response = response;
             this.operation = operation;
             this.address = address == null ? PathAddress.pathAddress(operation.get(OP_ADDR)) : address;
+            String opName = operation.hasDefined(OP) ? operation.require(OP).asString() : null;
+            this.operationId = new OperationId(this.address, opName);
             // Create the outcome node early so it appears at the top of the
             // response
             response.get(OUTCOME);
@@ -835,6 +839,34 @@ abstract class AbstractOperationContext implements OperationContext {
             if (resultAction == ResultAction.ROLLBACK) {
                 delegate.handleRollback(context, operation);
             }
+        }
+    }
+
+    static class OperationId {
+        final PathAddress address;
+        final String name;
+
+        private OperationId(PathAddress address, String name) {
+            this.address = address;
+            this.name = name;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            OperationId that = (OperationId) o;
+
+            return address.equals(that.address) && !(name != null ? !name.equals(that.name) : that.name != null);
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = address.hashCode();
+            result = 31 * result + (name != null ? name.hashCode() : 0);
+            return result;
         }
     }
 }
