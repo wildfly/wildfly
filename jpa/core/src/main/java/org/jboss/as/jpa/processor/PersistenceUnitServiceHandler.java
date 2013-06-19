@@ -331,8 +331,6 @@ public class PersistenceUnitServiceHandler {
             deploymentUnit.putAttachment(JpaAttachments.PERSISTENCE_UNIT_SERVICE_KEY, puServiceName);
 
             deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, puServiceName);
-            // add the PU service as a dependency to all EE components in this scope
-            addPUServiceDependencyToComponents(components, puServiceName);
 
             if (startEarly) {   // require that the pu service start before the next deployment phase starts
                 phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, puServiceName);
@@ -745,21 +743,6 @@ public class PersistenceUnitServiceHandler {
         }
     }
 
-    /**
-     * Add the <code>puServiceName</code> as a dependency on each of the passed <code>components</code>
-     *
-     * @param components    The components to which the PU service is added as a dependency
-     * @param puServiceName The persistence unit service name
-     */
-    private static void addPUServiceDependencyToComponents(final Collection<ComponentDescription> components, final ServiceName puServiceName) {
-        if (components == null || components.isEmpty()) {
-            return;
-        }
-        for (final ComponentDescription component : components) {
-            JPA_LOGGER.debugf("Adding dependency on PU service %s for component %s", puServiceName, component.getComponentClassName());
-            component.addDependency(puServiceName, ServiceBuilder.DependencyType.REQUIRED);
-        }
-    }
 
     /**
      * add to management console (if ManagementAdapter is supported for provider).
