@@ -22,10 +22,11 @@
   -->
 <!-- N.B. This is *not* meant to be a usable cache configuration -->
 <!-- This file supplies the internal configuration defaults per cache mode -->
-<infinispan xmlns="urn:infinispan:config:5.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:5.1 http://infinispan.org/schemas/infinispan-config-5.1.xsd">
+<infinispan xmlns="urn:infinispan:config:5.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:5.3 http://infinispan.org/schemas/infinispan-config-5.3.xsd">
     <global/>
     <default>
         <locking lockAcquisitionTimeout="15000" useLockStriping="false" concurrencyLevel="1000"/>
+        <transaction lockingMode="PESSIMISTIC"/>
         <storeAsBinary enabled="false"/>
         <clustering mode="local"></clustering>
         <eviction strategy="NONE"/>

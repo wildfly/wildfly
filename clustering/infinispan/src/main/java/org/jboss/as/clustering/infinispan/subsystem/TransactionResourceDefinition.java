@@ -55,7 +55,7 @@ public class TransactionResourceDefinition extends SimpleResourceDefinition {
                     .setAllowExpression(true)
                     .setValidator(new EnumValidator<LockingMode>(LockingMode.class, true, false))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(LockingMode.OPTIMISTIC.name()))
+                    .setDefaultValue(new ModelNode().set(LockingMode.PESSIMISTIC.name()))
                     .build();
     static final SimpleAttributeDefinition MODE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.MODE, ModelType.STRING, true)

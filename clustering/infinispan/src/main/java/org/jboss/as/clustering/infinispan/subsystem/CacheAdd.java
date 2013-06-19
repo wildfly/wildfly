@@ -412,26 +412,21 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             ;
         }
 
-        TransactionMode txMode = TransactionMode.NONE;
-        LockingMode lockingMode = LockingMode.OPTIMISTIC;
         // locking is a child resource
         if (cache.hasDefined(ModelKeys.TRANSACTION) && cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME).isDefined()) {
             ModelNode transaction = cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
 
-            final long stopTimeout = TransactionResourceDefinition.STOP_TIMEOUT.resolveModelAttribute(context, transaction).asLong();
-            txMode = TransactionMode.valueOf(TransactionResourceDefinition.MODE.resolveModelAttribute(context, transaction).asString());
-            lockingMode = LockingMode.valueOf(TransactionResourceDefinition.LOCKING.resolveModelAttribute(context, transaction).asString());
+            long stopTimeout = TransactionResourceDefinition.STOP_TIMEOUT.resolveModelAttribute(context, transaction).asLong();
+            TransactionMode txMode = TransactionMode.valueOf(TransactionResourceDefinition.MODE.resolveModelAttribute(context, transaction).asString());
+            LockingMode lockingMode = LockingMode.valueOf(TransactionResourceDefinition.LOCKING.resolveModelAttribute(context, transaction).asString());
 
-            builder.transaction().cacheStopTimeout(stopTimeout);
-        }
-        builder.transaction()
-                .transactionMode(txMode.getMode())
-                .lockingMode(lockingMode)
-                .useSynchronization(!txMode.isXAEnabled())
-                .recovery().enabled(txMode.isRecoveryEnabled())
-        ;
-        if (txMode.isRecoveryEnabled()) {
-            builder.transaction().syncCommitPhase(true).syncRollbackPhase(true);
+            builder.transaction()
+                    .cacheStopTimeout(stopTimeout)
+                    .transactionMode(txMode.getMode())
+                    .lockingMode(lockingMode)
+                    .useSynchronization(!txMode.isXAEnabled())
+                    .recovery().enabled(txMode.isRecoveryEnabled())
+            ;
         }
 
         if (batching) {
