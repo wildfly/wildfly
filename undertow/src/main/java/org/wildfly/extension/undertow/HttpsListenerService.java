@@ -55,7 +55,7 @@ public class HttpsListenerService extends HttpListenerService {
     private final InjectedValue<SecurityRealm> securityRealm = new InjectedValue<>();
     private volatile AcceptingChannel<SslConnection> sslServer;
 
-    HttpsListenerService(final String name) {
+    public HttpsListenerService(final String name) {
         super(name);
     }
 

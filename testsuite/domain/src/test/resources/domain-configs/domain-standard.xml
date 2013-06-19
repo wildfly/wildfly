@@ -37,7 +37,7 @@
         <extension module="org.jboss.as.jdr"/>
         <extension module="org.jboss.as.mail"/>
         <extension module="org.jboss.as.messaging"/>
-        <extension module="org.jboss.as.modcluster"/>
+        <extension module="org.wildfly.extension.mod_cluster"/>
         <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.osgi"/>
         <extension module="org.jboss.as.remoting"/>

@@ -525,7 +525,7 @@
                                             <goal>copy</goal>
                                             <goal>properties</goal>
                                             <goal>
-                                            	copy-dependencies
+                                                copy-dependencies
                                             </goal>
                                         </goals>
                                     </pluginExecutionFilter>
@@ -627,88 +627,88 @@
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
-                                	<pluginExecutionFilter>
-                                		<groupId>
-                                			org.apache.maven.plugins
-                                		</groupId>
-                                		<artifactId>
-                                			maven-help-plugin
-                                		</artifactId>
-                                		<versionRange>
-                                			[2.1.1,)
-                                		</versionRange>
-                                		<goals>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            org.apache.maven.plugins
+                                        </groupId>
+                                        <artifactId>
+                                            maven-help-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [2.1.1,)
+                                        </versionRange>
+                                        <goals>
                                        <goal>active-profiles</goal>
                                        <goal>effective-pom</goal>
                                        <goal>effective-settings</goal>
                                        <goal>system</goal>
-                                		</goals>
-                                	</pluginExecutionFilter>
-                                	<action>
-                                		<ignore></ignore>
-                                	</action>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
                                 </pluginExecution>
                                 <pluginExecution>
-                                	<pluginExecutionFilter>
-                                		<groupId>
-                                			org.codehaus.mojo
-                                		</groupId>
-                                		<artifactId>
-                                			properties-maven-plugin
-                                		</artifactId>
-                                		<versionRange>
-                                			[1.0-alpha-2,)
-                                		</versionRange>
-                                		<goals>
-                                			<goal>
-                                				write-project-properties
-                                			</goal>
-                                		</goals>
-                                	</pluginExecutionFilter>
-                                	<action>
-                                		<ignore></ignore>
-                                	</action>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            org.codehaus.mojo
+                                        </groupId>
+                                        <artifactId>
+                                            properties-maven-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [1.0-alpha-2,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>
+                                                write-project-properties
+                                            </goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
                                 </pluginExecution>
                                 <pluginExecution>
-                                	<pluginExecutionFilter>
-                                		<groupId>
-                                			org.codehaus.mojo
-                                		</groupId>
-                                		<artifactId>
-                                			keytool-maven-plugin
-                                		</artifactId>
-                                		<versionRange>
-                                			[1.2,)
-                                		</versionRange>
-                                		<goals>
-                                			<goal>clean</goal>
-                                			<goal>genkey</goal>
-                                		</goals>
-                                	</pluginExecutionFilter>
-                                	<action>
-                                		<ignore></ignore>
-                                	</action>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            org.codehaus.mojo
+                                        </groupId>
+                                        <artifactId>
+                                            keytool-maven-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [1.2,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>clean</goal>
+                                            <goal>genkey</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
                                 </pluginExecution>
                                 <pluginExecution>
-                                	<pluginExecutionFilter>
-                                		<groupId>
-                                			org.kuali.maven.plugins
-                                		</groupId>
-                                		<artifactId>
-                                			properties-maven-plugin
-                                		</artifactId>
-                                		<versionRange>
-                                			[1.5.3,)
-                                		</versionRange>
-                                		<goals>
-                                			<goal>
-                                				write-project-properties
-                                			</goal>
-                                		</goals>
-                                	</pluginExecutionFilter>
-                                	<action>
-                                		<ignore></ignore>
-                                	</action>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            org.kuali.maven.plugins
+                                        </groupId>
+                                        <artifactId>
+                                            properties-maven-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [1.5.3,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>
+                                                write-project-properties
+                                            </goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
                                 </pluginExecution>
                             </pluginExecutions>
                         </lifecycleMappingMetadata>
@@ -1161,7 +1161,19 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-modcluster</artifactId>
+                <artifactId>wildfly-mod_cluster-extension</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-mod_cluster-undertow</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-mod_cluster-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1864,7 +1876,7 @@
             </dependency>
 
             <dependency>
-	        <groupId>org.jsoup</groupId>
+            <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>
                 <version>${version.jsoup}</version>
             </dependency>
@@ -4193,7 +4205,7 @@
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.spec.javax.security.auth.message</groupId>
-      					<artifactId>jboss-jaspi-api_1.0_spec</artifactId>
+                          <artifactId>jboss-jaspi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.security</groupId>
@@ -6407,7 +6419,7 @@
                 <module>logging</module>
                 <module>mail</module>
                 <module>messaging</module>
-                <module>modcluster</module>
+                <module>mod_cluster</module>
                 <module>model-test</module>
                 <module>naming</module>
                 <module>osgi</module>

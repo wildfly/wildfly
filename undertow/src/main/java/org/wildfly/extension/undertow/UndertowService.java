@@ -160,6 +160,10 @@ public class UndertowService implements Service<UndertowService> {
         this.listeners.add(listener);
     }
 
+    public void unregisterListener(UndertowEventListener listener) {
+        this.listeners.remove(listener);
+    }
+
     protected void fireEvent(EventInvoker invoker) {
         for (UndertowEventListener listener : listeners) {
             invoker.invoke(listener);

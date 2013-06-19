@@ -42,10 +42,10 @@
                 <include name="standalone/deployments/**"/>
                 <include name="welcome-content/**"/>
             </fileset>
-        	   <fileset dir="${generated.configs}">
-        	   	 <include name="domain/**"/>
-        	   	 <include name="docs/**"/>
-        	   </fileset>
+            <fileset dir="${generated.configs}">
+                <include name="domain/**"/>
+                <include name="docs/**"/>
+            </fileset>
         </copy>
         <!-- Convert .bat files to DOS line endings -->
         <fixcrlf srcdir="${output.dir}/bin" includes="**/*.bat" eol="crlf" />
@@ -451,9 +451,9 @@
             <maven-resource group="javax.enterprise" artifact="cdi-api"/>
         </module-def>
 
-    	<module-def name="javax.enterprise.concurrent.api">
-    		<maven-resource group="org.jboss.spec.javax.enterprise.concurrent" artifact="jboss-concurrency-api_1.0_spec"/>
-    	</module-def>
+        <module-def name="javax.enterprise.concurrent.api">
+            <maven-resource group="org.jboss.spec.javax.enterprise.concurrent" artifact="jboss-concurrency-api_1.0_spec"/>
+        </module-def>
 
         <module-def name="javax.faces.api">
             <maven-resource group="org.jboss.spec.javax.faces" artifact="jboss-jsf-api_2.2_spec"/>
@@ -665,11 +665,11 @@
             <maven-resource group="xml-resolver" artifact="xml-resolver"/>
         </module-def>
 
-    	<module-def name="org.apache.ws.xmlschema">
+        <module-def name="org.apache.ws.xmlschema">
             <maven-resource group="org.apache.ws.xmlschema" artifact="xmlschema-core"/>
         </module-def>
 
-    	<module-def name="org.apache.ws.security">
+        <module-def name="org.apache.ws.security">
             <maven-resource group="org.apache.ws.security" artifact="wss4j"/>
         </module-def>
 
@@ -888,7 +888,7 @@
             <maven-resource group="org.wildfly" artifact="wildfly-deployment-scanner"/>
         </module-def>
 
-    	<module-def name="org.jboss.as.domain-add-user" />
+        <module-def name="org.jboss.as.domain-add-user" />
 
         <module-def name="org.jboss.as.ee">
             <maven-resource group="org.wildfly" artifact="wildfly-ee"/>
@@ -904,6 +904,13 @@
 
         <module-def name="org.wildfly.extension.io">
             <maven-resource group="org.wildfly" artifact="wildfly-io"/>
+        </module-def>
+
+        <!-- Dummy module for backwards compatibility -->
+        <module-def name="org.jboss.as.modcluster"/>
+
+        <module-def name="org.wildfly.extension.mod_cluster">
+            <maven-resource group="org.wildfly" artifact="wildfly-mod_cluster-extension"/>
         </module-def>
 
         <module-def name="org.jboss.as.jacorb">
@@ -974,12 +981,12 @@
             <maven-resource group="org.wildfly" artifact="wildfly-messaging"/>
         </module-def>
 
-        <module-def name="org.jboss.as.modcluster">
-            <maven-resource group="org.wildfly" artifact="wildfly-modcluster"/>
-            <maven-resource group="org.jboss.mod_cluster" artifact="mod_cluster-container-spi"/>
-            <maven-resource group="org.jboss.mod_cluster" artifact="mod_cluster-core"/>
-            <maven-resource group="org.jboss.mod_cluster" artifact="mod_cluster-container-catalina"/>
-            <maven-resource group="org.jboss.mod_cluster" artifact="mod_cluster-container-jbossweb"/>
+        <module-def name="org.wildfly.mod_cluster.undertow">
+            <maven-resource group="org.wildfly" artifact="wildfly-mod_cluster-undertow"/>
+        </module-def>
+
+        <module-def name="org.wildfly.mod_cluster.web">
+            <maven-resource group="org.wildfly" artifact="wildfly-mod_cluster-web"/>
         </module-def>
 
         <module-def name="org.jboss.as.pojo">
@@ -990,31 +997,31 @@
             <maven-resource group="org.wildfly" artifact="wildfly-naming"/>
         </module-def>
 
-     	<module-def name="org.jboss.as.osgi">
+        <module-def name="org.jboss.as.osgi">
             <maven-resource group="org.wildfly" artifact="wildfly-osgi-service"/>
         </module-def>
 
-     	<module-def name="org.jboss.as.osgi.http">
+        <module-def name="org.jboss.as.osgi.http">
             <maven-resource group="org.wildfly" artifact="wildfly-osgi-http"/>
         </module-def>
 
-     	<module-def name="org.jboss.as.osgi.jmx">
+        <module-def name="org.jboss.as.osgi.jmx">
             <maven-resource group="org.wildfly" artifact="wildfly-osgi-jmx"/>
         </module-def>
 
-     	<module-def name="org.jboss.as.osgi.jpa">
+        <module-def name="org.jboss.as.osgi.jpa">
             <maven-resource group="org.wildfly" artifact="wildfly-osgi-jpa"/>
         </module-def>
 
-     	<module-def name="org.jboss.as.osgi.jta">
+        <module-def name="org.jboss.as.osgi.jta">
             <maven-resource group="org.wildfly" artifact="wildfly-osgi-jta"/>
         </module-def>
 
-     	<module-def name="org.jboss.as.osgi.naming">
+        <module-def name="org.jboss.as.osgi.naming">
             <maven-resource group="org.wildfly" artifact="wildfly-osgi-naming"/>
         </module-def>
 
-     	<module-def name="org.jboss.as.osgi.web">
+        <module-def name="org.jboss.as.osgi.web">
             <maven-resource group="org.wildfly" artifact="wildfly-osgi-web"/>
         </module-def>
 
@@ -1026,7 +1033,7 @@
             <maven-resource group="org.wildfly" artifact="wildfly-security"/>
         </module-def>
 
-      	<module-def name="org.jboss.as.system-jmx">
+        <module-def name="org.jboss.as.system-jmx">
             <maven-resource group="org.wildfly" artifact="wildfly-system-jmx"/>
         </module-def>
 
@@ -1134,6 +1141,19 @@
             <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-ear"/>
         </module-def>
 
+        <module-def name="org.jboss.mod_cluster.container.spi">
+            <maven-resource group="org.jboss.mod_cluster" artifact="mod_cluster-container-spi"/>
+        </module-def>
+
+        <module-def name="org.jboss.mod_cluster.container.jbossweb">
+            <maven-resource group="org.jboss.mod_cluster" artifact="mod_cluster-container-catalina"/>
+            <maven-resource group="org.jboss.mod_cluster" artifact="mod_cluster-container-jbossweb"/>
+        </module-def>
+
+        <module-def name="org.jboss.mod_cluster.core">
+            <maven-resource group="org.jboss.mod_cluster" artifact="mod_cluster-core"/>
+        </module-def>
+
         <!--
           starting with 3.4.x Netty has changed its groupId to io.netty.
         -->
@@ -1230,10 +1250,10 @@
 
         <module-def name="org.jboss.security.negotiation">
             <maven-resource group="org.jboss.security" artifact="jboss-negotiation-common"/>
-        	<maven-resource group="org.jboss.security" artifact="jboss-negotiation-extras"/>
+            <maven-resource group="org.jboss.security" artifact="jboss-negotiation-extras"/>
             <maven-resource group="org.jboss.security" artifact="jboss-negotiation-net"/>
-        	<maven-resource group="org.jboss.security" artifact="jboss-negotiation-ntlm"/>
-        	<maven-resource group="org.jboss.security" artifact="jboss-negotiation-spnego"/>
+            <maven-resource group="org.jboss.security" artifact="jboss-negotiation-ntlm"/>
+            <maven-resource group="org.jboss.security" artifact="jboss-negotiation-spnego"/>
         </module-def>
 
         <module-def name="org.jboss.security.xacml">
