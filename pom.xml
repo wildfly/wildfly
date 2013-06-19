@@ -201,7 +201,7 @@
         <version.org.jboss.remote-naming>1.0.6.Final</version.org.jboss.remote-naming>
         <version.org.jboss.remoting>4.0.0.Beta1</version.org.jboss.remoting>
         <version.org.jboss.remotingjmx.remoting-jmx>2.0.0.Beta1</version.org.jboss.remotingjmx.remoting-jmx>
-        <version.org.jboss.resteasy>3.0-rc-1</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>3.0.1.Final</version.org.jboss.resteasy>
         <version.org.jboss.sasl>1.0.3.Final</version.org.jboss.sasl>
         <version.org.jboss.seam.int>6.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>2.2.3.Final</version.org.jboss.security.jboss-negotiation>
