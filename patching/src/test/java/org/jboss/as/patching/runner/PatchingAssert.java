@@ -234,6 +234,7 @@ public class PatchingAssert {
 
     public static void assertPatchHasBeenRolledBack(PatchingResult result, Patch patch, PatchableTarget.TargetInfo expectedPatchInfo) {
         assertEquals(expectedPatchInfo.getReleasePatchID(), result.getPatchInfo().getReleasePatchID());
+        assertEquals(expectedPatchInfo.getCumulativeID(), result.getPatchInfo().getCumulativePatchID());
         assertEquals(expectedPatchInfo.getPatchIDs(), result.getPatchInfo().getPatchIDs());
 
         // assertNoResourcesForPatch(result.getPatchInfo(), patch);

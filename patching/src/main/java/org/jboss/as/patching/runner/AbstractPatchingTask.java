@@ -30,6 +30,7 @@ import java.util.Arrays;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.ContentType;
 
 /**
  * Basic patching task implementation.
@@ -90,7 +91,8 @@ abstract class AbstractPatchingTask<T extends ContentItem> implements PatchingTa
         // If the content is already present just resolve any conflict automatically
         final byte[] contentHash = contentItem.getContentHash();
         if(Arrays.equals(backupHash, contentHash)) {
-            skipExecute = true; // Skip the execute
+            // Skip execute for misc items only
+            skipExecute = contentItem.getContentType() == ContentType.MISC;
             return true;
         }
         // See if the content matches our expected target
@@ -117,9 +119,7 @@ abstract class AbstractPatchingTask<T extends ContentItem> implements PatchingTa
             PatchLogger.ROOT_LOGGER.debugf("wrong hash for content item (%s)", contentItem);
         }
         final ContentModification rollbackAction = createRollbackEntry(original, contentHash, backupHash);
-        if (rollbackAction != null) {
-            context.recordRollbackAction(rollbackAction);
-        }
+        context.recordChange(description.getModification(), rollbackAction);
     }
 
 }

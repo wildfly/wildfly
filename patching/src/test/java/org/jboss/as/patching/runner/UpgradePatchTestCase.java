@@ -359,4 +359,64 @@ public class UpgradePatchTestCase extends AbstractTaskTestCase {
         assertDefinedModule(modulePatchDirectory, moduleName, moduleAddedInReleasePatch.getItem().getContentHash());
     }
 
+    @Test
+    public void testIncludePreviousUpgrade() throws Exception {
+
+        String moduleOne = "moduleOne";
+        InstalledIdentity identityBeforePatch = loadInstalledIdentity();
+
+        // build a Release patch for the base installation
+        String releasePatchID = "releasePatchID";// randomString() + "-Release";
+        String releaseLayerPatchID = "releaseLayerPatchID";//randomString();
+        File releasePatchDir = mkdir(tempDir, releasePatchID);
+        ContentModification moduleAddedInReleasePatch = ContentModificationUtils.addModule(releasePatchDir, releaseLayerPatchID, moduleOne, "different content in the module");
+
+        Patch releasePatch = PatchBuilder.create()
+                .setPatchId(releasePatchID)
+                .setDescription(randomString())
+                .setIdentity(new IdentityImpl(identityBeforePatch.getIdentity().getName(), identityBeforePatch.getIdentity().getVersion()))
+                .setUpgrade(identityBeforePatch.getIdentity().getVersion() + "-Release1")
+                .addElement(new PatchElementImpl(releaseLayerPatchID)
+                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
+                        .setNoUpgrade()
+                        .addContentModification(moduleAddedInReleasePatch))
+                .build();
+        createPatchXMLFile(releasePatchDir, releasePatch);
+        File zippedReleasePatch = createZippedPatchFile(releasePatchDir, releasePatchID);
+
+        PatchingResult resultOfReleasePatch = executePatch(zippedReleasePatch);
+        assertPatchHasBeenApplied(resultOfReleasePatch, releasePatch);
+
+        String moduleTwo = "moduleTwo";
+
+        // build a Release patch for the base installation
+        String releasePatchTwo = "releasePatchTwo";// randomString() + "-Release";
+        String releaseLayerPatchTwo = "releaseLayerPatchTwo";//randomString();
+        File releasePatchDirTwo = mkdir(tempDir, releasePatchTwo);
+        ContentModification moduleAddedTwo = ContentModificationUtils.addModule(releasePatchDirTwo, releaseLayerPatchTwo, moduleTwo, "different something in the module");
+
+        Patch releaseTwo = PatchBuilder.create()
+                .setPatchId(releasePatchTwo)
+                .setDescription(randomString())
+                .setIdentity(new IdentityImpl(identityBeforePatch.getIdentity().getName(), identityBeforePatch.getIdentity().getVersion()))
+                .setUpgrade(identityBeforePatch.getIdentity().getVersion() + "-Release1")
+                .addElement(new PatchElementImpl(releaseLayerPatchTwo)
+                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
+                        .setNoUpgrade()
+                        .addContentModification(moduleAddedTwo))
+                .build();
+        createPatchXMLFile(releasePatchDirTwo, releaseTwo);
+        File zippedReleasePatchTwo = createZippedPatchFile(releasePatchDirTwo, releasePatchTwo);
+
+        PatchingResult resultOfReleasePatchTwo = executePatch(zippedReleasePatchTwo);
+        assertPatchHasBeenApplied(resultOfReleasePatchTwo, releaseTwo);
+
+        // Now that we applied 2 releases, it should include both modules!
+        final InstalledIdentity processedIdentity = loadInstalledIdentity();
+        final File modulePatchDirectory = processedIdentity.getLayer(BASE).getDirectoryStructure().getModulePatchDirectory(releaseLayerPatchTwo);
+        assertDirExists(modulePatchDirectory);
+        assertDefinedModule(modulePatchDirectory, moduleTwo, moduleAddedTwo.getItem().getContentHash());
+        assertDefinedModule(modulePatchDirectory, moduleOne, moduleAddedInReleasePatch.getItem().getContentHash());
+    }
+
 }

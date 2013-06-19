@@ -37,11 +37,12 @@ public interface PatchingTaskContext {
     boolean isExcluded(ContentItem contentItem);
 
     /**
-     * Record a rollback action
+     * Record a change to be included in the patch history.
      *
+     * @param change         the modification
      * @param rollbackAction the rollback action
      */
-    void recordRollbackAction(ContentModification rollbackAction);
+    void recordChange(ContentModification change, ContentModification rollbackAction);
 
     /**
      * Get the current bundle path.

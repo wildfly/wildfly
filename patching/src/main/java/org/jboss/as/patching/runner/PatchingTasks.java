@@ -131,19 +131,28 @@ class PatchingTasks {
         }
     }
 
+    static void apply(final String patchId, final Collection<ContentModification> modifications, final Map<Location, ContentTaskDefinition> definitions) {
+        apply(patchId, modifications, definitions, ContentItemFilter.ALL);
+    }
+
     /**
      * Apply modifications to a content task definition.
      *
      * @param patchId       the patch id
      * @param modifications the modifications
      * @param definitions   the task definitions
+     * @param filter        the content item filter
      */
-    static void apply(final String patchId, final Collection<ContentModification> modifications, final Map<Location, ContentTaskDefinition> definitions) {
+    static void apply(final String patchId, final Collection<ContentModification> modifications, final Map<Location, ContentTaskDefinition> definitions, final ContentItemFilter filter) {
         for (final ContentModification modification : modifications) {
 
             final ContentItem item = modification.getItem();
-            final Location location = new Location(item);
+            // Check if we accept the item
+            if (!filter.accepts(item)) {
+                continue;
+            }
 
+            final Location location = new Location(item);
             final ContentEntry contentEntry = new ContentEntry(patchId, modification);
             ContentTaskDefinition definition = definitions.get(location);
             if (definition == null) {

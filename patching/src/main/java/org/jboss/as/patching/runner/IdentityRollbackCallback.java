@@ -3,10 +3,14 @@ package org.jboss.as.patching.runner;
 import static org.jboss.as.patching.IoUtils.recursiveDelete;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.installation.InstalledImage;
+import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.metadata.PatchElement;
+import org.jboss.as.patching.metadata.PatchImpl;
 import org.jboss.as.patching.metadata.RollbackPatch;
 
 /**
@@ -14,37 +18,35 @@ import org.jboss.as.patching.metadata.RollbackPatch;
  */
 class IdentityRollbackCallback implements IdentityPatchContext.FinalizeCallback {
 
-    private final String patchId;
+    private final Patch patch;
     private final Collection<String> patches;
     private final boolean restoreConfiguration;
     private final DirectoryStructure directoryStructure;
 
+
     public IdentityRollbackCallback(final String patchId, final Collection<String> patches, boolean restoreConfiguration, final DirectoryStructure directoryStructure) {
-        this.patchId = patchId;
         this.patches = patches;
         this.directoryStructure = directoryStructure;
         this.restoreConfiguration = restoreConfiguration;
+        // Create an empty patch, we don't do anything with the processedPatch
+        this.patch = new PatchImpl(patchId, "", Patch.PatchType.ONE_OFF, null, "", Collections.<String>emptyList(),
+                Collections.<String>emptyList(), Collections.<PatchElement>emptyList(), Collections.<ContentModification>emptyList());
     }
 
     @Override
-    public String getPatchId() {
-        return patchId;
+    public Patch getPatch() {
+        return patch;
     }
 
     @Override
-    public Patch.PatchType getPatchType() {
-        return Patch.PatchType.ONE_OFF; // does not matter
-    }
-
-    @Override
-    public void finishPatch(final RollbackPatch patch, final IdentityPatchContext context) throws Exception {
+    public void finishPatch(final Patch processedPatch, final RollbackPatch patch, final IdentityPatchContext context) throws Exception {
         if (restoreConfiguration) {
-            context.restoreConfiguration(patchId);
+            context.restoreConfiguration(patch.getPatchId());
         }
     }
 
     @Override
-    public void commit() {
+    public void completed() {
         final InstalledImage installedImage = directoryStructure.getInstalledImage();
         // delete all resources associated to the rolled back patches
         for (final String rollback : patches) {
@@ -52,11 +54,11 @@ class IdentityRollbackCallback implements IdentityPatchContext.FinalizeCallback 
             // Leave the patch dir to for the GC operation
             // IoUtils.recursiveDelete(structure.getPatchDirectory(rollback));
         }
-        recursiveDelete(installedImage.getPatchHistoryDir(patchId));
+        recursiveDelete(installedImage.getPatchHistoryDir(patch.getPatchId()));
     }
 
     @Override
-    public void rollback() {
+    public void operationCancelled() {
         // nothing to do here
     }
 }
