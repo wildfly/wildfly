@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.compat.jpa.toplink;
+package org.jboss.as.test.compat.jpa.eclipselink;
 
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
@@ -45,8 +45,7 @@ import org.junit.runner.RunWith;
  * @author Scott Marlow
  */
 @RunWith(Arquillian.class)
-@Ignore  // only for manual testing currently
-public class TopLinkSharedModuleProviderTestCase {
+public class EclipseLinkSharedModuleProviderTestCase {
 
     private static final String ARCHIVE_NAME = "toplink_module_test";
 
@@ -54,12 +53,14 @@ public class TopLinkSharedModuleProviderTestCase {
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
             "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
             "  <persistence-unit name=\"hibernate3_pc\">" +
-            "<provider>oracle.toplink.essentials.PersistenceProvider</provider>"+
+            "<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>"+
             "    <description>TopLink Persistence Unit." +
             "    </description>" +
             "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
-// uncomment after AS7-886 is fixed
-//            "<class>org.jboss.as.test.compat.jpa.toplink.Employee</class>" +
+            "  <properties>" +
+            "  <property name=\"jboss.as.jpa.providerModule\" value=\"org.eclipse.persistence:test\"/>" +
+            "  <property name=\"eclipselink.ddl-generation\" value=\"drop-and-create-tables\"/>"+
+            "  </properties>" +
             "  </persistence-unit>" +
             "</persistence>";
 
@@ -86,7 +87,7 @@ public class TopLinkSharedModuleProviderTestCase {
         ear.addAsLibraries(lib);
 
         final WebArchive main = ShrinkWrap.create(WebArchive.class, "main.war");
-        main.addClasses(TopLinkSharedModuleProviderTestCase.class);
+        main.addClasses(EclipseLinkSharedModuleProviderTestCase.class);
         ear.addAsModule(main);
 
         return ear;
@@ -120,12 +121,6 @@ public class TopLinkSharedModuleProviderTestCase {
                 dumpJndi(s + "/" + ncp.getName());
             }
         }
-    }
-
-    @Test
-    public void testLoadTSJavaLogClassInTopLinkProviderJar() throws Exception {
-        Class toplinkClass = Employee.class.getClassLoader().loadClass("com.sun.jpalog.TSJavaLog");
-        // success is when loadClass() didn't throw an exception
     }
 
     @Test

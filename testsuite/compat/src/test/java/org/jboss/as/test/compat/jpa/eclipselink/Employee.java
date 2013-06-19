@@ -20,18 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.compat.jpa.toplink;
+package org.jboss.as.test.compat.jpa.eclipselink;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
 /**
- * weblink entity class
+ * Employee entity class
  *
  * @author Scott Marlow
  */
 @Entity
-public class WebLink {
+public class Employee  {
 
     @Id
     private int id;

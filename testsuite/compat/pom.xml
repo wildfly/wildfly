@@ -52,6 +52,13 @@
         <xslt.scripts.dir>${basedir}/../integration/src/test/xslt</xslt.scripts.dir>
 
         <version.org.hibernate3>3.6.6.Final</version.org.hibernate3>
+
+        <!-- EclipseLink -->
+        <eclipselink.version.2.3.stable>2.3.2</eclipselink.version.2.3.stable>
+        <eclipselink.version.2.3.milestone>2.3.3-M3</eclipselink.version.2.3.milestone>
+        <eclipselink.version.2.4.milestone>2.4.0</eclipselink.version.2.4.milestone>
+        <eclipselink.version>${eclipselink.version.2.4.milestone}</eclipselink.version>
+
     </properties>
 
     <!--
@@ -87,6 +94,26 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jipijapa</groupId>
+            <artifactId>jipijapa-eclipselink</artifactId>
+            <version>1.0.0.Alpha3</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>eclipselink</artifactId>
+            <version>${eclipselink.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.persistence</groupId>
+                    <artifactId>javax.persistence</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
@@ -134,6 +161,27 @@
                 <version>3.2.0.Final</version>
                 <scope>test</scope>
             </dependency>
+
+            <dependency>
+                <groupId>org.jipijapa</groupId>
+                <artifactId>jipijapa-eclipselink</artifactId>
+                <version>1.0.0.Alpha3</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>eclipselink</artifactId>
+            <version>${eclipselink.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.persistence</groupId>
+                    <artifactId>javax.persistence</artifactId>
+                </exclusion>
+            </exclusions>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -191,7 +239,7 @@
                             Used in arquillian.xml - arguments for all JBoss AS instances.
                             System properties are duplicated here until ARQ-647 is implemented.
                         -->
-                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.security} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast}</server.jvm.args>
+                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.security} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Declipselink.archive.factory=org.jipijapa.eclipselink.JBossArchiveFactoryImpl</server.jvm.args>
                     </systemPropertyVariables>
 
                 </configuration>
@@ -230,5 +278,31 @@
             </dependencies>
         </profile>
     </profiles>
+
+  <repositories>
+
+    <repository>
+      <id>jboss-public-repository-group</id>
+      <name>JBoss Public Repository Group</name>
+      <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
+      </snapshots>
+    </repository>
+
+    <repository>
+      <id>eclipselink</id>
+      <url>http://www.eclipse.org/downloads/download.php?r=1&amp;nf=1&amp;file=/rt/eclipselink/maven.repo</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 
 </project>

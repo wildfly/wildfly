@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.compat.jpa.toplink;
+package org.jboss.as.test.compat.jpa.eclipselink;
 
 import javax.ejb.Stateful;
 import javax.persistence.EntityManager;

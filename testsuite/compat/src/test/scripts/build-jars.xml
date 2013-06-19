@@ -36,5 +36,39 @@
     -->
     <copy file="${commons-collections:commons-collections:jar}"     tofile="${tests.output.dir}/test-libs/commons-collections.jar"/>
     <copy file="${antlr:antlr:jar}"                                 tofile="${tests.output.dir}/test-libs/antlr.jar"/>
+    
+
+    <!-- create the eclipselink module to test with -->
+    <copy file="${org.eclipse.persistence:eclipselink:jar}"         tofile="${tests.output.dir}/modules/org/eclipse/persistence/test/eclipselink.jar"/>
+    <copy file="${org.jipijapa:jipijapa-eclipselink:jar}"           tofile="${tests.output.dir}/modules/org/eclipse/persistence/test/jipijapa-eclipselink.jar"/>
+
+    <echo file="${tests.output.dir}/modules/org/eclipse/persistence/test/module.xml" append="false">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;module xmlns="urn:jboss:module:1.1" name="org.eclipse.persistence" slot="test"&gt;
+&lt;resources&gt;
+&lt;resource-root path="eclipselink.jar"/&gt;
+&lt;resource-root path="jipijapa-eclipselink.jar"/&gt;
+&lt;/resources&gt;
+
+&lt;dependencies&gt;
+&lt;module name="asm.asm"/&gt;
+&lt;module name="javax.api"/&gt;
+&lt;module name="javax.annotation.api"/&gt;
+&lt;module name="javax.enterprise.api"/&gt;
+&lt;module name="javax.persistence.api"/&gt;
+&lt;module name="javax.transaction.api"/&gt;
+&lt;module name="javax.validation.api"/&gt;
+&lt;module name="javax.xml.bind.api"/&gt;
+&lt;module name="org.antlr"/&gt;
+&lt;module name="org.apache.commons.collections"/&gt;
+&lt;module name="org.dom4j"/&gt;
+&lt;module name="org.javassist"/&gt;
+&lt;module name="org.jboss.as.jpa.spi"/&gt;
+&lt;module name="org.jboss.as.jpa.util"/&gt;
+&lt;module name="org.jboss.logging"/&gt;
+&lt;module name="org.jboss.vfs"/&gt;
+&lt;/dependencies&gt;
+&lt;/module&gt;
+    </echo>
+
     </target>
 </project>
