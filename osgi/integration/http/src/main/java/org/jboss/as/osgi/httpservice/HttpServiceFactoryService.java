@@ -35,7 +35,6 @@ import org.jboss.as.web.host.WebDeploymentController;
 import org.jboss.as.web.host.WebHost;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -67,7 +66,7 @@ final class HttpServiceFactoryService implements Service<WebDeploymentController
     private final InjectedValue<WebHost> injectedVirtualHost = new InjectedValue<WebHost>();
     private final InjectedValue<HttpManagement> injectedHttpManagement = new InjectedValue<HttpManagement>();
     private final InjectedValue<CommonWebServer> injectedWebServer = new InjectedValue<CommonWebServer>();
-    private ServiceRegistration registration;
+    private ServiceRegistration<?> registration;
 
     private HttpServiceFactoryService() {
     }
@@ -79,7 +78,7 @@ final class HttpServiceFactoryService implements Service<WebDeploymentController
         builder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.injectedPathManager);
         builder.addDependency(WebHost.SERVICE_NAME.append(VIRTUAL_HOST), WebHost.class, service.injectedVirtualHost);
         builder.addDependency(CommonWebServer.SERVICE_NAME, CommonWebServer.class, service.injectedWebServer);
-        builder.addDependency(DependencyType.OPTIONAL, UndertowHttpManagementService.SERVICE_NAME, HttpManagement.class, service.injectedHttpManagement);
+        builder.addDependency(UndertowHttpManagementService.SERVICE_NAME, HttpManagement.class, service.injectedHttpManagement);
         builder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, service.injectedSystemContext);
         return builder.install();
     }
@@ -94,7 +93,7 @@ final class HttpServiceFactoryService implements Service<WebDeploymentController
         Hashtable<String, Object> props = new Hashtable<String, Object>();
         props.put("provider", getClass().getPackage().getName());
 
-        ServiceFactory serviceFactory = new HttpServiceFactory(webServer, virtualHost, serverEnvironment);
+        ServiceFactory<HttpService> serviceFactory = new HttpServiceFactory(webServer, virtualHost, serverEnvironment);
         registration = syscontext.registerService(HttpService.class.getName(), serviceFactory, props);
     }
 
