@@ -22,6 +22,7 @@
 
 package org.jboss.as.jpa.processor;
 
+import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
@@ -30,13 +31,17 @@ import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarFile;
 
+import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.config.PersistenceUnitsInApplication;
+import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -52,6 +57,8 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ResourceLoaderSpec;
 import org.jboss.modules.ResourceLoaders;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 /**
@@ -139,6 +146,39 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         // add persistence provider dependency
         for (String dependency : moduleDependencies) {
             addDependency(moduleSpecification, moduleLoader, deploymentUnit, ModuleIdentifier.fromString(dependency));
+        }
+
+        // add the PU service as a dependency to all EE components in this scope
+        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        final Collection<ComponentDescription> components = eeModuleDescription.getComponentDescriptions();
+        for (PersistenceUnitMetadataHolder holder: persistenceUnitsInApplication.getPersistenceUnitHolders()) {
+            addPUServiceDependencyToComponents(components, holder);
+        }
+
+    }
+
+    /**
+     * Add the <code>puServiceName</code> as a dependency on each of the passed <code>components</code>
+     *
+     * @param components    The components to which the PU service is added as a dependency
+     * @param holder        The persistence units
+     */
+    private static void addPUServiceDependencyToComponents(final Collection<ComponentDescription> components, final PersistenceUnitMetadataHolder holder) {
+
+        if (components == null || components.isEmpty() || holder == null) {
+            return;
+        }
+
+        for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
+            String jpaContainerManaged = pu.getProperties().getProperty(Configuration.JPA_CONTAINER_MANAGED);
+            boolean deployPU = (jpaContainerManaged == null? true : Boolean.parseBoolean(jpaContainerManaged));
+            if (deployPU) {
+                final ServiceName puServiceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
+                for (final ComponentDescription component : components) {
+                    JPA_LOGGER.debugf("Adding dependency on PU service %s for component %s", puServiceName, component.getComponentClassName());
+                    component.addDependency(puServiceName, ServiceBuilder.DependencyType.REQUIRED);
+                }
+            }
         }
     }
 
