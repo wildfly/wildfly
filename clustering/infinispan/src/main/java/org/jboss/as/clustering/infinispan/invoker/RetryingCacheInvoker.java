@@ -28,10 +28,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 
-import javax.transaction.xa.XAException;
-
 import org.infinispan.Cache;
-import org.infinispan.CacheException;
 import org.infinispan.context.Flag;
 import org.infinispan.remoting.transport.jgroups.SuspectException;
 import org.infinispan.util.concurrent.TimeoutException;
@@ -87,21 +84,6 @@ public class RetryingCacheInvoker implements CacheInvoker {
                 exception = e;
             } catch (SuspectException e) {
                 exception = e;
-            } catch (CacheException e) {
-                // If the tx commit (e.g. Cache.endBatch(true)) was rolled back due to failure on prepare, then retry
-                Throwable cause = e.getCause();
-                if (cause instanceof XAException) {
-                    XAException xaCause = (XAException) cause;
-                    // TimeoutException/SuspectException on prepare throws XAException.XA_RBROLLBACK
-                    // See org.infinispan.transaction.TransactionCoordinator.prepare(...)
-                    if (xaCause.errorCode == XAException.XA_RBROLLBACK) {
-                        exception = e;
-                    } else {
-                        throw e;
-                    }
-                } else {
-                    throw e;
-                }
             }
 
             if (retry) {
