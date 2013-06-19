@@ -4,11 +4,14 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
+import org.wildfly.extension.cluster.support.ManagementAPIClusterSupportServiceProvider;
 
 /**
  * Handler responsible for removing the subsystem resource from the model
  *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Richard Achmatowicz (c) Red Hat 2013
  */
 class ClusterSubsystemRemove extends AbstractRemoveStepHandler {
 
@@ -19,9 +22,14 @@ class ClusterSubsystemRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        //Remove any services installed by the corresponding add handler here
-        //context.removeService(ServiceName.of("some", "name"));
+        // remove all RPC services installed for channels
+        ServiceRegistry registry = context.getServiceRegistry(false);
+        // get all channel service names, whether UP or not
+        for (ServiceName channelServiceName : ClusterSubsystemHelper.getAllChannelServiceNames(registry)) {
+
+            String channelName = ClusterSubsystemHelper.getChannelNameFromChannelServiceName(channelServiceName);
+            ServiceName managementSupportServiceName = ManagementAPIClusterSupportServiceProvider.getServiceName(channelName);
+            context.removeService(managementSupportServiceName);
+        }
     }
-
-
 }

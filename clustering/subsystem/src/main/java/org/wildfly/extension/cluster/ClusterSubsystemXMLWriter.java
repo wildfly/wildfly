@@ -18,19 +18,8 @@ public class ClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         ModelNode model = context.getModelNode();
 
         if (model.isDefined()) {
-            // there should only be one management-client element
-            if (model.hasDefined(ModelKeys.MANAGEMENT_CLIENT)) {
-                ModelNode managementClient = model.get(ModelKeys.MANAGEMENT_CLIENT, ModelKeys.MANAGEMENT_CLIENT_NAME);
-                this.writeManagementClient(writer, managementClient, Element.MANAGEMENT_CLIENT);
-            }
+            // write model content here
         }
-        writer.writeEndElement();
-    }
-
-    private void writeManagementClient(XMLExtendedStreamWriter writer, ModelNode managementClient, Element element) throws XMLStreamException {
-
-        writer.writeStartElement(element.getLocalName());
-        this.writeOptional(writer, Attribute.SOCKET_BINDING, managementClient, ModelKeys.SOCKET_BINDING);
         writer.writeEndElement();
     }
 

@@ -29,7 +29,7 @@ import org.junit.Test;
  */
 public class ClusterSubsystemParsingTestCase extends AbstractSubsystemTest {
 
-    final int EXPECTED_NUM_OPERATIONS = 2 ;
+    final int EXPECTED_NUM_OPERATIONS = 1 ;
 
     public ClusterSubsystemParsingTestCase() {
         super(ClusterExtension.SUBSYSTEM_NAME, new ClusterExtension());

@@ -16,5 +16,8 @@
         <module name="org.jboss.as.clustering.impl"/>
         <module name="org.jboss.as.clustering.jgroups"/>
         <module name="org.jboss.as.clustering.infinispan"/>
+
+        <module name="org.jgroups"/>
+        <module name="org.infinispan"/>
     </dependencies>
 </module>

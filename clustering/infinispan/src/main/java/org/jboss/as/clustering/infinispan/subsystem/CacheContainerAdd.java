@@ -170,6 +170,9 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             for (ChannelDependentServiceProvider provider: ServiceLoader.load(ChannelDependentServiceProvider.class, ChannelDependentServiceProvider.class.getClassLoader())) {
                 controllers.add(provider.install(target, name));
             }
+
+            // install management support for cluster subsystem
+            // ManagementAPIClusterSupportService.addManagementAPIClusterSupportInstallationStep(context, cluster);
         }
 
         // install the cache container configuration service

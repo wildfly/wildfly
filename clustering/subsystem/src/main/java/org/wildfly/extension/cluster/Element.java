@@ -30,8 +30,6 @@ import java.util.Map;
 public enum Element {
     // must be first
     UNKNOWN(null),
-
-    MANAGEMENT_CLIENT(ModelKeys.MANAGEMENT_CLIENT),
     ;
 
     private final String name;

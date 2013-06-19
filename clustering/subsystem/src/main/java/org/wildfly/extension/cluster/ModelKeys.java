@@ -6,7 +6,8 @@ package org.wildfly.extension.cluster;
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
 public class ModelKeys {
-    static final String MANAGEMENT_CLIENT = "management-client";
-    static final String MANAGEMENT_CLIENT_NAME = "MANAGEMENT_CLIENT_NAME";
-    static final String SOCKET_BINDING = "socket-binding";
+    static final String CACHE_VIEW = "cache-view";
+    static final String DEPLOYMENT = "deployment";
+    static final String NAME = "name";
+    static final String VIEW = "view";
 }

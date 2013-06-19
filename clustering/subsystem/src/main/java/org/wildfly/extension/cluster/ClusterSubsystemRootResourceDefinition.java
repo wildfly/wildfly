@@ -31,6 +31,6 @@ public class ClusterSubsystemRootResourceDefinition extends SimpleResourceDefini
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(new ManagementClientResourceDefinition());
+        resourceRegistration.registerSubModel(new ClusterInstanceResourceDefinition(true));
     }
 }

@@ -27,8 +27,6 @@ import java.util.Map;
 public enum Attribute {
     // must be first
     UNKNOWN(null),
-
-    SOCKET_BINDING(ModelKeys.SOCKET_BINDING),
     ;
 
     private final String name;

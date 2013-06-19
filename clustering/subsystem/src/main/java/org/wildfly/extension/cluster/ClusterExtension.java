@@ -24,7 +24,7 @@ public class ClusterExtension implements Extension {
     public static final String NAMESPACE = "urn:jboss:domain:cluster:1.0";
     public static final String SUBSYSTEM_NAME = "cluster";
 
-    protected static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
+    public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
     private static final String RESOURCE_NAME = ClusterExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
