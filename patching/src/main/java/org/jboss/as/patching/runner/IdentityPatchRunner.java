@@ -2,7 +2,6 @@ package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.runner.PatchingTasks.ContentTaskDefinition;
 import static org.jboss.as.patching.runner.PatchingTasks.apply;
-import static org.jboss.as.patching.runner.PatchingTasks.rollback;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
@@ -21,6 +20,7 @@ import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.metadata.ContentItem;
+import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.LayerType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchElement;
@@ -123,6 +123,19 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         for (final String rollback : invalidation) {
             rollback(rollback, context);
         }
+        // Update a release
+        if (patchType == Patch.PatchType.UPGRADE) {
+            // In case of a release upgrade we only get the diffs from the next upgrade. This means if we just create an
+            // overlay directory with those changes, we might miss things from the current release. So we need to take the
+            // changes made by the current release patch and include them when creating the new overlay directory. Those
+            // additional modification need to be recorded as part of the history (patch.xml), so that the next release
+            // can leverage this as well.
+            final String releasePatchID = modification.getReleasePatchID();
+            if (!Constants.BASE.equals(releasePatchID)) {
+                portForward(modification.getReleasePatchID(), context);
+            }
+        }
+
         // Then apply the current patch
         for (final PatchElement element : patch.getElements()) {
             // Apply the content modifications
@@ -151,12 +164,12 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
             if (elementPatchType == Patch.PatchType.ONE_OFF) {
                 // TODO check whether the element applies to the cumulative ID
             }
-            apply(elementPatchId, element.getModifications(), target.getModifications());
+            apply(elementPatchId, element.getModifications(), target.getDefinitions());
             target.apply(elementPatchId, elementPatchType);
         }
         // Apply the patch to the identity
         final IdentityPatchContext.PatchEntry identity = context.getIdentityEntry();
-        apply(patchId, patch.getModifications(), identity.getModifications());
+        apply(patchId, patch.getModifications(), identity.getDefinitions());
         identity.apply(patchId, patchType);
 
         // We need the resulting version for rollback
@@ -169,12 +182,23 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         try {
             return executeTasks(context, callback);
         } catch (Exception e) {
-            callback.rollback();
+            callback.operationCancelled();
             throw rethrowException(e);
         }
     }
 
-    public PatchingResult rollbackPatch(final String patchId, final ContentVerificationPolicy contentPolicy, final boolean rollbackTo, final boolean restoreConfiguration, InstallationManager.InstallationModification modification) throws PatchingException {
+    /**
+     * Rollback a patch.
+     *
+     * @param patchId            the patch id
+     * @param contentPolicy      the content policy
+     * @param rollbackTo         rollback multiple one off patches
+     * @param resetConfiguration whether to reset the configuration
+     * @param modification       the installation modification
+     * @return the patching result
+     * @throws PatchingException
+     */
+    public PatchingResult rollbackPatch(final String patchId, final ContentVerificationPolicy contentPolicy, final boolean rollbackTo, final boolean resetConfiguration, InstallationManager.InstallationModification modification) throws PatchingException {
         if (Constants.BASE.equals(patchId)) {
             throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
         }
@@ -230,7 +254,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
             }
             // Execute the tasks
             final IdentityPatchContext.PatchEntry identity = context.getIdentityEntry();
-            final IdentityRollbackCallback callback = new IdentityRollbackCallback(patchId, patches, restoreConfiguration, identity.getDirectoryStructure());
+            final IdentityRollbackCallback callback = new IdentityRollbackCallback(patchId, patches, resetConfiguration, identity.getDirectoryStructure());
             try {
                 return executeTasks(context, callback);
             } catch (Exception e) {
@@ -250,6 +274,39 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
     @Override
     public void canceled() {
         // nothing here
+    }
+
+    /**
+     * When applying a release patch we don't invalidate the changes. Since the patch (diff) is based on the version we need
+     * to port forward the current modules and bundles in the release and create a new overlay including all those changes.
+     *
+     * @param patchID the release patch id
+     * @param context the patch context
+     * @throws PatchingException
+     */
+    private void portForward(final String patchID, final IdentityPatchContext context) throws PatchingException {
+        try {
+
+            final Patch patch = loadPatchInformation(patchID, installedImage);
+            for (final PatchElement patchElement : patch.getElements()) {
+                final IdentityPatchContext.PatchEntry entry = context.resolveForElement(patchElement);
+                final Map<Location, ContentTaskDefinition> definitions = entry.getDefinitions();
+                final Collection<ContentModification> modifications = patchElement.getModifications();
+                // Create the taskDefs for the modifications (only bundles and modules)
+                apply(patchElement.getId(), modifications, definitions, ContentItemFilter.ALL_BUT_MISC);
+                // Record a loader to have access to the current modules
+                context.recordRollbackLoader(patchElement.getId(), entry);
+            }
+
+            final IdentityPatchContext.PatchEntry identity = context.getIdentityEntry();
+            final Map<Location, ContentTaskDefinition> definitions = identity.getDefinitions();
+            final Collection<ContentModification> modifications = patch.getModifications();
+            apply(patchID, modifications, definitions, ContentItemFilter.ALL_BUT_MISC);
+            // context.recordRollbackLoader(patchID, identity);
+
+        } catch (Exception e) {
+            throw rethrowException(e);
+        }
     }
 
     /**
@@ -313,7 +370,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
                     throw new PatchingException("did not exist in original " + layerName);
                 }
                 final IdentityPatchContext.PatchEntry entry = context.resolveForElement(patchElement);
-                final Map<Location, ContentTaskDefinition> modifications = entry.getModifications();
+                final Map<Location, ContentTaskDefinition> modifications = entry.getDefinitions();
                 // Create the rollback
                 PatchingTasks.rollback(elementPatchId, original.getModifications(), patchElement.getModifications(), modifications, ContentItemFilter.MISC_ONLY);
                 entry.rollback(elementPatchId);
@@ -337,7 +394,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
 
             // Rollback the patch
             final IdentityPatchContext.PatchEntry identity = context.getIdentityEntry();
-            PatchingTasks.rollback(patchID, originalPatch.getModifications(), rollbackPatch.getModifications(), identity.getModifications(), ContentItemFilter.MISC_ONLY);
+            PatchingTasks.rollback(patchID, originalPatch.getModifications(), rollbackPatch.getModifications(), identity.getDefinitions(), ContentItemFilter.MISC_ONLY);
             identity.rollback(patchID);
 
             // Restore previous state
@@ -427,7 +484,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
      * @throws PatchingException
      */
     static void prepareTasks(final IdentityPatchContext.PatchEntry entry, final IdentityPatchContext context, final List<PreparedTask> tasks, final List<ContentItem> conflicts) throws PatchingException {
-        for (final PatchingTasks.ContentTaskDefinition definition : entry.getModifications().values()) {
+        for (final PatchingTasks.ContentTaskDefinition definition : entry.getDefinitions().values()) {
             final PatchingTask task = createTask(definition, context, entry);
             try {
                 // backup and validate content

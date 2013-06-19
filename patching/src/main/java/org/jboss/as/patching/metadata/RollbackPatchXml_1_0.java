@@ -28,12 +28,9 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
-
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -307,58 +304,7 @@ class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, 
         @Override
         public Patch build() {
             final Patch patch = super.build();
-
-            return new RollbackPatch() {
-                @Override
-                public InstalledIdentity getIdentityState() {
-                    return identity;
-                }
-
-                @Override
-                public String getPatchId() {
-                    return patch.getPatchId();
-                }
-
-                @Override
-                public String getDescription() {
-                    return patch.getDescription();
-                }
-
-                @Override
-                public PatchType getPatchType() {
-                    return patch.getPatchType();
-                }
-
-                @Override
-                public Identity getIdentity() {
-                    return patch.getIdentity();
-                }
-
-                @Override
-                public String getResultingVersion() {
-                    return patch.getResultingVersion();
-                }
-
-                @Override
-                public Collection<String> getAppliesTo() {
-                    return patch.getAppliesTo();
-                }
-
-                @Override
-                public Collection<String> getIncompatibleWith() {
-                    return patch.getIncompatibleWith();
-                }
-
-                @Override
-                public List<PatchElement> getElements() {
-                    return patch.getElements();
-                }
-
-                @Override
-                public List<ContentModification> getModifications() {
-                    return patch.getModifications();
-                }
-            };
+            return new PatchImpl.RollbackPatchImpl(patch, identity);
         }
     }
 }

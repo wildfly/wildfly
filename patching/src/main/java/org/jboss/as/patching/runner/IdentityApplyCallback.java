@@ -28,17 +28,12 @@ class IdentityApplyCallback implements IdentityPatchContext.FinalizeCallback {
     }
 
     @Override
-    public String getPatchId() {
-        return patchId;
+    public Patch getPatch() {
+        return original;
     }
 
     @Override
-    public Patch.PatchType getPatchType() {
-        return original.getPatchType();
-    }
-
-    @Override
-    public void finishPatch(final RollbackPatch rollbackPatch, final IdentityPatchContext context) throws Exception {
+    public void finishPatch(final Patch processedPatch, final RollbackPatch rollbackPatch, final IdentityPatchContext context) throws Exception {
         final File historyDir = structure.getInstalledImage().getPatchHistoryDir(patchId);
 
         if (!historyDir.exists()) {
@@ -49,9 +44,10 @@ class IdentityApplyCallback implements IdentityPatchContext.FinalizeCallback {
         final File timestamp = new File(historyDir, Constants.TIMESTAMP);
         PatchUtils.writeRef(timestamp, generateTimestamp());
 
-        // Persist the patch.xml in the patch directory
+        // Persist the processed patch, which contains the records of changes
         final File backupPatchXml = new File(historyDir, PatchXml.PATCH_XML);
-        IdentityPatchContext.writePatch(original, backupPatchXml);
+        IdentityPatchContext.writePatch(processedPatch, backupPatchXml);
+
         // Persist the rollback.xml in the history directory
         final File rollbackPatchXml = new File(historyDir, Constants.ROLLBACK_XML);
         IdentityPatchContext.writePatch(rollbackPatch, rollbackPatchXml);
@@ -61,12 +57,12 @@ class IdentityApplyCallback implements IdentityPatchContext.FinalizeCallback {
     }
 
     @Override
-    public void commit() {
+    public void completed() {
         // nothing to do
     }
 
     @Override
-    public void rollback() {
+    public void operationCancelled() {
         // Cleanup history, bundles and module patch directories
         final InstalledImage image = structure.getInstalledImage();
         IoUtils.recursiveDelete(image.getPatchHistoryDir(patchId));

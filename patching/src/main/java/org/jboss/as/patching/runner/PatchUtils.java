@@ -199,6 +199,10 @@ public final class PatchUtils {
         for (final String patch : patches) {
             path.add(structure.getModulePatchDirectory(patch));
         }
+        final String cp = info.getCumulativeID();
+        if (!BASE.equals(cp)) {
+            path.add(structure.getModulePatchDirectory(cp));
+        }
         final String ref = info.getReleasePatchID();
         if (!BASE.equals(ref)) {
             path.add(structure.getModulePatchDirectory(ref));
@@ -212,6 +216,10 @@ public final class PatchUtils {
         final List<File> path = new ArrayList<File>();
         for (final String patch : patches) {
             path.add(structure.getBundlesPatchDirectory(patch));
+        }
+        final String cp = info.getCumulativeID();
+        if (!BASE.equals(cp)) {
+            path.add(structure.getBundlesPatchDirectory(cp));
         }
         final String ref = info.getReleasePatchID();
         if (!BASE.equals(ref)) {

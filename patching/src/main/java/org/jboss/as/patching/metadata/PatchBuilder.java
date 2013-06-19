@@ -159,53 +159,9 @@ public class PatchBuilder extends AbstractModificationBuilderTarget<PatchBuilder
             elements.add(holder.createElement(patchType));
         }
 
-        return new Patch() {
-
-            @Override
-            public String getResultingVersion() {
-                return resultingVersion;
-            }
-
-            @Override
-            public PatchType getPatchType() {
-                return patchType;
-            }
-
-            @Override
-            public String getPatchId() {
-                return patchId;
-            }
-
-            @Override
-            public List<ContentModification> getModifications() {
-                return unmodifiableList(modifications);
-            }
-
-            @Override
-            public String getDescription() {
-                return description;
-            }
-
-            @Override
-            public List<String> getAppliesTo() {
-                return Collections.singletonList(identity.getVersion());
-            }
-
-            @Override
-            public Collection<String> getIncompatibleWith() {
-                return incompatibleWith;
-            }
-
-            @Override
-            public Identity getIdentity() {
-                return identity;
-            }
-
-            @Override
-            public List<PatchElement> getElements() {
-                return elements;
-            }
-        };
+        final Collection<String> appliesTo = Collections.singletonList(identity.getVersion());
+        return new PatchImpl(patchId, description, patchType, identity, resultingVersion, appliesTo, incompatibleWith,
+                unmodifiableList(elements), unmodifiableList(modifications));
     }
 
     @Override

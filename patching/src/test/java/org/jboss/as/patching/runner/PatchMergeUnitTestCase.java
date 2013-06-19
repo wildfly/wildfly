@@ -23,19 +23,17 @@
 package org.jboss.as.patching.runner;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import junit.framework.Assert;
 import org.jboss.as.patching.metadata.ContentModification;
-import org.jboss.as.patching.metadata.Identity;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchElement;
+import org.jboss.as.patching.metadata.PatchImpl;
 import org.junit.Test;
 
 /**
@@ -177,52 +175,8 @@ public class PatchMergeUnitTestCase {
     }
 
     static Patch createPatch(final String id, final Patch.PatchType type, final ContentModification... item) {
-        return new Patch() {
-            @Override
-            public String getPatchId() {
-                return id;
-            }
-
-            @Override
-            public String getDescription() {
-                return "test";
-            }
-
-            @Override
-            public PatchType getPatchType() {
-                return type;
-            }
-
-            @Override
-            public String getResultingVersion() {
-                return "1.2.3";
-            }
-
-            @Override
-            public List<String> getAppliesTo() {
-                return Collections.emptyList();
-            }
-
-            @Override
-            public List<ContentModification> getModifications() {
-                return Arrays.asList(item);
-            }
-
-            @Override
-            public Collection<String> getIncompatibleWith() {
-                return Collections.emptyList();
-            }
-
-            @Override
-            public Identity getIdentity() {
-                return null;
-            }
-
-            @Override
-            public List<PatchElement> getElements() {
-                return null;
-            }
-        };
+        return new PatchImpl(id, "test", type, null, "1.2.3", Collections.<String>emptyList(), Collections.<String>emptyList(),
+                Collections.<PatchElement>emptyList(), Arrays.asList(item));
     }
 
 }

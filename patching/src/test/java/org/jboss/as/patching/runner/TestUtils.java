@@ -168,33 +168,4 @@ public class TestUtils {
         return zipFile;
     }
 
-    public static File[] getModulePath(final DirectoryStructure structure, final PatchInfo info) {
-        final List<File> path = new ArrayList<File>();
-        final List<String> patches = info.getPatchIDs();
-        for (final String patch : patches) {
-            path.add(structure.getModulePatchDirectory(patch));
-        }
-        final String ref = info.getReleasePatchID();
-        if (!BASE.equals(ref)) {
-            path.add(structure.getModulePatchDirectory(ref));
-        }
-        path.add(structure.getModuleRoot());
-        return path.toArray(new File[path.size()]);
-    }
-
-    static File[] getBundlePath(final DirectoryStructure structure, final PatchInfo info) {
-        final List<String> patches = info.getPatchIDs();
-        final List<File> path = new ArrayList<File>();
-        for (final String patch : patches) {
-            path.add(structure.getBundlesPatchDirectory(patch));
-        }
-        final String ref = info.getReleasePatchID();
-        if (!BASE.equals(ref)) {
-            path.add(structure.getBundlesPatchDirectory(ref));
-        }
-        path.add(structure.getBundleRepositoryRoot());
-        return path.toArray(new File[path.size()]);
-    }
-
-
 }

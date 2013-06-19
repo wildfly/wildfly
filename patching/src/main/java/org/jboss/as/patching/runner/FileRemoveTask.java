@@ -85,7 +85,8 @@ class FileRemoveTask implements PatchingTask {
         boolean ok = IoUtils.recursiveDelete(target);
         for(ContentModification mod : rollback) {
             // Add the rollback (add actions)
-            context.recordRollbackAction(mod);
+            // We skip the change - misc files are reused in the processed patch
+            context.recordChange(null, mod);
         }
         if(! ok) {
             throw PatchMessages.MESSAGES.failedToDelete(target.getAbsolutePath());
