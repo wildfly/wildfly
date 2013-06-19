@@ -62,6 +62,7 @@ import org.jboss.as.jpa.service.JPAService;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
 import org.jboss.as.jpa.subsystem.PersistenceUnitRegistryImpl;
+import org.jboss.as.jpa.util.JPAServiceNames;
 import org.jboss.as.jpa.validator.SerializableValidatorFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -339,7 +340,11 @@ public class PersistenceUnitServiceHandler {
 
             deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
 
-            ServiceBuilder<PersistenceUnitService> builder = serviceTarget.addService(puServiceName, service);
+            final ServiceBuilder<PersistenceUnitService> builder = serviceTarget.addService(puServiceName, service);
+            // the PU service has to depend on the JPAService which is responsible for setting up the necessary JPA infrastructure (like registering the cache EventListener(s))
+            // @see https://issues.jboss.org/browse/WFLY-1531 for details
+            builder.addDependency(JPAServiceNames.getJPAServiceName());
+
             boolean useDefaultDataSource = true;
             final String jtaDataSource = adjustJndi(pu.getJtaDataSourceName());
             final String nonJtaDataSource = adjustJndi(pu.getNonJtaDataSourceName());
