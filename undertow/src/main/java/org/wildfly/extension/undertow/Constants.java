@@ -62,6 +62,7 @@ public interface Constants {
     String ALIAS = "alias";
     String ERROR_PAGE = "error-page";
     String ERROR_HANDLER = "error-handler";
+    String ERROR_HANDLERS = "error-handlers";
     String SIMPLE_ERROR_PAGE = "simple-error-page";
     String SCHEME = "scheme";
     /*JSP config */
@@ -72,6 +73,7 @@ public interface Constants {
     String DISPLAY_SOURCE_FRAGMENT = "display-source-fragment";
     String DUMP_SMAP = "dump-smap";
     String ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE = "error-on-use-bean-invalid-class-attribute";
+    String FILE = "file";
     String FILE_ENCODING = "file-encoding";
     String GENERATE_STRINGS_AS_CHAR_ARRAYS = "generate-strings-as-char-arrays";
     String JAVA_ENCODING = "java-encoding";
@@ -100,5 +102,14 @@ public interface Constants {
     String ENABLED = "enabled";
     String DIRECTORY_LISTING = "directory-listing";
     String FILTER = "filter";
+    String FILTERS = "filters";
     String FILTER_REF = "filter-ref";
+
+    //session cookie config
+    String SESSION_COOKIE = "session-cookie";
+    String DOMAIN = "domain";
+    String COMMENT = "comment";
+    String HTTP_ONLY = "http-only";
+    String SECURE = "secure";
+    String MAX_AGE = "max-age";
 }

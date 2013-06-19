@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.undertow.handlers;
 
-import java.nio.file.Paths;
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -42,29 +42,32 @@ import org.wildfly.extension.undertow.UndertowLogger;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 public class FileHandler extends Handler {
+
+    public static final FileHandler INSTANCE = new FileHandler();
+
     /*<file path="/opt/data" cache-buffer-size="1024" cache-buffers="1024"/>*/
-    private static final AttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING)
+    public static final AttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
             .build();
-    private static final AttributeDefinition CACHE_BUFFER_SIZE = new SimpleAttributeDefinitionBuilder("cache-buffer-size", ModelType.LONG)
-            .setAllowNull(true)
-            .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(1024))
-            .build();
-    private static final AttributeDefinition CACHE_BUFFERS = new SimpleAttributeDefinitionBuilder("cache-buffers", ModelType.LONG)
+    public static final AttributeDefinition CACHE_BUFFER_SIZE = new SimpleAttributeDefinitionBuilder("cache-buffer-size", ModelType.LONG)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(1024))
             .build();
-    private static final AttributeDefinition DIRECTORY_LISTING = new SimpleAttributeDefinitionBuilder(Constants.DIRECTORY_LISTING, ModelType.BOOLEAN)
+    public static final AttributeDefinition CACHE_BUFFERS = new SimpleAttributeDefinitionBuilder("cache-buffers", ModelType.LONG)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(1024))
+            .build();
+    public static final AttributeDefinition DIRECTORY_LISTING = new SimpleAttributeDefinitionBuilder(Constants.DIRECTORY_LISTING, ModelType.BOOLEAN)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
             .build();
 
-    FileHandler() {
-        super("file");
+    private FileHandler() {
+        super(Constants.FILE);
     }
 
     @Override
@@ -77,7 +80,7 @@ public class FileHandler extends Handler {
         String path = PATH.resolveModelAttribute(context, model).asString();
         boolean directoryListing = DIRECTORY_LISTING.resolveModelAttribute(context, model).asBoolean();
         UndertowLogger.ROOT_LOGGER.creatingFileHandler(path);
-        FileResourceManager resourceManager = new FileResourceManager(Paths.get(path));
+        FileResourceManager resourceManager = new FileResourceManager(new File(path));
         ResourceHandler handler = new ResourceHandler();
         handler.setResourceManager(resourceManager);
         handler.setDirectoryListingEnabled(directoryListing);

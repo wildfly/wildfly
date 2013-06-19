@@ -37,8 +37,10 @@ public class WebServicesContextJndiSetupProcessor  implements DeploymentUnitProc
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEResourceReferenceProcessorRegistry registry = deploymentUnit.getAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY);
-        // Add a EEResourceReferenceProcessor which handles @Resource references of type WebServiceContext.
-        registry.registerResourceReferenceProcessor(new WebServiceContextResourceProcessor());
+        if (registry != null) {
+            // Add a EEResourceReferenceProcessor which handles @Resource references of type WebServiceContext.
+            registry.registerResourceReferenceProcessor(new WebServiceContextResourceProcessor());
+        }
     }
 
     @Override

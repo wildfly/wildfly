@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <xsl:stylesheet version="1.0"
 		xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-		xmlns:jg="urn:jboss:domain:jgroups:1.1">
+		xmlns:jg="urn:jboss:domain:jgroups:2.0">
 
     <!--
         XSLT stylesheet to add an x-site relay protocol element to an existing JGroups stack.
@@ -36,7 +36,7 @@
   <!-- relay protocol layer to be added -->
   <xsl:variable name="relay-protocol">
     <jg:relay site="{$relay.site}">
-      <jg:remote-site name="{$remote-site.site}" stack="{$remote-site.stack}" cluster-name="{$remote-site.cluster}"/>
+      <jg:remote-site name="{$remote-site.site}" stack="{$remote-site.stack}" cluster="{$remote-site.cluster}"/>
     </jg:relay>
   </xsl:variable>
 

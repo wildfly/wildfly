@@ -68,6 +68,7 @@ import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.as.weld.services.TCCLSingletonService;
 import org.jboss.as.weld.services.bootstrap.WeldEjbInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldEjbServices;
+import org.jboss.as.weld.services.bootstrap.WeldJaxwsInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldJpaInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldResourceInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldSecurityServices;
@@ -82,6 +83,7 @@ import org.jboss.weld.bootstrap.api.Environments;
 import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.injection.spi.EjbInjectionServices;
+import org.jboss.weld.injection.spi.JaxwsInjectionServices;
 import org.jboss.weld.injection.spi.JpaInjectionServices;
 import org.jboss.weld.injection.spi.ResourceInjectionServices;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
@@ -229,7 +231,9 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
 
         final JpaInjectionServices rootJpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit, deploymentUnit.getServiceRegistry());
+        final JaxwsInjectionServices rootJaxWsInjectionServices = new WeldJaxwsInjectionServices(deploymentUnit);
         weldBootstrapService.addWeldService(JpaInjectionServices.class, rootJpaInjectionServices);
+        weldBootstrapService.addWeldService(JaxwsInjectionServices.class, rootJaxWsInjectionServices);
 
         // add the weld service
         final ServiceBuilder<WeldBootstrapService> weldBootstrapServiceBuilder = serviceTarget.addService(weldBootstrapServiceName, weldBootstrapService);

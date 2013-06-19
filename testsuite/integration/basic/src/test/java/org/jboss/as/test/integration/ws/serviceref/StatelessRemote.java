@@ -30,4 +30,5 @@ public interface StatelessRemote {
     String echo2(String string) throws Exception;
     String echo3(String string) throws Exception;
     String echo4(String string) throws Exception;
+    String echoCDI(String string) throws Exception;
 }

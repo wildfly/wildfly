@@ -25,7 +25,7 @@ package org.wildfly.extension.undertow.extension;
 import java.io.IOException;
 
 import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.CookieHandler;
+import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -67,7 +67,7 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         ServiceController<FilterService> filter = (ServiceController<FilterService>) mainServices.getContainer().getService(UndertowService.FILTER.append("limit-connections"));
         filter.setMode(ServiceController.Mode.ACTIVE);
         FilterService filterService = filter.getService().getValue();
-        HttpHandler result = filterService.createHttpHandler(new CookieHandler());
+        HttpHandler result = filterService.createHttpHandler(new PathHandler());
         Assert.assertNotNull("handler should have been created", result);
 
         final ServiceName locationServiceName = UndertowService.locationServiceName("default-server", "default-host", "/");

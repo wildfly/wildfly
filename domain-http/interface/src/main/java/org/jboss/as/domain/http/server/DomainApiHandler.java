@@ -21,39 +21,30 @@
 */
 package org.jboss.as.domain.http.server;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.domain.http.server.DomainUtil.writeResponse;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
-
-import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.util.HeaderMap;
-import io.undertow.util.Headers;
-import io.undertow.util.Methods;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.util.ETag;
+import io.undertow.util.ETagUtils;
+import io.undertow.util.HeaderMap;
+import io.undertow.util.Headers;
+import io.undertow.util.HexConverter;
+import io.undertow.util.Methods;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -69,28 +60,35 @@ import org.xnio.streams.ChannelInputStream;
 class DomainApiHandler implements HttpHandler {
 
     /**
-     * Represents all possible management operations that can be executed using HTTP GET
+     * Represents all possible management operations that can be executed using HTTP GET. Cacheable operations
+     * have a {@code maxAge} property &gt; 0.
      */
     enum GetOperation {
         /*
          *  It is essential that the GET requests exposed over the HTTP interface are for read only
          *  operations that do not modify the domain model or update anything server side.
          */
-        RESOURCE(READ_RESOURCE_OPERATION),
-        ATTRIBUTE("read-attribute"),
-        RESOURCE_DESCRIPTION(READ_RESOURCE_DESCRIPTION_OPERATION),
-        SNAPSHOTS("list-snapshots"),
-        OPERATION_DESCRIPTION(READ_OPERATION_DESCRIPTION_OPERATION),
-        OPERATION_NAMES(READ_OPERATION_NAMES_OPERATION);
+        RESOURCE(READ_RESOURCE_OPERATION, 0),
+        ATTRIBUTE("read-attribute", 0),
+        RESOURCE_DESCRIPTION(READ_RESOURCE_DESCRIPTION_OPERATION, Common.ONE_WEEK),
+        SNAPSHOTS("list-snapshots", 0),
+        OPERATION_DESCRIPTION(READ_OPERATION_DESCRIPTION_OPERATION, Common.ONE_WEEK),
+        OPERATION_NAMES(READ_OPERATION_NAMES_OPERATION, 0);
 
         private String realOperation;
+        private int maxAge;
 
-        GetOperation(String realOperation) {
+        GetOperation(String realOperation, int maxAge) {
             this.realOperation = realOperation;
+            this.maxAge = maxAge;
         }
 
         public String realOperation() {
             return realOperation;
+        }
+
+        public int getMaxAge() {
+            return maxAge;
         }
     }
 
@@ -107,12 +105,22 @@ class DomainApiHandler implements HttpHandler {
         ModelNode response;
 
         HeaderMap requestHeaders = exchange.getRequestHeaders();
+        final boolean cachable;
+        final boolean get = exchange.getRequestMethod().equals(Methods.GET);
         final boolean encode = Common.APPLICATION_DMR_ENCODED.equals(requestHeaders.getFirst(Headers.ACCEPT))
                 || Common.APPLICATION_DMR_ENCODED.equals(requestHeaders.getFirst(Headers.CONTENT_TYPE));
+        final OperationParameter.Builder operationParameterBuilder = new OperationParameter.Builder(get).encode(encode);
 
-        final boolean get = exchange.getRequestMethod().equals(Methods.GET);
         try {
-            dmr = get ? convertGetRequest(exchange) : convertPostRequest(exchange, encode);
+            if (get) {
+                GetOperation operation = getOperation(exchange);
+                operationParameterBuilder.maxAge(operation.getMaxAge());
+                dmr = convertGetRequest(exchange, operation);
+                cachable = operation.getMaxAge() > 0;
+            } else {
+                dmr = convertPostRequest(exchange, encode);
+                cachable = false;
+            }
         } catch (Exception e) {
             ROOT_LOGGER.debugf("Unable to construct ModelNode '%s'", e.getMessage());
             Common.sendError(exchange, get, false, e.getLocalizedMessage());
@@ -126,8 +134,7 @@ class DomainApiHandler implements HttpHandler {
                     Common.sendError(exchange, get, encode, response.get(FAILURE_DESCRIPTION).asString());
                     return;
                 }
-                final boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();
-                writeResponse(exchange, get, pretty, response, 200, encode);
+                writeResponse(exchange, 200, response, operationParameterBuilder.build());
             }
         };
 
@@ -145,6 +152,19 @@ class DomainApiHandler implements HttpHandler {
 
         try {
             response = modelController.execute(dmr, OperationMessageHandler.logging, control, new OperationBuilder(dmr).build());
+            if (cachable) {
+                // Use the MD5 of the model nodes toString() method as ETag
+                MessageDigest md = MessageDigest.getInstance("MD5");
+                md.update(response.toString().getBytes());
+                ETag etag = new ETag(false, HexConverter.convertToHexString(md.digest()));
+                operationParameterBuilder.etag(etag);
+                if (!ETagUtils.handleIfNoneMatch(exchange, etag, false)) {
+                    exchange.setResponseCode(304);
+                    DomainUtil.writeCacheHeaders(exchange, 304, operationParameterBuilder.build());
+                    exchange.endExchange();
+                    return;
+                }
+            }
         } catch (Throwable t) {
             ROOT_LOGGER.modelRequestError(t);
             Common.sendError(exchange, get, encode, t.getLocalizedMessage());
@@ -154,6 +174,47 @@ class DomainApiHandler implements HttpHandler {
         callback.sendResponse(response);
     }
 
+    private GetOperation getOperation(HttpServerExchange exchange) {
+        Map<String, Deque<String>> queryParameters = exchange.getQueryParameters();
+
+        GetOperation operation = null;
+        Deque<String> parameter = queryParameters.get(OP);
+        if (parameter != null) {
+            String value = parameter.getFirst();
+            try {
+                operation = GetOperation.valueOf(value.toUpperCase(Locale.ENGLISH).replace('-', '_'));
+                value = operation.realOperation();
+            } catch (Exception e) {
+                throw MESSAGES.invalidOperation(e, value);
+            }
+        }
+
+        // This will now only occur if no operation at all was specified on the incoming request.
+        if (operation == null) {
+            operation = GetOperation.RESOURCE;
+        }
+        return operation;
+    }
+
+    private ModelNode convertGetRequest(HttpServerExchange exchange, GetOperation operation) {
+        ArrayList<String> pathSegments = decodePath(exchange.getRequestPath());
+        Map<String, Deque<String>> queryParameters = exchange.getQueryParameters();
+
+        ModelNode dmr = new ModelNode();
+        for (Entry<String, Deque<String>> entry : queryParameters.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue().getFirst();
+            dmr.get(key).set(!value.equals("") ? value : "true");
+        }
+        dmr.get(OP).set(operation.realOperation);
+
+        ModelNode list = dmr.get(OP_ADDR).setEmptyList();
+        for (int i = 1; i < pathSegments.size() - 1; i += 2) {
+            list.add(pathSegments.get(i), pathSegments.get(i + 1));
+        }
+        return dmr;
+    }
+
     private ModelNode convertPostRequest(HttpServerExchange exchange, boolean encode) throws IOException {
         InputStream in = new ChannelInputStream(exchange.getRequestChannel());
         try {
@@ -161,38 +222,6 @@ class DomainApiHandler implements HttpHandler {
         } finally {
             IoUtils.safeClose(in);
         }
-    }
-
-    private ModelNode convertGetRequest(HttpServerExchange exchange) {
-        ArrayList<String> pathSegments = decodePath(exchange.getRequestPath());
-        Map<String, Deque<String>> queryParameters = exchange.getQueryParameters();
-
-        GetOperation operation = null;
-        ModelNode dmr = new ModelNode();
-        for (Entry<String, Deque<String>> entry : queryParameters.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue().getFirst();
-            if (OP.equals(key)) {
-                try {
-                    operation = GetOperation.valueOf(value.toUpperCase(Locale.ENGLISH).replace('-', '_'));
-                    value = operation.realOperation();
-                } catch (Exception e) {
-                    throw MESSAGES.invalidOperation(e, value);
-                }
-            }
-            dmr.get(entry.getKey()).set(!value.equals("") ? value : "true");
-        }
-
-        // This will now only occur if no operation at all was specified on the incoming request.
-        if (operation == null) {
-            operation = GetOperation.RESOURCE;
-            dmr.get(OP).set(operation.realOperation);
-        }
-        ModelNode list = dmr.get(OP_ADDR).setEmptyList();
-        for (int i = 1; i < pathSegments.size() - 1; i += 2) {
-            list.add(pathSegments.get(i), pathSegments.get(i + 1));
-        }
-        return dmr;
     }
 
     private ArrayList<String> decodePath(String path) {
@@ -252,9 +281,12 @@ class DomainApiHandler implements HttpHandler {
         return false;
     }
 
+    /**
+     * Callback to prevent the response will be sent multiple times.
+     */
     private abstract static class ResponseCallback {
-
         private volatile boolean complete;
+
         void sendResponse(final ModelNode response) {
             if (complete) {
                 return;
@@ -265,5 +297,4 @@ class DomainApiHandler implements HttpHandler {
 
         abstract void doSendResponse(ModelNode response);
     }
-
 }

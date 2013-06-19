@@ -42,6 +42,7 @@
         <module name="javax.wsdl4j.api" />
         <module name="javax.xml.bind.api" services="import"/>
         <module name="com.sun.xml.bind" services="import"/>
+        <module name="com.sun.xml.fastinfoset"/>
         <module name="org.apache.neethi" />
         <module name="org.apache.ws.xmlschema" />
         <module name="org.codehaus.woodstox" />

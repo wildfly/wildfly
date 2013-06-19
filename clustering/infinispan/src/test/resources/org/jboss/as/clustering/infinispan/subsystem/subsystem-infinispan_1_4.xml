@@ -82,7 +82,6 @@
                     <timestamp-column name="version" type="BIGINT"/>
                 </binary-keyed-table>
             </mixed-keyed-jdbc-store>
-
         </distributed-cache>
         </cache-container>
     <cache-container name="capedwarf" default-cache="default">

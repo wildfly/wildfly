@@ -35,10 +35,10 @@ import org.wildfly.extension.undertow.Constants;
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
-class SimpleErrorPageDefinition extends AbstractHandlerDefinition {
+public class SimpleErrorPageDefinition extends AbstractHandlerDefinition {
 
-    static final SimpleErrorPageDefinition INSTANCE = new SimpleErrorPageDefinition();
-    private static final AttributeDefinition CODE = new SimpleAttributeDefinitionBuilder("code", ModelType.INT)
+    public static final SimpleErrorPageDefinition INSTANCE = new SimpleErrorPageDefinition();
+    public static final AttributeDefinition CODE = new SimpleAttributeDefinitionBuilder("code", ModelType.INT)
             .setAllowExpression(true)
             .setAllowNull(true)
             .build();

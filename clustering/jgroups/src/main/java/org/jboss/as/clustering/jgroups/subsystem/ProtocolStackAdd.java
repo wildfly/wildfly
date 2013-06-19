@@ -45,6 +45,8 @@ import org.jboss.as.clustering.jgroups.JGroupsMessages;
 import org.jboss.as.clustering.jgroups.ProtocolConfiguration;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
 import org.jboss.as.clustering.jgroups.ProtocolStackConfiguration;
+import org.jboss.as.clustering.jgroups.RelayConfiguration;
+import org.jboss.as.clustering.jgroups.RemoteSiteConfiguration;
 import org.jboss.as.clustering.jgroups.TransportConfiguration;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -66,6 +68,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 import org.jboss.threads.JBossExecutors;
 
 /**
@@ -170,8 +173,29 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         transportConfig.setTopology(site, rack, machine);
         initProtocolProperties(context, transport, transportConfig);
 
+        Relay relayConfig = null;
+        List<Map.Entry<String, Injector<ChannelFactory>>> stacks = new LinkedList<Map.Entry<String, Injector<ChannelFactory>>>();
+        if (model.hasDefined(ModelKeys.RELAY)) {
+            final ModelNode relay = model.get(ModelKeys.RELAY, ModelKeys.RELAY_NAME);
+            final String siteName = RelayResource.SITE.resolveModelAttribute(context, relay).asString();
+            relayConfig = new Relay(siteName);
+            initProtocolProperties(context, relay, relayConfig);
+            if (relay.hasDefined(ModelKeys.REMOTE_SITE)) {
+                List<RemoteSiteConfiguration> remoteSites = relayConfig.getRemoteSites();
+                for (Property remoteSiteProperty: relay.get(ModelKeys.REMOTE_SITE).asPropertyList()) {
+                    final String remoteSiteName = remoteSiteProperty.getName();
+                    final ModelNode remoteSite = remoteSiteProperty.getValue();
+                    final String cluster = RemoteSiteResource.CLUSTER.resolveModelAttribute(context, remoteSite).asString();
+                    final String stack = RemoteSiteResource.STACK.resolveModelAttribute(context, remoteSite).asString();
+                    final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
+                    remoteSites.add(new RemoteSite(remoteSiteName, cluster, channelFactory));
+                    stacks.add(new AbstractMap.SimpleImmutableEntry<String, Injector<ChannelFactory>>(stack, channelFactory));
+                }
+            }
+        }
+
         // set up the protocol stack Protocol objects
-        ProtocolStack stackConfig = new ProtocolStack(name, transportConfig);
+        ProtocolStack stackConfig = new ProtocolStack(name, transportConfig, relayConfig);
         List<Map.Entry<Protocol, String>> protocolSocketBindings = new ArrayList<Map.Entry<Protocol, String>>(orderedProtocols.size());
         for (Property protocolProperty : orderedProtocols) {
             ModelNode protocol = protocolProperty.getValue();
@@ -183,12 +207,10 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
             protocolSocketBindings.add(new AbstractMap.SimpleImmutableEntry<Protocol, String>(protocolConfig, protocolSocketBinding));
         }
 
-        ServiceTarget target = context.getServiceTarget();
-
         // install the default channel factory service
-        ServiceController<ChannelFactory> cfsController = installChannelFactoryService(target,
+        ServiceController<ChannelFactory> cfsController = installChannelFactoryService(context.getServiceTarget(),
                         name, diagnosticsSocketBinding, defaultExecutor, oobExecutor, timerExecutor, threadFactory,
-                        transportSocketBinding, protocolSocketBindings, transportConfig, stackConfig, verificationHandler);
+                        transportSocketBinding, protocolSocketBindings, transportConfig, stackConfig, stacks, verificationHandler);
         if (newControllers != null) {
             newControllers.add(cfsController);
         }
@@ -216,6 +238,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
                                                                              List<Map.Entry<Protocol, String>> protocolSocketBindings,
                                                                              Transport transportConfig,
                                                                              ProtocolStack stackConfig,
+                                                                             List<Map.Entry<String, Injector<ChannelFactory>>> stacks,
                                                                              ServiceVerificationHandler verificationHandler) {
 
         // create the channel factory service builder
@@ -242,6 +265,9 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         }
         if (threadFactory != null) {
             builder.addDependency(ThreadsServices.threadFactoryName(threadFactory), ThreadFactory.class, transportConfig.getThreadFactoryInjector());
+        }
+        for (Map.Entry<String, Injector<ChannelFactory>> entry: stacks) {
+            builder.addDependency(ChannelFactoryService.getServiceName(entry.getKey()), ChannelFactory.class, entry.getValue());
         }
         return builder.install();
     }
@@ -325,11 +351,13 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
 
         private final String name;
         private final TransportConfiguration transport;
+        private final RelayConfiguration relay;
         private final List<ProtocolConfiguration> protocols = new LinkedList<ProtocolConfiguration>();
 
-        ProtocolStack(String name, TransportConfiguration transport) {
+        ProtocolStack(String name, TransportConfiguration transport, RelayConfiguration relay) {
             this.name = name;
             this.transport = transport;
+            this.relay = relay;
         }
 
         Injector<ProtocolDefaults> getDefaultsInjector() {
@@ -372,6 +400,11 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         @Override
         public ServerEnvironment getEnvironment() {
             return this.environment.getValue();
+        }
+
+        @Override
+        public RelayConfiguration getRelay() {
+            return this.relay;
         }
     }
 
@@ -480,6 +513,53 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
             public String getSite() {
                 return this.site;
             }
+        }
+    }
+
+    static class Relay extends Protocol implements RelayConfiguration {
+        private final List<RemoteSiteConfiguration> remoteSites = new LinkedList<RemoteSiteConfiguration>();
+        private final String siteName;
+
+        Relay(String siteName) {
+            super("relay.RELAY2");
+            this.siteName = siteName;
+        }
+
+        @Override
+        public String getSiteName() {
+            return this.siteName;
+        }
+
+        @Override
+        public List<RemoteSiteConfiguration> getRemoteSites() {
+            return this.remoteSites;
+        }
+    }
+
+    static class RemoteSite implements RemoteSiteConfiguration {
+        private final Value<ChannelFactory> channelFactory;
+        private final String name;
+        private final String clusterName;
+
+        RemoteSite(String name, String clusterName, Value<ChannelFactory> channelFactory) {
+            this.name = name;
+            this.clusterName = clusterName;
+            this.channelFactory = channelFactory;
+        }
+
+        @Override
+        public String getName() {
+            return this.name;
+        }
+
+        @Override
+        public ChannelFactory getChannelFactory() {
+            return this.channelFactory.getValue();
+        }
+
+        @Override
+        public String getClusterName() {
+            return this.clusterName;
         }
     }
 

@@ -30,8 +30,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Enumeration;
 import java.util.List;
-
 import java.util.PropertyPermission;
+
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.Attachments;
@@ -51,6 +51,9 @@ import org.jboss.modules.ResourceLoaderSpec;
 import org.jboss.modules.filter.MultiplePathFilterBuilder;
 import org.jboss.modules.filter.PathFilter;
 import org.jboss.modules.filter.PathFilters;
+import org.jboss.modules.security.FactoryPermissionCollection;
+import org.jboss.modules.security.ImmediatePermissionFactory;
+import org.jboss.modules.security.PermissionFactory;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ValueService;
@@ -190,7 +193,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         final List<ModuleDependency> localDependencies = moduleSpecification.getLocalDependencies();
         final List<ModuleDependency> userDependencies = moduleSpecification.getUserDependencies();
 
-        final Permissions permissions = moduleSpecification.getPermissions();
+        final List<PermissionFactory> permFactories = moduleSpecification.getPermissionFactories();
 
         installAliases(moduleSpecification, moduleIdentifier, deploymentUnit, phaseContext);
 
@@ -202,7 +205,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
         for (final ResourceRoot resourceRoot : resourceRoots) {
             logger.debug("Adding resource " + resourceRoot.getRoot() + " to module " + moduleIdentifier);
-            addResourceRoot(specBuilder, resourceRoot, permissions);
+            addResourceRoot(specBuilder, resourceRoot, permFactories);
         }
 
         createDependencies(specBuilder, dependencies, false);
@@ -218,11 +221,12 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
         final Enumeration<Permission> e = DEFAULT_PERMISSIONS.elements();
         while (e.hasMoreElements()) {
-            permissions.add(e.nextElement());
+            permFactories.add(new ImmediatePermissionFactory(e.nextElement()));
         }
         // TODO: servlet context temp dir FilePermission
 
-        specBuilder.setPermissionCollection(permissions);
+        specBuilder.setPermissionCollection(
+                new FactoryPermissionCollection(permFactories.toArray(new PermissionFactory[permFactories.size()])));
 
         final DelegatingClassFileTransformer delegatingClassFileTransformer = new DelegatingClassFileTransformer();
         specBuilder.setClassFileTransformer(delegatingClassFileTransformer);
@@ -305,7 +309,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private void addResourceRoot(final ModuleSpec.Builder specBuilder, final ResourceRoot resource, final Permissions permissions)
+    private void addResourceRoot(final ModuleSpec.Builder specBuilder, final ResourceRoot resource, final List<PermissionFactory> permFactories)
             throws DeploymentUnitProcessingException {
         try {
             final VirtualFile root = resource.getRoot();
@@ -320,7 +324,8 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                 specBuilder.addResourceRoot(ResourceLoaderSpec.createResourceLoaderSpec(new VFSResourceLoader(resource
                         .getRootName(), root, resource.isUsePhysicalCodeSource()), filterBuilder.create()));
             }
-            permissions.add(new VirtualFilePermission(root.getChild("-").getPathName(), VirtualFilePermission.FLAG_READ));
+            permFactories.add(new ImmediatePermissionFactory(
+                    new VirtualFilePermission(root.getChild("-").getPathName(), VirtualFilePermission.FLAG_READ)));
         } catch (IOException e) {
             throw ServerMessages.MESSAGES.failedToCreateVFSResourceLoader(resource.getRootName(), e);
         }

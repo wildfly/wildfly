@@ -184,8 +184,8 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
                             subsystemAddress.append(PathElement.pathElement("stack"))
                                 .append(PathElement.pathElement("protocol"))
                                 .append("property"),
-                            new FailedOperationTransformationConfig.RejectExpressionsConfig(VALUE)));
-
+                            new FailedOperationTransformationConfig.RejectExpressionsConfig(VALUE))
+                );
     }
 
 }

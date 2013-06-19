@@ -39,7 +39,7 @@ import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.as.webservices.metadata.model.POJOEndpoint;
-import org.jboss.as.webservices.webserviceref.WSReferences;
+import org.jboss.as.webservices.webserviceref.WSRefRegistry;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -247,15 +247,6 @@ public final class ASHelper {
         return wsDeployment;
     }
 
-    public static WSReferences getWSRefRegistry(final DeploymentUnit unit) {
-        WSReferences refRegistry = unit.getAttachment(WSAttachmentKeys.WS_REFERENCES);
-        if (refRegistry == null) {
-            refRegistry = WSReferences.newInstance();
-            unit.putAttachment(WSAttachmentKeys.WS_REFERENCES, refRegistry);
-        }
-        return refRegistry;
-    }
-
     /**
      * Returns context root associated with webservice deployment.
      *
@@ -293,6 +284,15 @@ public final class ASHelper {
     public static <T> T getMSCService(final ServiceName serviceName, final Class<T> clazz) {
         ServiceController<T> service = (ServiceController<T>)WSServices.getContainerRegistry().getService(serviceName);
         return service != null ? service.getValue() : null;
+    }
+
+    public static WSRefRegistry getWSRefRegistry(final DeploymentUnit unit) {
+        WSRefRegistry refRegistry = unit.getAttachment(WSAttachmentKeys.WS_REFREGISTRY);
+        if (refRegistry == null) {
+            refRegistry = WSRefRegistry.newInstance();
+            unit.putAttachment(WSAttachmentKeys.WS_REFREGISTRY, refRegistry);
+        }
+        return refRegistry;
     }
 
 }

@@ -83,6 +83,7 @@ public class DistributedCacheResourceDefinition extends SharedCacheResourceDefin
                     .setAlternatives(ModelKeys.SEGMENTS)
                     .build();
 
+    @SuppressWarnings("deprecation")
     static final SimpleAttributeDefinition SEGMENTS =
             new SimpleAttributeDefinitionBuilder(ModelKeys.SEGMENTS, ModelType.INT, true)
                     .setXmlName(Attribute.SEGMENTS.getLocalName())

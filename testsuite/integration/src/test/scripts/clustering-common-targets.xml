@@ -24,6 +24,48 @@
 <project>
 
     <!--
+        Change node IP addresses and mcast addresses.
+        Attribute node can be used to provide defaults for node parameters; attribute mcast can be used
+        to provide default for
+    -->
+    <macrodef name="ts.config-as.ip-with-multicast-longform" description="Changes the IP *and* multicast addresses of a node configuration">
+
+        <attribute name="name" default="wildfly"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <attribute name="managementIPAddress"/>
+        <attribute name="publicIPAddress"/>
+        <attribute name="udpMcastAddress"/>
+        <attribute name="diagnosticsMcastAddress"/>
+        <attribute name="mpingMcastAddress"/>
+        <attribute name="modclusterMcastAddress"/>
+
+        <sequential>
+            <echo message="Changing IP and mcast addresses for config @{name}:"/>
+            <echo>  managementIPAddress: @{managementIPAddress}</echo>
+            <echo>  publicIPAddress: @{publicIPAddress}</echo>
+            <echo>  udpMcastAddress: @{udpMcastAddress}</echo>
+            <echo>  diagnosticsMcastAddress: @{diagnosticsMcastAddress}</echo>
+            <echo>  mpingMcastAddress: @{mpingMcastAddress}</echo>
+            <echo>  modclusterMcastAddress: @{modclusterMcastAddress}</echo>
+
+            <execute-xslt-transform transform="changeIPAddresses.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+                <transform-params>
+                    <param name="managementIPAddress" expression="@{managementIPAddress}"/>
+                    <param name="publicIPAddress"     expression="@{publicIPAddress}"/>
+
+                    <param name="udpMcastAddress"         expression="@{udpMcastAddress}"/>
+                    <param name="diagnosticsMcastAddress" expression="@{diagnosticsMcastAddress}"/>
+                    <param name="mpingMcastAddress"       expression="@{mpingMcastAddress}"/>
+                    <param name="modclusterMcastAddress"  expression="@{modclusterMcastAddress}"/>
+                </transform-params>
+            </execute-xslt-transform>
+
+        </sequential>
+    </macrodef>
+
+    <!--
         Change default transport stack in clustering server profiles.
     -->
     <macrodef name="ts.config-as.change-transport-stack" description="Change default transport stack in clustering server profiles.">
@@ -185,7 +227,7 @@
     </macrodef>
 
     <!--
-        Add a relay protocol layer to a stack in the JGroups subsystem.
+        Add a relay protocol layer and a child remote site to a stack in the JGroups subsystem.
     -->
     <macrodef name="ts.config-as.add-xsite-relay" description="Add a relay layer to a stack in the JGroups subsystem">
 
@@ -206,6 +248,35 @@
                 <transform-params>
                     <param name="stack" expression="@{stack}"/>
                     <param name="relay.site" expression="@{relay.site}"/>
+                    <param name="remote-site.site" expression="@{remote-site.site}"/>
+                    <param name="remote-site.stack" expression="@{remote-site.stack}"/>
+                    <param name="remote-site.cluster" expression="@{remote-site.cluster}"/>
+                </transform-params>
+            </execute-xslt-transform>
+
+        </sequential>
+    </macrodef>
+
+    <!--
+        Add a remote site to an existing relay protocol layer for a stack in the JGroups subsystem.
+    -->
+    <macrodef name="ts.config-as.add-xsite-remote-site" description="Add a remote-site to a stack in the JGroups subsystem">
+
+        <attribute name="name" default="wildfly"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <attribute name="stack" default="udp"/>
+        <attribute name="remote-site.site" default="siteB"/>
+        <attribute name="remote-site.stack" default="tcp"/>
+        <attribute name="remote-site.cluster" default="bridge"/>
+
+        <sequential>
+            <echo message="Adding relay layer to stack @{stack} in JGroups subsystem for config @{name}"/>
+
+            <execute-xslt-transform transform="addXsiteRemoteSite.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+                <transform-params>
+                    <param name="stack" expression="@{stack}"/>
                     <param name="remote-site.site" expression="@{remote-site.site}"/>
                     <param name="remote-site.stack" expression="@{remote-site.stack}"/>
                     <param name="remote-site.cluster" expression="@{remote-site.cluster}"/>
@@ -246,6 +317,72 @@
                     <param name="backup.strategy" expression="@{backup.strategy}"/>
                     <param name="backup.replication-timeout" expression="@{backup.replication-timeout}"/>
                     <param name="backup.enabled" expression="@{backup.enabled}"/>
+                </transform-params>
+            </execute-xslt-transform>
+        </sequential>
+    </macrodef>
+
+    <!--
+        Add a backups element to a cache in the Infinispan subsystem.
+    -->
+    <macrodef name="ts.config-as.add-xsite-backups" description="Add a backup element to a cache in the Infinispan subsystem">
+
+        <attribute name="name" default="wildfly"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <attribute name="container" default="web"/>
+        <attribute name="cache-type" default="replicated-cache"/>
+        <attribute name="cache" default="repl"/>
+        <attribute name="backup.site" default="siteB"/>
+        <attribute name="backup.failure-policy" default="WARN"/>
+        <attribute name="backup.strategy" default="SYNC"/>
+        <attribute name="backup.replication-timeout" default="10000"/>
+        <attribute name="backup.enabled" default="true"/>
+
+        <sequential>
+            <echo message="Adding backups element to cache @{cache} in container @{container} in Infinispan subsystem for config @{name}"/>
+
+            <execute-xslt-transform transform="addXsiteBackups.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+                <transform-params>
+                    <param name="container" expression="@{container}"/>
+                    <param name="cache-type" expression="@{cache-type}"/>
+                    <param name="cache" expression="@{cache}"/>
+                    <param name="backup.site" expression="@{backup.site}"/>
+                    <param name="backup.failure-policy" expression="@{backup.failure-policy}"/>
+                    <param name="backup.strategy" expression="@{backup.strategy}"/>
+                    <param name="backup.replication-timeout" expression="@{backup.replication-timeout}"/>
+                    <param name="backup.enabled" expression="@{backup.enabled}"/>
+                </transform-params>
+            </execute-xslt-transform>
+        </sequential>
+    </macrodef>
+
+    <!--
+        Add a backup-for element to a cache in the Infinispan subsystem.
+    -->
+    <macrodef name="ts.config-as.add-xsite-backup-for" description="Add a backup-for element to a cache in the Infinispan subsystem">
+
+        <attribute name="name" default="wildfly"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <attribute name="container" default="web"/>
+        <attribute name="cache-type" default="replicated-cache"/>
+        <attribute name="cache" default="repl"/>
+        <attribute name="remote-site" default="LON"/>
+        <attribute name="remote-cache" default="repl"/>
+
+        <sequential>
+            <echo message="Adding backup-for element to cache @{cache} in container @{container} in Infinispan subsystem for config @{name}"/>
+
+            <execute-xslt-transform transform="addXsiteBackupFor.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+                <transform-params>
+                    <param name="container" expression="@{container}"/>
+                    <param name="cache-type" expression="@{cache-type}"/>
+                    <param name="cache" expression="@{cache}"/>
+                    <param name="remote-site" expression="@{remote-site}"/>
+                    <param name="remote-cache" expression="@{remote-cache}"/>
                 </transform-params>
             </execute-xslt-transform>
         </sequential>

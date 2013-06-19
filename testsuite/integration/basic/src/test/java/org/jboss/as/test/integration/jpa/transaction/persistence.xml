@@ -30,4 +30,12 @@
 			<property name="hibernate.show_sql" value="true" />
 		</properties>
 	</persistence-unit>
+    <persistence-unit name="unsynchronized">
+   		<description>Persistence Unit.</description>
+   		<jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+   		<properties>
+   			<property name="hibernate.hbm2ddl.auto" value="create-drop" />
+   			<property name="hibernate.show_sql" value="true" />
+   		</properties>
+   	</persistence-unit>
 </persistence>

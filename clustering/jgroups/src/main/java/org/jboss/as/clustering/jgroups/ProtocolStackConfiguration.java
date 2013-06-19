@@ -44,4 +44,6 @@ public interface ProtocolStackConfiguration {
     List<ProtocolConfiguration> getProtocols();
 
     ServerEnvironment getEnvironment();
+
+    RelayConfiguration getRelay();
 }

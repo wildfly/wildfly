@@ -25,7 +25,7 @@ package org.wildfly.extension.undertow;
 import java.net.InetSocketAddress;
 
 import io.undertow.server.HttpHandler;
-import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
+
 import org.jboss.jandex.ClassInfo;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -33,7 +33,6 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-import org.wildfly.extension.undertow.session.ClusteredSession;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
@@ -57,7 +56,6 @@ public interface UndertowLogger extends BasicLogger {
      * A root logger with the category of the package name.
      */
     UndertowLogger ROOT_LOGGER = Logger.getMessageLogger(UndertowLogger.class, UndertowLogger.class.getPackage().getName());
-    UndertowLogger WEB_SESSION_LOGGER = Logger.getMessageLogger(UndertowLogger.class, UndertowLogger.class.getPackage().getName() + ".sessions");
 
     ////////////////////////////////////////////////////////////
     //18200-18226 are copied across from the old web subsystem
@@ -171,54 +169,6 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 17506, value = "Undertow %s stopping")
     void serverStopping(String version);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 17507, value = "Failed to queue session replication for session %s")
-    void failedQueueingSessionReplication(ClusteredSession<? extends OutgoingDistributableSessionData> session, @Cause Exception e);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 17508, value = "Exception processing sessions")
-    void exceptionProcessingSessions(@Cause Exception e);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 17509, value = "Failed to store session %s")
-    void failedToStoreSession(String realId, @Cause Exception e);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 17510, value = "Failed to replicate session %s")
-    void failedToReplicateSession(String idInternal, @Cause Exception e);
-
-    @LogMessage(level = WARN)
-    @Message(id = 17511, value = "Failed to passivate session %s")
-    void errorPassivatingSession(String idInternal, @Cause Throwable t);
-
-    @LogMessage(level = WARN)
-    @Message(id = 17512, value = "Received notification for inactive session %s")
-    void notificationForInactiveSession(String realId);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 17513, value = "Failed to load passivated session %s")
-    void failToPassivateLoad(String realId, @Cause Exception e);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 17514, value = "Brute force cleanup failed for session %s")
-    void failToBruteForceCleanup(String realId, @Cause Exception e);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 17515, value = "Problem running expiration passivation")
-    void processExpirationPassivationException(@Cause Exception ex);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 17516, value = "Failed to passivate %s %s")
-    void failToPassivate(String s, String realId, @Cause Exception e);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 17517, value = "Failed to rollback transaction")
-    void exceptionRollingBackTransaction(@Cause RuntimeException exception);
-
-    @LogMessage(level = WARN)
-    @Message(id = 17518, value = "Performing brute force cleanup on %s due to %s")
-    void bruteForceCleanup(String realId, String localizedMessage);
-
     /**
      * Creates an exception indicating the class, represented by the {@code className} parameter, cannot be accessed.
      *
@@ -264,4 +214,8 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 17528, value="registering handler %s under path '%s'")
     void registeringHandler(HttpHandler value, String locationPath);
+
+    @LogMessage(level = WARN)
+    @Message(id = 17529, value = "Could not resolve name in absolute ordering: %s")
+    void invalidAbsoluteOrdering(String name);
 }

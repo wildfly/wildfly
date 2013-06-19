@@ -58,10 +58,11 @@ public class ExportNativeConfiguration extends AbstractRuntimeOnlyHandler {
         ServiceRegistry registry = context.getServiceRegistry(false);
         ServiceName serviceName = ChannelFactoryService.getServiceName(stackName);
         try {
-            ServiceController<?> controller = registry.getRequiredService(serviceName);
+            ServiceController<ChannelFactory> controller = ServiceContainerHelper.getService(registry, serviceName);
+            ServiceController.Mode mode = controller.getMode();
             controller.setMode(ServiceController.Mode.ACTIVE);
             try {
-                ChannelFactory factory = ServiceContainerHelper.getValue(controller, ChannelFactory.class);
+                ChannelFactory factory = controller.awaitValue();
                 // Create a temporary channel, but don't connect it
                 Channel channel = factory.createChannel(UUID.randomUUID().toString());
                 try {
@@ -76,7 +77,7 @@ public class ExportNativeConfiguration extends AbstractRuntimeOnlyHandler {
                     channel.close();
                 }
             } finally {
-                controller.setMode(ServiceController.Mode.ON_DEMAND);
+                controller.setMode(mode);
             }
         } catch (Exception e) {
             throw new OperationFailedException(e.getLocalizedMessage(), e);

@@ -98,5 +98,6 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
         // child resources
         resourceRegistration.registerSubModel(TransportResourceDefinition.INSTANCE);
         resourceRegistration.registerSubModel(ProtocolResourceDefinition.INSTANCE);
+        resourceRegistration.registerSubModel(new RelayResource());
     }
 }

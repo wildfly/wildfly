@@ -314,6 +314,7 @@ public final class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<
 
     }
 
+    @SuppressWarnings("deprecation")
     private void parseDistributedCache(XMLExtendedStreamReader reader, ModelNode containerAddress, List<ModelNode> operations) throws XMLStreamException {
 
         // ModelNode for the cache add operation

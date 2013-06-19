@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<faces-config id="weld" version="2.0"
+              xmlns="http://java.sun.com/xml/ns/javaee"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd">
+
+   <factory>
+      <application-factory>org.jboss.as.jsf.injection.weld.WeldApplicationFactory</application-factory>
+   </factory>
+
+   <application>
+      <view-handler>org.jboss.as.jsf.injection.weld.WildFlyConversationAwareViewHandler</view-handler>
+   </application>
+
+</faces-config>

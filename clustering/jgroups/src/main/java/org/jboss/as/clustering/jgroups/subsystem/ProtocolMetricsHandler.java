@@ -96,12 +96,6 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
         }
     }
 
-    private final String protocolName;
-
-    public ProtocolMetricsHandler(String protocolName) {
-        this.protocolName = protocolName;
-    }
-
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation)
             throws OperationFailedException {
@@ -282,11 +276,11 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
         return null;
     }
 
-    private static Field getField(Class clazz, String fieldName) throws NoSuchFieldException {
+    private static Field getField(Class<?> clazz, String fieldName) throws NoSuchFieldException {
         try {
             return clazz.getDeclaredField(fieldName);
         } catch (NoSuchFieldException e) {
-            Class superClass = clazz.getSuperclass();
+            Class<?> superClass = clazz.getSuperclass();
             if (superClass == null) {
                 throw e;
             } else {

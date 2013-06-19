@@ -289,6 +289,7 @@ public enum Phase {
     public static final int PARSE_EJB_TIMERSERVICE_BINDING              = 0x2E01;
     public static final int PARSE_EJB_DEFAULT_SECURITY_DOMAIN           = 0x2E02;
     public static final int PARSE_PERSISTENCE_UNIT                      = 0x2F00;
+    public static final int PARSE_PERMISSIONS                           = 0x3100;
     public static final int PARSE_LIFECYCLE_ANNOTATION                  = 0x3200;
     public static final int PARSE_PASSIVATION_ANNOTATION                = 0x3250;
     public static final int PARSE_AROUNDINVOKE_ANNOTATION               = 0x3300;

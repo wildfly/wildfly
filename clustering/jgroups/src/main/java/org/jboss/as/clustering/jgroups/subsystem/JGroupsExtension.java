@@ -131,34 +131,57 @@ public class JGroupsExtension implements Extension {
      * @param subsystem the subsystems registration
      */
     private static void registerTransformers(final SubsystemRegistration subsystem) {
+        registerTransformers_1_1_0(subsystem);
+        registerTransformers_1_2_0(subsystem);
+    }
+
+    private static void registerTransformers_1_2_0(final SubsystemRegistration subsystem) {
+        final ModelVersion version = ModelVersion.create(1, 2, 0);
+
+        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version, ResourceTransformer.DEFAULT);
+        final TransformersSubRegistration stack = registration.registerSubResource(StackResourceDefinition.STACK_PATH);
+
+        registerRelayTransformers(stack);
+    }
+
+    private static void registerTransformers_1_1_0(final SubsystemRegistration subsystem) {
         // Transformations to the 1.1.0 Model
         // - we need to reject expressions for transport (and similarly for protocol properties) for these operations
         //   transport=TRANSPORT/property=<name>:add(value=<value>)
         //   transport=TRANSPORT/property=<name>:write-attribute(name=value, value=<value>)
         //   transport=TRANSPORT:add(...,properties=<list of properties>)
 
-        final ModelVersion version110 = ModelVersion.create(1, 1, 0);
-        final RejectExpressionValuesTransformer TRANSFORMER = new RejectExpressionValuesTransformer(PropertyResourceDefinition.VALUE,
+        final ModelVersion version = ModelVersion.create(1, 1, 0);
+        final RejectExpressionValuesTransformer transformer = new RejectExpressionValuesTransformer(PropertyResourceDefinition.VALUE,
                 TransportResourceDefinition.PROPERTIES, ProtocolResourceDefinition.PROPERTIES, TransportResourceDefinition.SHARED);
+        final ResourceTransformer resourceTransformer = transformer;
 
-        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version110, ResourceTransformer.DEFAULT);
+        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version, ResourceTransformer.DEFAULT);
         final TransformersSubRegistration stack = registration.registerSubResource(StackResourceDefinition.STACK_PATH);
 
         // reject expressions for transport properties, for the add and write-attribute op
-        final TransformersSubRegistration transport = stack.registerSubResource(TransportResourceDefinition.TRANSPORT_PATH, (ResourceTransformer)TRANSFORMER) ;
-        transport.registerOperationTransformer(ADD, TRANSFORMER);
-        transport.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, TRANSFORMER.getWriteAttributeTransformer());
+        final TransformersSubRegistration transport = stack.registerSubResource(TransportResourceDefinition.TRANSPORT_PATH, resourceTransformer);
+        transport.registerOperationTransformer(ADD, transformer);
+        transport.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, transformer.getWriteAttributeTransformer());
         final TransformersSubRegistration transport_property = transport.registerSubResource(PropertyResourceDefinition.PROPERTY_PATH) ;
-        transport_property.registerOperationTransformer(ADD, TRANSFORMER);
-        transport_property.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, TRANSFORMER.getWriteAttributeTransformer());
+        transport_property.registerOperationTransformer(ADD, transformer);
+        transport_property.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, transformer.getWriteAttributeTransformer());
 
         // reject expressions for transport properties, for the add and write-attribute op
-        final TransformersSubRegistration protocol = stack.registerSubResource(ProtocolResourceDefinition.PROTOCOL_PATH, (ResourceTransformer)TRANSFORMER) ;
-        protocol.registerOperationTransformer(ADD, TRANSFORMER);
-        final TransformersSubRegistration protocol_property = protocol.registerSubResource(PropertyResourceDefinition.PROPERTY_PATH) ;
-        protocol_property.registerOperationTransformer(ADD, TRANSFORMER);
-        protocol_property.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, TRANSFORMER.getWriteAttributeTransformer());
+        final TransformersSubRegistration protocol = stack.registerSubResource(ProtocolResourceDefinition.PROTOCOL_PATH, resourceTransformer);
+        protocol.registerOperationTransformer(ADD, transformer);
+        final TransformersSubRegistration protocol_property = protocol.registerSubResource(PropertyResourceDefinition.PROPERTY_PATH);
+        protocol_property.registerOperationTransformer(ADD, transformer);
+        protocol_property.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, transformer.getWriteAttributeTransformer());
 
+        registerRelayTransformers(stack);
     }
 
+    private static void registerRelayTransformers(final TransformersSubRegistration stack) {
+        final TransformersSubRegistration relay = stack.registerSubResource(RelayResource.PATH, true);
+        relay.discardOperations(ADD, WRITE_ATTRIBUTE_OPERATION);
+
+        final TransformersSubRegistration remoteSite = relay.registerSubResource(RemoteSiteResource.PATH, true);
+        remoteSite.discardOperations(ADD, WRITE_ATTRIBUTE_OPERATION);
+    }
 }

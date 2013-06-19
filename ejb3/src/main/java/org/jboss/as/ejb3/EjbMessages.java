@@ -53,6 +53,7 @@ import javax.resource.spi.UnavailableException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.transaction.RollbackException;
 import javax.transaction.Transaction;
 import javax.transaction.xa.Xid;
 import javax.xml.stream.Location;
@@ -2474,6 +2475,16 @@ public interface EjbMessages {
      */
     @Message(id = 14584, value = "The timer '%s' is already active.")
     IllegalStateException timerIsActive(String timerId);
+
+    @Message(id = 14585, value = "Transaction '%s' was already rolled back")
+    RollbackException transactionAlreadyRolledBack(Transaction tx);
+
+    @Message(id = 14586, value = "Transaction '%s' is in unexpected state (%s)")
+    EJBException transactionInUnexpectedState(Transaction tx, String txStatus);
+
+    @Message(id = 14587, value = "Timerservice API is not allowed on stateful session bean %s")
+    String timerServiceMethodNotAllowedForSFSB(final String ejbComponent);
+
 
     // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is

@@ -293,6 +293,35 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             CacheResourceDefinition.INDEXING_PROPERTIES.marshallAsElement(cache,writer);
             writer.writeEndElement();
         }
+
+        if (cache.get(ModelKeys.BACKUP).isDefined()) {
+            writer.writeStartElement(Element.BACKUPS.getLocalName());
+            for (Property property: cache.get(ModelKeys.BACKUP).asPropertyList()) {
+                writer.writeStartElement(Element.BACKUP.getLocalName());
+                writer.writeAttribute(Attribute.SITE.getLocalName(), property.getName());
+                ModelNode backup = property.getValue();
+                BackupSiteResource.FAILURE_POLICY.marshallAsAttribute(backup, writer);
+                BackupSiteResource.STRATEGY.marshallAsAttribute(backup, writer);
+                BackupSiteResource.REPLICATION_TIMEOUT.marshallAsAttribute(backup, writer);
+                BackupSiteResource.ENABLED.marshallAsAttribute(backup, writer);
+                if (backup.hasDefined(ModelKeys.TAKE_BACKUP_OFFLINE_AFTER_FAILURES) || backup.hasDefined(ModelKeys.TAKE_BACKUP_OFFLINE_MIN_WAIT)) {
+                    writer.writeStartElement(Element.TAKE_OFFLINE.getLocalName());
+                    BackupSiteResource.TAKE_OFFLINE_AFTER_FAILURES.marshallAsAttribute(backup, writer);
+                    BackupSiteResource.TAKE_OFFLINE_MIN_WAIT.marshallAsAttribute(backup, writer);
+                    writer.writeEndElement();
+                }
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
+
+        if (cache.get(ModelKeys.BACKUP_FOR, ModelKeys.BACKUP_FOR_NAME).isDefined()) {
+            ModelNode backupFor = cache.get(ModelKeys.BACKUP_FOR, ModelKeys.BACKUP_FOR_NAME);
+            writer.writeStartElement(Element.BACKUP_FOR.getLocalName());
+            this.writeOptional(writer, Attribute.REMOTE_CACHE, backupFor, ModelKeys.REMOTE_CACHE);
+            this.writeOptional(writer, Attribute.REMOTE_SITE, backupFor, ModelKeys.REMOTE_SITE);
+            writer.writeEndElement();
+        }
     }
 
     private void writeAliases(XMLExtendedStreamWriter writer, Attribute attribute, ModelNode container, String key) throws XMLStreamException {

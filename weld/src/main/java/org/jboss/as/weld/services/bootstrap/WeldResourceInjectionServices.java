@@ -21,6 +21,8 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
+import static org.jboss.as.weld.util.ResourceInjectionUtilities.getResourceAnnotated;
+
 import java.lang.reflect.Method;
 
 import javax.annotation.Resource;
@@ -82,7 +84,7 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
     }
 
     protected String getResourceName(InjectionPoint injectionPoint) {
-        Resource resource = injectionPoint.getAnnotated().getAnnotation(Resource.class);
+        Resource resource = getResourceAnnotated(injectionPoint).getAnnotation(Resource.class);
         String mappedName = resource.mappedName();
         String lookup = resource.lookup();
         if (!lookup.isEmpty()) {

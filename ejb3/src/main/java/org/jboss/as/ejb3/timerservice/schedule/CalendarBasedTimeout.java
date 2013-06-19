@@ -43,6 +43,7 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
  * CalendarBasedTimeout
  *
  * @author Jaikiran Pai
+ * @author "<a href=\"mailto:wfink@redhat.com\">Wolf-Dieter Fink</a>"
  * @version $Revision: $
  */
 public class CalendarBasedTimeout {
@@ -622,7 +623,12 @@ public class CalendarBasedTimeout {
                 nextCal = this.advanceTillMonthHasDate(nextCal, nextDayOfMonth);
             }
         } else if (nextDayOfMonth < currentDayOfMonth) {
+            // since the next day is before the current day we need to shift to the next month
             nextCal.add(Calendar.MONTH, 1);
+            // also we need to reset the time
+            nextCal.set(Calendar.SECOND, this.second.getFirst());
+            nextCal.set(Calendar.MINUTE, this.minute.getFirst());
+            nextCal.set(Calendar.HOUR_OF_DAY, this.hour.getFirst());
             nextCal = this.computeNextMonth(nextCal);
             if (nextCal == null) {
                 return null;

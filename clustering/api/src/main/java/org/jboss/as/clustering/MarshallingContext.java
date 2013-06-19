@@ -26,6 +26,7 @@ import java.io.IOException;
 
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
+import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.Unmarshaller;
 
@@ -35,6 +36,10 @@ import org.jboss.marshalling.Unmarshaller;
 public class MarshallingContext {
     private final MarshallerFactory factory;
     private final VersionedMarshallingConfiguration configuration;
+
+    public MarshallingContext(VersionedMarshallingConfiguration configuration) {
+        this(Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader()), configuration);
+    }
 
     public MarshallingContext(MarshallerFactory factory, VersionedMarshallingConfiguration configuration) {
         this.factory = factory;

@@ -21,6 +21,12 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
@@ -32,6 +38,7 @@ import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.TimerServiceRegistry;
+import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
 import org.jboss.as.ejb3.timerservice.TimedObjectInvokerImpl;
@@ -48,12 +55,6 @@ import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.concurrent.ExecutorService;
 
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
@@ -160,7 +161,13 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                         public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                             final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) description;
                             final ServiceName nonFunctionalTimerServiceName = NonFunctionalTimerService.serviceNameFor(ejbComponentDescription);
-                            final NonFunctionalTimerService nonFunctionalTimerService = new NonFunctionalTimerService(EjbMessages.MESSAGES.ejbHasNoTimerMethods(), timerServiceRegistry);
+                            final NonFunctionalTimerService nonFunctionalTimerService;
+                            if (ejbComponentDescription instanceof StatefulComponentDescription) {
+                                // for stateful beans, use a different error message that gets thrown from the NonFunctionalTimerService
+                                nonFunctionalTimerService = new NonFunctionalTimerService(EjbMessages.MESSAGES.timerServiceMethodNotAllowedForSFSB(ejbComponentDescription.getComponentName()), timerServiceRegistry);
+                            } else {
+                                nonFunctionalTimerService = new NonFunctionalTimerService(EjbMessages.MESSAGES.ejbHasNoTimerMethods(), timerServiceRegistry);
+                            }
                             // add the non-functional timer service as a MSC service
                             context.getServiceTarget().addService(nonFunctionalTimerServiceName, nonFunctionalTimerService).install();
                             // set the timer service in the EJB component

@@ -28,16 +28,19 @@ import org.apache.catalina.authenticator.SingleSignOn;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.valves.AccessLogValve;
 import org.apache.catalina.valves.ExtendedAccessLogValve;
-import org.jboss.as.clustering.web.sso.SSOClusterManager;
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.web.sso.ClusteredSingleSignOn;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.web.rewrite.RewriteValve;
+import org.wildfly.clustering.web.catalina.session.ThreadLocalRequestValve;
+import org.wildfly.clustering.web.catalina.sso.LocalSSOContextFactory;
+import org.wildfly.clustering.web.catalina.sso.SingleSignOnFacade;
+import org.wildfly.clustering.web.sso.SSOManagerFactory;
 
 /**
  * Service creating and registering a virtual host.
@@ -57,7 +60,7 @@ public class WebVirtualHostService implements Service<VirtualHost> {
 
     private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
     private final InjectedValue<WebServer> webServer = new InjectedValue<WebServer>();
-    private final InjectedValue<SSOClusterManager> ssoManager = new InjectedValue<SSOClusterManager>();
+    private final InjectedValue<SSOManagerFactory> ssoManagerFactory = new InjectedValue<SSOManagerFactory>();
 
     private VirtualHost host;
 
@@ -93,6 +96,7 @@ public class WebVirtualHostService implements Service<VirtualHost> {
         if (defaultWebModule != null) {
             host.setDefaultWebapp(defaultWebModule);
         }
+        host.addValve(new ThreadLocalRequestValve());
         try {
             final WebServer server = webServer.getValue();
             server.addHost(host);
@@ -157,8 +161,8 @@ public class WebVirtualHostService implements Service<VirtualHost> {
         return webServer;
     }
 
-    public InjectedValue<SSOClusterManager> getSSOClusterManager() {
-        return ssoManager;
+    public Injector<SSOManagerFactory> getSSOManagerFactory() {
+        return this.ssoManagerFactory;
     }
 
     static Valve createAccessLogValve(final String logDirectory, final ModelNode element) {
@@ -228,10 +232,10 @@ public class WebVirtualHostService implements Service<VirtualHost> {
     }
 
     Valve createSsoValve(final Container container, final ModelNode element) throws StartException {
-        final SingleSignOn ssoValve = element.hasDefined(Constants.CACHE_CONTAINER) ? new ClusteredSingleSignOn(this.ssoManager.getValue()) : new SingleSignOn();
+        SSOManagerFactory factory = this.ssoManagerFactory.getOptionalValue();
+        final SingleSignOn ssoValve = (factory != null) ? new SingleSignOnFacade(factory.createSSOManager(new LocalSSOContextFactory())) : new SingleSignOn();
         if (element.hasDefined(Constants.DOMAIN)) ssoValve.setCookieDomain(element.get(Constants.DOMAIN).asString());
         if (element.hasDefined(Constants.REAUTHENTICATE)) ssoValve.setRequireReauthentication(element.get(Constants.REAUTHENTICATE).asBoolean());
         return ssoValve;
     }
-
 }

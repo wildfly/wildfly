@@ -156,6 +156,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-security-manager</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-security-manager</artifactId>
         </dependency>
@@ -293,6 +298,11 @@
                 <dependency>
                     <groupId>com.sun.xml.bind</groupId>
                     <artifactId>jaxb-xjc</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>com.sun.xml.fastinfoset</groupId>
+                    <artifactId>FastInfoset</artifactId>
                 </dependency>
 
                 <dependency>
@@ -867,6 +877,11 @@
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-annotations</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-clustering-api</artifactId>
                 </dependency>
 
@@ -912,6 +927,11 @@
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-web-catalina</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-clustering-web-infinispan</artifactId>
                 </dependency>
 
@@ -921,8 +941,13 @@
                 </dependency>
 
                 <dependency>
-                   <groupId>org.wildfly</groupId>
-                   <artifactId>wildfly-cmp</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-web-undertow</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-cmp</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1137,6 +1162,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-security-manager</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.wildfly.security</groupId>
                     <artifactId>wildfly-security-manager</artifactId>
                 </dependency>
@@ -1187,6 +1217,21 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-rts</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.narayana.rts</groupId>
+                    <artifactId>restat-api</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.narayana.rts</groupId>
+                    <artifactId>restat-integration</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.jboss.narayana.txframework</groupId>
                     <artifactId>txframework</artifactId>
                 </dependency>
@@ -1218,7 +1263,7 @@
 
                 <dependency>
                     <groupId>org.jipijapa</groupId>
-                    <artifactId>hibernate3</artifactId>
+                    <artifactId>jipijapa-hibernate3</artifactId>
                     <exclusions>
                         <exclusion>
                             <groupId>org.hibernate</groupId>
@@ -1229,22 +1274,27 @@
 
                 <dependency>
                     <groupId>org.jipijapa</groupId>
-                    <artifactId>hibernate4-3</artifactId>
+                    <artifactId>jipijapa-hibernate4-3</artifactId>
                 </dependency>
 
                 <dependency>
                     <groupId>org.jipijapa</groupId>
-                    <artifactId>openjpa</artifactId>
+                    <artifactId>jipijapa-hibernate4-1</artifactId>
                 </dependency>
 
                 <dependency>
                     <groupId>org.jipijapa</groupId>
-                    <artifactId>spi</artifactId>
+                    <artifactId>jipijapa-eclipselink</artifactId>
                 </dependency>
 
                 <dependency>
                     <groupId>org.jipijapa</groupId>
-                    <artifactId>core</artifactId>
+                    <artifactId>jipijapa-openjpa</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jipijapa</groupId>
+                    <artifactId>jipijapa-spi</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1401,13 +1451,13 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.osgi.repository</groupId>
-                    <artifactId>jbosgi-repository-api</artifactId>
+                    <groupId>org.jboss.osgi.provision</groupId>
+                    <artifactId>jbosgi-provision-core</artifactId>
                 </dependency>
-
+                
                 <dependency>
                     <groupId>org.jboss.osgi.repository</groupId>
-                    <artifactId>jbosgi-repository-core</artifactId>
+                    <artifactId>jbosgi-repository-api</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1652,7 +1702,7 @@
 
                 <dependency>
                     <groupId>org.jboss.spec.javax.transaction</groupId>
-                    <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    <artifactId>jboss-transaction-api_1.2_spec</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1737,13 +1787,18 @@
 
                 <dependency>
                     <groupId>org.jboss.weld</groupId>
-                    <artifactId>weld-core</artifactId>
+                    <artifactId>weld-core-impl</artifactId>
                     <exclusions>
                         <exclusion>
                             <groupId>org.jboss.spec.javax.interceptor</groupId>
                             <artifactId>jboss-interceptors-api_1.1_spec</artifactId>
                         </exclusion>
                     </exclusions>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.weld</groupId>
+                    <artifactId>weld-core-jsf</artifactId>
                 </dependency>
 
                 <dependency>
@@ -2111,7 +2166,7 @@
                                         <include>org.jboss.spec.javax.servlet:jboss-servlet-api_3.1_spec</include>
                                         <include>org.jboss.spec.javax.servlet.jsp:jboss-jsp-api_2.2_spec</include>
                                         <include>org.jboss.spec.javax.servlet.jstl:jboss-jstl-api_1.2_spec</include>
-                                        <include>org.jboss.spec.javax.transaction:jboss-transaction-api_1.1_spec</include>
+                                        <include>org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec</include>
                                         <include>org.jboss.spec.javax.xml.bind:jboss-jaxb-api_2.2_spec</include>
                                         <include>org.jboss.spec.javax.xml.rpc:jboss-jaxrpc-api_1.1_spec</include>
                                         <include>org.jboss.spec.javax.xml.soap:jboss-saaj-api_1.3_spec</include>
@@ -2233,8 +2288,10 @@
                                         <exclude>org.wildfly:wildfly-clustering-registry</exclude>
                                         <exclude>org.wildfly:wildfly-clustering-service</exclude>
                                         <exclude>org.wildfly:wildfly-clustering-singleton</exclude>
+                                        <exclude>org.wildfly:wildfly-clustering-web-catalina</exclude>
                                         <exclude>org.wildfly:wildfly-clustering-web-infinispan</exclude>
                                         <exclude>org.wildfly:wildfly-clustering-web-spi</exclude>
+                                        <exclude>org.wildfly:wildfly-clustering-web-undertow</exclude>
                                         <exclude>org.wildfly:wildfly-configadmin</exclude>
                                         <exclude>org.wildfly:wildfly-connector</exclude>
                                         <exclude>org.wildfly:wildfly-controller</exclude>
@@ -2252,10 +2309,12 @@
                                         <exclude>org.wildfly:wildfly-jdr</exclude>
                                         <exclude>org.wildfly:wildfly-jmx</exclude>
                                         <exclude>org.wildfly:wildfly-jpa</exclude>
-                                        <exclude>org.jipijapa:hibernate3</exclude>
-                                        <exclude>org.jipijapa:hibernate4-3</exclude>
-                                        <exclude>org.jipijapa:openjpa</exclude>
-                                        <exclude>org.jipijapa:spi</exclude>
+                                        <exclude>org.jipijapa:jipijapa-hibernate3</exclude>
+                                        <exclude>org.jipijapa:jipijapa-hibernate4-3</exclude>
+                                        <exclude>org.jipijapa:jipijapa-hibernate4-1</exclude>
+                                        <exclude>org.jipijapa:jipijapa-eclipselink</exclude>
+                                        <exclude>org.jipijapa:jipijapa-openjpa</exclude>
+                                        <exclude>org.jipijapa:jipijapa-spi</exclude>
                                         <exclude>org.wildfly:wildfly-jpa-util</exclude>
                                         <exclude>org.wildfly:wildfly-jsf</exclude>
                                         <exclude>org.wildfly:wildfly-jsf-injection</exclude>
@@ -2281,6 +2340,7 @@
                                         <exclude>org.wildfly:wildfly-remoting</exclude>
                                         <exclude>org.wildfly:wildfly-sar</exclude>
                                         <exclude>org.wildfly:wildfly-security</exclude>
+                                        <exclude>org.wildfly:wildfly-security-manager</exclude>
                                         <exclude>org.wildfly.security:wildfly-security-manager</exclude>
                                         <exclude>org.wildfly:wildfly-server</exclude>
                                         <exclude>org.wildfly:wildfly-system-jmx</exclude>
@@ -2326,7 +2386,6 @@
                                         <exclude>org.jboss.osgi.framework:jbosgi-framework-core</exclude>
                                         <exclude>org.jboss.osgi.metadata:jbosgi-metadata</exclude>
                                         <exclude>org.jboss.osgi.repository:jbosgi-repository-api</exclude>
-                                        <exclude>org.jboss.osgi.repository:jbosgi-repository-core</exclude>
                                         <exclude>org.jboss.osgi.resolver:jbosgi-resolver-api</exclude>
                                         <exclude>org.jboss.osgi.resolver:jbosgi-resolver-felix</exclude>
                                         <exclude>org.jboss.osgi.spi:jbosgi-spi</exclude>
@@ -2883,6 +2942,10 @@
                                             <packages>org.jboss.as.cli:org.jboss.as.cli.batch:org.jboss.as.cli.batch.impl:org.jboss.as.cli.gui:org.jboss.as.cli.gui.component:org.jboss.as.cli.gui.metacommand:org.jboss.as.cli.handlers:org.jboss.as.cli.handlers.batch:org.jboss.as.cli.handlers.ifelse:org.jboss.as.cli.handlers.jca:org.jboss.as.cli.handlers.jms:org.jboss.as.cli.handlers.module:org.jboss.as.cli.handlers.trycatch:org.jboss.as.cli.impl:org.jboss.as.cli.operation:org.jboss.as.cli.operation.impl:org.jboss.as.cli.parsing:org.jboss.as.cli.parsing.arguments:org.jboss.as.cli.parsing.command:org.jboss.as.cli.parsing.operation:org.jboss.as.cli.parsing.operation.header:org.jboss.as.cli.scriptsupport:org.jboss.as.cli.util</packages>
                                         </group>
                                         <group>
+                                            <title>Module org.wildfly.clustering.annotations</title>
+                                            <packages>org.jboss.as.clustering.annotation</packages>
+                                        </group>
+                                        <group>
                                             <title>Module org.wildfly.clustering.api</title>
                                             <packages>org.jboss.as.clustering:org.jboss.as.clustering.lock</packages>
                                         </group>
@@ -2919,20 +2982,28 @@
                                             <packages>org.jboss.as.clustering.singleton:org.jboss.as.clustering.singleton.election</packages>
                                         </group>
                                         <group>
+                                            <title>Module org.wildfly.clustering.web.catalina</title>
+                                            <packages>org.wildfly.clustering.web.catalina:org.wildfly.clustering.web.catalina.session:org.wildfly.clustering.web.catalina.sso</packages>
+                                        </group>
+                                        <group>
                                             <title>Module org.wildfly.clustering.web.infinispan</title>
-                                            <packages>org.jboss.as.clustering.web.infinispan:org.jboss.as.clustering.web.sso.infinispan</packages>
+                                            <packages>org.wildfly.clustering.web.infinispan:org.wildfly.clustering.web.infinispan.session:org.wildfly.clustering.web.infinispan.sso</packages>
                                         </group>
                                         <group>
                                             <title>Module org.wildfly.clustering.web.spi</title>
-                                            <packages>org.jboss.as.clustering.web:org.jboss.as.clustering.web.impl:org.jboss.as.clustering.web.sso</packages>
+                                            <packages>org.wildfly.clustering.web:org.wildfly.clustering.web.session:org.wildfly.clustering.web.sso</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.wildfly.configadmin</title>
-                                            <packages>org.jboss.as.configadmin:org.jboss.as.configadmin.parser:org.jboss.as.configadmin.service</packages>
+                                            <title>Module org.wildfly.clustering.web.undertow</title>
+                                            <packages>org.wildfly.clustering.web.undertow.session</packages>
                                         </group>
                                         <group>
                                             <title>Module org.wildfly.cmp</title>
                                             <packages>org.jboss.as.cmp:org.jboss.as.cmp.subsystem</packages>
+                                        </group>
+                                        <group>
+                                            <title>Module org.wildfly.configadmin</title>
+                                            <packages>org.jboss.as.configadmin:org.jboss.as.configadmin.parser:org.jboss.as.configadmin.service</packages>
                                         </group>
                                         <group>
                                             <title>Module org.wildfly.connector</title>
@@ -3093,6 +3164,10 @@
                                         <group>
                                             <title>Module org.wildfly.xts</title>
                                             <packages>org.jboss.as.xts</packages>
+                                        </group>
+                                        <group>
+                                            <title>Module org.wildfly.rts</title>
+                                            <packages>org.wildfly.extension.rts</packages>
                                         </group>
                                         <group>
                                             <title>Module org.jboss.classfilewriter</title>

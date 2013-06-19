@@ -24,6 +24,7 @@ package org.jboss.as.clustering.singleton;
 import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -72,7 +73,7 @@ public interface SingletonLogger {
     @Message(id = 10345, value = "Failed to reach quorum of %2$d for %1$s service. No singleton master will be elected.")
     void quorumNotReached(String service, int quorum);
 
-    @LogMessage(level = ERROR)
+    @LogMessage(level = WARN)
     @Message(id = 10346, value = "Just reached required quorum of %2$d for %1$s service. If this cluster loses another member, no node will be chosen to provide this service.")
     void quorumJustReached(String service, int quorum);
 }

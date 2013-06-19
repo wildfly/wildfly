@@ -47,6 +47,9 @@ import org.jgroups.JChannel;
 import org.jgroups.conf.ProtocolStackConfigurator;
 import org.jgroups.jmx.JmxConfigurator;
 import org.jgroups.protocols.TP;
+import org.jgroups.protocols.relay.RELAY2;
+import org.jgroups.protocols.relay.config.RelayConfig;
+import org.jgroups.stack.Configurator;
 import org.jgroups.stack.Protocol;
 import org.jgroups.util.SocketFactory;
 
@@ -74,7 +77,7 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
     }
 
     @Override
-    public Channel createChannel(String id) throws Exception {
+    public Channel createChannel(final String id) throws Exception {
         JChannel channel = new MuxChannel(this);
 
         // We need to synchronize on shared transport,
@@ -86,6 +89,47 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
             }
         } else {
             this.init(transport);
+        }
+
+        // Relay protocol is added to stack programmatically, not via ProtocolStackConfigurator
+        final RelayConfiguration relayConfig = this.configuration.getRelay();
+        if (relayConfig != null) {
+            final String localSite = relayConfig.getSiteName();
+            final List<RemoteSiteConfiguration> remoteSites = this.configuration.getRelay().getRemoteSites();
+            final List<String> sites = new ArrayList<String>(remoteSites.size() + 1);
+            sites.add(localSite);
+            // Collect bridges, eliminating duplicates
+            final Map<String, RelayConfig.BridgeConfig> bridges = new HashMap<String, RelayConfig.BridgeConfig>();
+            for (final RemoteSiteConfiguration remoteSite: remoteSites) {
+                final String siteName = remoteSite.getName();
+                sites.add(siteName);
+                final String cluster = remoteSite.getClusterName();
+                final String clusterName = (cluster != null) ? cluster : siteName;
+                final RelayConfig.BridgeConfig bridge = new RelayConfig.BridgeConfig(clusterName) {
+                    @Override
+                    public JChannel createChannel() throws Exception {
+                        return (JChannel) remoteSite.getChannelFactory().createChannel(id + "/" + clusterName);
+                    }
+                };
+                bridges.put(clusterName, bridge);
+            }
+            // Acquire consistent order of sites
+            Collections.sort(sites);
+            final RELAY2 relay = new RELAY2().site(localSite);
+            for (short i = 0; i < sites.size(); ++i) {
+                final String site = sites.get(i);
+                RelayConfig.SiteConfig siteConfig = new RelayConfig.SiteConfig(site, i);
+                relay.addSite(site, siteConfig);
+                if (site.equals(localSite)) {
+                    for (RelayConfig.BridgeConfig bridge: bridges.values()) {
+                        siteConfig.addBridge(bridge);
+                    }
+                }
+            }
+            Configurator.resolveAndAssignFields(relay, relayConfig.getProperties());
+            Configurator.resolveAndInvokePropertyMethods(relay, relayConfig.getProperties());
+            channel.getProtocolStack().addProtocol(relay);
+            relay.init();
         }
 
         channel.setName(this.configuration.getEnvironment().getNodeName() + "/" + id);
@@ -203,6 +247,14 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
             }
             configs.add(config);
         }
+/*
+        RelayConfiguration relay = this.configuration.getRelay();
+        if (relay != null) {
+            config = this.createProtocol(relay);
+            this.setProperty(relay, config, "site", relay.getSiteName());
+            configs.add(config);
+        }
+*/
         return configs;
     }
 

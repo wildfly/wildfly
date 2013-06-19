@@ -22,6 +22,8 @@
 
 package org.jboss.as.webservices.webserviceref;
 
+import javax.xml.ws.WebServiceRef;
+
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 
@@ -30,32 +32,40 @@ import org.jboss.jandex.AnnotationValue;
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class WSRefAnnotationWrapper {
+public final class WSRefAnnotationWrapper {
     private final String type;
     private final String name;
     private final String value;
     private final String wsdlLocation;
 
-    WSRefAnnotationWrapper(final AnnotationInstance annotation) {
+    public WSRefAnnotationWrapper(final AnnotationInstance annotation) {
         name = stringValueOrNull(annotation, "name");
         type = classValueOrNull(annotation, "type");
         value = classValueOrNull(annotation, "value");
         wsdlLocation = stringValueOrNull(annotation, "wsdlLocation");
     }
 
-    String name() {
+    public WSRefAnnotationWrapper(final WebServiceRef annotation) {
+        name = annotation.name().isEmpty() ? null : annotation.name();
+        type = annotation.type() == Object.class ? null : annotation.type().getName();
+        value = annotation.value().getName();
+        wsdlLocation = annotation.wsdlLocation().isEmpty() ? null : annotation.wsdlLocation();
+    }
+
+
+    public String name() {
         return name;
     }
 
-    String type() {
+    public String type() {
         return type;
     }
 
-    String value() {
+    public String value() {
         return value;
     }
 
-    String wsdlLocation() {
+    public String wsdlLocation() {
         return wsdlLocation;
     }
 

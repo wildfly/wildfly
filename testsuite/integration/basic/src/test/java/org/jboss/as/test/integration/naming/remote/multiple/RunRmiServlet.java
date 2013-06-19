@@ -15,6 +15,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jboss.as.network.NetworkUtils;
+
 @WebServlet(name = "RunRmiServlet", urlPatterns = {"/RunRmiServlet"})
 public class RunRmiServlet extends HttpServlet {
 	private List<Context> contexts = new ArrayList<Context>();
@@ -32,7 +34,10 @@ public class RunRmiServlet extends HttpServlet {
 	protected MyObject lookup() throws ServletException {
 		try {
 			Properties env = new Properties();
-			env.put(Context.PROVIDER_URL, "remote://localhost:4447");
+			String address = System.getProperty("node0", "localhost");
+			// format possible IPv6 address
+			address = NetworkUtils.formatPossibleIpv6Address(address);
+			env.put(Context.PROVIDER_URL, "remote://" + address + ":4447");
 			env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
 			Context ctx = new InitialContext(env);
 			try {

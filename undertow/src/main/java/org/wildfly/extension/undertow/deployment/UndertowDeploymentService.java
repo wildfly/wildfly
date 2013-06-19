@@ -32,6 +32,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
+
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.UndertowLogger;
@@ -71,6 +72,7 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
         try {
             deploymentManager = container.getValue().getServletContainer().addDeployment(deploymentInfo);
             deploymentManager.deploy();
+
             try {
                 HttpHandler handler = deploymentManager.start();
                 Deployment deployment = deploymentManager.getDeployment();

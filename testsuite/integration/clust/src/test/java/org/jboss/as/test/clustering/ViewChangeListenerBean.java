@@ -36,7 +36,6 @@ import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.StartException;
 
 /**
  * @author Paul Ferraro
@@ -57,35 +56,28 @@ public class ViewChangeListenerBean implements ViewChangeListener {
             }
         }
         ServiceRegistry registry = ServiceContainerHelper.getCurrentServiceContainer();
-        ServiceController<?> controller = registry.getService(ServiceName.JBOSS.append("infinispan", cluster));
-        if (controller == null) {
-            throw new IllegalStateException(String.format("Failed to locate service for cluster '%s'", cluster));
-        }
+        ServiceController<EmbeddedCacheManager> controller = ServiceContainerHelper.getService(registry, ServiceName.JBOSS.append("infinispan", cluster));
+        EmbeddedCacheManager manager = controller.awaitValue();
+        manager.addListener(this);
         try {
-            EmbeddedCacheManager manager = ServiceContainerHelper.getValue(controller, EmbeddedCacheManager.class);
-            manager.addListener(this);
-            try {
-                long start = System.currentTimeMillis();
-                long now = start;
-                long timeout = start + TIMEOUT;
-                synchronized (this) {
-                    Set<String> members = this.getMembers(manager);
-                    while (!expectedMembers.equals(members)) {
-                        System.out.println(String.format("%s != %s, waiting for a view change event...", expectedMembers, members));
-                        this.wait(timeout - now);
-                        now = System.currentTimeMillis();
-                        if (now >= timeout) {
-                            throw new InterruptedException(String.format("Cluster '%s' failed to establish view %s within %d ms.  Current view is: %s", cluster, expectedMembers, TIMEOUT, members));
-                        }
-                        members = this.getMembers(manager);
+            long start = System.currentTimeMillis();
+            long now = start;
+            long timeout = start + TIMEOUT;
+            synchronized (this) {
+                Set<String> members = this.getMembers(manager);
+                while (!expectedMembers.equals(members)) {
+                    System.out.println(String.format("%s != %s, waiting for a view change event...", expectedMembers, members));
+                    this.wait(timeout - now);
+                    now = System.currentTimeMillis();
+                    if (now >= timeout) {
+                        throw new InterruptedException(String.format("Cluster '%s' failed to establish view %s within %d ms.  Current view is: %s", cluster, expectedMembers, TIMEOUT, members));
                     }
-                    System.out.println(String.format("Cluster '%s' successfully established view %s within %d ms.", cluster, expectedMembers, now - start));
+                    members = this.getMembers(manager);
                 }
-            } finally {
-                manager.removeListener(this);
+                System.out.println(String.format("Cluster '%s' successfully established view %s within %d ms.", cluster, expectedMembers, now - start));
             }
-        } catch (StartException e) {
-            throw new IllegalStateException(e);
+        } finally {
+            manager.removeListener(this);
         }
     }
 

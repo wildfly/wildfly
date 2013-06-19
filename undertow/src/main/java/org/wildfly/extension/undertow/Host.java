@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
-import java.nio.file.Paths;
+import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -32,7 +32,6 @@ import javax.servlet.Servlet;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
-import io.undertow.server.handlers.form.MultiPartHandler;
 import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
@@ -60,7 +59,6 @@ public class Host implements Service<Host>, WebHost {
     private final String name;
     private final InjectedValue<Server> server = new InjectedValue<>();
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
-    private volatile MultiPartHandler rootHandler;
     private final Set<Deployment> deployments = Collections.synchronizedSet(new HashSet<Deployment>());
 
     protected Host(String name, List<String> aliases) {
@@ -69,12 +67,10 @@ public class Host implements Service<Host>, WebHost {
         hosts.add(name);
         hosts.addAll(aliases);
         allAliases = Collections.unmodifiableSet(hosts);
-        rootHandler = new MultiPartHandler();
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        rootHandler.setNext(pathHandler);
         server.getValue().registerHost(this);
         UndertowLogger.ROOT_LOGGER.infof("Starting host %s", name);
     }
@@ -112,7 +108,7 @@ public class Host implements Service<Host>, WebHost {
     }
 
     protected HttpHandler getRootHandler() {
-        return rootHandler;
+        return pathHandler;
     }
 
     public void registerDeployment(final Deployment deployment, HttpHandler handler) {
@@ -172,7 +168,7 @@ public class Host implements Service<Host>, WebHost {
         d.setDeploymentName(webDeploymentBuilder.getContextRoot());
         d.setContextPath(webDeploymentBuilder.getContextRoot());
         d.setClassLoader(webDeploymentBuilder.getClassLoader());
-        d.setResourceManager(new FileResourceManager(Paths.get(webDeploymentBuilder.getDocumentRoot().getAbsolutePath())));
+        d.setResourceManager(new FileResourceManager(new File(webDeploymentBuilder.getDocumentRoot().getAbsolutePath())));
         for (ServletBuilder servlet : webDeploymentBuilder.getServlets()) {
             ServletInfo s;
             if (servlet.getServlet() == null) {

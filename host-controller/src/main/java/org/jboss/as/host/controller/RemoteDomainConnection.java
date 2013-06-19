@@ -48,6 +48,7 @@ import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.ProtocolConnectionConfiguration;
 import org.jboss.as.protocol.ProtocolConnectionManager;
 import org.jboss.as.protocol.ProtocolConnectionUtils;
+import org.jboss.as.protocol.ProtocolMessages;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
@@ -108,6 +109,7 @@ class RemoteDomainConnection extends FutureManagementChannel {
     private final ManagementPongRequestHandler pongHandler = new ManagementPongRequestHandler();
     private final List<DiscoveryOption> discoveryOptions;
     private URI uri;
+    private volatile boolean closing = false;
 
     RemoteDomainConnection(final String localHostName, final ModelNode localHostInfo,
                            final ProtocolChannelClient.Configuration configuration, final SecurityRealm realm,
@@ -149,7 +151,22 @@ class RemoteDomainConnection extends FutureManagementChannel {
 
     @Override
     public Channel getChannel() throws IOException {
-        return awaitChannel();
+        Channel result;
+        if (!closing) {
+            // Normal case
+            result = awaitChannel();
+        } else {
+            // TODO WFLY-1511 this 'closing' stuff is just a quick and dirty fix; do it better
+            // We're closing so we don't need to wait for a channel if there isn't one
+            // If there isn't one the master will either be shut down itself or will detect the close
+            // of the existing channel
+            result = super.getChannel();
+            if (result == null) {
+                // Better than returning null with a subsequent NPE
+                throw ProtocolMessages.MESSAGES.channelClosed();
+            }
+        }
+        return result;
     }
 
     /**
@@ -164,6 +181,7 @@ class RemoteDomainConnection extends FutureManagementChannel {
     @Override
     public void close() throws IOException {
         synchronized (this) {
+            closing = true;
             try {
                 if(isConnected()) {
                     try {
@@ -177,6 +195,7 @@ class RemoteDomainConnection extends FutureManagementChannel {
                     connectionManager.shutdown();
                 } finally {
                     super.close();
+                    closing = false;
                 }
             }
         }

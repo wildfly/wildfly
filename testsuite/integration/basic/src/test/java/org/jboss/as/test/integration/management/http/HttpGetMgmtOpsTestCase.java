@@ -121,7 +121,6 @@ public class HttpGetMgmtOpsTestCase {
 
         ModelNode node = httpMgmt.sendGetCommand("/subsystem/undertow?operation=resource-description");
 
-
         assertTrue(node.has("description"));
         assertTrue(node.has("attributes"));
     }

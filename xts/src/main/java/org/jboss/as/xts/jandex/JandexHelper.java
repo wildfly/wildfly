@@ -27,6 +27,7 @@ import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.jboss.jandex.MethodInfo;
 
 import java.util.List;
 
@@ -40,11 +41,23 @@ public class JandexHelper {
 
         final List<AnnotationInstance> annotations = ASHelper.getAnnotations(unit, DotName.createSimple(annotationClassName));
         for (AnnotationInstance annotationInstance : annotations) {
-            final ClassInfo classInfo = (ClassInfo) annotationInstance.target();
-            final String endpointClass = classInfo.name().toString();
 
-            if (endpointClass.equals(endpoint)) {
-                return annotationInstance;
+            Object target = annotationInstance.target();
+
+            if (target instanceof ClassInfo) {
+                final ClassInfo classInfo = (ClassInfo) target;
+                final String endpointClass = classInfo.name().toString();
+
+                if (endpointClass.equals(endpoint)) {
+                    return annotationInstance;
+                }
+            } else if (target instanceof MethodInfo) {
+                final MethodInfo methodInfo = (MethodInfo) target;
+                final String endpointClass = methodInfo.declaringClass().name().toString();
+
+                if (endpointClass.equals(endpoint)) {
+                    return annotationInstance;
+                }
             }
         }
 

@@ -85,8 +85,9 @@
         <version.com.google.guava>13.0.1</version.com.google.guava>
         <version.com.h2database>1.3.168</version.com.h2database>
         <version.com.sun.codemodel>2.6</version.com.sun.codemodel>
-        <version.com.sun.faces>2.2.0-jbossorg-1</version.com.sun.faces>
+        <version.com.sun.faces>2.2.0-jbossorg-2</version.com.sun.faces>
         <version.com.sun.istack>2.6.1</version.com.sun.istack>
+        <version.com.sun.xml.fastinfoset>1.2.12</version.com.sun.xml.fastinfoset>
         <version.com.sun.xml.txw2>20110809</version.com.sun.xml.txw2>
         <version.com.sun.xsom>20110809</version.com.sun.xsom>
         <version.commons-beanutils>1.8.3</version.commons-beanutils>
@@ -100,8 +101,8 @@
         <version.dom4j>1.6.1</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.io.netty>3.6.6.Final</version.io.netty>
-        <version.io.undertow>1.0.0.Alpha18</version.io.undertow>
-        <version.io.undertow.jastow>1.0.0.Alpha2</version.io.undertow.jastow>
+        <version.io.undertow>1.0.0.Alpha19</version.io.undertow>
+        <version.io.undertow.jastow>1.0.0.Alpha3</version.io.undertow.jastow>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.1</version.javax.enterprise>
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
@@ -153,19 +154,19 @@
         <version.org.hibernate3>3.6.6.Final</version.org.hibernate3>
         <version.org.hibernate3.commons.annotations>3.2.0.Final</version.org.hibernate3.commons.annotations>
         <version.org.hornetq>2.3.1.Final</version.org.hornetq>
-        <version.org.infinispan>5.3.0.Beta2</version.org.infinispan>
+        <version.org.infinispan>5.3.0.CR1</version.org.infinispan>
         <version.org.jacorb>2.3.2.jbossorg-4</version.org.jacorb>
         <version.org.javassist>3.17.1-GA</version.org.javassist>
         <version.org.jdom>1.1.2</version.org.jdom>
         <version.org.jboss.aesh>0.33.3</version.org.jboss.aesh>
         <version.org.jboss.arquillian.core>1.0.3.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.osgi>2.0.0.CR3</version.org.jboss.arquillian.osgi>
-        <version.org.jboss.as.console>1.6.0.Final</version.org.jboss.as.console>
+        <version.org.jboss.as.console>1.6.1.Final</version.org.jboss.as.console>
         <version.org.jboss.as.jbossweb-native>2.0.10.Final</version.org.jboss.as.jbossweb-native>
         <version.org.jboss.byteman>2.0.1</version.org.jboss.byteman>
         <version.org.jboss.classfilewriter>1.0.4.Final</version.org.jboss.classfilewriter>
         <version.org.jboss.common.jboss-common-beans>1.1.0.Final</version.org.jboss.common.jboss-common-beans>
-        <version.org.jboss.jboss-common-core>2.2.17.GA</version.org.jboss.jboss-common-core>
+        <version.org.jboss.jboss-common-core>2.2.22.GA</version.org.jboss.jboss-common-core>
         <version.org.jboss.com.sun.httpserver>1.0.1.Final</version.org.jboss.com.sun.httpserver>
         <version.org.jboss.ejb-client>1.0.21.Final</version.org.jboss.ejb-client>
         <version.org.jboss.ejb3.ext-api>2.0.0</version.org.jboss.ejb3.ext-api>
@@ -173,13 +174,11 @@
         <version.org.jboss.invocation>1.2.0.Beta1</version.org.jboss.invocation>
         <version.org.jboss.ironjacamar>1.0.17.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jandex>1.1.0.Alpha1</version.org.jboss.jandex>
-        <version.org.jboss.jboss-dmr>1.1.6.Final</version.org.jboss.jboss-dmr>
-        <version.org.jboss.jboss-transaction-spi>7.0.0.Final</version.org.jboss.jboss-transaction-spi>
-        <version.org.jboss.jbossts.jbossjts>5.0.0.M2</version.org.jboss.jbossts.jbossjts>
-        <version.org.jboss.jbossts.jbossjts-integration>5.0.0.M2</version.org.jboss.jbossts.jbossjts-integration>
-        <version.org.jboss.jbossts.jbossxts>5.0.0.M2</version.org.jboss.jbossts.jbossxts>
+        <version.org.jboss.jboss-dmr>1.2.0.Beta2</version.org.jboss.jboss-dmr>
+        <version.org.jboss.jboss-transaction-spi>7.0.1.Final</version.org.jboss.jboss-transaction-spi>
         <version.org.jboss.jboss-vfs>3.2.0.Beta1</version.org.jboss.jboss-vfs>
-        <version.org.jboss.jbossts.narayana>5.0.0.M2</version.org.jboss.jbossts.narayana>
+        <version.org.jboss.jboss-vfs>3.2.0.Beta1</version.org.jboss.jboss-vfs>
+        <version.org.jboss.narayana>5.0.0.M3</version.org.jboss.narayana>
         <version.org.jboss.jsfunit>2.0.0.Beta1</version.org.jboss.jsfunit>
         <version.org.jboss.logging.jboss-logging>3.1.3.GA</version.org.jboss.logging.jboss-logging>
         <version.org.jboss.logging.jboss-logging-processor>1.1.0.Final</version.org.jboss.logging.jboss-logging-processor>
@@ -188,14 +187,15 @@
         <version.org.jboss.marshalling.jboss-marshalling>1.3.16.GA</version.org.jboss.marshalling.jboss-marshalling>
         <version.org.jboss.metadata>8.0.0.Alpha3</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>1.2.3.Final</version.org.jboss.mod_cluster>
-        <version.org.jboss.modules.jboss-modules>1.2.1.Final</version.org.jboss.modules.jboss-modules>
+        <version.org.jboss.modules.jboss-modules>1.2.2.Final</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.2.0.Beta1</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.osgi.deployment>2.0.0.CR4</version.org.jboss.osgi.deployment>
-        <version.org.jboss.osgi.framework>3.0.0.CR22</version.org.jboss.osgi.framework>
+        <version.org.jboss.osgi.framework>3.0.0.CR28</version.org.jboss.osgi.framework>
         <version.org.jboss.osgi.logging>1.0.0.Final</version.org.jboss.osgi.logging>
         <version.org.jboss.osgi.metadata>3.0.0.CR1</version.org.jboss.osgi.metadata>
-        <version.org.jboss.osgi.resolver>4.0.0.CR12</version.org.jboss.osgi.resolver>
-        <version.org.jboss.osgi.repository>3.0.0.CR3</version.org.jboss.osgi.repository>
+        <version.org.jboss.osgi.provision>1.0.0.CR3</version.org.jboss.osgi.provision>
+        <version.org.jboss.osgi.resolver>4.0.0.CR17</version.org.jboss.osgi.resolver>
+        <version.org.jboss.osgi.repository>3.0.0.CR6</version.org.jboss.osgi.repository>
         <version.org.jboss.osgi.spi>4.0.0.CR2</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>2.0.0.Alpha3</version.org.jboss.osgi.vfs>
         <version.org.jboss.remote-naming>1.0.6.Final</version.org.jboss.remote-naming>
@@ -228,7 +228,7 @@
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.0.Alpha1</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
         <version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>1.0.1.Final</version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>
         <version.org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec>1.0.3.Final</version.org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec>
-        <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.1_spec>1.0.1.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.1_spec>
+        <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>1.0.0.Alpha3</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>
         <version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>1.0.4.Final</version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>
         <version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>1.0.1.Final</version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>
         <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>1.0.2.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>
@@ -238,8 +238,8 @@
         <version.org.jboss.threads>2.1.0.Final</version.org.jboss.threads>
         <version.org.jboss.web>8.0.0.Alpha1</version.org.jboss.web>
         <version.org.jboss.web.jasper-jdt>7.0.3.Final</version.org.jboss.web.jasper-jdt>
-        <version.org.jboss.weld.weld>2.0.0.CR4</version.org.jboss.weld.weld>
-        <version.org.jboss.weld.weld-api>2.0.CR4</version.org.jboss.weld.weld-api>
+        <version.org.jboss.weld.weld>2.0.1.Final</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld-api>2.0.Final</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>1.0.2.Beta1</version.org.jboss.ws.api>
         <version.org.jboss.ws.spi>2.2.0.Beta1</version.org.jboss.ws.spi>
         <version.org.jboss.ws.common>2.2.0.Beta1</version.org.jboss.ws.common>
@@ -250,8 +250,8 @@
         <version.org.jboss.xnio>3.1.0.CR3</version.org.jboss.xnio>
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
-        <version.org.jgroups>3.3.0.Final</version.org.jgroups>
-        <version.org.jipijapa>1.0.0.Alpha1</version.org.jipijapa>
+        <version.org.jgroups>3.3.1.Final</version.org.jgroups>
+        <version.org.jipijapa>1.0.0.Alpha2</version.org.jipijapa>
         <version.org.kohsuke.rngom>201103.jboss-1</version.org.kohsuke.rngom>
         <version.org.mockito>1.9.5</version.org.mockito>
         <version.org.opensaml.opensaml>2.5.3</version.org.opensaml.opensaml>
@@ -470,6 +470,7 @@
                                             <exclude>org.jboss.security:jbosssx</exclude>
                                             <exclude>org.jboss.slf4j:slf4j-jboss-logging</exclude>
                                             <exclude>org.jboss.spec.javax.resource:jboss-connector-api_1.5_spec</exclude>
+                                            <exclude>org.jboss.spec.javax.transaction:jboss-transaction-api_1.1_spec</exclude>
                                             <exclude>org.ops4j.base</exclude>
                                             <exclude>org.ops4j.pax.swissbox</exclude>
                                             <exclude>org.ops4j.pax.web</exclude>
@@ -854,6 +855,12 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-annotations</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -908,6 +915,12 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-web-catalina</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-web-infinispan</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -918,6 +931,12 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-web-undertow</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-cmp</artifactId>
@@ -1037,6 +1056,14 @@
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-ejb3</artifactId>
                 <version>${project.version}</version>
+                <exclusions>
+                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -1247,6 +1274,12 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-security-manager</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-sar</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1343,9 +1376,15 @@
             </dependency>
 
             <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-rts</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.narayana.txframework</groupId>
                 <artifactId>txframework</artifactId>
-                <version>${version.org.jboss.jbossts.narayana}</version>
+                <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>junit</groupId>
@@ -1363,7 +1402,10 @@
                         <groupId>org.hibernate.javax.persistence</groupId>
                         <artifactId>hibernate-jpa-2.0-api</artifactId>
                     </exclusion>
-
+	            <exclusion>
+                        <groupId>org.jboss.weld</groupId>
+                        <artifactId>weld-core</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -1497,6 +1539,22 @@
                     <groupId>org.kohsuke.rngom</groupId>
                     <artifactId>rngom</artifactId>
                   </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.xml.fastinfoset</groupId>
+                <artifactId>FastInfoset</artifactId>
+                <version>${version.com.sun.xml.fastinfoset}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.xml</groupId>
+                        <artifactId>jsr173</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jsr173_api</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -3652,6 +3710,12 @@
                        <groupId>org.jboss.spec.javax.jms</groupId>
                        <artifactId>jboss-jms-api_1.1_spec</artifactId>
                     </exclusion>
+                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -3691,10 +3755,6 @@
                         <artifactId>jgroups</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.jboss.javaee</groupId>
-                        <artifactId>jboss-transaction-api</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>org.jboss.marshalling</groupId>
                         <artifactId>jboss-marshalling</artifactId>
                     </exclusion>
@@ -3708,23 +3768,13 @@
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss</groupId>
-                        <artifactId>jandex</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.woodstox</groupId>
-                        <artifactId>woodstox-core-asl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.woodstox</groupId>
-                        <artifactId>woodstox-core-asl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.woodstox</groupId>
-                        <artifactId>stax2-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss</groupId>
                         <artifactId>staxmapper</artifactId>
+                    </exclusion>
+                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4074,7 +4124,7 @@
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4099,6 +4149,12 @@
                     <exclusion>
                         <groupId>org.jboss.threads</groupId>
                         <artifactId>jboss-threads</artifactId>
+                    </exclusion>
+                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4136,6 +4192,12 @@
                         <groupId>org.picketbox</groupId>
                         <artifactId>jbosssx</artifactId>
                     </exclusion>
+                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -4168,6 +4230,12 @@
                         <groupId>org.jboss</groupId>
                         <artifactId>jboss-common-core</artifactId>
                     </exclusion>
+                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -4181,12 +4249,28 @@
                 <groupId>org.jboss.ironjacamar</groupId>
                 <artifactId>ironjacamar-spec-api</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
+                <exclusions>
+                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
                 <artifactId>ironjacamar-jdbc</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
+                <exclusions>
+                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -4203,15 +4287,18 @@
 
             <dependency>
                 <groupId>org.jipijapa</groupId>
-                <artifactId>spi</artifactId>
+                <artifactId>jipijapa-spi</artifactId>
                 <version>${version.org.jipijapa}</version>
+                <exclusions>
+                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
-            <dependency>
-                <groupId>org.jipijapa</groupId>
-                <artifactId>core</artifactId>
-                <version>${version.org.jipijapa}</version>
-            </dependency>
 
             <dependency>
                 <groupId>org.wildfly</groupId>
@@ -4221,7 +4308,7 @@
 
             <dependency>
                 <groupId>org.jipijapa</groupId>
-                <artifactId>hibernate3</artifactId>
+                <artifactId>jipijapa-hibernate3</artifactId>
                 <version>${version.org.jipijapa}</version>
                 <exclusions>
                     <exclusion>
@@ -4241,7 +4328,7 @@
 
             <dependency>
                 <groupId>org.jipijapa</groupId>
-                <artifactId>hibernate4-3</artifactId>
+                <artifactId>jipijapa-hibernate4-3</artifactId>
                 <version>${version.org.jipijapa}</version>
                 <exclusions>
                     <exclusion>
@@ -4258,9 +4345,36 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
             <dependency>
                 <groupId>org.jipijapa</groupId>
-                <artifactId>openjpa</artifactId>
+                <artifactId>jipijapa-hibernate4-1</artifactId>
+                <version>${version.org.jipijapa}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-entitymanager</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-infinispan</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jipijapa</groupId>
+                <artifactId>jipijapa-eclipselink</artifactId>
+                <version>${version.org.jipijapa}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jipijapa</groupId>
+                <artifactId>jipijapa-openjpa</artifactId>
                 <version>${version.org.jipijapa}</version>
             </dependency>
 
@@ -4285,7 +4399,7 @@
             <dependency>
                 <groupId>org.jboss.narayana.jts</groupId>
                 <artifactId>narayana-jts-jacorb</artifactId>
-                <version>${version.org.jboss.jbossts.jbossjts}</version>
+                <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.byteman</groupId>
@@ -4317,13 +4431,13 @@
             <dependency>
                 <groupId>org.jboss.narayana.jts</groupId>
                 <artifactId>narayana-jts-integration</artifactId>
-                <version>${version.org.jboss.jbossts.jbossjts-integration}</version>
+                <version>${version.org.jboss.narayana}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.narayana.xts</groupId>
                 <artifactId>jbossxts</artifactId>
-                <version>${version.org.jboss.jbossts.jbossxts}</version>
+                <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>commons-httpclient</groupId>
@@ -4372,7 +4486,7 @@
                 <groupId>org.jboss.narayana.xts</groupId>
                 <artifactId>jbossxts</artifactId>
                 <classifier>api</classifier>
-                <version>${version.org.jboss.jbossts.jbossxts}</version>
+                <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>commons-httpclient</groupId>
@@ -4416,7 +4530,7 @@
             <dependency>
                 <groupId>org.jboss.narayana</groupId>
                 <artifactId>jbosstxbridge</artifactId>
-                <version>${version.org.jboss.jbossts.jbossxts}</version>
+                <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>commons-httpclient</groupId>
@@ -4436,10 +4550,35 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>restat-integration</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.narayana.rts</groupId>
+                        <artifactId>restat-util</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>restat-api</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.narayana.rts</groupId>
+                        <artifactId>restat-util</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>org.jboss.narayana.rts</groupId>
                 <artifactId>restat-util</artifactId>
-                <version>${version.org.jboss.jbossts.narayana}</version>
+                <version>${version.org.jboss.narayana}</version>
              </dependency>
 
             <dependency>
@@ -4651,6 +4790,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.osgi.provision</groupId>
+                <artifactId>jbosgi-provision-core</artifactId>
+                <version>${version.org.jboss.osgi.provision}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.osgi.resolver</groupId>
                 <artifactId>jbosgi-resolver-api</artifactId>
                 <version>${version.org.jboss.osgi.resolver}</version>
@@ -4665,12 +4810,6 @@
             <dependency>
                 <groupId>org.jboss.osgi.repository</groupId>
                 <artifactId>jbosgi-repository-api</artifactId>
-                <version>${version.org.jboss.osgi.repository}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.osgi.repository</groupId>
-                <artifactId>jbosgi-repository-core</artifactId>
                 <version>${version.org.jboss.osgi.repository}</version>
             </dependency>
 
@@ -5177,8 +5316,8 @@
 
             <dependency>
                 <groupId>org.jboss.spec.javax.transaction</groupId>
-                <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.1_spec}</version>
+                <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec}</version>
             </dependency>
 
             <dependency>
@@ -5396,7 +5535,7 @@
 
             <dependency>
                 <groupId>org.jboss.weld</groupId>
-                <artifactId>weld-core</artifactId>
+                <artifactId>weld-core-impl</artifactId>
                 <version>${version.org.jboss.weld.weld}</version>
                 <exclusions>
                     <exclusion>
@@ -5439,6 +5578,34 @@
                         <groupId>org.jboss.weld</groupId>
                         <artifactId>weld-spi</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.el</groupId>
+                        <artifactId>jboss-el-api_3.0_spec</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.weld</groupId>
+                <artifactId>weld-core-jsf</artifactId>
+                <version>${version.org.jboss.weld.weld}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.enterprise</groupId>
+                        <artifactId>cdi-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.weld</groupId>
+                        <artifactId>weld-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.weld</groupId>
+                        <artifactId>weld-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.weld</groupId>
+                        <artifactId>weld-core-impl</artifactId>
+                    </exclusion>                                        
                 </exclusions>
             </dependency>
 
@@ -6238,6 +6405,7 @@
                 <module>system-jmx</module>
                 <module>sar</module>
                 <module>security</module>
+                <module>security-manager</module>
                 <module>spec-api</module>
                 <module>transactions</module>
                 <module>undertow</module>
@@ -6246,6 +6414,7 @@
                 <module>webservices</module>
                 <module>weld</module>
                 <module>xts</module>
+                <module>rts</module>
                 <module>testsuite/shared</module>
                 <module>testsuite</module>
             </modules>

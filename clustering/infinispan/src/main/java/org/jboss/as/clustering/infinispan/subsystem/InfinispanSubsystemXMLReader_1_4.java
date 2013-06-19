@@ -271,9 +271,6 @@ public final class InfinispanSubsystemXMLReader_1_4 implements XMLElementReader<
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ADD, null);
-        // NOTE: this list is used to avoid lost attribute updates to the cache
-        // object once it has been added to the operations list
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
 
         // set the cache mode to local
         // cache.get(ModelKeys.MODE).set(Configuration.CacheMode.LOCAL.name());
@@ -291,6 +288,9 @@ public final class InfinispanSubsystemXMLReader_1_4 implements XMLElementReader<
         // update the cache address with the cache name
         addCacheNameToAddress(cache, containerAddress, ModelKeys.LOCAL_CACHE) ;
 
+        // NOTE: this list is used to avoid lost attribute updates to the cache
+        // object once it has been added to the operations list
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             this.parseCacheElement(reader, element, cache, additionalConfigurationOperations);
@@ -344,12 +344,8 @@ public final class InfinispanSubsystemXMLReader_1_4 implements XMLElementReader<
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
-                case STATE_TRANSFER: {
-                    this.parseStateTransfer(reader, cache, additionalConfigurationOperations);
-                    break;
-                }
                 default: {
-                    this.parseCacheElement(reader, element, cache, additionalConfigurationOperations);
+                    this.parseSharedStateCacheElement(reader, element, cache, additionalConfigurationOperations);
                 }
             }
         }
@@ -386,12 +382,8 @@ public final class InfinispanSubsystemXMLReader_1_4 implements XMLElementReader<
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
-                case STATE_TRANSFER: {
-                    this.parseStateTransfer(reader, cache, additionalConfigurationOperations);
-                    break;
-                }
                 default: {
-                    this.parseCacheElement(reader, element, cache, additionalConfigurationOperations);
+                    this.parseSharedStateCacheElement(reader, element, cache, additionalConfigurationOperations);
                 }
             }
         }
@@ -450,6 +442,18 @@ public final class InfinispanSubsystemXMLReader_1_4 implements XMLElementReader<
 
         // get rid of NAME now that we are finished with it
         cache.remove(ModelKeys.NAME);
+    }
+
+    private void parseSharedStateCacheElement(XMLExtendedStreamReader reader, Element element, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+        switch (element) {
+            case STATE_TRANSFER: {
+                this.parseStateTransfer(reader, cache, operations);
+                break;
+            }
+            default: {
+                this.parseCacheElement(reader, element, cache, operations);
+            }
+        }
     }
 
     private void parseCacheElement(XMLExtendedStreamReader reader, Element element, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
@@ -1146,7 +1150,5 @@ public final class InfinispanSubsystemXMLReader_1_4 implements XMLElementReader<
                 }
             }
         }
-       // ParseUtils.requireNoContent(reader);
     }
-
 }

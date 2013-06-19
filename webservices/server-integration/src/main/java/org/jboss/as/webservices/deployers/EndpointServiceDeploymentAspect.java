@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2012, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2013, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -27,18 +27,18 @@ import static org.jboss.ws.common.integration.WSHelper.getRequiredAttachment;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.service.EndpointService;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.ws.common.deployment.EndpointLifecycleDeploymentAspect;
+import org.jboss.ws.common.integration.AbstractDeploymentAspect;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
-import org.jboss.wsf.spi.deployment.LifecycleHandler;
 
 /**
  * Creates Endpoint Service instance when starting the Endpoint
  *
  * @author alessio.soldano@jboss.com
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
-public final class EndpointServiceDeploymentAspect extends EndpointLifecycleDeploymentAspect implements Cloneable {
+public final class EndpointServiceDeploymentAspect extends AbstractDeploymentAspect implements Cloneable {
 
     private boolean stopServices = false;
 
@@ -48,7 +48,6 @@ public final class EndpointServiceDeploymentAspect extends EndpointLifecycleDepl
         final DeploymentUnit unit = getRequiredAttachment(dep, DeploymentUnit.class);
         for (final Endpoint ep : dep.getService().getEndpoints()) {
             EndpointService.install(target, ep, unit);
-            getLifecycleHandler(ep, true).start(ep);
         }
     }
 
@@ -57,9 +56,6 @@ public final class EndpointServiceDeploymentAspect extends EndpointLifecycleDepl
         if (stopServices) {
             final DeploymentUnit unit = getRequiredAttachment(dep, DeploymentUnit.class);
             for (final Endpoint ep : dep.getService().getEndpoints()) {
-                LifecycleHandler lifecycleHandler = getLifecycleHandler(ep, false);
-                if (lifecycleHandler != null)
-                   lifecycleHandler.stop(ep);
                 EndpointService.uninstall(ep, unit);
             }
         } else {

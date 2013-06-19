@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:jgroups:1.1" default-stack="${test.expr:maximal}">
+<subsystem xmlns="urn:jboss:domain:jgroups:2.0" default-stack="${test.expr:maximal}">
     <stack name="minimal">
         <transport type="UDP"/>
     </stack>
@@ -15,15 +15,17 @@
         <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
         <protocol type="FD"/>
         <protocol type="VERIFY_SUSPECT"/>
-        <protocol type="BARRIER"/>
-        <protocol type="pbcast.NAKACK"/>
+        <protocol type="pbcast.NAKACK2"/>
         <protocol type="UNICAST2"/>
         <protocol type="pbcast.STABLE"/>
         <protocol type="pbcast.GMS"/>
         <protocol type="UFC"/>
         <protocol type="MFC"/>
         <protocol type="FRAG2"/>
-        <protocol type="pbcast.STATE_TRANSFER" socket-binding="jgroups-state-xfr"/>
-        <protocol type="pbcast.FLUSH"/>
+        <protocol type="RSVP"/>
+        <relay site="LONDON">
+            <remote-site name="SFO" stack="minimal" cluster="global"/>
+            <remote-site name="NYC" stack="minimal" cluster="global"/>
+        </relay>
     </stack>
 </subsystem>

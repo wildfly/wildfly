@@ -31,7 +31,7 @@ import org.jboss.jandex.AnnotationInstance;
  */
 public class CompensatableAnnotation {
 
-    public static final String COMPENSATABLE_ANNOTATION = "org.jboss.narayana.txframework.api.annotation.transaction.Compensatable";
+    public static final String COMPENSATABLE_ANNOTATION = "org.jboss.narayana.compensations.api.Compensatable";
 
     private CompensatableAnnotation() {
     }

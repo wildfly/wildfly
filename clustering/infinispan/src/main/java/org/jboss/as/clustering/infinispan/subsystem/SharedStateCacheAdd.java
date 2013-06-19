@@ -24,11 +24,15 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.List;
 
+import org.infinispan.configuration.cache.BackupFailurePolicy;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.SitesConfigurationBuilder;
+import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * @author Paul Ferraro
@@ -58,5 +62,37 @@ public abstract class SharedStateCacheAdd extends ClusteredCacheAdd {
             builder.clustering().stateTransfer().timeout(timeout);
             builder.clustering().stateTransfer().chunkSize(chunkSize);
         }
+
+        // backup is a child resource
+        if (cache.hasDefined(ModelKeys.BACKUP)) {
+            SitesConfigurationBuilder sitesBuilder = builder.sites();
+            for (Property property: cache.get(ModelKeys.BACKUP).asPropertyList()) {
+                String siteName = property.getName();
+                ModelNode site = property.getValue();
+                sitesBuilder.addBackup()
+                        .site(siteName)
+                        .backupFailurePolicy(BackupFailurePolicy.valueOf(BackupSiteResource.FAILURE_POLICY.resolveModelAttribute(context, site).asString()))
+                        .strategy(BackupStrategy.valueOf(BackupSiteResource.STRATEGY.resolveModelAttribute(context, site).asString()))
+                        .replicationTimeout(BackupSiteResource.REPLICATION_TIMEOUT.resolveModelAttribute(context, site).asLong())
+                ;
+                if (BackupSiteResource.ENABLED.resolveModelAttribute(context, site).asBoolean()) {
+                    sitesBuilder.addInUseBackupSite(siteName);
+                }
+            }
+        }
+
+        // backup-for is a child resource
+        if (cache.hasDefined(ModelKeys.BACKUP_FOR) && cache.get(ModelKeys.BACKUP_FOR, ModelKeys.BACKUP_FOR_NAME).isDefined()) {
+            ModelNode backupFor = cache.get(ModelKeys.BACKUP_FOR, ModelKeys.BACKUP_FOR_NAME);
+
+            ModelNode resolvedValue = null;
+            final String remoteCache = ((resolvedValue = BackupForResourceDefinition.REMOTE_CACHE.resolveModelAttribute(context, backupFor)).isDefined()) ? resolvedValue.asString() : null;
+            final String remoteSite = ((resolvedValue = BackupForResourceDefinition.REMOTE_SITE.resolveModelAttribute(context, backupFor)).isDefined()) ? resolvedValue.asString() : null;
+
+            // need to check that both are present
+            SitesConfigurationBuilder sitesBuilder = builder.sites();
+            sitesBuilder.backupFor().remoteCache(remoteCache).remoteSite(remoteSite);
+        }
+
     }
 }

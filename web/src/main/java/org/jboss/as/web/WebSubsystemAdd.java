@@ -23,10 +23,10 @@
 package org.jboss.as.web;
 
 import java.util.List;
+
 import javax.management.MBeanServer;
 
-import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
-import org.jboss.as.clustering.web.DistributedCacheManagerFactoryService;
+import org.apache.catalina.Engine;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -42,8 +42,8 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
-import org.jboss.as.web.deployment.EarContextRootProcessor;
 import org.jboss.as.web.deployment.ELExpressionFactoryProcessor;
+import org.jboss.as.web.deployment.EarContextRootProcessor;
 import org.jboss.as.web.deployment.JBossWebParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.ServletContainerInitializerDeploymentProcessor;
 import org.jboss.as.web.deployment.TldParsingDeploymentProcessor;
@@ -67,6 +67,9 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
+import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
+import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderService;
 
 /**
  * Adds the web subsystem.
@@ -146,14 +149,20 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
                         .setInitialMode(Mode.PASSIVE)
                         .install());
 
-        final DistributedCacheManagerFactory factory = new DistributedCacheManagerFactoryService().getValue();
-        if (factory != null) {
+        SessionManagerFactoryBuilder factoryBuilder = new SessionManagerFactoryBuilderService().getValue();
+        if (factoryBuilder != null) {
             final InjectedValue<WebServer> server = new InjectedValue<WebServer>();
-            newControllers.add(target.addService(DistributedCacheManagerFactoryService.JVM_ROUTE_REGISTRY_ENTRY_PROVIDER_SERVICE_NAME, new JvmRouteRegistryEntryProviderService(server))
+            Value<String> instanceIdValue = new Value<String>() {
+                @Override
+                public String getValue() {
+                    return ((Engine) server.getValue().getService().getContainer()).getJvmRoute();
+                }
+            };
+            newControllers.add(factoryBuilder.buildServerDependency(target, instanceIdValue)
                     .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, server)
                     .setInitialMode(Mode.ON_DEMAND)
-                    .install());
-            newControllers.addAll(factory.installServices(target));
+                    .install()
+            );
         }
     }
 

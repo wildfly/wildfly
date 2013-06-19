@@ -22,6 +22,11 @@
 
 package org.wildfly.extension.undertow.deployment;
 
+import io.undertow.servlet.api.DeploymentInfo;
+
+import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.AUTHENTICATE;
+import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.DENY;
+import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.PERMIT;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,23 +42,17 @@ import java.util.Set;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContainerInitializer;
-import javax.servlet.SessionCookieConfig;
 import javax.servlet.http.HttpServletRequest;
 
 import io.undertow.jsp.JspFileWrapper;
 import io.undertow.jsp.JspServletBuilder;
-import io.undertow.server.HandlerWrapper;
-import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.server.handlers.resource.CachingResourceManager;
 import io.undertow.server.handlers.resource.ResourceManager;
-import io.undertow.server.session.SessionManager;
 import io.undertow.servlet.api.ClassIntrospecter;
 import io.undertow.servlet.api.ConfidentialPortManager;
 import io.undertow.servlet.api.DefaultServletConfig;
-import io.undertow.servlet.api.Deployment;
-import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.ErrorPage;
 import io.undertow.servlet.api.FilterInfo;
 import io.undertow.servlet.api.HttpMethodSecurityInfo;
@@ -66,12 +65,12 @@ import io.undertow.servlet.api.SecurityConstraint;
 import io.undertow.servlet.api.ServletContainerInitializerInfo;
 import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.api.ServletSecurityInfo;
-import io.undertow.servlet.api.SessionManagerFactory;
+import io.undertow.servlet.api.ServletSessionConfig;
 import io.undertow.servlet.api.ThreadSetupAction;
 import io.undertow.servlet.api.WebResourceCollection;
-import io.undertow.servlet.spec.SessionCookieConfigImpl;
 import io.undertow.servlet.util.ConstructorInstanceFactory;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
+
 import org.apache.jasper.deploy.FunctionInfo;
 import org.apache.jasper.deploy.JspPropertyGroup;
 import org.apache.jasper.deploy.TagAttributeInfo;
@@ -82,8 +81,6 @@ import org.apache.jasper.deploy.TagLibraryValidatorInfo;
 import org.apache.jasper.deploy.TagVariableInfo;
 import org.apache.jasper.servlet.JspServlet;
 import org.jboss.annotation.javaee.Icon;
-import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
-import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -91,8 +88,6 @@ import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.WebInjectionContainer;
-import org.jboss.marshalling.ClassResolver;
-import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.metadata.javaee.spec.DescriptionGroupMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
@@ -123,6 +118,7 @@ import org.jboss.metadata.web.spec.TransportGuaranteeType;
 import org.jboss.metadata.web.spec.VariableMetaData;
 import org.jboss.metadata.web.spec.WebResourceCollectionMetaData;
 import org.jboss.modules.Module;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -131,17 +127,15 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.audit.AuditManager;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.clustering.web.session.SessionManagerFactory;
+import org.wildfly.clustering.web.undertow.session.SessionManagerFacadeFactory;
 import org.wildfly.extension.undertow.ServletContainerService;
+import org.wildfly.extension.undertow.SessionCookieConfigService;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
 import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
 import org.wildfly.extension.undertow.security.SecurityContextAssociationHandler;
 import org.wildfly.extension.undertow.security.SecurityContextCreationHandler;
-import org.wildfly.extension.undertow.session.DistributableSessionManager;
-
-import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.AUTHENTICATE;
-import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.DENY;
-import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.PERMIT;
 
 /**
  * Service that builds up the undertow metadata.
@@ -173,10 +167,11 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final List<ExpressionFactoryWrapper> expressionFactoryWrappers;
 
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
-    private final InjectedValue<DistributedCacheManagerFactory> distributedCacheManagerFactoryInjectedValue = new InjectedValue<DistributedCacheManagerFactory>();
+    private final InjectedValue<SessionManagerFactory> sessionManagerFactory = new InjectedValue<SessionManagerFactory>();
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
     private final InjectedValue<ServletContainerService> container = new InjectedValue<>();
     private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
+    private final InjectedValue<SessionCookieConfigService> defaultSessionCookieConfig = new InjectedValue<>();
 
     private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final WebInjectionContainer injectionContainer, final ComponentRegistry componentRegistry, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers) {
         this.mergedMetaData = mergedMetaData;
@@ -203,30 +198,63 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         try {
             Thread.currentThread().setContextClassLoader(module.getClassLoader());
             DeploymentInfo deploymentInfo = createServletConfig();
-            handleSessionReplication(deploymentInfo);
+            handleDistributable(deploymentInfo);
             handleIdentityManager(deploymentInfo);
 
+
             SessionConfigMetaData sessionConfig = mergedMetaData.getSessionConfig();
+            ServletSessionConfig config = null;
+            //default session config
+            SessionCookieConfigService defaultSessionConfig = defaultSessionCookieConfig.getOptionalValue();
+            if(defaultSessionConfig != null) {
+                config = new ServletSessionConfig();
+                if(defaultSessionConfig.getName() != null) {
+                    config.setName(defaultSessionConfig.getName());
+                }
+                if(defaultSessionConfig.getDomain() != null) {
+                    config.setDomain(defaultSessionConfig.getDomain());
+                }
+                if(defaultSessionConfig.getHttpOnly() != null) {
+                    config.setHttpOnly(defaultSessionConfig.getHttpOnly());
+                }
+                if(defaultSessionConfig.getSecure() != null) {
+                    config.setSecure(defaultSessionConfig.getSecure());
+                }
+                if(defaultSessionConfig.getMaxAge() != null) {
+                    config.setMaxAge(defaultSessionConfig.getMaxAge());
+                }
+                if(defaultSessionConfig.getComment() != null) {
+                    config.setComment(defaultSessionConfig.getComment());
+                }
+            }
+
             if (sessionConfig != null) {
                 if (sessionConfig.getSessionTimeoutSet()) {
                     deploymentInfo.setDefaultSessionTimeout(sessionConfig.getSessionTimeout() * 60);
                 }
                 CookieConfigMetaData cookieConfig = sessionConfig.getCookieConfig();
                 if (cookieConfig != null) {
-                    SessionCookieConfig config = new SessionCookieConfigImpl();
+                    if(config == null) {
+                        config = new ServletSessionConfig();
+                    }
                     if (cookieConfig.getName() != null) {
                         config.setName(cookieConfig.getName());
+                    }
+                    if(cookieConfig.getDomain() != null) {
+                        config.setDomain(cookieConfig.getDomain());
+                    }
+                    if(cookieConfig.getComment() != null) {
+                        config.setComment(cookieConfig.getComment());
                     }
                     config.setSecure(cookieConfig.getSecure());
                     config.setPath(cookieConfig.getPath());
                     config.setMaxAge(cookieConfig.getMaxAge());
-                    config.setDomain(cookieConfig.getDomain());
-                    config.setComment(cookieConfig.getComment());
                     config.setHttpOnly(cookieConfig.getHttpOnly());
-                    deploymentInfo.setSessionCookieConfig(config);
                 }
                 //todo: session tracking modes
-
+            }
+            if(config != null) {
+                deploymentInfo.setServletSessionConfig(config);
             }
 
             for (final SetupAction action : setupActions) {
@@ -287,18 +315,12 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         };
     }
 
-    private void handleSessionReplication(final DeploymentInfo deploymentInfo) {
-        if (mergedMetaData.getDistributable() != null) {
-            String instanceId = undertowService.getValue().getInstanceId();
-            ClassResolver resolver = ModularClassResolver.getInstance(module.getModuleLoader());
-            final DistributableSessionManager<OutgoingDistributableSessionData> sessionManager = new DistributableSessionManager<>(this.distributedCacheManagerFactoryInjectedValue.getValue(), mergedMetaData, resolver, deploymentInfo.getContextPath(), module.getClassLoader(), instanceId);
-            deploymentInfo.setSessionManagerFactory(new ImmediateSessionManagerFactory(sessionManager));
-            deploymentInfo.addOuterHandlerChainWrapper(new HandlerWrapper() {
-                @Override
-                public HttpHandler wrap(final HttpHandler handler) {
-                    return sessionManager.wrapHandlers(handler);
-                }
-            });
+    private void handleDistributable(final DeploymentInfo deploymentInfo) {
+        if (this.mergedMetaData.getDistributable() != null) {
+            SessionManagerFactory factory = this.sessionManagerFactory.getOptionalValue();
+            if (factory != null) {
+                deploymentInfo.setSessionManagerFactory(new SessionManagerFacadeFactory(factory, this.mergedMetaData));
+            }
         }
     }
 
@@ -508,9 +530,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             }
 
             if (scisMetaData != null && scisMetaData.getHandlesTypes() != null) {
-                for (final Map.Entry<ServletContainerInitializer, Set<Class<?>>> sci : scisMetaData.getHandlesTypes().entrySet()) {
-                    final ImmediateInstanceFactory<ServletContainerInitializer> instanceFactory = new ImmediateInstanceFactory<>(sci.getKey());
-                    d.addServletContainerInitalizer(new ServletContainerInitializerInfo(sci.getKey().getClass(), instanceFactory, sci.getValue()));
+                for (final ServletContainerInitializer sci : scisMetaData.getScis()) {
+                    final ImmediateInstanceFactory<ServletContainerInitializer> instanceFactory = new ImmediateInstanceFactory<>(sci);
+                    d.addServletContainerInitalizer(new ServletContainerInitializerInfo(sci.getClass(), instanceFactory, scisMetaData.getHandlesTypes().get(sci)));
                 }
             }
 
@@ -920,8 +942,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         return securityDomainContextValue;
     }
 
-    public InjectedValue<DistributedCacheManagerFactory> getDistributedCacheManagerFactoryInjectedValue() {
-        return distributedCacheManagerFactoryInjectedValue;
+    public Injector<SessionManagerFactory> getSessionManagerFactoryInjector() {
+        return this.sessionManagerFactory;
     }
 
     public InjectedValue<UndertowService> getUndertowService() {
@@ -930,6 +952,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     public InjectedValue<DirectBufferCache> getBufferCacheInjectedValue() {
         return bufferCacheInjectedValue;
+    }
+
+    public InjectedValue<SessionCookieConfigService> getDefaultSessionCookieConfig() {
+        return defaultSessionCookieConfig;
     }
 
     private static class ComponentClassIntrospector implements ClassIntrospecter {
@@ -1078,23 +1104,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
         public UndertowDeploymentInfoService createUndertowDeploymentInfoService() {
             return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, injectionContainer, componentRegistry, scisMetaData, deploymentRoot, securityContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers);
-        }
-    }
-
-    /**
-     * TODO: remove this class
-     */
-    private static final class ImmediateSessionManagerFactory implements SessionManagerFactory {
-
-        private final SessionManager sessionManager;
-
-        private ImmediateSessionManagerFactory(final SessionManager sessionManager) {
-            this.sessionManager = sessionManager;
-        }
-
-        @Override
-        public SessionManager createSessionManager(final Deployment deployment) {
-            return sessionManager;
         }
     }
 }

@@ -21,9 +21,13 @@
  */
 package org.jboss.as.test.smoke.messaging;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
@@ -33,6 +37,7 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -43,7 +48,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -63,12 +67,6 @@ public class MessagingTestCase {
 
     private ClientSessionFactory sf;
     private ClientSession session;
-    private ClientConsumer consumer;
-
-    private final AtomicBoolean shutdown = new AtomicBoolean();
-
-    private final CountDownLatch latch = new CountDownLatch(1);
-    private volatile String receivedMessage;
 
     @Deployment
     public static JavaArchive createDeployment() throws Exception {
@@ -82,78 +80,66 @@ public class MessagingTestCase {
 
     @Before
     public void start() throws Exception {
-        System.out.println("CLASSLOADER " + this.getClass().getClassLoader());
         //FIXME Arquillian Alpha bug - it also wants to execute this on the client despite this test being IN_CONTAINER
-        if (!isInContainer()) {
-            return;
-        }
-
-        //HornetQService set up the config and starts the HornetQServer
+        // JFM: I'm not sure this bug is still relevant. I leave it to test it on our CI
+        assertTrue("Test is not run inside the container", isInContainer());
 
         //Not using JNDI so we use the core services directly
         sf = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName())).createSessionFactory();
+        session = sf.createSession();
 
         //Create a queue
-        ClientSession coreSession = sf.createSession(false, true, true);
+        ClientSession coreSession = sf.createSession();
         coreSession.createQueue(QUEUE_EXAMPLE_QUEUE, QUEUE_EXAMPLE_QUEUE, false);
         coreSession.close();
 
         session = sf.createSession();
-
-        consumer = session.createConsumer(QUEUE_EXAMPLE_QUEUE);
         session.start();
-
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                while (!shutdown.get()) {
-                    try {
-                        ClientMessage message = consumer.receive(500);
-                        if (message == null) {
-                            continue;
-                        }
-                        String s = message.getStringProperty(BODY);
-                        log.info("-----> Received: " + s);
-                        receivedMessage = s;
-                        latch.countDown();
-                    } catch (HornetQException e) {
-                        log.error("Exception, closing receiver", e);
-                    }
-                }
-            }
-        }).start();
-
-        log.info("-----> Started queue and session");
     }
 
     @After
     public void stop() throws Exception {
-        //FIXME Arquillian Alpha bug - it also wants to execute this on the client despite this test being IN_CONTAINER
-        if (!isInContainer()) {
-            return;
-        }
+        session.close();
 
-        shutdown.set(true);
-        if (session != null)
-            session.close();
-        ClientSession coreSession = sf.createSession(false, false, false);
+        ClientSession coreSession = sf.createSession();
         coreSession.deleteQueue(QUEUE_EXAMPLE_QUEUE);
         coreSession.close();
+
+        sf.close();
     }
 
     @Test
     public void testMessaging() throws Exception {
-        sendMessage("Test");
-        Assert.assertTrue(latch.await(3, TimeUnit.SECONDS));
-        Assert.assertEquals("'Test' sent today", receivedMessage);
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<ClientMessage> message = new AtomicReference<ClientMessage>();
+
+        ClientConsumer consumer = session.createConsumer(QUEUE_EXAMPLE_QUEUE);
+        consumer.setMessageHandler(new MessageHandler() {
+            @Override
+            public void onMessage(ClientMessage m) {
+                try {
+                    m.acknowledge();
+                    message.set(m);
+                    latch.countDown();
+                } catch (HornetQException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        String text = UUID.randomUUID().toString();
+
+        sendMessage(text);
+
+        assertTrue(latch.await(1, SECONDS));
+        assertEquals(text, message.get().getStringProperty(BODY));
     }
 
-    private void sendMessage(String txt) throws Exception {
+    private void sendMessage(String text) throws Exception {
         ClientProducer producer = session.createProducer(QUEUE_EXAMPLE_QUEUE);
         ClientMessage message = session.createMessage(false);
 
-        message.putStringProperty(BODY, "'" + txt + "' sent today");
+        message.putStringProperty(BODY, text);
         log.info("-----> Sending message");
         producer.send(message);
     }

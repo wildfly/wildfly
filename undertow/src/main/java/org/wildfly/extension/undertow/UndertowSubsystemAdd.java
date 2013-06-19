@@ -25,8 +25,7 @@ package org.wildfly.extension.undertow;
 import java.util.List;
 
 import io.undertow.Version;
-import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
-import org.jboss.as.clustering.web.DistributedCacheManagerFactoryService;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -36,6 +35,8 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
+import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
+import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderService;
 import org.wildfly.extension.undertow.deployment.ELExpressionFactoryProcessor;
 import org.wildfly.extension.undertow.deployment.EarContextRootProcessor;
 import org.wildfly.extension.undertow.deployment.JBossWebParsingDeploymentProcessor;
@@ -51,11 +52,12 @@ import org.wildfly.extension.undertow.deployment.WarStructureDeploymentProcessor
 import org.wildfly.extension.undertow.deployment.WebFragmentParsingDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.WebJBossAllParser;
 import org.wildfly.extension.undertow.deployment.WebParsingDeploymentProcessor;
-import org.wildfly.extension.undertow.session.JvmRouteRegistryEntryProviderService;
 import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
 import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.ImmediateValue;
 
 
 /**
@@ -94,12 +96,13 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final ModelNode instanceIdModel = UndertowRootDefinition.INSTANCE_ID.resolveModelAttribute(context, model);
         final String instanceId = instanceIdModel.isDefined() ? instanceIdModel.asString() : null;
+        ServiceTarget target = context.getServiceTarget();
 
-        newControllers.add(context.getServiceTarget().addService(UndertowService.UNDERTOW, new UndertowService(defaultContainer, defaultServer, defaultVirtualHost, instanceId))
+        newControllers.add(target.addService(UndertowService.UNDERTOW, new UndertowService(defaultContainer, defaultServer, defaultVirtualHost, instanceId))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install());
 
-        newControllers.add(context.getServiceTarget().addService(CommonWebServer.SERVICE_NAME, new WebServerService())
+        newControllers.add(target.addService(CommonWebServer.SERVICE_NAME, new WebServerService())
                 .install());
 
 
@@ -137,13 +140,9 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         UndertowLogger.ROOT_LOGGER.serverStarting(Version.getVersionString());
 
-        final DistributedCacheManagerFactory factory = new DistributedCacheManagerFactoryService().getValue();
-        if (factory != null) {
-            newControllers.add(context.getServiceTarget().addService(DistributedCacheManagerFactoryService.JVM_ROUTE_REGISTRY_ENTRY_PROVIDER_SERVICE_NAME, new JvmRouteRegistryEntryProviderService(instanceId))
-                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                    .install());
-            newControllers.addAll(factory.installServices(context.getServiceTarget()));
+        SessionManagerFactoryBuilder builder = new SessionManagerFactoryBuilderService().getValue();
+        if (builder != null) {
+            newControllers.add(builder.buildServerDependency(target, new ImmediateValue<String>(instanceId)).setInitialMode(ServiceController.Mode.ON_DEMAND).install());
         }
     }
-
 }

@@ -151,7 +151,7 @@ public class ClientCompatibilityUnitTestCase {
 
     @Test
     public void testCurrent() throws Exception {
-        test(ModelControllerClient.Factory.create("remote", "localhost", 9999));
+        test(ModelControllerClient.Factory.create("localhost", 9999));
     }
 
     protected void test(final String version) throws Exception {

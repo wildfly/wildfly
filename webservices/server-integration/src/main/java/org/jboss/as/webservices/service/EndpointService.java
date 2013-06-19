@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -50,9 +50,9 @@ import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.ws.api.monitoring.RecordProcessor;
 import org.jboss.ws.common.ObjectNameFactory;
+import org.jboss.ws.common.management.ManagedEndpoint;
 import org.jboss.ws.common.monitoring.ManagedRecordProcessor;
 import org.jboss.wsf.spi.deployment.Endpoint;
-import org.jboss.wsf.spi.management.EndpointRegistry;
 
 /**
  * WS endpoint service; this is meant for setting the lazy deployment time info into the Endpoint (stuff coming from
@@ -60,6 +60,7 @@ import org.jboss.wsf.spi.management.EndpointRegistry;
  *
  * @author alessio.soldano@jboss.com
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
 public final class EndpointService implements Service<Endpoint> {
 
@@ -67,7 +68,6 @@ public final class EndpointService implements Service<Endpoint> {
     private final Endpoint endpoint;
     private final ServiceName name;
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
-    private final InjectedValue<EndpointRegistry> endpointRegistryValue = new InjectedValue<EndpointRegistry>();
     private final InjectedValue<MBeanServer> mBeanServerValue = new InjectedValue<MBeanServer>();
 
     private EndpointService(final Endpoint endpoint, final ServiceName name) {
@@ -94,19 +94,50 @@ public final class EndpointService implements Service<Endpoint> {
         endpoint.setSecurityDomainContext(new SecurityDomainContextAdaptor(securityDomainContextValue.getValue()));
         final List<RecordProcessor> processors = endpoint.getRecordProcessors();
         for (final RecordProcessor processor : processors) {
-           registerRecordProcessor(processor, endpoint);
+            registerRecordProcessor(processor, endpoint);
         }
-        endpointRegistryValue.getValue().register(endpoint);
+        registerEndpoint(endpoint);
+        endpoint.getLifecycleHandler().start(endpoint);
     }
 
     @Override
     public void stop(final StopContext context) {
         ROOT_LOGGER.stopping(name);
+        endpoint.getLifecycleHandler().stop(endpoint);
         endpoint.setSecurityDomainContext(null);
-        endpointRegistryValue.getValue().unregister(endpoint);
+        unregisterEndpoint(endpoint);
         final List<RecordProcessor> processors = endpoint.getRecordProcessors();
         for (final RecordProcessor processor : processors) {
-           unregisterRecordProcessor(processor, endpoint);
+            unregisterRecordProcessor(processor, endpoint);
+        }
+    }
+
+    private void registerEndpoint(final Endpoint ep) {
+        MBeanServer mbeanServer = mBeanServerValue.getValue();
+        if (mbeanServer != null) {
+            try {
+                ManagedEndpoint jmxEndpoint = new ManagedEndpoint(endpoint, mbeanServer);
+                mbeanServer.registerMBean(jmxEndpoint, endpoint.getName());
+            } catch (final JMException ex) {
+                ROOT_LOGGER.trace("Cannot register endpoint in JMX server", ex);
+                ROOT_LOGGER.cannotRegisterEndpoint(endpoint.getShortName());
+            }
+        } else {
+            ROOT_LOGGER.mBeanServerNotAvailable(endpoint.getShortName());
+        }
+    }
+
+    private void unregisterEndpoint(final Endpoint ep) {
+        MBeanServer mbeanServer = mBeanServerValue.getValue();
+        if (mbeanServer != null) {
+            try {
+                mbeanServer.unregisterMBean(endpoint.getName());
+            } catch (final JMException ex) {
+                ROOT_LOGGER.trace("Cannot unregister endpoint from JMX server", ex);
+                ROOT_LOGGER.cannotUnregisterEndpoint(endpoint.getShortName());
+            }
+        } else {
+            ROOT_LOGGER.mBeanServerNotAvailable(endpoint.getShortName());
         }
     }
 
@@ -114,14 +145,14 @@ public final class EndpointService implements Service<Endpoint> {
         MBeanServer mbeanServer = mBeanServerValue.getValue();
         if (mbeanServer != null) {
             try {
-                mbeanServer.registerMBean(processor, ObjectNameFactory.create(ep.getName() + ",recordProcessor=" + processor.getName()));
-            }
-            catch (final JMException ex) {
-                ROOT_LOGGER.trace("Cannot register endpoint with JMX server, trying with the default ManagedRecordProcessor: " + ex.getMessage());
+                mbeanServer.registerMBean(processor,
+                        ObjectNameFactory.create(ep.getName() + ",recordProcessor=" + processor.getName()));
+            } catch (final JMException ex) {
+                ROOT_LOGGER.trace("Cannot register endpoint in JMX server, trying with the default ManagedRecordProcessor", ex);
                 try {
-                    mbeanServer.registerMBean(new ManagedRecordProcessor(processor), ObjectNameFactory.create(ep.getName() + ",recordProcessor=" + processor.getName()));
-                }
-                catch (final JMException e) {
+                    mbeanServer.registerMBean(new ManagedRecordProcessor(processor),
+                            ObjectNameFactory.create(ep.getName() + ",recordProcessor=" + processor.getName()));
+                } catch (final JMException e) {
                     ROOT_LOGGER.cannotRegisterRecordProcessor();
                 }
             }
@@ -147,27 +178,23 @@ public final class EndpointService implements Service<Endpoint> {
         return securityDomainContextValue;
     }
 
-    public Injector<EndpointRegistry> getEndpointRegistryInjector() {
-        return endpointRegistryValue;
-    }
-
     public Injector<MBeanServer> getMBeanServerInjector() {
         return mBeanServerValue;
     }
 
     public static void install(final ServiceTarget serviceTarget, final Endpoint endpoint, final DeploymentUnit unit) {
         final ServiceName serviceName = getServiceName(unit, endpoint.getShortName());
+        final String propContext = endpoint.getName().getKeyProperty(Endpoint.SEPID_PROPERTY_CONTEXT);
+        final String propEndpoint = endpoint.getName().getKeyProperty(Endpoint.SEPID_PROPERTY_ENDPOINT);
+        final StringBuilder context = new StringBuilder(Endpoint.SEPID_PROPERTY_CONTEXT).append("=").append(propContext);
         final EndpointService service = new EndpointService(endpoint, serviceName);
         final ServiceBuilder<Endpoint> builder = serviceTarget.addService(serviceName, service);
+        final ServiceName alias = WSServices.ENDPOINT_SERVICE.append(context.toString()).append(propEndpoint);
+        builder.addAliases(alias);
         builder.addDependency(DependencyType.REQUIRED,
                 SecurityDomainService.SERVICE_NAME.append(getDeploymentSecurityDomainName(endpoint)),
                 SecurityDomainContext.class, service.getSecurityDomainContextInjector());
-        builder.addDependency(DependencyType.REQUIRED, WSServices.REGISTRY_SERVICE,
-                EndpointRegistry.class,
-                service.getEndpointRegistryInjector());
-        builder.addDependency(DependencyType.OPTIONAL, MBEAN_SERVER_NAME,
-                MBeanServer.class,
-                service.getMBeanServerInjector());
+        builder.addDependency(DependencyType.OPTIONAL, MBEAN_SERVER_NAME, MBeanServer.class, service.getMBeanServerInjector());
         builder.setInitialMode(Mode.ACTIVE);
         builder.install();
     }
@@ -183,8 +210,8 @@ public final class EndpointService implements Service<Endpoint> {
     private static String getDeploymentSecurityDomainName(final Endpoint ep) {
         JBossWebMetaData metadata = ep.getService().getDeployment().getAttachment(JBossWebMetaData.class);
         String metaDataSecurityDomain = metadata != null ? metadata.getSecurityDomain() : null;
-        return metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY
-            : SecurityUtil.unprefixSecurityDomain(metaDataSecurityDomain.trim());
+        return metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY : SecurityUtil
+                .unprefixSecurityDomain(metaDataSecurityDomain.trim());
     }
 
 }

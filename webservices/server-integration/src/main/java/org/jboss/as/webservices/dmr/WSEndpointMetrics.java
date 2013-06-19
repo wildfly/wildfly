@@ -27,8 +27,6 @@ import static org.jboss.as.webservices.WSMessages.MESSAGES;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -40,9 +38,10 @@ import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.management.EndpointMetrics;
-import org.jboss.wsf.spi.management.EndpointRegistry;
 
 /**
  * Provides WS endpoint metrics.
@@ -92,10 +91,10 @@ final class WSEndpointMetrics implements OperationStepHandler {
         if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    final ServiceController<?> controller = context.getServiceRegistry(false).getService(WSServices.REGISTRY_SERVICE);
-                    if (controller != null) {
+                    final ServiceRegistry registry = context.getServiceRegistry(false);
+                    if (registry != null) {
                         try {
-                            context.getResult().set(getEndpointMetricsFragment(operation, controller));
+                            context.getResult().set(getEndpointMetricsFragment(operation, registry));
                         } catch (Exception e) {
                             throw new OperationFailedException(new ModelNode(getFallbackMessage() + ": " + e.getMessage()));
                         }
@@ -111,7 +110,8 @@ final class WSEndpointMetrics implements OperationStepHandler {
         context.stepCompleted();
     }
 
-    private ModelNode getEndpointMetricsFragment(final ModelNode operation, final ServiceController<?> controller) throws OperationFailedException {
+    @SuppressWarnings("unchecked")
+    private ModelNode getEndpointMetricsFragment(final ModelNode operation, final ServiceRegistry registry) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         String endpointId;
         try {
@@ -122,16 +122,9 @@ final class WSEndpointMetrics implements OperationStepHandler {
         final String metricName = operation.require(NAME).asString();
         final String webContext = endpointId.substring(0, endpointId.indexOf(":"));
         final String endpointName = endpointId.substring(endpointId.indexOf(":") + 1);
-        ObjectName endpointObjectName;
-        try {
-            endpointObjectName = new ObjectName("jboss.ws:context=" + webContext + ",endpoint=" + endpointName);
-        } catch (final MalformedObjectNameException e) {
-            throw new OperationFailedException(new ModelNode().set(e.getMessage()));
-        }
-
-        final EndpointRegistry registry = (EndpointRegistry) controller.getValue();
-        final Endpoint endpoint = registry.getEndpoint(endpointObjectName);
-
+        ServiceName endpointServiceName = WSServices.ENDPOINT_SERVICE.append("context="+webContext).append(endpointName);
+        ServiceController<Endpoint> service = (ServiceController<Endpoint>)WSServices.getContainerRegistry().getService(endpointServiceName);
+        Endpoint endpoint= service.getValue();
         final ModelNode result = new ModelNode();
         if (endpoint != null && endpoint.getEndpointMetrics() != null) {
             final EndpointMetrics endpointMetrics = endpoint.getEndpointMetrics();

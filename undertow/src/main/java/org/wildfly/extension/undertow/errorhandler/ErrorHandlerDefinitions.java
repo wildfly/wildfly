@@ -31,17 +31,16 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimplePersistentResourceDefinition;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
-public class ErrorHandlerDefinitions extends SimplePersistentResourceDefinition {
+public class ErrorHandlerDefinitions extends PersistentResourceDefinition {
 
     public static final ErrorHandlerDefinitions INSTANCE = new ErrorHandlerDefinitions();
-    private static List<? extends SimplePersistentResourceDefinition> ERROR_HANDLERS = Collections.unmodifiableList(Arrays.asList(
+    private static List<? extends PersistentResourceDefinition> ERROR_HANDLERS = Collections.unmodifiableList(Arrays.asList(
             ErrorPageDefinition.INSTANCE,
             SimpleErrorPageDefinition.INSTANCE
     ));
@@ -57,11 +56,6 @@ public class ErrorHandlerDefinitions extends SimplePersistentResourceDefinition 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return Collections.emptySet();
-    }
-
-    @Override
-    public String getXmlElementName() {
-        return "error-handlers";
     }
 
     @Override

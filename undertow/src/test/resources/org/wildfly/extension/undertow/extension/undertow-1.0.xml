@@ -30,6 +30,7 @@
     <server name="default-server" default-host="localhost" servlet-container="blah">
         <ajp-listener name="ajp-connector" socket-binding="ajp"/>
         <http-listener name="default" socket-binding="http"/>
+        <https-listener name="https" socket-binding="https" security-realm="UndertowRealm" />
 
         <host name="default-host" alias="localhost, some.host">
             <location name="/" handler="welcome-content">
@@ -62,6 +63,12 @@
                     java-encoding="${prop.java-encoding:utf-8}"
                     x-powered-by="${prop.x-powered-by:true}"
                     display-source-fragment="${prop.display-source-fragment:true}"/>
+        <session-cookie name="MYSESSIONCOOKIE"
+                        domain="example.com"
+                        comment="session cookie"
+                        secure="true"
+                        http-only="true"
+                        max-age="1000"/>
     </servlet-container>
 
     <error-handlers>

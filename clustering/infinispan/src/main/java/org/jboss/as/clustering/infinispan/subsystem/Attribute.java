@@ -22,9 +22,10 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import javax.xml.XMLConstants;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.xml.XMLConstants;
 
 import org.jboss.as.controller.AttributeDefinition;
 
@@ -40,6 +41,7 @@ public enum Attribute {
     ACQUIRE_TIMEOUT(ModelKeys.ACQUIRE_TIMEOUT),
     ALIASES(ModelKeys.ALIASES),
     ASYNC_MARSHALLING(ModelKeys.ASYNC_MARSHALLING),
+    BACKUP_FAILURE_POLICY(ModelKeys.BACKUP_FAILURE_POLICY),
     BATCH_SIZE(ModelKeys.BATCH_SIZE),
     BATCHING(ModelKeys.BATCHING),
     CACHE(ModelKeys.CACHE),
@@ -87,6 +89,8 @@ public enum Attribute {
     QUEUE_SIZE(ModelKeys.QUEUE_SIZE),
     RACK(ModelKeys.RACK),
     RELATIVE_TO(ModelKeys.RELATIVE_TO),
+    REMOTE_CACHE(ModelKeys.REMOTE_CACHE),
+    REMOTE_SITE(ModelKeys.REMOTE_SITE),
     REMOTE_TIMEOUT(ModelKeys.REMOTE_TIMEOUT),
     REPLICATION_QUEUE_EXECUTOR(ModelKeys.REPLICATION_QUEUE_EXECUTOR),
     SEGMENTS(ModelKeys.SEGMENTS),
@@ -100,6 +104,8 @@ public enum Attribute {
     STOP_TIMEOUT(ModelKeys.STOP_TIMEOUT),
     STRATEGY(ModelKeys.STRATEGY),
     STRIPING(ModelKeys.STRIPING),
+    TAKE_BACKUP_OFFLINE_AFTER_FAILURES(ModelKeys.TAKE_BACKUP_OFFLINE_AFTER_FAILURES),
+    TAKE_BACKUP_OFFLINE_MIN_WAIT(ModelKeys.TAKE_BACKUP_OFFLINE_MIN_WAIT),
     TCP_NO_DELAY(ModelKeys.TCP_NO_DELAY),
     THREAD_POOL_SIZE(ModelKeys.THREAD_POOL_SIZE),
     TIMEOUT(ModelKeys.TIMEOUT),

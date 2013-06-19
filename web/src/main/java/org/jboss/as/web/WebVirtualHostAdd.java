@@ -30,8 +30,6 @@ import static org.jboss.as.web.WebMessages.MESSAGES;
 
 import java.util.List;
 
-import org.jboss.as.clustering.web.sso.SSOClusterManager;
-import org.jboss.as.clustering.web.sso.SSOClusterManagerService;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -51,6 +49,11 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.wildfly.clustering.web.sso.SSOManagerFactory;
+import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilder;
+import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderService;
+import org.wildfly.clustering.web.sso.SSOManagerConfiguration;
 
 /**
  * {@code OperationHandler} responsible for adding a virtual host.
@@ -121,18 +124,17 @@ class WebVirtualHostAdd extends AbstractAddStepHandler {
             ModelNode sso = resolveExpressions(context, fullModel.get(SSO_PATH.getKey(), SSO_PATH.getValue()).clone(), WebSSODefinition.SSO_ATTRIBUTES);
             service.setSso(sso);
             if (sso.hasDefined(Constants.CACHE_CONTAINER)) {
-                ServiceName ssoName = WebSubsystemServices.JBOSS_WEB_HOST.append(name, Constants.SSO);
-                serviceBuilder.addDependency(ssoName, SSOClusterManager.class, service.getSSOClusterManager());
-
-                SSOClusterManagerService ssoService = new SSOClusterManagerService();
-                SSOClusterManager ssoManager = ssoService.getValue();
-                ssoManager.setCacheContainerName(sso.get(Constants.CACHE_CONTAINER).asString());
-                if (sso.hasDefined(Constants.CACHE_NAME)) {
-                    ssoManager.setCacheName(sso.get(Constants.CACHE_NAME).asString());
+                SSOManagerFactoryBuilder ssoManagerFactoryBuilder = new SSOManagerFactoryBuilderService().getValue();
+                if (ssoManagerFactoryBuilder != null) {
+                    ServiceName ssoName = WebSubsystemServices.JBOSS_WEB_HOST.append(name, Constants.SSO);
+                    serviceBuilder.addDependency(ssoName, SSOManagerFactory.class, service.getSSOManagerFactory());
+                    SSOManagerConfiguration ssoManagerConfig = new SSOManagerConfiguration();
+                    ssoManagerConfig.setContainer(sso.get(Constants.CACHE_CONTAINER).asString());
+                    if (sso.hasDefined(Constants.CACHE_NAME)) {
+                        ssoManagerConfig.setCache(sso.get(Constants.CACHE_NAME).asString());
+                    }
+                    newControllers.add(ssoManagerFactoryBuilder.build(serviceTarget, ssoName, ssoManagerConfig).setInitialMode(Mode.ON_DEMAND).install());
                 }
-                ServiceBuilder<SSOClusterManager> builder = serviceTarget.addService(ssoName, ssoService);
-                ssoService.getValue().addDependencies(serviceTarget, builder);
-                newControllers.add(builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install());
             }
         }
 

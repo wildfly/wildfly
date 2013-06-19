@@ -30,6 +30,7 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.xnio.BufferAllocator;
 import org.xnio.ByteBufferSlicePool;
 import org.xnio.Pool;
 
@@ -41,15 +42,17 @@ public class BufferPoolService implements Service<Pool<ByteBuffer>> {
     /*<buffer-pool name="default" buffer-size="2048" buffers-per-slice="512"/>*/
     private final int bufferSize;
     private final int buffersPerSlice;
+    private final boolean directBuffers;
 
-    public BufferPoolService(int bufferSize, int buffersPerSlice) {
+    public BufferPoolService(int bufferSize, int buffersPerSlice, final boolean directBuffers) {
         this.bufferSize = bufferSize;
         this.buffersPerSlice = buffersPerSlice;
+        this.directBuffers = directBuffers;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        bufferPool = new ByteBufferSlicePool(bufferSize, buffersPerSlice * bufferSize);
+        bufferPool = new ByteBufferSlicePool(directBuffers ? BufferAllocator.DIRECT_BYTE_BUFFER_ALLOCATOR : BufferAllocator.BYTE_BUFFER_ALLOCATOR, bufferSize, buffersPerSlice * bufferSize);
     }
 
     @Override

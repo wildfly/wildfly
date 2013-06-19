@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
    <extension-module>org.jboss.as.clustering.jgroups</extension-module>
-   <subsystem xmlns="urn:jboss:domain:jgroups:1.1" default-stack="udp">
+   <subsystem xmlns="urn:jboss:domain:jgroups:2.0" default-stack="udp">
        <stack name="udp">
            <transport type="UDP" socket-binding="jgroups-udp"/>
            <protocol type="PING"/>
@@ -34,10 +34,10 @@
            <protocol type="FRAG2"/>
            <protocol type="RSVP"/>
        </stack>
-   </subsystem>   
+   </subsystem>
    <socket-binding name="jgroups-mping" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
    <socket-binding name="jgroups-tcp" port="7600"/>
    <socket-binding name="jgroups-tcp-fd" port="57600"/>
    <socket-binding name="jgroups-udp" port="55200" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45688"/>
-   <socket-binding name="jgroups-udp-fd" port="54200"/>   
+   <socket-binding name="jgroups-udp-fd" port="54200"/>
 </config>

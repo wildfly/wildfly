@@ -142,11 +142,6 @@ public class Configuration {
     public static final String ADAPTER_MODULE = "jboss.as.jpa.adapterModule";
 
     /**
-     * default if no ADAPTER_MODULE is specified.
-     */
-    public static final String ADAPTER_MODULE_DEFAULT = "org.jboss.as.jpa.hibernate:4";
-
-    /**
      * defaults to true, if changed to false (in the persistence.xml),
      * the JPA container will not start the persistence unit service.
      */

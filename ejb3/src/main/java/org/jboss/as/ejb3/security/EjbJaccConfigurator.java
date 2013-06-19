@@ -111,10 +111,10 @@ public class EjbJaccConfigurator implements ComponentConfigurator {
                                      final Method viewMethod, final DeploymentReflectionIndex index, final ApplicableMethodInformation<EJBMethodSecurityAttribute> permissions) {
 
         MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(viewMethod);
-        EJBMethodSecurityAttribute ejbMethodSecurityMetaData = permissions.getViewAttribute(ejbViewConfiguration.getMethodIntf(), viewMethod.getName(), methodIdentifier.getParameterTypes());
+        EJBMethodSecurityAttribute ejbMethodSecurityMetaData = permissions.getViewAttribute(ejbViewConfiguration.getMethodIntf(), viewMethod);
         //if this is null we try with the corresponding bean method.
         if (ejbMethodSecurityMetaData == null) {
-            ejbMethodSecurityMetaData = permissions.getViewAttribute(MethodIntf.BEAN, viewMethod.getName(), methodIdentifier.getParameterTypes());
+            ejbMethodSecurityMetaData = permissions.getViewAttribute(MethodIntf.BEAN, viewMethod);
         }
 
         final Method classMethod = ClassReflectionIndexUtil.findMethod(index, ejbViewConfiguration.getComponentConfiguration().getComponentClass(), viewMethod);
@@ -122,9 +122,9 @@ public class EjbJaccConfigurator implements ComponentConfigurator {
             if (classMethod != null) {
                 methodIdentifier = methodIdentifier.getIdentifierForMethod(classMethod);
                 //if this is null we try with the corresponding bean method.
-                ejbMethodSecurityMetaData = permissions.getAttribute(ejbViewConfiguration.getMethodIntf(), classMethod.getDeclaringClass().getName(), classMethod.getName(), methodIdentifier.getParameterTypes());
+                ejbMethodSecurityMetaData = permissions.getAttribute(ejbViewConfiguration.getMethodIntf(), classMethod);
                 if (ejbMethodSecurityMetaData == null) {
-                    ejbMethodSecurityMetaData = permissions.getAttribute(MethodIntf.BEAN, classMethod.getDeclaringClass().getName(), classMethod.getName(), methodIdentifier.getParameterTypes());
+                    ejbMethodSecurityMetaData = permissions.getAttribute(MethodIntf.BEAN, classMethod);
 
                 }
             }

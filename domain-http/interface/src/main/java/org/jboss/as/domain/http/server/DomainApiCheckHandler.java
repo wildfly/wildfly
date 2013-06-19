@@ -26,7 +26,6 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.BlockingHandler;
 import io.undertow.server.handlers.ResponseCodeHandler;
-import io.undertow.server.handlers.form.MultiPartHandler;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
@@ -48,13 +47,13 @@ class DomainApiCheckHandler implements HttpHandler {
 
     private final ControlledProcessStateService controlledProcessStateService;
     private final HttpHandler domainApiHandler;
-    private final MultiPartHandler uploadHandler = new MultiPartHandler();;
+    private final HttpHandler uploadHandler;
 
 
     DomainApiCheckHandler(final ModelController modelController, final ControlledProcessStateService controlledProcessStateService) {
         this.controlledProcessStateService = controlledProcessStateService;
         domainApiHandler = new BlockingHandler(new SubjectAssociationHandler(new DomainApiHandler(modelController)));
-        uploadHandler.setNext(new BlockingHandler(new SubjectAssociationHandler(new DomainApiUploadHandler(modelController))));
+        uploadHandler = new BlockingHandler(new SubjectAssociationHandler(new DomainApiUploadHandler(modelController)));
     }
 
     @Override

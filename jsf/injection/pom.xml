@@ -59,5 +59,12 @@
             <groupId>org.apache.myfaces.core</groupId>
             <artifactId>myfaces-impl</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-core-jsf</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
+
 </project>

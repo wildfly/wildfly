@@ -22,19 +22,19 @@
 
 package org.jboss.as.webservices.util;
 
-import org.jboss.ws.common.management.DefaultEndpointRegistry;
 import org.jboss.wsf.spi.management.EndpointRegistry;
 
 /**
  * JBoss AS 7 WS Endpoint registry factory
  *
  * @author alessio.soldano@jboss.com
+ * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  * @since 25-Jan-2012
  *
  */
 public final class EndpointRegistryFactory extends org.jboss.wsf.spi.management.EndpointRegistryFactory {
 
-    private static final EndpointRegistry fallbackRegistry = new DefaultEndpointRegistry();;
+    private static final EndpointRegistry registry = new ServiceContainerEndpointRegistry();
 
     public EndpointRegistryFactory() {
         super();
@@ -46,15 +46,7 @@ public final class EndpointRegistryFactory extends org.jboss.wsf.spi.management.
      * @return endpoint registry
      */
     public EndpointRegistry getEndpointRegistry() {
-        try {
-            EndpointRegistry registry = ASHelper.getMSCService(WSServices.REGISTRY_SERVICE, EndpointRegistry.class);
-            if (registry == null) {
-                registry = fallbackRegistry;
-            }
-            return registry;
-        } catch (Exception e) {
-            return fallbackRegistry;
-        }
+        return registry;
     }
 
 }

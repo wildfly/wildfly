@@ -35,6 +35,7 @@ import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.PropertiesValueResolver;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -75,10 +76,11 @@ public class ServiceRefTestCase {
             properties.put("node0", NetworkUtils.formatPossibleIpv6Address((String)properties.get("node0")));
         }
         return ShrinkWrap.create(JavaArchive.class, "ws-serviceref-example.jar")
-                .addClasses(EJB3Bean.class, EndpointInterface.class, EndpointService.class, StatelessBean.class, StatelessRemote.class)
+                .addClasses(EJB3Bean.class, EndpointInterface.class, EndpointService.class, StatelessBean.class, StatelessRemote.class, CdiBean.class)
                 .addAsManifestResource(ServiceRefTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml")
                 .addAsManifestResource(ServiceRefTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsManifestResource(new StringAsset(PropertiesValueResolver.replaceProperties(wsdl, properties)), "wsdl/TestService.wsdl");
+                .addAsManifestResource(new StringAsset(PropertiesValueResolver.replaceProperties(wsdl, properties)), "wsdl/TestService.wsdl")
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Test
@@ -119,6 +121,16 @@ public class ServiceRefTestCase {
         // test StatelessBean2
         final String result2 = remote2.echo4("Relay4");
         Assert.assertEquals("Second EJB:Relay4", result2);
+    }
+
+    @Test
+    public void testCdiBeanRelay() throws Exception {
+        // test StatelessBean
+        final String result1 = remote1.echoCDI("RelayCDI");
+        Assert.assertEquals("First EJB:RelayCDI", result1);
+        // test StatelessBean2
+        final String result2 = remote2.echoCDI("RelayCDI");
+        Assert.assertEquals("Second EJB:RelayCDI", result2);
     }
 
 }

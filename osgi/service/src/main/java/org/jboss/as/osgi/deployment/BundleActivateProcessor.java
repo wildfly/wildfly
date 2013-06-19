@@ -95,10 +95,12 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
             if (metadata != null && metadata.getBundleActivator() != null) {
                 String activatorClass = metadata.getBundleActivator();
                 EEModuleDescription moduleDescription = depUnit.getAttachment(EE_MODULE_DESCRIPTION);
-                for (ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
-                    if (activatorClass.equals(componentDescription.getComponentClassName())) {
-                        ServiceName startServiceName = componentDescription.getStartServiceName();
-                        builder.addDependency(startServiceName, Component.class, service.injectedComponent);
+                if (moduleDescription != null) {
+                    for (ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
+                        if (activatorClass.equals(componentDescription.getComponentClassName())) {
+                            ServiceName startServiceName = componentDescription.getStartServiceName();
+                            builder.addDependency(startServiceName, Component.class, service.injectedComponent);
+                        }
                     }
                 }
             }

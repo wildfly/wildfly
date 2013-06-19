@@ -30,6 +30,7 @@ public enum Attribute {
     // must be first
     UNKNOWN(null),
 
+    CLUSTER(ModelKeys.CLUSTER),
     DEFAULT_EXECUTOR(ModelKeys.DEFAULT_EXECUTOR),
     DEFAULT_STACK(ModelKeys.DEFAULT_STACK),
     DIAGNOSTICS_SOCKET_BINDING(ModelKeys.DIAGNOSTICS_SOCKET_BINDING),
@@ -41,6 +42,7 @@ public enum Attribute {
     SHARED(ModelKeys.SHARED),
     SITE(ModelKeys.SITE),
     SOCKET_BINDING(ModelKeys.SOCKET_BINDING),
+    STACK(ModelKeys.STACK),
     THREAD_FACTORY(ModelKeys.THREAD_FACTORY),
     TIMER_EXECUTOR(ModelKeys.TIMER_EXECUTOR),
     TYPE(ModelKeys.TYPE),

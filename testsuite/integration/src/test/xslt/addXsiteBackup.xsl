@@ -1,11 +1,10 @@
 <?xml version="1.0" ?>
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:ispn="urn:jboss:domain:infinispan:1.4">
+                xmlns:ispn="urn:jboss:domain:infinispan:2.0">
 
     <!--
       XSLT stylesheet to add an x-site backup element to a cache in a cache container.
-      The <backups/> element is created if it does not exist.
 
       Upon execution, this:
       <backups>
@@ -31,12 +30,10 @@
 
     <xsl:output method="xml" indent="yes"/>
 
-    <xsl:variable name="ispnns">urn:jboss:domain:infinispan:1.4</xsl:variable>
-
     <!-- populate the <backup/> element by input parameters -->
     <xsl:variable name="new-backup-element">
-        <backup site-name="{$backup.site}" failure-policy="{$backup.failure-policy}" strategy="{$backup.strategy}"
-                replication-timeout="{$backup.replication-timeout}" enabled="{$backup.enabled}"/>
+        <ispn:backup site="{$backup.site}" failure-policy="{$backup.failure-policy}" strategy="{$backup.strategy}"
+                     timeout="{$backup.replication-timeout}" enabled="{$backup.enabled}"/>
     </xsl:variable>
 
     <xsl:template name="copy-attributes">
@@ -45,28 +42,13 @@
         </xsl:for-each>
     </xsl:template>
 
-    <xsl:template name="add-backup-element">
-        <xsl:choose>
-            <xsl:when test="count(backups)">
-                <!-- copy the existing backups over -->
-                <xsl:copy-of select="backups/backup"/>
-                <xsl:copy-of select="$new-backup-element"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <!-- create a new <backups/> element and add the new backup -->
-                <backups>
-                    <xsl:copy-of select="$new-backup-element"/>
-                </backups>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:template>
-
     <!-- copy the cache over and add the backup element -->
-    <xsl:template match="ispn:cache-container[@name=$container]/*[local-name()=$cache-type and @name=$cache]">
+    <xsl:template
+            match="ispn:cache-container[@name=$container]/*[local-name()=$cache-type and @name=$cache]/ispn:backups">
         <xsl:copy>
             <xsl:call-template name="copy-attributes"/>
             <xsl:copy-of select="child::*"/>
-            <xsl:call-template name="add-backup-element"/>
+            <xsl:copy-of select="$new-backup-element"/>
         </xsl:copy>
     </xsl:template>
 

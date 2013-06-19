@@ -42,6 +42,8 @@ cygwin=false;
 darwin=false;
 linux=false;
 solaris=false;
+freebsd=false;
+
 case "`uname`" in
     CYGWIN*)
         cygwin=true
@@ -50,7 +52,9 @@ case "`uname`" in
     Darwin*)
         darwin=true
         ;;
-
+    FreeBSD)
+        freebsd=true
+        ;;
     Linux)
         linux=true
         ;;
@@ -182,7 +186,7 @@ if $linux || $solaris; then
 fi
 
 # No readlink -m on BSD
-if $darwin; then
+if $darwin || $freebsd; then
     # consolidate the server and command line opts
     CONSOLIDATED_OPTS="$JAVA_OPTS $SERVER_OPTS"
     # process the standalone options

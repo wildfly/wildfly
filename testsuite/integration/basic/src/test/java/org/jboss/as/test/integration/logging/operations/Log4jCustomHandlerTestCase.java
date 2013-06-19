@@ -30,7 +30,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import javax.servlet.http.HttpServletResponse;
 
-import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -46,6 +45,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -141,7 +141,7 @@ public class Log4jCustomHandlerTestCase extends AbstractLoggingOperationsTestCas
             ModelNode opProperties = op.get("properties").setEmptyObject();
             opProperties.get("file").set(logFile.getAbsolutePath());
             opProperties.get("immediateFlush").set(true);
-            System.out.println(client.execute(op));
+            client.execute(op);
 
             // Add the handler to the root-logger
             op = Operations.createOperation("add-handler", createRootLoggerAddress().toModelNode());

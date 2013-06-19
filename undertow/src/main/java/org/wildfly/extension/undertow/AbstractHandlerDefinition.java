@@ -30,7 +30,7 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimplePersistentResourceDefinition;
+import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -38,7 +38,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public abstract class AbstractHandlerDefinition extends SimplePersistentResourceDefinition implements Handler {
+public abstract class AbstractHandlerDefinition extends PersistentResourceDefinition implements Handler {
     protected final String name;
 
     protected AbstractHandlerDefinition(final String name, AbstractAddStepHandler addHandler, AbstractRemoveStepHandler removeHandler) {

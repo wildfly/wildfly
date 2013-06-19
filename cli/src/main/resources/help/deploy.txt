@@ -40,7 +40,20 @@ ARGUMENTS
                      enable an already existing but disabled deployment, and in
                      this case the name argument is required.
 
- --runtime-name    - optional, the runtime name for the deployment.
+ --runtime-name    - optional, the runtime name for the deployment. This will
+                     form the basis for such things as default Java EE
+                     application and module names. This would typically be the
+                     same as --name, and if not specified the value used for
+                     --name will be used. In some cases users may wish to have
+                     two deployments with the same 'runtime-name' (e.g. two
+                     versions of "example.war") both available in the management
+                     configuration, in which case the deployments would need to
+                     have distinct 'name' values but would have the same
+                     'runtime-name'. Within an individual server, only one
+                     deployment with a given 'runtime-name' can deployed.
+                     However, multiple deployments with the same 'runtime-name'
+                     can exist in the configuration, so long as only one is
+                     enabled.
 
  --force           - if the deployment with the specified name already exists,
                      by default, deploy will be aborted and the corresponding
@@ -50,7 +63,7 @@ ARGUMENTS
 
  --disabled       - indicates that the deployment has to be added to the
                     repository disabled.
- 
+
  --unmanaged      - if this argument is not specified, the deployment content
                     will be copied (i.e. uploaded) to the server's deployment
                     repository before it is deployed. If the argument is
