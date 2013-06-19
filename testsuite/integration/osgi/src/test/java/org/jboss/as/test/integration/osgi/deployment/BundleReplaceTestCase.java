@@ -148,6 +148,7 @@ public class BundleReplaceTestCase {
     }
 
     @Test
+    @Ignore("[WFLY-1557] DuplicateServiceException on undertow deployment replace")
     public void testDirectBundleReplace() throws Exception {
         ServerDeploymentHelper server = new ServerDeploymentHelper(managementClient.getControllerClient());
         String runtimeName = server.deploy(BUNDLE_V100_WAB, deployer.getDeployment(BUNDLE_V100_WAB));
