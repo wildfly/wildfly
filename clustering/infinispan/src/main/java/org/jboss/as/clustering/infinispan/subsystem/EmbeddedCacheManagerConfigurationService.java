@@ -61,6 +61,7 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
     }
 
     interface TransportConfiguration {
+        String getClusterName();
         Long getLockTimeout();
         ChannelFactory getChannelFactory();
         Executor getExecutor();
@@ -157,7 +158,9 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
                     transportBuilder.machineId(machine);
                 }
             }
-            transportBuilder.clusterName(this.name);
+
+            String clusterName = transport.getClusterName();
+            transportBuilder.clusterName((clusterName != null) ? clusterName : this.name);
 
             Executor executor = transport.getExecutor();
             if (executor != null) {
