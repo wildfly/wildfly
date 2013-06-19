@@ -40,6 +40,7 @@ import org.jboss.as.web.host.WebHost;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
 
 /**
@@ -49,7 +50,7 @@ import org.osgi.service.http.NamespaceException;
  * @author David Bosschaert
  * @since 19-Jul-2012
  */
-final class HttpServiceFactory implements ServiceFactory {
+final class HttpServiceFactory implements ServiceFactory<HttpService> {
 
     private final GlobalRegistry registry;
     private final CommonWebServer webServer;
@@ -64,14 +65,14 @@ final class HttpServiceFactory implements ServiceFactory {
     }
 
     @Override
-    public Object getService(final Bundle bundle, final ServiceRegistration registration) {
+    public HttpService getService(final Bundle bundle, final ServiceRegistration<HttpService> registration) {
         synchronized (registry) {
             return new HttpServiceImpl(serverEnvironment, webServer, virtualHost, bundle);
         }
     }
 
     @Override
-    public void ungetService(Bundle bundle, ServiceRegistration registration, Object service) {
+    public void ungetService(Bundle bundle, ServiceRegistration<HttpService> registration, HttpService service) {
         synchronized (registry) {
             HttpServiceImpl httpService = (HttpServiceImpl) service;
             for (Registration reg : registry.unregister(bundle)) {

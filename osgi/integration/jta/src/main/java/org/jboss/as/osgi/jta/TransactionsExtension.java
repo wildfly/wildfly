@@ -28,7 +28,6 @@ import org.jboss.as.osgi.AbstractSubsystemExtension;
 import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.UserTransactionService;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.value.InjectedValue;
@@ -49,20 +48,16 @@ public class TransactionsExtension extends AbstractSubsystemExtension {
     @Override
     public void configureServiceDependencies(ServiceName serviceName, ServiceBuilder<?> builder) {
         if (serviceName.equals(IntegrationServices.SYSTEM_SERVICES_PLUGIN)) {
-            builder.addDependency(DependencyType.OPTIONAL, TransactionManagerService.SERVICE_NAME, TransactionManager.class, injectedTransactionManager);
-            builder.addDependency(DependencyType.OPTIONAL, UserTransactionService.SERVICE_NAME, UserTransaction.class, injectedUserTransaction);
+            builder.addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, injectedTransactionManager);
+            builder.addDependency(UserTransactionService.SERVICE_NAME, UserTransaction.class, injectedUserTransaction);
         }
     }
 
     @Override
     public void startSystemServices(StartContext startContext, BundleContext systemContext) {
-        TransactionManager transactionManager = injectedTransactionManager.getOptionalValue();
-        if (transactionManager != null) {
-            systemContext.registerService(TransactionManager.class.getName(), transactionManager, null);
-        }
-        UserTransaction userTransaction = injectedUserTransaction.getOptionalValue();
-        if (userTransaction != null) {
-            systemContext.registerService(UserTransaction.class.getName(), userTransaction, null);
-        }
+        TransactionManager transactionManager = injectedTransactionManager.getValue();
+        systemContext.registerService(TransactionManager.class.getName(), transactionManager, null);
+        UserTransaction userTransaction = injectedUserTransaction.getValue();
+        systemContext.registerService(UserTransaction.class.getName(), userTransaction, null);
     }
 }
