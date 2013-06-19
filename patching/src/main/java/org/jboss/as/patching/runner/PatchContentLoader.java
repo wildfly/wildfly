@@ -51,11 +51,15 @@ public class PatchContentLoader {
         final File miscRoot = new File(root, PatchContentLoader.MISC);
         final File bundlesRoot = new File(root, PatchContentLoader.BUNDLES);
         final File modulesRoot = new File(root, PatchContentLoader.MODULES);
+        return PatchContentLoader.create(miscRoot, bundlesRoot, modulesRoot);
+    }
+
+    public static PatchContentLoader create(final File miscRoot, final File bundlesRoot, final File modulesRoot) {
         return new PatchContentLoader(miscRoot, bundlesRoot, modulesRoot);
     }
 
-    public PatchContentLoader(final File miscRoot, final File bundlesRoot, final File modulesRoot) {
-        this.bundlesRoot  = bundlesRoot;
+    private PatchContentLoader(final File miscRoot, final File bundlesRoot, final File modulesRoot) {
+        this.bundlesRoot = bundlesRoot;
         this.miscRoot = miscRoot;
         this.modulesRoot = modulesRoot;
     }
@@ -108,8 +112,11 @@ public class PatchContentLoader {
     }
 
     public static File getMiscPath(final File miscRoot, final MiscContentItem item) {
+        if (miscRoot == null) {
+            throw new IllegalStateException();
+        }
         File file = miscRoot;
-        for(final String path : item.getPath()) {
+        for (final String path : item.getPath()) {
             file = new File(file, path);
         }
         file = new File(file, item.getName());
@@ -121,9 +128,12 @@ public class PatchContentLoader {
     }
 
     static File getModulePath(File root, String name, String slot) {
+        if (root == null) {
+            throw new IllegalStateException();
+        }
         final String[] ss = name.split("\\.");
         File file = root;
-        for(final String s : ss) {
+        for (final String s : ss) {
             file = new File(file, s);
         }
         return new File(file, slot);

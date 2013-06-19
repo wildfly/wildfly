@@ -36,6 +36,7 @@ import org.jboss.as.patching.metadata.ModuleItem;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchElement;
 import org.jboss.as.patching.metadata.PatchElementProvider;
+import org.jboss.as.patching.metadata.PatchImpl;
 import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.patching.metadata.RollbackPatch;
 import org.jboss.as.patching.metadata.impl.IdentityImpl;
@@ -173,21 +174,25 @@ class IdentityPatchContext implements PatchContentProvider {
      */
     protected PatchingResult finalize(final FinalizeCallback callback) throws Exception {
         assert state == State.NEW;
-        final Patch.PatchType patchType = callback.getPatchType();
+        final Patch original = callback.getPatch();
+        final Patch.PatchType patchType = original.getPatchType();
         final String patchId;
         if (patchType == Patch.PatchType.UPGRADE) {
             patchId = modification.getReleasePatchID();
         } else if (patchType == Patch.PatchType.CUMULATIVE) {
             patchId = modification.getCumulativeID();
         } else {
-            patchId = callback.getPatchId();
+            patchId = original.getPatchId();
         }
         try {
+            // The processed patch, based on the recorded changes
+            final Patch processedPatch = createProcessedPatch(original);
+            // The rollback containing all the recorded rollback actions
             final RollbackPatch rollbackPatch = createRollbackPatch(patchId, patchType, modification.getVersion());
-            callback.finishPatch(rollbackPatch, this);
+            callback.finishPatch(processedPatch, rollbackPatch, this);
         } catch (Exception e) {
             if (undoChanges()) {
-                callback.rollback();
+                callback.operationCancelled();
             }
             throw e;
         }
@@ -195,7 +200,7 @@ class IdentityPatchContext implements PatchContentProvider {
         return new PatchingResult() {
             @Override
             public String getPatchId() {
-                return callback.getPatchId();
+                return original.getPatchId();
             }
 
             @Override
@@ -228,7 +233,7 @@ class IdentityPatchContext implements PatchContentProvider {
             public void commit() {
                 if (state == State.FINISHED) {
                     try {
-                        callback.commit();
+                        callback.completed();
                         modification.complete();
                         state = State.COMPLETED;
                     } catch (Exception e) {
@@ -245,7 +250,7 @@ class IdentityPatchContext implements PatchContentProvider {
             public void rollback() {
                 if (undoChanges()) {
                     try {
-                        callback.rollback();
+                        callback.operationCancelled();
                     } finally {
                         modification.cancel();
                     }
@@ -265,7 +270,7 @@ class IdentityPatchContext implements PatchContentProvider {
             // Was actually completed already
             return false;
         }
-        final PatchContentLoader loader = new PatchContentLoader(miscBackup, null, null);
+        final PatchContentLoader loader = PatchContentLoader.create(miscBackup, null, null);
         // Undo changes for the identity
         undoChanges(identityEntry, loader);
         // TODO maybe check if we need to do something for the layers too !?
@@ -303,7 +308,7 @@ class IdentityPatchContext implements PatchContentProvider {
      * @throws XMLStreamException
      * @throws IOException
      */
-    private void recordRollbackLoader(final String patchId, PatchableTarget.TargetInfo target) {
+    protected void recordRollbackLoader(final String patchId, PatchableTarget.TargetInfo target) {
         // setup the content loader paths
         final DirectoryStructure structure = target.getDirectoryStructure();
         final InstalledImage image = structure.getInstalledImage();
@@ -311,9 +316,16 @@ class IdentityPatchContext implements PatchContentProvider {
         final File miscRoot = new File(historyDir, PatchContentLoader.MISC);
         final File modulesRoot = structure.getModulePatchDirectory(patchId);
         final File bundlesRoot = structure.getBundlesPatchDirectory(patchId);
-        final PatchContentLoader loader = new PatchContentLoader(miscRoot, bundlesRoot, modulesRoot);
+        final PatchContentLoader loader = PatchContentLoader.create(miscRoot, bundlesRoot, modulesRoot);
         //
-        contentLoaders.put(patchId, loader);
+        recordContentLoader(patchId, loader);
+    }
+
+    protected void recordContentLoader(final String patchID, final PatchContentLoader contentLoader) {
+        if (contentLoaders.containsKey(patchID)) {
+            throw new IllegalStateException();
+        }
+        contentLoaders.put(patchID, contentLoader);
     }
 
     /**
@@ -352,27 +364,69 @@ class IdentityPatchContext implements PatchContentProvider {
 
     }
 
-    static File getTargetFile(final File root, final MiscContentItem item) {
-        return PatchContentLoader.getMiscPath(root, item);
+    /**
+     * Create a patch representing what we actually processed. This may contain additional items in case we had
+     * to port forward modules which were not changed in the actual patch.
+     *
+     * @param original the original
+     * @return the processed patch
+     */
+    protected Patch createProcessedPatch(final Patch original) {
+
+        // Process elements
+        final List<PatchElement> elements = new ArrayList<PatchElement>();
+        // Process layers
+        for (final PatchEntry entry : getLayers()) {
+            final PatchElement element = createPatchElement(entry, entry.element.getId(), entry.modifications);
+            elements.add(element);
+        }
+        // Process add-ons
+        for (final PatchEntry entry : getAddOns()) {
+            final PatchElement element = createPatchElement(entry, entry.element.getId(), entry.modifications);
+            elements.add(element);
+        }
+
+        // Swap the patch element modifications, keep the identity ones since we don't need to track misc items
+        return new PatchImpl(original.getPatchId(), original.getDescription(), original.getPatchType(), original.getIdentity(),
+                original.getResultingVersion(), original.getAppliesTo(), original.getIncompatibleWith(), elements, original.getModifications());
     }
 
-    static void writePatch(final Patch rollbackPatch, final File file) throws IOException {
-        final File parent = file.getParentFile();
-        if (!parent.isDirectory()) {
-            if (!parent.mkdirs() && !parent.exists()) {
-                throw PatchMessages.MESSAGES.cannotCreateDirectory(file.getAbsolutePath());
-            }
+    /**
+     * Create a rollback patch based on the recorded actions.
+     *
+     * @param patchId          the new patch id, depending on release or one-off
+     * @param patchType        the current patch type
+     * @param resultingVersion the resulting version
+     * @return the rollback patch
+     */
+    protected RollbackPatch createRollbackPatch(final String patchId, final Patch.PatchType patchType, final String resultingVersion) {
+        // Process elements
+        final List<PatchElement> elements = new ArrayList<PatchElement>();
+        // Process layers
+        for (final PatchEntry entry : getLayers()) {
+            final PatchElement element = createRollbackElement(entry);
+            elements.add(element);
         }
-        try {
-            final OutputStream os = new FileOutputStream(file);
-            try {
-                PatchXml.marshal(os, rollbackPatch);
-            } finally {
-                IoUtils.safeClose(os);
-            }
-        } catch (XMLStreamException e) {
-            throw new IOException(e);
+        // Process add-ons
+        for (final PatchEntry entry : getAddOns()) {
+            final PatchElement element = createRollbackElement(entry);
+            elements.add(element);
         }
+
+        final InstalledIdentity installedIdentity = modification.getUnmodifiedInstallationState();
+        final String name = installedIdentity.getIdentity().getName();
+        final Collection<String> appliesTo = Collections.singletonList(modification.getVersion());
+        final Identity identity = new IdentityImpl(name, modification.getVersion());
+        final List<ContentModification> modifications = identityEntry.rollbackActions;
+        // TODO see if we need to add some requires, we probably need to maintain incompatible-with
+        final Collection<String> incompatibleWith = Collections.emptyList();
+        final Patch delegate = new PatchImpl(patchId, "rollback patch", patchType, identity, resultingVersion, appliesTo,
+                incompatibleWith, elements, modifications);
+        return new PatchImpl.RollbackPatchImpl(delegate, installedIdentity);
+    }
+
+    static File getTargetFile(final File root, final MiscContentItem item) {
+        return PatchContentLoader.getMiscPath(root, item);
     }
 
     class PatchEntry implements InstallationManager.MutablePatchingTarget, PatchingTaskContext {
@@ -381,8 +435,9 @@ class IdentityPatchContext implements PatchContentProvider {
         private String resultingVersion;
         private PatchElement element;
         private final InstallationManager.MutablePatchingTarget delegate;
+        private final List<ContentModification> modifications = new ArrayList<ContentModification>();
         private final List<ContentModification> rollbackActions = new ArrayList<ContentModification>();
-        private final Map<Location, PatchingTasks.ContentTaskDefinition> modifications = new LinkedHashMap<Location, PatchingTasks.ContentTaskDefinition>();
+        private final Map<Location, PatchingTasks.ContentTaskDefinition> definitions = new LinkedHashMap<Location, PatchingTasks.ContentTaskDefinition>();
 
         PatchEntry(final InstallationManager.MutablePatchingTarget delegate, final PatchElement element) {
             assert delegate != null;
@@ -450,8 +505,8 @@ class IdentityPatchContext implements PatchContentProvider {
             return delegate.getDirectoryStructure();
         }
 
-        public Map<Location, PatchingTasks.ContentTaskDefinition> getModifications() {
-            return modifications;
+        public Map<Location, PatchingTasks.ContentTaskDefinition> getDefinitions() {
+            return definitions;
         }
 
         @Override
@@ -471,8 +526,14 @@ class IdentityPatchContext implements PatchContentProvider {
         }
 
         @Override
-        public void recordRollbackAction(ContentModification rollbackAction) {
-            rollbackActions.add(rollbackAction);
+        public void recordChange(final ContentModification change, final ContentModification rollbackAction) {
+            // Only misc remove is null, but we replace it with the
+            if (change != null) {
+                modifications.add(change);
+            }
+            if (rollbackAction != null) {
+                rollbackActions.add(rollbackAction);
+            }
         }
 
         @Override
@@ -513,6 +574,77 @@ class IdentityPatchContext implements PatchContentProvider {
             }
             return PatchContentLoader.getModulePath(root, (ModuleItem) item);
         }
+    }
+
+    /**
+     * Patch finalization callback.
+     */
+    interface FinalizeCallback {
+
+        /**
+         * Get the original patch.
+         *
+         * @return the patch
+         */
+        Patch getPatch();
+
+        /**
+         * Finish step after the content modification were executed.
+         *
+         * @param processedPatch the processed patch
+         * @param rollbackPatch  the rollback patch
+         * @param context        the patch context
+         * @throws Exception
+         */
+        void finishPatch(Patch processedPatch, RollbackPatch rollbackPatch, IdentityPatchContext context) throws Exception;
+
+        void completed();
+
+        void operationCancelled();
+    }
+
+    /**
+     * Create a patch element for the rollback patch.
+     *
+     * @param entry the entry
+     * @return the new patch element
+     */
+    protected static PatchElement createRollbackElement(final PatchEntry entry) {
+        final PatchElement patchElement = entry.element;
+        final String patchId;
+        final Patch.PatchType patchType = patchElement.getPatchType();
+        if (patchType == Patch.PatchType.UPGRADE) {
+            patchId = entry.getReleasePatchID();
+        } else if (patchType == Patch.PatchType.CUMULATIVE) {
+            patchId = entry.getCumulativeID();
+        } else {
+            patchId = patchElement.getId();
+        }
+        return createPatchElement(entry, patchId, entry.rollbackActions);
+    }
+
+    /**
+     * Copy a patch element
+     *
+     * @param entry         the patch entry
+     * @param patchId       the patch id for the element
+     * @param modifications the element modifications
+     * @return the new patch element
+     */
+    protected static PatchElement createPatchElement(final PatchEntry entry, String patchId, final List<ContentModification> modifications) {
+
+        final PatchElement patchElement = entry.element;
+        final Patch.PatchType patchType = patchElement.getPatchType();
+        final PatchElementImpl element = new PatchElementImpl(patchId);
+        element.setProvider(patchElement.getProvider());
+        if (patchType == Patch.PatchType.UPGRADE) {
+            element.setUpgrade(""); // no versions for patch-elements for nwo
+        } else {
+            element.setNoUpgrade();
+        }
+        // Add all the rollback actions
+        element.getModifications().addAll(modifications);
+        return element;
     }
 
     void backupConfiguration() throws IOException {
@@ -584,120 +716,23 @@ class IdentityPatchContext implements PatchContentProvider {
 
     }
 
-    interface FinalizeCallback {
-
-        String getPatchId();
-
-        Patch.PatchType getPatchType();
-
-        void finishPatch(final RollbackPatch patch, IdentityPatchContext context) throws Exception;
-
-        void commit();
-
-        void rollback();
-    }
-
-    /**
-     * Create a rollback patch based on the recorded actions.
-     *
-     * @param patchId          the new patch id, depending on release or one-off
-     * @param patchType        the current patch type
-     * @param resultingVersion the resulting version
-     * @return the rollback patch
-     */
-    protected RollbackPatch createRollbackPatch(final String patchId, final Patch.PatchType patchType, final String resultingVersion) {
-        // Process elements
-        final List<PatchElement> elements = new ArrayList<PatchElement>();
-        // Process layers
-        for (final PatchEntry entry : getLayers()) {
-            final PatchElement element = createRollbackElement(entry);
-            elements.add(element);
+    static void writePatch(final Patch rollbackPatch, final File file) throws IOException {
+        final File parent = file.getParentFile();
+        if (!parent.isDirectory()) {
+            if (!parent.mkdirs() && !parent.exists()) {
+                throw PatchMessages.MESSAGES.cannotCreateDirectory(file.getAbsolutePath());
+            }
         }
-        // Process add-ons
-        for (final PatchEntry entry : getAddOns()) {
-            final PatchElement element = createRollbackElement(entry);
-            elements.add(element);
+        try {
+            final OutputStream os = new FileOutputStream(file);
+            try {
+                PatchXml.marshal(os, rollbackPatch);
+            } finally {
+                IoUtils.safeClose(os);
+            }
+        } catch (XMLStreamException e) {
+            throw new IOException(e);
         }
-
-        return new RollbackPatch() {
-
-            @Override
-            public InstalledIdentity getIdentityState() {
-                return modification.getUnmodifiedInstallationState();
-            }
-
-            @Override
-            public Identity getIdentity() {
-                // TODO see if we need to add some requires, we probably need to maintain incompatible-with
-                final String name =  getIdentityState().getIdentity().getName();
-                return new IdentityImpl(name, modification.getVersion());
-            }
-
-            @Override
-            public List<PatchElement> getElements() {
-                return elements;
-            }
-
-            @Override
-            public String getPatchId() {
-                return patchId;
-            }
-
-            @Override
-            public String getDescription() {
-                return "rollback patch";
-            }
-
-            @Override
-            public PatchType getPatchType() {
-                return patchType;
-            }
-
-            @Override
-            public String getResultingVersion() {
-                return resultingVersion;
-            }
-
-            @Override
-            public List<String> getAppliesTo() {
-                return Collections.singletonList(modification.getVersion());
-            }
-
-            @Override
-            public Collection<String> getIncompatibleWith() {
-                return Collections.emptyList(); // TODO
-            }
-
-            @Override
-            public List<ContentModification> getModifications() {
-                return identityEntry.rollbackActions;
-            }
-        };
-
-    }
-
-    protected PatchElement createRollbackElement(final PatchEntry entry) {
-
-        final PatchElement patchElement = entry.element;
-        final String patchId;
-        final Patch.PatchType patchType = patchElement.getPatchType();
-        if (patchType == Patch.PatchType.UPGRADE) {
-            patchId = entry.getReleasePatchID();
-        } else if (patchType == Patch.PatchType.CUMULATIVE) {
-            patchId = entry.getCumulativeID();
-        } else {
-            patchId = patchElement.getId();
-        }
-        final PatchElementImpl element = new PatchElementImpl(patchId);
-        element.setProvider(patchElement.getProvider());
-        if (patchType == Patch.PatchType.UPGRADE) {
-            element.setUpgrade(""); // no versions for patch-elements for nwo
-        } else {
-            element.setNoUpgrade();
-        }
-        // Add all the rollback actions
-        element.getModifications().addAll(entry.rollbackActions);
-        return element;
     }
 
 }
