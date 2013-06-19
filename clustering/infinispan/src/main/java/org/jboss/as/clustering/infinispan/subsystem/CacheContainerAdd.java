@@ -159,6 +159,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             transportExecutor = (resolvedValue = TransportResourceDefinition.EXECUTOR.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null ;
 
             // initialise the Transport
+            transportConfig.setClusterName(cluster);
             transportConfig.setLockTimeout(lockTimeout);
 
             controllers.add(this.installChannelService(target, name, cluster, stack, verificationHandler));
@@ -381,9 +382,14 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         private final InjectedValue<Executor> executor = new InjectedValue<Executor>();
 
         private Long lockTimeout;
+        private String clusterName;
 
         void setLockTimeout(long lockTimeout) {
             this.lockTimeout = lockTimeout;
+        }
+
+        void setClusterName(String clusterName) {
+            this.clusterName = clusterName;
         }
 
         Injector<ChannelFactory> getChannelFactoryInjector() {
@@ -407,6 +413,11 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         @Override
         public Long getLockTimeout() {
             return this.lockTimeout;
+        }
+
+        @Override
+        public String getClusterName() {
+            return this.clusterName;
         }
     }
 }
