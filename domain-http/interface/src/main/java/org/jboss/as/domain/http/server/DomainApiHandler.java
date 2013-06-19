@@ -23,6 +23,7 @@
 package org.jboss.as.domain.http.server;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.domain.http.server.Constants.ACCEPT;
 import static org.jboss.as.domain.http.server.Constants.APPLICATION_DMR_ENCODED;
@@ -46,10 +47,10 @@ import static org.jboss.as.domain.http.server.Constants.TEXT_HTML;
 import static org.jboss.as.domain.http.server.Constants.UNSUPPORTED_MEDIA_TYPE;
 import static org.jboss.as.domain.http.server.Constants.US_ASCII;
 import static org.jboss.as.domain.http.server.Constants.UTF_8;
+import static org.jboss.as.domain.http.server.DomainUtil.safeClose;
+import static org.jboss.as.domain.http.server.DomainUtil.writeResponse;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
-import static org.jboss.as.domain.http.server.DomainUtil.writeResponse;
-import static org.jboss.as.domain.http.server.DomainUtil.safeClose;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -424,16 +425,23 @@ class DomainApiHandler implements ManagementHttpHandler {
         for (Entry<String, String> entry : queryParameters.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
+            ModelNode valueNode;
             if ("operation".equals(key)) {
                 try {
                     operation = GetOperation.valueOf(value.toUpperCase(Locale.ENGLISH).replace('-', '_'));
                     value = operation.realOperation();
+                    valueNode = dmr.get(key);
                 } catch (Exception e) {
                     throw MESSAGES.invalidOperation(e, value);
                 }
+            } else if (key.startsWith("operation-header-")) {
+                String header = key.substring("operation-header-".length());
+                valueNode = dmr.get(OPERATION_HEADERS, header);
+            } else {
+                valueNode = dmr.get(key);
             }
 
-            dmr.get(entry.getKey()).set(value);
+            valueNode.set(value);
         }
 
         // This will now only occur if no operation at all was specified on the incoming request.
