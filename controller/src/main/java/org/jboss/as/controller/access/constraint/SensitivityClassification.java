@@ -31,9 +31,9 @@ package org.jboss.as.controller.access.constraint;
  */
 public class SensitivityClassification extends AbstractSensitivity {
 
-    public static final SensitivityClassification SECURITY_REALM = addSensitivityClassification("SECURITY_REALM", true, true);
-    public static final SensitivityClassification SOCKET_BINDING = addSensitivityClassification("SOCKET_BINDING", false, false);
-    public static final SensitivityClassification SOCKET_CONFIG = addSensitivityClassification("SOCKET_CONFIG", false, false);
+    public static final SensitivityClassification SECURITY_REALM = new SensitivityClassification("SECURITY_REALM", true, true);
+    public static final SensitivityClassification SOCKET_BINDING = new SensitivityClassification("SOCKET_BINDING", false, false);
+    public static final SensitivityClassification SOCKET_CONFIG = new SensitivityClassification("SOCKET_CONFIG", false, false);
 
     private final boolean core;
     private final String subsystem;
@@ -53,12 +53,6 @@ public class SensitivityClassification extends AbstractSensitivity {
         this.core = false;
         this.subsystem = subsystem;
         this.name = name;
-    }
-
-    private static SensitivityClassification addSensitivityClassification(String name, boolean accessDefault, boolean readDefault) {
-        SensitivityClassification sensitivity = new SensitivityClassification(name, accessDefault, readDefault);
-        SensitiveTargetConstraint.FACTORY.addSensitivity(sensitivity);
-        return sensitivity;
     }
 
     public boolean isCore() {

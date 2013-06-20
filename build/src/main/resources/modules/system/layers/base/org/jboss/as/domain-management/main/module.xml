@@ -42,4 +42,8 @@
         <module name="javax.api"/>
         <module name="sun.jdk" export="true" />        
     </dependencies>
+    
+    <exports>
+        <exclude path="org.jboss.as.domain.management._private"/>    
+    </exports>        
 </module>

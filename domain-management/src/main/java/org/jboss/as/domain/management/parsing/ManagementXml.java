@@ -24,7 +24,9 @@ package org.jboss.as.domain.management.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONSTRAINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
@@ -42,9 +44,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SENSITIVITY_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
@@ -67,8 +71,10 @@ import static org.jboss.as.domain.management.ModelDescriptionConstants.PROPERTY;
 
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
@@ -79,6 +85,10 @@ import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.domain.management.access.ApplicationTypeConfigResourceDefinition;
+import org.jboss.as.domain.management.access.ApplicationTypeResourceDefinition;
+import org.jboss.as.domain.management.access.SensitivityClassificationResourceDefinition;
+import org.jboss.as.domain.management.access.SensitivityResourceDefinition;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.AbstractPlugInAuthResourceDefinition;
 import org.jboss.as.domain.management.security.JaasAuthenticationResourceDefinition;
@@ -160,6 +170,20 @@ public class ManagementXml {
 
                     } else {
                         ROOT_LOGGER.warn(ParseUtils.getWarningMessage(MESSAGES.elementNotSupported(element.getLocalName(), "domain.xml"), reader.getLocation()));
+                    }
+                    break;
+                }
+                case ACCESS_CONSTRAINTS: {
+                    switch (expectedNs) {
+                    case DOMAIN_1_0:
+                    case DOMAIN_1_1:
+                    case DOMAIN_1_2:
+                    case DOMAIN_1_3:
+                    case DOMAIN_1_4:
+                        throw ParseUtils.unexpectedElement(reader);
+                    case DOMAIN_1_5:
+                        parseAccessConstraints(reader, address, expectedNs, list);
+                        break;
                     }
                     break;
                 }
@@ -1566,13 +1590,255 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
-    public void writeManagement(final XMLExtendedStreamWriter writer, final ModelNode management, boolean allowInterfaces)
+    private void parseAccessConstraints(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list) throws XMLStreamException {
+
+        ParseUtils.requireNoAttributes(reader);
+
+        ModelNode newAddress = address.clone().add(CORE_SERVICE, ACCESS_CONSTRAINT);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case VAULT_EXPRESSION_SENSITIVITY: {
+                    parseClassificationType(reader, newAddress, expectedNs, list, true);
+                    break;
+                }
+                case SENSITIVE_CLASSIFICATIONS: {
+                    parseSensitiveClassifications(reader, newAddress, expectedNs, list);
+                    break;
+                }
+                case APPLICATION_TYPES: {
+                    parseApplicationTypes(reader, newAddress, expectedNs, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void parseSensitiveClassifications(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list) throws XMLStreamException {
+
+        ParseUtils.requireNoAttributes(reader);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case SENSITIVE_CLASSIFICATION: {
+                    parseClassification(reader, address, expectedNs, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void parseClassification(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list) throws XMLStreamException {
+        String name = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME:
+                        name = value;
+                        break;
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (name == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(NAME));
+        }
+
+        ModelNode newAddress = address.clone().add(SensitivityClassificationResourceDefinition.PATH_ELEMENT.getKey(), name);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case TYPE: {
+                    parseClassificationType(reader, newAddress, expectedNs, list, false);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void parseClassificationType(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list, boolean vault) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        String name = null;
+        Map<String, ModelNode> values = new HashMap<String, ModelNode>();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        name = value;
+                        break;
+                    }
+                    case REQUIRES_ACCESS: {
+                        values.put(SensitivityResourceDefinition.CONFIGURED_REQUIRES_ACCESS.getName(),
+                                SensitivityResourceDefinition.CONFIGURED_REQUIRES_ACCESS.parse(value, reader));
+                        break;
+                    }
+                    case REQUIRES_READ: {
+                        values.put(SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.getName(),
+                                SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.parse(value, reader));
+                        break;
+                    }
+                    case REQUIRES_WRITE: {
+                        values.put(SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE.getName(),
+                                SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE.parse(value, reader));
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (name == null && !vault) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+
+        final ModelNode newAddress = vault ?
+                address.clone().add(SensitivityResourceDefinition.VAULT_ELEMENT.getKey(), SensitivityResourceDefinition.VAULT_ELEMENT.getValue()) :
+                    address.clone().add(SensitivityResourceDefinition.PATH_ELEMENT.getKey(), name);
+        for (Map.Entry<String, ModelNode> entry : values.entrySet()) {
+            list.add(Util.getWriteAttributeOperation(newAddress, entry.getKey(), entry.getValue()));
+        }
+        ParseUtils.requireNoContent(reader);
+    }
+
+    private void parseApplicationTypes(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list) throws XMLStreamException {
+
+        ParseUtils.requireNoAttributes(reader);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case APPLICATION_TYPE: {
+                    parseApplicationType(reader, address, expectedNs, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void parseApplicationType(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list) throws XMLStreamException {
+        String name = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME:
+                        name = value;
+                        break;
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (name == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(NAME));
+        }
+
+        ModelNode newAddress = address.clone().add(ApplicationTypeResourceDefinition.PATH_ELEMENT.getKey(), name);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case TYPE: {
+                    parseApplicationTypeType(reader, newAddress, expectedNs, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void parseApplicationTypeType(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        String name = null;
+        ModelNode applicationValue = null;
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        name = value;
+                        break;
+                    }
+                    case APPLICATION: {
+                        applicationValue = ApplicationTypeConfigResourceDefinition.CONFIGURED_APPLICATION.parse(value, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (name == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+        if (applicationValue == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.APPLICATION));
+        }
+        final ModelNode newAddress = address.clone().add(ApplicationTypeConfigResourceDefinition.PATH_ELEMENT.getKey(), name);
+        list.add(Util.getWriteAttributeOperation(newAddress, ApplicationTypeConfigResourceDefinition.CONFIGURED_APPLICATION.getName(), applicationValue));
+        ParseUtils.requireNoContent(reader);
+    }
+
+    public void writeManagement(final XMLExtendedStreamWriter writer, final ModelNode management, final ModelNode accessConstraint, boolean allowInterfaces)
             throws XMLStreamException {
         boolean hasSecurityRealm = management.hasDefined(SECURITY_REALM);
         boolean hasConnection = management.hasDefined(LDAP_CONNECTION);
         boolean hasInterface = allowInterfaces && management.hasDefined(MANAGEMENT_INTERFACE);
+        Map<String, Map<String, Set<String>>> configuredAccessConstraints = getConfiguredAccessConstraints(accessConstraint);
 
-        if (!hasSecurityRealm && !hasConnection && !hasInterface) {
+        if (!hasSecurityRealm && !hasConnection && !hasInterface && configuredAccessConstraints.size() == 0) {
             return;
         }
 
@@ -1587,6 +1853,10 @@ public class ManagementXml {
 
         if (allowInterfaces && hasInterface) {
             writeManagementInterfaces(writer, management);
+        }
+
+        if (configuredAccessConstraints.size() > 0) {
+            writeAccessConstraints(writer, accessConstraint, configuredAccessConstraints);
         }
 
         writer.writeEndElement();
@@ -1806,6 +2076,126 @@ public class ManagementXml {
 
         writer.writeEndElement();
     }
+
+    private Map<String, Map<String, Set<String>>> getConfiguredAccessConstraints(ModelNode accessConstraint) {
+        Map<String, Map<String, Set<String>>> configuredConstraints = new HashMap<String, Map<String, Set<String>>>();
+        if (accessConstraint.hasDefined(SensitivityResourceDefinition.VAULT_ELEMENT.getKey()) &&
+                accessConstraint.get(SensitivityResourceDefinition.VAULT_ELEMENT.getKey()).hasDefined(SensitivityResourceDefinition.VAULT_ELEMENT.getValue())) {
+            ModelNode classification = accessConstraint.get(SensitivityResourceDefinition.VAULT_ELEMENT.getKey(), SensitivityResourceDefinition.VAULT_ELEMENT.getValue());
+            if (classification.hasDefined(SensitivityResourceDefinition.CONFIGURED_REQUIRES_ACCESS.getName()) ||
+                    classification.hasDefined(SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE.getName()) ||
+                    classification.hasDefined(SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.getName())){
+                configuredConstraints.put(SensitivityResourceDefinition.VAULT_ELEMENT.getKey(), Collections.<String, Set<String>>emptyMap());
+            }
+        }
+
+        if (accessConstraint.hasDefined(SENSITIVITY_CLASSIFICATION)) {
+            for (Property sensitivityProperty : accessConstraint.get(SENSITIVITY_CLASSIFICATION).asPropertyList()) {
+                if (sensitivityProperty.getValue().hasDefined(TYPE)) {
+                    for (Property typeProperty : sensitivityProperty.getValue().get(TYPE).asPropertyList()) {
+                        ModelNode classification = typeProperty.getValue();
+                        if (classification.hasDefined(SensitivityResourceDefinition.CONFIGURED_REQUIRES_ACCESS.getName()) ||
+                                classification.hasDefined(SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE.getName()) ||
+                                classification.hasDefined(SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.getName())){
+                            Map<String, Set<String>> constraint = configuredConstraints.get(SENSITIVITY_CLASSIFICATION);
+                            if (constraint == null) {
+                                constraint = new HashMap<String, Set<String>>();
+                                configuredConstraints.put(SENSITIVITY_CLASSIFICATION, constraint);
+                            }
+                            Set<String> types = constraint.get(sensitivityProperty.getName());
+                            if (types == null) {
+                                types = new HashSet<String>();
+                                constraint.put(sensitivityProperty.getName(), types);
+                            }
+                            types.add(typeProperty.getName());
+                        }
+                    }
+                }
+            }
+        }
+        if (accessConstraint.hasDefined(APPLICATION_TYPE)) {
+            for (Property applicationTypeProperty : accessConstraint.get(APPLICATION_TYPE).asPropertyList()) {
+                if (applicationTypeProperty.getValue().hasDefined(TYPE)) {
+                    for (Property typeProperty : applicationTypeProperty.getValue().get(TYPE).asPropertyList()) {
+                        ModelNode applicationType = typeProperty.getValue();
+                        if (applicationType.hasDefined(ApplicationTypeConfigResourceDefinition.CONFIGURED_APPLICATION.getName())){
+                            Map<String, Set<String>> constraint = configuredConstraints.get(APPLICATION_TYPE);
+                            if (constraint == null) {
+                                constraint = new HashMap<String, Set<String>>();
+                                configuredConstraints.put(APPLICATION_TYPE, constraint);
+                            }
+                            Set<String> types = constraint.get(applicationTypeProperty.getName());
+                            if (types == null) {
+                                types = new HashSet<String>();
+                                constraint.put(applicationTypeProperty.getName(), types);
+                            }
+                            types.add(typeProperty.getName());
+                        }
+                    }
+                }
+            }
+        }
+        return configuredConstraints;
+    }
+
+    private void writeAccessConstraints(XMLExtendedStreamWriter writer, ModelNode accessConstraint, Map<String, Map<String, Set<String>>> configuredConstraints) throws XMLStreamException {
+        writer.writeStartElement(Element.ACCESS_CONSTRAINTS.getLocalName());
+
+        if (configuredConstraints.containsKey(SensitivityResourceDefinition.VAULT_ELEMENT.getKey())){
+            writer.writeStartElement(Element.VAULT_EXPRESSION_SENSITIVITY.getLocalName());
+            ModelNode model = accessConstraint.get(SensitivityResourceDefinition.VAULT_ELEMENT.getKey(),
+                    SensitivityResourceDefinition.VAULT_ELEMENT.getValue());
+            SensitivityResourceDefinition.CONFIGURED_REQUIRES_ACCESS.marshallAsAttribute(model, writer);
+            SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.marshallAsAttribute(model, writer);
+            SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE.marshallAsAttribute(model, writer);
+
+            writer.writeEndElement();
+        }
+
+        if (configuredConstraints.containsKey(SENSITIVITY_CLASSIFICATION)) {
+            writer.writeStartElement(Element.SENSITIVE_CLASSIFICATIONS.getLocalName());
+            Map<String, Set<String>> constraints = configuredConstraints.get(SENSITIVITY_CLASSIFICATION);
+            for (Map.Entry<String, Set<String>> entry : constraints.entrySet()) {
+                writer.writeStartElement(Element.SENSITIVE_CLASSIFICATION.getLocalName());
+                writeAttribute(writer, Attribute.NAME, entry.getKey());
+
+                for (String type : entry.getValue()) {
+                    writer.writeStartElement(Element.TYPE.getLocalName());
+                    ModelNode model = accessConstraint.get(SENSITIVITY_CLASSIFICATION, entry.getKey(), TYPE, type);
+                    writeAttribute(writer, Attribute.NAME, type);
+                    SensitivityResourceDefinition.CONFIGURED_REQUIRES_ACCESS.marshallAsAttribute(model, writer);
+                    SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.marshallAsAttribute(model, writer);
+                    SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE.marshallAsAttribute(model, writer);
+                    writer.writeEndElement();
+                }
+
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
+        if (configuredConstraints.containsKey(APPLICATION_TYPE)) {
+            writer.writeStartElement(Element.APPLICATION_TYPES.getLocalName());
+            Map<String, Set<String>> constraints = configuredConstraints.get(APPLICATION_TYPE);
+            for (Map.Entry<String, Set<String>> entry : constraints.entrySet()) {
+                writer.writeStartElement(Element.APPLICATION_TYPE.getLocalName());
+                writeAttribute(writer, Attribute.NAME, entry.getKey());
+
+                for (String type : entry.getValue()) {
+                    writer.writeStartElement(Element.TYPE.getLocalName());
+                    ModelNode model = accessConstraint.get(APPLICATION_TYPE, entry.getKey(), TYPE, type);
+                    writeAttribute(writer, Attribute.NAME, type);
+                    ApplicationTypeConfigResourceDefinition.CONFIGURED_APPLICATION.marshallAsAttribute(model, writer);
+                    writer.writeEndElement();
+                }
+
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
+        writer.writeEndElement();
+    }
+
+
 
     private static void writeAttribute(XMLExtendedStreamWriter writer, Attribute attribute, String value)
             throws XMLStreamException {

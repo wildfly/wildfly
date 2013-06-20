@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.access.constraint;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,8 +30,8 @@ import java.util.Map;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
-import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.access.rbac.StandardRole;
 
 /**
@@ -119,5 +120,11 @@ public class ApplicationTypeConstraint extends AllowAllowNotConstraint {
                 throw new IllegalStateException("incompatible ApplicationTypeConfig");
             }
         }
+
+
+        public Collection<ApplicationTypeConfig> getApplicationTypeConfigs(){
+            return Collections.unmodifiableCollection(typeConfigs.values());
+        }
+
     }
 }
