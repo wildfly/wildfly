@@ -23,6 +23,7 @@
 package org.jboss.as.patching.runner;
 
 import static junit.framework.Assert.assertEquals;
+import static org.jboss.as.patching.Constants.NOT_PATCHED;
 import static org.jboss.as.patching.HashUtils.bytesToHexString;
 import static org.jboss.as.patching.HashUtils.hashFile;
 import static org.jboss.as.patching.IoUtils.mkdir;
@@ -40,14 +41,12 @@ import static org.jboss.as.patching.runner.TestUtils.tree;
 
 import java.io.File;
 
+import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.installation.Identity;
 import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
-import org.jboss.as.patching.metadata.impl.IdentityImpl;
-import org.jboss.as.patching.metadata.impl.PatchElementImpl;
-import org.jboss.as.patching.metadata.impl.PatchElementProviderImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -97,17 +96,15 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
 
         InstalledIdentity installedIdentity = loadInstalledIdentity();
 
-        Patch patch = PatchBuilder.create()
-                .setPatchId(patchID)
+        final PatchBuilder builder = PatchBuilder.create();
+        builder .setPatchId(patchID)
                 .setDescription(randomString())
-                .setIdentity(new IdentityImpl(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion()))
-                .setUpgrade(productConfig.getProductVersion() + "-CP1")
-                .addElement(new PatchElementImpl(layerPatchID)
-                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
-                        .setNoUpgrade()
-                        .addContentModification(moduleAdded))
-                .build();
+                .upgradeIdentity(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion(), productConfig.getProductVersion() + "-CP1")
+                .getParent()
+                .upgradeElement(layerPatchID, BASE, false)
+                .addContentModification(moduleAdded);
 
+        Patch patch = builder.build();
         checkApplyPatchAndRollbackRestoresBackupConfiguration(patchDir, patch);
     }
 
@@ -124,17 +121,17 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
 
         InstalledIdentity installedIdentity = loadInstalledIdentity();
 
-        Patch patch = PatchBuilder.create()
+        final PatchBuilder builder = PatchBuilder.create();
+        builder .setPatchId(patchID)
+
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setOneOffType(productConfig.getProductVersion())
-                .setIdentity(new IdentityImpl(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion()))
-                .addElement(new PatchElementImpl(layerPatchID)
-                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
-                        .setNoUpgrade()
-                        .addContentModification(moduleAdded))
-                .build();
+                .oneOffPatchIdentity(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion(), Constants.NOT_PATCHED)
+                .getParent()
+                .oneOffPatchElement(layerPatchID, BASE, NOT_PATCHED, false)
+                .addContentModification(moduleAdded);
 
+        Patch patch = builder.build();
         checkApplyPatchAndRollbackRestoresBackupConfiguration(patchDir, patch);
     }
 

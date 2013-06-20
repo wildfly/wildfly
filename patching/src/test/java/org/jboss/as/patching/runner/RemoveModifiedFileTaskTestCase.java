@@ -38,6 +38,7 @@ import static org.junit.Assert.assertArrayEquals;
 
 import java.io.File;
 
+import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerImpl;
 import org.jboss.as.patching.installation.InstalledIdentity;
@@ -85,7 +86,8 @@ public class RemoveModifiedFileTaskTestCase extends AbstractTaskTestCase {
         patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setOneOffType(identity.getIdentity().getVersion())
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), Constants.NOT_PATCHED)
+                .getParent()
                 .addContentModification(fileRemoved)
                 .build();
 

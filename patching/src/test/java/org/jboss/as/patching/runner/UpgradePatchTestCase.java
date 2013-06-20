@@ -22,6 +22,7 @@
 
 package org.jboss.as.patching.runner;
 
+import static org.jboss.as.patching.Constants.NOT_PATCHED;
 import static org.jboss.as.patching.HashUtils.hashFile;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
@@ -73,12 +74,11 @@ public class UpgradePatchTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setIdentity(new IdentityImpl(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion()))
-                .setUpgrade(productConfig.getProductVersion() + "-Release1")
-                .addElement(new PatchElementImpl(layerPatchID)
-                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
-                        .setNoUpgrade()
-                        .addContentModification(moduleAdded))
+                .upgradeIdentity(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion(), productConfig.getProductVersion() + "-Release1")
+                .getParent()
+                .upgradeElement(layerPatchID, BASE, false)
+                    .addContentModification(moduleAdded)
+                    .getParent()
                 .build();
 
         createPatchXMLFile(patchDir, patch);
@@ -119,12 +119,11 @@ public class UpgradePatchTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setIdentity(new IdentityImpl(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion()))
-                .setUpgrade(productConfig.getProductVersion() + "-Release1")
-                .addElement(new PatchElementImpl(layerPatchID)
-                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
-                        .setNoUpgrade()
-                        .addContentModification(moduleAdded))
+                .upgradeIdentity(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion(), productConfig.getProductVersion() + "-Release1")
+                    .getParent()
+                .upgradeElement(layerPatchID, BASE, false)
+                    .addContentModification(moduleAdded)
+                    .getParent()
                 .addContentModification(fileModified)
                 .build();
         createPatchXMLFile(patchDir, patch);
@@ -164,16 +163,15 @@ public class UpgradePatchTestCase extends AbstractTaskTestCase {
         ContentModification moduleAdded = ContentModificationUtils.addModule(releasePatchDir, releaseLayerPatchID, moduleName);
 
         InstalledIdentity installedIdentity = loadInstalledIdentity();
-
+        final String resultingVersion = productConfig.getProductVersion() + "-Release1";
         Patch releasePatch = PatchBuilder.create()
                 .setPatchId(releasePatchID)
                 .setDescription(randomString())
-                .setIdentity(new IdentityImpl(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion()))
-                .setUpgrade(installedIdentity.getIdentity().getVersion() + "-Release1")
-                .addElement(new PatchElementImpl(releaseLayerPatchID)
-                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
-                        .setNoUpgrade()
-                        .addContentModification(moduleAdded))
+                .upgradeIdentity(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion(), resultingVersion)
+                .getParent()
+                .upgradeElement(releaseLayerPatchID, BASE, false)
+                    .addContentModification(moduleAdded)
+                    .getParent()
                 .build();
 
         createPatchXMLFile(releasePatchDir, releasePatch);
@@ -202,10 +200,11 @@ public class UpgradePatchTestCase extends AbstractTaskTestCase {
                 .setPatchId(oneOffPatchID)
                 .setDescription(randomString())
                 // one-off patch can be applied to Release
-                .setOneOffType(releasePatch.getResultingVersion())
-                .addElement(new PatchElementImpl(oneOffLayerPatchID)
-                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
-                        .addContentModification(moduleModified))
+                .oneOffPatchIdentity(productConfig.getProductName(), resultingVersion, NOT_PATCHED)
+                .getParent()
+                .oneOffPatchElement(oneOffLayerPatchID, BASE, NOT_PATCHED, false)
+                    .addContentModification(moduleModified)
+                    .getParent()
                 .build();
 
         createPatchXMLFile(oneOffPatchDir, oneOffPatch);
@@ -232,16 +231,15 @@ public class UpgradePatchTestCase extends AbstractTaskTestCase {
         ContentModification moduleAdded = ContentModificationUtils.addModule(releasePatchDir, releaseLayerPatchID, moduleName);
 
         InstalledIdentity identityBeforePatch = loadInstalledIdentity();
-
+        final String resultingVersion = identityBeforePatch.getIdentity().getVersion() + "-Release1";
         Patch releasePatch = PatchBuilder.create()
                 .setPatchId(releasePatchID)
                 .setDescription(randomString())
-                .setIdentity(new IdentityImpl(identityBeforePatch.getIdentity().getName(), identityBeforePatch.getIdentity().getVersion()))
-                .setUpgrade(identityBeforePatch.getIdentity().getVersion() + "-Release1")
-                .addElement(new PatchElementImpl(releaseLayerPatchID)
-                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
-                        .setNoUpgrade()
-                        .addContentModification(moduleAdded))
+                .upgradeIdentity(identityBeforePatch.getIdentity().getName(), identityBeforePatch.getIdentity().getVersion(), resultingVersion)
+                .getParent()
+                .upgradeElement(releaseLayerPatchID, BASE, false)
+                    .addContentModification(moduleAdded)
+                    .getParent()
                 .build();
         createPatchXMLFile(releasePatchDir, releasePatch);
         File zippedReleasePatch = createZippedPatchFile(releasePatchDir, releasePatchID);
@@ -267,11 +265,12 @@ public class UpgradePatchTestCase extends AbstractTaskTestCase {
         Patch oneOffPatch = PatchBuilder.create()
                 .setPatchId(oneOffPatchID)
                 .setDescription(randomString())
-                        // one-off patch can be applied to Release
-                .setOneOffType(releasePatch.getResultingVersion())
-                .addElement(new PatchElementImpl(oneOffLayerPatchID)
-                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
-                        .addContentModification(moduleModified))
+                // one-off patch can be applied to Release
+                .oneOffPatchIdentity(productConfig.getProductName(), resultingVersion, NOT_PATCHED)
+                .getParent()
+                .oneOffPatchElement(oneOffLayerPatchID, BASE, NOT_PATCHED, false)
+                    .addContentModification(moduleModified)
+                    .getParent()
                 .build();
 
         createPatchXMLFile(oneOffPatchDir, oneOffPatch);
@@ -313,10 +312,11 @@ public class UpgradePatchTestCase extends AbstractTaskTestCase {
                 .setPatchId(oneOffPatchID)
                 .setDescription(randomString())
                         // one-off patch can be applied to Release
-                .setOneOffType(productConfig.getProductVersion())
-                .addElement(new PatchElementImpl(oneOffLayerPatchID)
-                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
-                        .addContentModification(moduleAdded))
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), NOT_PATCHED)
+                .getParent()
+                .oneOffPatchElement(oneOffLayerPatchID, BASE, NOT_PATCHED, false)
+                    .addContentModification(moduleAdded)
+                    .getParent()
                 .build();
 
         createPatchXMLFile(oneOffPatchDir, oneOffPatch);
@@ -337,15 +337,15 @@ public class UpgradePatchTestCase extends AbstractTaskTestCase {
 
         ContentModification moduleAddedInReleasePatch = ContentModificationUtils.addModule(releasePatchDir, releaseLayerPatchID, moduleName, "different content in the module");
 
+        final String resultingVersion = identityBeforePatch.getIdentity().getVersion() + "-Release1";
         Patch releasePatch = PatchBuilder.create()
                 .setPatchId(releasePatchID)
                 .setDescription(randomString())
-                .setIdentity(new IdentityImpl(identityBeforePatch.getIdentity().getName(), identityBeforePatch.getIdentity().getVersion()))
-                .setUpgrade(identityBeforePatch.getIdentity().getVersion() + "-Release1")
-                .addElement(new PatchElementImpl(releaseLayerPatchID)
-                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
-                        .setNoUpgrade()
-                        .addContentModification(moduleAddedInReleasePatch))
+                .upgradeIdentity(identityBeforePatch.getIdentity().getName(), identityBeforePatch.getIdentity().getVersion(), resultingVersion)
+                .getParent()
+                .upgradeElement(releaseLayerPatchID, BASE, false)
+                    .addContentModification(moduleAddedInReleasePatch)
+                    .getParent()
                 .build();
         createPatchXMLFile(releasePatchDir, releasePatch);
         File zippedReleasePatch = createZippedPatchFile(releasePatchDir, releasePatchID);
@@ -371,15 +371,15 @@ public class UpgradePatchTestCase extends AbstractTaskTestCase {
         File releasePatchDir = mkdir(tempDir, releasePatchID);
         ContentModification moduleAddedInReleasePatch = ContentModificationUtils.addModule(releasePatchDir, releaseLayerPatchID, moduleOne, "different content in the module");
 
+        final String resultingVersion = identityBeforePatch.getIdentity().getVersion() + "-Release1";
         Patch releasePatch = PatchBuilder.create()
                 .setPatchId(releasePatchID)
                 .setDescription(randomString())
-                .setIdentity(new IdentityImpl(identityBeforePatch.getIdentity().getName(), identityBeforePatch.getIdentity().getVersion()))
-                .setUpgrade(identityBeforePatch.getIdentity().getVersion() + "-Release1")
-                .addElement(new PatchElementImpl(releaseLayerPatchID)
-                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
-                        .setNoUpgrade()
-                        .addContentModification(moduleAddedInReleasePatch))
+                .upgradeIdentity(identityBeforePatch.getIdentity().getName(), identityBeforePatch.getIdentity().getVersion(), resultingVersion)
+                .getParent()
+                .upgradeElement(releaseLayerPatchID, BASE, false)
+                    .addContentModification(moduleAddedInReleasePatch)
+                    .getParent()
                 .build();
         createPatchXMLFile(releasePatchDir, releasePatch);
         File zippedReleasePatch = createZippedPatchFile(releasePatchDir, releasePatchID);
@@ -395,15 +395,15 @@ public class UpgradePatchTestCase extends AbstractTaskTestCase {
         File releasePatchDirTwo = mkdir(tempDir, releasePatchTwo);
         ContentModification moduleAddedTwo = ContentModificationUtils.addModule(releasePatchDirTwo, releaseLayerPatchTwo, moduleTwo, "different something in the module");
 
+
         Patch releaseTwo = PatchBuilder.create()
                 .setPatchId(releasePatchTwo)
                 .setDescription(randomString())
-                .setIdentity(new IdentityImpl(identityBeforePatch.getIdentity().getName(), identityBeforePatch.getIdentity().getVersion()))
-                .setUpgrade(identityBeforePatch.getIdentity().getVersion() + "-Release1")
-                .addElement(new PatchElementImpl(releaseLayerPatchTwo)
-                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
-                        .setNoUpgrade()
-                        .addContentModification(moduleAddedTwo))
+                .upgradeIdentity(identityBeforePatch.getIdentity().getName(), productConfig.getProductVersion(), resultingVersion + 1) // The resulting version does not get upated
+                .getParent()
+                .upgradeElement(releaseLayerPatchTwo, BASE, false)
+                    .addContentModification(moduleAddedTwo)
+                    .getParent()
                 .build();
         createPatchXMLFile(releasePatchDirTwo, releaseTwo);
         File zippedReleasePatchTwo = createZippedPatchFile(releasePatchDirTwo, releasePatchTwo);

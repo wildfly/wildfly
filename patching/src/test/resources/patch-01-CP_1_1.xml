@@ -24,32 +24,28 @@
 <patch xmlns="urn:jboss:patch:1.0" id="patch-01">
 
     <description>patch description</description>
-    
-    <identity name="i1" version="1.1.1">
+
+    <upgrade to-version="1.1.2" name="i1" version="1.1.1">
     <!-- a cumulative (i.e. version upgrading) patch should not be based upon any one-off patches
          so, it shouldn't contain the includes element -->
-        <includes>
+        <requires>
             <patch id="i1-one-off01"/>
             <patch id="i1-one-off02"/>
-        </includes>
-    </identity>
-    
-    <upgrade to-version="1.1.2"/>
+        </requires>
+    </upgrade>
 
-    <element id="patch-01-e01">
+    <layer id="patch-01-e01">
         <description>patch element description</description>
         
-        <layer name="base" version="0.0.1">
+        <upgrade name="base">
             <!-- a cumulative (i.e. version upgrading) patch should not be based upon any one-off patches
                  so, it shouldn't contain the includes element -->
-            <includes>
-                <element id="base-e01"/>
-                <element id="base-e02"/>
-            </includes>
-        </layer>
-        
-        <upgrade to-version="0.0.2"/>
-        
+            <requires>
+                <patch id="base-e01"/>
+                <patch id="base-e02"/>
+            </requires>
+        </upgrade>
+
         <modules>
             <added-module name="org.jboss.as.test" slot="prod" hash="xxxx"/>
             <added-module name="org.jboss.as.test2" slot="prod" hash="yyyy"/>
@@ -77,22 +73,20 @@
             <removed-misc-content path="test/file4" existing-hash="5e6f7a" directory="true" />
         </misc-files>
         
-    </element>
+    </layer>
 
-    <element id="patch-01-e02">
+    <add-on id="patch-01-e02">
         <description>patch element description</description>
         
-        <add-on name="addon1" version="0.0.1">
+        <upgrade name="addon1">
             <!-- a cumulative (i.e. version upgrading) patch should not be based upon any one-off patches
                  so, it shouldn't contain the includes element -->
-            <includes>
-                <element id="addon1-e01"/>
-                <element id="addon1-e02"/>
-            </includes>
-        </add-on>
-        
-        <upgrade to-version="0.0.2"/>
-        
+            <requires>
+                <patch id="addon1-e01"/>
+                <patch id="addon1-e02"/>
+            </requires>
+        </upgrade>
+
         <modules>
             <added-module name="org.jboss.as.test" slot="prod" hash="xxxx"/>
             <added-module name="org.jboss.as.test2" slot="prod" hash="yyyy"/>
@@ -120,6 +114,6 @@
             <removed-misc-content path="test/file4" existing-hash="5e6f7a" directory="true" />
         </misc-files>
         
-    </element>
+    </add-on>
 
 </patch>

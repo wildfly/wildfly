@@ -48,12 +48,12 @@ public class PatchXmlUnitTestCase {
         assertNotNull(patch);
         assertNotNull(patch.getPatchId());
         assertNotNull(patch.getDescription());
-        assertNotNull(patch.getPatchType());
-        assertEquals(Patch.PatchType.UPGRADE, patch.getPatchType());
-        assertNotNull(patch.getResultingVersion());
-        assertNotNull(patch.getAppliesTo().iterator().next());
+        final Identity identity = patch.getIdentity();
+        assertNotNull(identity);
+        assertEquals(Patch.PatchType.UPGRADE, identity.getPatchType());
+        assertNotNull(identity.forType(Patch.PatchType.UPGRADE, Identity.IdentityUpgrade.class).getResultingVersion());
+        assertNotNull(identity.getVersion());
     }
-
 
     @Test
     public void testParseOneOff() throws Exception {
@@ -64,10 +64,10 @@ public class PatchXmlUnitTestCase {
         assertNotNull(patch);
         assertNotNull(patch.getPatchId());
         assertNotNull(patch.getDescription());
-        assertNotNull(patch.getPatchType());
-        assertEquals(Patch.PatchType.ONE_OFF, patch.getPatchType());
-        assertNull(patch.getResultingVersion());
-        assertNotNull(patch.getAppliesTo().iterator().next());
+        final Identity identity = patch.getIdentity();
+        assertNotNull(identity);
+        assertEquals(Patch.PatchType.CUMULATIVE, identity.getPatchType());
+        assertNotNull(patch.getIdentity().getVersion());
     }
 
     @Test

@@ -23,13 +23,9 @@
 package org.jboss.as.patching.metadata.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.jboss.as.patching.metadata.ContentModification;
-import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.metadata.PatchElement;
 import org.jboss.as.patching.metadata.PatchElementProvider;
 
@@ -37,15 +33,11 @@ import org.jboss.as.patching.metadata.PatchElementProvider;
  * @author Alexey Loubyansky
  *
  */
-public class PatchElementImpl implements PatchElement, UpgradeCallback {
+public class PatchElementImpl implements PatchElement {
 
     private final String id;
-    private String descr;
+    private String description = "no description";
     private PatchElementProvider provider;
-    private PatchType patchType;
-    private String resultingVersion;
-
-    private final Set<String> incompatibleWith = new HashSet<String>();
     private final List<ContentModification> modifications = new ArrayList<ContentModification>();
 
     public PatchElementImpl(String id) {
@@ -68,11 +60,11 @@ public class PatchElementImpl implements PatchElement, UpgradeCallback {
      */
     @Override
     public String getDescription() {
-        return descr;
+        return description;
     }
 
     public PatchElementImpl setDescription(String descr) {
-        this.descr = descr;
+        this.description = descr;
         return this;
     }
 
@@ -92,46 +84,9 @@ public class PatchElementImpl implements PatchElement, UpgradeCallback {
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.PatchElement#getPatchType()
-     */
-    @Override
-    public PatchType getPatchType() {
-        return patchType;
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.PatchElement#getResultingVersion()
-     */
-    @Override
-    public String getResultingVersion() {
-        if(patchType == null) {
-            return null;
-        }
-        if(patchType == PatchType.ONE_OFF) {
-            if(provider == null) {
-                return null;
-            }
-            return provider.getVersion();
-        }
-        return resultingVersion;
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.PatchElement#getModifications()
-     */
     @Override
     public List<ContentModification> getModifications() {
         return modifications;
-    }
-
-    @Override
-    public Collection<String> getIncompatibleWith() {
-        return incompatibleWith;
-    }
-
-    public void addIncompatibleWith(final String patchId) {
-        incompatibleWith.add(patchId);
     }
 
     public PatchElementImpl addContentModification(ContentModification modification) {
@@ -139,19 +94,4 @@ public class PatchElementImpl implements PatchElement, UpgradeCallback {
         return this;
     }
 
-    @Override
-    public PatchElementImpl setUpgrade(String version) {
-        if(version == null) {
-            throw new IllegalArgumentException("version is null");
-        }
-        this.resultingVersion = version;
-        this.patchType = PatchType.UPGRADE;
-        return this;
-    }
-
-    @Override
-    public PatchElementImpl setNoUpgrade() {
-        this.patchType = PatchType.ONE_OFF;
-        return this;
-    }
 }

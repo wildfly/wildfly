@@ -23,6 +23,7 @@
 package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.HashUtils.hashFile;
+import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileContent;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileDoesNotExist;
@@ -40,6 +41,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
+import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.installation.Identity;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
@@ -63,7 +65,8 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setOneOffType(productConfig.getProductVersion())
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), Constants.NOT_PATCHED)
+                   .getParent()
                 .addContentModification(fileAdded)
                 .build();
 
@@ -95,7 +98,8 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(randomString())
                 .setDescription(randomString())
-                .setOneOffType(productConfig.getProductVersion())
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), Constants.NOT_PATCHED)
+                   .getParent()
                 .addContentModification(fileRemoved)
                 .build();
 
@@ -133,7 +137,8 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setOneOffType(productConfig.getProductVersion())
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), Constants.NOT_PATCHED)
+                   .getParent()
                 .addContentModification(fileModified)
                 .build();
 
@@ -184,7 +189,8 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setOneOffType(productConfig.getProductVersion())
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), Constants.NOT_PATCHED)
+                   .getParent()
                 .addContentModification(dirRemoved)
                 .build();
 

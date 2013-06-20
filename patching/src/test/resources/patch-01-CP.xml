@@ -24,13 +24,11 @@
 <patch xmlns="urn:jboss:patch:1.0" id="patch-01">
 
     <description>patch-01 description</description>
-    <identity name="eap" version="1.2.3"/>
-    <upgrade to-version="2.3.4"/>
+    <upgrade name="eap" version="1.2.3" to-version="2.3.4"/>
 
-    <element id="element-01">
+    <layer id="element-01">
         <description>element-01 description</description>
-        <layer name="base" version="1.0.0"/>
-        <upgrade to-version="1.0.1" />
+        <upgrade name="base" />
 
         <modules>
             <added name="org.jboss.as.test" slot="prod" hash="1a2b3c4d"/>
@@ -58,11 +56,10 @@
             <removed path="test/file" hash="1a2b3c4d" in-runtime-use="true" />
             <removed path="test/file4" hash="5e6f7a" directory="true" />
         </misc-files>
-    </element>
-    <element id="element-02">
+    </layer>
+    <layer id="element-02">
         <description>element-02 description</description>
-        <layer name="xyz" version="2.0.0"/>
-        <upgrade to-version="2.0.1" />
+        <upgrade name="xyz" />
 
         <modules>
             <added name="org.jboss.xyz" slot="prod" hash="1a2b3c4d"/>
@@ -84,11 +81,10 @@
             <removed path="test/otherfile" hash="1a2b3c4d" in-runtime-use="true" />
             <removed path="test/otherfile4" hash="5e6f7a" directory="true" />
         </misc-files>
-    </element>
-    <element id="element-03">
+    </layer>
+    <add-on id="element-03">
         <description>element-03 description</description>
-        <add-on name="dev" version="1.0.0" />
-        <upgrade to-version="1.0.1" />
+        <upgrade name="dev" />
 
         <modules>
             <added name="org.jboss.def" slot="prod" hash="1a2b3c4d"/>
@@ -110,5 +106,5 @@
             <removed path="test/anotherfile" hash="1a2b3c4d" in-runtime-use="true" />
             <removed path="test/anotherfile4" hash="5e6f7a" directory="true" />
         </misc-files>
-    </element>
+    </add-on>
 </patch>

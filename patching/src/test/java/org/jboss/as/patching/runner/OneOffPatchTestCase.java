@@ -22,6 +22,7 @@
 
 package org.jboss.as.patching.runner;
 
+import static org.jboss.as.patching.Constants.NOT_PATCHED;
 import static org.jboss.as.patching.HashUtils.hashFile;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.Constants.BASE;
@@ -67,10 +68,11 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         Patch oneOffPatch = PatchBuilder.create()
                 .setPatchId(oneOffPatchID)
                 .setDescription(randomString())
-                .setOneOffType(productConfig.getProductVersion())
-                .addElement(new PatchElementImpl(oneOffLayerPatchID)
-                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
-                        .addContentModification(moduleAdded))
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), NOT_PATCHED)
+                .getParent()
+                .oneOffPatchElement(oneOffLayerPatchID, BASE, NOT_PATCHED, false)
+                    .addContentModification(moduleAdded)
+                    .getParent()
                 .build();
 
         createPatchXMLFile(oneOffPatchDir, oneOffPatch);
@@ -111,10 +113,11 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setOneOffType(productConfig.getProductVersion())
-                .addElement(new PatchElementImpl(layerPatchID)
-                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
-                        .addContentModification(moduleAdded))
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), NOT_PATCHED)
+                .getParent()
+                .oneOffPatchElement(layerPatchID, BASE, NOT_PATCHED, false)
+                    .addContentModification(moduleAdded)
+                    .getParent()
                 .addContentModification(fileUpdated)
                 .build();
         createPatchXMLFile(patchDir, patch);
@@ -169,10 +172,11 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setOneOffType(productConfig.getProductVersion())
-                .addElement(new PatchElementImpl(layerPatchID)
-                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
-                        .addContentModification(moduleAdded))
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), NOT_PATCHED)
+                .getParent()
+                .oneOffPatchElement(layerPatchID, BASE, NOT_PATCHED, false)
+                    .addContentModification(moduleAdded)
+                    .getParent()
                 .addContentModification(fileUpdated)
                 .build();
         createPatchXMLFile(patchDir, patch);
@@ -199,7 +203,8 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         Patch patch_2 = PatchBuilder.create()
                 .setPatchId(patchID_2)
                 .setDescription(randomString())
-                .setOneOffType(productConfig.getProductVersion())
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), NOT_PATCHED)
+                .getParent()
                 .addContentModification(otherFileUpdated)
                 .build();
 

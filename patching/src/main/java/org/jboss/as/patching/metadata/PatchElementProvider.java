@@ -22,35 +22,11 @@
 
 package org.jboss.as.patching.metadata;
 
-import java.util.Collection;
-
-
 /**
  * @author Alexey Loubyansky
  *
  */
-public interface PatchElementProvider {
-
-    /**
-     * Patch element provider name.
-     *
-     * @return  patch element provider name
-     */
-    String getName();
-
-    /**
-     * Patch element provider version.
-     *
-     * @return  patch element provider version
-     */
-    String getVersion();
-
-    /**
-     * List of the applied patch elements to this provider.
-     *
-     * @return  list of id's of the patch elements applied to this provider
-     */
-    Collection<String> getRequires();
+public interface PatchElementProvider extends UpgradeCondition {
 
     /**
      * Get the layer type for this element.
@@ -65,4 +41,18 @@ public interface PatchElementProvider {
      * @return  true if the provider is an add-on, otherwise - false, which means it's a layer.
      */
     boolean isAddOn();
+
+    <T extends PatchElementProvider> T forType(Patch.PatchType patchType, Class<T> clazz);
+
+    public interface OneOffPatchTarget extends PatchElementProvider {
+
+        /**
+         * Get the cumulative patch id
+         *
+         * @return the cumulative patch id
+         */
+        String getCumulativePatchId();
+
+    }
+
 }

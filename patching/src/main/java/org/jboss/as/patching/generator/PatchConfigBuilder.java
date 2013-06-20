@@ -323,9 +323,9 @@ class PatchConfigBuilder {
                     .setPatchId(getPatchId())
                     .setDescription(getDescription());
             if (patchType == Patch.PatchType.ONE_OFF) {
-                pb.setOneOffType(appliesTo);
+              //  pb.setOneOffType(appliesTo);
             } else {
-                pb.setCumulativeType(appliesTo.iterator().next(), resultingVersion);
+              //  pb.setCumulativeType(appliesTo.iterator().next(), resultingVersion);
             }
 
             return pb;

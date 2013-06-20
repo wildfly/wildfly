@@ -25,30 +25,22 @@ package org.jboss.as.patching.metadata;
 import static java.util.Collections.unmodifiableList;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
+import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.metadata.impl.IdentityImpl;
-import org.jboss.as.patching.metadata.impl.PatchElementImpl;
-import org.jboss.as.patching.metadata.impl.UpgradeCallback;
+import org.jboss.as.patching.metadata.impl.PatchElementProviderImpl;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class PatchBuilder extends AbstractModificationBuilderTarget<PatchBuilder> implements UpgradeCallback, Builder {
+public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implements Builder {
 
     private String patchId;
     private String description;
-    private String resultingVersion;
-    private PatchType patchType;
     private Identity identity;
-
-    private final Set<String> incompatibleWith = new HashSet<String>();
+    private PatchType patchType;
     private final List<ContentModification> modifications = new ArrayList<ContentModification>();
     private final List<PatchElementHolder> elements = new ArrayList<PatchElementHolder>();
 
@@ -69,50 +61,30 @@ public class PatchBuilder extends AbstractModificationBuilderTarget<PatchBuilder
         return this;
     }
 
-    @Override
-    public PatchBuilder setUpgrade(String toVersion) {
-        this.patchType = PatchType.UPGRADE;
-        this.resultingVersion = toVersion;
-        return this;
-    }
-
-    @Override
-    public PatchBuilder setNoUpgrade() {
-        this.patchType = PatchType.ONE_OFF;
-        return this;
-    }
-
-    public PatchBuilder setIdentity(final String name, final String version) {
-        return setIdentity(new IdentityImpl(name, version));
-    }
-
-    public PatchBuilder setIdentity(Identity identity) {
+    public PatchIdentityBuilder upgradeIdentity(final String name, final String version, final String resultingVersion) {
+        final PatchIdentityBuilder builder = new PatchIdentityBuilder(name, version, PatchType.UPGRADE, this);
+        final IdentityImpl identity = builder.getIdentity();
+        identity.setResultingVersion(resultingVersion);
         this.identity = identity;
-        return this;
+        this.patchType = PatchType.UPGRADE;
+        return builder;
     }
 
-    @Deprecated
-    public PatchBuilder setCumulativeType(String appliesToVersion, String resultingVersion) {
-        this.identity = new IdentityImpl("", appliesToVersion);
-        setUpgrade(resultingVersion);
-        return this;
+    public PatchIdentityBuilder cumulativePatchIdentity(final String name, final String version) {
+        final PatchIdentityBuilder builder = new PatchIdentityBuilder(name, version, PatchType.CUMULATIVE, this);
+        final IdentityImpl identity = builder.getIdentity();
+        this.identity = identity;
+        this.patchType = PatchType.CUMULATIVE;
+        return builder;
     }
 
-    @Deprecated
-    public PatchBuilder setOneOffType(List<String> appliesTo) {
-        assert appliesTo.size() == 1; // TODO update
-        this.identity = new IdentityImpl("", appliesTo.get(0));
-        setNoUpgrade();
-        return this;
-    }
-
-    public PatchBuilder addIncompatibleWith(final String patchId) {
-        incompatibleWith.add(patchId);
-        return returnThis();
-    }
-
-    public PatchBuilder setOneOffType(String... appliesTo) {
-        return setOneOffType(Arrays.asList(appliesTo));
+    public PatchIdentityBuilder oneOffPatchIdentity(final String name, final String version, final String cumulativeID) {
+        final PatchIdentityBuilder builder = new PatchIdentityBuilder(name, version, PatchType.ONE_OFF, this);
+        final IdentityImpl identity = builder.getIdentity();
+        identity.setCumulativePatchId(cumulativeID);
+        this.identity = identity;
+        this.patchType = PatchType.ONE_OFF;
+        return builder;
     }
 
     public PatchBuilder addContentModification(ContentModification modification) {
@@ -120,8 +92,29 @@ public class PatchBuilder extends AbstractModificationBuilderTarget<PatchBuilder
         return this;
     }
 
+    public PatchElementBuilder upgradeElement(final String patchId, final String layerName, final boolean addOn) {
+        final PatchElementBuilder builder = new PatchElementBuilder(patchId, layerName, addOn, this);
+        builder.upgrade();
+        elements.add(builder);
+        return builder;
+    }
+
+    public PatchElementBuilder cumulativePatchElement(final String patchId, final String layerName, final boolean addOn) {
+        final PatchElementBuilder builder = new PatchElementBuilder(patchId, layerName, addOn, this);
+        builder.cumulativePatch();
+        elements.add(builder);
+        return builder;
+    }
+
+    public PatchElementBuilder oneOffPatchElement(final String patchId, final String layerName, final String cumulativePatchId, final boolean addOn) {
+        final PatchElementBuilder builder = new PatchElementBuilder(patchId, layerName, addOn, this);
+        builder.oneOffPatch(cumulativePatchId);
+        elements.add(builder);
+        return builder;
+    }
+
     public PatchElementBuilder addElement(final String patchId, final String layerName, final boolean addOn) {
-        final PatchElementBuilder builder = new PatchElementBuilder(patchId, layerName, addOn);
+        final PatchElementBuilder builder = new PatchElementBuilder(patchId, layerName, addOn, this);
         elements.add(builder);
         return builder;
     }
@@ -130,11 +123,13 @@ public class PatchBuilder extends AbstractModificationBuilderTarget<PatchBuilder
         this.elements.add(new PatchElementHolder() {
             @Override
             public PatchElement createElement(PatchType patchType) {
-                if (element.getPatchType() == null && element instanceof PatchElementImpl) {
+                if (element.getProvider().getPatchType() == null) {
                     if (patchType == PatchType.UPGRADE) {
-                        ((PatchElementImpl)element).setUpgrade(resultingVersion);
+                        ((PatchElementProviderImpl)element.getProvider()).upgrade();
+                    } else if (patchType == PatchType.CUMULATIVE) {
+                        ((PatchElementProviderImpl)element.getProvider()).cumulativePatch();
                     } else {
-                        ((PatchElementImpl)element).setNoUpgrade();
+                        ((PatchElementProviderImpl)element.getProvider()).oneOffPatch(Constants.NOT_PATCHED);
                     }
                 }
                 return element;
@@ -151,7 +146,6 @@ public class PatchBuilder extends AbstractModificationBuilderTarget<PatchBuilder
     public Patch build() {
         assert notNull(identity);
         assert notNull(patchId);
-        assert notNull(patchType);
 
         // Create the elements
         final List<PatchElement> elements = new ArrayList<PatchElement>();
@@ -159,9 +153,7 @@ public class PatchBuilder extends AbstractModificationBuilderTarget<PatchBuilder
             elements.add(holder.createElement(patchType));
         }
 
-        final Collection<String> appliesTo = Collections.singletonList(identity.getVersion());
-        return new PatchImpl(patchId, description, patchType, identity, resultingVersion, appliesTo, incompatibleWith,
-                unmodifiableList(elements), unmodifiableList(modifications));
+        return new PatchImpl(patchId, description, identity, unmodifiableList(elements), unmodifiableList(modifications));
     }
 
     @Override

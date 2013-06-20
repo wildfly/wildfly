@@ -25,6 +25,7 @@ package org.jboss.as.patching.installation;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
+import static org.jboss.as.patching.Constants.NOT_PATCHED;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.patching.Constants.BASE;
@@ -125,12 +126,11 @@ public class LayerTestCase extends AbstractTaskTestCase {
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
-                .setOneOffType(productConfig.getProductVersion())
-                .setIdentity(new IdentityImpl(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion()))
-                .addElement(new PatchElementImpl(layerPatchId)
-                        .setProvider(new PatchElementProviderImpl(layerName, "1.0.1", false))
-                        .setNoUpgrade()
-                        .addContentModification(moduleAdded))
+                .oneOffPatchIdentity(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion(), Constants.NOT_PATCHED)
+                .getParent()
+                .oneOffPatchElement(layerPatchId, layerName, NOT_PATCHED, false)
+                    .addContentModification(moduleAdded)
+                    .getParent()
                 .addContentModification(fileAdded)
                 .build();
 
@@ -180,12 +180,11 @@ public class LayerTestCase extends AbstractTaskTestCase {
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
-                .setOneOffType(productConfig.getProductVersion())
-                .setIdentity(new IdentityImpl(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion()))
-                .addElement(new PatchElementImpl(layerPatchId)
-                        .setProvider(new PatchElementProviderImpl(layerName, "1.0.1", false))
-                        .setNoUpgrade()
-                        .addContentModification(moduleAdded))
+                .oneOffPatchIdentity(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion(), Constants.NOT_PATCHED)
+                .getParent()
+                .oneOffPatchElement(layerPatchId, layerName, NOT_PATCHED, false)
+                    .addContentModification(moduleAdded)
+                    .getParent()
                 .addContentModification(fileAdded)
                 .build();
 

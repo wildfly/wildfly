@@ -25,7 +25,6 @@ package org.jboss.as.patching;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Set;
 
 import org.jboss.as.patching.runner.PatchingException;
@@ -84,7 +83,7 @@ public interface PatchMessages {
     String argVersion();
 
     @Message(id = 16840, value = "Patch does not apply - expected (%s), but was (%s)")
-    PatchingException doesNotApply(Collection<String> appliesTo, String version);
+    PatchingException doesNotApply(String appliesTo, String version);
 
     @Message(id = 16841, value = "Failed to delete (%s)")
     IOException failedToDelete(String path);
