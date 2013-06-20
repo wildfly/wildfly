@@ -115,8 +115,8 @@ public class SessionFacade implements io.undertow.server.session.Session {
     public void invalidate(HttpServerExchange exchange) {
         Map.Entry<Session<Void>, SessionConfig> entry = this.entry;
         Session<Void> session = entry.getKey();
-        session.invalidate();
         this.manager.getSessionListeners().sessionDestroyed(this, exchange, SessionDestroyedReason.INVALIDATED);
+        session.invalidate();
         if (exchange != null) {
             entry.getValue().clearSession(exchange, session.getId());
         }
