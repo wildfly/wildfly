@@ -27,6 +27,7 @@ import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 import java.util.List;
 
+import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -116,6 +117,7 @@ public class PersistenceUnitSearch {
         }
 
         ambiguousPUError(unit, persistenceUnitName, holder);
+        persistenceUnitName = defaultPersistenceUnitName(persistenceUnitName, holder);
 
         for (PersistenceUnitMetadata persistenceUnit : holder.getPersistenceUnits()) {
             if (traceEnabled) {
@@ -149,6 +151,7 @@ public class PersistenceUnitSearch {
             }
 
             ambiguousPUError(unit, persistenceUnitName, holder);
+            persistenceUnitName = defaultPersistenceUnitName(persistenceUnitName, holder);
 
             for (PersistenceUnitMetadata persistenceUnit : holder.getPersistenceUnits()) {
                 if (traceEnabled) {
@@ -167,9 +170,42 @@ public class PersistenceUnitSearch {
 
     private static void ambiguousPUError(DeploymentUnit unit, String persistenceUnitName, PersistenceUnitMetadataHolder holder) {
         if (holder.getPersistenceUnits().size() > 1 &&  (persistenceUnitName == null || persistenceUnitName.length() == 0)) {
-            // AS7-2275 no unitName and there is more than one persistence unit;
-            throw MESSAGES.noPUnitNameSpecifiedAndMultiplePersistenceUnits(holder.getPersistenceUnits().size(), unit);
+            int numberOfDefaultPersistenceUnits = 0;
+
+            // get number of persistence units that are marked as default
+            for (PersistenceUnitMetadata persistenceUnit : holder.getPersistenceUnits()) {
+                String defaultPU = persistenceUnit.getProperties().getProperty(Configuration.JPA_DEFAULT_PERSISTENCE_UNIT);
+                if(Boolean.TRUE.toString().equals(defaultPU)) {
+                    numberOfDefaultPersistenceUnits++;
+                }
+            }
+            ROOT_LOGGER.tracef("checking for ambiguous persistence unit injection error, " +
+                    "number of persistence units marked default (%s) = %d", Configuration.JPA_DEFAULT_PERSISTENCE_UNIT,  numberOfDefaultPersistenceUnits);
+            // don't throw an error if there is exactly one default persistence unit
+            if (numberOfDefaultPersistenceUnits != 1) {
+                // AS7-2275 no unitName and there is more than one persistence unit;
+                throw MESSAGES.noPUnitNameSpecifiedAndMultiplePersistenceUnits(holder.getPersistenceUnits().size(), unit);
+            }
         }
+    }
+
+    /**
+     * if no persistence unit name is specified, return name of default persistence unit
+     *
+     * @param persistenceUnitName that was specified to be used (null means to use the default persistence unit)
+     * @param holder
+     * @return
+     */
+    private static String defaultPersistenceUnitName(String persistenceUnitName, PersistenceUnitMetadataHolder holder) {
+        if ((persistenceUnitName == null || persistenceUnitName.length() == 0)) {
+            for (PersistenceUnitMetadata persistenceUnit : holder.getPersistenceUnits()) {
+                String defaultPU = persistenceUnit.getProperties().getProperty(Configuration.JPA_DEFAULT_PERSISTENCE_UNIT);
+                if(Boolean.TRUE.toString().equals(defaultPU)) {
+                    persistenceUnitName = persistenceUnit.getPersistenceUnitName();
+                }
+            }
+        }
+        return persistenceUnitName;
     }
 
     private static PersistenceUnitMetadata getPersistenceUnit(DeploymentUnit current, final String absolutePath, String puName) {
