@@ -790,6 +790,23 @@ final class OperationContextImpl extends AbstractOperationContext {
         return key.cast(valueAttachments.remove(key));
     }
 
+    @Override
+    public AuthorizationResult authorize(ModelNode operation, Set<Action.ActionEffect> effects) {
+        OperationId opId = new OperationId(operation);
+        return authorize(opId, operation, false, effects);
+    }
+
+    @Override
+    public AuthorizationResult authorize(ModelNode operation, String attribute, Set<Action.ActionEffect> effects) {
+        OperationId opId = new OperationId(operation);
+        AuthorizationResult resourceResult = authorize(opId, operation, false, effects);
+        if (resourceResult.getDecision() == AuthorizationResult.Decision.DENY) {
+            return resourceResult;
+        }
+        return authorize(opId, attribute, effects);
+    }
+
+
     private void rejectUserDomainServerUpdates() {
         if (isModelUpdateRejectionRequired()) {
             ModelNode op = activeStep.operation;
@@ -818,12 +835,16 @@ final class OperationContextImpl extends AbstractOperationContext {
     }
 
     private AuthorizationResult authorize(Step step, boolean allAttributes, Set<Action.ActionEffect> actionEffects) {
+        return authorize(step.operationId, step.operation, allAttributes, actionEffects);
+    }
+
+    private AuthorizationResult authorize(OperationId opId, ModelNode operation, boolean allAttributes, Set<Action.ActionEffect> actionEffects) {
         if (isBooting()) {
             return AuthorizationResult.PERMITTED;
         } else {
-            AuthorizationResponse authResp = authorizations.get(step.operationId);
+            AuthorizationResponse authResp = authorizations.get(opId);
             if (authResp == null) {
-                authResp = getBasicAuthorizationResponse(step);
+                authResp = getBasicAuthorizationResponse(opId, operation);
             }
             if (authResp == null) {
                 // Non-existent resource type or operation. This is permitted but will fail
@@ -844,7 +865,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             if (allAttributes) {
                 ImmutableManagementResourceRegistration mrr = authResp.targetResource.getResourceRegistration();
                 for (String attr : mrr.getAttributeNames(PathAddress.EMPTY_ADDRESS)) {
-                    AuthorizationResult attrResult = authorize(step, attr, actionEffects);
+                    AuthorizationResult attrResult = authorize(opId, attr, actionEffects);
                     if (attrResult.getDecision() == AuthorizationResult.Decision.DENY) {
                         return attrResult;
                     }
@@ -856,11 +877,11 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
     }
 
-    private AuthorizationResult authorize(Step step, String attribute, Set<Action.ActionEffect> actionEffects) {
+    private AuthorizationResult authorize(OperationId operationId, String attribute, Set<Action.ActionEffect> actionEffects) {
         if (isBooting()) {
             return AuthorizationResult.PERMITTED;
         } else {
-            AuthorizationResponse authResp = authorizations.get(step.operationId);
+            AuthorizationResponse authResp = authorizations.get(operationId);
             assert authResp != null : "perform resource authorization before attribute authorization";
 
             TargetAttribute targetAttribute = null;
@@ -884,22 +905,22 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
     }
 
-    private AuthorizationResponse getBasicAuthorizationResponse(Step step) {
+    private AuthorizationResponse getBasicAuthorizationResponse(OperationId opId, ModelNode operation) {
         Caller caller = getCaller();
-        ImmutableManagementResourceRegistration mrr = modelController.getRootRegistration().getSubModel(step.address);
+        ImmutableManagementResourceRegistration mrr = modelController.getRootRegistration().getSubModel(opId.address);
         if (mrr == null) {
             return null;
         }
-        Action action = getAuthorizationAction(mrr, step);
+        Action action = getAuthorizationAction(mrr, opId.name, operation);
         if (action == null) {
             return null;
         }
 
-        Resource resource = getAuthorizationResource(step.address);
+        Resource resource = getAuthorizationResource(opId.address);
         ProcessType processType = getProcessType();
         TargetResource targetResource = (processType == ProcessType.STANDALONE_SERVER || processType == ProcessType.EMBEDDED_SERVER)
                 ? TargetResource.forStandalone(mrr, resource)
-                : TargetResource.forDomain(mrr, resource, getServerGroups(step.address, resource), getHosts(step.address, resource));
+                : TargetResource.forDomain(mrr, resource, getServerGroups(opId.address, resource), getHosts(opId.address, resource));
 
         AuthorizationResponse result = new AuthorizationResponse(action, targetResource);
         AuthorizationResult simple = modelController.getAuthorizer().authorize(caller, callEnvironment, action, targetResource);
@@ -909,7 +930,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             }
         }
         // else something was denied. Find out exactly what was denied when needed
-        authorizations.put(step.operationId, result);
+        authorizations.put(opId, result);
         return result;
     }
 
@@ -952,12 +973,12 @@ final class OperationContextImpl extends AbstractOperationContext {
         return model;
     }
 
-    private Action getAuthorizationAction(ImmutableManagementResourceRegistration mrr, Step step) {
-        OperationEntry entry = mrr.getOperationEntry(PathAddress.EMPTY_ADDRESS, step.operationId.name);
+    private Action getAuthorizationAction(ImmutableManagementResourceRegistration mrr, String operationName, ModelNode operation) {
+        OperationEntry entry = mrr.getOperationEntry(PathAddress.EMPTY_ADDRESS, operationName);
         if (entry == null) {
             return null;
         }
-        return new Action(step.operation, entry);
+        return new Action(operation, entry);
     }
 
     class ContextServiceTarget implements ServiceTarget {

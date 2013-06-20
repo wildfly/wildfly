@@ -22,6 +22,7 @@
 package org.jboss.as.controller.services.path;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -794,6 +795,7 @@ public class PathsTestCase extends AbstractControllerTestBase {
     private ModelNode readResource() throws Exception {
         ModelNode operation = createOperation(READ_RESOURCE_OPERATION);
         operation.get(RECURSIVE).set(true);
+        operation.get(INCLUDE_RUNTIME).set(true);
 
         return executeForResult(operation);
     }

@@ -2051,7 +2051,7 @@ public interface ControllerMessages {
      * @return an {@link OperationFailedRuntimeException} for the error.
      */
     @Message(id = 14807, value = "Management resource '%s' not found")
-    OperationFailedRuntimeException managementResourceNotFound(PathAddress pathAddress);
+    NoSuchResourceException managementResourceNotFound(PathAddress pathAddress);
 
     /**
      * Creates an exception message indicating a child resource cannot be found.
@@ -2649,6 +2649,5 @@ public interface ControllerMessages {
     IllegalStateException noContextToDelegateTo(int operationId);
 
     @Message(id = 13456, value = "Unauthorized to execute operation '%s' for resource '%s' -- %s")
-    OperationFailedRuntimeException unauthorized(String name, PathAddress address, ModelNode explanation);
-
+    UnauthorizedException unauthorized(String name, PathAddress address, ModelNode explanation);
 }
