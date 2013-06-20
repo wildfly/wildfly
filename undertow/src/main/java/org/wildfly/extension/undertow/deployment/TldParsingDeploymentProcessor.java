@@ -86,6 +86,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         }
         Map<String, TldMetaData> tlds = new HashMap<String, TldMetaData>();
         tldsMetaData.setTlds(tlds);
+        final List<TldMetaData> uniqueTlds = new ArrayList<>();
 
         final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         final List<VirtualFile> testRoots = new ArrayList<VirtualFile>();
@@ -113,6 +114,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
                         }
                         final TldMetaData value = parseTLD(child);
                         value.setUri(tld.getTaglibUri());
+                        uniqueTlds.add(value);
                         String key = "/" + pathNameRelativeToRoot;
                         if (!tlds.containsKey(key)) {
                             tlds.put(key, value);
@@ -139,7 +141,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
             if (resourceRoot.getRoot().getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
                 VirtualFile webFragment = resourceRoot.getRoot().getChild(META_INF);
                 if (webFragment.exists() && webFragment.isDirectory()) {
-                    processTlds(deploymentRoot, webFragment.getChildren(), tlds);
+                    processTlds(deploymentRoot, webFragment.getChildren(), tlds, uniqueTlds);
                 }
             }
         }
@@ -156,6 +158,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
                     }
 
                     final TldMetaData value = parseTLD(file);
+                    uniqueTlds.add(value);
                     String key = "/" + pathNameRelativeToRoot;
                     if (!tlds.containsKey(key)) {
                         tlds.put(key, value);
@@ -164,7 +167,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
                         tlds.put(value.getUri(), value);
                     }
                 } else if (file.isDirectory() && !CLASSES.equals(file.getName()) && !LIB.equals(file.getName())) {
-                    processTlds(deploymentRoot, file.getChildren(), tlds);
+                    processTlds(deploymentRoot, file.getChildren(), tlds, uniqueTlds);
                 }
             }
         }
@@ -174,7 +177,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
             mergedMd.setListeners(new ArrayList<ListenerMetaData>());
         }
 
-        final ArrayList<TldMetaData> allTlds = new ArrayList<>(tlds.values());
+        final ArrayList<TldMetaData> allTlds = new ArrayList<>(uniqueTlds);
         allTlds.addAll(tldsMetaData.getSharedTlds(deploymentUnit));
 
 
@@ -192,7 +195,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
     public void undeploy(final DeploymentUnit context) {
     }
 
-    private void processTlds(VirtualFile root, List<VirtualFile> files, Map<String, TldMetaData> tlds)
+    private void processTlds(VirtualFile root, List<VirtualFile> files, Map<String, TldMetaData> tlds, final List<TldMetaData> uniqueTlds)
             throws DeploymentUnitProcessingException {
         for (VirtualFile file : files) {
             if (file.isFile() && file.getName().toLowerCase(Locale.ENGLISH).endsWith(TLD)) {
@@ -205,6 +208,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
                 }
                 final TldMetaData value = parseTLD(file);
                 String key = "/" + pathNameRelativeToRoot;
+                uniqueTlds.add(value);
                 if (!tlds.containsKey(key)) {
                     tlds.put(key, value);
                 }
@@ -212,7 +216,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
                     tlds.put(value.getUri(), value);
                 }
             } else if (file.isDirectory()) {
-                processTlds(root, file.getChildren(), tlds);
+                processTlds(root, file.getChildren(), tlds, uniqueTlds);
             }
         }
     }
