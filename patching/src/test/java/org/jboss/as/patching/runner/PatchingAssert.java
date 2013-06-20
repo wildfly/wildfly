@@ -207,9 +207,9 @@ public class PatchingAssert {
     }
 
     public static void assertPatchHasBeenApplied(PatchingResult result, Patch patch) {
-        if (UPGRADE == patch.getPatchType()) {
+        if (UPGRADE == patch.getIdentity().getPatchType()) {
             assertEquals(patch.getPatchId(), result.getPatchInfo().getReleasePatchID());
-            assertEquals(patch.getResultingVersion(), result.getPatchInfo().getVersion());
+            assertEquals(patch.getIdentity().forType(UPGRADE, org.jboss.as.patching.metadata.Identity.IdentityUpgrade.class).getResultingVersion(), result.getPatchInfo().getVersion());
         } else {
             assertTrue(result.getPatchInfo().getPatchIDs().contains(patch.getPatchId()));
             // applied one-off patch is at the top of the patchIDs
@@ -253,7 +253,7 @@ public class PatchingAssert {
     }
 
     public static void assertInstallationIsPatched(Patch patch, PatchableTarget.TargetInfo targetInfo) {
-        if (UPGRADE == patch.getPatchType()) {
+        if (UPGRADE == patch.getIdentity().getPatchType()) {
             assertEquals(patch.getPatchId(), targetInfo.getReleasePatchID());
         } else {
             Assert.assertTrue(targetInfo.getPatchIDs().contains(patch.getPatchId()));

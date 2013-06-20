@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,7 +28,6 @@ import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.ContentType;
-import org.jboss.as.patching.metadata.Identity;
 import org.jboss.as.patching.metadata.LayerType;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModuleItem;
@@ -175,7 +173,7 @@ class IdentityPatchContext implements PatchContentProvider {
     protected PatchingResult finalize(final FinalizeCallback callback) throws Exception {
         assert state == State.NEW;
         final Patch original = callback.getPatch();
-        final Patch.PatchType patchType = original.getPatchType();
+        final Patch.PatchType patchType = original.getIdentity().getPatchType();
         final String patchId;
         if (patchType == Patch.PatchType.UPGRADE) {
             patchId = modification.getReleasePatchID();
@@ -188,7 +186,7 @@ class IdentityPatchContext implements PatchContentProvider {
             // The processed patch, based on the recorded changes
             final Patch processedPatch = createProcessedPatch(original);
             // The rollback containing all the recorded rollback actions
-            final RollbackPatch rollbackPatch = createRollbackPatch(patchId, patchType, modification.getVersion());
+            final RollbackPatch rollbackPatch = createRollbackPatch(patchId, patchType);
             callback.finishPatch(processedPatch, rollbackPatch, this);
         } catch (Exception e) {
             if (undoChanges()) {
@@ -284,7 +282,8 @@ class IdentityPatchContext implements PatchContentProvider {
      * @param loader the content loader
      */
     static void undoChanges(final PatchEntry entry, final PatchContentLoader loader) {
-        for (final ContentModification modification : entry.rollbackActions) {
+        final List<ContentModification> modifications = new ArrayList<ContentModification>(entry.rollbackActions);
+        for (final ContentModification modification : modifications) {
             final ContentItem item = modification.getItem();
             if (item.getContentType() != ContentType.MISC) {
                 // Skip modules and bundles they should be removed as part of the {@link FinalizeCallback}
@@ -387,19 +386,17 @@ class IdentityPatchContext implements PatchContentProvider {
         }
 
         // Swap the patch element modifications, keep the identity ones since we don't need to track misc items
-        return new PatchImpl(original.getPatchId(), original.getDescription(), original.getPatchType(), original.getIdentity(),
-                original.getResultingVersion(), original.getAppliesTo(), original.getIncompatibleWith(), elements, original.getModifications());
+        return new PatchImpl(original.getPatchId(), original.getDescription(), original.getIdentity(), elements, original.getModifications());
     }
 
     /**
      * Create a rollback patch based on the recorded actions.
      *
      * @param patchId          the new patch id, depending on release or one-off
-     * @param patchType        the current patch type
-     * @param resultingVersion the resulting version
+     * @param patchType        the current patch identity
      * @return the rollback patch
      */
-    protected RollbackPatch createRollbackPatch(final String patchId, final Patch.PatchType patchType, final String resultingVersion) {
+    protected RollbackPatch createRollbackPatch(final String patchId, final Patch.PatchType patchType) {
         // Process elements
         final List<PatchElement> elements = new ArrayList<PatchElement>();
         // Process layers
@@ -415,13 +412,16 @@ class IdentityPatchContext implements PatchContentProvider {
 
         final InstalledIdentity installedIdentity = modification.getUnmodifiedInstallationState();
         final String name = installedIdentity.getIdentity().getName();
-        final Collection<String> appliesTo = Collections.singletonList(modification.getVersion());
-        final Identity identity = new IdentityImpl(name, modification.getVersion());
+        final IdentityImpl identity = new IdentityImpl(name, modification.getVersion());
+        if (patchType == Patch.PatchType.UPGRADE) {
+            identity.setPatchType(Patch.PatchType.UPGRADE);
+            identity.setResultingVersion(installedIdentity.getIdentity().getVersion());
+        } else if (patchType == Patch.PatchType.ONE_OFF) {
+            identity.setPatchType(Patch.PatchType.ONE_OFF);
+            identity.setCumulativePatchId(modification.getCumulativeID());
+        }
         final List<ContentModification> modifications = identityEntry.rollbackActions;
-        // TODO see if we need to add some requires, we probably need to maintain incompatible-with
-        final Collection<String> incompatibleWith = Collections.emptyList();
-        final Patch delegate = new PatchImpl(patchId, "rollback patch", patchType, identity, resultingVersion, appliesTo,
-                incompatibleWith, elements, modifications);
+        final Patch delegate = new PatchImpl(patchId, "rollback patch", identity, elements, modifications);
         return new PatchImpl.RollbackPatchImpl(delegate, installedIdentity);
     }
 
@@ -612,7 +612,7 @@ class IdentityPatchContext implements PatchContentProvider {
     protected static PatchElement createRollbackElement(final PatchEntry entry) {
         final PatchElement patchElement = entry.element;
         final String patchId;
-        final Patch.PatchType patchType = patchElement.getPatchType();
+        final Patch.PatchType patchType = patchElement.getProvider().getPatchType();
         if (patchType == Patch.PatchType.UPGRADE) {
             patchId = entry.getReleasePatchID();
         } else if (patchType == Patch.PatchType.CUMULATIVE) {
@@ -632,16 +632,9 @@ class IdentityPatchContext implements PatchContentProvider {
      * @return the new patch element
      */
     protected static PatchElement createPatchElement(final PatchEntry entry, String patchId, final List<ContentModification> modifications) {
-
         final PatchElement patchElement = entry.element;
-        final Patch.PatchType patchType = patchElement.getPatchType();
         final PatchElementImpl element = new PatchElementImpl(patchId);
         element.setProvider(patchElement.getProvider());
-        if (patchType == Patch.PatchType.UPGRADE) {
-            element.setUpgrade(""); // no versions for patch-elements for nwo
-        } else {
-            element.setNoUpgrade();
-        }
         // Add all the rollback actions
         element.getModifications().addAll(modifications);
         return element;

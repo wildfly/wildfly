@@ -20,29 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.metadata;
+package org.jboss.as.patching.metadata.impl;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class UpgradeType {
+public interface IncompatibleWithCallback {
 
-    private final String version;
-    private final Patch.PatchType patchType;
-
-    public UpgradeType(final String version, final Patch.PatchType patchType) {
-        this.version = version;
-        this.patchType = patchType;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public Patch.PatchType getPatchType() {
-        return patchType;
-    }
-
-
+    IncompatibleWithCallback incompatibleWith(String patchID);
 
 }

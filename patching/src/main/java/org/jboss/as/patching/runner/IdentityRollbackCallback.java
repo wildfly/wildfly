@@ -12,6 +12,7 @@ import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchElement;
 import org.jboss.as.patching.metadata.PatchImpl;
 import org.jboss.as.patching.metadata.RollbackPatch;
+import org.jboss.as.patching.metadata.impl.IdentityImpl;
 
 /**
  * @author Emanuel Muckenhuber
@@ -23,14 +24,14 @@ class IdentityRollbackCallback implements IdentityPatchContext.FinalizeCallback 
     private final boolean restoreConfiguration;
     private final DirectoryStructure directoryStructure;
 
-
     public IdentityRollbackCallback(final String patchId, final Collection<String> patches, boolean restoreConfiguration, final DirectoryStructure directoryStructure) {
         this.patches = patches;
         this.directoryStructure = directoryStructure;
         this.restoreConfiguration = restoreConfiguration;
         // Create an empty patch, we don't do anything with the processedPatch
-        this.patch = new PatchImpl(patchId, "", Patch.PatchType.ONE_OFF, null, "", Collections.<String>emptyList(),
-                Collections.<String>emptyList(), Collections.<PatchElement>emptyList(), Collections.<ContentModification>emptyList());
+        final IdentityImpl identity = new IdentityImpl("", "");
+        identity.setPatchType(Patch.PatchType.ONE_OFF); // Does not matter
+        this.patch = new PatchImpl(patchId, "no description", identity, Collections.<PatchElement>emptyList(), Collections.<ContentModification>emptyList());
     }
 
     @Override

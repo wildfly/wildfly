@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * @author Emanuel Muckenhuber
  */
-public abstract class AbstractModificationBuilderTarget<T> {
+public abstract class ModificationBuilderTarget<T> {
 
     /**
      * Add a content modification.

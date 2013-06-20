@@ -22,7 +22,6 @@
 
 package org.jboss.as.patching.metadata;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.patching.installation.InstalledIdentity;
@@ -34,24 +33,15 @@ public class PatchImpl implements Patch {
 
     private final String patchID;
     private final String description;
-    private final PatchType patchType;
     private final Identity identity;
-    private final String resultingVersion;
-    private final Collection<String> appliesTo;
-    private final Collection<String> incompatibleWith;
     private final List<PatchElement> elements;
     private final List<ContentModification> modifications;
 
-    public PatchImpl(String patchID, String description, PatchType patchType, Identity identity, String resultingVersion,
-                     Collection<String> appliesTo, Collection<String> incompatibleWith, List<PatchElement> elements,
-                     List<ContentModification> modifications) {
+    public PatchImpl(String patchID, String description, Identity identity,
+                     List<PatchElement> elements, List<ContentModification> modifications) {
         this.patchID = patchID;
         this.description = description;
-        this.patchType = patchType;
         this.identity = identity;
-        this.resultingVersion = resultingVersion;
-        this.appliesTo = appliesTo;
-        this.incompatibleWith = incompatibleWith;
         this.elements = elements;
         this.modifications = modifications;
     }
@@ -67,28 +57,8 @@ public class PatchImpl implements Patch {
     }
 
     @Override
-    public PatchType getPatchType() {
-        return patchType;
-    }
-
-    @Override
     public Identity getIdentity() {
         return identity;
-    }
-
-    @Override
-    public String getResultingVersion() {
-        return resultingVersion;
-    }
-
-    @Override
-    public Collection<String> getAppliesTo() {
-        return appliesTo;
-    }
-
-    @Override
-    public Collection<String> getIncompatibleWith() {
-        return incompatibleWith;
     }
 
     @Override
@@ -121,28 +91,8 @@ public class PatchImpl implements Patch {
         }
 
         @Override
-        public PatchType getPatchType() {
-            return patch.getPatchType();
-        }
-
-        @Override
         public Identity getIdentity() {
             return patch.getIdentity();
-        }
-
-        @Override
-        public String getResultingVersion() {
-            return patch.getResultingVersion();
-        }
-
-        @Override
-        public Collection<String> getAppliesTo() {
-            return patch.getAppliesTo();
-        }
-
-        @Override
-        public Collection<String> getIncompatibleWith() {
-            return patch.getIncompatibleWith();
         }
 
         @Override
