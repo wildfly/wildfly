@@ -26,7 +26,10 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Set;
 
+import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -352,6 +355,16 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     @Override
     public <T> T detach(final AttachmentKey<T> key) {
         return primaryContext.detach(key);
+    }
+
+    @Override
+    public AuthorizationResult authorize(ModelNode operation, Set<Action.ActionEffect> effects) {
+        return primaryContext.authorize(operation, effects);
+    }
+
+    @Override
+    public AuthorizationResult authorize(ModelNode operation, String attribute, Set<Action.ActionEffect> effects) {
+        return primaryContext.authorize(operation, attribute, effects);
     }
 
 }

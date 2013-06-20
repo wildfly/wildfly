@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller;
 
+import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -35,6 +37,7 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
 import java.io.InputStream;
+import java.util.Set;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
@@ -278,6 +281,16 @@ class ReadOnlyContext extends AbstractOperationContext {
     @Override
     public <T> T detach(AttachmentKey<T> key) {
         throw readOnlyContext();
+    }
+
+    @Override
+    public AuthorizationResult authorize(ModelNode operation, Set<Action.ActionEffect> effects) {
+        return primaryContext.authorize(operation, effects);
+    }
+
+    @Override
+    public AuthorizationResult authorize(ModelNode operation, String attribute, Set<Action.ActionEffect> effects) {
+        return primaryContext.authorize(operation, attribute, effects);
     }
 
     IllegalStateException readOnlyContext() {

@@ -24,7 +24,7 @@ package org.jboss.as.controller;
 
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -36,14 +36,20 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_UPDATE_SKIPPED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -51,6 +57,7 @@ import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -60,6 +67,10 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 @SuppressWarnings("deprecation")
 abstract class AbstractOperationContext implements OperationContext {
+
+    private static final Set<String> NON_COPIED_HEADERS =
+            Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(ALLOW_RESOURCE_SERVICE_RESTART,
+                    ROLLBACK_ON_RUNTIME_FAILURE, ROLLOUT_PLAN)));
 
     static final ThreadLocal<Thread> controllingThread = new ThreadLocal<Thread>();
 
@@ -188,9 +199,14 @@ abstract class AbstractOperationContext implements OperationContext {
         }
         if (!booting && activeStep != null) {
             // Added steps inherit the caller type of their parent
-            if (activeStep.operation.hasDefined(OPERATION_HEADERS)
-                    && activeStep.operation.get(OPERATION_HEADERS).hasDefined(CALLER_TYPE)) {
-                operation.get(OPERATION_HEADERS, CALLER_TYPE).set(activeStep.operation.get(OPERATION_HEADERS, CALLER_TYPE));
+            if (activeStep.operation.hasDefined(OPERATION_HEADERS)) {
+                ModelNode activeHeaders = activeStep.operation.get(OPERATION_HEADERS);
+                for (Property property : activeHeaders.asPropertyList()) {
+                    String key = property.getName();
+                    if (!NON_COPIED_HEADERS.contains(key)) {
+                        operation.get(OPERATION_HEADERS, key).set(property.getValue());
+                    }
+                }
             }
         }
 
@@ -845,6 +861,10 @@ abstract class AbstractOperationContext implements OperationContext {
     static class OperationId {
         final PathAddress address;
         final String name;
+
+        OperationId(ModelNode operation) {
+            this(PathAddress.pathAddress(operation.get(OP_ADDR)), operation.hasDefined(OP) ? operation.get(OP).asString() : null);
+        }
 
         private OperationId(PathAddress address, String name) {
             this.address = address;

@@ -61,6 +61,8 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -477,6 +479,16 @@ public abstract class AbstractOperationTestCase {
         @Override
         public <V> V detach(final AttachmentKey<V> key) {
             return key.cast(valueAttachments.get(key));
+        }
+
+        @Override
+        public AuthorizationResult authorize(ModelNode operation, Set<Action.ActionEffect> effects) {
+            return AuthorizationResult.PERMITTED;
+        }
+
+        @Override
+        public AuthorizationResult authorize(ModelNode operation, String attribute, Set<Action.ActionEffect> effects) {
+            return AuthorizationResult.PERMITTED;
         }
 
         @Override

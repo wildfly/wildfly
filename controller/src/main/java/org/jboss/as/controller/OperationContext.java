@@ -23,7 +23,10 @@
 package org.jboss.as.controller;
 
 import java.io.InputStream;
+import java.util.Set;
 
+import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -653,6 +656,10 @@ public interface OperationContext extends ExpressionResolver {
      * @return the attachment if found otherwise {@code null}.
      */
     <T> T detach(AttachmentKey<T> key);
+
+    AuthorizationResult authorize(ModelNode operation, Set<Action.ActionEffect> effects);
+
+    AuthorizationResult authorize(ModelNode operation, String attribute, Set<Action.ActionEffect> effects);
 
     /**
      * The stage at which a step should apply.
