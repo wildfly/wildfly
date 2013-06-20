@@ -40,10 +40,6 @@
     <dependencies>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-jgroups</artifactId>
         </dependency>
         <dependency>

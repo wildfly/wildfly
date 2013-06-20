@@ -65,7 +65,7 @@ public class DelegatingBatchServiceTarget extends DelegatingServiceTarget implem
     }
 
     @Override
-    public BatchServiceTarget addListener(ServiceListener<Object>... listeners) {
+    public BatchServiceTarget addListener(@SuppressWarnings("unchecked") ServiceListener<Object>... listeners) {
         this.target.addListener(listeners);
         return this;
     }

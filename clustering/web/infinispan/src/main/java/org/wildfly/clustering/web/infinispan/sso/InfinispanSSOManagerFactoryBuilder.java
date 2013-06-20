@@ -36,7 +36,7 @@ public class InfinispanSSOManagerFactoryBuilder implements SSOManagerFactoryBuil
     @Override
     public ServiceBuilder<SSOManagerFactory> build(ServiceTarget target, ServiceName name, SSOManagerConfiguration config) {
         @SuppressWarnings("rawtypes")
-        InjectedValue<Cache> cache = new InjectedValue<Cache>();
+        InjectedValue<Cache> cache = new InjectedValue<>();
         return target.addService(name, new InfinispanSSOManagerFactory(cache))
                 .addDependency(CacheService.getServiceName(config.getContainer(), config.getCache()), Cache.class, cache)
         ;

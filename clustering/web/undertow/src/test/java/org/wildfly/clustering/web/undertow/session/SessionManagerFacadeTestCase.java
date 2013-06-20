@@ -38,7 +38,6 @@ import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
 
 public class SessionManagerFacadeTestCase {
-    @SuppressWarnings("unchecked")
     private final SessionManager<Void> manager = mock(SessionManager.class);
     private final ReplicationConfig config = new ReplicationConfig();
     private final SessionListener listener = mock(SessionListener.class);
@@ -98,7 +97,6 @@ public class SessionManagerFacadeTestCase {
         HttpServerExchange exchange = new HttpServerExchange(null);
         Batcher batcher = mock(Batcher.class);
         SessionConfig config = mock(SessionConfig.class);
-        @SuppressWarnings("unchecked")
         Session<Void> session = mock(Session.class);
         String sessionId = "session";
         String route = "route";
@@ -131,7 +129,6 @@ public class SessionManagerFacadeTestCase {
         HttpServerExchange exchange = new HttpServerExchange(null);
         Batcher batcher = mock(Batcher.class);
         SessionConfig config = mock(SessionConfig.class);
-        @SuppressWarnings("unchecked")
         Session<Void> session = mock(Session.class);
         String requestedSessionId = "session.route1";
         String sessionId = "session";
@@ -184,7 +181,6 @@ public class SessionManagerFacadeTestCase {
         HttpServerExchange exchange = new HttpServerExchange(null);
         Batcher batcher = mock(Batcher.class);
         SessionConfig config = mock(SessionConfig.class);
-        @SuppressWarnings("unchecked")
         Session<Void> session = mock(Session.class);
         String requestedSessionId = "session.route1";
         String sessionId = "session";

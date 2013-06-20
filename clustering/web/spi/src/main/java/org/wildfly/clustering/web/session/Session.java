@@ -31,6 +31,7 @@ public interface Session<L> extends ImmutableSession, AutoCloseable {
      * @return this session's meta data
      * @throws IllegalStateException if this session is invalid
      */
+    @Override
     SessionMetaData getMetaData();
 
     /**
@@ -44,11 +45,13 @@ public interface Session<L> extends ImmutableSession, AutoCloseable {
      * @return this session's attributes
      * @throws IllegalStateException if this session is invalid
      */
+    @Override
     SessionAttributes getAttributes();
 
     /**
      * Indicates that the application thread is finished with this session.
      */
+    @Override
     void close();
 
     /**

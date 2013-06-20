@@ -154,7 +154,7 @@ public class DelegatingServiceBuilder<T> implements ServiceBuilder<T> {
     }
 
     @Override
-    public ServiceBuilder<T> addListener(ServiceListener<? super T>... listeners) {
+    public ServiceBuilder<T> addListener(@SuppressWarnings("unchecked") ServiceListener<? super T>... listeners) {
         this.builder.addListener(listeners);
         return this;
     }

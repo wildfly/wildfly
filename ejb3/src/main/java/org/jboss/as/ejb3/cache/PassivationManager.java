@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.cache;
 
-import org.jboss.as.clustering.VersionedMarshallingConfiguration;
+import org.jboss.as.clustering.marshalling.VersionedMarshallingConfiguration;
 
 /**
  * Manages passivation and replication lifecycle callbacks on an object.

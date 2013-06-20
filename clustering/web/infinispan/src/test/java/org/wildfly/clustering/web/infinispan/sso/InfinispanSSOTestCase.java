@@ -18,11 +18,11 @@ public class InfinispanSSOTestCase {
     private final String id = "id";
     private final Credentials credentials = mock(Credentials.class);
     private final Sessions sessions = mock(Sessions.class);
-    private final AtomicReference<Object> localContext = new AtomicReference<Object>();
+    private final AtomicReference<Object> localContext = new AtomicReference<>();
     private final LocalContextFactory<Object> localContextFactory = mock(LocalContextFactory.class);
     private final Remover<String> remover = mock(Remover.class);
 
-    private final SSO<Object> sso = new InfinispanSSO<Object>(this.id, this.credentials, this.sessions, this.localContext, this.localContextFactory, this.remover);
+    private final SSO<Object> sso = new InfinispanSSO<>(this.id, this.credentials, this.sessions, this.localContext, this.localContextFactory, this.remover);
     
     @Test
     public void getId() {

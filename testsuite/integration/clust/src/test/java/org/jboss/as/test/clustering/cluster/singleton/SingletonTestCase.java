@@ -74,7 +74,8 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "singleton.war");
         war.addPackage(MyService.class.getPackage());
         war.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class, ViewChangeListenerServlet.class);
-        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan, org.jboss.as.clustering.singleton, org.jboss.as.server, org.jboss.marshalling, org.jgroups\n"));
+        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.wildfly.clustering.singleton, org.jboss.as.server, org.infinispan, org.jboss.as.clustering.common\n"));
+//        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan, org.jboss.as.clustering.singleton, org.jboss.as.server, org.jboss.marshalling, org.jgroups\n"));
         war.addAsServiceProvider(org.jboss.msc.service.ServiceActivator.class, MyServiceActivator.class);
         return war;
     }
@@ -283,6 +284,6 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
     }
 
     private void establishView(HttpClient client, URL baseURL, String... members) throws URISyntaxException, IOException {
-        ClusterHttpClientUtil.establishView(client, baseURL, "singleton", members);
+        ClusterHttpClientUtil.establishView(client, baseURL, "server", members);
     }
 }

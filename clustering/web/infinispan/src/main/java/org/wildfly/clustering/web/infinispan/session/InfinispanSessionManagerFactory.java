@@ -24,13 +24,13 @@ package org.wildfly.clustering.web.infinispan.session;
 import java.util.Map;
 
 import org.infinispan.Cache;
-import org.jboss.as.clustering.MarshalledValue;
-import org.jboss.as.clustering.MarshalledValueFactory;
-import org.jboss.as.clustering.MarshallingContext;
-import org.jboss.as.clustering.SimpleMarshalledValueFactory;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
+import org.jboss.as.clustering.marshalling.MarshalledValue;
+import org.jboss.as.clustering.marshalling.MarshalledValueFactory;
+import org.jboss.as.clustering.marshalling.MarshallingContext;
+import org.jboss.as.clustering.marshalling.SimpleMarshalledValueFactory;
 import org.jboss.as.clustering.registry.Registry;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
@@ -75,33 +75,27 @@ public class InfinispanSessionManagerFactory extends AbstractService<SessionMana
         return this;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <L> SessionManager<L> createSessionManager(SessionContext context, SessionIdentifierFactory identifierFactory, LocalContextFactory<L> localContextFactory) {
-        Cache cache = this.cache.getValue();
-        return new InfinispanSessionManager<>(context, identifierFactory, cache, this.<L>getSessionFactory(context, localContextFactory, cache), this.affinityFactory.getValue(), this.registry.getValue(), this.metaData);
+        return new InfinispanSessionManager<>(context, identifierFactory, this.cache.getValue(), this.<L>getSessionFactory(context, localContextFactory), this.affinityFactory.getValue(), this.registry.getValue(), this.metaData);
     }
 
-    private <L> SessionFactory<?, L> getSessionFactory(SessionContext context, LocalContextFactory<L> localContextFactory, Cache<?, ?> cache) {
+    private <L> SessionFactory<?, L> getSessionFactory(SessionContext context, LocalContextFactory<L> localContextFactory) {
         MarshallingContext marshallingContext = new MarshallingContext(this.context);
         MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(marshallingContext);
 
         switch (this.metaData.getReplicationConfig().getReplicationGranularity()) {
             case ATTRIBUTE: {
-                @SuppressWarnings("unchecked")
-                Cache<String, FineSessionCacheEntry<L>> sessionCache = (Cache<String, FineSessionCacheEntry<L>>) cache;
-                @SuppressWarnings("unchecked")
-                Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> attributeCache = (Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>>) cache;
+                Cache<String, FineSessionCacheEntry<L>> sessionCache = this.cache.getValue();
+                Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> attributeCache = this.cache.getValue();
                 SessionAttributeMarshaller<Object, MarshalledValue<Object, MarshallingContext>> marshaller = new MarshalledValueSessionAttributeMarshaller<>(factory, marshallingContext);
-                return new FineSessionFactory<L>(sessionCache, attributeCache, this.invoker, context, marshaller, localContextFactory);
+                return new FineSessionFactory<>(sessionCache, attributeCache, this.invoker, context, marshaller, localContextFactory);
             }
             case SESSION: {
-                @SuppressWarnings("unchecked")
-                Cache<String, CoarseSessionCacheEntry<L>> sessionCache = (Cache<String, CoarseSessionCacheEntry<L>>) cache;
-                @SuppressWarnings("unchecked")
-                Cache<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>> attributesCache = (Cache<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>>) cache;
+                Cache<String, CoarseSessionCacheEntry<L>> sessionCache = this.cache.getValue();
+                Cache<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>> attributesCache = this.cache.getValue();
                 SessionAttributeMarshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> marshaller = new MarshalledValueSessionAttributeMarshaller<>(factory, marshallingContext);
-                return new CoarseSessionFactory<L>(sessionCache, attributesCache, this.invoker, context, marshaller, localContextFactory);
+                return new CoarseSessionFactory<>(sessionCache, attributesCache, this.invoker, context, marshaller, localContextFactory);
             }
             default: {
                 throw InfinispanWebMessages.MESSAGES.unknownReplicationGranularity(this.metaData.getReplicationConfig().getReplicationGranularity());

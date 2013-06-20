@@ -30,13 +30,11 @@ public class InfinispanSessionTestCase {
     private final SessionAttributes attributes = mock(SessionAttributes.class);
     private final SessionContext context = mock(SessionContext.class);
     private final Mutator mutator = mock(Mutator.class);
-    @SuppressWarnings("unchecked")
     private final Remover<String> remover = mock(Remover.class);
-    @SuppressWarnings("unchecked")
     private final LocalContextFactory<Object> localContextFactory = mock(LocalContextFactory.class);
-    private final AtomicReference<Object> localContextRef = new AtomicReference<Object>();
+    private final AtomicReference<Object> localContextRef = new AtomicReference<>();
 
-    private final Session<Object> session = new InfinispanSession<Object>(this.id, this.metaData, this.attributes, this.localContextRef, this.localContextFactory, this.context, this.mutator, this.remover);
+    private final Session<Object> session = new InfinispanSession<>(this.id, this.metaData, this.attributes, this.localContextRef, this.localContextFactory, this.context, this.mutator, this.remover);
     
     @Test
     public void getId() {

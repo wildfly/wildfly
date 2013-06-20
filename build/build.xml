@@ -821,11 +821,7 @@
             <maven-resource group="org.wildfly" artifact="wildfly-cli"/>
         </module-def>
 
-        <module-def name="org.wildfly.clustering.annotations">
-            <maven-resource group="org.wildfly" artifact="wildfly-clustering-annotations"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.clustering.api">
+        <module-def name="org.wildfly.clustering.api">
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-api"/>
         </module-def>
 
@@ -835,10 +831,6 @@
 
         <module-def name="org.jboss.as.clustering.ejb3.infinispan">
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-ejb3-infinispan"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.clustering.impl">
-            <maven-resource group="org.wildfly" artifact="wildfly-clustering-impl"/>
         </module-def>
 
         <module-def name="org.jboss.as.clustering.infinispan">
@@ -853,11 +845,11 @@
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-registry"/>
         </module-def>
 
-        <module-def name="org.jboss.as.clustering.service">
-            <maven-resource group="org.wildfly" artifact="wildfly-clustering-service"/>
+        <module-def name="org.wildfly.clustering.server">
+            <maven-resource group="org.wildfly" artifact="wildfly-clustering-server"/>
         </module-def>
 
-        <module-def name="org.jboss.as.clustering.singleton">
+        <module-def name="org.wildfly.clustering.singleton">
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-singleton"/>
         </module-def>
 

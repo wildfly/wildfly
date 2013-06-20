@@ -43,13 +43,10 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivate
 import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.as.clustering.MarshalledValue;
-import org.jboss.as.clustering.MarshalledValueFactory;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
-import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager.LockResult;
-import org.jboss.as.clustering.lock.TimeoutException;
+import org.jboss.as.clustering.marshalling.MarshalledValue;
+import org.jboss.as.clustering.marshalling.MarshalledValueFactory;
 import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.IdentifierFactory;
@@ -72,8 +69,6 @@ import org.jboss.logging.Logger;
 public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends Cacheable<K>, E extends BackingCacheEntry<K, V>, C> extends AbstractBackingCacheEntryStore<K, V, E> implements KeyGenerator<K> {
     private final Logger log = Logger.getLogger(getClass());
 
-    private final SharedLocalYieldingClusterLockManager lockManager;
-    private final LockKeyFactory<K> lockKeyFactory;
     private final MarshalledValueFactory<C> valueFactory;
     private final C context;
     private final boolean controlCacheLifecycle;
@@ -86,7 +81,7 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
     private final IdentifierFactory<K> identifierFactory;
     private final KeyAffinityService<K> affinity;
 
-    public InfinispanBackingCacheEntryStore(Cache<K, MarshalledValue<E, C>> cache, CacheInvoker invoker, IdentifierFactory<K> identifierFactory, KeyAffinityServiceFactory affinityFactory, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout, ClusteredBackingCacheEntryStoreConfig config, boolean controlCacheLifecycle, MarshalledValueFactory<C> valueFactory, C context, SharedLocalYieldingClusterLockManager lockManager, LockKeyFactory<K> lockKeyFactory, Registry<String, ?> registry) {
+    public InfinispanBackingCacheEntryStore(Cache<K, MarshalledValue<E, C>> cache, CacheInvoker invoker, IdentifierFactory<K> identifierFactory, KeyAffinityServiceFactory affinityFactory, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout, ClusteredBackingCacheEntryStoreConfig config, boolean controlCacheLifecycle, MarshalledValueFactory<C> valueFactory, C context, Registry<String, ?> registry) {
         super(timeout, config);
         this.cache = cache;
         this.invoker = invoker;
@@ -96,8 +91,6 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
         this.clustered = cache.getCacheConfiguration().clustering().cacheMode().isClustered();
         this.valueFactory = valueFactory;
         this.context = context;
-        this.lockManager = this.clustered ? lockManager : null;
-        this.lockKeyFactory = lockKeyFactory;
         this.registry = registry;
         this.affinity = affinityFactory.createService(cache, this);
     }
@@ -164,30 +157,21 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
         final K id = entry.getId();
         this.trace("insert(%s)", id);
 
-        this.acquireSessionOwnership(id, true);
-        try {
-            final MarshalledValue<E, C> value = this.marshalEntry(entry);
-            Operation<Void> operation = new Operation<Void>() {
-                @Override
-                public Void invoke(Cache<K, MarshalledValue<E, C>> cache) {
-                    cache.put(id, value);
-                    return null;
-                }
-            };
-            this.invoker.invoke(this.cache, operation, Flag.SKIP_REMOTE_LOOKUP);
-        } finally {
-            this.releaseSessionOwnership(id, false);
-        }
+        final MarshalledValue<E, C> value = this.marshalEntry(entry);
+        Operation<Void> operation = new Operation<Void>() {
+            @Override
+            public Void invoke(Cache<K, MarshalledValue<E, C>> cache) {
+                cache.put(id, value);
+                return null;
+            }
+        };
+        this.invoker.invoke(this.cache, operation, Flag.SKIP_REMOTE_LOOKUP);
         return Collections.emptySet();
     }
 
     @Override
     public E get(final K id, boolean lock) {
         this.trace("get(%s. %s)", id, lock);
-
-        if (lock) {
-            this.acquireSessionOwnership(id, false);
-        }
 
         Operation<MarshalledValue<E, C>> operation = new Operation<MarshalledValue<E, C>>() {
             @Override
@@ -202,20 +186,16 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
     public void update(E entry, boolean modified) {
         final K id = entry.getId();
         this.trace("update(%s, %s)", id, modified);
-        try {
-            if (modified) {
-                final MarshalledValue<E, C> value = this.marshalEntry(entry);
-                Operation<Void> operation = new Operation<Void>() {
-                    @Override
-                    public Void invoke(Cache<K, MarshalledValue<E, C>> cache) {
-                        cache.put(id, value);
-                        return null;
-                    }
-                };
-                this.invoker.invoke(this.cache, operation, Flag.SKIP_REMOTE_LOOKUP);
-            }
-        } finally {
-            this.releaseSessionOwnership(id, false);
+        if (modified) {
+            final MarshalledValue<E, C> value = this.marshalEntry(entry);
+            Operation<Void> operation = new Operation<Void>() {
+                @Override
+                public Void invoke(Cache<K, MarshalledValue<E, C>> cache) {
+                    cache.put(id, value);
+                    return null;
+                }
+            };
+            this.invoker.invoke(this.cache, operation, Flag.SKIP_REMOTE_LOOKUP);
         }
     }
 
@@ -228,11 +208,7 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
                 return cache.remove(id);
             }
         };
-        try {
-            return this.unmarshalEntry(id, this.invoker.invoke(this.cache, operation));
-        } finally {
-            this.releaseSessionOwnership(id, true);
-        }
+        return this.unmarshalEntry(id, this.invoker.invoke(this.cache, operation));
     }
 
     private K unmarshalKey(MarshalledValue<K, C> key) {
@@ -253,35 +229,6 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
             return value.get(this.context);
         } catch (Exception e) {
             throw InfinispanEjbMessages.MESSAGES.deserializationFailure(e, id);
-        }
-    }
-
-    private LockResult acquireSessionOwnership(K key, boolean newLock) {
-        if (this.lockManager == null) return null;
-
-        Serializable lockKey = this.lockKeyFactory.createLockKey(key);
-
-        this.trace("Acquiring %slock on %s", newLock ? "new " : "", lockKey);
-
-        long timeout = this.cache.getCacheConfiguration().locking().lockAcquisitionTimeout();
-        try {
-            LockResult result = this.lockManager.lock(lockKey, timeout, newLock);
-            this.trace("Lock acquired (%s) on %s", result, lockKey);
-            return result;
-        } catch (TimeoutException e) {
-            throw InfinispanEjbMessages.MESSAGES.lockAcquisitionTimeout(lockKey, timeout);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw InfinispanEjbMessages.MESSAGES.lockAcquisitionInterruption(e, lockKey);
-        }
-    }
-
-    private void releaseSessionOwnership(K key, boolean remove) {
-        if (this.lockManager != null) {
-            Serializable lockKey = this.lockKeyFactory.createLockKey(key);
-            this.trace("Releasing %slock on %s", remove ? "and removing " : "", lockKey);
-            this.lockManager.unlock(lockKey, remove);
-            this.trace("Released %slock on %s", remove ? "and removed " : "", lockKey);
         }
     }
 

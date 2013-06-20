@@ -83,7 +83,6 @@ public class ManagedScheduledExecutorTest extends ManagedExecutorServiceTest {
 
     @Test
     public void scheduleCallable() {
-        @SuppressWarnings("unchecked")
         ScheduledFuture<Object> expected = mock(ScheduledFuture.class);
         Task task = new Task();
         long delay = 10L;

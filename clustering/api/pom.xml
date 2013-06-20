@@ -35,30 +35,12 @@
     <artifactId>wildfly-clustering-api</artifactId>
     <packaging>jar</packaging>
 
-    <name>WildFly: Clustering Server API</name>
+    <name>WildFly: Clustering public API</name>
 
     <dependencies>
         <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-processor</artifactId>
-            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-                  projects that depend on this project.-->
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.marshalling</groupId>
-            <artifactId>jboss-marshalling</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.marshalling</groupId>
-            <artifactId>jboss-marshalling-river</artifactId>
-            <scope>test</scope>
+            <groupId>org.jboss.msc</groupId>
+            <artifactId>jboss-msc</artifactId>
         </dependency>
     </dependencies>
 </project>

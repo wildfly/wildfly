@@ -22,10 +22,7 @@
 
 package org.jboss.as.ejb3.component.stateful;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.ejb.EJBHome;
@@ -39,9 +36,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.transaction.UserTransaction;
 
-import org.jboss.as.clustering.SimpleMarshalledValue;
+import org.jboss.as.clustering.marshalling.SimpleClassTable;
+import org.jboss.as.clustering.marshalling.SimpleMarshalledValue;
 import org.jboss.as.ee.component.BasicComponentInstance;
-import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.impl.backing.SerializationGroupImpl;
 import org.jboss.as.ejb3.cache.impl.backing.SerializationGroupMemberImpl;
@@ -51,14 +48,11 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.ejb.client.SessionID;
-import org.jboss.marshalling.ClassTable;
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.Unmarshaller;
 
 /**
  * @author Paul Ferraro
  */
-public class StatefulSessionBeanClassTable implements ClassTable {
+public class StatefulSessionBeanClassTable extends SimpleClassTable {
 
     private static Class<?>[] classes = new Class<?>[] {
         SessionContext.class,
@@ -90,39 +84,7 @@ public class StatefulSessionBeanClassTable implements ClassTable {
         SimpleMarshalledValue.class,
     };
 
-    private static final Map<Class<?>, Writer> writers = createWriters();
-    private static Map<Class<?>, Writer> createWriters() {
-        Map<Class<?>, Writer> writers = new IdentityHashMap<Class<?>, Writer>();
-        for (int i = 0; i < classes.length; i++) {
-            writers.put(classes[i], new ByteWriter((byte) i));
-        }
-        return writers;
-    }
-
-    @Override
-    public Writer getClassWriter(final Class<?> clazz) throws IOException {
-        return writers.get(clazz);
-    }
-
-    @Override
-    public Class<?> readClass(final Unmarshaller unmarshaller) throws IOException, ClassNotFoundException {
-        int index = unmarshaller.readUnsignedByte();
-        if (index >= classes.length) {
-            throw EjbMessages.MESSAGES.classNotFoundInClassTable(this.getClass().getName(), index);
-        }
-        return classes[index];
-    }
-
-    private static final class ByteWriter implements Writer {
-        final byte[] bytes;
-
-        ByteWriter(final byte... bytes) {
-            this.bytes = bytes;
-        }
-
-        @Override
-        public void writeClass(final Marshaller marshaller, final Class<?> clazz) throws IOException {
-            marshaller.write(bytes);
-        }
+    public StatefulSessionBeanClassTable() {
+        super(classes);
     }
 }

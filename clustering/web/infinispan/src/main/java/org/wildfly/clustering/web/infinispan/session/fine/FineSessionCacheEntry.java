@@ -34,8 +34,8 @@ import org.wildfly.clustering.web.session.SessionMetaData;
 public class FineSessionCacheEntry<L> {
 
     private final SessionMetaData metaData;
-    private final Set<String> attributes = new HashSet<String>();
-    private final AtomicReference<L> localContext = new AtomicReference<L>();
+    private final Set<String> attributes = new HashSet<>();
+    private final AtomicReference<L> localContext = new AtomicReference<>();
 
     public FineSessionCacheEntry(SessionMetaData metaData) {
         this.metaData = metaData;

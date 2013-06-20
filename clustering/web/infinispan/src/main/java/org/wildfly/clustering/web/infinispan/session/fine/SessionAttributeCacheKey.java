@@ -46,16 +46,19 @@ public class SessionAttributeCacheKey {
         return this.attribute;
     }
 
+    @Override
     public int hashCode() {
         return this.id.hashCode();
     }
 
+    @Override
     public boolean equals(Object object) {
         if ((object == null) || !(object instanceof SessionAttributeCacheKey)) return false;
         SessionAttributeCacheKey key = (SessionAttributeCacheKey) object;
         return this.id.equals(key.id) && this.attribute.equals(key.attribute);
     }
 
+    @Override
     public String toString() {
         return String.format("%s->%s", this.id, this.attribute);
     }

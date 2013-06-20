@@ -43,12 +43,11 @@ public class CacheMutatorTestCase {
 
     @Test
     public void mutate() {
-        @SuppressWarnings("unchecked")
         AdvancedCache<Object, Object> cache = mock(AdvancedCache.class);
         Object id = new Object();
         Object value = new Object();
         
-        Mutator mutator = new CacheMutator<Object, Object>(cache, new SimpleCacheInvoker(), id, value);
+        Mutator mutator = new CacheMutator<>(cache, new SimpleCacheInvoker(), id, value);
         
         when(cache.getAdvancedCache()).thenReturn(cache);
         when(cache.withFlags(Flag.IGNORE_RETURN_VALUES)).thenReturn(cache);

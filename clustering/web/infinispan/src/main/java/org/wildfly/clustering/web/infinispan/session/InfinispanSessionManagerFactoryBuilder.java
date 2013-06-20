@@ -22,8 +22,8 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import org.infinispan.Cache;
+import org.infinispan.api.BasicCacheContainer;
 import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
@@ -118,7 +118,7 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
         if (!baseServiceName.isParentOf(serviceName)) {
             serviceName = baseServiceName.append(serviceName);
         }
-        return (serviceName.length() < 4) ? serviceName.append(CacheContainer.DEFAULT_CACHE_NAME) : serviceName;
+        return (serviceName.length() < 4) ? serviceName.append(BasicCacheContainer.DEFAULT_CACHE_NAME) : serviceName;
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })

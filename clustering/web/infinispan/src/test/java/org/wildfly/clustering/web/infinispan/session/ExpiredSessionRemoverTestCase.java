@@ -11,7 +11,6 @@ import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionMetaData;
 
 public class ExpiredSessionRemoverTestCase {
-    @SuppressWarnings("unchecked")
     @Test
     public void test() {
         SessionFactory<Object, Object> factory = mock(SessionFactory.class);

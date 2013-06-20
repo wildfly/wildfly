@@ -7,8 +7,8 @@ import java.util.UUID;
 
 import static org.junit.Assert.*;
 
-import org.jboss.as.clustering.SimpleMarshalledValue;
 import org.jboss.as.clustering.infinispan.io.SimpleExternalizer;
+import org.jboss.as.clustering.marshalling.SimpleMarshalledValue;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.ejb.client.SessionID;
 import org.junit.Test;

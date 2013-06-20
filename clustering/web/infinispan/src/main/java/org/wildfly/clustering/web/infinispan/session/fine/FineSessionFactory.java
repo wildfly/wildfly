@@ -23,10 +23,10 @@ package org.wildfly.clustering.web.infinispan.session.fine;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.jboss.as.clustering.MarshalledValue;
-import org.jboss.as.clustering.MarshallingContext;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker.Operation;
+import org.jboss.as.clustering.marshalling.MarshalledValue;
+import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.CacheMutator;
 import org.wildfly.clustering.web.infinispan.Mutator;
@@ -88,7 +88,7 @@ public class FineSessionFactory<L> implements SessionFactory<FineSessionCacheEnt
 
     @Override
     public FineSessionCacheEntry<L> createValue(String id) {
-        FineSessionCacheEntry<L> entry = new FineSessionCacheEntry<L>(new SimpleSessionMetaData());
+        FineSessionCacheEntry<L> entry = new FineSessionCacheEntry<>(new SimpleSessionMetaData());
         FineSessionCacheEntry<L> existing = this.invoker.invoke(this.sessionCache, new CreateOperation<>(id, entry));
         return (existing != null) ? existing : entry;
     }

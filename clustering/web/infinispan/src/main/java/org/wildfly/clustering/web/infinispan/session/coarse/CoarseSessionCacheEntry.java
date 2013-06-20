@@ -32,7 +32,7 @@ import org.wildfly.clustering.web.session.SessionMetaData;
 public class CoarseSessionCacheEntry<L> {
 
     private final SessionMetaData metaData;
-    private final AtomicReference<L> localContext = new AtomicReference<L>();
+    private final AtomicReference<L> localContext = new AtomicReference<>();
 
     public CoarseSessionCacheEntry(SessionMetaData metaData) {
         this.metaData = metaData;

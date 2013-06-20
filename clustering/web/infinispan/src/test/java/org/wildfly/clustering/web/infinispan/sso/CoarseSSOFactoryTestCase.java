@@ -13,13 +13,12 @@ import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSSOCacheEntry;
 import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSSOFactory;
 
-@SuppressWarnings("unchecked")
 public class CoarseSSOFactoryTestCase {
     private final CacheInvoker invoker = new SimpleCacheInvoker();
     private final AdvancedCache<String, CoarseSSOCacheEntry<Object>> cache = mock(AdvancedCache.class);
     private final LocalContextFactory<Object> localContextFactory = mock(LocalContextFactory.class);
     
-    private CoarseSSOFactory<Object> factory = new CoarseSSOFactory<Object>(this.cache, this.invoker, this.localContextFactory);
+    private CoarseSSOFactory<Object> factory = new CoarseSSOFactory<>(this.cache, this.invoker, this.localContextFactory);
 
     @SuppressWarnings("rawtypes")
     @Test
@@ -27,7 +26,7 @@ public class CoarseSSOFactoryTestCase {
         ArgumentCaptor<CoarseSSOCacheEntry> capturedEntry = ArgumentCaptor.forClass(CoarseSSOCacheEntry.class);
         String newId = "new";
         String existingId = "existing";
-        CoarseSSOCacheEntry<Object> entry = new CoarseSSOCacheEntry<Object>();
+        CoarseSSOCacheEntry<Object> entry = new CoarseSSOCacheEntry<>();
         
         when(this.cache.getAdvancedCache()).thenReturn(this.cache);
         when(this.cache.withFlags()).thenReturn(this.cache);
@@ -47,7 +46,7 @@ public class CoarseSSOFactoryTestCase {
     public void getValue() {
         String missingId = "missing";
         String existingId = "existing";
-        CoarseSSOCacheEntry<Object> entry = new CoarseSSOCacheEntry<Object>();
+        CoarseSSOCacheEntry<Object> entry = new CoarseSSOCacheEntry<>();
         
         when(this.cache.getAdvancedCache()).thenReturn(this.cache);
         when(this.cache.withFlags()).thenReturn(this.cache);

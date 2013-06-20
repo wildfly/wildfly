@@ -26,9 +26,9 @@ import java.util.Map;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.jboss.as.clustering.MarshalledValue;
-import org.jboss.as.clustering.MarshallingContext;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
+import org.jboss.as.clustering.marshalling.MarshalledValue;
+import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.CacheMutator;
 import org.wildfly.clustering.web.infinispan.Mutator;

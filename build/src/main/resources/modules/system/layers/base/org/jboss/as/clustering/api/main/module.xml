@@ -32,7 +32,6 @@
     </resources>
 
     <dependencies>
-        <module name="org.jboss.marshalling"/>
-        <module name="org.jboss.logging"/>
+        <module name="org.wildfly.clustering.api" export="true"/>
     </dependencies>
 </module>

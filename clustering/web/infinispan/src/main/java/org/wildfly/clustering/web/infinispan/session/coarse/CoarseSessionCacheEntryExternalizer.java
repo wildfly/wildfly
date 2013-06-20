@@ -54,6 +54,6 @@ public class CoarseSessionCacheEntryExternalizer extends AbstractSimpleExternali
 
     @Override
     public CoarseSessionCacheEntry<Object> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return new CoarseSessionCacheEntry<Object>(this.externalizer.readObject(input));
+        return new CoarseSessionCacheEntry<>(this.externalizer.readObject(input));
     }
 }

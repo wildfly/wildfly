@@ -16,7 +16,6 @@ import org.wildfly.clustering.web.infinispan.Scheduler;
 import org.wildfly.clustering.web.session.Session;
 
 public class SessionEvictionSchedulerTestCase {
-    @SuppressWarnings("unchecked")
     @Test
     public void test() throws InterruptedException {
         String evictedSessionId = "evicted";
@@ -28,7 +27,7 @@ public class SessionEvictionSchedulerTestCase {
         ExecutorService executor = mock(ExecutorService.class);
         ArgumentCaptor<Runnable> capturedTask = ArgumentCaptor.forClass(Runnable.class);
 
-        try (Scheduler<Session<Void>> scheduler = new SessionEvictionScheduler<Void>(batcher, evictor, 1, executor)) {
+        try (Scheduler<Session<Void>> scheduler = new SessionEvictionScheduler<>(batcher, evictor, 1, executor)) {
             when(evictedSession.getId()).thenReturn(evictedSessionId);
             when(activeSession.getId()).thenReturn(activeSessionId);
             

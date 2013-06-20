@@ -891,11 +891,6 @@
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-clustering-annotations</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-clustering-api</artifactId>
                 </dependency>
 
@@ -907,11 +902,6 @@
                 <dependency>
                     <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-clustering-ejb3-infinispan</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-clustering-impl</artifactId>
                 </dependency>
 
                 <dependency>
@@ -931,7 +921,7 @@
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-clustering-service</artifactId>
+                    <artifactId>wildfly-clustering-server</artifactId>
                 </dependency>
 
                 <dependency>
@@ -2224,7 +2214,7 @@
                                         <include>xalan:xalan</include>
                                         <include>xerces:xercesImpl</include>
                                     </dependencySourceIncludes>
-                                    <dependencySourceExcludes>
+                                        <dependencySourceExcludes>
                                         <exclude>antlr:antlr</exclude>
                                         <exclude>asm:asm</exclude>
                                         <exclude>ch.qos.cal10n:cal10n-api</exclude>
@@ -2312,11 +2302,10 @@
                                         <exclude>org.wildfly:wildfly-clustering-api</exclude>
                                         <exclude>org.wildfly:wildfly-clustering-common</exclude>
                                         <exclude>org.wildfly:wildfly-clustering-ejb3-infinispan</exclude>
-                                        <exclude>org.wildfly:wildfly-clustering-impl</exclude>
                                         <exclude>org.wildfly:wildfly-clustering-infinispan</exclude>
                                         <exclude>org.wildfly:wildfly-clustering-jgroups</exclude>
                                         <exclude>org.wildfly:wildfly-clustering-registry</exclude>
-                                        <exclude>org.wildfly:wildfly-clustering-service</exclude>
+                                        <exclude>org.wildfly:wildfly-clustering-server</exclude>
                                         <exclude>org.wildfly:wildfly-clustering-singleton</exclude>
                                         <exclude>org.wildfly:wildfly-clustering-web-catalina</exclude>
                                         <exclude>org.wildfly:wildfly-clustering-web-infinispan</exclude>
@@ -2978,44 +2967,40 @@
                                             <packages>org.jboss.as.cli:org.jboss.as.cli.batch:org.jboss.as.cli.batch.impl:org.jboss.as.cli.gui:org.jboss.as.cli.gui.component:org.jboss.as.cli.gui.metacommand:org.jboss.as.cli.handlers:org.jboss.as.cli.handlers.batch:org.jboss.as.cli.handlers.ifelse:org.jboss.as.cli.handlers.jca:org.jboss.as.cli.handlers.jms:org.jboss.as.cli.handlers.module:org.jboss.as.cli.handlers.trycatch:org.jboss.as.cli.impl:org.jboss.as.cli.operation:org.jboss.as.cli.operation.impl:org.jboss.as.cli.parsing:org.jboss.as.cli.parsing.arguments:org.jboss.as.cli.parsing.command:org.jboss.as.cli.parsing.operation:org.jboss.as.cli.parsing.operation.header:org.jboss.as.cli.scriptsupport:org.jboss.as.cli.util</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.wildfly.clustering.annotations</title>
-                                            <packages>org.jboss.as.clustering.annotation</packages>
+                                            <title>Module org.jboss.as.clustering.api</title>
+                                            <packages>org.jboss.as.clustering</packages>
                                         </group>
                                         <group>
                                             <title>Module org.wildfly.clustering.api</title>
-                                            <packages>org.jboss.as.clustering:org.jboss.as.clustering.lock</packages>
+                                            <packages>org.wildfly.clustering:org.wildfly.clustering.dispatcher:org.wildfly.clustering.service</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.wildfly.clustering.common</title>
-                                            <packages>org.jboss.as.clustering.concurrent:org.jboss.as.clustering.msc</packages>
+                                            <title>Module org.jboss.as.clustering.common</title>
+                                            <packages>org.jboss.as.clustering.concurrent:org.jboss.as.clustering.marshalling:org.jboss.as.clustering.msc</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.wildfly.clustering.ejb3.infinispan</title>
+                                            <title>Module org.jboss.as.clustering.ejb3.infinispan</title>
                                             <packages>org.jboss.as.clustering.ejb3.cache.backing.infinispan</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.wildfly.clustering.impl</title>
-                                            <packages>org.jboss.as.clustering.impl:org.jboss.as.clustering.lock.impl</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.wildfly.clustering.infinispan</title>
+                                            <title>Module org.jboss.as.clustering.infinispan</title>
                                             <packages>org.jboss.as.clustering.infinispan:org.jboss.as.clustering.infinispan.affinity:org.jboss.as.clustering.infinispan.atomic:org.jboss.as.clustering.infinispan.invoker:org.jboss.as.clustering.infinispan.io:org.jboss.as.clustering.infinispan.subsystem</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.wildfly.clustering.jgroups</title>
+                                            <title>Module org.jboss.as.clustering.jgroups</title>
                                             <packages>org.jboss.as.clustering.jgroups:org.jboss.as.clustering.jgroups.subsystem</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.wildfly.clustering.registry</title>
+                                            <title>Module org.jboss.as.clustering.registry</title>
                                             <packages>org.jboss.as.clustering.registry</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.wildfly.clustering.service</title>
-                                            <packages>org.jboss.as.clustering.service</packages>
+                                            <title>Module org.wildfly.clustering.server</title>
+                                            <packages>org.wildfly.clustering.server:org.wildfly.clustering.server.dispatcher:org.wildfly.clustering.server.service</packages>
                                         </group>
                                         <group>
                                             <title>Module org.wildfly.clustering.singleton</title>
-                                            <packages>org.jboss.as.clustering.singleton:org.jboss.as.clustering.singleton.election</packages>
+                                            <packages>org.wildfly.clustering.singleton:org.wildfly.clustering.singleton.election</packages>
                                         </group>
                                         <group>
                                             <title>Module org.wildfly.clustering.web.catalina</title>

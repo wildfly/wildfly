@@ -24,15 +24,14 @@ package org.jboss.as.test.clustering.cluster.singleton.service;
 
 import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
 
-import org.jboss.as.clustering.singleton.SingletonService;
-import org.jboss.as.clustering.singleton.election.NamePreference;
-import org.jboss.as.clustering.singleton.election.PreferredSingletonElectionPolicy;
-import org.jboss.as.clustering.singleton.election.SimpleSingletonElectionPolicy;
+import org.wildfly.clustering.singleton.SingletonService;
+import org.wildfly.clustering.singleton.election.NamePreference;
+import org.wildfly.clustering.singleton.election.PreferredSingletonElectionPolicy;
+import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
@@ -41,8 +40,6 @@ import org.jboss.msc.value.InjectedValue;
  * @author Paul Ferraro
  */
 public class MyServiceActivator implements ServiceActivator {
-
-    private static final Logger log = Logger.getLogger(MyServiceActivator.class);
 
     public static final String PREFERRED_NODE = NODE_2;
 
@@ -55,7 +52,7 @@ public class MyServiceActivator implements ServiceActivator {
     private void install(ServiceName name, int quorum, ServiceActivatorContext context) {
         InjectedValue<ServerEnvironment> env = new InjectedValue<ServerEnvironment>();
         MyService service = new MyService(env);
-        SingletonService<Environment> singleton = new SingletonService<Environment>(service, name, quorum);
+        SingletonService<Environment> singleton = new SingletonService<Environment>(name, service, quorum);
         singleton.setElectionPolicy(new PreferredSingletonElectionPolicy(new SimpleSingletonElectionPolicy(), new NamePreference(PREFERRED_NODE + "/" + SingletonService.DEFAULT_CONTAINER)));
         singleton.build(context.getServiceTarget())
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, env)

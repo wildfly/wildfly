@@ -15,7 +15,6 @@ import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionMetaData;
 
 public class SessionExpirationSchedulerTestCase {
-    @SuppressWarnings("unchecked")
     @Test
     public void test() throws InterruptedException {
         Batcher batcher = mock(Batcher.class);
@@ -46,7 +45,7 @@ public class SessionExpirationSchedulerTestCase {
         when(expiringSession.getId()).thenReturn(expiringSessionId);
         when(canceledSession.getId()).thenReturn(canceledSessionId);
         
-        try (Scheduler<Session<Void>> scheduler = new SessionExpirationScheduler<Void>(batcher, remover)) {
+        try (Scheduler<Session<Void>> scheduler = new SessionExpirationScheduler<>(batcher, remover)) {
             scheduler.schedule(immortalSession);
             scheduler.schedule(canceledSession);
             scheduler.schedule(expiringSession);

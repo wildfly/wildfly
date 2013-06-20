@@ -32,7 +32,7 @@
     </supplement>
     <supplement name="ha">
         <replacement placeholder="CACHE-CONTAINERS">
-            <cache-container name="singleton" aliases="cluster ha-partition" default-cache="default">
+            <cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">
                 <transport lock-timeout="60000"/>
                 <replicated-cache name="default" mode="SYNC" batching="true">
                     <locking isolation="REPEATABLE_READ"/>
