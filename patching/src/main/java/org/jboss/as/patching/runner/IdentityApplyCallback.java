@@ -34,8 +34,8 @@ class IdentityApplyCallback implements IdentityPatchContext.FinalizeCallback {
 
     @Override
     public void finishPatch(final Patch processedPatch, final RollbackPatch rollbackPatch, final IdentityPatchContext context) throws Exception {
-        final File historyDir = structure.getInstalledImage().getPatchHistoryDir(patchId);
 
+        final File historyDir = structure.getInstalledImage().getPatchHistoryDir(patchId);
         if (!historyDir.exists()) {
             historyDir.mkdirs();
         }

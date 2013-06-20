@@ -21,6 +21,8 @@
  */
 package org.jboss.as.patching.runner;
 
+import static org.jboss.as.patching.Constants.BASE;
+import static org.jboss.as.patching.Constants.NOT_PATCHED;
 import static org.jboss.as.patching.HashUtils.hashFile;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.metadata.ModificationType.MODIFY;
@@ -36,6 +38,7 @@ import static org.junit.Assert.assertArrayEquals;
 
 import java.io.File;
 
+import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerImpl;
 import org.jboss.as.patching.installation.InstalledIdentity;
@@ -86,8 +89,8 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
         PatchBuilder builder = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setIdentity(new IdentityImpl("eap", identity.getIdentity().getVersion()))
-                .setNoUpgrade();
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), Constants.NOT_PATCHED)
+                .getParent();
 
 //        PatchElementImpl element = new PatchElementImpl("patch element 01");
 //        builder.addElement(element);

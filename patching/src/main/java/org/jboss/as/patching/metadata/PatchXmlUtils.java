@@ -22,7 +22,6 @@
 
 package org.jboss.as.patching.metadata;
 
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
@@ -40,11 +39,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.patching.metadata.impl.IdentityImpl;
 import org.jboss.as.patching.metadata.impl.PatchElementImpl;
 import org.jboss.as.patching.metadata.impl.PatchElementProviderImpl;
 import org.jboss.as.patching.metadata.impl.RequiresCallback;
-import org.jboss.as.patching.metadata.impl.UpgradeCallback;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -62,13 +59,13 @@ class PatchXmlUtils implements XMLStreamConstants {
         ADDED("added"),
         BUNDLES("bundles"),
         DESCRIPTION("description"),
-        ELEMENT("element"),
         IDENTITY("identity"),
         REQUIRES("requires"),
         LAYER("layer"),
         MISC_FILES("misc-files"),
         MODULES("modules"),
         NO_UPGRADE("no-upgrade"),
+        ONE_OFF("one-off"),
         PATCH("patch"),
         REMOVED("removed"),
         UPDATED("updated"),
@@ -101,6 +98,7 @@ class PatchXmlUtils implements XMLStreamConstants {
 
     enum Attribute {
 
+        CUMULATIVE_PATCH_ID("cumulative-patch-id"),
         DIRECTORY("directory"),
         EXISTING_PATH("existing-path"),
         HASH("hash"),
@@ -152,9 +150,27 @@ class PatchXmlUtils implements XMLStreamConstants {
 
         // identity
         final Identity identity = patch.getIdentity();
-        writer.writeStartElement(Element.IDENTITY.name);
+        final Patch.PatchType type = identity.getPatchType();
+        if (type == Patch.PatchType.UPGRADE) {
+            writer.writeStartElement(Element.UPGRADE.name);
+        } else if (type == Patch.PatchType.CUMULATIVE) {
+            writer.writeStartElement(Element.NO_UPGRADE.name);
+        } else {
+            writer.writeStartElement(Element.ONE_OFF.name);
+        }
+
         writer.writeAttribute(Attribute.NAME.name, identity.getName());
         writer.writeAttribute(Attribute.VERSION.name, identity.getVersion());
+
+        // upgrade / no-upgrade
+        if(type == Patch.PatchType.UPGRADE) {
+            final Identity.IdentityUpgrade upgrade = identity.forType(Patch.PatchType.UPGRADE, Identity.IdentityUpgrade.class);
+            writer.writeAttribute(Attribute.TO_VERSION.name, upgrade.getResultingVersion());
+        } else if (type == Patch.PatchType.ONE_OFF) {
+            final Identity.IdentityOneOffPatch oneOffPatch = identity.forType(Patch.PatchType.ONE_OFF, Identity.IdentityOneOffPatch.class);
+            writer.writeAttribute(Attribute.CUMULATIVE_PATCH_ID.name, oneOffPatch.getCumulativePatchId());
+        }
+
         if(!identity.getRequires().isEmpty()) {
             writer.writeStartElement(Element.REQUIRES.name);
             for(String patchId : identity.getRequires()) {
@@ -166,20 +182,12 @@ class PatchXmlUtils implements XMLStreamConstants {
         }
         writer.writeEndElement(); // identity
 
-        // upgrade / no-upgrade
-        final Patch.PatchType type = patch.getPatchType();
-        if(type == Patch.PatchType.ONE_OFF) {
-            writer.writeEmptyElement(Element.NO_UPGRADE.name);
-        } else {
-            writer.writeStartElement(Element.UPGRADE.name);
-            writer.writeAttribute(Attribute.TO_VERSION.name, patch.getResultingVersion());
-            writer.writeEndElement();
-        }
-
         // elements
         final List<PatchElement> elements = patch.getElements();
         for(PatchElement element : elements) {
-            writer.writeStartElement(Element.ELEMENT.name);
+
+            final Element startElement = element.getProvider().isAddOn() ? Element.ADD_ON : Element.LAYER;
+            writer.writeStartElement(startElement.name);
             writer.writeAttribute(Attribute.ID.name, element.getId());
 
             if(element.getDescription() != null) {
@@ -193,32 +201,35 @@ class PatchXmlUtils implements XMLStreamConstants {
             if(provider == null) {
                 throw new XMLStreamException("Provider is missing for patch element " + element.getId());
             }
-            if(provider.isAddOn()) {
-                writer.writeStartElement(Element.ADD_ON.name);
+
+            // identity
+            final Patch.PatchType elementPatchType =  provider.getPatchType();
+            if (elementPatchType == Patch.PatchType.UPGRADE) {
+                writer.writeStartElement(Element.UPGRADE.name);
+            } else if (elementPatchType == Patch.PatchType.CUMULATIVE) {
+                writer.writeStartElement(Element.NO_UPGRADE.name);
             } else {
-                writer.writeStartElement(Element.LAYER.name);
+                writer.writeStartElement(Element.ONE_OFF.name);
             }
+
             writer.writeAttribute(Attribute.NAME.name, provider.getName());
-            writer.writeAttribute(Attribute.VERSION.name, provider.getVersion());
+
+            // upgrade / no-upgrade
+            if (type == Patch.PatchType.ONE_OFF) {
+                final PatchElementProvider.OneOffPatchTarget oneOffPatch = provider.forType(Patch.PatchType.ONE_OFF, PatchElementProvider.OneOffPatchTarget.class);
+                writer.writeAttribute(Attribute.CUMULATIVE_PATCH_ID.name, oneOffPatch.getCumulativePatchId());
+            }
+
             if(!provider.getRequires().isEmpty()) {
                 writer.writeStartElement(Element.REQUIRES.name);
                 for(String elementId : provider.getRequires()) {
-                    writer.writeStartElement(Element.ELEMENT.name);
+                    writer.writeStartElement(Element.PATCH.name);
                     writer.writeAttribute(Attribute.ID.name, elementId);
                     writer.writeEndElement(); // element
                 }
                 writer.writeEndElement(); // includes
             }
             writer.writeEndElement(); // add-on / layer
-
-            // upgrade / no-upgrade
-            final Patch.PatchType upgrade = element.getPatchType();
-            if(upgrade == Patch.PatchType.ONE_OFF) {
-                writer.writeEmptyElement(Element.NO_UPGRADE.name);
-            } else {
-                writer.writeEmptyElement(Element.UPGRADE.name);
-                writer.writeAttribute(Attribute.TO_VERSION.name, element.getResultingVersion());
-            }
 
             // Write the content modifications
             writeContentModifications(writer, element.getModifications());
@@ -349,16 +360,19 @@ class PatchXmlUtils implements XMLStreamConstants {
                     patch.setDescription(reader.getElementText());
                     break;
                 case UPGRADE:
-                    parseUpgrade(reader, patch);
+                    parseIdentity(reader, patch, Patch.PatchType.UPGRADE);
                     break;
                 case NO_UPGRADE:
-                    parseNoUpgrade(reader, patch);
+                    parseIdentity(reader, patch, Patch.PatchType.CUMULATIVE);
                     break;
-                case IDENTITY:
-                    parseIdentity(reader, patch);
+                case ONE_OFF:
+                    parseIdentity(reader, patch, Patch.PatchType.ONE_OFF);
                     break;
-                case ELEMENT:
-                    parseElement(reader, patch);
+                case LAYER:
+                    parseElement(reader, patch, false);
+                    break;
+                case ADD_ON:
+                    parseElement(reader, patch, true);
                     break;
                 case MODULES:
                     parseModules(reader, modifications);
@@ -379,7 +393,7 @@ class PatchXmlUtils implements XMLStreamConstants {
         throw unexpectedElement(reader);
     }
 
-    static void parseElement(final XMLExtendedStreamReader reader, final PatchBuilder builder) throws XMLStreamException {
+    static void parseElement(final XMLExtendedStreamReader reader, final PatchBuilder builder, boolean addOn) throws XMLStreamException {
 
         String id = null;
         final int count = reader.getAttributeCount();
@@ -392,9 +406,9 @@ class PatchXmlUtils implements XMLStreamConstants {
                 throw unexpectedAttribute(reader, i);
             }
         }
+
         final PatchElementImpl patchElement = new PatchElementImpl(id);
         builder.addElement(patchElement);
-
         final List<ContentModification> modifications = patchElement.getModifications();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
@@ -402,17 +416,14 @@ class PatchXmlUtils implements XMLStreamConstants {
                 case DESCRIPTION:
                     patchElement.setDescription(reader.getElementText());
                     break;
-                case LAYER:
-                    parseElementProvider(reader, patchElement, false);
-                    break;
-                case ADD_ON:
-                    parseElementProvider(reader, patchElement, true);
-                    break;
                 case UPGRADE:
-                    parseUpgrade(reader, patchElement);
+                    parseElementProvider(reader, patchElement, Patch.PatchType.UPGRADE, addOn);
                     break;
                 case NO_UPGRADE:
-                    parseNoUpgrade(reader, patchElement);
+                    parseElementProvider(reader, patchElement, Patch.PatchType.CUMULATIVE, addOn);
+                    break;
+                case ONE_OFF:
+                    parseElementProvider(reader, patchElement, Patch.PatchType.ONE_OFF, addOn);
                     break;
                 case MODULES:
                     parseModules(reader, modifications);
@@ -429,16 +440,16 @@ class PatchXmlUtils implements XMLStreamConstants {
         }
     }
 
-    static void parseElementProvider(final XMLExtendedStreamReader reader, final PatchElementImpl patchElement, boolean isAddOn) throws XMLStreamException {
+    static void parseElementProvider(final XMLExtendedStreamReader reader, PatchElementImpl patchElement, Patch.PatchType patchType, boolean isAddOn) throws XMLStreamException {
 
         String name = null;
-        String version = null;
+        String cumulativePatchId = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            if(Attribute.VERSION == attribute) {
-                version = value;
+            if(Attribute.CUMULATIVE_PATCH_ID == attribute) {
+                cumulativePatchId = value;
             } else if(Attribute.NAME == attribute) {
                 name = value;
             } else {
@@ -446,8 +457,21 @@ class PatchXmlUtils implements XMLStreamConstants {
             }
         }
 
-        final PatchElementProviderImpl provider = new PatchElementProviderImpl(name, version, isAddOn);
+        final PatchElementProviderImpl provider = new PatchElementProviderImpl(name, isAddOn);
         patchElement.setProvider(provider);
+        switch (patchType) {
+            case UPGRADE:
+                provider.upgrade();
+                break;
+            case CUMULATIVE:
+                provider.cumulativePatch();
+                break;
+            case ONE_OFF:
+                provider.oneOffPatch(cumulativePatchId);
+                break;
+            default:
+                throw new IllegalStateException();
+        }
 
         int level = 0;
         while (reader.hasNext()) {
@@ -462,7 +486,7 @@ class PatchXmlUtils implements XMLStreamConstants {
             switch (element) {
                 case REQUIRES:
                     break;
-                case ELEMENT:
+                case PATCH:
                     level = 1;
                     parseIncluded(reader, provider);
                     break;
@@ -472,16 +496,22 @@ class PatchXmlUtils implements XMLStreamConstants {
         }
     }
 
-    static void parseIdentity(final XMLExtendedStreamReader reader, final PatchBuilder builder) throws XMLStreamException {
+    static void parseIdentity(final XMLExtendedStreamReader reader, final PatchBuilder builder, final Patch.PatchType patchType) throws XMLStreamException {
 
         String name = null;
         String version = null;
+        String resultingVersion = null;
+        String cumulativePatchId = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             if(Attribute.VERSION == attribute) {
                 version = value;
+            } else if(Attribute.CUMULATIVE_PATCH_ID == attribute) {
+                cumulativePatchId = value;
+            } else if(Attribute.TO_VERSION == attribute) {
+                resultingVersion = value;
             } else if(Attribute.NAME == attribute) {
                 name = value;
             } else {
@@ -489,8 +519,20 @@ class PatchXmlUtils implements XMLStreamConstants {
             }
         }
 
-        final IdentityImpl identity = new IdentityImpl(name, version);
-        builder.setIdentity(identity);
+        final PatchIdentityBuilder identityBuilder;
+        switch (patchType) {
+            case UPGRADE:
+                identityBuilder = builder.upgradeIdentity(name, version, resultingVersion);
+                break;
+            case CUMULATIVE:
+                identityBuilder = builder.cumulativePatchIdentity(name, version);
+                break;
+            case ONE_OFF:
+                identityBuilder = builder.oneOffPatchIdentity(name, version, cumulativePatchId);
+                break;
+            default:
+                throw new IllegalStateException();
+        }
 
         int level = 0;
         while (reader.hasNext()) {
@@ -508,7 +550,7 @@ class PatchXmlUtils implements XMLStreamConstants {
                     break;
                 case PATCH:
                     level = 1;
-                    parseIncluded(reader, identity);
+                    parseIncluded(reader, identityBuilder);
                     break;
                 default:
                     throw unexpectedElement(reader);
@@ -529,27 +571,6 @@ class PatchXmlUtils implements XMLStreamConstants {
             }
         }
         requireNoContent(reader);
-    }
-
-    static void parseUpgrade(final XMLExtendedStreamReader reader, final UpgradeCallback builder) throws XMLStreamException {
-
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            final String value = reader.getAttributeValue(i);
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            if(Attribute.TO_VERSION == attribute) {
-                builder.setUpgrade(value);
-            } else {
-                throw unexpectedAttribute(reader, i);
-            }
-        }
-        requireNoContent(reader);
-    }
-
-    static void parseNoUpgrade(final XMLExtendedStreamReader reader, final UpgradeCallback builder) throws XMLStreamException {
-        requireNoAttributes(reader);
-        requireNoContent(reader);
-        builder.setNoUpgrade();
     }
 
     static void parseModules(final XMLExtendedStreamReader reader, final Collection<ContentModification> modifications) throws XMLStreamException {

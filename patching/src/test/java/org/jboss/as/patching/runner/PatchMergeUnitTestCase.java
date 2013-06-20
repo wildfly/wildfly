@@ -175,8 +175,7 @@ public class PatchMergeUnitTestCase {
     }
 
     static Patch createPatch(final String id, final Patch.PatchType type, final ContentModification... item) {
-        return new PatchImpl(id, "test", type, null, "1.2.3", Collections.<String>emptyList(), Collections.<String>emptyList(),
-                Collections.<PatchElement>emptyList(), Arrays.asList(item));
+        return new PatchImpl(id, "test", null, Collections.<PatchElement>emptyList(), Arrays.asList(item));
     }
 
 }

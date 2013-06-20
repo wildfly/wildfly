@@ -22,13 +22,13 @@
 
 package org.jboss.as.patching.metadata;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
  * The patch metadata.
  *
  * @author Emanuel Muckenhuber
+ * @author Alexey Loubyansky
  */
 public interface Patch {
 
@@ -64,39 +64,11 @@ public interface Patch {
     String getDescription();
 
     /**
-     * Get the patch type.
-     *
-     * @return the type of the patch
-     */
-    PatchType getPatchType();
-
-    /**
-     * Returns the identity which produced this patch.
+     * Returns the target identity.
      *
      * @return  identity which produced this patch
      */
     Identity getIdentity();
-
-    /**
-     * Get the resulting version of a release or {@code null} for other patches
-     *
-     * @return the resulting version
-     */
-    String getResultingVersion();
-
-    /**
-     * Get the versions this patch applies to.
-     *
-     * @return the versions the patch can be applied
-     */
-    Collection<String> getAppliesTo();
-
-    /**
-     * Get a list of patch-ids, this patch is incompatible with.
-     *
-     * @return a list of incompatible patches
-     */
-    Collection<String> getIncompatibleWith();
 
     /**
      * List of patch elements.

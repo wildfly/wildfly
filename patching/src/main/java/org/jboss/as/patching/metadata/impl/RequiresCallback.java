@@ -28,5 +28,5 @@ package org.jboss.as.patching.metadata.impl;
  */
 public interface RequiresCallback {
 
-    void require(String id);
+    RequiresCallback require(String id);
 }

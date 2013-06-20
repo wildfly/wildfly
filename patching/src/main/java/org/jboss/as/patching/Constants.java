@@ -42,6 +42,7 @@ public class Constants {
     public static final String ROLLBACK = "rollback";
     /** The default if no patches are active. */
     public static final String BASE = "base";
+    public static final String NOT_PATCHED = BASE;
 
     public static final String OVERRIDE_MODULES = "override-modules";
     public static final String OVERRIDE_ALL = "override-all";
@@ -77,4 +78,5 @@ public class Constants {
     public static final ServiceName JBOSS_PATCHING = ServiceName.JBOSS.append("patching");
     public static final ServiceName JBOSS_PRODUCT_CONFIG_SERVICE = JBOSS_AS.append("product-config");
     public static final String SYSTEM = "system";
+
 }

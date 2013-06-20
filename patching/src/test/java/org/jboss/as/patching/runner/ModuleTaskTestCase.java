@@ -23,6 +23,7 @@
 package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.Constants.LAYERS;
+import static org.jboss.as.patching.Constants.NOT_PATCHED;
 import static org.jboss.as.patching.Constants.SYSTEM;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
@@ -66,11 +67,11 @@ public class ModuleTaskTestCase extends AbstractTaskTestCase{
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setOneOffType(productConfig.getProductVersion())
-                .addElement(new PatchElementImpl(baseLayerPatchID)
-                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
-                        .setNoUpgrade()
-                        .addContentModification(moduleAdded))
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), NOT_PATCHED)
+                .getParent()
+                .oneOffPatchElement(baseLayerPatchID, BASE, NOT_PATCHED, false)
+                    .addContentModification(moduleAdded)
+                    .getParent()
                 .build();
 
         createPatchXMLFile(patchDir, patch);
@@ -100,11 +101,11 @@ public class ModuleTaskTestCase extends AbstractTaskTestCase{
         Patch patch = PatchBuilder.create()
                 .setPatchId(randomString())
                 .setDescription(randomString())
-                .setOneOffType(productConfig.getProductVersion())
-                .addElement(new PatchElementImpl(baseLayerPatchID)
-                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
-                        .setNoUpgrade()
-                        .addContentModification(ContentModificationUtils.removeModule(moduleDir)))
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), NOT_PATCHED)
+                .getParent()
+                .oneOffPatchElement(baseLayerPatchID, BASE, NOT_PATCHED, false)
+                    .addContentModification(ContentModificationUtils.removeModule(moduleDir))
+                    .getParent()
                 .build();
 
         // create the patch
@@ -141,11 +142,11 @@ public class ModuleTaskTestCase extends AbstractTaskTestCase{
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setOneOffType(productConfig.getProductVersion())
-                .addElement(new PatchElementImpl(baseLayerPatchID)
-                        .setProvider(new PatchElementProviderImpl(BASE, "1.0.1", false))
-                        .setNoUpgrade()
-                        .addContentModification(moduleModified))
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), NOT_PATCHED)
+                .getParent()
+                .oneOffPatchElement(baseLayerPatchID, BASE, NOT_PATCHED, false)
+                    .addContentModification(moduleModified)
+                    .getParent()
                 .build();
         createPatchXMLFile(patchDir, patch);
         File zippedPatch = createZippedPatchFile(patchDir, patch.getPatchId());

@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.jboss.as.patching.metadata.LayerType;
+import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchElementProvider;
 
 
@@ -34,60 +35,48 @@ import org.jboss.as.patching.metadata.PatchElementProvider;
  * @author Alexey Loubyansky
  *
  */
-public class PatchElementProviderImpl implements PatchElementProvider, RequiresCallback {
+public class PatchElementProviderImpl implements PatchElementProvider, PatchElementProvider.OneOffPatchTarget, RequiresCallback, IncompatibleWithCallback {
 
     private final String name;
-    private final String version;
     private final boolean isAddOn;
+    private Patch.PatchType patchType;
+    private String cumulativeTarget = null;
+    private Collection<String> incompatibleWith = Collections.emptyList();
     private Collection<String> requires = Collections.emptyList();
 
-    public PatchElementProviderImpl(String name, String version, boolean isAddOn) {
+    public PatchElementProviderImpl(String name, boolean isAddOn) {
         if(name == null) {
             throw new IllegalArgumentException("name is null");
         }
-        if(version == null) {
-            throw new IllegalArgumentException("version is null");
-        }
         this.name = name;
-        this.version = version;
         this.isAddOn = isAddOn;
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.PatchElementProvider#getName()
-     */
     @Override
     public String getName() {
         return name;
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.PatchElementProvider#getVersion()
-     */
     @Override
-    public String getVersion() {
-        return version;
+    public Patch.PatchType getPatchType() {
+        return patchType;
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.PatchElementProvider#getIncludes()
-     */
     @Override
     public Collection<String> getRequires() {
         return requires;
     }
 
     @Override
-    public void require(String elementId) {
-        if(requires.isEmpty()) {
-            requires = new ArrayList<String>();
-        }
-        requires.add(elementId);
+    public Collection<String> getIncompatibleWith() {
+        return incompatibleWith;
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.patching.metadata.PatchElementProvider#isAddOn()
-     */
+    @Override
+    public String getCumulativePatchId() {
+        return cumulativeTarget;
+    }
+
     @Override
     public boolean isAddOn() {
         return isAddOn;
@@ -96,6 +85,53 @@ public class PatchElementProviderImpl implements PatchElementProvider, RequiresC
     @Override
     public LayerType getLayerType() {
         return isAddOn ? LayerType.AddOn : LayerType.Layer;
+    }
+
+    public void upgrade() {
+        this.patchType = Patch.PatchType.UPGRADE;
+    }
+
+    public void cumulativePatch() {
+        this.patchType = Patch.PatchType.CUMULATIVE;
+    }
+
+    public void oneOffPatch(String target) {
+        this.patchType = Patch.PatchType.ONE_OFF;
+        this.cumulativeTarget = target;
+    }
+
+    @Override
+    public PatchElementProviderImpl incompatibleWith(final String patchID) {
+        if (patchID == null) {
+            throw new IllegalArgumentException("patchId is null");
+        }
+        if (incompatibleWith.isEmpty()) {
+            incompatibleWith = new ArrayList<String>();
+        }
+        incompatibleWith.add(patchID);
+        return this;
+    }
+
+    @Override
+    public PatchElementProviderImpl require(String elementId) {
+        if(requires.isEmpty()) {
+            requires = new ArrayList<String>();
+        }
+        requires.add(elementId);
+        return this;
+    }
+
+    @Override
+    public <T extends PatchElementProvider> T forType(Patch.PatchType patchType, Class<T> clazz) {
+        if (patchType != this.patchType) {
+            throw new IllegalStateException();
+        }
+        if (patchType == Patch.PatchType.ONE_OFF) {
+            if (cumulativeTarget == null) {
+                throw new IllegalStateException();
+            }
+        }
+        return clazz.cast(this);
     }
 
 }

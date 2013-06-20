@@ -26,6 +26,7 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static org.jboss.as.patching.Constants.ADD_ONS;
+import static org.jboss.as.patching.Constants.NOT_PATCHED;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.patching.Constants.BASE;
@@ -43,6 +44,7 @@ import static org.jboss.as.patching.runner.TestUtils.tree;
 import java.io.File;
 import java.util.Collection;
 
+import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.metadata.ContentModification;
@@ -107,12 +109,11 @@ public class AddOnTestCase extends AbstractTaskTestCase {
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
-                .setOneOffType(productConfig.getProductVersion())
-                .setIdentity(new IdentityImpl(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion()))
-                .addElement(new PatchElementImpl(addOnPatchID)
-                        .setProvider(new PatchElementProviderImpl(addOnName, "1.0.1", true))
-                        .setNoUpgrade()
-                        .addContentModification(moduleAdded))
+                .oneOffPatchIdentity(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion(), Constants.NOT_PATCHED)
+                .getParent()
+                .oneOffPatchElement(addOnPatchID, addOnName, NOT_PATCHED, true)
+                    .addContentModification(moduleAdded)
+                    .getParent()
                 .addContentModification(fileAdded)
                 .build();
 
@@ -163,12 +164,11 @@ public class AddOnTestCase extends AbstractTaskTestCase {
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
-                .setOneOffType(productConfig.getProductVersion())
-                .setIdentity(new IdentityImpl(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion()))
-                .addElement(new PatchElementImpl(addOnPatchID)
-                        .setProvider(new PatchElementProviderImpl(addOnName, "1.0.1", true))
-                        .setNoUpgrade()
-                        .addContentModification(moduleAdded))
+                .oneOffPatchIdentity(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion(), Constants.NOT_PATCHED)
+                .getParent()
+                .oneOffPatchElement(addOnPatchID, addOnName, NOT_PATCHED, true)
+                    .addContentModification(moduleAdded)
+                    .getParent()
                 .addContentModification(fileAdded)
                 .build();
 

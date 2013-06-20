@@ -22,26 +22,37 @@
 
 package org.jboss.as.patching.metadata;
 
+import org.jboss.as.patching.metadata.impl.IncompatibleWithCallback;
 import org.jboss.as.patching.metadata.impl.PatchElementImpl;
 import org.jboss.as.patching.metadata.impl.PatchElementProviderImpl;
+import org.jboss.as.patching.metadata.impl.RequiresCallback;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class PatchElementBuilder extends AbstractModificationBuilderTarget<PatchElementBuilder> implements PatchBuilder.PatchElementHolder {
+public class PatchElementBuilder extends ModificationBuilderTarget<PatchElementBuilder>
+        implements PatchBuilder.PatchElementHolder, RequiresCallback, IncompatibleWithCallback {
 
     private final String patchId;
     private final PatchElementImpl element;
-    private PatchElementProvider provider;
-    protected PatchElementBuilder(final String patchId, final String layerName, final boolean addOn) {
+    private PatchElementProviderImpl provider;
+    private final PatchBuilder parent;
+
+    protected PatchElementBuilder(final String patchId, final String layerName, final boolean addOn, final PatchBuilder parent) {
         this.patchId = patchId;
-        this.provider = new PatchElementProviderImpl(layerName, "undefined", addOn);
+        this.provider = new PatchElementProviderImpl(layerName, addOn);
         this.element = new PatchElementImpl(patchId);
         element.setProvider(provider);
+        this.parent = parent;
     }
 
-    public PatchElementProvider getProvider() {
+    PatchElementProviderImpl getProvider() {
         return provider;
+    }
+
+    public PatchElementBuilder setDescription(String description) {
+        element.setDescription(description);
+        return this;
     }
 
     @Override
@@ -50,23 +61,41 @@ public class PatchElementBuilder extends AbstractModificationBuilderTarget<Patch
         return returnThis();
     }
 
-    public PatchElementBuilder addIncompatibleWith(final String patchId) {
-        element.addIncompatibleWith(patchId);
+    @Override
+    public IncompatibleWithCallback incompatibleWith(String patchID) {
+        provider.incompatibleWith(patchID);
+        return returnThis();
+    }
+
+    @Override
+    public PatchElementBuilder require(String id) {
+        provider.require(id);
+        return returnThis();
+    }
+
+    public PatchElementBuilder upgrade() {
+        provider.upgrade();
+        return returnThis();
+    }
+
+    public PatchElementBuilder cumulativePatch() {
+        provider.cumulativePatch();
+        return returnThis();
+    }
+
+    public PatchElementBuilder oneOffPatch(String target) {
+        provider.oneOffPatch(target);
         return returnThis();
     }
 
     public PatchElement createElement(Patch.PatchType patchType) {
         assert patchId != null;
         assert provider != null;
-
-        if (element.getPatchType() == null) {
-            if (patchType == Patch.PatchType.UPGRADE) {
-                element.setUpgrade("unknown");
-            } else {
-                element.setNoUpgrade();
-            }
-        }
         return element;
+    }
+
+    public PatchBuilder getParent() {
+        return parent;
     }
 
     @Override

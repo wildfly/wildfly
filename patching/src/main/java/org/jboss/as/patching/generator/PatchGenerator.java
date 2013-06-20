@@ -132,8 +132,7 @@ public class PatchGenerator {
             // Add some random information until we have a patch-config replacement
             wrapper.setPatchId(randomUUID().toString());
             wrapper.setDescription("Test patch");
-            wrapper.setIdentity(Version.AS_RELEASE_CODENAME, Version.AS_VERSION);
-            wrapper.setNoUpgrade();
+            wrapper.cumulativePatchIdentity(Version.AS_RELEASE_CODENAME, Version.AS_VERSION);
 
             // Create the resulting patch
             final Patch patch = wrapper.compare(base, updated);

@@ -30,7 +30,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.patching.metadata.AbstractModificationBuilderTarget;
+import org.jboss.as.patching.metadata.ModificationBuilderTarget;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.patching.metadata.PatchElementBuilder;
@@ -212,7 +212,7 @@ abstract class PatchBuilderWrapper extends PatchBuilder {
      * @param o the original root
      * @param n the updated root
      */
-    static void compareMiscFiles(final AbstractModificationBuilderTarget<?> builder, final DistributionContentItem o, final DistributionContentItem n) {
+    static void compareMiscFiles(final ModificationBuilderTarget<?> builder, final DistributionContentItem o, final DistributionContentItem n) {
         if (o == null && n == null) {
             return;
         } else if (o != null && n == null) {

@@ -53,27 +53,6 @@ public interface PatchElement {
     PatchElementProvider getProvider();
 
     /**
-     * Get the patch type.
-     *
-     * @return the type of the patch
-     */
-    Patch.PatchType getPatchType();
-
-    /**
-     * Get the resulting version of a CP or {@code null} for a one-off patch
-     *
-     * @return the resulting version
-     */
-    String getResultingVersion();
-
-    /**
-     * Get a list of patch-ids, this patch is incompatible with.
-     *
-     * @return a list of incompatible patches
-     */
-    Collection<String> getIncompatibleWith();
-
-    /**
      * Get the content modifications.
      *
      * @return the modifications

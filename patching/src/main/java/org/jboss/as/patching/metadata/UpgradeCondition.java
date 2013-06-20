@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,15 +20,41 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.metadata.impl;
+package org.jboss.as.patching.metadata;
+
+import java.util.Collection;
 
 /**
- * @author Alexey Loubyansky
- *
+ * @author Emanuel Muckenhuber
  */
-public interface UpgradeCallback {
+public interface UpgradeCondition {
 
-    UpgradeCallback setUpgrade(String version);
+    /**
+     * Patch element provider name.
+     *
+     * @return  patch element provider name
+     */
+    String getName();
 
-    UpgradeCallback setNoUpgrade();
+    /**
+     * Get the patch type.
+     *
+     * @return the patch type
+     */
+    Patch.PatchType getPatchType();
+
+    /**
+     * List of the applied patch elements to this provider.
+     *
+     * @return  list of id's of the patch elements applied to this provider
+     */
+    Collection<String> getRequires();
+
+    /**
+     * Get a list of patch-ids, this patch is incompatible with.
+     *
+     * @return a list of incompatible patches
+     */
+    Collection<String> getIncompatibleWith();
+
 }
