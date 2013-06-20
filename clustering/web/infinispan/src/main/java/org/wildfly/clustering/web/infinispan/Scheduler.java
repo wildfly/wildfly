@@ -42,5 +42,6 @@ public interface Scheduler<T> extends AutoCloseable {
     /**
      * Closes any resources used by this scheduler.
      */
+    @Override
     void close();
 }

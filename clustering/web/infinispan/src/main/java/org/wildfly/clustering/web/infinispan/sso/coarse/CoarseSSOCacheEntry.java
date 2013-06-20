@@ -30,7 +30,7 @@ import org.wildfly.clustering.web.sso.AuthenticationType;
 import org.wildfly.clustering.web.sso.Credentials;
 
 public class CoarseSSOCacheEntry<L> implements Credentials {
-    private final AtomicReference<L> localContext = new AtomicReference<L>();
+    private final AtomicReference<L> localContext = new AtomicReference<>();
     private volatile AuthenticationType authType;
     private volatile String user;
     private volatile String password;

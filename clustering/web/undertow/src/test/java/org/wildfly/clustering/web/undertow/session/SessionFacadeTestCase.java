@@ -47,7 +47,6 @@ import org.wildfly.clustering.web.undertow.session.UndertowSessionManager;
 public class SessionFacadeTestCase {
     private final UndertowSessionManager manager = mock(UndertowSessionManager.class);
     private final SessionConfig config = mock(SessionConfig.class);
-    @SuppressWarnings("unchecked")
     private final Session<Void> session = mock(Session.class);
     
     private final io.undertow.server.session.Session facade = new SessionFacade(this.manager, this.session, this.config);
@@ -65,7 +64,6 @@ public class SessionFacadeTestCase {
     @Test
     public void requestDone() {
         HttpServerExchange exchange = new HttpServerExchange(null);
-        @SuppressWarnings("unchecked")
         SessionManager<Void> manager = mock(SessionManager.class);
         Batcher batcher = mock(Batcher.class);
 
@@ -278,7 +276,6 @@ public class SessionFacadeTestCase {
     @Test
     public void invalidate() {
         HttpServerExchange exchange = new HttpServerExchange(null);
-        @SuppressWarnings("unchecked")
         SessionManager<Void> manager = mock(SessionManager.class);
         Batcher batcher = mock(Batcher.class);
         SessionListener listener = mock(SessionListener.class);
@@ -304,7 +301,6 @@ public class SessionFacadeTestCase {
         assertSame(this.manager, this.facade.getSessionManager());
     }
     
-    @SuppressWarnings("unchecked")
     @Test
     public void changeSessionId() {
         HttpServerExchange exchange = new HttpServerExchange(null);

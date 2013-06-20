@@ -38,14 +38,12 @@
     <name>WildFly: Clustering Subsystems</name>
 
     <modules>
-        <module>annotations</module>
         <module>api</module>
         <module>common</module>
-        <module>impl</module>
         <module>jgroups</module>
         <module>infinispan</module>
         <module>registry</module>
-        <module>service</module>
+        <module>server</module>
         <module>singleton</module>
         <module>ejb3-infinispan</module>
         <module>web</module>

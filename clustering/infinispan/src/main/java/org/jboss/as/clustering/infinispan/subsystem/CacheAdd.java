@@ -65,6 +65,7 @@ import org.infinispan.util.TypedProperties;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.clustering.msc.AsynchronousService;
+import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -77,6 +78,7 @@ import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.server.ServerEnvironment;
@@ -227,7 +229,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         controllers.add(this.installCacheService(target, containerName, cacheName, defaultCache, initialMode, config, verificationHandler));
 
         // install a name service entry for the cache
-        controllers.add(this.installJndiService(target, containerName, cacheName, InfinispanJndiName.createCacheJndiName(jndiName, containerName, cacheName), verificationHandler));
+        controllers.add(this.installJndiService(target, containerName, cacheName, jndiName, verificationHandler));
         log.debugf("Cache service for cache %s installed for container %s", cacheName, containerName);
 
         return controllers;
@@ -246,8 +248,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         // remove the binder service
         ModelNode resolvedValue = null;
         final String jndiName = (resolvedValue = CacheResourceDefinition.JNDI_NAME.resolveModelAttribute(context, model)).isDefined() ? resolvedValue.asString() : null;
-        ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(InfinispanJndiName.createCacheJndiName(jndiName, containerName, cacheName));
-        context.removeService(bindInfo.getBinderServiceName()) ;
+        context.removeService(this.createCacheBinding(jndiName, containerName, cacheName).getBinderServiceName());
         // remove the CacheService instance
         context.removeService(CacheService.getServiceName(containerName, cacheName));
         // remove the cache configuration service
@@ -328,15 +329,20 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     ServiceController<?> installJndiService(ServiceTarget target, String containerName, String cacheName, String jndiName, ServiceVerificationHandler verificationHandler) {
 
         final ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
-        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
-        final BinderService binder = new BinderService(bindInfo.getBindName());
-        return target.addService(bindInfo.getBinderServiceName(), binder)
-                .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName))
+        final ContextNames.BindInfo binding = this.createCacheBinding(jndiName, containerName, cacheName);
+        final BinderService binder = new BinderService(binding.getBindName());
+        return target.addService(binding.getBinderServiceName(), binder)
+                .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(binding.getBindName()))
                 .addDependency(cacheServiceName, Cache.class, new ManagedReferenceInjector<Cache>(binder.getManagedObjectInjector()))
-                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binder.getNamingStoreInjector())
+                .addDependency(binding.getParentContextServiceName(), ServiceBasedNamingStore.class, binder.getNamingStoreInjector())
                 .setInitialMode(ServiceController.Mode.PASSIVE)
                 .install()
         ;
+    }
+
+    private ContextNames.BindInfo createCacheBinding(String jndiName, String container, String cache) {
+        JndiName name = (jndiName != null) ? JndiNameFactory.parse(jndiName) : JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, InfinispanExtension.SUBSYSTEM_NAME, "cache", container, cache);
+        return ContextNames.bindInfoFor(name.getAbsoluteName());
     }
 
     private <T> void addDependency(ServiceBuilder<?> builder, Dependency<T> dependency) {

@@ -48,6 +48,7 @@ public class Time {
         return unit.convert(this.value, this.unit);
     }
 
+    @Override
     public boolean equals(Object object) {
         if ((object == null) || !(object instanceof Time)) return false;
         Time time = (Time) object;
@@ -55,10 +56,12 @@ public class Time {
         return compareUnit.convert(this.value, this.unit) == compareUnit.convert(time.value, time.unit);
     }
 
+    @Override
     public int hashCode() {
         return Long.valueOf(TimeUnit.MILLISECONDS.convert(this.value, this.unit)).hashCode();
     }
 
+    @Override
     public String toString() {
         return String.format("%d %s", this.value, this.unit);
     }

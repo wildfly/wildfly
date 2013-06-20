@@ -15,7 +15,6 @@ import org.wildfly.clustering.web.sso.WebApplication;
 
 public class CoarseSessionsTestCase {
     private Mutator mutator = mock(Mutator.class);
-    @SuppressWarnings("unchecked")
     private Map<WebApplication, String> map = mock(Map.class);
     private Sessions sessions = new CoarseSessions(this.map, this.mutator);
 

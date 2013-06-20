@@ -46,6 +46,6 @@ public class SSOMutator<V> implements Mutator {
 
     @Override
     public void mutate() {
-        this.invoker.invoke(this.cache, new MutateOperation<String, V>(this.id, this.value), Flag.IGNORE_RETURN_VALUES);
+        this.invoker.invoke(this.cache, new MutateOperation<>(this.id, this.value), Flag.IGNORE_RETURN_VALUES);
     }
 }

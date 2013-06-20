@@ -49,7 +49,7 @@ public class ViewChangeListenerBean implements ViewChangeListener {
 
     @Override
     public void establishView(String cluster, String... names) throws InterruptedException {
-        Set<String> expectedMembers = new TreeSet<String>();
+        Set<String> expectedMembers = new TreeSet<>();
         if (names != null) {
             for (String name: names) {
                 expectedMembers.add(name + "/" + cluster);
@@ -82,7 +82,7 @@ public class ViewChangeListenerBean implements ViewChangeListener {
     }
 
     private Set<String> getMembers(EmbeddedCacheManager manager) {
-        Set<String> members = new TreeSet<String>();
+        Set<String> members = new TreeSet<>();
         for (Address address: manager.getMembers()) {
             members.add(address.toString());
         }

@@ -75,9 +75,9 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
     private final SessionIdentifierFactory idFactory;
     private final KeyAffinityService<String> affinity;
     private final Registry<String, Void> registry;
-    private final List<Scheduler<Session<L>>> schedulers = new CopyOnWriteArrayList<Scheduler<Session<L>>>();
+    private final List<Scheduler<Session<L>>> schedulers = new CopyOnWriteArrayList<>();
     private volatile Time defaultMaxInactiveInterval = new Time(30, TimeUnit.MINUTES);
-    private final Set<String> activeSessions = new ConcurrentHashSet<String>();
+    private final Set<String> activeSessions = new ConcurrentHashSet<>();
     private final int maxActiveSessions;
 
     public InfinispanSessionManager(SessionContext context, SessionIdentifierFactory idFactory, Cache<String, V> cache, SessionFactory<V, L> factory, KeyAffinityServiceFactory affinityFactory, Registry<String, Void> registry, JBossWebMetaData metaData) {

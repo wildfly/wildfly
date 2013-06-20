@@ -61,7 +61,6 @@ public class ManagedExecutorServiceTest {
 
     @Test
     public void submitCallable() {
-        @SuppressWarnings("unchecked")
         Future<Object> expected = mock(Future.class);
         Task task = new Task();
 
@@ -111,7 +110,6 @@ public class ManagedExecutorServiceTest {
     @Test
     public void invokeAll() throws InterruptedException {
         Collection<Task> tasks = Collections.singletonList(new Task());
-        @SuppressWarnings("unchecked")
         Future<Object> future = mock(Future.class);
         List<Future<Object>> expected = Collections.singletonList(future);
 
@@ -125,7 +123,6 @@ public class ManagedExecutorServiceTest {
     @Test
     public void invokeAllWithTimeout() throws InterruptedException {
         Collection<Task> tasks = Collections.singletonList(new Task());
-        @SuppressWarnings("unchecked")
         Future<Object> future = mock(Future.class);
         List<Future<Object>> expected = Collections.singletonList(future);
         long timeout = 10L;

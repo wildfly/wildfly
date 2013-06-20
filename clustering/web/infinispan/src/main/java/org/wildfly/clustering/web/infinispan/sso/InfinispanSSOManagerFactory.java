@@ -49,9 +49,8 @@ public class InfinispanSSOManagerFactory extends AbstractService<SSOManagerFacto
 
     @Override
     public <L> SSOManager<L> createSSOManager(LocalContextFactory<L> localContextFactory) {
-        @SuppressWarnings("unchecked")
         Cache<String, CoarseSSOCacheEntry<L>> cache = (Cache<String, CoarseSSOCacheEntry<L>>) this.cache.getValue();
-        SSOFactory<CoarseSSOCacheEntry<L>, L> factory = new CoarseSSOFactory<L>(cache, this.invoker, localContextFactory);
-        return new InfinispanSSOManager<CoarseSSOCacheEntry<L>, L>(factory, cache);
+        SSOFactory<CoarseSSOCacheEntry<L>, L> factory = new CoarseSSOFactory<>(cache, this.invoker, localContextFactory);
+        return new InfinispanSSOManager<>(factory, cache);
     }
 }

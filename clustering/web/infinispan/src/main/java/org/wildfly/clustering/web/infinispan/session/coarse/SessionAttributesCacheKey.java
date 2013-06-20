@@ -35,15 +35,18 @@ public class SessionAttributesCacheKey {
         this.id = id;
     }
 
+    @Override
     @Group
     public String toString() {
         return this.id;
     }
 
+    @Override
     public int hashCode() {
         return this.id.hashCode();
     }
 
+    @Override
     public boolean equals(Object object) {
         if (!(object instanceof SessionAttributesCacheKey)) return false;
         SessionAttributesCacheKey key = (SessionAttributesCacheKey) object;

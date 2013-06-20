@@ -46,17 +46,17 @@ public class ServiceContainerHelper {
     // Mapping of service controller mode changes that appropriate for toggling to a given controller state
     private static final Map<State, Map<Mode, Mode>> modeToggle = new EnumMap<State, Map<Mode, Mode>>(State.class);
     static {
-        Map<Mode, Mode> map = new EnumMap<Mode, Mode>(Mode.class);
+        Map<Mode, Mode> map = new EnumMap<>(Mode.class);
         map.put(Mode.NEVER, Mode.ACTIVE);
         map.put(Mode.ON_DEMAND, Mode.PASSIVE);
         modeToggle.put(State.UP, map);
 
-        map = new EnumMap<Mode, Mode>(Mode.class);
+        map = new EnumMap<>(Mode.class);
         map.put(Mode.ACTIVE, Mode.NEVER);
         map.put(Mode.PASSIVE, Mode.ON_DEMAND);
         modeToggle.put(State.DOWN, map);
 
-        map = new EnumMap<Mode, Mode>(Mode.class);
+        map = new EnumMap<>(Mode.class);
         for (Mode mode: Mode.values()) {
             if (mode != Mode.REMOVE) {
                 map.put(mode, Mode.REMOVE);
@@ -85,7 +85,6 @@ public class ServiceContainerHelper {
      * @param name service name
      * @return the service controller with the specified name, or null if the service does not exist
      */
-    @SuppressWarnings("unchecked")
     public static <T> ServiceController<T> findService(ServiceRegistry registry, ServiceName name) {
         return (ServiceController<T>) registry.getService(name);
     }
@@ -97,7 +96,6 @@ public class ServiceContainerHelper {
      * @return the service controller with the specified name
      * @throws org.jboss.msc.ServiceNotFoundException if the service was not found
      */
-    @SuppressWarnings("unchecked")
     public static <T> ServiceController<T> getService(ServiceRegistry registry, ServiceName name) {
         return (ServiceController<T>) registry.getRequiredService(name);
     }

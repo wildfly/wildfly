@@ -1,15 +1,11 @@
 package org.jboss.as.clustering.subsystem;
 
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
-import java.net.URISyntaxException;
-import java.net.URL;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.RunningMode;
@@ -45,11 +41,11 @@ public abstract class ClusteringSubsystemTest extends AbstractSubsystemBaseTest 
         final XMLStreamReader marshalledReader = XMLInputFactory.newInstance().createXMLStreamReader(new StringReader(marshalled));
 
         String originalNS = null;
-        if (originalReader.next() == XMLStreamReader.START_ELEMENT) {
+        if (originalReader.next() == XMLStreamConstants.START_ELEMENT) {
             originalNS = originalReader.getNamespaceURI();
         }
         String marshalledNS = null;
-        if (marshalledReader.next() == XMLStreamReader.START_ELEMENT) {
+        if (marshalledReader.next() == XMLStreamConstants.START_ELEMENT) {
             marshalledNS = marshalledReader.getNamespaceURI();
         }
 

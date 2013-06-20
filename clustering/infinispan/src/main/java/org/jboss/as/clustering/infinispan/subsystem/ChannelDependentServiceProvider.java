@@ -22,6 +22,9 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.Collection;
+
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -31,7 +34,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author Paul Ferraro
  */
 public interface ChannelDependentServiceProvider {
-    ServiceName getServiceName(String cluster);
+    Collection<ServiceName> getServiceNames(String cluster);
 
-    ServiceController<?> install(ServiceTarget target, String cluster);
+    Collection<ServiceController<?>> install(ServiceTarget target, String cluster, ModuleIdentifier moduleId);
 }

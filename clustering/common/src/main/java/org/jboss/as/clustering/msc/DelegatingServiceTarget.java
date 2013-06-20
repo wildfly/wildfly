@@ -67,7 +67,7 @@ public class DelegatingServiceTarget implements ServiceTarget {
     }
 
     @Override
-    public ServiceTarget addListener(ServiceListener<Object>... listeners) {
+    public ServiceTarget addListener(@SuppressWarnings("unchecked") ServiceListener<Object>... listeners) {
         this.target.addListener(listeners);
         return this;
     }

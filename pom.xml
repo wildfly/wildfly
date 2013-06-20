@@ -251,7 +251,7 @@
         <version.org.jboss.xnio>3.1.0.CR3</version.org.jboss.xnio>
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
-        <version.org.jgroups>3.3.1.Final</version.org.jgroups>
+        <version.org.jgroups>3.3.2.Final</version.org.jgroups>
         <version.org.jipijapa>1.0.0.Alpha2</version.org.jipijapa>
         <version.org.kohsuke.rngom>201103.jboss-1</version.org.kohsuke.rngom>
         <version.org.mockito>1.9.5</version.org.mockito>
@@ -856,12 +856,6 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-clustering-annotations</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -875,12 +869,6 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-ejb3-infinispan</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-clustering-impl</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -904,7 +892,7 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-clustering-service</artifactId>
+                <artifactId>wildfly-clustering-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
