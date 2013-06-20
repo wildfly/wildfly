@@ -55,7 +55,6 @@ import org.jboss.resteasy.plugins.providers.jaxb.json.JettisonXmlTypeProvider;
 import org.jboss.resteasy.plugins.providers.jaxb.json.JsonCollectionProvider;
 import org.jboss.resteasy.plugins.providers.jaxb.json.JsonJAXBContextFinder;
 import org.jboss.resteasy.plugins.providers.jaxb.json.JsonMapProvider;
-import org.jboss.resteasy.plugins.providers.validation.ResteasyViolationExceptionMapper;
 
 /**
  *
@@ -90,9 +89,6 @@ public abstract class AbstractRTSApplication extends Application {
         providers.add(StringTextStar.class);
         providers.add(IIOImageProvider.class);
         providers.add(DataSourceProvider.class);
-
-        // Mappers
-        providers.add(ResteasyViolationExceptionMapper.class);
 
         return providers;
     }
