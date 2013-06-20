@@ -178,9 +178,10 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             writeNewLine(writer);
         }
 
-        if (hasCoreServices && modelNode.get(CORE_SERVICE).hasDefined(MANAGEMENT)) {
+        if (hasCoreServices) {
             ManagementXml managementXml = new ManagementXml(this);
-            managementXml.writeManagement(writer, modelNode.get(CORE_SERVICE, MANAGEMENT), true);
+            //TODO pass in proper access-constraint node
+            managementXml.writeManagement(writer, modelNode.get(CORE_SERVICE, MANAGEMENT), new ModelNode(), true);
             writeNewLine(writer);
         }
 

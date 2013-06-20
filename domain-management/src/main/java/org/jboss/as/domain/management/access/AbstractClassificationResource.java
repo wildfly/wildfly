@@ -98,7 +98,7 @@ abstract class AbstractClassificationResource implements Resource.ResourceEntry 
 
     @Override
     public boolean isRuntime() {
-        return true;
+        return false;
     }
 
     @Override
@@ -126,7 +126,9 @@ abstract class AbstractClassificationResource implements Resource.ResourceEntry 
     }
 
     @Override
-    public abstract Resource getChild(PathElement element);
+    public Resource getChild(PathElement element) {
+        return getChildEntry(element.getKey(), element.getValue());
+    }
 
     abstract ResourceEntry getChildEntry(String type, String name);
 

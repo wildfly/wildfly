@@ -19,25 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.management.access;
+package org.jboss.as.domain.management._private;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SENSITIVITY_CLASSIFICATION;
-
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class SensitivityTypeResourceDefinition extends SimpleResourceDefinition {
+public final class DomainManagementResolver {
+    public static final String RESOURCE_NAME = DomainManagementResolver.class.getPackage().getName() + ".LocalDescriptions";
 
-    public static PathElement PATH_ELEMENT = PathElement.pathElement(SENSITIVITY_CLASSIFICATION);
 
-    public SensitivityTypeResourceDefinition() {
-        //TODO use proper description resolver
-        super(PATH_ELEMENT, new NonResolvingResourceDescriptionResolver());
+    public static ResourceDescriptionResolver getResolver(final String... keyPrefix) {
+        return getResolver(false, keyPrefix);
     }
 
+    public static ResourceDescriptionResolver getResolver(boolean useUnprefixedChildTypes, final String... keyPrefix) {
+        StringBuilder prefix = new StringBuilder();
+        for (String kp : keyPrefix) {
+            if (prefix.length() > 0) {
+                prefix.append('.').append(kp);
+            } else {
+                prefix.append(kp);
+            }
+        }
+
+        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, DomainManagementResolver.class.getClassLoader(), true, useUnprefixedChildTypes);
+    }
 }

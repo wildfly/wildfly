@@ -33,7 +33,8 @@ public class ApplicationTypeConfig {
 
     /** Core configurations */
     //TODO Come up with an authoritative list and use the correct settings - this one is just here so I have something to test
-    public static final ApplicationTypeConfig DEPLOYMENT = new ApplicationTypeConfig("DEPLOYMENT", true);
+    //This addApplicationTypeConfig() call is a temporary workaround to get these things registered until they are used by the model.
+    public static final ApplicationTypeConfig DEPLOYMENT = addApplicationTypeConfig("DEPLOYMENT", true);
 
 
     private final boolean core;
@@ -58,6 +59,13 @@ public class ApplicationTypeConfig {
         this.name = name;
         this.application = application;
     }
+
+    private static ApplicationTypeConfig addApplicationTypeConfig(String name, boolean application) {
+        ApplicationTypeConfig applicationTypeConfig = new ApplicationTypeConfig(name, application);
+        ApplicationTypeConstraint.FACTORY.addApplicationTypeConfig(applicationTypeConfig);
+        return applicationTypeConfig;
+    }
+
 
     public boolean isCore() {
         return core;
@@ -84,7 +92,7 @@ public class ApplicationTypeConfig {
         return app == null ? application : app;
     }
 
-    void setConfiguredApplication(boolean configuredApplication) {
+    public void setConfiguredApplication(boolean configuredApplication) {
         this.configuredApplication = configuredApplication;
     }
 

@@ -32,7 +32,7 @@ public class ModelDescriptionConstants {
 
     // KEEP THESE IN ALPHABETICAL ORDER!
 
-    public static final String ACCESS_CONSTRAINT = "access-contstraint";
+    public static final String ACCESS_CONSTRAINT = "access-constraint";
     public static final String ACCESS_CONSTRAINTS = "access-constraints";
     /** The key for {@link org.jboss.as.controller.registry.AttributeAccess.AccessType} fields. */
     public static final String ACCESS_TYPE = "access-type";
@@ -50,6 +50,7 @@ public class ModelDescriptionConstants {
     public static final String ANY_IPV6_ADDRESS = "any-ipv6-address";
     public static final String APPCLIENT = "appclient";
     public static final String APPLICATION = "application";
+    public static final String APPLICATION_TYPE = "application-type";
     public static final String ARCHIVE = "archive";
     public static final String ATTRIBUTES = "attributes";
     public static final String ATTRIBUTES_ONLY = "attributes-only";
@@ -68,6 +69,10 @@ public class ModelDescriptionConstants {
     public static final String CODE = "code";
     public static final String COMPOSITE = "composite";
     public static final String CONCURRENT_GROUPS = "concurrent-groups";
+    public static final String CONFIGURED_APPLICATION = "configured-application";
+    public static final String CONFIGURED_REQUIRES_ACCESS = "configured-requires-access";
+    public static final String CONFIGURED_REQUIRES_READ = "configured-requires-read";
+    public static final String CONFIGURED_REQUIRES_WRITE = "configured-requires-write";
     public static final String CONNECTION = "connection";
     public static final String CONNECTIONS = "connections";
     public static final String CONSOLE_ENABLED = "console-enabled";
@@ -77,7 +82,11 @@ public class ModelDescriptionConstants {
     public static final String CPU_AFFINITY = "cpu-affinity";
     public static final String CRITERIA = "criteria";
     public static final String DEFAULT = "default";
+    public static final String DEFAULT_APPLICATION = "default-application";
     public static final String DEFAULT_INTERFACE = "default-interface";
+    public static final String DEFAULT_REQUIRES_WRITE = "default-requires-write";
+    public static final String DEFAULT_REQUIRES_READ = "default-requires-read";
+    public static final String DEFAULT_REQUIRES_ACCESS = "default-requires-access";
     public static final String DEPLOY = "deploy";
     public static final String DEPLOYMENT = "deployment";
     public static final String DEPLOYMENT_OVERLAY = "deployment-overlay";
@@ -324,6 +333,7 @@ public class ModelDescriptionConstants {
     public static final String VALUE = "value";
     public static final String VALUE_TYPE = "value-type";
     public static final String VAULT = "vault";
+    public static final String VAULT_EXPRESSION = "vault-expression";
     public static final String VAULT_OPTION = "vault-option";
     public static final String VAULT_OPTIONS = "vault-options";
     public static final String WILDCARD = "wildcard";

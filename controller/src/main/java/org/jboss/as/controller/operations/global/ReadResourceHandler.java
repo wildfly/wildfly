@@ -290,12 +290,20 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
         Resource result;
         if (registry != null && registry.isRuntimeOnly()) {
             try {
-                result = context.readResource(PathAddress.EMPTY_ADDRESS, false);
+                //TODO check that having changed this from false to true does not break anything
+                //If it does, consider adding a Resource.alwaysClone() method that can be used in
+                //OperationContextImpl.readResourceFromRoot(final PathAddress address, final boolean recursive)
+                //instead of the recursive check
+                result = context.readResource(PathAddress.EMPTY_ADDRESS, true);
             } catch (RuntimeException e) {
                 result = PlaceholderResource.INSTANCE;
             }
         } else {
-            result = context.readResource(PathAddress.EMPTY_ADDRESS, false);
+            //TODO check that having changed this from false to true does not break anything
+            //If it does, consider adding a Resource.alwaysClone() method that can be used in
+            //OperationContextImpl.readResourceFromRoot(final PathAddress address, final boolean recursive)
+            //instead of the recursive check
+            result = context.readResource(PathAddress.EMPTY_ADDRESS, true);
         }
         return result;
     }

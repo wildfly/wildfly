@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<server xmlns="urn:jboss:domain:2.0">
+    <management>
+      <access-constraints>
+         <vault-expression-sensitivity requires-access="false" requires-read="false" requires-write="false"/>
+         <sensitive-classifications>
+            <sensitive-classification name="SECURITY_REALM">
+               <type name="core" requires-access="false" requires-read="false" requires-write="false"/>
+            </sensitive-classification>
+         </sensitive-classifications>
+         <application-types>
+            <application-type name="DEPLOYMENT">
+               <type name="core" application="false"/>
+            </application-type>
+         </application-types>
+      </access-constraints>
+    </management>
+</server>

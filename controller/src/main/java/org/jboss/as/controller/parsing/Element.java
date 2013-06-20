@@ -35,6 +35,7 @@ public enum Element {
     UNKNOWN(null),
 
     // Domain elements in alpha order
+    ACCESS_CONSTRAINTS("access-constraints"),
     ADVANCED_FILTER("advanced-filter"),
     AGENT_LIB("agent-lib"),
     AGENT_PATH("agent-path"),
@@ -42,6 +43,8 @@ public enum Element {
     ANY_ADDRESS("any-address"),
     ANY_IPV4_ADDRESS("any-ipv4-address"),
     ANY_IPV6_ADDRESS("any-ipv6-address"),
+    APPLICATION_TYPE("application-type"),
+    APPLICATION_TYPES("application-types"),
     AUTHENTICATION("authentication"),
     AUTHORIZATION("authorization"),
 
@@ -127,6 +130,8 @@ public enum Element {
     SECRET("secret"),
     SECURITY_REALM("security-realm"),
     SECURITY_REALMS("security-realms"),
+    SENSITIVE_CLASSIFICATION("sensitive-classification"),
+    SENSITIVE_CLASSIFICATIONS("sensitive-classifications"),
     SERVER("server"),
     SERVER_IDENTITIES("server-identities"),
     SERVERS("servers"),
@@ -146,6 +151,7 @@ public enum Element {
     SYSTEM_PROPERTIES("system-properties"),
 
     TRUSTSTORE("truststore"),
+    TYPE("type"),
 
     UP("up"),
     USER("user"),
@@ -155,6 +161,7 @@ public enum Element {
     VARIABLE("variable"),
     VIRTUAL("virtual"),
     VAULT("vault"),
+    VAULT_EXPRESSION_SENSITIVITY("vault-expression-sensitivity"),
     VAULT_OPTION("vault-option")
     ;
 

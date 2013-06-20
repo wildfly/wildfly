@@ -52,6 +52,7 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.resources.DomainRootDefinition;
+import org.jboss.as.domain.management.access.RootAccessConstraintResourceDefinition;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.HostModelUtil;
@@ -412,6 +413,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
             VersionModelInitializer.registerRootResource(rootResource, null);
             rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), Resource.Factory.create());
             rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.SERVICE_CONTAINER), Resource.Factory.create());
+            rootResource.registerChild(RootAccessConstraintResourceDefinition.PATH_ELEMENT, RootAccessConstraintResourceDefinition.getResource());
             rootResource.registerChild(ServerEnvironmentResourceDescription.RESOURCE_PATH, Resource.Factory.create());
             pathManagerService.addPathManagerResources(rootResource);
         }

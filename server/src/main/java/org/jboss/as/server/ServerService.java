@@ -22,6 +22,8 @@
 
 package org.jboss.as.server;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +51,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
+import org.jboss.as.domain.management.access.RootAccessConstraintResourceDefinition;
 import org.jboss.as.platform.mbean.PlatformMBeanConstants;
 import org.jboss.as.platform.mbean.RootPlatformMBeanResource;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
@@ -101,7 +104,6 @@ import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.remoting.HttpListenerRegistryService;
 import org.jboss.as.server.services.security.AbstractVaultReader;
-import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -112,9 +114,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static java.security.AccessController.doPrivileged;
 
 /**
  * Service for the {@link org.jboss.as.controller.ModelController} for an AS server instance.
@@ -356,6 +357,7 @@ public final class ServerService extends AbstractControllerService {
         rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), Resource.Factory.create());
         rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.SERVICE_CONTAINER), Resource.Factory.create());
         rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MODULE_LOADING), Resource.Factory.create());
+        rootResource.registerChild(RootAccessConstraintResourceDefinition.PATH_ELEMENT, RootAccessConstraintResourceDefinition.getResource());
         rootResource.registerChild(ServerEnvironmentResourceDescription.RESOURCE_PATH, Resource.Factory.create());
         ((PathManagerService)injectedPathManagerService.getValue()).addPathManagerResources(rootResource);
 

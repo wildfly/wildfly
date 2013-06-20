@@ -190,6 +190,7 @@
             <xs:extension base="domain-managementType">
                 <xs:sequence>
                     <xs:element name="management-interfaces" type="server-management-interfacesType" minOccurs="0"/>
+                    <xs:element name="access-constraints" type="access-constraintsType" minOccurs="0"/>
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>
@@ -2482,4 +2483,97 @@
     </xs:complexType>
 
 
+    <xs:complexType name="access-constraintsType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                   Stores information about configured access constraints.
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="vault-expression-sensitivity" type="vault-expression-sensitivityType" minOccurs="0"/>
+            <xs:element name="sensitive-classifications" type="sensitive-classificationsType" minOccurs="0"/>
+            <xs:element name="application-types" type="application-typesType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="base-sensitivityType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                   Common configuration of a sensitivity constraint
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="requires-access" type="xs:boolean"/>
+        <xs:attribute name="requires-read" type="xs:boolean"/>
+        <xs:attribute name="requires-write" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="vault-expression-sensitivityType">
+        <xs:complexContent>
+        <xs:extension base="base-sensitivityType"/>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="sensitive-classificationsType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                   Stores information about configured sensitive classifications
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="sensitive-classification" type="sensitive-classificationType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="sensitive-classificationType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                   Stores information about a configured sensitive classification
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="type" type="typed-sensitivityType"/>
+        </xs:choice>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="typed-sensitivityType">
+        <xs:complexContent>
+            <xs:extension base="base-sensitivityType">
+                <xs:attribute name="name" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="application-typesType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                   Stores information about configured application types
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="application-type" type="application-typeType"/>
+        </xs:choice>
+
+    </xs:complexType>
+    <xs:complexType name="application-typeType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                   Stores information about configured application types
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="application" type="xs:boolean" use="required"/>
+    </xs:complexType>
 </xs:schema>

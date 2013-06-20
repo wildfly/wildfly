@@ -77,7 +77,7 @@ public class AbstractSensitivity {
         return configuredRequiresAccessPermission;
     }
 
-    void setConfiguredRequiresAccessPermission(Boolean requiresAccessPermission) {
+    public void setConfiguredRequiresAccessPermission(Boolean requiresAccessPermission) {
         this.configuredRequiresAccessPermission = requiresAccessPermission;
     }
 
@@ -90,7 +90,7 @@ public class AbstractSensitivity {
         return configuredRequiresReadPermission;
     }
 
-    void setConfiguredRequiresReadPermission(Boolean requiresReadPermission) {
+    public void setConfiguredRequiresReadPermission(Boolean requiresReadPermission) {
         this.configuredRequiresReadPermission = requiresReadPermission;
     }
 
@@ -114,7 +114,7 @@ public class AbstractSensitivity {
         }
     }
 
-    void setConfiguredRequiresWritePermission(Boolean requiresWritePermission) {
+    public void setConfiguredRequiresWritePermission(Boolean requiresWritePermission) {
         this.configuredRequiresWritePermission = requiresWritePermission;
     }
 
