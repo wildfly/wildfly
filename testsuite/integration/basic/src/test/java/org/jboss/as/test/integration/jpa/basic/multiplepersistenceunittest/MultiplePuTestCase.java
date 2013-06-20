@@ -26,6 +26,7 @@ import java.util.Map;
 
 import javax.ejb.EJB;
 
+import org.jboss.as.test.integration.jpa.basic.SLSBAmbiguousPU;
 import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -53,7 +54,7 @@ public class MultiplePuTestCase {
     @Deployment
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addClasses(MultiplePuTestCase.class, SLSBPU1.class, SLSBPU2.class, SLSBPersistenceContexts.class, SLSBPersistenceUnits.class);
+        jar.addClasses(MultiplePuTestCase.class, SLSBPU1.class, SLSBPU2.class, SLSBPersistenceContexts.class, SLSBPersistenceUnits.class, SLSBAmbiguousPU.class);
         jar.addAsManifestResource(MultiplePuTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         return jar;
     }
@@ -63,6 +64,9 @@ public class MultiplePuTestCase {
 
     @EJB(mappedName = "java:global/" + ARCHIVE_NAME + "/SLSBPU2")
     private SLSBPU2 slsbpu2;
+
+    @EJB(mappedName = "java:global/" + ARCHIVE_NAME + "/SLSBAmbiguousPU")
+    private SLSBAmbiguousPU slsbAmbiguousPU;
 
     @EJB(mappedName = "java:global/" + ARCHIVE_NAME + "/SLSBPersistenceContexts")
     private SLSBPersistenceContexts slsbPersistenceContexts;
@@ -74,9 +78,12 @@ public class MultiplePuTestCase {
     public void testBothPersistenceUnitDefinitions() throws Exception {
         Map<String, Object> sl1Props = slsbpu1.getEMInfo();
         Map<String, Object> sl2Props = slsbpu2.getEMInfo();
+        Map<String, Object> slsbAmbiguousPUEMInfo = slsbAmbiguousPU.getEMInfo();
 
         Assert.assertEquals("wrong pu " ,sl1Props.get("PersistenceUnitName"),"pu1");
         Assert.assertEquals("wrong pu ", sl2Props.get("PersistenceUnitName"),"pu2");
+        // pu2 is the default pu
+        Assert.assertEquals("wrong pu ", slsbAmbiguousPUEMInfo.get("PersistenceUnitName"),"pu2");
     }
 
     /**

@@ -23,6 +23,7 @@
 package org.jboss.as.jpa.processor;
 
 import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 import java.util.HashMap;
 import java.util.List;
@@ -361,6 +362,7 @@ public class JPAAnnotationProcessor implements DeploymentUnitProcessor {
         if (puName != null) {
             searchName = puName.asString();
         }
+        ROOT_LOGGER.debugf("persistence unit search for unitName=%s referenced from class=%s (annotation=%s)", searchName, classDescription.getClassName(), annotation.toString());
         PersistenceUnitMetadata pu = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, searchName);
         if (null == pu) {
             classDescription.setInvalid(MESSAGES.persistenceUnitNotFound(searchName, deploymentUnit));

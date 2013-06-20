@@ -147,6 +147,8 @@ public class Configuration {
      */
     public static final String JPA_CONTAINER_MANAGED = "jboss.as.jpa.managed";
 
+    public static final String JPA_DEFAULT_PERSISTENCE_UNIT = "wildfly.jpa.default-unit";
+
     /**
      * defaults to true, if false, persistence unit will not support javax.persistence.spi.ClassTransformer Interface
      * which means no application class rewriting

@@ -12,6 +12,7 @@
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="PersistenceUnitName" value="pu2"/>
+            <property name="wildfly.jpa.default-unit" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>
