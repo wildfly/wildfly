@@ -43,6 +43,7 @@ import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VirtualFile;
 
@@ -234,6 +235,11 @@ public final class Attachments {
      * The module loader for the deployment
      */
     public static final AttachmentKey<ServiceModuleLoader> SERVICE_MODULE_LOADER  = AttachmentKey.create(ServiceModuleLoader.class);
+
+    /**
+     * The main module loader for the deployment
+     */
+    public static final AttachmentKey<ModuleLoader> MAIN_MODULE_LOADER  = AttachmentKey.create(ModuleLoader.class);
 
     /**
      * The external module service
