@@ -22,23 +22,12 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="org.jboss.resteasy.resteasy-crypto">
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
-
+<module xmlns="urn:jboss:module:1.1" name="org.bouncycastle">
     <resources>
         <!-- Insert resources here -->
     </resources>
-
     <dependencies>
         <module name="javax.api"/>
-        <module name="javax.activation.api"/>
-        <module name="javax.mail.api"/>
-        <module name="org.apache.james.mime4j"/>
-        <module name="javax.servlet.api"/>
-        <module name="javax.ws.rs.api"/>
-        <module name="org.bouncycastle"/>
-        <module name="org.jboss.resteasy.resteasy-jaxrs"/>
     </dependencies>
+
 </module>
