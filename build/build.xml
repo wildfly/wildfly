@@ -673,6 +673,11 @@
             <maven-resource group="org.apache.ws.security" artifact="wss4j"/>
         </module-def>
 
+        <module-def name="org.bouncycastle">
+            <maven-resource group="org.bouncycastle" artifact="bcprov-jdk16"/>
+            <maven-resource group="org.bouncycastle" artifact="bcmail-jdk16"/>
+        </module-def>
+
         <module-def name="org.codehaus.woodstox">
             <maven-resource group="org.codehaus.woodstox" artifact="woodstox-core-asl" />
             <maven-resource group="org.codehaus.woodstox" artifact="stax2-api" />
