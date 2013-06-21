@@ -119,6 +119,9 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
                         if (!tlds.containsKey(key)) {
                             tlds.put(key, value);
                         }
+                        if (!tlds.containsKey(tld.getTaglibUri())) {
+                            tlds.put(tld.getTaglibUri(), value);
+                        }
                         found = true;
                         break;
                     }
