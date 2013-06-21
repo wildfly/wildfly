@@ -311,6 +311,7 @@
         <module>build</module>
         <module>build-config</module>
         <module>build-modular</module>
+        <module>concurrent</module>
         <module>controller</module>
         <module>controller-client</module>
         <module>deployment-repository</module>
@@ -1022,6 +1023,12 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-concurrent</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-core-model-test</artifactId>
@@ -6398,11 +6405,11 @@
                 <module>osgi</module>
                 <module>pojo</module>
                 <module>remoting-test</module>
-                <module>system-jmx</module>
                 <module>sar</module>
                 <module>security</module>
                 <module>security-manager</module>
                 <module>spec-api</module>
+                <module>system-jmx</module>
                 <module>transactions</module>
                 <module>undertow</module>
                 <module>web-common</module>
