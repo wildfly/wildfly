@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.NoSuchResourceException;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -196,10 +197,37 @@ public class GlobalOperationHandlers {
         public void execute(final OperationContext context, final ModelNode ignored) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             execute(address, PathAddress.EMPTY_ADDRESS, context);
-            context.stepCompleted();
+            context.completeStep(new OperationContext.ResultHandler() {
+                @Override
+                public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+
+                    if (result.getType() == ModelType.LIST) {
+                        boolean replace = false;
+                        ModelNode replacement = new ModelNode().setEmptyList();
+                        for (ModelNode item : result.asList()) {
+                            if (item.isDefined() && item.hasDefined(OP_ADDR)) {
+                                replacement.add(item);
+                            } else {
+                                replace = true;
+                            }
+                        }
+                        if (replace) {
+                            result.set(replacement);
+                        }
+                    }
+                }
+            });
         }
 
-        void execute(final PathAddress address, final PathAddress base, final OperationContext context) {
+        private void safeExecute(final PathAddress address, final PathAddress base, final OperationContext context) {
+            try {
+                execute(address, base, context);
+            } catch (NoSuchResourceException e) {
+                // ignore to ensure we don't leak the resource
+            }
+        }
+
+        private void execute(final PathAddress address, final PathAddress base, final OperationContext context) {
             final Resource resource = context.readResource(base, false);
             final PathAddress current = address.subAddress(base.size());
             final Iterator<PathElement> iterator = current.iterator();
@@ -223,7 +251,7 @@ public class GlobalOperationHandlers {
                             for (final String child : children) {
                                 // Double check if the child actually exists
                                 if (resource.hasChild(PathElement.pathElement(key, child))) {
-                                    execute(address, base.append(PathElement.pathElement(key, child)), context);
+                                    safeExecute(address, base.append(PathElement.pathElement(key, child)), context);
                                 }
                             }
                         } else {
@@ -231,7 +259,7 @@ public class GlobalOperationHandlers {
                                 if (children.contains(segment)) {
                                     // Double check if the child actually exists
                                     if (resource.hasChild(PathElement.pathElement(key, segment))) {
-                                        execute(address, base.append(PathElement.pathElement(key, segment)), context);
+                                        safeExecute(address, base.append(PathElement.pathElement(key, segment)), context);
                                     }
                                 }
                             }
@@ -240,7 +268,7 @@ public class GlobalOperationHandlers {
                 } else {
                     // Double check if the child actually exists
                     if (resource.hasChild(element)) {
-                        execute(address, base.append(element), context);
+                        safeExecute(address, base.append(element), context);
                     }
                 }
             } else {
@@ -248,9 +276,22 @@ public class GlobalOperationHandlers {
                 final ModelNode newOp = operation.clone();
                 newOp.get(OP_ADDR).set(base.toModelNode());
 
-                final ModelNode result = this.result.add();
-                result.get(OP_ADDR).set(base.toModelNode());
-                context.addStep(result, newOp, handler, OperationContext.Stage.MODEL, true);
+                final ModelNode resultItem = this.result.add();
+                final ModelNode resultAddress = resultItem.get(OP_ADDR);
+
+                final OperationStepHandler wrapper = new OperationStepHandler() {
+                    @Override
+                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                        try {
+                            handler.execute(context, operation);
+                            resultAddress.set(base.toModelNode());
+                        } catch (NoSuchResourceException e) {
+                            // just discard the result to avoid leaking the inaccessible address
+                            context.stepCompleted();
+                        }
+                    }
+                };
+                context.addStep(resultItem, newOp, wrapper, OperationContext.Stage.MODEL, true);
             }
         }
 
