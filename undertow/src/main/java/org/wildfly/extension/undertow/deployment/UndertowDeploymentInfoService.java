@@ -42,6 +42,7 @@ import java.util.Set;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContainerInitializer;
+import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.HttpServletRequest;
 
 import io.undertow.jsp.JspFileWrapper;
@@ -111,6 +112,7 @@ import org.jboss.metadata.web.spec.MimeMappingMetaData;
 import org.jboss.metadata.web.spec.SecurityConstraintMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.metadata.web.spec.SessionConfigMetaData;
+import org.jboss.metadata.web.spec.SessionTrackingModeType;
 import org.jboss.metadata.web.spec.TagFileMetaData;
 import org.jboss.metadata.web.spec.TagMetaData;
 import org.jboss.metadata.web.spec.TldMetaData;
@@ -251,7 +253,24 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     config.setMaxAge(cookieConfig.getMaxAge());
                     config.setHttpOnly(cookieConfig.getHttpOnly());
                 }
-                //todo: session tracking modes
+                List<SessionTrackingModeType> modes = sessionConfig.getSessionTrackingModes();
+                if(modes != null && !modes.isEmpty()) {
+                    final Set<SessionTrackingMode> trackingModes = new HashSet<>();
+                    for(SessionTrackingModeType mode : modes) {
+                        switch (mode) {
+                            case COOKIE:
+                                trackingModes.add(SessionTrackingMode.COOKIE);
+                                break;
+                            case SSL:
+                                trackingModes.add(SessionTrackingMode.SSL);
+                                break;
+                            case URL:
+                                trackingModes.add(SessionTrackingMode.URL);
+                                break;
+                        }
+                    }
+                    config.setSessionTrackingModes(trackingModes);
+                }
             }
             if(config != null) {
                 deploymentInfo.setServletSessionConfig(config);
