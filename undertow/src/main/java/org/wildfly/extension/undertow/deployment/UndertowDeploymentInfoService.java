@@ -235,10 +235,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     deploymentInfo.setDefaultSessionTimeout(sessionConfig.getSessionTimeout() * 60);
                 }
                 CookieConfigMetaData cookieConfig = sessionConfig.getCookieConfig();
+                if(config == null) {
+                    config = new ServletSessionConfig();
+                }
                 if (cookieConfig != null) {
-                    if(config == null) {
-                        config = new ServletSessionConfig();
-                    }
                     if (cookieConfig.getName() != null) {
                         config.setName(cookieConfig.getName());
                     }
