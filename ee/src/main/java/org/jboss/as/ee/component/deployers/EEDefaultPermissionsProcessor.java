@@ -22,10 +22,13 @@
 
 package org.jboss.as.ee.component.deployers;
 
+import java.io.FilePermission;
+import java.net.SocketPermission;
 import java.security.Permission;
 import java.security.Permissions;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.PropertyPermission;
 
 import org.jboss.as.naming.JndiPermission;
 import org.jboss.as.server.deployment.Attachments;
@@ -57,6 +60,12 @@ public final class EEDefaultPermissionsProcessor implements DeploymentUnitProces
         permissions.add(new JndiPermission("java:global/-", LOOKUP));
         permissions.add(new JndiPermission("java:jboss/-", LOOKUP));
         permissions.add(new JndiPermission("java:/-", LOOKUP));
+        permissions.add(new PropertyPermission("*", "read"));
+        permissions.add(new RuntimePermission("queuePrintJob"));
+        permissions.add(new RuntimePermission("loadLibrary"));
+        permissions.add(new FilePermission("*", "read"));
+        permissions.add(new FilePermission("*", "write"));
+        permissions.add(new SocketPermission("*", "connect"));
         DEFAULT_PERMISSIONS = permissions;
     }
 
