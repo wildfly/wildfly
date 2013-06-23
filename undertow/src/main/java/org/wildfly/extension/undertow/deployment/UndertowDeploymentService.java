@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.undertow.deployment;
 
+import java.io.File;
+
 import io.undertow.server.HttpHandler;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
@@ -102,6 +104,7 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
             deploymentManager.undeploy();
             host.getValue().unregisterDeployment(deployment);
         }
+        recursiveDelete(deploymentInfoInjectedValue.getValue().getTempDir());
     }
 
     @Override
@@ -169,6 +172,15 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
             DeploymentManager manager = service.deploymentManager;
             Deployment deployment = manager != null ? manager.getDeployment() : null;
             return deployment != null ? deployment.getServletContext() : null;
+        }
+    }
+
+    private static void recursiveDelete(File file) {
+        for(File f : file.listFiles()) {
+            recursiveDelete(f);
+        }
+        if(!file.delete()) {
+            throw UndertowMessages.MESSAGES.couldNotDeleteTempFile(file);
         }
     }
 }

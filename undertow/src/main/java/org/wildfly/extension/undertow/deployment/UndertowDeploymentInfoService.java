@@ -27,6 +27,8 @@ import io.undertow.servlet.api.DeploymentInfo;
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.AUTHENTICATE;
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.DENY;
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.PERMIT;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -82,6 +84,7 @@ import org.apache.jasper.deploy.TagLibraryValidatorInfo;
 import org.apache.jasper.deploy.TagVariableInfo;
 import org.apache.jasper.servlet.JspServlet;
 import org.jboss.annotation.javaee.Icon;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -148,6 +151,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("UndertowDeploymentInfoService");
 
+    private static final String TEMP_DIR = "jboss.server.temp.dir";
+    private static final String HOME_DIR = "jboss.home.dir";
 
     private DeploymentInfo deploymentInfo;
 
@@ -174,6 +179,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<ServletContainerService> container = new InjectedValue<>();
     private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
     private final InjectedValue<SessionCookieConfigService> defaultSessionCookieConfig = new InjectedValue<>();
+    private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
 
     private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final WebInjectionContainer injectionContainer, final ComponentRegistry componentRegistry, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers) {
         this.mergedMetaData = mergedMetaData;
@@ -360,6 +366,11 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             } catch (IOException e) {
                 throw new StartException(e);
             }
+
+            File tempFile = new File(pathManagerInjector.getValue().getPathEntry(TEMP_DIR).resolvePath(), deploymentName);
+            tempFile.mkdirs();
+            d.setTempDir(tempFile);
+
             d.setClassLoader(module.getClassLoader());
             final String servletVersion = mergedMetaData.getServletVersion();
             if (servletVersion != null) {
@@ -979,6 +990,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     public InjectedValue<SessionCookieConfigService> getDefaultSessionCookieConfig() {
         return defaultSessionCookieConfig;
+    }
+
+    public InjectedValue<PathManager> getPathManagerInjector() {
+        return pathManagerInjector;
     }
 
     private static class ComponentClassIntrospector implements ClassIntrospecter {
