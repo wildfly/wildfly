@@ -167,10 +167,10 @@ public class PersistentResourceXMLDescription {
     public void persist(XMLExtendedStreamWriter writer, ModelNode model, String namespaceURI) throws XMLStreamException {
         boolean wildcard = resourceDefinition.getPathElement().isWildcard();
         model = wildcard ? model.get(resourceDefinition.getPathElement().getKey()) : model.get(resourceDefinition.getPathElement().getKeyValuePair());
-        if (!model.isDefined() && !useValueAsElementName) {
+        boolean isSubsystem = resourceDefinition.getPathElement().getKey().equals(ModelDescriptionConstants.SUBSYSTEM);
+        if (!isSubsystem && !model.isDefined() && !useValueAsElementName) {
             return;
         }
-        boolean isSubsystem = resourceDefinition.getPathElement().getKey().equals(ModelDescriptionConstants.SUBSYSTEM);
 
         boolean writeWrapper = xmlWrapperElement != null;
         if (writeWrapper) {
