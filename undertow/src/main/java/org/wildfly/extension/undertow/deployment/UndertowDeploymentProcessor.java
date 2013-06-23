@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -214,6 +216,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, undertowDeploymentInfoService.getUndertowService())
                 .addDependency(ServiceBuilder.DependencyType.OPTIONAL, BufferCacheService.SERVICE_NAME.append("default"), DirectBufferCache.class, undertowDeploymentInfoService.getBufferCacheInjectedValue())
                 .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
+                .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, undertowDeploymentInfoService.getPathManagerInjector())
                 .addDependencies(additionalDependencies);
 
         if (metaData.getDistributable() != null) {

@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.undertow;
 
+import java.io.File;
+
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
@@ -157,4 +159,6 @@ public interface UndertowMessages {
     @Message(id = 17346, value = "Could not construct handler for class: %s. with parameters %s")
     RuntimeException cannotCreateHttpHandler(Class<?> handlerClass, ModelNode parameters, @Cause Throwable cause);
 
+    @Message(id = 17347, value = "Could not delete servlet temp file %s")
+    RuntimeException couldNotDeleteTempFile(File file);
 }
