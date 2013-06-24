@@ -4434,6 +4434,18 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>restat-bridge</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.narayana.rts</groupId>
+                        <artifactId>restat-util</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
                 <artifactId>restat-api</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>

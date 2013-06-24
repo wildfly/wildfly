@@ -1307,6 +1307,7 @@
             <maven-resource group="org.jboss.narayana.rts" artifact="restat-api"/>
             <maven-resource group="org.jboss.narayana.rts" artifact="restat-util"/>
             <maven-resource group="org.jboss.narayana.rts" artifact="restat-integration"/>
+            <maven-resource group="org.jboss.narayana.rts" artifact="restat-bridge"/>
         </module-def>
 
         <module-def name="org.jgroups">
