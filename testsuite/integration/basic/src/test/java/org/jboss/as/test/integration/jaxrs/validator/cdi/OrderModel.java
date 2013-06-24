@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2013, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -19,22 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.jaxrs.validator;
+package org.jboss.as.test.integration.jaxrs.validator.cdi;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+/**
+ * An order.
+ *
+ * @author Gunnar Morling
+ */
+public class OrderModel {
 
-@Path("validate/{id}")
-@Produces("text/plain")
-public class ValidatorResource {
+    private int id;
 
-    @Valid
-    @GET
-    public ValidatorModel get(@PathParam("id") @Min(value=4) int id) {
-        return new ValidatorModel(id);
+    public OrderModel(final int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(final int id) {
+        this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        return "OrderModel{" + "id=" + id + "}";
     }
 }

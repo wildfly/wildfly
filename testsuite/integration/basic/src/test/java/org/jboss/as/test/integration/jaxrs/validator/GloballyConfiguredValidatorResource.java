@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2013, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -21,20 +21,28 @@
  */
 package org.jboss.as.test.integration.jaxrs.validator;
 
-import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import javax.validation.executable.ExecutableType;
+import javax.validation.executable.ValidateOnExecution;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
-@Path("validate/{id}")
+@Path("globally-configured-validate/{id}")
 @Produces("text/plain")
-public class ValidatorResource {
+public class GloballyConfiguredValidatorResource {
 
-    @Valid
     @GET
-    public ValidatorModel get(@PathParam("id") @Min(value=4) int id) {
+    @Path("disabled")
+    public ValidatorModel getWithoutValidation(@PathParam("id") @Min(value = 4) int id) {
+        return new ValidatorModel(id);
+    }
+
+    @GET
+    @Path("enabled")
+    @ValidateOnExecution(type = ExecutableType.NON_GETTER_METHODS)
+    public ValidatorModel getWithValidation(@PathParam("id") @Min(value = 4) int id) {
         return new ValidatorModel(id);
     }
 }

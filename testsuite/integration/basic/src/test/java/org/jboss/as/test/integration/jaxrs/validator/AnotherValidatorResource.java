@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2013, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -28,13 +28,17 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
-@Path("validate/{id}")
+@Path("another-validate/{id}")
 @Produces("text/plain")
-public class ValidatorResource {
+public class AnotherValidatorResource {
+
+    @PathParam("id")
+    @Min(value = 4)
+    private int id;
 
     @Valid
     @GET
-    public ValidatorModel get(@PathParam("id") @Min(value=4) int id) {
+    public ValidatorModel getValidatorModel() {
         return new ValidatorModel(id);
     }
 }

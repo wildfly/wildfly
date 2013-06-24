@@ -19,66 +19,84 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.jaxrs.validator;
+package org.jboss.as.test.integration.jaxrs.validator.cdi;
 
 import java.net.URL;
-import java.util.concurrent.TimeUnit;
+
+import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.Application;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+/**
+ * Test for the integration of JAX-RS, Bean Validation and CDI.
+ *
+ * @author Gunnar Morling
+ */
 @RunWith(Arquillian.class)
 @RunAsClient
 @Ignore
-public class HibernateValidatorProviderTestCase {
+//TODO WFLY-278 Can be enabled once HV portable extension is integrated into WF
+public class BeanValidationCdiIntegrationTestCase {
+
+    @ApplicationPath("/myjaxrs")
+    public static class TestApplication extends Application {
+    }
 
     @Deployment(testable = false)
     public static Archive<?> deploy() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxrsnoap.war");
-        war.addPackage(HttpRequest.class.getPackage());
-        war.addClasses(HibernateValidatorProviderTestCase.class, ValidatorModel.class, ValidatorResource.class);
-        war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
-                "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
-                "        <url-pattern>/myjaxrs/*</url-pattern>\n" +
-                "    </servlet-mapping>\n" +
-                "\n"), "web.xml");
-        return war;
+        return ShrinkWrap.create(WebArchive.class, "jaxrsnoap.war")
+            .addPackage(HttpRequest.class.getPackage())
+            .addClasses(
+                BeanValidationCdiIntegrationTestCase.class,
+                OrderModel.class,
+                OrderResource.class,
+                CustomMax.class,
+                CustomMaxValidator.class,
+                MaximumValueProvider.class
+            )
+            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @ArquillianResource
     private URL url;
 
-    private String performCall(String urlPattern) throws Exception {
-        return HttpRequest.get(url + urlPattern, 10, TimeUnit.SECONDS);
+    @Test
+    public void testValidRequest() throws Exception {
+        DefaultHttpClient client = new DefaultHttpClient(new PoolingClientConnectionManager());
+
+        HttpGet get = new HttpGet(url + "myjaxrs/order/5");
+        HttpResponse result = client.execute(get);
+
+        Assert.assertEquals(200, result.getStatusLine().getStatusCode());
+        Assert.assertEquals("OrderModel{id=5}", EntityUtils.toString(result.getEntity()));
     }
 
     @Test
-    public void testHibernateValidatorProvider() throws Exception {
-        DefaultHttpClient client = new DefaultHttpClient();
-        HttpGet get = new HttpGet(url + "myjaxrs/validate/5");
+    public void testInvalidRequest() throws Exception {
+        DefaultHttpClient client = new DefaultHttpClient(new PoolingClientConnectionManager());
+
+        HttpGet get = new HttpGet(url + "myjaxrs/order/11");
         HttpResponse result = client.execute(get);
-        Assert.assertEquals(200, result.getStatusLine().getStatusCode());
-        Assert.assertEquals("ValidatorModel{id=5}", EntityUtils.toString(result.getEntity()));
-
-        get = new HttpGet(url + "myjaxrs/validate/3");
         result = client.execute(get);
-        Assert.assertEquals(500, result.getStatusLine().getStatusCode());
+
+        Assert.assertEquals("Parameter constraint violated", 400, result.getStatusLine().getStatusCode());
     }
-
-
 }
