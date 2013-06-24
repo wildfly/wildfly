@@ -124,9 +124,11 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             dam.deploy(dep);
             // [JBWS-3441] hack - fallback JAXWS invocation handler for dynamically generated deployments
             for (Endpoint ep : dep.getService().getEndpoints()) {
-                ep.setState(EndpointState.STOPPED);
-                ep.setInvocationHandler(new InvocationHandlerJAXWS());
-                ep.setState(EndpointState.STARTED);
+                synchronized(ep) {
+                    ep.setState(EndpointState.STOPPED);
+                    ep.setInvocationHandler(new InvocationHandlerJAXWS());
+                    ep.setState(EndpointState.STARTED);
+                }
             }
         } finally {
             if (dep != null) {
