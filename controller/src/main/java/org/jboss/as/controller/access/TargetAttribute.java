@@ -61,7 +61,7 @@ public final class TargetAttribute {
      * @return the access type
      */
     public AttributeAccess.AccessType getAccessType() {
-        return attributeAccess.getAccessType();
+        return attributeAccess == null ? null : attributeAccess.getAccessType();
     }
 
     /**
@@ -70,11 +70,11 @@ public final class TargetAttribute {
      * @return the storage type
      */
     public AttributeAccess.Storage getStorageType() {
-        return attributeAccess.getStorageType();
+        return attributeAccess == null ? null : attributeAccess.getStorageType();
     }
 
     public AttributeDefinition getAttributeDefinition() {
-        return attributeAccess.getAttributeDefinition();
+        return attributeAccess == null ? null : attributeAccess.getAttributeDefinition();
     }
 
     /**
@@ -82,6 +82,9 @@ public final class TargetAttribute {
      * @return the flags. Will not return {@code null}
      */
     public Set<AttributeAccess.Flag> getFlags() {
+        if (attributeAccess == null) {
+            return Collections.emptySet();
+        }
         return attributeAccess.getFlags();
     }
 
