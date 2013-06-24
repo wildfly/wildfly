@@ -26,12 +26,14 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 
 import java.util.Locale;
 import java.util.Set;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -39,6 +41,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.UnauthorizedException;
+import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -86,6 +89,10 @@ public class ReadAttributeHandler extends GlobalOperationHandlers.AbstractMultiT
 
     @Override
     void doExecute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+        // Add a step to authorize the attribute read once we determine the value below
+        context.addStep(operation, new AuthorizeAttributeReadHandler(filteredData), OperationContext.Stage.MODEL, true);
+
         if (filteredData == null) {
             doExecuteInternal(context, operation);
         } else {
@@ -181,4 +188,44 @@ public class ReadAttributeHandler extends GlobalOperationHandlers.AbstractMultiT
         return descriptionProvider.getModelDescription(locale);
     }
 
+    private static class AuthorizeAttributeReadHandler implements OperationStepHandler {
+
+        private final FilteredData filteredData;
+
+        private AuthorizeAttributeReadHandler(FilteredData filteredData) {
+            this.filteredData = filteredData;
+        }
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            if (filteredData == null) {
+                doExecuteInternal(context, operation);
+            } else {
+                try {
+                    doExecuteInternal(context, operation);
+                } catch (UnauthorizedException ue) {
+                    if (context.hasResult()) {
+                        context.getResult().set(new ModelNode());
+                    }
+                    // Report the failure to the filter and complete normally
+                    PathAddress pa = PathAddress.pathAddress(operation.get(OP_ADDR));
+                    filteredData.addReadRestrictedAttribute(pa, operation.get(NAME).asString());
+                    context.getResult().set(new ModelNode());
+                    context.stepCompleted();
+                }
+            }
+        }
+
+        private void doExecuteInternal(OperationContext context, ModelNode operation) throws OperationFailedException {
+            ModelNode value = context.hasResult() ? context.getResult().clone() : new ModelNode();
+            AuthorizationResult authorizationResult = context.authorize(operation, operation.require(NAME).asString(), value);
+            if (authorizationResult.getDecision() == AuthorizationResult.Decision.DENY) {
+                throw ControllerMessages.MESSAGES.unauthorized(operation.require(OP).asString(),
+                        PathAddress.pathAddress(operation.get(OP_ADDR)),
+                        authorizationResult.getExplanation());
+            }
+
+            context.stepCompleted();
+        }
+    }
 }

@@ -284,13 +284,23 @@ class ReadOnlyContext extends AbstractOperationContext {
     }
 
     @Override
+    public AuthorizationResult authorize(ModelNode operation) {
+        return primaryContext.authorize(operation);
+    }
+
+    @Override
     public AuthorizationResult authorize(ModelNode operation, Set<Action.ActionEffect> effects) {
         return primaryContext.authorize(operation, effects);
     }
 
     @Override
-    public AuthorizationResult authorize(ModelNode operation, String attribute, Set<Action.ActionEffect> effects) {
-        return primaryContext.authorize(operation, attribute, effects);
+    public AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue) {
+        return primaryContext.authorize(operation, attribute, currentValue);
+    }
+
+    @Override
+    public AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue, Set<Action.ActionEffect> effects) {
+        return primaryContext.authorize(operation, attribute, currentValue, effects);
     }
 
     IllegalStateException readOnlyContext() {

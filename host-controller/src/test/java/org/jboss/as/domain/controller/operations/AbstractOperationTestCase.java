@@ -482,12 +482,22 @@ public abstract class AbstractOperationTestCase {
         }
 
         @Override
+        public AuthorizationResult authorize(ModelNode operation) {
+            return AuthorizationResult.PERMITTED;
+        }
+
+        @Override
         public AuthorizationResult authorize(ModelNode operation, Set<Action.ActionEffect> effects) {
             return AuthorizationResult.PERMITTED;
         }
 
         @Override
-        public AuthorizationResult authorize(ModelNode operation, String attribute, Set<Action.ActionEffect> effects) {
+        public AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue) {
+            return AuthorizationResult.PERMITTED;
+        }
+
+        @Override
+        public AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue, Set<Action.ActionEffect> effects) {
             return AuthorizationResult.PERMITTED;
         }
 

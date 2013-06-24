@@ -31,6 +31,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -56,12 +58,14 @@ public class NativeManagementResourceDefinition extends SimpleResourceDefinition
     public static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SECURITY_REALM, ModelType.STRING, true)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .addAccessConstraint(new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.SECURITY_REALM))
             .build();
 
     public static final SimpleAttributeDefinition INTERFACE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.INTERFACE, ModelType.STRING, false)
                 .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
                 .setAlternatives(ModelDescriptionConstants.SOCKET_BINDING)
                 .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                .addAccessConstraint(new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.SOCKET_CONFIG))
                 .setDeprecated(ModelVersion.create(1, 4))
                 .build();
 
@@ -70,6 +74,7 @@ public class NativeManagementResourceDefinition extends SimpleResourceDefinition
             .setAlternatives(ModelDescriptionConstants.SOCKET_BINDING)
             .setRequires(ModelDescriptionConstants.INTERFACE)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .addAccessConstraint(new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.SOCKET_CONFIG))
             .setDeprecated(ModelVersion.create(1,4))
             .build();
 
@@ -78,6 +83,7 @@ public class NativeManagementResourceDefinition extends SimpleResourceDefinition
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .setAlternatives(ModelDescriptionConstants.INTERFACE)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .addAccessConstraint(new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.SOCKET_CONFIG))
             .build();
 
     public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = new AttributeDefinition[] {INTERFACE, NATIVE_PORT, SECURITY_REALM, SOCKET_BINDING };

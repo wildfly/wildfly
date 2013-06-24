@@ -657,9 +657,18 @@ public interface OperationContext extends ExpressionResolver {
      */
     <T> T detach(AttachmentKey<T> key);
 
+    /**
+     * Check for authorization of the given operation.
+     * @param operation the operation. Cannot be {@code null}
+     * @return the authorization result
+     */
+    AuthorizationResult authorize(ModelNode operation);
+
     AuthorizationResult authorize(ModelNode operation, Set<Action.ActionEffect> effects);
 
-    AuthorizationResult authorize(ModelNode operation, String attribute, Set<Action.ActionEffect> effects);
+    AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue);
+
+    AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue, Set<Action.ActionEffect> effects);
 
     /**
      * The stage at which a step should apply.

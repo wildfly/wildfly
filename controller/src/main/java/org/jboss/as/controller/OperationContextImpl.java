@@ -273,7 +273,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY && !isRollingBack()) {
             throw MESSAGES.serviceRemovalRuntimeOperationsOnly();
         }
-        authorize(true, WRITE_RUNTIME);
+        authorize(false, WRITE_RUNTIME);
         if (!affectsRuntime) {
             takeWriteLock();
             affectsRuntime = true;
@@ -321,7 +321,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY && !isRollingBack()) {
             throw MESSAGES.serviceRemovalRuntimeOperationsOnly();
         }
-        authorize(true, WRITE_RUNTIME);
+        authorize(false, WRITE_RUNTIME);
         if (!affectsRuntime) {
             takeWriteLock();
             affectsRuntime = true;
@@ -422,7 +422,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     }
 
     public ModelNode readModel(final PathAddress requestAddress) {
-        authorize(true, READ_CONFIG);
+        authorize(false, READ_CONFIG);
         final PathAddress address = activeStep.address.append(requestAddress);
         assert isControllingThread();
         Stage currentStage = this.currentStage;
@@ -448,7 +448,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
         rejectUserDomainServerUpdates();
-        authorize(true, READ_WRITE_CONFIG);
+        authorize(false, READ_WRITE_CONFIG);
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
@@ -504,7 +504,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
         }
-        authorize(true, READ_CONFIG);
+        authorize(false, READ_CONFIG);
         Resource model = this.model;
         final Iterator<PathElement> iterator = address.iterator();
         while(iterator.hasNext()) {
@@ -792,19 +792,29 @@ final class OperationContextImpl extends AbstractOperationContext {
     }
 
     @Override
+    public AuthorizationResult authorize(ModelNode operation) {
+        return authorize(operation, EnumSet.noneOf(Action.ActionEffect.class));
+    }
+
+    @Override
     public AuthorizationResult authorize(ModelNode operation, Set<Action.ActionEffect> effects) {
         OperationId opId = new OperationId(operation);
         return authorize(opId, operation, false, effects);
     }
 
     @Override
-    public AuthorizationResult authorize(ModelNode operation, String attribute, Set<Action.ActionEffect> effects) {
+    public AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue) {
+        return authorize(operation, attribute, currentValue, EnumSet.noneOf(Action.ActionEffect.class));
+    }
+
+    @Override
+    public AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue, Set<Action.ActionEffect> effects) {
         OperationId opId = new OperationId(operation);
         AuthorizationResult resourceResult = authorize(opId, operation, false, effects);
         if (resourceResult.getDecision() == AuthorizationResult.Decision.DENY) {
             return resourceResult;
         }
-        return authorize(opId, attribute, effects);
+        return authorize(opId, attribute, currentValue, effects);
     }
 
 
@@ -865,8 +875,11 @@ final class OperationContextImpl extends AbstractOperationContext {
             }
             if (allAttributes) {
                 ImmutableManagementResourceRegistration mrr = authResp.targetResource.getResourceRegistration();
+                ModelNode model = authResp.targetResource.getResource().getModel();
+                Set<Action.ActionEffect> attributeEffects = actionEffects.isEmpty() ? authResp.standardAction.getActionEffects() : actionEffects;
                 for (String attr : mrr.getAttributeNames(PathAddress.EMPTY_ADDRESS)) {
-                    AuthorizationResult attrResult = authorize(opId, attr, actionEffects);
+                    ModelNode currentValue = model.has(attr) ? model.get(attr) : new ModelNode();
+                    AuthorizationResult attrResult = authorize(opId, attr, currentValue, attributeEffects);
                     if (attrResult.getDecision() == AuthorizationResult.Decision.DENY) {
                         return attrResult;
                     }
@@ -878,7 +891,8 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
     }
 
-    private AuthorizationResult authorize(OperationId operationId, String attribute, Set<Action.ActionEffect> actionEffects) {
+    private AuthorizationResult authorize(OperationId operationId, String attribute,
+                                          ModelNode currentValue, Set<Action.ActionEffect> actionEffects) {
         if (isBooting()) {
             return AuthorizationResult.PERMITTED;
         } else {
@@ -886,13 +900,14 @@ final class OperationContextImpl extends AbstractOperationContext {
             assert authResp != null : "perform resource authorization before attribute authorization";
 
             TargetAttribute targetAttribute = null;
-            for (Action.ActionEffect actionEffect : actionEffects) {
+            Set<Action.ActionEffect> attributeEffects = actionEffects.isEmpty() ? authResp.standardAction.getActionEffects() : actionEffects;
+            for (Action.ActionEffect actionEffect : attributeEffects) {
                 AuthorizationResult authResult = authResp.getAttributeResult(attribute, actionEffect);
                 if (authResult == null) {
                     Action action = authResp.standardAction.limitAction(actionEffect);
                     if (targetAttribute == null) {
                         AttributeAccess attributeAccess = authResp.targetResource.getResourceRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attribute);
-                        targetAttribute = new TargetAttribute(attributeAccess, new ModelNode(), authResp.targetResource);
+                        targetAttribute = new TargetAttribute(attributeAccess, currentValue, authResp.targetResource);
                     }
                     authResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, targetAttribute);
                     authResp.addAttributeResult(attribute, actionEffect, authResult);
