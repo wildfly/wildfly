@@ -1195,10 +1195,6 @@
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-crypto"/>
         </module-def>
 
-        <module-def name="org.jboss.resteasy.resteasy-hibernatevalidator-provider">
-            <maven-resource group="org.jboss.resteasy" artifact="resteasy-hibernatevalidator-provider"/>
-        </module-def>
-
         <module-def name="org.jboss.resteasy.resteasy-jackson-provider">
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-jackson-provider"/>
         </module-def>
@@ -1222,6 +1218,10 @@
 
         <module-def name="org.jboss.resteasy.resteasy-multipart-provider">
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-multipart-provider"/>
+        </module-def>
+
+        <module-def name="org.jboss.resteasy.resteasy-validator-provider-11">
+            <maven-resource group="org.jboss.resteasy" artifact="resteasy-validator-provider-11"/>
         </module-def>
 
         <module-def name="org.jboss.resteasy.resteasy-yaml-provider">
