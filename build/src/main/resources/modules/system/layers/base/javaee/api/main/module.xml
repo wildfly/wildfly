@@ -30,6 +30,7 @@
     <dependencies>
         <module name="javax.activation.api" export="true"/>
         <module name="javax.annotation.api" export="true"/>
+        <module name="javax.batch.api" export="true"/>
         <module name="javax.ejb.api" export="true"/>
         <module name="javax.enterprise.api" export="true"/>
         <module name="javax.enterprise.concurrent.api" export="true"/>
