@@ -1,7 +1,7 @@
 <xsl:stylesheet version="2.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:d="urn:jboss:domain:2.0"
-                xmlns:l="urn:jboss:domain:logging:1.1"
+                xmlns:l="urn:jboss:domain:logging:1.2"
                 exclude-result-prefixes="l d"
         >
 
@@ -15,11 +15,11 @@
         <xsl:param name="list" />
         <xsl:variable name="first" select="substring-before(concat($list,','), ',')" />
         <xsl:variable name="remaining" select="substring-after($list, ',')" />
-        <xsl:element name="logger" namespace="urn:jboss:domain:logging:1.1">
+        <xsl:element name="logger" namespace="urn:jboss:domain:logging:1.2">
             <xsl:attribute name="category" >
                 <xsl:value-of select="$first"></xsl:value-of>
             </xsl:attribute>
-            <xsl:element name="level" namespace="urn:jboss:domain:logging:1.1" >
+            <xsl:element name="level" namespace="urn:jboss:domain:logging:1.2" >
                 <xsl:attribute name="name" >
                     <xsl:value-of select="'TRACE'"/>
                 </xsl:attribute>
