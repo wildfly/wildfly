@@ -50,13 +50,13 @@
         <module name="org.jboss.resteasy.resteasy-atom-provider"/>
         <module name="org.jboss.resteasy.resteasy-cdi"/>
         <module name="org.jboss.resteasy.resteasy-crypto"/>
-        <module name="org.jboss.resteasy.resteasy-hibernatevalidator-provider"/>
         <module name="org.jboss.resteasy.resteasy-jaxrs"/>
         <module name="org.jboss.resteasy.resteasy-jaxb-provider"/>
         <module name="org.jboss.resteasy.resteasy-jackson-provider"/>
         <module name="org.jboss.resteasy.resteasy-jettison-provider"/>
         <module name="org.jboss.resteasy.resteasy-jsapi"/>
         <module name="org.jboss.resteasy.resteasy-multipart-provider"/>
+        <module name="org.jboss.resteasy.resteasy-validator-provider-11"/>
         <module name="org.jboss.resteasy.resteasy-yaml-provider"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>

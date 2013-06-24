@@ -1541,11 +1541,6 @@
 
                 <dependency>
                     <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-hibernatevalidator-provider</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
                     <artifactId>resteasy-jackson-provider</artifactId>
                 </dependency>
 
@@ -1567,6 +1562,11 @@
                 <dependency>
                     <groupId>org.jboss.resteasy</groupId>
                     <artifactId>resteasy-multipart-provider</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-validator-provider-11</artifactId>
                 </dependency>
 
                 <dependency>
@@ -2153,13 +2153,13 @@
                                         <include>org.jboss.resteasy:async-http-servlet-3.0</include>
                                         <include>org.jboss.resteasy:jaxrs-api</include>
                                         <include>org.jboss.resteasy:resteasy-atom-provider</include>
-                                        <include>org.jboss.resteasy:resteasy-hibernatevalidator-provider</include>
                                         <include>org.jboss.resteasy:resteasy-jackson-provider</include>
                                         <include>org.jboss.resteasy:resteasy-jaxb-provider</include>
                                         <include>org.jboss.resteasy:resteasy-jaxrs</include>
                                         <include>org.jboss.resteasy:resteasy-jettison-provider</include>
                                         <include>org.jboss.resteasy:resteasy-jsapi</include>
                                         <include>org.jboss.resteasy:resteasy-multipart-provider</include>
+                                        <include>org.jboss.resteasy:resteasy-validator-provider-11</include>
                                         <include>org.jboss.sasl:jboss-sasl</include>
                                         <include>org.jboss.spec.javax.annotation:jboss-annotations-api_1.2_spec</include>
                                         <include>org.jboss.spec.javax.ejb:jboss-ejb-api_3.2_spec</include>
@@ -3279,10 +3279,6 @@
                                             <packages>org.jboss.resteasy.cdi</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.resteasy.resteasy-hibernatevalidator-provider</title>
-                                            <packages>org.jboss.resteasy.plugins.validation.hibernate</packages>
-                                        </group>
-                                        <group>
                                             <title>Module org.jboss.resteasy.resteasy-jackson-provider</title>
                                             <packages>org.jboss.resteasy.annotations.providers:org.jboss.resteasy.plugins.providers.jackson</packages>
                                         </group>
@@ -3305,6 +3301,10 @@
                                         <group>
                                             <title>Module org.jboss.resteasy.resteasy-multipart-provider</title>
                                             <packages>org.jboss.resteasy.annotations.providers.multipart:org.jboss.resteasy.plugins.providers.multipart</packages>
+                                        </group>
+                                        <group>
+                                            <title>Module org.jboss.resteasy.resteasy-validator-provider-11</title>
+                                            <packages>org.jboss.resteasy.plugins.validation</packages>
                                         </group>
                                         <group>
                                             <title>Module org.jboss.security.negotiation</title>

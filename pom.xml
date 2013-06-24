@@ -5044,7 +5044,7 @@
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-hibernatevalidator-provider</artifactId>
+                <artifactId>resteasy-validator-provider-11</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
             </dependency>
 

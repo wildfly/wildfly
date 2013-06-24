@@ -44,7 +44,7 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
     public static final ModuleIdentifier RESTEASY_ATOM = ModuleIdentifier.create("org.jboss.resteasy.resteasy-atom-provider");
     public static final ModuleIdentifier RESTEASY_CDI = ModuleIdentifier.create("org.jboss.resteasy.resteasy-cdi");
     public static final ModuleIdentifier RESTEASY_CRYPTO = ModuleIdentifier.create("org.jboss.resteasy.resteasy-crypto");
-    public static final ModuleIdentifier RESTEASY_HIBERNATE_VALIDATOR = ModuleIdentifier.create("org.jboss.resteasy.resteasy-hibernatevalidator-provider");
+    public static final ModuleIdentifier RESTEASY_VALIDATOR_11 = ModuleIdentifier.create("org.jboss.resteasy.resteasy-validator-provider-11");
     public static final ModuleIdentifier RESTEASY_JAXRS = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jaxrs");
     public static final ModuleIdentifier RESTEASY_JAXB = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jaxb-provider");
     public static final ModuleIdentifier RESTEASY_JACKSON = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jackson-provider");
@@ -72,7 +72,7 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
             return;
         }
         addDependency(moduleSpecification, moduleLoader, RESTEASY_ATOM);
-        addDependency(moduleSpecification, moduleLoader, RESTEASY_HIBERNATE_VALIDATOR);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_VALIDATOR_11);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_JAXRS);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_JAXB);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_JACKSON);
