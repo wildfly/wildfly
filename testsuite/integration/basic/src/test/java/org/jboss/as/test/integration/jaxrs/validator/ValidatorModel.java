@@ -21,12 +21,14 @@
  */
 package org.jboss.as.test.integration.jaxrs.validator;
 
+import javax.validation.constraints.Max;
+
 /**
  * @author Stuart Douglas
  */
-
 public class ValidatorModel {
 
+    @Max(10)
     private int id;
 
     public ValidatorModel(final int id) {

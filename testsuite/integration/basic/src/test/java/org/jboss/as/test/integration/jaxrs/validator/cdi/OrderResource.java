@@ -19,22 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.jaxrs.validator;
+package org.jboss.as.test.integration.jaxrs.validator.cdi;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
-@Path("validate/{id}")
 @Produces("text/plain")
-public class ValidatorResource {
+@Path("order/{id}")
+public class OrderResource {
 
-    @Valid
     @GET
-    public ValidatorModel get(@PathParam("id") @Min(value=4) int id) {
-        return new ValidatorModel(id);
+    public OrderModel get(@PathParam("id") @CustomMax int id) {
+        return new OrderModel(id);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2013, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -19,22 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.jaxrs.validator;
+package org.jboss.as.test.integration.jaxrs.validator.cdi;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.inject.Inject;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 
-@Path("validate/{id}")
-@Produces("text/plain")
-public class ValidatorResource {
+/**
+ * A validator which makes use of constructor injection.
+ *
+ * @author Gunnar Morling
+ */
+public class CustomMaxValidator implements ConstraintValidator<CustomMax, Integer> {
 
-    @Valid
-    @GET
-    public ValidatorModel get(@PathParam("id") @Min(value=4) int id) {
-        return new ValidatorModel(id);
+    private final MaximumValueProvider maximumValueProvider;
+
+    @Inject
+    public CustomMaxValidator(MaximumValueProvider maximumValueProvider) {
+        this.maximumValueProvider = maximumValueProvider;
+    }
+
+    @Override
+    public void initialize(CustomMax constraintAnnotation) {
+    }
+
+    @Override
+    public boolean isValid(Integer value, ConstraintValidatorContext context) {
+        return value <= maximumValueProvider.getMax();
     }
 }
