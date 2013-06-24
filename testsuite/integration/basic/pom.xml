@@ -84,18 +84,17 @@
             <version>${version.apacheds.shared}</version>
             <scope>test</scope>
         </dependency>
-
- 	<dependency>
+        <dependency>
             <groupId>org.apache.directory.server</groupId>
             <artifactId>apacheds-core-jndi</artifactId>
             <version>${version.apacheds}</version>
             <scope>test</scope>
         </dependency>
-	<dependency>
-	    <groupId>org.syslog4j</groupId>
-	    <artifactId>syslog4j</artifactId>
-	    <version>0.9.30</version>
-	</dependency>
+        <dependency>
+            <groupId>org.syslog4j</groupId>
+            <artifactId>syslog4j</artifactId>
+            <version>0.9.30</version>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -290,7 +289,7 @@
                                         <jboss.inst>${basedir}/target/jbossas</jboss.inst>
                                         <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
                                         <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
-																				<org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>
+                                        <org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>
@@ -344,10 +343,10 @@
                     </plugin>
 
                     <plugin>
-                    	<groupId>org.apache.felix</groupId>
-                    	<artifactId>maven-bundle-plugin</artifactId>
-                    	<inherited>true</inherited>
-                    	<extensions>true</extensions>
+                        <groupId>org.apache.felix</groupId>
+                        <artifactId>maven-bundle-plugin</artifactId>
+                        <inherited>true</inherited>
+                        <extensions>true</extensions>
                     </plugin>
 
                 </plugins>
