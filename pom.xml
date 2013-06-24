@@ -158,6 +158,7 @@
         <version.org.infinispan.protostream>1.0.0.Alpha6</version.org.infinispan.protostream>
         <version.org.jacorb>2.3.2.jbossorg-4</version.org.jacorb>
         <version.org.javassist>3.18.1-GA</version.org.javassist>
+        <version.org.jberet>1.0.0.Alpha1</version.org.jberet>
         <version.org.jdom>1.1.2</version.org.jdom>
         <version.org.jboss.aesh>0.33.8</version.org.jboss.aesh>
         <version.org.jboss.arquillian.core>1.0.3.Final</version.org.jboss.arquillian.core>
@@ -203,6 +204,7 @@
         <version.org.jboss.logging.jul-to-slf4j-stub>1.0.1.Final</version.org.jboss.logging.jul-to-slf4j-stub>
         <!-- Include the artifactId for org.jboss.spec project versions because artifactId contains the API spec version -->
         <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.2_spec>1.0.0.Alpha1</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.2_spec>
+        <version.org.jboss.spec.javax.batch.jboss-batch-api_1.0_spec>1.0.0.Alpha1</version.org.jboss.spec.javax.batch.jboss-batch-api_1.0_spec>
         <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>1.0.0.Alpha2</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>
         <version.org.jboss.spec.javax.el.jboss-el-api_2.2_spec>1.0.2.Final</version.org.jboss.spec.javax.el.jboss-el-api_2.2_spec>
         <version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>1.0.0.CR1</version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>
@@ -808,6 +810,12 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-batch</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -4713,6 +4721,30 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jberet</groupId>
+                <artifactId>jberet-core</artifactId>
+                <version>${version.org.jberet}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-processor</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.marshalling</groupId>
+                        <artifactId>jboss-marshalling</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.narayana.arjunacore</groupId>
+                        <artifactId>arjuna</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.narayana.jta</groupId>
+                        <artifactId>narayana-jta</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.hal</groupId>
                 <artifactId>release-stream</artifactId>
                 <version>${version.org.jboss.hal.release-stream}</version>
@@ -5158,6 +5190,12 @@
                 <groupId>org.jboss.spec.javax.annotation</groupId>
                 <artifactId>jboss-annotations-api_1.2_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.2_spec}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.spec.javax.batch</groupId>
+                <artifactId>jboss-batch-api_1.0_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.batch.jboss-batch-api_1.0_spec}</version>
             </dependency>
 
             <dependency>
@@ -6245,6 +6283,7 @@
             </activation>
             <modules>
                 <module>appclient</module>
+                <module>batch</module>
                 <module>build</module>
                 <module>build-config</module>
                 <module>arquillian</module>
