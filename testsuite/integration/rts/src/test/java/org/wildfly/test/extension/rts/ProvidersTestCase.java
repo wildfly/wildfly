@@ -21,8 +21,6 @@
 */
 package org.wildfly.test.extension.rts;
 
-import java.net.URL;
-
 import javax.xml.bind.JAXBException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -35,11 +33,12 @@ import org.jboss.jbossts.star.util.media.txstatusext.TransactionManagerElement;
 import org.jboss.jbossts.star.util.media.txstatusext.TransactionStatisticsElement;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.net.URL;
 
 /**
  * Test if all providers work as required.
@@ -51,36 +50,20 @@ import org.junit.runner.RunWith;
  */
 @RunAsClient
 @RunWith(Arquillian.class)
-public final class ProvidersTestCase {
-
-    private static final String DEPLOYMENT_NAME = "test-deployment";
-
-    private TxSupport txSupport;
+public final class ProvidersTestCase extends AbstractTestCase {
 
     @ArquillianResource
     private URL deploymentUrl;
 
-    /**
-     * Just an empty deployment to make deploymentUrl injection possible.
-     *
-     * @return
-     */
     @Deployment
     public static WebArchive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME + ".war");
+        return AbstractTestCase.getDeployment();
     }
 
     @Before
     public void before() {
-        final String transactionManagerUrl = getBaseUrl() + "rest-at-coordinator/tx/transaction-manager";
-
-        txSupport = new TxSupport(transactionManagerUrl);
+        super.before();
         txSupport.startTx();
-    }
-
-    @After
-    public void after() {
-        txSupport.rollbackTx();
     }
 
     @Test
@@ -104,14 +87,8 @@ public final class ProvidersTestCase {
         Assert.assertEquals(1, transactionStatisticsElement.getActive());
     }
 
-    private String getBaseUrl() {
-        if (deploymentUrl == null) {
-            return null;
-        }
-
-        final int cutUntil = deploymentUrl.toString().indexOf(DEPLOYMENT_NAME);
-
-        return deploymentUrl.toString().substring(0, cutUntil);
+    protected String getDeploymentUrl() {
+        return deploymentUrl.toString();
     }
 
 }

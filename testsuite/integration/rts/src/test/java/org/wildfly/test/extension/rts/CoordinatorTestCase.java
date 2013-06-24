@@ -33,14 +33,13 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.jbossts.star.util.TxMediaType;
 import org.jboss.jbossts.star.util.TxStatusMediaType;
 import org.jboss.jbossts.star.util.TxSupport;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.extension.rts.common.RestfulParticipant;
+import org.wildfly.test.extension.rts.common.WorkRestATResource;
 import org.wildfly.test.extension.rts.common.Work;
 
 /**
@@ -51,29 +50,25 @@ import org.wildfly.test.extension.rts.common.Work;
  */
 @RunAsClient
 @RunWith(Arquillian.class)
-public final class CoordinatorTestCase {
+public final class CoordinatorTestCase extends AbstractTestCase {
 
     private static final String DEPENDENCIES = "Dependencies: org.jboss.narayana.rts\n";
-
-    private static final String DEPLOYMENT_NAME = "test-deployment";
 
     @ArquillianResource
     private URL deploymentUrl;
 
     @Deployment
     public static WebArchive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME + ".war")
-                .addClasses(RestfulParticipant.class, Work.class)
+        return AbstractTestCase.getDeployment()
+                .addClasses(WorkRestATResource.class, Work.class)
                 .addAsWebInfResource(new File("../test-classes", "web.xml"), "web.xml")
                 .addAsManifestResource(new StringAsset(DEPENDENCIES), "MANIFEST.MF");
     }
 
     @Before
-    public void before() throws Exception {
-        final String transactionManagerUrl = getBaseUrl() + "rest-at-coordinator/tx/transaction-manager";
-
-        TxSupport.setTxnMgrUrl(transactionManagerUrl);
-        RestfulParticipant.clearFaults();
+    public void before() {
+        super.before();
+        WorkRestATResource.clearFaults();
     }
 
     @Test
@@ -99,7 +94,7 @@ public final class CoordinatorTestCase {
     @Test
     public void test1PCAbort() throws Exception {
         TxSupport txn = new TxSupport();
-        String pUrl = deploymentUrl + RestfulParticipant.PATH_SEGMENT;
+        String pUrl = getDeploymentUrl() + WorkRestATResource.PATH_SEGMENT;
         String pid = null;
         String pVal;
 
@@ -123,7 +118,7 @@ public final class CoordinatorTestCase {
     @Test
     public void test1PCCommit() throws Exception {
         TxSupport txn = new TxSupport();
-        String pUrl = deploymentUrl + RestfulParticipant.PATH_SEGMENT;
+        String pUrl = getDeploymentUrl() + WorkRestATResource.PATH_SEGMENT;
         String pid = null;
         String pVal;
 
@@ -147,7 +142,7 @@ public final class CoordinatorTestCase {
     @Test
     public void test2PC() throws Exception {
         TxSupport txn = new TxSupport();
-        String pUrl = deploymentUrl + RestfulParticipant.PATH_SEGMENT;
+        String pUrl = getDeploymentUrl() + WorkRestATResource.PATH_SEGMENT;
         String[] pid = new String[2];
         String[] pVal = new String[2];
 
@@ -195,12 +190,16 @@ public final class CoordinatorTestCase {
         TxSupport txn = new TxSupport();
         int txnCount = txn.txCount();
         txn.startTx(1000);
-        txn.enlistTestResource(deploymentUrl + RestfulParticipant.PATH_SEGMENT, false);
+        txn.enlistTestResource(getDeploymentUrl() + WorkRestATResource.PATH_SEGMENT, false);
 
         // Let the txn timeout
         Thread.sleep(2000);
 
         Assert.assertEquals(txnCount, txn.txCount());
+    }
+
+    protected String getDeploymentUrl() {
+        return deploymentUrl.toString();
     }
 
     private String enlistResource(final TxSupport txn, final String pUrl) {
@@ -241,16 +240,6 @@ public final class CoordinatorTestCase {
         }
 
         return sb;
-    }
-
-    private String getBaseUrl() {
-        if (deploymentUrl == null) {
-            return null;
-        }
-
-        final int cutUntil = deploymentUrl.toString().indexOf(DEPLOYMENT_NAME);
-
-        return deploymentUrl.toString().substring(0, cutUntil);
     }
 
 }
