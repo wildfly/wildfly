@@ -70,7 +70,7 @@ public final class EEDefaultPermissionsProcessor implements DeploymentUnitProces
     }
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final ModuleSpecification attachment = phaseContext.getAttachment(Attachments.MODULE_SPECIFICATION);
+        final ModuleSpecification attachment = phaseContext.getDeploymentUnit().getAttachment(Attachments.MODULE_SPECIFICATION);
         if (attachment == null) {
             return;
         }
