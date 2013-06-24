@@ -321,7 +321,15 @@ public class ValueTypeCompleter implements CommandLineCompleter {
         }
 
         protected boolean isBoolean(ModelNode propType) {
-            return propType.has(Util.TYPE) && propType.get(Util.TYPE).asType().equals(ModelType.BOOLEAN);
+            if(propType.has(Util.TYPE)) {
+                try {
+                    return propType.get(Util.TYPE).asType().equals(ModelType.BOOLEAN);
+                } catch(IllegalArgumentException e) {
+                    // 'type', if present, is not always ModelType,
+                    // it could a custom property, in which case IAE will be thrown
+                }
+            }
+            return false;
         }
 
         protected List<String> getMentionedProps(int i) {
