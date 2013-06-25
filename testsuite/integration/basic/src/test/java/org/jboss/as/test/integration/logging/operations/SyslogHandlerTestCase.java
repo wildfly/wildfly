@@ -54,6 +54,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.productivity.java.syslog4j.server.SyslogServer;
@@ -63,11 +64,12 @@ import org.productivity.java.syslog4j.server.impl.event.printstream.FileSyslogSe
 
 /**
  * A SyslogHandlerTestCase for testing that logs are logged to syslog
- * 
+ *
  * @author Ondrej Lukas
  */
 @RunWith(Arquillian.class)
 @ServerSetup(SyslogHandlerTestCase.SyslogHandlerTestCaseSetup.class)
+@Ignore("WFLY-1584 - Events may not be getting fired before the file read is done.")
 public class SyslogHandlerTestCase {
 
     private static final Logger LOGGER = Logger.getLogger(SyslogHandlerTestCase.class.getPackage().getName());

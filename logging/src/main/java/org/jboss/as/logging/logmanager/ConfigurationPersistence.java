@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.FileLock;
 import java.util.List;
 
 import org.jboss.as.controller.OperationContext;
@@ -392,9 +393,17 @@ public class ConfigurationPersistence implements Configurator, LogContextConfigu
                     FileOutputStream out = null;
                     try {
                         out = new FileOutputStream(configFile);
-                        out.write(NOTE_MESSAGE);
-                        config.writeConfiguration(out);
-                        out.close();
+                        final FileLock lock = out.getChannel().lock();
+                        try {
+                            out.write(NOTE_MESSAGE);
+                            config.writeConfiguration(out);
+                        } finally {
+                            // The write should close the stream which would release the lock this check ensures the
+                            // lock will be released
+                            if (lock.isValid()) {
+                                lock.release();
+                            }
+                        }
                         LoggingLogger.ROOT_LOGGER.tracef("Logging configuration file '%s' successfully written.", configFile.getAbsolutePath());
                     } catch (IOException e) {
                         throw LoggingMessages.MESSAGES.failedToWriteConfigurationFile(e, configFile);
