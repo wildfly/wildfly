@@ -906,6 +906,9 @@
             <maven-resource group="org.wildfly" artifact="wildfly-io"/>
         </module-def>
 
+        <!-- Dummy module for backwards compatibility -->
+        <module-def name="org.jboss.as.modcluster"/>
+
         <module-def name="org.wildfly.extension.mod_cluster">
             <maven-resource group="org.wildfly" artifact="wildfly-mod_cluster-extension"/>
         </module-def>

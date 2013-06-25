@@ -32,6 +32,6 @@
     </resources>
 
     <dependencies>
-        <module name="org.jboss.as.modcluster" export="true"/>
+        <module name="org.wildfly.extension.mod_cluster" export="true" services="export"/>
     </dependencies>
 </module>
