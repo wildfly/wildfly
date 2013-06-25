@@ -69,6 +69,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition PROXY_LIST = SimpleAttributeDefinitionBuilder.create(CommonAttributes.PROXY_LIST, ModelType.STRING, true)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .setValidator(new ProxyListValidator())
             .build();
 
     static final SimpleAttributeDefinition PROXY_URL = SimpleAttributeDefinitionBuilder.create(CommonAttributes.PROXY_URL, ModelType.STRING, true)
