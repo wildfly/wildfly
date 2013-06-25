@@ -30,6 +30,7 @@ import static org.jboss.as.patching.PatchLogger.ROOT_LOGGER;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.ZipUtils;
+import org.jboss.as.patching.metadata.ModuleItem;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
 
@@ -74,7 +76,7 @@ public class TestUtils {
         }
     }
 
-    public static File touch(File baseDir, String... segments) throws Exception {
+    public static File touch(File baseDir, String... segments) throws IOException {
         File f = baseDir;
         for (String segment : segments) {
             f = new File(f, segment);
@@ -84,7 +86,7 @@ public class TestUtils {
         return f;
     }
 
-    public static void dump(File f, String content) throws Exception {
+    public static void dump(File f, String content) throws IOException {
         final OutputStream os = new FileOutputStream(f);
         try {
             os.write(content.getBytes(Charset.forName("UTF-8")));
@@ -94,7 +96,7 @@ public class TestUtils {
         }
     }
 
-    public static File createModuleXmlFile(File mainDir, String moduleName, String... resources) throws Exception {
+    public static File createModuleXmlFile(File mainDir, String moduleName, String... resources) throws IOException {
         StringBuilder content = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         content.append(format("<module xmlns=\"urn:jboss:module:1.2\" name=\"%s\" slot=\"main\" />\n", moduleName));
         content.append("  <resources>\n");
@@ -110,7 +112,7 @@ public class TestUtils {
         return moduleXMLFile;
     }
 
-    public static File createModule(File baseDir, String moduleName, String... resourcesContents) throws Exception {
+    public static File createModule(File baseDir, String moduleName, String... resourcesContents) throws IOException {
         File moduleDir = IoUtils.mkdir(baseDir, "modules", moduleName);
         File mainDir = IoUtils.mkdir(moduleDir, "main");
         String resourceFilePrefix = randomString();
@@ -126,8 +128,8 @@ public class TestUtils {
         return moduleDir;
     }
 
-    public static File createModule0(File baseDir, String moduleName, String... resourcesContents) throws Exception {
-        File mainDir = IoUtils.mkdir(baseDir, moduleName, "main");
+    public static File createModule0(File baseDir, String moduleName, String... resourcesContents) throws IOException {
+        File mainDir = createModuleRoot(baseDir, moduleName);
         String resourceFilePrefix = randomString();
         String[] resourceFileNames = new String[resourcesContents.length];
         for (int i = 0; i < resourcesContents.length; i++) {
@@ -141,8 +143,31 @@ public class TestUtils {
         return mainDir.getParentFile();
     }
 
-    public static File createBundle0(File baseDir, String bundleName, String content) throws Exception {
-        File mainDir = IoUtils.mkdir(baseDir, bundleName, "main");
+    public static File createModuleRoot(File baseDir, String moduleSpec) throws IOException {
+        final int c1 = moduleSpec.lastIndexOf(':');
+        final String name;
+        final String slot;
+        if (c1 != -1) {
+            name = moduleSpec.substring(0, c1);
+            slot = moduleSpec.substring(c1 + 1);
+        } else {
+            name = moduleSpec;
+            slot = "main";
+        }
+        assert slot.equals(ModuleItem.MAIN_SLOT); // update to support other slots too
+        final String[] segments = name.split("\\.");
+        assert segments.length > 0;
+        File dir = baseDir;
+        for (String segment : segments) {
+            dir = new File(dir, segment);
+        }
+        dir = new File(dir, slot);
+        dir.mkdirs();
+        return dir;
+    }
+
+    public static File createBundle0(File baseDir, String bundleName, String content) throws IOException {
+        File mainDir = createModuleRoot(baseDir, bundleName);
         if(content != null) {
             File f = touch(mainDir, "content");
             dump(f, content);

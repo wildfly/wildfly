@@ -236,7 +236,12 @@ public class LayerTestCase extends AbstractTaskTestCase {
             }
             props.put(Constants.LAYERS, str.toString());
             props.put(Constants.EXCLUDE_LAYER_BASE, "true");
-            props.store(new FileOutputStream(layerConf), "");
+            final FileOutputStream os = new FileOutputStream(layerConf);
+            try {
+                props.store(os, "");
+            } finally {
+                IoUtils.safeClose(os);
+            }
         }
     }
 }

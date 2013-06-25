@@ -67,9 +67,8 @@ class DistributionModuleItem implements Comparable<DistributionModuleItem> {
         DistributionModuleItem that = (DistributionModuleItem) o;
 
         if (!moduleName.equals(that.moduleName)) return false;
-        if (!slot.equals(that.slot)) return false;
+        return slot.equals(that.slot);
 
-        return true;
     }
 
     @Override

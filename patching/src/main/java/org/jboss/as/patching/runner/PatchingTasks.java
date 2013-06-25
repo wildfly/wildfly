@@ -47,11 +47,6 @@ import org.jboss.as.patching.metadata.ModificationType;
 class PatchingTasks {
 
     /**
-     * Only accept misc items for rollback operations
-     */
-    static final ContentItemFilter ROLLBACK_FILTER = ContentItemFilter.MISC_ONLY;
-
-    /**
      * Process multiple patches for rollback, trying to determine the current and target state for this applying this combination.
      * <p/>
      * This will track changes by location, trying to merge multiple changes per location and recording whether conflicts
@@ -64,9 +59,10 @@ class PatchingTasks {
      * @param rollbackPatch the rollback modifications
      * @param modifications the definitions
      * @param filter        the content filter
+     * @param originalsOnly whether to include only items part of the original patch
      */
     static void rollback(final String patchId, final Collection<ContentModification> originalPatch, final Collection<ContentModification> rollbackPatch,
-                         final Map<Location, ContentTaskDefinition> modifications, final ContentItemFilter filter) {
+                         final Map<Location, ContentTaskDefinition> modifications, final ContentItemFilter filter, final boolean originalsOnly) {
 
         // Process the original patch information
         final Map<Location, ContentModification> originalModifications = new HashMap<Location, ContentModification>();
@@ -84,6 +80,9 @@ class PatchingTasks {
             final Location location = new Location(item);
             final ContentModification original = originalModifications.remove(location);
             if (original == null) {
+                if (originalsOnly) {
+                    continue;
+                }
                 if (modification.getType() != ModificationType.ADD) {
                     throw new IllegalStateException(item.toString()); // Only for development purpose
                 }

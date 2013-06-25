@@ -57,7 +57,6 @@ public interface PatchingTask {
      * Execute.
      *
      * @param context the patching context
-     * @return the rollback action
      * @throws IOException
      */
     void execute(final PatchingTaskContext context) throws IOException;

@@ -124,8 +124,6 @@ public class MiscContentItem extends ContentItem {
             return false;
         if (isDirectory != other.isDirectory)
             return false;
-        if (!Arrays.equals(path, other.path))
-            return false;
-        return true;
+        return Arrays.equals(path, other.path);
     }
 }

@@ -49,9 +49,9 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
     public void rollback(final String patchId) {
         if (!patchIds.remove(patchId)) {
             if (patchId.equals(cumulativeID)) {
-                cumulativeID = null;
+                cumulativeID = Constants.NOT_PATCHED;
             } else if (patchId.equals(releaseID)) {
-                releaseID = null;
+                releaseID = Constants.NOT_PATCHED;
             } else {
                 throw new IllegalStateException("cannot rollback not-applied patch " + patchId);
             }
@@ -63,15 +63,12 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
     public void apply(String patchId, Patch.PatchType patchType) {
         if (patchType == Patch.PatchType.UPGRADE) {
             if (!patchIds.isEmpty()) {
-                throw new IllegalStateException("cannot apply release patch if there are other patches applied");
+                throw new IllegalStateException("cannot apply release patch if there are other patches applied " +patchIds);
             }
             releaseID = patchId;
         } else if (patchType == Patch.PatchType.CUMULATIVE) {
             if (! patchIds.isEmpty()) {
-                throw new IllegalStateException("cannot apply cumulative patch if there are other patches applied");
-            }
-            if (cumulativeID != null && !Constants.BASE.equals(cumulativeID)) {
-                throw new IllegalStateException("cannot apply cumulative patch if there are other patches applied");
+                throw new IllegalStateException("cannot apply cumulative patch if there are other patches applied" +patchIds);
             }
             cumulativeID = patchId;
         } else {

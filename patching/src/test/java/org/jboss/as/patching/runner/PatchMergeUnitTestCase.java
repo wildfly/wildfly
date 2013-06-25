@@ -145,7 +145,7 @@ public class PatchMergeUnitTestCase {
     static Map<Location, PatchingTasks.ContentTaskDefinition> process(final RollbackInfo... rollbackInfos) {
         final Map<Location, PatchingTasks.ContentTaskDefinition> foo = new HashMap<Location, PatchingTasks.ContentTaskDefinition>();
         for(final RollbackInfo info : rollbackInfos) {
-            PatchingTasks.rollback(info.original.getPatchId(), info.original.getModifications(), info.rollback.getModifications(), foo, ContentItemFilter.MISC_ONLY);
+            PatchingTasks.rollback(info.original.getPatchId(), info.original.getModifications(), info.rollback.getModifications(), foo, ContentItemFilter.MISC_ONLY, false);
         }
         return foo;
     }
