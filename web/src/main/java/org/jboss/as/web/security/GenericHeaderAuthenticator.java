@@ -187,7 +187,6 @@ public class GenericHeaderAuthenticator extends ExtendedFormAuthenticator {
      */
     protected String getSessionCookie(Request request) {
         Cookie[] cookies = request.getCookies();
-        log.trace("Cookies:" + cookies);
         int numCookies = cookies != null ? cookies.length : 0;
 
         // We can have comma-separated ids
