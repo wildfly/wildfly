@@ -26,6 +26,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -44,13 +46,19 @@ public class Proxy {
             Property prop = it.next();
             if (prop.getName().equals("host")) {
                 host = prop.getValue().toString();
+                host = ContextHost.RemoveQuotes(host);
+                try {
+                   InetAddress.getByName(host);
+                } catch (UnknownHostException e) {
+                   host = null;
+                }
             }
             if (prop.getName().equals("port")) {
                 port = Integer.parseInt(ContextHost.RemoveQuotes(prop.getValue().toString()));
+                if (port<1 || port>65535)
+                   port = 0;
             }
         }
-        if (host == null || port == 0) { throw new OperationFailedException(new ModelNode().set(MESSAGES.needContextAndHost())); }
-
-        host = ContextHost.RemoveQuotes(host);
+        if (host == null || port == 0) { throw new OperationFailedException(new ModelNode().set(MESSAGES.needHostAndPort())); }
     }
 }
