@@ -34,13 +34,14 @@ public enum Namespace {
     // must be first
     UNKNOWN(0, 0, null),
 
-    MOD_CLUSTER_1_0(1, 0, new ModClusterSubsystemXMLReader_1_0()),
-    MOD_CLUSTER_1_1(1, 1, new ModClusterSubsystemXMLReader_1_1()),
+    MODCLUSTER_1_0(1, 0, new ModClusterSubsystemXMLReader_1_0()),
+    MODCLUSTER_1_1(1, 1, new ModClusterSubsystemXMLReader_1_1()),
+    MODCLUSTER_1_2(1, 2, new ModClusterSubsystemXMLReader_1_2()),
     ;
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = MOD_CLUSTER_1_1;
+    public static final Namespace CURRENT = MODCLUSTER_1_2;
 
     private final int major;
     private final int minor;

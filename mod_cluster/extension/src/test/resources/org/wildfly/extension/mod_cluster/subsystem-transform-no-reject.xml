@@ -22,7 +22,7 @@
   ~ */
   -->
 
-<subsystem xmlns="urn:jboss:domain:modcluster:1.1">
+<subsystem xmlns="urn:jboss:domain:modcluster:1.2">
     <mod-cluster-config advertise="true"
                         advertise-security-key="mysecurekey"
                         advertise-socket="modcluster"
