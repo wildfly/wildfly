@@ -37,7 +37,7 @@ import org.jboss.as.patching.metadata.impl.PatchElementProviderImpl;
  */
 public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implements Builder {
 
-    private String patchId;
+    protected String patchId;
     private String description;
     private Identity identity;
     private PatchType patchType;

@@ -28,7 +28,6 @@ import java.util.List;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentType;
 import org.jboss.as.patching.metadata.MiscContentItem;
-import org.jboss.as.patching.runner.ContentVerificationPolicy;
 
 /**
  * @author Emanuel Muckenhuber

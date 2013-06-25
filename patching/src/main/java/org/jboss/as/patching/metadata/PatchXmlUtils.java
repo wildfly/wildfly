@@ -215,7 +215,7 @@ class PatchXmlUtils implements XMLStreamConstants {
             writer.writeAttribute(Attribute.NAME.name, provider.getName());
 
             // upgrade / no-upgrade
-            if (type == Patch.PatchType.ONE_OFF) {
+            if (elementPatchType == Patch.PatchType.ONE_OFF) {
                 final PatchElementProvider.OneOffPatchTarget oneOffPatch = provider.forType(Patch.PatchType.ONE_OFF, PatchElementProvider.OneOffPatchTarget.class);
                 writer.writeAttribute(Attribute.CUMULATIVE_PATCH_ID.name, oneOffPatch.getCumulativePatchId());
             }

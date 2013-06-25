@@ -39,6 +39,7 @@ import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerImpl;
 import org.jboss.as.patching.installation.InstalledIdentity;
+import org.jboss.as.patching.tool.ContentVerificationPolicy;
 import org.jboss.as.patching.tool.PatchTool;
 import org.jboss.as.version.ProductConfig;
 import org.junit.After;
@@ -66,7 +67,9 @@ public abstract class AbstractTaskTestCase {
 
     @After
     public void tearDown() {
-        IoUtils.recursiveDelete(tempDir);
+        if (IoUtils.recursiveDelete(tempDir)) {
+            tempDir.deleteOnExit();
+        }
     }
 
     public InstalledIdentity loadInstalledIdentity() throws IOException {

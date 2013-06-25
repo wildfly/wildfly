@@ -21,13 +21,13 @@ class IdentityRollbackCallback implements IdentityPatchContext.FinalizeCallback 
 
     private final Patch patch;
     private final Collection<String> patches;
-    private final boolean restoreConfiguration;
+    private final boolean resetConfiguration;
     private final DirectoryStructure directoryStructure;
 
-    public IdentityRollbackCallback(final String patchId, final Collection<String> patches, boolean restoreConfiguration, final DirectoryStructure directoryStructure) {
+    public IdentityRollbackCallback(final String patchId, final Collection<String> patches, boolean resetConfiguration, final DirectoryStructure directoryStructure) {
         this.patches = patches;
         this.directoryStructure = directoryStructure;
-        this.restoreConfiguration = restoreConfiguration;
+        this.resetConfiguration = resetConfiguration;
         // Create an empty patch, we don't do anything with the processedPatch
         final IdentityImpl identity = new IdentityImpl("", "");
         identity.setPatchType(Patch.PatchType.ONE_OFF); // Does not matter
@@ -41,7 +41,7 @@ class IdentityRollbackCallback implements IdentityPatchContext.FinalizeCallback 
 
     @Override
     public void finishPatch(final Patch processedPatch, final RollbackPatch patch, final IdentityPatchContext context) throws Exception {
-        if (restoreConfiguration) {
+        if (resetConfiguration) {
             context.restoreConfiguration(patch.getPatchId());
         }
     }

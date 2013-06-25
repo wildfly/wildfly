@@ -33,7 +33,6 @@ import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerService;
 import org.jboss.as.patching.metadata.MiscContentItem;
-import org.jboss.as.patching.runner.ContentVerificationPolicy;
 import org.jboss.as.patching.runner.PatchToolImpl;
 import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingResult;
@@ -93,11 +92,11 @@ public interface PatchTool {
      * @param patchId the patch id
      * @param contentPolicy the content verification policy
      * @param rollbackTo rollback all one off patches until the given patch-id
-     * @param restoreConfiguration whether to restore the configuration from the backup
+     * @param resetConfiguration whether to reset the configuration from the backup
      * @return the patching result
      * @throws PatchingException
      */
-    PatchingResult rollback(String patchId, ContentVerificationPolicy contentPolicy, boolean rollbackTo, boolean restoreConfiguration) throws PatchingException;
+    PatchingResult rollback(String patchId, ContentVerificationPolicy contentPolicy, boolean rollbackTo, boolean resetConfiguration) throws PatchingException;
 
     public class Factory {
 

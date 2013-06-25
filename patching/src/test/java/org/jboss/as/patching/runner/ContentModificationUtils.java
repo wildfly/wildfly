@@ -53,7 +53,7 @@ import org.jboss.as.patching.metadata.ModuleItem;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
 public class ContentModificationUtils {
-    public static ContentModification addModule(File patchDir, String patchElementID, String moduleName, String... resourceContents) throws Exception {
+    public static ContentModification addModule(File patchDir, String patchElementID, String moduleName, String... resourceContents) throws IOException {
         File modulesDir = newFile(patchDir, patchElementID, MODULES);
         File moduleDir = createModule0(modulesDir, moduleName, resourceContents);
         byte[] newHash = hashFile(moduleDir);
@@ -61,7 +61,7 @@ public class ContentModificationUtils {
         return moduleAdded;
     }
 
-    public static ContentModification addModule(File patchDir, String patchElementID, String moduleName) throws Exception {
+    public static ContentModification addModule(File patchDir, String patchElementID, String moduleName) throws IOException {
         File modulesDir = newFile(patchDir, patchElementID, MODULES);
         File moduleDir = createModule0(modulesDir, moduleName);
         byte[] newHash = hashFile(moduleDir);
@@ -74,16 +74,20 @@ public class ContentModificationUtils {
         return new ContentModification(new ModuleItem(existingModule.getName(), ModuleItem.MAIN_SLOT, NO_CONTENT), existingHash, REMOVE);
     }
 
-    public static ContentModification modifyModule(File patchDir, String patchElementID, File existingModule, String newContent) throws Exception {
-        File modulesDir = newFile(patchDir, patchElementID, MODULES);
-        File modifiedModule = createModule0(modulesDir, existingModule.getName(), newContent);
+    public static ContentModification modifyModule(File patchDir, String patchElementID, File existingModule, String newContent) throws IOException {
         byte[] existingHash = hashFile(existingModule);
+        return modifyModule(patchDir, patchElementID, existingModule.getName(), existingHash, newContent);
+    }
+
+    public static ContentModification modifyModule(File patchDir, String patchElementID, String moduleName, byte[] existingHash, String newContent) throws IOException {
+        File modulesDir = newFile(patchDir, patchElementID, MODULES);
+        File modifiedModule = createModule0(modulesDir, moduleName, newContent);
         byte[] updatedHash = hashFile(modifiedModule);
-        ContentModification moduleUpdated = new ContentModification(new ModuleItem(existingModule.getName(), ModuleItem.MAIN_SLOT, updatedHash), existingHash, MODIFY);
+        ContentModification moduleUpdated = new ContentModification(new ModuleItem(moduleName, ModuleItem.MAIN_SLOT, updatedHash), existingHash, MODIFY);
         return moduleUpdated;
     }
 
-    public static ContentModification addBundle(File patchDir, String patchElementID, String bundleName) throws Exception {
+    public static ContentModification addBundle(File patchDir, String patchElementID, String bundleName) throws IOException {
         File bundlesDir = newFile(patchDir, patchElementID, BUNDLES);
         File bundleDir = createBundle0(bundlesDir, bundleName, randomString());
         byte[] newHash = hashFile(bundleDir);
@@ -96,7 +100,7 @@ public class ContentModificationUtils {
         return new ContentModification(new BundleItem(existingBundle.getName(), null, NO_CONTENT), existingHash, REMOVE);
     }
 
-    public static ContentModification modifyBundle(File patchDir, String patchElementID, File existingBundle, String newContent) throws Exception {
+    public static ContentModification modifyBundle(File patchDir, String patchElementID, File existingBundle, String newContent) throws IOException {
         File bundlesDir = newFile(patchDir, patchElementID, BUNDLES);
         File modifiedBundle = createBundle0(bundlesDir, existingBundle.getName(), newContent);
         byte[] existingHash = hashFile(existingBundle);
@@ -105,7 +109,7 @@ public class ContentModificationUtils {
         return moduleUpdated;
     }
 
-    public static ContentModification addMisc(File patchDir, String patchElementID, String content, String... fileSegments) throws Exception {
+    public static ContentModification addMisc(File patchDir, String patchElementID, String content, String... fileSegments) throws IOException {
         File miscDir = newFile(patchDir, patchElementID, MISC);
         File addedFile = touch(miscDir, fileSegments);
         dump(addedFile, content);
@@ -127,18 +131,22 @@ public class ContentModificationUtils {
         return fileRemoved;
     }
 
-    public static ContentModification modifyMisc(File patchDir, String patchElementID, String modifiedContent, File existingFile, String... fileSegments) throws Exception {
+    public static ContentModification modifyMisc(File patchDir, String patchElementID, String modifiedContent, File existingFile, String... fileSegments) throws IOException {
+        byte[] existingHash = hashFile(existingFile);
+        return modifyMisc(patchDir, patchElementID, modifiedContent, existingHash, fileSegments);
+    }
+
+    public static ContentModification modifyMisc(File patchDir, String patchElementID, String modifiedContent, byte[] existingHash, String... fileSegments) throws IOException {
         File miscDir = newFile(patchDir, patchElementID, MISC);
         File modifiedFile = touch(miscDir, fileSegments);
         dump(modifiedFile, modifiedContent);
-        byte[] existingHash = hashFile(existingFile);
         byte[] modifiedHash = hashFile(modifiedFile);
         String[] subdir = new String[0];
         if (fileSegments.length > 0) {
             subdir = new String[fileSegments.length -1];
             System.arraycopy(fileSegments, 0, subdir, 0, fileSegments.length - 1);
         }
-        ContentModification fileUpdated = new ContentModification(new MiscContentItem(existingFile.getName(), subdir, modifiedHash), existingHash, MODIFY);
+        ContentModification fileUpdated = new ContentModification(new MiscContentItem(modifiedFile.getName(), subdir, modifiedHash), existingHash, MODIFY);
         return fileUpdated;
     }
 }

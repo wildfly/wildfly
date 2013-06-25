@@ -39,6 +39,7 @@ import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.patching.metadata.RollbackPatch;
 import org.jboss.as.patching.metadata.impl.IdentityImpl;
 import org.jboss.as.patching.metadata.impl.PatchElementImpl;
+import org.jboss.as.patching.tool.ContentVerificationPolicy;
 
 /**
  * @author Emanuel Muckenhuber
@@ -512,7 +513,7 @@ class IdentityPatchContext implements PatchContentProvider {
         @Override
         public File getBackupFile(MiscContentItem item) {
             if (state == State.NEW) {
-                return IdentityPatchContext.this.getTargetFile(miscBackup, item);
+                return IdentityPatchContext.getTargetFile(miscBackup, item);
             } else if (state == State.ROLLBACK_ONLY) {
                 return null;
             } else {
@@ -527,6 +528,10 @@ class IdentityPatchContext implements PatchContentProvider {
 
         @Override
         public void recordChange(final ContentModification change, final ContentModification rollbackAction) {
+            if (state == State.ROLLBACK_ONLY) {
+                // don't record undo tasks
+                return;
+            }
             // Only misc remove is null, but we replace it with the
             if (change != null) {
                 modifications.add(change);

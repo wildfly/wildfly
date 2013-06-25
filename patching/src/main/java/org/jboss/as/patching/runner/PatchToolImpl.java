@@ -38,10 +38,10 @@ import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.ZipUtils;
 import org.jboss.as.patching.installation.Identity;
 import org.jboss.as.patching.installation.InstallationManager;
-import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
+import org.jboss.as.patching.tool.ContentVerificationPolicy;
 import org.jboss.as.patching.tool.PatchTool;
 
 /**
@@ -51,14 +51,20 @@ import org.jboss.as.patching.tool.PatchTool;
  */
 public class PatchToolImpl implements PatchTool {
 
-    private final InstalledImage image;
     private final InstallationManager manager;
+    private final InstallationManager.ModificationCompletion callback;
     private final IdentityPatchRunner runner;
 
     public PatchToolImpl(final InstallationManager manager) {
         this.manager = manager;
-        this.image = manager.getInstalledImage();
-        this.runner = new IdentityPatchRunner(image);
+        this.runner = new IdentityPatchRunner(manager.getInstalledImage());
+        this.callback = runner;
+    }
+
+    public PatchToolImpl(final InstallationManager manager, final InstallationManager.ModificationCompletion callback) {
+        this.manager = manager;
+        this.runner = new IdentityPatchRunner(manager.getInstalledImage());
+        this.callback = callback;
     }
 
     @Override
@@ -161,11 +167,11 @@ public class PatchToolImpl implements PatchTool {
 
     @Override
     public PatchingResult rollback(final String patchId, final ContentVerificationPolicy contentPolicy,
-                                   final boolean rollbackTo, final boolean restoreConfiguration) throws PatchingException {
+                                   final boolean rollbackTo, final boolean resetConfiguration) throws PatchingException {
         // Rollback the patch
         final InstallationManager.InstallationModification modification = manager.modifyInstallation(runner);
         try {
-            return runner.rollbackPatch(patchId, contentPolicy, rollbackTo, restoreConfiguration, modification);
+            return runner.rollbackPatch(patchId, contentPolicy, rollbackTo, resetConfiguration, modification);
         } catch (Exception e) {
             modification.cancel();
             throw rethrowException(e);
@@ -186,7 +192,7 @@ public class PatchToolImpl implements PatchTool {
             safeClose(patchIS);
         }
         // Apply the patch
-        final InstallationManager.InstallationModification modification = manager.modifyInstallation(runner);
+        final InstallationManager.InstallationModification modification = manager.modifyInstallation(callback);
         try {
             return runner.applyPatch(patch, contentProvider, contentPolicy, modification);
         } catch (Exception e) {

@@ -124,7 +124,7 @@ public class PatchElementProviderImpl implements PatchElementProvider, PatchElem
     @Override
     public <T extends PatchElementProvider> T forType(Patch.PatchType patchType, Class<T> clazz) {
         if (patchType != this.patchType) {
-            throw new IllegalStateException();
+            throw new IllegalStateException(this.patchType + " was: " + patchType);
         }
         if (patchType == Patch.PatchType.ONE_OFF) {
             if (cumulativeTarget == null) {

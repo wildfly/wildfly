@@ -27,6 +27,7 @@ import static java.util.Arrays.asList;
 import static junit.framework.Assert.assertEquals;
 import static org.jboss.as.patching.HashUtils.bytesToHexString;
 import static org.jboss.as.patching.HashUtils.hashFile;
+import static org.jboss.as.patching.metadata.Patch.PatchType.CUMULATIVE;
 import static org.jboss.as.patching.metadata.Patch.PatchType.UPGRADE;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -209,7 +210,11 @@ public class PatchingAssert {
     public static void assertPatchHasBeenApplied(PatchingResult result, Patch patch) {
         if (UPGRADE == patch.getIdentity().getPatchType()) {
             assertEquals(patch.getPatchId(), result.getPatchInfo().getReleasePatchID());
+            assertTrue(result.getPatchInfo().getPatchIDs().isEmpty());
             assertEquals(patch.getIdentity().forType(UPGRADE, org.jboss.as.patching.metadata.Identity.IdentityUpgrade.class).getResultingVersion(), result.getPatchInfo().getVersion());
+        } else if (CUMULATIVE == patch.getIdentity().getPatchType()) {
+            assertEquals(patch.getPatchId(), result.getPatchInfo().getCumulativePatchID());
+            assertTrue(result.getPatchInfo().getPatchIDs().isEmpty());
         } else {
             assertTrue(result.getPatchInfo().getPatchIDs().contains(patch.getPatchId()));
             // applied one-off patch is at the top of the patchIDs
