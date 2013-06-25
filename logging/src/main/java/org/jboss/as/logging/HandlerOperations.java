@@ -626,12 +626,17 @@ final class HandlerOperations {
             result = (resolvedValue == null ? currentValue == null : resolvedValue.equals(currentValue));
         } else if (attribute.getName().equals(FORMATTER.getName())) {
             final String formatterName = configuration.getName();
-            final FormatterConfiguration fmtConfig;
-            if (logContextConfiguration.getFormatterNames().contains(formatterName)) {
-                fmtConfig = logContextConfiguration.getFormatterConfiguration(formatterName);
-                final String resolvedValue = FORMATTER.resolvePropertyValue(context, model);
-                final String currentValue = fmtConfig.getPropertyValueString("pattern");
-                result = (resolvedValue == null ? currentValue == null : resolvedValue.equals(currentValue));
+            // Only check the pattern if the name matches the currently configured name
+            if (formatterName.equals(configuration.getFormatterNameValueExpression().getResolvedValue())) {
+                final FormatterConfiguration fmtConfig;
+                if (logContextConfiguration.getFormatterNames().contains(formatterName)) {
+                    fmtConfig = logContextConfiguration.getFormatterConfiguration(formatterName);
+                    final String resolvedValue = FORMATTER.resolvePropertyValue(context, model);
+                    final String currentValue = fmtConfig.getPropertyValueString("pattern");
+                    result = (resolvedValue == null ? currentValue == null : resolvedValue.equals(currentValue));
+                } else {
+                    result = false;
+                }
             } else {
                 result = false;
             }
