@@ -47,7 +47,7 @@
     </subsystem>
     <supplement name="ha">
         <replacement placeholder="AJP">
-            <ajp-listener name="ajp-connector" socket-binding="ajp"/>
+            <ajp-listener name="ajp" socket-binding="ajp"/>
         </replacement>
     </supplement>
     <socket-binding name="http" port="${jboss.http.port:8080}"/>
