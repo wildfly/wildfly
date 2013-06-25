@@ -32,7 +32,7 @@ import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerService;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentType;
-import org.jboss.as.patching.runner.ContentVerificationPolicy;
+import org.jboss.as.patching.tool.ContentVerificationPolicy;
 import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.as.patching.tool.PatchTool;
