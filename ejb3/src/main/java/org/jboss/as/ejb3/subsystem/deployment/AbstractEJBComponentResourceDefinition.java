@@ -39,6 +39,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.invocationmetrics.InvocationMetrics;
+import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -95,6 +96,21 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .setStorageRuntime()
             .build();
 
+    private static final AttributeDefinition CACHE_SIZE = new SimpleAttributeDefinitionBuilder("cache-size", ModelType.LONG)
+            .setAllowNull(false)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .build();
+
+    private static final AttributeDefinition PASSIVATED_SIZE = new SimpleAttributeDefinitionBuilder("passivated-count",
+            ModelType.LONG).setAllowNull(false)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .build();
+
+    private static final AttributeDefinition TOTAL_SIZE = new SimpleAttributeDefinitionBuilder("total-size", ModelType.LONG)
+            .setAllowNull(false)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .build();
+
     // Pool attributes
 
     public static final SimpleAttributeDefinition POOL_AVAILABLE_COUNT = new SimpleAttributeDefinitionBuilder("pool-available-count", ModelType.INT, false)
@@ -138,6 +154,28 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             resourceRegistration.registerReadOnlyAttribute(POOL_CURRENT_SIZE, handler);
             resourceRegistration.registerReadWriteAttribute(POOL_MAX_SIZE, handler, handler);
         }
+
+        if (componentType.equals(EJBComponentType.STATEFUL)) {
+            resourceRegistration.registerMetric(CACHE_SIZE, new AbstractRuntimeMetricsHandler() {
+                @Override
+                protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
+                    context.getResult().set(((StatefulSessionComponent)component).getCache().getCacheSize());
+                }
+            });
+            resourceRegistration.registerMetric(PASSIVATED_SIZE, new AbstractRuntimeMetricsHandler() {
+                @Override
+                protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
+                    context.getResult().set(((StatefulSessionComponent)component).getCache().getPassivatedCount());
+                }
+            });
+            resourceRegistration.registerMetric(TOTAL_SIZE, new AbstractRuntimeMetricsHandler() {
+                @Override
+                protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
+                    context.getResult().set(((StatefulSessionComponent)component).getCache().getTotalSize());
+                }
+            });
+        }
+
         resourceRegistration.registerMetric(EXECUTION_TIME, new AbstractRuntimeMetricsHandler() {
             @Override
             protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {

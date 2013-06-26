@@ -212,4 +212,19 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
             }
         }
     }
+
+    @Override
+    public int getCacheSize() {
+        return this.cache.size();
+    }
+
+    @Override
+    public int getPassivatedCount() {
+        return 0;
+    }
+
+    @Override
+    public int getTotalSize() {
+        return this.cache.size();
+    }
 }

@@ -220,4 +220,14 @@ public class SimpleBackingCacheEntryStore<K extends Serializable, V extends Cach
             this.timestamp = timestamp;
         }
     }
+
+    @Override
+    public int getStoreSize() {
+        return this.cache.size();
+    }
+
+    @Override
+    public int getPassivatedCount() {
+        return this.store.getStoreSize();
+    }
 }

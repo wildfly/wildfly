@@ -32,6 +32,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
@@ -61,6 +62,7 @@ public class FilePersistentObjectStore<K extends Serializable, V extends Cacheab
     private final int subdirectoryCount;
     private final File baseDirectory;
     private File[] storageDirectories;
+    private final AtomicInteger counter = new AtomicInteger(0);
 
     private static class DeleteFileAction implements PrivilegedAction<Boolean> {
         File file;
@@ -191,6 +193,7 @@ public class FilePersistentObjectStore<K extends Serializable, V extends Cacheab
                 try {
                     V value = (V) unmarshaller.readObject();
                     unmarshaller.finish();
+                    counter.decrementAndGet();
                     return value;
                 } finally {
                     unmarshaller.close();
@@ -269,6 +272,7 @@ public class FilePersistentObjectStore<K extends Serializable, V extends Cacheab
                 try {
                     marshaller.writeObject(obj);
                     marshaller.finish();
+                    counter.incrementAndGet();
                 } finally {
                     marshaller.close();
                 }
@@ -288,5 +292,10 @@ public class FilePersistentObjectStore<K extends Serializable, V extends Cacheab
                 //
             }
         }
+    }
+
+    @Override
+    public int getStoreSize() {
+        return counter.get();
     }
 }

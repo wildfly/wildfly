@@ -341,4 +341,15 @@ public class SerializationGroupMemberContainer<K extends Serializable, V extends
     public boolean isCompatibleWith(GroupCompatibilityChecker other) {
         return store.isCompatibleWith(other);
     }
+
+    @Override
+    public int getStoreSize() {
+        return store.getStoreSize();
+    }
+
+    @Override
+    public int getPassivatedCount() {
+        return store.getPassivatedCount();
+    }
+
 }

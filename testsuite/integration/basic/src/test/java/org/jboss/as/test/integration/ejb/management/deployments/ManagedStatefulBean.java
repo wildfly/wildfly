@@ -26,6 +26,7 @@ import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
 import javax.ejb.Stateful;
 
+import org.jboss.ejb3.annotation.Cache;
 import org.jboss.ejb3.annotation.SecurityDomain;
 
 /**
@@ -37,5 +38,6 @@ import org.jboss.ejb3.annotation.SecurityDomain;
 @SecurityDomain("other")
 @DeclareRoles(value = {"Role1", "Role2", "Role3"})
 @RunAs("Role3")
+@Cache("passivating")
 public class ManagedStatefulBean extends AbstractManagedBean implements BusinessInterface {
 }
