@@ -616,6 +616,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 }
             }
 
+            d.setDenyUncoveredHttpMethods(mergedMetaData.getDenyUncoveredHttpMethods() != null);
             Set<String> securityRoleNames = mergedMetaData.getSecurityRoleNames();
             if (mergedMetaData.getSecurityConstraints() != null) {
                 for (SecurityConstraintMetaData constraint : mergedMetaData.getSecurityConstraints()) {
