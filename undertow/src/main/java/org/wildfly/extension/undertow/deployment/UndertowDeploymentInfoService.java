@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow.deployment;
 
+import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.AUTHENTICATE;
@@ -112,6 +113,7 @@ import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.metadata.web.spec.LocaleEncodingMetaData;
 import org.jboss.metadata.web.spec.LoginConfigMetaData;
 import org.jboss.metadata.web.spec.MimeMappingMetaData;
+import org.jboss.metadata.web.spec.MultipartConfigMetaData;
 import org.jboss.metadata.web.spec.SecurityConstraintMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.metadata.web.spec.SessionConfigMetaData;
@@ -505,6 +507,11 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                         for (final SecurityRoleRefMetaData ref : servlet.getSecurityRoleRefs()) {
                             s.addSecurityRoleRef(ref.getRoleName(), ref.getRoleLink());
                         }
+                    }
+
+                    if(servlet.getMultipartConfig() != null) {
+                        MultipartConfigMetaData mp = servlet.getMultipartConfig();
+                        s.setMultipartConfig(Servlets.multipartConfig(mp.getLocation(), mp.getMaxFileSize(), mp.getMaxRequestSize(), mp.getFileSizeThreshold()));
                     }
 
                     d.addServlet(s);
