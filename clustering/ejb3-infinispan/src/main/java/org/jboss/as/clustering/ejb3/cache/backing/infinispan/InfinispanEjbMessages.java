@@ -52,4 +52,7 @@ public interface InfinispanEjbMessages {
 
     @Message(id = 10363, value = "Interrupted while acquiring ownership of %s")
     RuntimeException lockAcquisitionInterruption(@Cause Throwable cause, Object key);
+
+    @Message(id = 10364, value = "Failed to load infinispan cache store")
+    RuntimeException CacheLoaderFailure(@Cause Throwable cause);
 }

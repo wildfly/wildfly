@@ -110,4 +110,8 @@ public interface BackingCacheEntryStore<K extends Serializable, V extends Cachea
     BackingCacheEntryStoreConfig getConfig();
 
     StatefulTimeoutInfo getTimeout();
+
+    int getStoreSize();
+
+    int getPassivatedCount();
 }

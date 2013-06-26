@@ -128,4 +128,10 @@ public interface BackingCache<K extends Serializable, V extends Cacheable<K>, E 
      * @param listener the listener. Cannot be <code>null</code>.
      */
     void removeLifecycleListener(BackingCacheLifecycleListener listener);
+
+    int getCacheSize();
+
+    int getPassivatedCount();
+
+    int getTotalSize();
 }

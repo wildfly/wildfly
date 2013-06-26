@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.ejb.management.deployments;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -32,6 +33,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -63,6 +65,7 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup(EjbInvocationStatisticsTestCaseSetup.class)
 public class EjbInvocationStatisticsTestCase {
     @ContainerResource
     private ManagementClient managementClient;
@@ -146,11 +149,18 @@ public class EjbInvocationStatisticsTestCase {
             assertEquals(0L, result.get("peak-concurrent-invocations").asLong());
             assertEquals(0L, result.get("wait-time").asLong());
             assertEquals(0L, result.get("methods").asInt());
+
+            if (type.equals(EJBComponentType.STATEFUL)) {
+                assertEquals(0L, result.get("cache-size").asLong());
+                assertEquals(0L, result.get("passivated-count").asLong());
+                assertEquals(0L, result.get("total-size").asLong());
+            }
         }
         final BusinessInterface bean = (BusinessInterface) context.lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + BusinessInterface.class.getName() + (type == EJBComponentType.STATEFUL ? "?stateful" : ""));
         bean.doIt();
         {
-            final ModelNode result = executeOperation(managementClient, ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
+            ModelNode result = executeOperation(managementClient, ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
+
             assertTrue(result.get("execution-time").asLong() >= 50L);
             assertEquals(1L, result.get("invocations").asLong());
             assertEquals(1L, result.get("peak-concurrent-invocations").asLong());
@@ -162,7 +172,36 @@ public class EjbInvocationStatisticsTestCase {
             assertTrue(invocationValues.get("execution-time").asLong() >= 50L);
             assertEquals(1L, invocationValues.get("invocations").asLong());
             assertTrue(invocationValues.get("wait-time").asLong() >= 0L);
-        }        
+
+            if (type.equals(EJBComponentType.STATEFUL)) {
+                assertEquals(1L, result.get("cache-size").asLong());
+                assertEquals(0L, result.get("passivated-count").asLong());
+                assertEquals(1L, result.get("total-size").asLong());
+
+                // wait a few seconds to let passivation happens, idle-timeout=2
+                TimeUnit.SECONDS.sleep(4);
+                result = executeOperation(managementClient, ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
+                assertEquals(0L, result.get("cache-size").asLong());
+                assertEquals(1L, result.get("passivated-count").asLong());
+                assertEquals(1L, result.get("total-size").asLong());
+
+                BusinessInterface bean2 = (BusinessInterface) context.lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + BusinessInterface.class.getName() + (type == EJBComponentType.STATEFUL ? "?stateful" : ""));
+                bean2.doIt();
+
+                result = executeOperation(managementClient, ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
+                assertEquals(1L, result.get("cache-size").asLong());
+                assertEquals(1L, result.get("passivated-count").asLong());
+                assertEquals(2L, result.get("total-size").asLong());
+
+                // remove bean from container
+                bean.remove();
+                bean2.remove();
+                result = executeOperation(managementClient, ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
+                assertEquals(0L, result.get("cache-size").asLong());
+                assertEquals(0L, result.get("passivated-count").asLong());
+                assertEquals(0L, result.get("total-size").asLong());
+            }
+        }
     }
 
     private static ModelNode undefineAttribute(final ManagementClient managementClient, final ModelNode address, final String attributeName) throws IOException {

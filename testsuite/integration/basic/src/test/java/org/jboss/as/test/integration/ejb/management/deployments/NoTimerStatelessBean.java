@@ -41,6 +41,11 @@ public class NoTimerStatelessBean implements BusinessInterface {
 
     @Override
     public void doIt() {
-        //no-op;
+        // no-op;
+    }
+
+    @Override
+    public void remove() {
+        // no-op;
     }
 }
