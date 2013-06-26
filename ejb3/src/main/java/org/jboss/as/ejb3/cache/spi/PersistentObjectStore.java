@@ -54,4 +54,6 @@ public interface PersistentObjectStore<K, V extends Identifiable<K>> {
      * Perform any shutdown work.
      */
     void stop();
+
+    int getStoreSize();
 }

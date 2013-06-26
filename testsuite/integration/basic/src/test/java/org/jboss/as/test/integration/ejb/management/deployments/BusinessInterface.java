@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.ejb.management.deployments;
 
 import javax.ejb.Remote;
+import javax.ejb.Remove;
 
 /**
  * Dummy interface for session beans in this class.
@@ -33,4 +34,7 @@ import javax.ejb.Remote;
 public interface BusinessInterface {
 
     void doIt();
+
+    void remove();
+
 }

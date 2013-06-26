@@ -354,4 +354,19 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
             log.tracef(pattern, args);
         }
     }
+
+    @Override
+    public int getCacheSize() {
+        return this.store.getStoreSize();
+    }
+
+    @Override
+    public int getPassivatedCount() {
+         return this.store.getPassivatedCount();
+    }
+
+    @Override
+    public int getTotalSize() {
+         return this.getCacheSize() + this.getPassivatedCount();
+    }
 }

@@ -36,6 +36,8 @@ import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DataLocality;
 import org.infinispan.distribution.DistributionManager;
+import org.infinispan.loaders.CacheLoaderException;
+import org.infinispan.loaders.CacheLoaderManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
@@ -340,4 +342,20 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
             this.log.tracef(message, args);
         }
     }
+
+    @Override
+    public int getStoreSize() {
+        return this.cache.size();
+    }
+
+    @Override
+    public int getPassivatedCount() {
+        try {
+            return this.cache.getAdvancedCache().getComponentRegistry().getComponent(CacheLoaderManager.class).getCacheStore()
+                    .loadAll().size();
+        } catch (CacheLoaderException e) {
+            throw InfinispanEjbMessages.MESSAGES.CacheLoaderFailure(e);
+        }
+    }
+
 }

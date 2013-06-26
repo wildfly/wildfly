@@ -77,4 +77,10 @@ public interface Cache<K extends Serializable, V extends Identifiable<K>> extend
      * Stop the cache.
      */
     void stop();
+
+    int getCacheSize();
+
+    int getPassivatedCount();
+
+    int getTotalSize();
 }

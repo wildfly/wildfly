@@ -132,4 +132,19 @@ public abstract class AbstractCache<K extends Serializable, V extends Cacheable<
     public boolean hasAffinity(K key) {
         return this.backingCache.hasAffinity(key);
     }
+
+    @Override
+    public int getCacheSize() {
+        return this.backingCache.getCacheSize();
+    }
+
+    @Override
+    public int getPassivatedCount() {
+        return this.backingCache.getPassivatedCount();
+    }
+
+    @Override
+    public int getTotalSize() {
+        return this.backingCache.getTotalSize();
+    }
 }
