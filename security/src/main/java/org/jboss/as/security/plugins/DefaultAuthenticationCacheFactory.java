@@ -26,7 +26,7 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentMap;
 
-import org.infinispan.util.AnyEquivalence;
+import org.infinispan.commons.equivalence.AnyEquivalence;
 import org.infinispan.util.concurrent.BoundedConcurrentHashMap;
 import org.infinispan.util.concurrent.BoundedConcurrentHashMap.Eviction;
 import org.jboss.security.authentication.JBossCachedAuthenticationManager.DomainInfo;
