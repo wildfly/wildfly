@@ -45,7 +45,7 @@ public final class AbstractResolverService extends AbstractService<XResolver> {
 
     public static ServiceController<?> addService(final ServiceTarget target) {
         AbstractResolverService service = new AbstractResolverService();
-        ServiceBuilder<?> builder = target.addService(OSGiConstants.ABSTRACT_RESOLVER_SERVICE_NAME, service);
+        ServiceBuilder<?> builder = target.addService(OSGiConstants.RESOLVER_SERVICE_NAME, service);
         return builder.install();
     }
 

@@ -41,7 +41,7 @@ public final class AbstractResolverIntegration extends AbstractResolverPlugin {
 
     @Override
     protected void addServiceDependencies(ServiceBuilder<XResolver> builder) {
-        builder.addDependency(OSGiConstants.ABSTRACT_RESOLVER_SERVICE_NAME, XResolver.class, injectedResolver);
+        builder.addDependency(OSGiConstants.RESOLVER_SERVICE_NAME, XResolver.class, injectedResolver);
         builder.setInitialMode(Mode.ON_DEMAND);
     }
 

@@ -25,16 +25,10 @@ package org.jboss.as.osgi.service;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper.ServerDeploymentException;
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
@@ -45,12 +39,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.provision.AbstractResourceProvisioner;
-import org.jboss.osgi.provision.ProvisionException;
 import org.jboss.osgi.provision.XResourceProvisioner;
 import org.jboss.osgi.repository.XPersistentRepository;
 import org.jboss.osgi.resolver.XResolver;
-import org.jboss.osgi.resolver.XResource;
-import org.osgi.service.repository.RepositoryContent;
 
 /**
  * The standalone {@link Provisioner} service.
@@ -70,8 +61,8 @@ public final class ResourceProvisionerService extends AbstractService<XResourceP
         ResourceProvisionerService service = new ResourceProvisionerService();
         ServiceBuilder<?> builder = target.addService(OSGiConstants.PROVISIONER_SERVICE_NAME, service);
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, service.injectedController);
-        builder.addDependency(RepositoryService.SERVICE_NAME, XPersistentRepository.class, service.injectedRepository);
-        builder.addDependency(OSGiConstants.ABSTRACT_RESOLVER_SERVICE_NAME, XResolver.class, service.injectedResolver);
+        builder.addDependency(OSGiConstants.REPOSITORY_SERVICE_NAME, XPersistentRepository.class, service.injectedRepository);
+        builder.addDependency(OSGiConstants.RESOLVER_SERVICE_NAME, XResolver.class, service.injectedResolver);
         return builder.install();
     }
 
@@ -85,25 +76,7 @@ public final class ResourceProvisionerService extends AbstractService<XResourceP
 
         final XResolver resolver = injectedResolver.getValue();
         final XPersistentRepository repository = injectedRepository.getValue();
-        final ServerDeploymentHelper serverDeployer = new ServerDeploymentHelper(modelControllerClient);
-        provisioner = new AbstractResourceProvisioner(resolver, repository, XResource.TYPE_BUNDLE) {
-            @Override
-            @SuppressWarnings("unchecked")
-            public <T> List<T> installResources(List<XResource> resources, Class<T> type) throws ProvisionException {
-                List<T> result = new ArrayList<T>();
-                for (XResource res : resources) {
-                    String name = res.getIdentityCapability().getName();
-                    InputStream input = ((RepositoryContent) res).getContent();
-                    try {
-                        String runtimeName = serverDeployer.deploy(name, input);
-                        result.add((T)runtimeName);
-                    } catch (ServerDeploymentException ex) {
-                       throw new ProvisionException(ex);
-                    }
-                }
-                return Collections.unmodifiableList(result);
-            }
-        };
+        provisioner = new AbstractResourceProvisioner(resolver, repository);
     }
 
     @Override

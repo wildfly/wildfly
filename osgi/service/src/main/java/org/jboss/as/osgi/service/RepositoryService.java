@@ -34,7 +34,6 @@ import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -45,10 +44,9 @@ import org.jboss.osgi.repository.RepositoryStorageFactory;
 import org.jboss.osgi.repository.XPersistentRepository;
 import org.jboss.osgi.repository.XRepository;
 import org.jboss.osgi.repository.spi.AbstractPersistentRepository;
-import org.jboss.osgi.repository.spi.AggregatingRepository;
 import org.jboss.osgi.repository.spi.FileBasedRepositoryStorage;
-import org.jboss.osgi.repository.spi.MavenDelegateRepository;
-import org.jboss.osgi.repository.spi.MavenDelegateRepository.ConfigurationPropertyProvider;
+import org.jboss.osgi.repository.spi.MavenIdentityRepository;
+import org.jboss.osgi.repository.spi.MavenIdentityRepository.ConfigurationPropertyProvider;
 
 /**
  * The standalone {@link XRepository} service.
@@ -56,9 +54,7 @@ import org.jboss.osgi.repository.spi.MavenDelegateRepository.ConfigurationProper
  * @author Thomas.Diesler@jboss.com
  * @since 31-Aug-2012
  */
-public final class RepositoryService extends AbstractService<XPersistentRepository> {
-
-    public static final ServiceName SERVICE_NAME = OSGiConstants.SERVICE_BASE_NAME.append("XRepository");
+public final class RepositoryService extends AbstractService<XRepository> {
 
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
@@ -66,7 +62,7 @@ public final class RepositoryService extends AbstractService<XPersistentReposito
 
     public static ServiceController<?> addService(final ServiceTarget target) {
         RepositoryService service = new RepositoryService();
-        ServiceBuilder<?> builder = target.addService(SERVICE_NAME, service);
+        ServiceBuilder<?> builder = target.addService(OSGiConstants.REPOSITORY_SERVICE_NAME, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
         builder.addDependency(OSGiConstants.SUBSYSTEM_STATE_SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
         return builder.install();
@@ -98,10 +94,9 @@ public final class RepositoryService extends AbstractService<XPersistentReposito
             }
         };
 
-        AggregatingRepository aggregator = new AggregatingRepository();
-        aggregator.addRepository(new ModuleIdentityRepository(serverenv));
-        aggregator.addRepository(new MavenDelegateRepository(propProvider));
-        repository = new AbstractPersistentRepository(factory, aggregator);
+        repository = new AbstractPersistentRepository(factory);
+        repository.addRepositoryDelegate(new ModuleIdentityRepositoryIntegration(serverenv));
+        repository.addRepositoryDelegate(new MavenIdentityRepository(propProvider));
     }
 
     private File getRepositoryStorageDir(ConfigurationPropertyProvider propProvider, ServerEnvironment serverenv) {

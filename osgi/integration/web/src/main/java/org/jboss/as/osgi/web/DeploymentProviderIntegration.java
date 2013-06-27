@@ -21,9 +21,6 @@
  */
 package org.jboss.as.osgi.web;
 
-import static org.jboss.osgi.framework.spi.IntegrationConstants.MANIFEST_KEY;
-import static org.jboss.osgi.framework.spi.IntegrationConstants.OSGI_METADATA_KEY;
-
 import java.util.jar.Manifest;
 
 import org.jboss.msc.service.StartContext;
@@ -32,6 +29,7 @@ import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
 import org.jboss.osgi.framework.spi.DeploymentProvider;
 import org.jboss.osgi.framework.spi.DeploymentProviderPlugin;
+import org.jboss.osgi.framework.spi.IntegrationConstants;
 import org.jboss.osgi.framework.spi.StorageState;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
@@ -81,8 +79,8 @@ public class DeploymentProviderIntegration extends DeploymentProviderPlugin {
             String symbolicName = metadata.getBundleSymbolicName();
 
             Deployment dep = DeploymentFactory.createDeployment(rootFile, location, symbolicName, null);
-            dep.putAttachment(MANIFEST_KEY, manifest);
-            dep.putAttachment(OSGI_METADATA_KEY, metadata);
+            dep.putAttachment(IntegrationConstants.MANIFEST_KEY, manifest);
+            dep.putAttachment(IntegrationConstants.OSGI_METADATA_KEY, metadata);
 
             return dep;
         }

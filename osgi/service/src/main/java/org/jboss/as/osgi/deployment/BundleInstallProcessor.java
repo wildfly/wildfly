@@ -79,7 +79,7 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
             if (deploymentTracker.hasDeploymentName(depUnit.getName())) {
                 restoreStorageState(phaseContext, deployment);
             }
-            XBundleRevision brev = bundleManager.createBundleRevision(syscontext, deployment, phaseContext.getServiceTarget());
+            XBundleRevision brev = bundleManager.installBundleRevision(syscontext, deployment, phaseContext.getServiceTarget());
             depUnit.putAttachment(OSGiConstants.BUNDLE_REVISION_KEY, brev);
             depUnit.putAttachment(BUNDLE_STATE_KEY, BundleState.INSTALLED);
         } catch (BundleException ex) {

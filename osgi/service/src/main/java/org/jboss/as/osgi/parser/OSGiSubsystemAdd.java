@@ -59,6 +59,7 @@ import org.jboss.as.osgi.service.FrameworkBootstrapService;
 import org.jboss.as.osgi.service.InitialDeploymentTracker;
 import org.jboss.as.osgi.service.ModuleRegistrationTracker;
 import org.jboss.as.osgi.service.RepositoryService;
+import org.jboss.as.osgi.service.ResourceInstallerService;
 import org.jboss.as.osgi.service.ResourceProvisionerService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -125,6 +126,7 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 newControllers.add(EnvironmentService.addService(serviceTarget));
                 newControllers.add(RepositoryService.addService(serviceTarget));
                 newControllers.add(ResourceProvisionerService.addService(serviceTarget));
+                newControllers.add(ResourceInstallerService.addService(serviceTarget));
 
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
