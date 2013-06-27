@@ -83,9 +83,9 @@ class TestControllerClient extends AbstractModelControllerClient {
         @Override
         public void close() throws IOException {
             try {
-                connectionManager.shutdown();
-            } finally {
                 super.close();
+            } finally {
+                connectionManager.shutdown();
             }
         }
     }

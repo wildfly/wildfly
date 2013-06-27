@@ -43,12 +43,19 @@ public abstract class FutureManagementChannel extends ManagementClientChannelStr
 
     private final Object lock = new Object();
     private volatile Channel channel;
-    private volatile boolean closed;
+    private volatile State state = State.OPEN;
+
+    static enum State {
+        OPEN,
+        CLOSING,
+        CLOSED,
+        ;
+    }
 
     @Override
     public Channel getChannel() throws IOException {
         final Channel channel = this.channel;
-        if(channel == null && closed) {
+        if(channel == null && state != State.OPEN) {
             throw ProtocolMessages.MESSAGES.channelClosed();
         }
         return channel;
@@ -57,10 +64,10 @@ public abstract class FutureManagementChannel extends ManagementClientChannelStr
     @Override
     public void close() throws IOException {
         synchronized (lock) {
-            if(closed) {
+            if(state == State.CLOSED) {
                 return;
             }
-            closed = true;
+            state = State.CLOSED;
             StreamUtils.safeClose(channel);
             lock.notifyAll();
         }
@@ -72,7 +79,7 @@ public abstract class FutureManagementChannel extends ManagementClientChannelStr
      * @return {@code true} if the connection is open, {@code false} otherwise
      */
     protected boolean isConnected() {
-        return channel != null && !closed;
+        return channel != null && state != State.CLOSED;
     }
 
     /**
@@ -88,12 +95,15 @@ public abstract class FutureManagementChannel extends ManagementClientChannelStr
         }
         synchronized (lock) {
             for(;;) {
-                if(closed) {
+                if(state == State.CLOSED) {
                     throw ProtocolMessages.MESSAGES.channelClosed();
                 }
                 channel = this.channel;
                 if(channel != null) {
                     return channel;
+                }
+                if(state == State.CLOSING) {
+                    throw ProtocolMessages.MESSAGES.channelClosed();
                 }
                 try {
                     lock.wait();
@@ -102,6 +112,24 @@ public abstract class FutureManagementChannel extends ManagementClientChannelStr
                 }
             }
         }
+    }
+
+    /**
+     * Signal that we are about to close the channel. This will not have any affect on the underlying channel, however
+     * prevent setting a new channel.
+     *
+     * @return whether the closing state was set successfully
+     */
+    protected boolean prepareClose() {
+        synchronized (lock) {
+            final State state = this.state;
+            if (state == State.OPEN) {
+                this.state = State.CLOSING;
+                lock.notifyAll();
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -129,7 +157,7 @@ public abstract class FutureManagementChannel extends ManagementClientChannelStr
             return false;
         }
         synchronized (lock) {
-            if(closed || channel != null) {
+            if(state != State.OPEN || channel != null) {
                 return false;
             }
             this.channel = newChannel;
@@ -195,9 +223,9 @@ public abstract class FutureManagementChannel extends ManagementClientChannelStr
         @Override
         public void close() throws IOException {
             try {
-                connectionManager.shutdown();
-            } finally {
                 super.close();
+            } finally {
+                connectionManager.shutdown();
             }
         }
 
