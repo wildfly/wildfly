@@ -115,22 +115,20 @@ public interface EeLogger extends BasicLogger {
     /**
      * Logs a warning message indicating a failure to destroy the component instance.
      *
-     * @param cause     the cause of the error.
      * @param component the component instance.
      */
     @LogMessage(level = WARN)
     @Message(id = 11005, value = "Failed to destroy component instance %s")
-    void componentDestroyFailure(@Cause Throwable cause, ComponentInstance component);
+    void componentDestroyFailure(ComponentInstance component);
 
     /**
      * Logs a warning message indicating the component is not being installed due to an exception.
      *
-     * @param cause the cause of the error.
      * @param name  the name of the component.
      */
     @LogMessage(level = WARN)
     @Message(id = 11006, value = "Not installing optional component %s due to exception")
-    void componentInstallationFailure(@Cause Throwable cause, String name);
+    void componentInstallationFailure(String name);
 
     /**
      * Logs a warning message indicating the property, represented by the {@code name} parameter, is be ignored due to
@@ -171,12 +169,11 @@ public interface EeLogger extends BasicLogger {
      * Logs a warning message indicating an exception occurred while invoking the pre-destroy on the interceptor
      * component class, represented by the {@code component} parameter.
      *
-     * @param cause     the cause of the error.
      * @param component the component.
      */
     @LogMessage(level = WARN)
     @Message(id = 11010, value = "Exception while invoking pre-destroy interceptor for component class: %s")
-    void preDestroyInterceptorFailure(@Cause Throwable cause, Class<?> component);
+    void preDestroyInterceptorFailure(Class<?> component);
 
     /**
      * Logs a warning message indicating the transaction datasource, represented by the {@code className} parameter,
