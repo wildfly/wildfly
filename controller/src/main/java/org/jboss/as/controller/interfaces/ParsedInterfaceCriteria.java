@@ -258,7 +258,7 @@ public final class ParsedInterfaceCriteria {
             // they've entered a wildcard address
             return new WildcardInetAddressInterfaceCriteria(address);
         } else if (address.isLoopbackAddress()) {
-            // support any loopback address via the -b argument, without xml files changes - WFLY-248 
+            // support any loopback address via the -b argument, without xml files changes - WFLY-248
             return new LoopbackAddressInterfaceCriteria(address);
         } else {
             return new InetAddressMatchInterfaceCriteria(address);
