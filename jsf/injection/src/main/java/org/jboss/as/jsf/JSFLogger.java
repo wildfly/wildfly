@@ -63,4 +63,8 @@ public interface JSFLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 12603, value = "Unknown JSF version %s %s will be used instead")
     void unknownJSFVersion(String version, String referenceVersion);
+
+    @LogMessage(level = WARN)
+    @Message(id = 12604, value = "WildFlyConversationAwareViewHandler was improperly initialized. Expected ViewHandler parent.")
+    void viewHandlerImproperlyInitialized();
 }

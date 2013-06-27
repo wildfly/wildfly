@@ -23,6 +23,7 @@ import javax.faces.application.ViewHandler;
 import javax.faces.application.ViewHandlerWrapper;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
+import org.jboss.as.jsf.JSFLogger;
 import org.jboss.as.jsf.deployment.JSFDependencyProcessor;
 import org.jboss.weld.jsf.ConversationAwareViewHandler;
 
@@ -35,6 +36,17 @@ import org.jboss.weld.jsf.ConversationAwareViewHandler;
 public class WildFlyConversationAwareViewHandler extends ViewHandlerWrapper {
 
     private ViewHandler wrapped;
+
+    /**
+     * This method will never be called by the JSF implementation.  The JSF impl recognizes the single-arg
+     * constructor.  The only reason the no-arg constructor is here is because the TCK creates the ViewHandler outside of
+     * the JSF impl.  So we need it to pass the test.
+     */
+    public WildFlyConversationAwareViewHandler() {
+        super();
+
+        JSFLogger.ROOT_LOGGER.viewHandlerImproperlyInitialized();
+    }
 
     public WildFlyConversationAwareViewHandler(ViewHandler parent) {
         super();
