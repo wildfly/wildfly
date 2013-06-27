@@ -23,15 +23,19 @@
 package org.jboss.as.controller.operations.global;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.NAME;
 import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.VALUE;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
@@ -70,6 +74,22 @@ public class WriteAttributeHandler implements OperationStepHandler {
         } else if (attributeAccess.getAccessType() != AttributeAccess.AccessType.READ_WRITE) {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.attributeNotWritable(attributeName)));
         } else {
+
+            // Authorize
+            ModelNode currentValue;
+            if (attributeAccess.getStorageType() == AttributeAccess.Storage.CONFIGURATION) {
+                ModelNode model = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
+                currentValue = model.has(attributeName) ? model.get(attributeName) : new ModelNode();
+            } else {
+                currentValue = new ModelNode();
+            }
+            AuthorizationResult authorizationResult = context.authorize(operation, attributeName, currentValue);
+            if (authorizationResult.getDecision() == AuthorizationResult.Decision.DENY) {
+                throw ControllerMessages.MESSAGES.unauthorized(operation.require(OP).asString(),
+                        PathAddress.pathAddress(operation.get(OP_ADDR)),
+                        authorizationResult.getExplanation());
+            }
+
             OperationStepHandler handler = attributeAccess.getWriteHandler();
             ClassLoader oldTccl = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(handler.getClass());
             try {
