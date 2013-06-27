@@ -191,12 +191,12 @@
         <version.org.jboss.modules.jboss-modules>1.2.2.Final</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.2.0.Beta1</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.osgi.deployment>2.0.0.Final</version.org.jboss.osgi.deployment>
-        <version.org.jboss.osgi.framework>3.0.0.Final</version.org.jboss.osgi.framework>
+        <version.org.jboss.osgi.framework>3.0.2.Final</version.org.jboss.osgi.framework>
         <version.org.jboss.osgi.logging>1.0.0.Final</version.org.jboss.osgi.logging>
         <version.org.jboss.osgi.metadata>3.0.0.Final</version.org.jboss.osgi.metadata>
-        <version.org.jboss.osgi.provision>1.0.0.Final</version.org.jboss.osgi.provision>
+        <version.org.jboss.osgi.provision>1.1.0.Beta1</version.org.jboss.osgi.provision>
         <version.org.jboss.osgi.resolver>4.0.0.Final</version.org.jboss.osgi.resolver>
-        <version.org.jboss.osgi.repository>3.0.0.Final</version.org.jboss.osgi.repository>
+        <version.org.jboss.osgi.repository>3.1.0.CR1</version.org.jboss.osgi.repository>
         <version.org.jboss.osgi.spi>4.0.0.Final</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>2.0.0.Final</version.org.jboss.osgi.vfs>
         <version.org.jboss.remote-naming>1.0.6.Final</version.org.jboss.remote-naming>
@@ -4820,7 +4820,7 @@
 
             <dependency>
                 <groupId>org.jboss.osgi.repository</groupId>
-                <artifactId>jbosgi-repository-api</artifactId>
+                <artifactId>jbosgi-repository-core</artifactId>
                 <version>${version.org.jboss.osgi.repository}</version>
             </dependency>
 

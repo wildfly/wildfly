@@ -2539,7 +2539,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.osgi.repository</groupId>
-      <artifactId>jbosgi-repository-api</artifactId>
+      <artifactId>jbosgi-repository-core</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License, Version 2.1</name>

@@ -197,12 +197,12 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
             // https://issues.jboss.org/browse/AS7-5642
             if (OperationAssociation.INSTANCE.getAssociation() != null) {
                 LOGGER.warnCannotDeployBundleFromManagementOperation(deployment);
-                return bundleManager.createBundleRevision(context, deployment, null);
+                return bundleManager.installBundleRevision(context, deployment, null);
             }
 
             // Check if a bundle with that location already exists
             if (!deployment.isBundleUpdate() && bundleManager.getBundleByLocation(deployment.getLocation()) != null) {
-                return bundleManager.createBundleRevision(context, deployment, null);
+                return bundleManager.installBundleRevision(context, deployment, null);
             }
 
             LOGGER.debugf("Install deployment: %s", deployment);
