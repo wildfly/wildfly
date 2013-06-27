@@ -22,14 +22,13 @@
 
 package org.wildfly.mod_cluster.undertow;
 
-import io.undertow.servlet.api.Deployment;
-
 import java.security.AccessController;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import io.undertow.servlet.api.Deployment;
 import org.jboss.logging.Logger;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.ContainerEventHandler;
@@ -112,6 +111,16 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
 
     @Override
     public void onDeploymentStart(Deployment deployment, Host host) {
+        System.out.println("onDeploymentStart" + deployment.getServlets().getServletHandlers());
+
+        // Register metrics in the handler chain on start
+//        deployment.getDeploymentInfo().addInitialHandlerChainWrapper(new HandlerWrapper() {
+//            @Override
+//            public HttpHandler wrap(HttpHandler handler) {
+//                return new RequestCountHttpHandler();
+//            }
+//        });
+
         Context context = this.createContext(deployment, host);
         this.eventHandler.getValue().add(context);
 
