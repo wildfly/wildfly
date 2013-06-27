@@ -48,15 +48,4 @@ public interface Identity extends UpgradeCondition {
 
     }
 
-    public interface IdentityOneOffPatch extends Identity {
-
-        /**
-         * Get the cumulative patch id
-         *
-         * @return the cumulative patch id
-         */
-        String getCumulativePatchId();
-
-    }
-
 }

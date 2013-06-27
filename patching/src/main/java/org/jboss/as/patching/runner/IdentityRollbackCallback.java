@@ -30,7 +30,7 @@ class IdentityRollbackCallback implements IdentityPatchContext.FinalizeCallback 
         this.resetConfiguration = resetConfiguration;
         // Create an empty patch, we don't do anything with the processedPatch
         final IdentityImpl identity = new IdentityImpl("", "");
-        identity.setPatchType(Patch.PatchType.ONE_OFF); // Does not matter
+        identity.setPatchType(Patch.PatchType.ONE_OFF); // Does not matter, we delete the temp directory anyway
         this.patch = new PatchImpl(patchId, "no description", identity, Collections.<PatchElement>emptyList(), Collections.<ContentModification>emptyList());
     }
 
@@ -63,7 +63,7 @@ class IdentityRollbackCallback implements IdentityPatchContext.FinalizeCallback 
 
     static void cleanupEntry(final Collection<IdentityPatchContext.PatchEntry> entries) {
         for (final IdentityPatchContext.PatchEntry entry : entries) {
-            entry.cleanupRollbacks();
+            entry.cleanupRollbackPatchHistory();
         }
     }
 

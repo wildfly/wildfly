@@ -126,14 +126,14 @@ public class PatchGenerator {
                 @Override
                 PatchElementBuilder modifyLayer(String name, boolean addOn) {
                     //return addElement(randomUUID().toString(), name, addOn);
-                    return cumulativePatchElement(randomUUID().toString(), name, addOn);
+                    return oneOffPatchElement(randomUUID().toString(), name, addOn);
                 }
             };
 
             // Add some random information until we have a patch-config replacement
             wrapper.setPatchId(randomUUID().toString());
             wrapper.setDescription("Test patch");
-            wrapper.cumulativePatchIdentity(Version.AS_RELEASE_CODENAME, Version.AS_VERSION);
+            wrapper.oneOffPatchIdentity(Version.AS_RELEASE_CODENAME, Version.AS_VERSION);
 
             // Create the resulting patch
             final Patch patch = wrapper.compare(base, updated);

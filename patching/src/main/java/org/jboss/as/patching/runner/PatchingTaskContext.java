@@ -1,6 +1,7 @@
 package org.jboss.as.patching.runner;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentModification;
@@ -43,6 +44,16 @@ public interface PatchingTaskContext {
      * @param rollbackAction the rollback action
      */
     void recordChange(ContentModification change, ContentModification rollbackAction);
+
+    /**
+     * Store content for further reuse.
+     *
+     * @param hash the content hash
+     * @param file the content root
+     * @param move try to move the file
+     * @throws IOException
+     */
+    void store(byte[] hash, File file, boolean move) throws IOException;
 
     /**
      * Get the current bundle path.

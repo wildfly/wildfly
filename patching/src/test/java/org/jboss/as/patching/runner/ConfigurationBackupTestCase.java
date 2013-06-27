@@ -126,9 +126,9 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
 
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .oneOffPatchIdentity(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion(), Constants.NOT_PATCHED)
+                .oneOffPatchIdentity(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion())
                 .getParent()
-                .oneOffPatchElement(layerPatchID, BASE, NOT_PATCHED, false)
+                .oneOffPatchElement(layerPatchID, BASE, false)
                 .addContentModification(moduleAdded);
 
         Patch patch = builder.build();

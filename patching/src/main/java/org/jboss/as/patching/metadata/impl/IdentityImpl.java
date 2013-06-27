@@ -34,13 +34,12 @@ import org.jboss.as.patching.metadata.Patch;
  * @author Alexey Loubyansky
  *
  */
-public class IdentityImpl implements Identity, RequiresCallback, IncompatibleWithCallback, Identity.IdentityOneOffPatch, Identity.IdentityUpgrade {
+public class IdentityImpl implements Identity, RequiresCallback, IncompatibleWithCallback, Identity.IdentityUpgrade {
 
     private final String name;
     private final String version;
     private String resultingVersion;
     private Patch.PatchType patchType;
-    private String cumulativePatchId;
     private Collection<String> incompatibleWith = Collections.emptyList();
     private Collection<String> requires = Collections.emptyList();
 
@@ -68,11 +67,6 @@ public class IdentityImpl implements Identity, RequiresCallback, IncompatibleWit
     @Override
     public Patch.PatchType getPatchType() {
         return patchType;
-    }
-
-    @Override
-    public String getCumulativePatchId() {
-        return cumulativePatchId;
     }
 
     @Override
@@ -122,20 +116,12 @@ public class IdentityImpl implements Identity, RequiresCallback, IncompatibleWit
         this.patchType = patchType;
     }
 
-    public void setCumulativePatchId(String cumulativePatchId) {
-        this.cumulativePatchId = cumulativePatchId;
-    }
-
     @Override
     public <T extends Identity> T forType(Patch.PatchType patchType, Class<T> clazz) {
         if (patchType != this.patchType) {
             throw new IllegalStateException();
         }
-        if (patchType == Patch.PatchType.ONE_OFF) {
-            if (cumulativePatchId == null) {
-                throw new IllegalStateException();
-            }
-        } else if (patchType == Patch.PatchType.UPGRADE) {
+        if (patchType == Patch.PatchType.CUMULATIVE) {
             if (resultingVersion == null) {
                 throw new IllegalStateException();
             }

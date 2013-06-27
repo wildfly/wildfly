@@ -22,24 +22,20 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
     // The mutable state
     private final List<String> patchIds;
     private final Properties properties;
-    private String releaseID;
     private String cumulativeID;
     private boolean modified = false;
 
     MutableTargetImpl(PatchableTarget.TargetInfo current) {
         this.current = current;
         this.structure = current.getDirectoryStructure();
-        this.releaseID = current.getReleasePatchID();
-        this.cumulativeID = current.getCumulativeID();
+        this.cumulativeID = current.getCumulativePatchID();
         this.patchIds = new ArrayList<String>(current.getPatchIDs());
         this.properties = new Properties(current.getProperties());
     }
 
     @Override
     public boolean isApplied(String patchId) {
-        if (releaseID.equals(patchId)) {
-            return true;
-        } else if (cumulativeID.equals(patchId)) {
+        if (cumulativeID.equals(patchId)) {
             return true;
         }
         return patchIds.contains(patchId);
@@ -50,8 +46,6 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
         if (!patchIds.remove(patchId)) {
             if (patchId.equals(cumulativeID)) {
                 cumulativeID = Constants.NOT_PATCHED;
-            } else if (patchId.equals(releaseID)) {
-                releaseID = Constants.NOT_PATCHED;
             } else {
                 throw new IllegalStateException("cannot rollback not-applied patch " + patchId);
             }
@@ -61,14 +55,9 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
 
     @Override
     public void apply(String patchId, Patch.PatchType patchType) {
-        if (patchType == Patch.PatchType.UPGRADE) {
+        if (patchType == Patch.PatchType.CUMULATIVE) {
             if (!patchIds.isEmpty()) {
-                throw new IllegalStateException("cannot apply release patch if there are other patches applied " +patchIds);
-            }
-            releaseID = patchId;
-        } else if (patchType == Patch.PatchType.CUMULATIVE) {
-            if (! patchIds.isEmpty()) {
-                throw new IllegalStateException("cannot apply cumulative patch if there are other patches applied" +patchIds);
+                throw new IllegalStateException("cannot apply cumulative patch if there are other patches applied " +patchIds);
             }
             cumulativeID = patchId;
         } else {
@@ -78,18 +67,13 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
     }
 
     @Override
-    public String getReleasePatchID() {
-        return current.getReleasePatchID();
+    public String getCumulativePatchID() {
+        return current.getCumulativePatchID();
     }
 
     @Override
     public List<String> getPatchIDs() {
         return current.getPatchIDs();
-    }
-
-    @Override
-    public String getCumulativeID() {
-        return cumulativeID;
     }
 
     @Override
@@ -105,19 +89,19 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
     protected void persist() throws IOException {
         if (modified) {
             // persist the state for bundles and modules directory
-            persist(releaseID, cumulativeID, patchIds);
+            persist(cumulativeID, patchIds);
         }
     }
 
     protected void restore() throws IOException {
         if (modified) {
             // persist the state for bundles and modules directory
-            persist(current.getReleasePatchID(), current.getCumulativeID(), current.getPatchIDs());
+            persist(current.getCumulativePatchID(), current.getPatchIDs());
         }
     }
 
-    private void persist(final String releaseID, final String cumulativeID, final List<String> patches) throws IOException {
-        if (releaseID == null || cumulativeID == null) {
+    private void persist(final String cumulativeID, final List<String> patches) throws IOException {
+        if (cumulativeID == null) {
             throw new IllegalStateException();
         }
         // Create the parent
@@ -125,11 +109,8 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
 
         final List<String> consolidate = new ArrayList<String>();
         consolidate.addAll(patches);
-        if (! Constants.BASE.equals(cumulativeID)) {
+        if (!Constants.BASE.equals(cumulativeID)) {
             consolidate.add(cumulativeID);
-        }
-        if (!Constants.BASE.equals(releaseID)) {
-            consolidate.add(releaseID);
         }
 
         if (structure.getModuleRoot() != null) {
@@ -139,7 +120,6 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
         }
 
         // Update the properties
-        properties.put(Constants.RELEASE_PATCH_ID, releaseID);
         properties.put(Constants.CUMULATIVE, cumulativeID);
         properties.put(Constants.PATCHES, PatchUtils.asString(patches));
 
@@ -150,7 +130,7 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
     @Override
     public PatchableTarget.TargetInfo getModifiedState() {
         if (modified) {
-            return new LayerInfo.TargetInfoImpl(properties, releaseID, cumulativeID, patchIds, structure);
+            return new LayerInfo.TargetInfoImpl(properties, cumulativeID, patchIds, structure);
         } else {
             return current;
         }

@@ -57,7 +57,7 @@ import org.junit.Test;
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012, Red Hat Inc
  */
-public class UpgradePatchTestCase extends AbstractTaskTestCase {
+public class CumulativePatchTestCase extends AbstractTaskTestCase {
 
     @Test
     public void testApplyReleasePatch() throws Exception {
@@ -200,9 +200,9 @@ public class UpgradePatchTestCase extends AbstractTaskTestCase {
                 .setPatchId(oneOffPatchID)
                 .setDescription(randomString())
                 // one-off patch can be applied to Release
-                .oneOffPatchIdentity(productConfig.getProductName(), resultingVersion, NOT_PATCHED)
+                .oneOffPatchIdentity(productConfig.getProductName(), resultingVersion)
                 .getParent()
-                .oneOffPatchElement(oneOffLayerPatchID, BASE, NOT_PATCHED, false)
+                .oneOffPatchElement(oneOffLayerPatchID, BASE, false)
                     .addContentModification(moduleModified)
                     .getParent()
                 .build();
@@ -266,9 +266,9 @@ public class UpgradePatchTestCase extends AbstractTaskTestCase {
                 .setPatchId(oneOffPatchID)
                 .setDescription(randomString())
                 // one-off patch can be applied to Release
-                .oneOffPatchIdentity(productConfig.getProductName(), resultingVersion, NOT_PATCHED)
+                .oneOffPatchIdentity(productConfig.getProductName(), resultingVersion)
                 .getParent()
-                .oneOffPatchElement(oneOffLayerPatchID, BASE, NOT_PATCHED, false)
+                .oneOffPatchElement(oneOffLayerPatchID, BASE, false)
                     .addContentModification(moduleModified)
                     .getParent()
                 .build();
@@ -312,9 +312,9 @@ public class UpgradePatchTestCase extends AbstractTaskTestCase {
                 .setPatchId(oneOffPatchID)
                 .setDescription(randomString())
                         // one-off patch can be applied to Release
-                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), NOT_PATCHED)
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion())
                 .getParent()
-                .oneOffPatchElement(oneOffLayerPatchID, BASE, NOT_PATCHED, false)
+                .oneOffPatchElement(oneOffLayerPatchID, BASE, false)
                     .addContentModification(moduleAdded)
                     .getParent()
                 .build();
@@ -357,66 +357,6 @@ public class UpgradePatchTestCase extends AbstractTaskTestCase {
         modulePatchDirectory = installedIdentityAfterOneOffPatch.getLayers().get(0).loadTargetInfo().getDirectoryStructure().getModulePatchDirectory(releaseLayerPatchID);
         assertDirExists(modulePatchDirectory);
         assertDefinedModule(modulePatchDirectory, moduleName, moduleAddedInReleasePatch.getItem().getContentHash());
-    }
-
-    @Test
-    public void testIncludePreviousUpgrade() throws Exception {
-
-        String moduleOne = "moduleOne";
-        InstalledIdentity identityBeforePatch = loadInstalledIdentity();
-
-        // build a Release patch for the base installation
-        String releasePatchID = "releasePatchID";// randomString() + "-Release";
-        String releaseLayerPatchID = "releaseLayerPatchID";//randomString();
-        File releasePatchDir = mkdir(tempDir, releasePatchID);
-        ContentModification moduleAddedInReleasePatch = ContentModificationUtils.addModule(releasePatchDir, releaseLayerPatchID, moduleOne, "different content in the module");
-
-        final String resultingVersion = identityBeforePatch.getIdentity().getVersion() + "-Release1";
-        Patch releasePatch = PatchBuilder.create()
-                .setPatchId(releasePatchID)
-                .setDescription(randomString())
-                .upgradeIdentity(identityBeforePatch.getIdentity().getName(), identityBeforePatch.getIdentity().getVersion(), resultingVersion)
-                .getParent()
-                .upgradeElement(releaseLayerPatchID, BASE, false)
-                    .addContentModification(moduleAddedInReleasePatch)
-                    .getParent()
-                .build();
-        createPatchXMLFile(releasePatchDir, releasePatch);
-        File zippedReleasePatch = createZippedPatchFile(releasePatchDir, releasePatchID);
-
-        PatchingResult resultOfReleasePatch = executePatch(zippedReleasePatch);
-        assertPatchHasBeenApplied(resultOfReleasePatch, releasePatch);
-
-        String moduleTwo = "moduleTwo";
-
-        // build a Release patch for the base installation
-        String releasePatchTwo = "releasePatchTwo";// randomString() + "-Release";
-        String releaseLayerPatchTwo = "releaseLayerPatchTwo";//randomString();
-        File releasePatchDirTwo = mkdir(tempDir, releasePatchTwo);
-        ContentModification moduleAddedTwo = ContentModificationUtils.addModule(releasePatchDirTwo, releaseLayerPatchTwo, moduleTwo, "different something in the module");
-
-
-        Patch releaseTwo = PatchBuilder.create()
-                .setPatchId(releasePatchTwo)
-                .setDescription(randomString())
-                .upgradeIdentity(identityBeforePatch.getIdentity().getName(), productConfig.getProductVersion(), resultingVersion + 1) // The resulting version does not get upated
-                .getParent()
-                .upgradeElement(releaseLayerPatchTwo, BASE, false)
-                    .addContentModification(moduleAddedTwo)
-                    .getParent()
-                .build();
-        createPatchXMLFile(releasePatchDirTwo, releaseTwo);
-        File zippedReleasePatchTwo = createZippedPatchFile(releasePatchDirTwo, releasePatchTwo);
-
-        PatchingResult resultOfReleasePatchTwo = executePatch(zippedReleasePatchTwo);
-        assertPatchHasBeenApplied(resultOfReleasePatchTwo, releaseTwo);
-
-        // Now that we applied 2 releases, it should include both modules!
-        final InstalledIdentity processedIdentity = loadInstalledIdentity();
-        final File modulePatchDirectory = processedIdentity.getLayer(BASE).getDirectoryStructure().getModulePatchDirectory(releaseLayerPatchTwo);
-        assertDirExists(modulePatchDirectory);
-        assertDefinedModule(modulePatchDirectory, moduleTwo, moduleAddedTwo.getItem().getContentHash());
-        assertDefinedModule(modulePatchDirectory, moduleOne, moduleAddedInReleasePatch.getItem().getContentHash());
     }
 
 }

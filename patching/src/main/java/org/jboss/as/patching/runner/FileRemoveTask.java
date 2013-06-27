@@ -71,7 +71,7 @@ class FileRemoveTask implements PatchingTask {
         // we create the backup in any case, since it is possible that the task
         // will be processed anyhow if the user specified OVERRIDE_ALL policy.
         // If the task is undone, the patch history will be deleted (including this backup).
-        backup(target, backup, Arrays.asList(item.getPath()), rollback);
+        backup(target, backup, Arrays.asList(item.getPath()), rollback, context);
         // See if the hash matches the metadata
 
         final byte[] expected = description.getModification().getTargetHash();
@@ -93,7 +93,7 @@ class FileRemoveTask implements PatchingTask {
         }
     }
 
-    void backup(final File root, final File backupLocation, final List<String> path, final List<ContentModification> rollback) throws IOException {
+    void backup(final File root, final File backupLocation, final List<String> path, final List<ContentModification> rollback, final PatchingTaskContext context) throws IOException {
         if(!root.exists()) {
             // Perhaps an error condition?
         } else if(root.isDirectory()) {
@@ -108,12 +108,13 @@ class FileRemoveTask implements PatchingTask {
                 for (File file : files) {
                     final String name = file.getName();
                     final File newBackupLocation = new File(backupLocation, name);
-                    backup(file, newBackupLocation, newPath, rollback);
+                    backup(file, newBackupLocation, newPath, rollback, context);
                 }
             }
         } else {
             // Copy and record the backup action
             final byte[] hash = copy(root, backupLocation);
+            context.store(hash, backupLocation, true);
             rollback.add(createRollbackItem(root.getName(), path, hash, false));
         }
     }

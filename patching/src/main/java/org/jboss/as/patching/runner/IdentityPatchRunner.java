@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.patching.Constants;
+import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.installation.InstallationManager;
@@ -104,34 +105,27 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         if (patchType == Patch.PatchType.ONE_OFF) {
             // We don't need to invalidate anything
             invalidation = Collections.emptyList();
-            // Check the cumulative id
-            final Identity.IdentityOneOffPatch oneOffPatch = identity.forType(Patch.PatchType.ONE_OFF, Identity.IdentityOneOffPatch.class);
-            if (!modification.getCumulativeID().equals(oneOffPatch.getCumulativePatchId())) {
-                throw PatchMessages.MESSAGES.doesNotApply(oneOffPatch.getCumulativePatchId(), modification.getCumulativeID());
-            }
         } else {
             // Invalidate all installed patches (one-off, cumulative) - we never need to invalidate the release base
             invalidation = new ArrayList<String>(modification.getPatchIDs());
-            if (!Constants.BASE.equals(modification.getCumulativeID())) {
-                invalidation.add(modification.getCumulativeID());
-            }
         }
         // Invalidate the installed patches first
         for (final String rollback : invalidation) {
             rollback(rollback, context, false);
         }
-        // Update a release
-        if (patchType == Patch.PatchType.UPGRADE) {
-            // In case of a release upgrade we only get the diffs from the next upgrade. This means if we just create an
-            // overlay directory with those changes, we might miss things from the current release. So we need to take the
-            // changes made by the current release patch and include them when creating the new overlay directory. Those
-            // additional modification need to be recorded as part of the history (patch.xml), so that the next release
-            // can leverage this as well.
-            final String releasePatchID = modification.getReleasePatchID();
-            if (!Constants.BASE.equals(releasePatchID)) {
-                portForward(modification.getReleasePatchID(), context);
-            }
-        }
+
+//        if (patchType == Patch.PatchType.UPGRADE) {
+//            // NOTE: there are no patch types needing this for now...
+//            // In case of a release upgrade we only get the diffs from the next upgrade. This means if we just create an
+//            // overlay directory with those changes, we might miss things from the current release. So we need to take the
+//            // changes made by the current release patch and include them when creating the new overlay directory. Those
+//            // additional modification need to be recorded as part of the history (patch.xml), so that the next release
+//            // can leverage this as well.
+//            final String releasePatchID = modification.getCumulativePatchID();
+//            if (!Constants.BASE.equals(releasePatchID)) {
+//                portForward(modification.getCumulativePatchID(), context);
+//            }
+//        }
 
         // Then apply the current patch
         for (final PatchElement element : patch.getElements()) {
@@ -148,13 +142,6 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
             }
             // Check upgrade conditions
             checkUpgradeConditions(provider, target);
-            if (elementPatchType == Patch.PatchType.ONE_OFF) {
-                // Check the cumulative ID
-                PatchElementProvider.OneOffPatchTarget oneOffPatch = provider.forType(Patch.PatchType.ONE_OFF, PatchElementProvider.OneOffPatchTarget.class);
-                if (!target.getCumulativeID().equals(oneOffPatch.getCumulativePatchId())) {
-                    throw PatchMessages.MESSAGES.doesNotApply(oneOffPatch.getCumulativePatchId(), target.getCumulativeID());
-                }
-            }
             apply(elementPatchId, element.getModifications(), target.getDefinitions());
             target.apply(elementPatchId, elementPatchType);
         }
@@ -164,8 +151,8 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         identityEntry.apply(patchId, patchType);
 
         // We need the resulting version for rollback
-        if (patchType == Patch.PatchType.UPGRADE) {
-            final Identity.IdentityUpgrade upgrade = identity.forType(Patch.PatchType.UPGRADE, Identity.IdentityUpgrade.class);
+        if (patchType == Patch.PatchType.CUMULATIVE) {
+            final Identity.IdentityUpgrade upgrade = identity.forType(Patch.PatchType.CUMULATIVE, Identity.IdentityUpgrade.class);
             identityEntry.setResultingVersion(upgrade.getResultingVersion());
         }
 
@@ -201,15 +188,10 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         final int index = oneOffs.indexOf(patchId);
 
         if (index == -1) {
-            if (patchId.equals(modification.getReleasePatchID())) {
+            if (patchId.equals(modification.getCumulativePatchID())) {
                 // Rollback all active
                 patches.addAll(oneOffs);
-                patches.add(modification.getCumulativeID());
-                patches.add(modification.getReleasePatchID());
-            } else if (patchId.equals(modification.getCumulativeID())) {
-                // Rollback all active
-                patches.addAll(oneOffs);
-                patches.add(modification.getCumulativeID());
+                patches.add(modification.getCumulativePatchID());
             } else {
                 throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
             }
@@ -287,7 +269,11 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
                 // Create the taskDefs for the modifications (only bundles and modules)
                 apply(patchElement.getId(), modifications, definitions, ContentItemFilter.ALL_BUT_MISC);
                 // Record a loader to have access to the current modules
-                context.recordRollbackLoader(patchElement.getId(), entry);
+                final DirectoryStructure structure = entry.getDirectoryStructure();
+                final File modulesRoot = structure.getModulePatchDirectory(patchElement.getId());
+                final File bundlesRoot = structure.getBundlesPatchDirectory(patchElement.getId());
+                final PatchContentLoader loader = PatchContentLoader.create(null, bundlesRoot, modulesRoot);
+                context.recordContentLoader(patchElement.getId(), loader);
             }
 
             final IdentityPatchContext.PatchEntry identity = context.getIdentityEntry();
@@ -366,7 +352,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
                 final Map<Location, ContentTaskDefinition> modifications = entry.getDefinitions();
                 // Create the rollback
                 PatchingTasks.rollback(elementPatchId, original.getModifications(), patchElement.getModifications(), modifications, ContentItemFilter.MISC_ONLY, !restoreFromHistory);
-                entry.rollback(elementPatchId);
+                entry.rollback(original.getId());
 
                 // We need to restore the previous state
                 final Patch.PatchType elementPatchType = provider.getPatchType();
@@ -394,8 +380,8 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
             if (restoreFromHistory) {
                 restoreFromHistory(identity, rollbackPatch.getPatchId(), patchType, identityHistory);
             }
-            if (patchType == Patch.PatchType.UPGRADE) {
-                final Identity.IdentityUpgrade upgrade = rollbackPatch.getIdentity().forType(Patch.PatchType.UPGRADE, Identity.IdentityUpgrade.class);
+            if (patchType == Patch.PatchType.CUMULATIVE) {
+                final Identity.IdentityUpgrade upgrade = rollbackPatch.getIdentity().forType(Patch.PatchType.CUMULATIVE, Identity.IdentityUpgrade.class);
                 identity.setResultingVersion(upgrade.getResultingVersion());
             }
         } catch (Exception e) {
@@ -405,16 +391,9 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
 
     static void restoreFromHistory(final InstallationManager.MutablePatchingTarget target, final String rollbackPatchId,
                                    final Patch.PatchType patchType, final PatchableTarget.TargetInfo history) throws PatchingException {
-        if (patchType == Patch.PatchType.UPGRADE) {
-            assert history.getReleasePatchID().equals(rollbackPatchId);
+        if (patchType == Patch.PatchType.CUMULATIVE) {
+            assert history.getCumulativePatchID().equals(rollbackPatchId);
             target.apply(rollbackPatchId, patchType);
-            // Restore previous CP state
-            target.apply(history.getCumulativeID(), Patch.PatchType.CUMULATIVE);
-        } else if (patchType == Patch.PatchType.CUMULATIVE) {
-            assert history.getCumulativeID().equals(rollbackPatchId);
-            target.apply(rollbackPatchId, patchType);
-        }
-        if (patchType != Patch.PatchType.ONE_OFF) {
             // Restore one off state
             final List<String> oneOffs = new ArrayList<String>(history.getPatchIDs());
             Collections.reverse(oneOffs);
@@ -427,8 +406,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
 
     static void checkState(final PatchableTarget.TargetInfo o, final PatchableTarget.TargetInfo n) {
         assert n.getPatchIDs().equals(o.getPatchIDs());
-        assert n.getCumulativeID().equals(o.getCumulativeID());
-        assert n.getReleasePatchID().equals(o.getReleasePatchID());
+        assert n.getCumulativePatchID().equals(o.getCumulativePatchID());
     }
 
     /**

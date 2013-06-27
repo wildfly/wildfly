@@ -88,7 +88,6 @@ class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, 
 
     static enum Attribute {
 
-        CUMULATIVE_ID("cumulative-id"),
         NAME("name"),
         PATCHES("patches"),
         RELEASE_ID("release-id"),
@@ -204,11 +203,8 @@ class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, 
                 case PATCHES:
                     properties.put(Constants.PATCHES, value);
                     break;
-                case CUMULATIVE_ID:
-                    properties.put(Constants.CUMULATIVE, value);
-                    break;
                 case RELEASE_ID:
-                    properties.put(Constants.RELEASE_PATCH_ID, value);
+                    properties.put(Constants.CUMULATIVE, value);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -244,8 +240,7 @@ class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, 
             //
             writer.writeEmptyElement(element.name);
             writer.writeAttribute(Attribute.NAME.name, target.getName());
-            writer.writeAttribute(Attribute.CUMULATIVE_ID.name, info.getCumulativeID());
-            writer.writeAttribute(Attribute.RELEASE_ID.name, info.getReleasePatchID());
+            writer.writeAttribute(Attribute.RELEASE_ID.name, info.getCumulativePatchID());
             if (! info.getPatchIDs().isEmpty()) {
                 writer.writeAttribute(Attribute.PATCHES.name, PatchUtils.asString(info.getPatchIDs()));
             }

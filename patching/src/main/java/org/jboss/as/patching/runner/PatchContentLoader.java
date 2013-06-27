@@ -26,8 +26,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 import org.jboss.as.patching.Constants;
+import org.jboss.as.patching.HashUtils;
+import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.metadata.BundleItem;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentType;
@@ -37,15 +40,11 @@ import org.jboss.as.patching.metadata.ModuleItem;
 /**
  * @author Emanuel Muckenhuber
  */
-public class PatchContentLoader {
+public abstract class PatchContentLoader {
 
     public static final String MODULES = Constants.MODULES;
     public static final String BUNDLES = Constants.BUNDLES;
     public static final String MISC = Constants.MISC;
-
-    private final File miscRoot;
-    private final File bundlesRoot;
-    private final File modulesRoot;
 
     public static PatchContentLoader create(final File root) {
         final File miscRoot = new File(root, PatchContentLoader.MISC);
@@ -55,13 +54,7 @@ public class PatchContentLoader {
     }
 
     public static PatchContentLoader create(final File miscRoot, final File bundlesRoot, final File modulesRoot) {
-        return new PatchContentLoader(miscRoot, bundlesRoot, modulesRoot);
-    }
-
-    private PatchContentLoader(final File miscRoot, final File bundlesRoot, final File modulesRoot) {
-        this.bundlesRoot = bundlesRoot;
-        this.miscRoot = miscRoot;
-        this.modulesRoot = modulesRoot;
+        return new BasicContentLoader(miscRoot, bundlesRoot, modulesRoot);
     }
 
     /**
@@ -83,33 +76,8 @@ public class PatchContentLoader {
      *
      * @param item the content item
      * @return the file
-     * @throws IOException
      */
-    public File getFile(final ContentItem item) throws IOException {
-        final ContentType content = item.getContentType();
-        switch (content) {
-            case MODULE:
-                return getModulePath((ModuleItem) item);
-            case MISC:
-                return getMiscPath((MiscContentItem) item);
-            case BUNDLE:
-                return getBundlePath((BundleItem) item);
-            default:
-                throw new IllegalStateException();
-        }
-    }
-
-    File getMiscPath(final MiscContentItem item) {
-        return getMiscPath(miscRoot, item);
-    }
-
-    File getModulePath(final ModuleItem item) {
-        return getModulePath(modulesRoot, item);
-    }
-
-    File getBundlePath(final BundleItem item) {
-        return getModulePath(bundlesRoot, item.getName(), item.getSlot());
-    }
+    public abstract File getFile(final ContentItem item);
 
     public static File getMiscPath(final File miscRoot, final MiscContentItem item) {
         if (miscRoot == null) {
@@ -137,6 +105,64 @@ public class PatchContentLoader {
             file = new File(file, s);
         }
         return new File(file, slot);
+    }
+
+    static class BasicContentLoader extends PatchContentLoader {
+        private final File miscRoot;
+        private final File bundlesRoot;
+        private final File modulesRoot;
+
+        BasicContentLoader(File miscRoot, File bundlesRoot, File modulesRoot) {
+            this.miscRoot = miscRoot;
+            this.bundlesRoot = bundlesRoot;
+            this.modulesRoot = modulesRoot;
+        }
+
+        @Override
+        public File getFile(ContentItem item) {
+            final ContentType content = item.getContentType();
+            switch (content) {
+                case MODULE:
+                    return getModulePath((ModuleItem) item);
+                case MISC:
+                    return getMiscPath((MiscContentItem) item);
+                case BUNDLE:
+                    return getBundlePath((BundleItem) item);
+                default:
+                    throw new IllegalStateException();
+            }
+        }
+
+        File getMiscPath(final MiscContentItem item) {
+            return getMiscPath(miscRoot, item);
+        }
+
+        File getModulePath(final ModuleItem item) {
+            return getModulePath(modulesRoot, item);
+        }
+
+        File getBundlePath(final BundleItem item) {
+            return getModulePath(bundlesRoot, item.getName(), item.getSlot());
+        }
+    }
+
+    static class HashBasedContentLoader extends PatchContentLoader {
+
+        private final File objectStoreRoot;
+        HashBasedContentLoader(File objectStoreRoot) {
+            this.objectStoreRoot = objectStoreRoot;
+        }
+
+        @Override
+        public File getFile(final ContentItem item) {
+            final byte[] hash = item.getContentHash();
+            if (Arrays.equals(hash, IoUtils.NO_CONTENT)) {
+                return null;
+            }
+            final String hex = HashUtils.bytesToHexString(hash);
+            final File base = new File(objectStoreRoot, hex.substring(0, 2));
+            return new File(base, hex.substring(2));
+        }
     }
 
 }

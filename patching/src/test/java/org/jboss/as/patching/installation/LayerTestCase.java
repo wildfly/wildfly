@@ -25,7 +25,6 @@ package org.jboss.as.patching.installation;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
-import static org.jboss.as.patching.Constants.NOT_PATCHED;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.patching.Constants.BASE;
@@ -51,9 +50,6 @@ import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
-import org.jboss.as.patching.metadata.impl.IdentityImpl;
-import org.jboss.as.patching.metadata.impl.PatchElementImpl;
-import org.jboss.as.patching.metadata.impl.PatchElementProviderImpl;
 import org.jboss.as.patching.runner.AbstractTaskTestCase;
 import org.jboss.as.patching.runner.ContentModificationUtils;
 import org.jboss.as.patching.runner.PatchingResult;
@@ -97,7 +93,7 @@ public class LayerTestCase extends AbstractTaskTestCase {
         assertEquals(BASE, layers.get(1).getName()); // base layer is always appended
 
         PatchableTarget.TargetInfo targetInfo = layer.loadTargetInfo();
-        assertEquals(BASE, targetInfo.getReleasePatchID());
+        assertEquals(BASE, targetInfo.getCumulativePatchID());
         assertTrue(targetInfo.getPatchIDs().isEmpty());
         DirectoryStructure directoryStructure = targetInfo.getDirectoryStructure();
         assertEquals(newFile(env.getModuleRoot(), "system", "layers", layerName), directoryStructure.getModuleRoot());
@@ -126,9 +122,9 @@ public class LayerTestCase extends AbstractTaskTestCase {
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
-                .oneOffPatchIdentity(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion(), Constants.NOT_PATCHED)
+                .oneOffPatchIdentity(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion())
                 .getParent()
-                .oneOffPatchElement(layerPatchId, layerName, NOT_PATCHED, false)
+                .oneOffPatchElement(layerPatchId, layerName, false)
                     .addContentModification(moduleAdded)
                     .getParent()
                 .addContentModification(fileAdded)
@@ -163,7 +159,7 @@ public class LayerTestCase extends AbstractTaskTestCase {
         InstalledIdentity installedIdentity = loadInstalledIdentity();
 
         PatchableTarget.TargetInfo identityInfo = installedIdentity.getIdentity().loadTargetInfo();
-        assertEquals(BASE, identityInfo.getReleasePatchID());
+        assertEquals(BASE, identityInfo.getCumulativePatchID());
         assertTrue(identityInfo.getPatchIDs().isEmpty());
 
         System.out.println("installation =>>");
@@ -180,9 +176,9 @@ public class LayerTestCase extends AbstractTaskTestCase {
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
-                .oneOffPatchIdentity(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion(), Constants.NOT_PATCHED)
+                .oneOffPatchIdentity(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion())
                 .getParent()
-                .oneOffPatchElement(layerPatchId, layerName, NOT_PATCHED, false)
+                .oneOffPatchElement(layerPatchId, layerName, false)
                     .addContentModification(moduleAdded)
                     .getParent()
                 .addContentModification(fileAdded)

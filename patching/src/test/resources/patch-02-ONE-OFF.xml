@@ -31,7 +31,7 @@
         </requires>
     </no-upgrade>
 
-    <layer id="element-01">
+    <element id="element-01">
         <description>element-01 description</description>
         <no-upgrade name="base">
             <requires>
@@ -43,8 +43,8 @@
         <modules>
             <updated name="org.jboss.as.test" hash="1a2a3a4a" new-hash="1b2b3b4b"/>
         </modules>
-    </layer>
-    <layer id="element-04">
+    </element>
+    <element id="element-04">
         <description>element-02 description</description>
         <no-upgrade name="xyz">
             <requires>
@@ -55,5 +55,5 @@
         <modules>
             <updated name="org.jboss.xyz" hash="1a2a3a4a" new-hash="1b2b3b4b"/>
         </modules>
-    </layer>
+    </element>
 </patch>

@@ -78,13 +78,8 @@ public class PatchElementBuilder extends ModificationBuilderTarget<PatchElementB
         return returnThis();
     }
 
-    public PatchElementBuilder cumulativePatch() {
-        provider.cumulativePatch();
-        return returnThis();
-    }
-
-    public PatchElementBuilder oneOffPatch(String target) {
-        provider.oneOffPatch(target);
+    public PatchElementBuilder oneOffPatch() {
+        provider.oneOffPatch();
         return returnThis();
     }
 
