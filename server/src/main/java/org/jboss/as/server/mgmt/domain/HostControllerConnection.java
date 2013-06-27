@@ -209,9 +209,9 @@ class HostControllerConnection extends FutureManagementChannel {
     @Override
     public void close() throws IOException {
         try {
-            connectionManager.shutdown();
-        } finally {
             super.close();
+        } finally {
+            connectionManager.shutdown();
         }
     }
 
