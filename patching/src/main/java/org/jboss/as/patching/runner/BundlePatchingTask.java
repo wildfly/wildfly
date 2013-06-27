@@ -60,7 +60,9 @@ class BundlePatchingTask extends AbstractPatchingTask<BundleItem> {
                 if(children == null || children.length == 0) {
                     return NO_CONTENT;
                 }
-                return HashUtils.hashFile(bundlePath);
+                final byte[] hash = HashUtils.hashFile(bundlePath);
+                context.store(hash, bundlePath, false);
+                return hash;
             }
         }
         return NO_CONTENT;

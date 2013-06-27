@@ -50,8 +50,8 @@ public class PatchXmlUnitTestCase {
         assertNotNull(patch.getDescription());
         final Identity identity = patch.getIdentity();
         assertNotNull(identity);
-        assertEquals(Patch.PatchType.UPGRADE, identity.getPatchType());
-        assertNotNull(identity.forType(Patch.PatchType.UPGRADE, Identity.IdentityUpgrade.class).getResultingVersion());
+        assertEquals(Patch.PatchType.CUMULATIVE, identity.getPatchType());
+        assertNotNull(identity.forType(Patch.PatchType.CUMULATIVE, Identity.IdentityUpgrade.class).getResultingVersion());
         assertNotNull(identity.getVersion());
     }
 
@@ -66,7 +66,6 @@ public class PatchXmlUnitTestCase {
         assertNotNull(patch.getDescription());
         final Identity identity = patch.getIdentity();
         assertNotNull(identity);
-        assertEquals(Patch.PatchType.CUMULATIVE, identity.getPatchType());
         assertNotNull(patch.getIdentity().getVersion());
     }
 

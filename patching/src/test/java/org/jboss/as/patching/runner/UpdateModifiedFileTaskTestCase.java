@@ -88,7 +88,7 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
         PatchBuilder builder = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), Constants.NOT_PATCHED)
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion())
                 .getParent();
 
 //        PatchElementImpl element = new PatchElementImpl("patch element 01");

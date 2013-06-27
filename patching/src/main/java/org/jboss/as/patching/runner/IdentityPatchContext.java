@@ -160,6 +160,9 @@ class IdentityPatchContext implements PatchContentProvider {
         PatchEntry entry = map.get(layerName);
         if (entry == null) {
             final InstallationManager.MutablePatchingTarget target = modification.resolve(layerName, layerType);
+            if (target == null) {
+                throw new PatchingException("no such layer " + layerName);
+            }
             entry = new PatchEntry(target, element);
             map.put(layerName, entry);
         }
@@ -180,10 +183,8 @@ class IdentityPatchContext implements PatchContentProvider {
         final Patch original = callback.getPatch();
         final Patch.PatchType patchType = original.getIdentity().getPatchType();
         final String patchId;
-        if (patchType == Patch.PatchType.UPGRADE) {
-            patchId = modification.getReleasePatchID();
-        } else if (patchType == Patch.PatchType.CUMULATIVE) {
-            patchId = modification.getCumulativeID();
+        if (patchType == Patch.PatchType.CUMULATIVE) {
+            patchId = modification.getCumulativePatchID();
         } else {
             patchId = original.getPatchId();
         }
@@ -215,13 +216,8 @@ class IdentityPatchContext implements PatchContentProvider {
                     }
 
                     @Override
-                    public String getReleasePatchID() {
-                        return identityEntry.delegate.getModifiedState().getReleasePatchID();
-                    }
-
-                    @Override
                     public String getCumulativePatchID() {
-                        return identityEntry.delegate.getModifiedState().getCumulativeID();
+                        return identityEntry.delegate.getModifiedState().getCumulativePatchID();
                     }
 
                     @Override
@@ -312,7 +308,7 @@ class IdentityPatchContext implements PatchContentProvider {
      * @throws XMLStreamException
      * @throws IOException
      */
-    protected void recordRollbackLoader(final String patchId, PatchableTarget.TargetInfo target) {
+    private void recordRollbackLoader(final String patchId, PatchableTarget.TargetInfo target) {
         // setup the content loader paths
         final DirectoryStructure structure = target.getDirectoryStructure();
         final InstalledImage image = structure.getInstalledImage();
@@ -321,6 +317,8 @@ class IdentityPatchContext implements PatchContentProvider {
         final File modulesRoot = structure.getModulePatchDirectory(patchId);
         final File bundlesRoot = structure.getBundlesPatchDirectory(patchId);
         final PatchContentLoader loader = PatchContentLoader.create(miscRoot, bundlesRoot, modulesRoot);
+//        final File objectStoreRoot = new File(image.getInstallationMetadata(), "contents");
+//        final PatchContentLoader loader = // new PatchContentLoader.HashBasedContentLoader(objectStoreRoot);
         //
         recordContentLoader(patchId, loader);
     }
@@ -418,12 +416,11 @@ class IdentityPatchContext implements PatchContentProvider {
         final InstalledIdentity installedIdentity = modification.getUnmodifiedInstallationState();
         final String name = installedIdentity.getIdentity().getName();
         final IdentityImpl identity = new IdentityImpl(name, modification.getVersion());
-        if (patchType == Patch.PatchType.UPGRADE) {
-            identity.setPatchType(Patch.PatchType.UPGRADE);
+        if (patchType == Patch.PatchType.CUMULATIVE) {
+            identity.setPatchType(Patch.PatchType.CUMULATIVE);
             identity.setResultingVersion(installedIdentity.getIdentity().getVersion());
         } else if (patchType == Patch.PatchType.ONE_OFF) {
             identity.setPatchType(Patch.PatchType.ONE_OFF);
-            identity.setCumulativePatchId(modification.getCumulativeID());
         }
         final List<ContentModification> modifications = identityEntry.rollbackActions;
         final Patch delegate = new PatchImpl(patchId, "rollback patch", identity, elements, modifications);
@@ -488,13 +485,8 @@ class IdentityPatchContext implements PatchContentProvider {
         }
 
         @Override
-        public String getReleasePatchID() {
-            return delegate.getReleasePatchID();
-        }
-
-        @Override
-        public String getCumulativeID() {
-            return delegate.getCumulativeID();
+        public String getCumulativePatchID() {
+            return delegate.getCumulativePatchID();
         }
 
         @Override
@@ -586,7 +578,29 @@ class IdentityPatchContext implements PatchContentProvider {
             return PatchContentLoader.getModulePath(root, (ModuleItem) item);
         }
 
-        protected void cleanupRollbacks() {
+        @Override
+        public void store(byte[] hash, File file, boolean move) throws IOException {
+            // We currently don't store in content in a central repository
+//            final File objectStoreRoot = new File(installedImage.getInstallationMetadata(), "contents");
+//            if (Arrays.equals(hash, IoUtils.NO_CONTENT)) {
+//                throw new FileNotFoundException();
+//            }
+//            final String hex = HashUtils.bytesToHexString(hash);
+//            final File base = new File(objectStoreRoot, hex.substring(0, 2));
+//            final File backup = new File(base, hex.substring(2));
+//            base.mkdirs();
+//            if (! backup.exists()) {
+//                if (move) {
+//                    if (!file.renameTo(backup)) {
+//                        throw new SyncFailedException(backup.getAbsolutePath());
+//                    }
+//                } else {
+//                    IoUtils.copyFile(file, backup);
+//                }
+//            }
+        }
+
+        protected void cleanupRollbackPatchHistory() {
             final DirectoryStructure structure = getDirectoryStructure();
             for (final String rollback : rollbacks) {
                 IoUtils.recursiveDelete(structure.getBundlesPatchDirectory(rollback));
@@ -642,10 +656,8 @@ class IdentityPatchContext implements PatchContentProvider {
         final PatchElement patchElement = entry.element;
         final String patchId;
         final Patch.PatchType patchType = patchElement.getProvider().getPatchType();
-        if (patchType == Patch.PatchType.UPGRADE) {
-            patchId = entry.getReleasePatchID();
-        } else if (patchType == Patch.PatchType.CUMULATIVE) {
-            patchId = entry.getCumulativeID();
+        if (patchType == Patch.PatchType.CUMULATIVE) {
+            patchId = entry.getCumulativePatchID();
         } else {
             patchId = patchElement.getId();
         }

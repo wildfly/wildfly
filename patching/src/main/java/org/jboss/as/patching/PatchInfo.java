@@ -39,16 +39,9 @@ public interface PatchInfo {
     String getVersion();
 
     /**
-     * The release patch id.
+     * The cumulative patch id.
      *
      * @return the release patch id
-     */
-    String getReleasePatchID();
-
-    /**
-     * Get the cumulative patch id
-     *
-     * @return the cumulative patch id
      */
     String getCumulativePatchID();
 

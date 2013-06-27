@@ -88,10 +88,8 @@ abstract class PatchStepAssertions {
     }
 
     static void assertNotApplied(final Patch.PatchType patchType, final String patchId, final PatchableTarget.TargetInfo targetInfo) {
-        if (patchType == Patch.PatchType.UPGRADE) {
-            Assert.assertNotEquals(patchId, targetInfo.getReleasePatchID());
-        } else if (patchType == Patch.PatchType.CUMULATIVE) {
-            Assert.assertNotEquals(patchId, targetInfo.getCumulativeID());
+        if (patchType == Patch.PatchType.CUMULATIVE) {
+            Assert.assertNotEquals(patchId, targetInfo.getCumulativePatchID());
         } else {
             Assert.assertFalse(targetInfo.getPatchIDs().contains(patchId));
         }
@@ -101,11 +99,8 @@ abstract class PatchStepAssertions {
     }
 
     static void assertIsApplied(final Patch.PatchType patchType, final String patchId, final PatchableTarget.TargetInfo targetInfo) {
-        if (patchType == Patch.PatchType.UPGRADE) {
-            Assert.assertEquals(patchId, targetInfo.getReleasePatchID());
-            Assert.assertTrue(targetInfo.getPatchIDs().isEmpty());
-        } else if (patchType == Patch.PatchType.CUMULATIVE) {
-            Assert.assertEquals(patchId, targetInfo.getCumulativeID());
+        if (patchType == Patch.PatchType.CUMULATIVE) {
+            Assert.assertEquals(patchId, targetInfo.getCumulativePatchID());
             Assert.assertTrue(targetInfo.getPatchIDs().isEmpty());
         } else {
             Assert.assertTrue(targetInfo.getPatchIDs().contains(patchId));

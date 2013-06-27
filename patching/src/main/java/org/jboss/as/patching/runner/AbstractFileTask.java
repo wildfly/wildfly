@@ -65,7 +65,9 @@ abstract class AbstractFileTask extends AbstractPatchingTask<MiscContentItem> {
     byte[] backup(PatchingTaskContext context) throws IOException {
         if(target.isFile()) {
             // Backup the original in the history directory
-            return IoUtils.copy(target, backup);
+            final byte[] backupHash = IoUtils.copy(target, backup);
+            context.store(backupHash, backup, true);
+            return backupHash;
         }
         return NO_CONTENT;
     }

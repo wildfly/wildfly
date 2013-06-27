@@ -69,7 +69,7 @@ public class OneOffPatchTestCase {
         Patch oneOffPatch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription("A one-off patch used for testing purposes.")
-                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), NOT_PATCHED)
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion())
                     .getParent()
                 .addContentModification(miscFileAdded)
                 .build();

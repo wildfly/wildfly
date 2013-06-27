@@ -27,7 +27,6 @@ import static java.util.Collections.unmodifiableList;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.metadata.impl.IdentityImpl;
 import org.jboss.as.patching.metadata.impl.PatchElementProviderImpl;
@@ -62,26 +61,17 @@ public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implem
     }
 
     public PatchIdentityBuilder upgradeIdentity(final String name, final String version, final String resultingVersion) {
-        final PatchIdentityBuilder builder = new PatchIdentityBuilder(name, version, PatchType.UPGRADE, this);
-        final IdentityImpl identity = builder.getIdentity();
-        identity.setResultingVersion(resultingVersion);
-        this.identity = identity;
-        this.patchType = PatchType.UPGRADE;
-        return builder;
-    }
-
-    public PatchIdentityBuilder cumulativePatchIdentity(final String name, final String version) {
         final PatchIdentityBuilder builder = new PatchIdentityBuilder(name, version, PatchType.CUMULATIVE, this);
         final IdentityImpl identity = builder.getIdentity();
+        identity.setResultingVersion(resultingVersion);
         this.identity = identity;
         this.patchType = PatchType.CUMULATIVE;
         return builder;
     }
 
-    public PatchIdentityBuilder oneOffPatchIdentity(final String name, final String version, final String cumulativeID) {
+    public PatchIdentityBuilder oneOffPatchIdentity(final String name, final String version) {
         final PatchIdentityBuilder builder = new PatchIdentityBuilder(name, version, PatchType.ONE_OFF, this);
         final IdentityImpl identity = builder.getIdentity();
-        identity.setCumulativePatchId(cumulativeID);
         this.identity = identity;
         this.patchType = PatchType.ONE_OFF;
         return builder;
@@ -99,16 +89,9 @@ public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implem
         return builder;
     }
 
-    public PatchElementBuilder cumulativePatchElement(final String patchId, final String layerName, final boolean addOn) {
+    public PatchElementBuilder oneOffPatchElement(final String patchId, final String layerName, final boolean addOn) {
         final PatchElementBuilder builder = new PatchElementBuilder(patchId, layerName, addOn, this);
-        builder.cumulativePatch();
-        elements.add(builder);
-        return builder;
-    }
-
-    public PatchElementBuilder oneOffPatchElement(final String patchId, final String layerName, final String cumulativePatchId, final boolean addOn) {
-        final PatchElementBuilder builder = new PatchElementBuilder(patchId, layerName, addOn, this);
-        builder.oneOffPatch(cumulativePatchId);
+        builder.oneOffPatch();
         elements.add(builder);
         return builder;
     }
@@ -125,12 +108,10 @@ public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implem
             @Override
             public PatchElement createElement(PatchType patchType) {
                 if (element.getProvider().getPatchType() == null) {
-                    if (patchType == PatchType.UPGRADE) {
+                    if (patchType == PatchType.CUMULATIVE) {
                         ((PatchElementProviderImpl)element.getProvider()).upgrade();
-                    } else if (patchType == PatchType.CUMULATIVE) {
-                        ((PatchElementProviderImpl)element.getProvider()).cumulativePatch();
                     } else {
-                        ((PatchElementProviderImpl)element.getProvider()).oneOffPatch(Constants.NOT_PATCHED);
+                        ((PatchElementProviderImpl)element.getProvider()).oneOffPatch();
                     }
                 }
                 return element;

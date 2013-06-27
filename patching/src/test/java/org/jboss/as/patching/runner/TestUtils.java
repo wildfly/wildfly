@@ -179,7 +179,7 @@ public class TestUtils {
             name = moduleSpec;
             slot = "main";
         }
-        assert slot.equals(ModuleItem.MAIN_SLOT); // update to support other slots too
+        // assert slot.equals(ModuleItem.MAIN_SLOT); // update to support other slots too
         final String[] segments = name.split("\\.");
         assert segments.length > 0;
         File dir = baseDir;

@@ -23,7 +23,7 @@
 package org.jboss.as.patching.management;
 
 import static org.jboss.as.patching.Constants.BASE;
-import static org.jboss.as.patching.metadata.Patch.PatchType.UPGRADE;
+import static org.jboss.as.patching.metadata.Patch.PatchType.CUMULATIVE;
 import static org.jboss.as.patching.metadata.Patch.PatchType.ONE_OFF;
 
 import java.io.File;
@@ -59,9 +59,9 @@ public final class LocalShowHistoryHandler implements OperationStepHandler {
             final ModelNode result = new ModelNode();
             result.setEmptyList();
 
-            final String releaseID = info.getReleasePatchID();
+            final String releaseID = info.getCumulativePatchID();
             if (!BASE.equals(releaseID)) {
-                fillHistory(result, UPGRADE, releaseID, installedImage.getPatchHistoryDir(releaseID));
+                fillHistory(result, CUMULATIVE, releaseID, installedImage.getPatchHistoryDir(releaseID));
             }
 
             final List<String> oneOffPatchIDs = info.getPatchIDs();

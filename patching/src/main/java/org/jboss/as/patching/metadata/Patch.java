@@ -33,7 +33,6 @@ import java.util.List;
 public interface Patch {
 
     public enum PatchType {
-        UPGRADE("upgrade"),
         CUMULATIVE("cumulative"),
         ONE_OFF("one-off"),
         ;

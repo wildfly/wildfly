@@ -27,13 +27,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.Assert;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchElement;
 import org.jboss.as.patching.metadata.PatchImpl;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

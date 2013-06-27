@@ -26,6 +26,7 @@ import static org.jboss.as.patching.HashUtils.hashFile;
 import static org.jboss.as.patching.runner.TestUtils.dump;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
+import static org.jboss.as.patching.runner.TestUtils.tree;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,7 +43,6 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
 
     static final String[] FILE_ONE = {"bin", "standalone.sh"};
     static final String[] FILE_TWO = {"bin", "standalone.conf"};
-    static final String[] FILE_THREE = {"bin", "standalone.test"};
     static final String[] FILE_EXISTING = {"bin", "test"};
 
     @Test
@@ -61,8 +61,8 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
 
         final PatchingTestStepBuilder cp1 = builder.createBuilder();
         cp1.setPatchId("CP1")
-                .cumulativePatchIdentity(PRODUCT_VERSION)
-                .cumulativePatchElement("base:CP1", "base", false)
+                .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .upgradeElement("base:CP1", "base", false)
                 .addModuleWithRandomContent("org.jboss.test", moduleHash)
                 .getParent()
                 .addFileWithRandomContent(standaloneHash, FILE_ONE)
@@ -71,15 +71,14 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         // Apply CP1
         apply(cp1);
 
-        //
         Assert.assertTrue(builder.hasFile(FILE_ONE));
         Assert.assertTrue(builder.hasFile(FILE_EXISTING));
         Assert.assertTrue(Arrays.equals(existingHash, hashFile(existing)));
 
         final PatchingTestStepBuilder oneOff1 = builder.createBuilder();
         oneOff1.setPatchId("oneOff1")
-                .oneOffPatchIdentity(PRODUCT_VERSION, "CP1")
-                .oneOffPatchElement("base:oneOff1", "base", "base:CP1", false)
+                .oneOffPatchIdentity(PRODUCT_VERSION)
+                .oneOffPatchElement("base:oneOff1", "base", false)
                 .updateModuleWithRandomContent("org.jboss.test", moduleHash, null)
                 .getParent()
                 .updateFileWithRandomContent(standaloneHash, null, FILE_ONE)
@@ -88,15 +87,14 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         // Apply oneOff1
         apply(oneOff1);
 
-        //
         Assert.assertTrue(builder.hasFile(FILE_ONE));
         Assert.assertTrue(builder.hasFile(FILE_EXISTING));
         Assert.assertTrue(Arrays.equals(existingHash, hashFile(existing)));
 
         final PatchingTestStepBuilder cp2 = builder.createBuilder();
         cp2.setPatchId("CP2")
-                .cumulativePatchIdentity(PRODUCT_VERSION)
-                .cumulativePatchElement("base:CP2", "base", false)
+                .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .upgradeElement("base:CP2", "base", false)
                 .addModuleWithRandomContent("org.jboss.test", moduleHash)
                 .getParent()
                 .addFileWithRandomContent(standaloneHash, FILE_TWO)
@@ -105,29 +103,11 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         // Apply CP2
         apply(cp2);
 
-        // Needs to invalidate cp1
+        // Builds upon CP1 and has to invalidate one-off1
         Assert.assertTrue(builder.hasFile(FILE_TWO));
-        Assert.assertFalse(builder.hasFile(FILE_ONE));
+        Assert.assertTrue(builder.hasFile(FILE_ONE));
         Assert.assertTrue(builder.hasFile(FILE_EXISTING));
         Assert.assertTrue(Arrays.equals(existingHash, hashFile(existing)));
-
-        final PatchingTestStepBuilder release = builder.createBuilder();
-        release.setPatchId("CP3")
-                .cumulativePatchIdentity(PRODUCT_VERSION)
-                .cumulativePatchElement("base:CP3", "base", false)
-                .addModuleWithRandomContent("org.jboss.test", moduleHash)
-                .getParent()
-                .addFileWithRandomContent(standaloneHash, FILE_THREE )
-        ;
-        // Apply release
-        apply(release);
-
-        // Needs to invalidate all CPs
-        Assert.assertTrue(builder.hasFile(FILE_THREE ));
-        Assert.assertFalse(builder.hasFile(FILE_TWO));
-        Assert.assertFalse(builder.hasFile(FILE_ONE));
-        Assert.assertTrue(builder.hasFile(FILE_EXISTING));
-        // Assert.assertTrue(Arrays.equals(initialHash, hashFile(existing)));
 
     }
 

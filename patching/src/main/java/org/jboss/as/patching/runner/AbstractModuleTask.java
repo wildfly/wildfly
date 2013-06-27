@@ -59,7 +59,9 @@ abstract class AbstractModuleTask extends AbstractPatchingTask<ModuleItem> {
             final File moduleXml = new File(modulePath, MODULE_XML);
             if(moduleXml.exists()) {
                 PatchLogger.ROOT_LOGGER.debugf("found in path (%s)", moduleXml.getAbsolutePath());
-                return HashUtils.hashFile(modulePath);
+                final byte[] hash = HashUtils.hashFile(modulePath);
+                context.store(hash, modulePath, false);
+                return hash;
             }
         }
         return NO_CONTENT;
