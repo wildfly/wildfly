@@ -123,7 +123,8 @@ public class BasicComponentInstance implements ComponentInstance {
                 preDestroy.processInvocation(interceptorContext);
             }
         } catch (Exception e) {
-            ROOT_LOGGER.componentDestroyFailure(e, this);
+            ROOT_LOGGER.componentDestroyFailure(this);
+            ROOT_LOGGER.debug(this, e);
         } finally {
             component.finishDestroy();
         }

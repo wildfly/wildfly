@@ -83,7 +83,8 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
                     moduleConfiguration.addComponentConfiguration(componentConfiguration);
                 } catch (Exception e) {
                     if (componentDescription.isOptional()) {
-                        ROOT_LOGGER.componentInstallationFailure(e, componentDescription.getComponentName());
+                        ROOT_LOGGER.componentInstallationFailure(componentDescription.getComponentName());
+                        ROOT_LOGGER.debug(componentDescription.getComponentName(), e);
                         failed.add(componentDescription.getStartServiceName());
                         failed.add(componentDescription.getCreateServiceName());
                         failed.add(componentDescription.getServiceName());

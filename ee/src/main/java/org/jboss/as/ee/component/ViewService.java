@@ -289,7 +289,8 @@ public final class ViewService implements Service<ComponentView> {
                         interceptorContext.putPrivateData(Component.class, component);
                         clientPreDestroyInterceptor.processInvocation(interceptorContext);
                     } catch (Exception e) {
-                        ROOT_LOGGER.preDestroyInterceptorFailure(e, component.getComponentClass());
+                        ROOT_LOGGER.preDestroyInterceptorFailure(component.getComponentClass());
+                        ROOT_LOGGER.debug(component.getComponentClass(), e);
                     }
                 }
 
