@@ -1,4 +1,4 @@
-/*
+/**
  * JBoss, Home of Professional Open Source.
  * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
@@ -28,16 +28,19 @@ import org.jboss.modcluster.container.Connector;
 import org.wildfly.extension.undertow.AbstractListenerService;
 import org.wildfly.extension.undertow.AjpListenerService;
 import org.wildfly.extension.undertow.HttpListenerService;
+import org.wildfly.mod_cluster.undertow.metric.RequestCountHttpHandler;
+import org.wildfly.mod_cluster.undertow.metric.RunningRequestsThreadSetupAction;
 
 /**
  * Adapts {@link AbstractListenerService} to a {@link Connector}.
  *
  * @author Radoslav Husar
+ * @version Aug 2013
  * @since 8.0
  */
 public class UndertowConnector implements Connector {
 
-    private AbstractListenerService<?> listener;
+    private final AbstractListenerService<?> listener;
 
     public UndertowConnector(AbstractListenerService<?> listener) {
         this.listener = listener;
@@ -87,10 +90,12 @@ public class UndertowConnector implements Connector {
         return this.listener.getWorker().getValue().getIoThreadCount();
     }
 
+    /**
+     * Returns number of <em>running requests</em> on all connectors as opposed to busy threads.
+     */
     @Override
     public int getBusyThreads() {
-        // TODO -- ongoing discussion with David
-        return 0;
+        return RunningRequestsThreadSetupAction.getRunningRequestCount();
     }
 
     @Override
@@ -105,10 +110,12 @@ public class UndertowConnector implements Connector {
         return 0;
     }
 
+    /**
+     * Returns number of requests on <em>all</em> connectors as opposed to only this connector.
+     */
     @Override
     public long getRequestCount() {
-        // TODO -- ongoing discussion with David
-        return 0;
+        return RequestCountHttpHandler.getRequestCount();
     }
 
     @Override
