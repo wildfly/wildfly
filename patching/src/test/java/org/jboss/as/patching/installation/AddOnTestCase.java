@@ -26,7 +26,6 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static org.jboss.as.patching.Constants.ADD_ONS;
-import static org.jboss.as.patching.Constants.NOT_PATCHED;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.patching.Constants.BASE;
@@ -44,15 +43,11 @@ import static org.jboss.as.patching.runner.TestUtils.tree;
 import java.io.File;
 import java.util.Collection;
 
-import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
-import org.jboss.as.patching.metadata.impl.IdentityImpl;
-import org.jboss.as.patching.metadata.impl.PatchElementImpl;
-import org.jboss.as.patching.metadata.impl.PatchElementProviderImpl;
 import org.jboss.as.patching.runner.AbstractTaskTestCase;
 import org.jboss.as.patching.runner.ContentModificationUtils;
 import org.jboss.as.patching.runner.PatchingResult;
@@ -79,7 +74,7 @@ public class AddOnTestCase extends AbstractTaskTestCase {
         assertEquals(addOnName, addOn.getName());
 
         PatchableTarget.TargetInfo targetInfo = addOn.loadTargetInfo();
-        assertEquals(BASE, targetInfo.getReleasePatchID());
+        assertEquals(BASE, targetInfo.getCumulativePatchID());
         assertTrue(targetInfo.getPatchIDs().isEmpty());
         DirectoryStructure directoryStructure = targetInfo.getDirectoryStructure();
         assertEquals(newFile(env.getModuleRoot(), "system", ADD_ONS, addOnName), directoryStructure.getModuleRoot());
@@ -109,9 +104,9 @@ public class AddOnTestCase extends AbstractTaskTestCase {
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
-                .oneOffPatchIdentity(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion(), Constants.NOT_PATCHED)
+                .oneOffPatchIdentity(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion())
                 .getParent()
-                .oneOffPatchElement(addOnPatchID, addOnName, NOT_PATCHED, true)
+                .oneOffPatchElement(addOnPatchID, addOnName, true)
                     .addContentModification(moduleAdded)
                     .getParent()
                 .addContentModification(fileAdded)
@@ -147,7 +142,7 @@ public class AddOnTestCase extends AbstractTaskTestCase {
         InstalledIdentity installedIdentity = loadInstalledIdentity();
 
         PatchableTarget.TargetInfo identityInfo = installedIdentity.getIdentity().loadTargetInfo();
-        assertEquals(BASE, identityInfo.getReleasePatchID());
+        assertEquals(BASE, identityInfo.getCumulativePatchID());
         assertTrue(identityInfo.getPatchIDs().isEmpty());
 
         System.out.println("installation =>>");
@@ -164,9 +159,9 @@ public class AddOnTestCase extends AbstractTaskTestCase {
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
-                .oneOffPatchIdentity(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion(), Constants.NOT_PATCHED)
+                .oneOffPatchIdentity(installedIdentity.getIdentity().getName(), installedIdentity.getIdentity().getVersion())
                 .getParent()
-                .oneOffPatchElement(addOnPatchID, addOnName, NOT_PATCHED, true)
+                .oneOffPatchElement(addOnPatchID, addOnName, true)
                     .addContentModification(moduleAdded)
                     .getParent()
                 .addContentModification(fileAdded)

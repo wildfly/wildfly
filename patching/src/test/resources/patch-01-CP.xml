@@ -26,7 +26,7 @@
     <description>patch-01 description</description>
     <upgrade name="eap" version="1.2.3" to-version="2.3.4"/>
 
-    <layer id="element-01">
+    <element id="element-01">
         <description>element-01 description</description>
         <upgrade name="base" />
 
@@ -56,8 +56,8 @@
             <removed path="test/file" hash="1a2b3c4d" in-runtime-use="true" />
             <removed path="test/file4" hash="5e6f7a" directory="true" />
         </misc-files>
-    </layer>
-    <layer id="element-02">
+    </element>
+    <element id="element-02">
         <description>element-02 description</description>
         <upgrade name="xyz" />
 
@@ -81,10 +81,10 @@
             <removed path="test/otherfile" hash="1a2b3c4d" in-runtime-use="true" />
             <removed path="test/otherfile4" hash="5e6f7a" directory="true" />
         </misc-files>
-    </layer>
-    <add-on id="element-03">
+    </element>
+    <element id="element-03">
         <description>element-03 description</description>
-        <upgrade name="dev" />
+        <upgrade name="dev" add-on="true" />
 
         <modules>
             <added name="org.jboss.def" slot="prod" hash="1a2b3c4d"/>
@@ -106,5 +106,5 @@
             <removed path="test/anotherfile" hash="1a2b3c4d" in-runtime-use="true" />
             <removed path="test/anotherfile4" hash="5e6f7a" directory="true" />
         </misc-files>
-    </add-on>
+    </element>
 </patch>

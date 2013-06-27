@@ -64,7 +64,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), Constants.NOT_PATCHED)
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion())
                    .getParent()
                 .addContentModification(fileAdded)
                 .build();
@@ -97,7 +97,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(randomString())
                 .setDescription(randomString())
-                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), Constants.NOT_PATCHED)
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion())
                    .getParent()
                 .addContentModification(fileRemoved)
                 .build();
@@ -136,7 +136,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), Constants.NOT_PATCHED)
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion())
                    .getParent()
                 .addContentModification(fileModified)
                 .build();
@@ -188,7 +188,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), Constants.NOT_PATCHED)
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion())
                    .getParent()
                 .addContentModification(dirRemoved)
                 .build();

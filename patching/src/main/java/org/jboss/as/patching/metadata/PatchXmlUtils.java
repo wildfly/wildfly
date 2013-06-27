@@ -55,18 +55,17 @@ class PatchXmlUtils implements XMLStreamConstants {
 
     enum Element {
 
-        ADD_ON("add-on"),
         ADDED("added"),
         BUNDLES("bundles"),
         DESCRIPTION("description"),
         IDENTITY("identity"),
         REQUIRES("requires"),
-        LAYER("layer"),
         MISC_FILES("misc-files"),
         MODULES("modules"),
         NO_UPGRADE("no-upgrade"),
         ONE_OFF("one-off"),
         PATCH("patch"),
+        PATCH_ELEMENT("element"),
         REMOVED("removed"),
         UPDATED("updated"),
         UPGRADE("upgrade"),
@@ -98,7 +97,7 @@ class PatchXmlUtils implements XMLStreamConstants {
 
     enum Attribute {
 
-        CUMULATIVE_PATCH_ID("cumulative-patch-id"),
+        ADD_ON("add-on"),
         DIRECTORY("directory"),
         EXISTING_PATH("existing-path"),
         HASH("hash"),
@@ -151,24 +150,19 @@ class PatchXmlUtils implements XMLStreamConstants {
         // identity
         final Identity identity = patch.getIdentity();
         final Patch.PatchType type = identity.getPatchType();
-        if (type == Patch.PatchType.UPGRADE) {
+        if (type == Patch.PatchType.CUMULATIVE) {
             writer.writeStartElement(Element.UPGRADE.name);
-        } else if (type == Patch.PatchType.CUMULATIVE) {
-            writer.writeStartElement(Element.NO_UPGRADE.name);
         } else {
-            writer.writeStartElement(Element.ONE_OFF.name);
+            writer.writeStartElement(Element.NO_UPGRADE.name);
         }
 
         writer.writeAttribute(Attribute.NAME.name, identity.getName());
         writer.writeAttribute(Attribute.VERSION.name, identity.getVersion());
 
         // upgrade / no-upgrade
-        if(type == Patch.PatchType.UPGRADE) {
-            final Identity.IdentityUpgrade upgrade = identity.forType(Patch.PatchType.UPGRADE, Identity.IdentityUpgrade.class);
+        if(type == Patch.PatchType.CUMULATIVE) {
+            final Identity.IdentityUpgrade upgrade = identity.forType(Patch.PatchType.CUMULATIVE, Identity.IdentityUpgrade.class);
             writer.writeAttribute(Attribute.TO_VERSION.name, upgrade.getResultingVersion());
-        } else if (type == Patch.PatchType.ONE_OFF) {
-            final Identity.IdentityOneOffPatch oneOffPatch = identity.forType(Patch.PatchType.ONE_OFF, Identity.IdentityOneOffPatch.class);
-            writer.writeAttribute(Attribute.CUMULATIVE_PATCH_ID.name, oneOffPatch.getCumulativePatchId());
         }
 
         if(!identity.getRequires().isEmpty()) {
@@ -186,8 +180,7 @@ class PatchXmlUtils implements XMLStreamConstants {
         final List<PatchElement> elements = patch.getElements();
         for(PatchElement element : elements) {
 
-            final Element startElement = element.getProvider().isAddOn() ? Element.ADD_ON : Element.LAYER;
-            writer.writeStartElement(startElement.name);
+            writer.writeStartElement(Element.PATCH_ELEMENT.name);
             writer.writeAttribute(Attribute.ID.name, element.getId());
 
             if(element.getDescription() != null) {
@@ -204,20 +197,15 @@ class PatchXmlUtils implements XMLStreamConstants {
 
             // identity
             final Patch.PatchType elementPatchType =  provider.getPatchType();
-            if (elementPatchType == Patch.PatchType.UPGRADE) {
+            if (elementPatchType == Patch.PatchType.CUMULATIVE) {
                 writer.writeStartElement(Element.UPGRADE.name);
-            } else if (elementPatchType == Patch.PatchType.CUMULATIVE) {
-                writer.writeStartElement(Element.NO_UPGRADE.name);
             } else {
-                writer.writeStartElement(Element.ONE_OFF.name);
+                writer.writeStartElement(Element.NO_UPGRADE.name);
             }
 
             writer.writeAttribute(Attribute.NAME.name, provider.getName());
-
-            // upgrade / no-upgrade
-            if (elementPatchType == Patch.PatchType.ONE_OFF) {
-                final PatchElementProvider.OneOffPatchTarget oneOffPatch = provider.forType(Patch.PatchType.ONE_OFF, PatchElementProvider.OneOffPatchTarget.class);
-                writer.writeAttribute(Attribute.CUMULATIVE_PATCH_ID.name, oneOffPatch.getCumulativePatchId());
+            if (provider.isAddOn()) {
+                writer.writeAttribute(Attribute.ADD_ON.name, "true");
             }
 
             if(!provider.getRequires().isEmpty()) {
@@ -360,19 +348,13 @@ class PatchXmlUtils implements XMLStreamConstants {
                     patch.setDescription(reader.getElementText());
                     break;
                 case UPGRADE:
-                    parseIdentity(reader, patch, Patch.PatchType.UPGRADE);
-                    break;
-                case NO_UPGRADE:
                     parseIdentity(reader, patch, Patch.PatchType.CUMULATIVE);
                     break;
-                case ONE_OFF:
+                case NO_UPGRADE:
                     parseIdentity(reader, patch, Patch.PatchType.ONE_OFF);
                     break;
-                case LAYER:
-                    parseElement(reader, patch, false);
-                    break;
-                case ADD_ON:
-                    parseElement(reader, patch, true);
+                case PATCH_ELEMENT:
+                    parseElement(reader, patch);
                     break;
                 case MODULES:
                     parseModules(reader, modifications);
@@ -393,14 +375,14 @@ class PatchXmlUtils implements XMLStreamConstants {
         throw unexpectedElement(reader);
     }
 
-    static void parseElement(final XMLExtendedStreamReader reader, final PatchBuilder builder, boolean addOn) throws XMLStreamException {
+    static void parseElement(final XMLExtendedStreamReader reader, final PatchBuilder builder) throws XMLStreamException {
 
         String id = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            if(Attribute.ID == attribute) {
+            if (Attribute.ID == attribute) {
                 id = value;
             } else {
                 throw unexpectedAttribute(reader, i);
@@ -417,13 +399,10 @@ class PatchXmlUtils implements XMLStreamConstants {
                     patchElement.setDescription(reader.getElementText());
                     break;
                 case UPGRADE:
-                    parseElementProvider(reader, patchElement, Patch.PatchType.UPGRADE, addOn);
+                    parseElementProvider(reader, patchElement, Patch.PatchType.CUMULATIVE);
                     break;
                 case NO_UPGRADE:
-                    parseElementProvider(reader, patchElement, Patch.PatchType.CUMULATIVE, addOn);
-                    break;
-                case ONE_OFF:
-                    parseElementProvider(reader, patchElement, Patch.PatchType.ONE_OFF, addOn);
+                    parseElementProvider(reader, patchElement, Patch.PatchType.ONE_OFF);
                     break;
                 case MODULES:
                     parseModules(reader, modifications);
@@ -440,18 +419,18 @@ class PatchXmlUtils implements XMLStreamConstants {
         }
     }
 
-    static void parseElementProvider(final XMLExtendedStreamReader reader, PatchElementImpl patchElement, Patch.PatchType patchType, boolean isAddOn) throws XMLStreamException {
+    static void parseElementProvider(final XMLExtendedStreamReader reader, PatchElementImpl patchElement, Patch.PatchType patchType) throws XMLStreamException {
 
         String name = null;
-        String cumulativePatchId = null;
+        boolean isAddOn = false;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            if(Attribute.CUMULATIVE_PATCH_ID == attribute) {
-                cumulativePatchId = value;
-            } else if(Attribute.NAME == attribute) {
+            if(Attribute.NAME == attribute) {
                 name = value;
+            } else if (Attribute.ADD_ON == attribute) {
+                isAddOn = Boolean.valueOf(value);
             } else {
                 throw unexpectedAttribute(reader, i);
             }
@@ -460,14 +439,11 @@ class PatchXmlUtils implements XMLStreamConstants {
         final PatchElementProviderImpl provider = new PatchElementProviderImpl(name, isAddOn);
         patchElement.setProvider(provider);
         switch (patchType) {
-            case UPGRADE:
+            case CUMULATIVE:
                 provider.upgrade();
                 break;
-            case CUMULATIVE:
-                provider.cumulativePatch();
-                break;
             case ONE_OFF:
-                provider.oneOffPatch(cumulativePatchId);
+                provider.oneOffPatch();
                 break;
             default:
                 throw new IllegalStateException();
@@ -501,15 +477,12 @@ class PatchXmlUtils implements XMLStreamConstants {
         String name = null;
         String version = null;
         String resultingVersion = null;
-        String cumulativePatchId = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             if(Attribute.VERSION == attribute) {
                 version = value;
-            } else if(Attribute.CUMULATIVE_PATCH_ID == attribute) {
-                cumulativePatchId = value;
             } else if(Attribute.TO_VERSION == attribute) {
                 resultingVersion = value;
             } else if(Attribute.NAME == attribute) {
@@ -521,14 +494,11 @@ class PatchXmlUtils implements XMLStreamConstants {
 
         final PatchIdentityBuilder identityBuilder;
         switch (patchType) {
-            case UPGRADE:
+            case CUMULATIVE:
                 identityBuilder = builder.upgradeIdentity(name, version, resultingVersion);
                 break;
-            case CUMULATIVE:
-                identityBuilder = builder.cumulativePatchIdentity(name, version);
-                break;
             case ONE_OFF:
-                identityBuilder = builder.oneOffPatchIdentity(name, version, cumulativePatchId);
+                identityBuilder = builder.oneOffPatchIdentity(name, version);
                 break;
             default:
                 throw new IllegalStateException();

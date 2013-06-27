@@ -80,13 +80,8 @@ public class PatchToolImpl implements PatchTool {
                 }
 
                 @Override
-                public String getReleasePatchID() {
-                    return info.getReleasePatchID();
-                }
-
-                @Override
                 public String getCumulativePatchID() {
-                    return info.getCumulativeID();
+                    return info.getCumulativePatchID();
                 }
 
                 @Override

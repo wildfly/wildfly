@@ -122,8 +122,8 @@ import org.jboss.as.patching.installation.InstalledImage;
  *     <li>let paths be a list of File</li>
  *     <li>for each layer in {@link org.jboss.as.patching.installation.InstalledImage#getLayersConf()} file and "base":</li>
  *     <ol>
- *        <li>read the release-patch-id in {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getInstallationInfo()}</li>
- *        <li>append {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getModulePatchDirectory(String)} for the release-patch-id (if it exists) to the paths</li>
+ *        <li>read the cumulative-patch-id in {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getInstallationInfo()}</li>
+ *        <li>append {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getModulePatchDirectory(String)} for the cumulative-patch-id (if it exists) to the paths</li>
  *        <li>for each one-off patchIDs in {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getInstallationInfo()}</li>
  *        <ol>
  *            <li>append {@link org.jboss.as.patching.installation.Layer#loadTargetInfo()#getModulePatchDirectory(String)} (if it exists) to the paths</li>
@@ -131,8 +131,8 @@ import org.jboss.as.patching.installation.InstalledImage;
  *     </ol>
  *     <li>for each addOn in {@link InstalledImage#getModulesDir()}}/system/add-ons</li>
  *     <ol>
- *        <li>read the release-patch-id in {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getInstallationInfo()}</li>
- *        <li>append {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getModulePatchDirectory(String)} for the release-patch-id (if it exists) to the paths</li>
+ *        <li>read the cumulative-patch-id in {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getInstallationInfo()}</li>
+ *        <li>append {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getModulePatchDirectory(String)} for the cumulative-patch-id (if it exists) to the paths</li>
  *        <li>for each one-off patchIDs in {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getInstallationInfo()}</li>
  *        <ol>
  *            <li>append {@link org.jboss.as.patching.installation.AddOn#loadTargetInfo()#getModulePatchDirectory(String)} (if it exists) to the paths</li>

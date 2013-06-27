@@ -44,15 +44,4 @@ public interface PatchElementProvider extends UpgradeCondition {
 
     <T extends PatchElementProvider> T forType(Patch.PatchType patchType, Class<T> clazz);
 
-    public interface OneOffPatchTarget extends PatchElementProvider {
-
-        /**
-         * Get the cumulative patch id
-         *
-         * @return the cumulative patch id
-         */
-        String getCumulativePatchId();
-
-    }
-
 }

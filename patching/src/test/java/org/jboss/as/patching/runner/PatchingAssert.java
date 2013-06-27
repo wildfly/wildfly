@@ -28,7 +28,6 @@ import static junit.framework.Assert.assertEquals;
 import static org.jboss.as.patching.HashUtils.bytesToHexString;
 import static org.jboss.as.patching.HashUtils.hashFile;
 import static org.jboss.as.patching.metadata.Patch.PatchType.CUMULATIVE;
-import static org.jboss.as.patching.metadata.Patch.PatchType.UPGRADE;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -210,13 +209,10 @@ public class PatchingAssert {
     }
 
     public static void assertPatchHasBeenApplied(PatchingResult result, Patch patch) {
-        if (UPGRADE == patch.getIdentity().getPatchType()) {
-            assertEquals(patch.getPatchId(), result.getPatchInfo().getReleasePatchID());
-            assertTrue(result.getPatchInfo().getPatchIDs().isEmpty());
-            assertEquals(patch.getIdentity().forType(UPGRADE, org.jboss.as.patching.metadata.Identity.IdentityUpgrade.class).getResultingVersion(), result.getPatchInfo().getVersion());
-        } else if (CUMULATIVE == patch.getIdentity().getPatchType()) {
+        if (CUMULATIVE == patch.getIdentity().getPatchType()) {
             assertEquals(patch.getPatchId(), result.getPatchInfo().getCumulativePatchID());
             assertTrue(result.getPatchInfo().getPatchIDs().isEmpty());
+            assertEquals(patch.getIdentity().forType(CUMULATIVE, org.jboss.as.patching.metadata.Identity.IdentityUpgrade.class).getResultingVersion(), result.getPatchInfo().getVersion());
         } else {
             assertTrue(result.getPatchInfo().getPatchIDs().contains(patch.getPatchId()));
             // applied one-off patch is at the top of the patchIDs
@@ -233,15 +229,14 @@ public class PatchingAssert {
 
     public static void assertPatchHasBeenRolledBack(PatchingResult result, Patch patch, PatchInfo expectedPatchInfo) {
         assertEquals(expectedPatchInfo.getVersion(), result.getPatchInfo().getVersion());
-        assertEquals(expectedPatchInfo.getReleasePatchID(), result.getPatchInfo().getReleasePatchID());
+        assertEquals(expectedPatchInfo.getCumulativePatchID(), result.getPatchInfo().getCumulativePatchID());
         assertEquals(expectedPatchInfo.getPatchIDs(), result.getPatchInfo().getPatchIDs());
 
         // assertNoResourcesForPatch(result.getPatchInfo(), patch);
     }
 
     public static void assertPatchHasBeenRolledBack(PatchingResult result, Patch patch, PatchableTarget.TargetInfo expectedPatchInfo) {
-        assertEquals(expectedPatchInfo.getReleasePatchID(), result.getPatchInfo().getReleasePatchID());
-        assertEquals(expectedPatchInfo.getCumulativeID(), result.getPatchInfo().getCumulativePatchID());
+        assertEquals(expectedPatchInfo.getCumulativePatchID(), result.getPatchInfo().getCumulativePatchID());
         assertEquals(expectedPatchInfo.getPatchIDs(), result.getPatchInfo().getPatchIDs());
 
         // assertNoResourcesForPatch(result.getPatchInfo(), patch);
@@ -249,7 +244,7 @@ public class PatchingAssert {
 
     public static void assertPatchHasBeenRolledBack(PatchingResult result, Identity expectedIdentity) throws IOException {
         assertEquals(expectedIdentity.getVersion(), result.getPatchInfo().getVersion());
-        assertEquals(expectedIdentity.loadTargetInfo().getReleasePatchID(), result.getPatchInfo().getReleasePatchID());
+        assertEquals(expectedIdentity.loadTargetInfo().getCumulativePatchID(), result.getPatchInfo().getCumulativePatchID());
         assertEquals(expectedIdentity.loadTargetInfo().getPatchIDs(), result.getPatchInfo().getPatchIDs());
     }
 
@@ -260,8 +255,8 @@ public class PatchingAssert {
     }
 
     public static void assertInstallationIsPatched(Patch patch, PatchableTarget.TargetInfo targetInfo) {
-        if (UPGRADE == patch.getIdentity().getPatchType()) {
-            assertEquals(patch.getPatchId(), targetInfo.getReleasePatchID());
+        if (CUMULATIVE == patch.getIdentity().getPatchType()) {
+            assertEquals(patch.getPatchId(), targetInfo.getCumulativePatchID());
         } else {
             Assert.assertTrue(targetInfo.getPatchIDs().contains(patch.getPatchId()));
             // applied one-off patch is at the top of the patchIDs

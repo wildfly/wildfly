@@ -34,7 +34,7 @@
         </requires>
     </upgrade>
 
-    <layer id="patch-01-e01">
+    <element id="patch-01-e01">
         <description>patch element description</description>
         
         <upgrade name="base">
@@ -47,38 +47,38 @@
         </upgrade>
 
         <modules>
-            <added-module name="org.jboss.as.test" slot="prod" hash="xxxx"/>
-            <added-module name="org.jboss.as.test2" slot="prod" hash="yyyy"/>
-            <updated-module name="org.jboss.as.test" hash="1a2b3c4d" new-hash="zzzz"/>
-            <updated-module name="org.jboss.as.test3" hash="5e6f7a" new-hash="aaaa"/>
-            <removed-module name="org.jboss.as.test" hash="1a2b3c4d" />
-            <removed-module name="org.jboss.as.test4" hash="5e6f7a" />
+            <added name="org.jboss.as.test" slot="prod" hash="xxxx"/>
+            <added name="org.jboss.as.test2" slot="prod" hash="yyyy"/>
+            <updated name="org.jboss.as.test" hash="1a2b3c4d" new-hash="zzzz"/>
+            <updated name="org.jboss.as.test3" hash="5e6f7a" new-hash="aaaa"/>
+            <removed name="org.jboss.as.test" hash="1a2b3c4d" />
+            <removed name="org.jboss.as.test4" hash="5e6f7a" />
         </modules>
 
         <bundles>
-            <added-bundle name="org.jboss.as.test" slot="prod" hash="xxxx"/>
-            <added-bundle name="org.jboss.as.test2" slot="prod" hash="xxxx"/>
-            <updated-bundle name="org.jboss.as.test" hash="1a2b3c4d" new-hash="zzzz"/>
-            <updated-bundle name="org.jboss.as.test3" hash="5e6f7a" new-hash="aaaa"/>
-            <removed-bundle name="org.jboss.as.test" hash="1a2b3c4d" />
-            <removed-bundle name="org.jboss.as.test4" hash="5e6f7a" />
+            <added name="org.jboss.as.test" slot="prod" hash="xxxx"/>
+            <added name="org.jboss.as.test2" slot="prod" hash="xxxx"/>
+            <updated name="org.jboss.as.test" hash="1a2b3c4d" new-hash="zzzz"/>
+            <updated name="org.jboss.as.test3" hash="5e6f7a" new-hash="aaaa"/>
+            <removed name="org.jboss.as.test" hash="1a2b3c4d" />
+            <removed name="org.jboss.as.test4" hash="5e6f7a" />
         </bundles>
 
         <misc-files>
-            <added-misc-content path="test/file" hash="1a2b3c4d" />
-            <added-misc-content path="test/file2" hash="5e6f7a" directory="true" />
-            <updated-misc-content path="test/file" hash="1a2b3c4d" existing-hash="2b3c4d5e" />
-            <updated-misc-content path="test/file3" hash="5e6f7a" existing-hash="6e7f8e" directory="true" />
-            <removed-misc-content path="test/file" existing-hash="1a2b3c4d" in-runtime-use="true" />
-            <removed-misc-content path="test/file4" existing-hash="5e6f7a" directory="true" />
+            <added path="test/file" hash="1a2b3c4d" />
+            <added path="test/file2" hash="5e6f7a" directory="true" />
+            <updated path="test/file" hash="1a2b3c4d" existing-hash="2b3c4d5e" />
+            <updated path="test/file3" hash="5e6f7a" existing-hash="6e7f8e" directory="true" />
+            <removed path="test/file" existing-hash="1a2b3c4d" in-runtime-use="true" />
+            <removed path="test/file4" existing-hash="5e6f7a" directory="true" />
         </misc-files>
         
-    </layer>
+    </element>
 
-    <add-on id="patch-01-e02">
+    <element id="patch-01-e02">
         <description>patch element description</description>
         
-        <upgrade name="addon1">
+        <upgrade name="addon1" add-on="true">
             <!-- a cumulative (i.e. version upgrading) patch should not be based upon any one-off patches
                  so, it shouldn't contain the includes element -->
             <requires>
@@ -88,32 +88,32 @@
         </upgrade>
 
         <modules>
-            <added-module name="org.jboss.as.test" slot="prod" hash="xxxx"/>
-            <added-module name="org.jboss.as.test2" slot="prod" hash="yyyy"/>
-            <updated-module name="org.jboss.as.test" hash="1a2b3c4d" new-hash="zzzz"/>
-            <updated-module name="org.jboss.as.test3" hash="5e6f7a" new-hash="aaaa"/>
-            <removed-module name="org.jboss.as.test" hash="1a2b3c4d" />
-            <removed-module name="org.jboss.as.test4" hash="5e6f7a" />
+            <added name="org.jboss.as.test" slot="prod" hash="xxxx"/>
+            <added name="org.jboss.as.test2" slot="prod" hash="yyyy"/>
+            <updated name="org.jboss.as.test" hash="1a2b3c4d" new-hash="zzzz"/>
+            <updated name="org.jboss.as.test3" hash="5e6f7a" new-hash="aaaa"/>
+            <removed name="org.jboss.as.test" hash="1a2b3c4d" />
+            <removed name="org.jboss.as.test4" hash="5e6f7a" />
         </modules>
 
         <bundles>
-            <added-bundle name="org.jboss.as.test" slot="prod" hash="xxxx"/>
-            <added-bundle name="org.jboss.as.test2" slot="prod" hash="xxxx"/>
-            <updated-bundle name="org.jboss.as.test" hash="1a2b3c4d" new-hash="zzzz"/>
-            <updated-bundle name="org.jboss.as.test3" hash="5e6f7a" new-hash="aaaa"/>
-            <removed-bundle name="org.jboss.as.test" hash="1a2b3c4d" />
-            <removed-bundle name="org.jboss.as.test4" hash="5e6f7a" />
+            <added name="org.jboss.as.test" slot="prod" hash="xxxx"/>
+            <added name="org.jboss.as.test2" slot="prod" hash="xxxx"/>
+            <updated name="org.jboss.as.test" hash="1a2b3c4d" new-hash="zzzz"/>
+            <updated name="org.jboss.as.test3" hash="5e6f7a" new-hash="aaaa"/>
+            <removed name="org.jboss.as.test" hash="1a2b3c4d" />
+            <removed name="org.jboss.as.test4" hash="5e6f7a" />
         </bundles>
 
         <misc-files>
-            <added-misc-content path="test/file" hash="1a2b3c4d" />
-            <added-misc-content path="test/file2" hash="5e6f7a" directory="true" />
-            <updated-misc-content path="test/file" hash="1a2b3c4d" existing-hash="2b3c4d5e" />
-            <updated-misc-content path="test/file3" hash="5e6f7a" existing-hash="6e7f8e" directory="true" />
-            <removed-misc-content path="test/file" existing-hash="1a2b3c4d" in-runtime-use="true" />
-            <removed-misc-content path="test/file4" existing-hash="5e6f7a" directory="true" />
+            <added path="test/file" hash="1a2b3c4d" />
+            <added path="test/file2" hash="5e6f7a" directory="true" />
+            <updated path="test/file" hash="1a2b3c4d" existing-hash="2b3c4d5e" />
+            <updated path="test/file3" hash="5e6f7a" existing-hash="6e7f8e" directory="true" />
+            <removed path="test/file" existing-hash="1a2b3c4d" in-runtime-use="true" />
+            <removed path="test/file4" existing-hash="5e6f7a" directory="true" />
         </misc-files>
         
-    </add-on>
+    </element>
 
 </patch>

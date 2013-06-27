@@ -36,7 +36,6 @@ public class Constants {
     public static final String MISC = "misc";
     public static final String MODULES = "modules";
     public static final String NAME = "name";
-    public static final String RELEASE_PATCH_ID = "release-patch-id";
     public static final String VERSION = "version";
 
     public static final String PATCH = "patch";

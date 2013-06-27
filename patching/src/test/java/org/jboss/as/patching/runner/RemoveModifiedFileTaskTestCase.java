@@ -88,7 +88,7 @@ public class RemoveModifiedFileTaskTestCase extends AbstractTaskTestCase {
         patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), Constants.NOT_PATCHED)
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion())
                 .getParent()
                 .addContentModification(fileRemoved)
                 .build();

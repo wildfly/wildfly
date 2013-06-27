@@ -64,13 +64,8 @@ class PatchingTestStepBuilder extends AbstractPatchTestBuilder<PatchingTestStepB
         return returnThis();
     }
 
-    public PatchingTestStepBuilder cumulativePatchIdentity(String version) {
-        builder.cumulativePatchIdentity(AbstractPatchingTest.PRODUCT_NAME, version);
-        return returnThis();
-    }
-
-    public PatchingTestStepBuilder oneOffPatchIdentity(String version, String cumulativeId) {
-        builder.oneOffPatchIdentity(AbstractPatchingTest.PRODUCT_NAME, version, cumulativeId);
+    public PatchingTestStepBuilder oneOffPatchIdentity(String version) {
+        builder.oneOffPatchIdentity(AbstractPatchingTest.PRODUCT_NAME, version);
         return returnThis();
     }
 
@@ -79,13 +74,8 @@ class PatchingTestStepBuilder extends AbstractPatchTestBuilder<PatchingTestStepB
         return new PatchElementTestStepBuilder(patchId, elementBuilder, this);
     }
 
-    public PatchElementTestStepBuilder cumulativePatchElement(String patchId, String layerName, boolean isAddon) {
-        final PatchElementBuilder elementBuilder = builder.cumulativePatchElement(patchId, layerName, isAddon);
-        return new PatchElementTestStepBuilder(patchId, elementBuilder, this);
-    }
-
-    public PatchElementTestStepBuilder oneOffPatchElement(String patchId, String layerName, String cumulativeId, boolean isAddon) {
-        final PatchElementBuilder elementBuilder = builder.oneOffPatchElement(patchId, layerName, cumulativeId, isAddon);
+    public PatchElementTestStepBuilder oneOffPatchElement(String patchId, String layerName, boolean isAddon) {
+        final PatchElementBuilder elementBuilder = builder.oneOffPatchElement(patchId, layerName, isAddon);
         return new PatchElementTestStepBuilder(patchId, elementBuilder, this);
     }
 

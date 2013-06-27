@@ -35,12 +35,11 @@ import org.jboss.as.patching.metadata.PatchElementProvider;
  * @author Alexey Loubyansky
  *
  */
-public class PatchElementProviderImpl implements PatchElementProvider, PatchElementProvider.OneOffPatchTarget, RequiresCallback, IncompatibleWithCallback {
+public class PatchElementProviderImpl implements PatchElementProvider, RequiresCallback, IncompatibleWithCallback {
 
     private final String name;
     private final boolean isAddOn;
     private Patch.PatchType patchType;
-    private String cumulativeTarget = null;
     private Collection<String> incompatibleWith = Collections.emptyList();
     private Collection<String> requires = Collections.emptyList();
 
@@ -73,11 +72,6 @@ public class PatchElementProviderImpl implements PatchElementProvider, PatchElem
     }
 
     @Override
-    public String getCumulativePatchId() {
-        return cumulativeTarget;
-    }
-
-    @Override
     public boolean isAddOn() {
         return isAddOn;
     }
@@ -88,19 +82,11 @@ public class PatchElementProviderImpl implements PatchElementProvider, PatchElem
     }
 
     public void upgrade() {
-        this.patchType = Patch.PatchType.UPGRADE;
-    }
-
-    public void cumulativePatch() {
         this.patchType = Patch.PatchType.CUMULATIVE;
     }
 
-    public void oneOffPatch(String target) {
+    public void oneOffPatch() {
         this.patchType = Patch.PatchType.ONE_OFF;
-        this.cumulativeTarget = target;
-        if(target == null) {
-            throw new IllegalArgumentException("The cumulative target is null");
-        }
     }
 
     @Override
@@ -128,11 +114,6 @@ public class PatchElementProviderImpl implements PatchElementProvider, PatchElem
     public <T extends PatchElementProvider> T forType(Patch.PatchType patchType, Class<T> clazz) {
         if (patchType != this.patchType) {
             throw new IllegalStateException(this.patchType + " was: " + patchType);
-        }
-        if (patchType == Patch.PatchType.ONE_OFF) {
-            if (cumulativeTarget == null) {
-                throw new IllegalStateException("Cumulative target is missing");
-            }
         }
         return clazz.cast(this);
     }
