@@ -42,12 +42,13 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.framework.spi.AbstractBundleRevisionAdaptor;
 import org.jboss.osgi.framework.spi.BundleManager;
+import org.jboss.osgi.framework.spi.IntegrationConstants;
 import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.resolver.XBundleRevision;
-import org.jboss.osgi.resolver.XBundleRevisionBuilder;
 import org.jboss.osgi.resolver.XBundleRevisionBuilderFactory;
 import org.jboss.osgi.resolver.XEnvironment;
+import org.jboss.osgi.resolver.XResourceBuilder;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -79,10 +80,9 @@ public class ModuleRegistrationTracker extends AbstractService<Void> {
 
     public synchronized void registerModule(Module module, OSGiMetaData metadata) {
         BundleContext context = injectedSystemContext.getOptionalValue();
-        XEnvironment env = injectedEnvironment.getOptionalValue();
         Registration reg = new Registration(module, metadata);
-        if (context != null && env != null) {
-            registerInternal(context, env, reg);
+        if (context != null) {
+            reg.brev = registerInternal(context, reg);
         }
         registrations.put(module, reg);
     }
@@ -101,39 +101,43 @@ public class ModuleRegistrationTracker extends AbstractService<Void> {
         LOGGER.tracef("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
 
         BundleContext syscontext = injectedSystemContext.getValue();
-        XEnvironment env = injectedEnvironment.getValue();
         for (Registration reg : registrations.values()) {
-            registerInternal(syscontext, env, reg);
+            reg.brev = registerInternal(syscontext, reg);
         }
         registrations.clear();
     }
 
-    private XBundleRevision registerInternal(final BundleContext context, final XEnvironment env, final Registration reg) {
+    private XBundleRevision registerInternal(final BundleContext context, final Registration reg) {
         final OSGiMetaData metadata = reg.metadata;
         final Module module = reg.module;
-
         LOGGER.infoRegisterModule(module.getIdentifier());
-        XBundleRevisionBuilderFactory factory = new XBundleRevisionBuilderFactory() {
-            @Override
-            public XBundleRevision createResource() {
-                return new AbstractBundleRevisionAdaptor(context, module);
-            }
-        };
 
+        XBundleRevision brev;
         try {
-            XBundleRevisionBuilder builder = XBundleRevisionBuilderFactory.create(factory);
+            XBundleRevisionBuilderFactory factory = new XBundleRevisionBuilderFactory() {
+                @Override
+                public XBundleRevision createResource() {
+                    return new AbstractBundleRevisionAdaptor(context, module);
+                }
+            };
+
+            XResourceBuilder<XBundleRevision> builder = XBundleRevisionBuilderFactory.create(factory);
             if (metadata != null) {
                 builder.loadFrom(metadata);
+                brev = builder.getResource();
+                brev.putAttachment(IntegrationConstants.OSGI_METADATA_KEY, metadata);
             } else {
                 builder.loadFrom(module);
+                brev = builder.getResource();
             }
-            reg.brev = builder.getResource();
-            env.installResources(reg.brev);
+
+            injectedEnvironment.getValue().installResources(brev);
+
         } catch (Throwable th) {
             throw MESSAGES.illegalStateFailedToRegisterModule(th, module);
         }
 
-        return reg.brev;
+        return brev;
     }
 
     private void unregisterInternal(final XEnvironment env, final Registration reg) {

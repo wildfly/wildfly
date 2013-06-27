@@ -24,11 +24,8 @@ package org.jboss.as.osgi.service;
 import static org.jboss.as.network.SocketBinding.JBOSS_BINDING_NAME;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
 
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Dictionary;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -41,6 +38,7 @@ import java.util.concurrent.ThreadFactory;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.SubsystemExtension;
 import org.jboss.as.osgi.management.OSGiRuntimeResource;
 import org.jboss.msc.service.AbstractService;
@@ -58,16 +56,13 @@ import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.jboss.osgi.framework.spi.SystemServices;
 import org.jboss.osgi.framework.spi.SystemServicesPlugin;
 import org.jboss.osgi.provision.AbstractResourceProvisioner;
-import org.jboss.osgi.provision.ProvisionException;
 import org.jboss.osgi.provision.XResourceProvisioner;
-import org.jboss.osgi.repository.XPersistentRepository;
+import org.jboss.osgi.repository.ResourceInstaller;
 import org.jboss.osgi.repository.XRepository;
 import org.jboss.osgi.resolver.XResolver;
-import org.jboss.osgi.resolver.XResource;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
-import org.osgi.service.repository.RepositoryContent;
+import org.osgi.service.repository.Repository;
 import org.osgi.util.xml.XMLParserActivator;
 
 /**
@@ -81,8 +76,9 @@ final class SystemServicesIntegration extends SystemServicesPlugin {
     private final InjectedValue<ModelController> injectedModelController = new InjectedValue<ModelController>();
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
     private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
-    private final InjectedValue<XPersistentRepository> injectedRepository = new InjectedValue<XPersistentRepository>();
+    private final InjectedValue<XRepository> injectedRepository = new InjectedValue<XRepository>();
     private final InjectedValue<XResolver> injectedResolver = new InjectedValue<XResolver>();
+    private final InjectedValue<ResourceInstaller> injectedResourceInstaller = new InjectedValue<ResourceInstaller>();
     private final List<SubsystemExtension> extensions;
     private final OSGiRuntimeResource resource;
     private ServiceContainer serviceContainer;
@@ -97,7 +93,8 @@ final class SystemServicesIntegration extends SystemServicesPlugin {
     protected void addServiceDependencies(ServiceBuilder<SystemServices> builder) {
         super.addServiceDependencies(builder);
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, injectedModelController);
-        builder.addDependency(RepositoryService.SERVICE_NAME, XPersistentRepository.class, injectedRepository);
+        builder.addDependency(OSGiConstants.REPOSITORY_SERVICE_NAME, XRepository.class, injectedRepository);
+        builder.addDependency(ResourceInstallerService.SERVICE_NAME, ResourceInstaller.class, injectedResourceInstaller);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
         builder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, injectedBundleContext);
         builder.addDependency(Services.RESOLVER, XResolver.class, injectedResolver);
@@ -148,10 +145,10 @@ final class SystemServicesIntegration extends SystemServicesPlugin {
 
                 registerJAXPServices(syscontext);
                 registerServiceContainer(syscontext);
-                registerSocketBindings(syscontext);
-                registerRepository(syscontext);
-                registerResourceProvisioner(syscontext);
-                registerModelControllerClient(syscontext);
+                registerSocketBindingServices(syscontext);
+                registerRepositoryServices(syscontext);
+                registerProvisionerServices(syscontext);
+                registerModelControllerServices(syscontext);
             }
 
             @Override
@@ -182,39 +179,22 @@ final class SystemServicesIntegration extends SystemServicesPlugin {
         syscontext.registerService(ServiceContainer.class, serviceContainer, null);
     }
 
-    private void registerRepository(BundleContext syscontext) {
+    private void registerRepositoryServices(BundleContext syscontext) {
         XRepository repository = injectedRepository.getValue();
-        syscontext.registerService(XRepository.class, repository, null);
+        String[] classes = new String[] { XRepository.class.getName(), Repository.class.getName() };
+        syscontext.registerService(classes, repository, null);
+        ResourceInstaller installer = injectedResourceInstaller.getValue();
+        syscontext.registerService(ResourceInstaller.class, installer, null);
     }
 
-    private void registerResourceProvisioner(final BundleContext syscontext) {
+    private void registerProvisionerServices(final BundleContext syscontext) {
         XResolver resolver = injectedResolver.getValue();
-        XPersistentRepository repository = injectedRepository.getValue();
-        XResourceProvisioner provisioner = new AbstractResourceProvisioner(resolver, repository, XResource.TYPE_BUNDLE) {
-            @Override
-            @SuppressWarnings("unchecked")
-            public <T> List<T> installResources(List<XResource> resources, Class<T> type) throws ProvisionException {
-                List<T> result = new ArrayList<T>();
-                for (XResource res : resources) {
-                    String name = res.getIdentityCapability().getName();
-                    String location = "provisioned-resource/" + name;
-                    InputStream input = ((RepositoryContent) res).getContent();
-                    try {
-                        Bundle bundle = syscontext.installBundle(location, input);
-                        result.add((T) bundle);
-                    } catch (BundleException ex) {
-                        throw new ProvisionException(ex);
-                    }
-                }
-                return Collections.unmodifiableList(result);
-            }
-        };
-        Dictionary<String, String> props = new Hashtable<String, String>();
-        props.put("type", XResource.TYPE_BUNDLE);
-        syscontext.registerService(XResourceProvisioner.class, provisioner, props);
+        XRepository repository = injectedRepository.getValue();
+        XResourceProvisioner provisioner = new AbstractResourceProvisioner(resolver, repository);
+        syscontext.registerService(XResourceProvisioner.class, provisioner, null);
     }
 
-    private void registerModelControllerClient(final BundleContext syscontext) {
+    private void registerModelControllerServices(final BundleContext syscontext) {
         // The ExecutorService that is used by the ModelControllerClient service
         controllerThreadExecutor = Executors.newSingleThreadExecutor(new ThreadFactory() {
             @Override
@@ -231,7 +211,7 @@ final class SystemServicesIntegration extends SystemServicesPlugin {
         syscontext.registerService(ModelControllerClient.class, client, null);
     }
 
-    private void registerSocketBindings(final BundleContext syscontext) {
+    private void registerSocketBindingServices(final BundleContext syscontext) {
         BundleManager bundleManager = injectedBundleManager.getValue();
         String bindingNames = syscontext.getProperty(FrameworkBootstrapService.MAPPED_OSGI_SOCKET_BINDINGS);
         if (bindingNames != null) {

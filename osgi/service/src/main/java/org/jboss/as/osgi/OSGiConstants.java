@@ -73,17 +73,20 @@ public interface OSGiConstants {
     /** Attachment key for the OSGi system context. */
     AttachmentKey<BundleContext> SYSTEM_CONTEXT_KEY = AttachmentKey.create(BundleContext.class);
 
-    /** The {@link org.jboss.as.osgi.parser.SubsystemState} service */
-    ServiceName SUBSYSTEM_STATE_SERVICE_NAME = SERVICE_BASE_NAME.append("SubsystemState");
+    /** The {@link org.jboss.osgi.resolver.XEnvironment} service */
+    ServiceName ENVIRONMENT_SERVICE_NAME = SERVICE_BASE_NAME.append("XEnvironment");
 
     /** The {@link org.jboss.osgi.provision.XResourceProvisioner} service */
     ServiceName PROVISIONER_SERVICE_NAME = SERVICE_BASE_NAME.append("XResourceProvisioner");
 
-    /** The {@link org.jboss.osgi.resolver.XEnvironment} service */
-    ServiceName ENVIRONMENT_SERVICE_NAME = SERVICE_BASE_NAME.append("XEnvironment");
+    /** The {@link org.jboss.osgi.resolver.XResolver} service */
+    ServiceName RESOLVER_SERVICE_NAME = SERVICE_BASE_NAME.append("XResolver");
 
-    /** The {@link org.jboss.osgi.resolver.XEnvironment} service */
-    ServiceName ABSTRACT_RESOLVER_SERVICE_NAME = SERVICE_BASE_NAME.append("XResolver");
+    /** The {@link org.jboss.osgi.repository.XRepository} service */
+    ServiceName REPOSITORY_SERVICE_NAME = SERVICE_BASE_NAME.append("XRepository");
+
+    /** The {@link org.jboss.as.osgi.parser.SubsystemState} service */
+    ServiceName SUBSYSTEM_STATE_SERVICE_NAME = SERVICE_BASE_NAME.append("SubsystemState");
 
     /** The OSGi deployment type */
     enum DeploymentType {
