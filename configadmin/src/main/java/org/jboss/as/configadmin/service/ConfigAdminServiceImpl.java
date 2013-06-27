@@ -53,7 +53,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.spi.util.UnmodifiableDictionary;
 
 /**
  * Maintains a set of {@link Dictionary}s in the domain model keyed be persistent ID (PID).

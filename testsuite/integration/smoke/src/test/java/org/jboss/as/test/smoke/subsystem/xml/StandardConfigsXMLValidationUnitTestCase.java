@@ -107,22 +107,12 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         parseXml("standalone/configuration/standalone-full.xml");
     }
 
-    @Test
-    public void testStandaloneOSGi() throws Exception {
-        parseXml("docs/examples/configs/standalone-osgi-only.xml");
-    }
-
-  //TODO Leave commented out until domain-osgi-only.xml and domain-jts.xml are definitely removed from the configuration
+  //TODO Leave commented out until domain-jts.xml is definitely removed from the configuration
 //    @Test
 //    public void testDomainJTS() throws Exception {
 //        parseXml("docs/examples/configs/domain-jts.xml");
 //    }
 //
-//    @Test
-//    public void testDomainOSGiOnly() throws Exception {
-//        parseXml("docs/examples/configs/domain-osgi-only.xml");
-//    }
-
     @Test
     public void testHornetQColocated() throws Exception {
         parseXml("docs/examples/configs/standalone-hornetq-colocated.xml");

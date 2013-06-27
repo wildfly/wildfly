@@ -999,34 +999,6 @@
             <maven-resource group="org.wildfly" artifact="wildfly-naming"/>
         </module-def>
 
-        <module-def name="org.jboss.as.osgi">
-            <maven-resource group="org.wildfly" artifact="wildfly-osgi-service"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.osgi.http">
-            <maven-resource group="org.wildfly" artifact="wildfly-osgi-http"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.osgi.jmx">
-            <maven-resource group="org.wildfly" artifact="wildfly-osgi-jmx"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.osgi.jpa">
-            <maven-resource group="org.wildfly" artifact="wildfly-osgi-jpa"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.osgi.jta">
-            <maven-resource group="org.wildfly" artifact="wildfly-osgi-jta"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.osgi.naming">
-            <maven-resource group="org.wildfly" artifact="wildfly-osgi-naming"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.osgi.web">
-            <maven-resource group="org.wildfly" artifact="wildfly-osgi-web"/>
-        </module-def>
-
         <module-def name="org.jboss.as.sar">
             <maven-resource group="org.wildfly" artifact="wildfly-sar"/>
         </module-def>
@@ -1163,38 +1135,8 @@
             <maven-resource group="io.netty" artifact="netty"/>
         </module-def>
 
-        <module-def name="org.jboss.osgi.deployment">
-            <maven-resource group="org.jboss.osgi.deployment" artifact="jbosgi-deployment"/>
-        </module-def>
-
-        <module-def name="org.jboss.osgi.framework">
-            <maven-resource group="org.jboss.osgi.framework" artifact="jbosgi-framework-core"/>
-        </module-def>
-
-        <module-def name="org.jboss.osgi.provision">
-            <maven-resource group="org.jboss.osgi.provision" artifact="jbosgi-provision-core"/>
-        </module-def>
-
-        <module-def name="org.jboss.osgi.repository">
-            <maven-resource group="org.jboss.osgi.repository" artifact="jbosgi-repository-api"/>
-        </module-def>
-
-        <module-def name="org.jboss.osgi.resolver">
-            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-api"/>
-            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-felix"/>
-        </module-def>
-
         <module-def name="org.jboss.osgi.metadata">
             <maven-resource group="org.jboss.osgi.metadata" artifact="jbosgi-metadata"/>
-        </module-def>
-
-        <module-def name="org.jboss.osgi.spi">
-            <maven-resource group="org.jboss.osgi.spi" artifact="jbosgi-spi"/>
-        </module-def>
-
-        <module-def name="org.jboss.osgi.vfs">
-            <maven-resource group="org.jboss.osgi.vfs" artifact="jbosgi-vfs"/>
-            <maven-resource group="org.jboss.osgi.vfs" artifact="jbosgi-vfs30"/>
         </module-def>
 
         <module-def name="org.jboss.remote-naming">
@@ -1448,29 +1390,6 @@
 
     </target>
 
-    <target name="bundles">
-
-        <bundle-def name="org.apache.felix.configadmin">
-            <maven-bundle group="org.apache.felix" artifact="org.apache.felix.configadmin"/>
-        </bundle-def>
-
-        <bundle-def name="org.apache.felix.log">
-            <maven-bundle group="org.apache.felix" artifact="org.apache.felix.log"/>
-        </bundle-def>
-
-        <bundle-def name="org.jboss.as.osgi.configadmin">
-            <maven-bundle group="org.wildfly" artifact="wildfly-osgi-configadmin"/>
-        </bundle-def>
-
-        <bundle-def name="javax.servlet.api" slot="v31">
-            <maven-bundle group="org.jboss.spec.javax.servlet" artifact="jboss-servlet-api_3.1_spec"/>
-        </bundle-def>
-
-        <bundle-def name="org.jboss.osgi.logging">
-            <maven-bundle group="org.jboss.osgi.logging" artifact="jboss-osgi-logging"/>
-        </bundle-def>
-    </target>
-
     <target name="clean-target">
         <delete dir="${output.dir}"/>
     </target>
@@ -1479,5 +1398,5 @@
         <delete file="maven-ant-tasks.jar"/>
     </target>
 
-    <target name="all" depends="base, copy-standalone, modules, bundles, create-ext-content, copy-client"/>
+    <target name="all" depends="base, copy-standalone, modules, create-ext-content, copy-client"/>
 </project>

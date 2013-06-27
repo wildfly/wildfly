@@ -33,7 +33,6 @@
         <version>8.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-configadmin</artifactId>
 
     <name>WildFly: Config Admin</name>
@@ -70,10 +69,6 @@
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-processor</artifactId>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.osgi.spi</groupId>
-            <artifactId>jbosgi-spi</artifactId>
         </dependency>
 
         <!-- Test Dependencies -->

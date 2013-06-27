@@ -617,16 +617,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>org.apache.felix.configadmin</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>org.apache.felix.log</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.apache.httpcomponents</groupId>
                     <artifactId>httpclient</artifactId>
                 </dependency>
@@ -1102,46 +1092,6 @@
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-osgi-configadmin</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-osgi-http</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-osgi-jmx</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-osgi-jpa</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-osgi-jta</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-osgi-naming</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-osgi-service</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-osgi-web</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-platform-mbean</artifactId>
                 </dependency>
 
@@ -1445,58 +1395,8 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.osgi.deployment</groupId>
-                    <artifactId>jbosgi-deployment</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.osgi.framework</groupId>
-                    <artifactId>jbosgi-framework-core</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.osgi.logging</groupId>
-                    <artifactId>jboss-osgi-logging</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.jboss.osgi.metadata</groupId>
                     <artifactId>jbosgi-metadata</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.osgi.provision</groupId>
-                    <artifactId>jbosgi-provision-core</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.osgi.repository</groupId>
-                    <artifactId>jbosgi-repository-api</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.osgi.resolver</groupId>
-                    <artifactId>jbosgi-resolver-api</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.osgi.resolver</groupId>
-                    <artifactId>jbosgi-resolver-felix</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.osgi.spi</groupId>
-                    <artifactId>jbosgi-spi</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.osgi.vfs</groupId>
-                    <artifactId>jbosgi-vfs</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.osgi.vfs</groupId>
-                    <artifactId>jbosgi-vfs30</artifactId>
                 </dependency>
 
                 <dependency>
@@ -2200,7 +2100,6 @@
                                         <include>org.opensaml:openws</include>
                                         <include>org.opensaml:xmltooling</include>
                                         <include>org.osgi:org.osgi.core</include>
-                                        <include>org.osgi:org.osgi.enterprise</include>
                                         <include>org.picketbox:picketbox</include>
                                         <!--     <include># org.picketbox:picketbox-commons</include> -->
                                         <include>org.picketbox:picketbox-infinispan</include>
@@ -2347,13 +2246,6 @@
                                         <exclude>org.wildfly:wildfly-mod_cluster-web</exclude>
                                         <exclude>org.wildfly:wildfly-naming</exclude>
                                         <exclude>org.wildfly:wildfly-network</exclude>
-                                        <exclude>org.wildfly:wildfly-osgi-http</exclude>
-                                        <exclude>org.wildfly:wildfly-osgi-jmx</exclude>
-                                        <exclude>org.wildfly:wildfly-osgi-jpa</exclude>
-                                        <exclude>org.wildfly:wildfly-osgi-jta</exclude>
-                                        <exclude>org.wildfly:wildfly-osgi-naming</exclude>
-                                        <exclude>org.wildfly:wildfly-osgi-service</exclude>
-                                        <exclude>org.wildfly:wildfly-osgi-web</exclude>
                                         <exclude>org.wildfly:wildfly-platform-mbean</exclude>
                                         <exclude>org.wildfly:wildfly-pojo</exclude>
                                         <exclude>org.wildfly:wildfly-process-controller</exclude>
@@ -2403,15 +2295,6 @@
                                         <exclude>org.jboss.mod_cluster:mod_cluster-container-jbossweb</exclude>
                                         <exclude>org.jboss.mod_cluster:mod_cluster-container-spi</exclude>
                                         <exclude>org.jboss.mod_cluster:mod_cluster-core</exclude>
-                                        <exclude>org.jboss.osgi.deployment:jbosgi-deployment</exclude>
-                                        <exclude>org.jboss.osgi.framework:jbosgi-framework-core</exclude>
-                                        <exclude>org.jboss.osgi.metadata:jbosgi-metadata</exclude>
-                                        <exclude>org.jboss.osgi.repository:jbosgi-repository-api</exclude>
-                                        <exclude>org.jboss.osgi.resolver:jbosgi-resolver-api</exclude>
-                                        <exclude>org.jboss.osgi.resolver:jbosgi-resolver-felix</exclude>
-                                        <exclude>org.jboss.osgi.spi:jbosgi-spi</exclude>
-                                        <exclude>org.jboss.osgi.vfs:jbosgi-vfs</exclude>
-                                        <exclude>org.jboss.osgi.vfs:jbosgi-vfs30</exclude>
                                         <exclude>org.jboss.resteasy:resteasy-cdi</exclude>
                                         <exclude>org.jboss.resteasy:resteasy-yaml-provider</exclude>
                                         <exclude>org.jboss.security:jboss-negotiation-common</exclude>
@@ -3127,34 +3010,6 @@
                                             <packages>org.jboss.as.naming:org.jboss.as.naming.context:org.jboss.as.naming.deployment:org.jboss.as.naming.interfaces.java:org.jboss.as.naming.management:org.jboss.as.naming.remote:org.jboss.as.naming.service:org.jboss.as.naming.subsystem:org.jboss.as.naming.util</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.wildfly.osgi</title>
-                                            <packages>org.jboss.as.osgi:org.jboss.as.osgi.deployment:org.jboss.as.osgi.management:org.jboss.as.osgi.parser:org.jboss.as.osgi.service</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.wildfly.osgi.http</title>
-                                            <packages>org.jboss.as.osgi.httpservice:org.osgi.service.http</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.wildfly.osgi.jmx</title>
-                                            <packages>org.jboss.as.osgi.jmx</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.wildfly.osgi.jpa</title>
-                                            <packages>org.jboss.as.osgi.jpa:org.osgi.service.jpa</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.wildfly.osgi.jta</title>
-                                            <packages>org.jboss.as.osgi.jta</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.wildfly.osgi.naming</title>
-                                            <packages>org.jboss.as.osgi.naming</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.wildfly.osgi.web</title>
-                                            <packages>org.jboss.as.osgi.web</packages>
-                                        </group>
-                                        <group>
                                             <title>Module org.wildfly.sar</title>
                                             <packages>org.jboss.as.service:org.jboss.as.service.component:org.jboss.as.service.descriptor</packages>
                                         </group>
@@ -3267,32 +3122,8 @@
                                             <packages>org.jboss.netty.bootstrap:org.jboss.netty.buffer:org.jboss.netty.channel:org.jboss.netty.channel.group:org.jboss.netty.channel.local:org.jboss.netty.channel.socket:org.jboss.netty.channel.socket.http:org.jboss.netty.channel.socket.nio:org.jboss.netty.channel.socket.oio:org.jboss.netty.container.microcontainer:org.jboss.netty.container.osgi:org.jboss.netty.container.spring:org.jboss.netty.handler.codec:org.jboss.netty.handler.codec.base64:org.jboss.netty.handler.codec.compression:org.jboss.netty.handler.codec.embedder:org.jboss.netty.handler.codec.frame:org.jboss.netty.handler.codec.http:org.jboss.netty.handler.codec.http.multipart:org.jboss.netty.handler.codec.http.websocket:org.jboss.netty.handler.codec.http.websocketx:org.jboss.netty.handler.codec.marshalling:org.jboss.netty.handler.codec.oneone:org.jboss.netty.handler.codec.protobuf:org.jboss.netty.handler.codec.replay:org.jboss.netty.handler.codec.rtsp:org.jboss.netty.handler.codec.serialization:org.jboss.netty.handler.codec.socks:org.jboss.netty.handler.codec.spdy:org.jboss.netty.handler.codec.string:org.jboss.netty.handler.execution:org.jboss.netty.handler.ipfilter:org.jboss.netty.handler.logging:org.jboss.netty.handler.queue:org.jboss.netty.handler.ssl:org.jboss.netty.handler.stream:org.jboss.netty.handler.timeout:org.jboss.netty.handler.traffic:org.jboss.netty.logging:org.jboss.netty.util:org.jboss.netty.util.internal:org.jboss.netty.util.internal.jzlib</packages>
                                         </group>
                                         <group>
-                                            <title>Module org.jboss.osgi.deployment</title>
-                                            <packages>org.jboss.osgi.deployment:org.jboss.osgi.deployment.deployer:org.jboss.osgi.deployment.interceptor:org.jboss.osgi.deployment.internal</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.osgi.framework</title>
-                                            <packages>org.jboss.osgi.framework:org.jboss.osgi.framework.internal:org.jboss.osgi.framework.spi:org.osgi.util.xml</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.osgi.repository</title>
-                                            <packages>org.jboss.osgi.repository.core:org.jboss.osgi.repository:org.jboss.osgi.repository.spi:org.osgi.service.repository</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.osgi.resolver</title>
-                                            <packages>org.jboss.osgi.resolver:org.jboss.osgi.resolver.spi:org.osgi.service.resolver:org.apache.felix.resolver:org.jboss.osgi.resolver.felix</packages>
-                                        </group>
-                                        <group>
                                             <title>Module org.jboss.osgi.metadata</title>
                                             <packages>org.jboss.osgi.metadata:org.jboss.osgi.metadata.internal:org.jboss.osgi.metadata.spi</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.osgi.spi</title>
-                                            <packages>org.jboss.osgi.spi:org.jboss.osgi.spi.framework:org.jboss.osgi.spi.util</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.osgi.vfs</title>
-                                            <packages>org.jboss.osgi.vfs30:org.jboss.osgi.vfs</packages>
                                         </group>
                                         <group>
                                             <title>Module org.jboss.remote-naming</title>
@@ -3421,10 +3252,6 @@
                                         <group>
                                             <title>Module org.osgi.core</title>
                                             <packages>org.osgi.framework:org.osgi.framework.hooks.bundle:org.osgi.framework.hooks.resolver:org.osgi.framework.hooks.service:org.osgi.framework.hooks.weaving:org.osgi.framework.launch:org.osgi.framework.namespace:org.osgi.framework.startlevel:org.osgi.framework.wiring:org.osgi.resource:org.osgi.service.condpermadmin:org.osgi.service.packageadmin:org.osgi.service.permissionadmin:org.osgi.service.startlevel:org.osgi.service.url:org.osgi.util.tracker</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.osgi.enterprise</title>
-                                            <packages>org.osgi.jmx:org.osgi.jmx.framework:org.osgi.jmx.framework.wiring:org.osgi.jmx.service.cm:org.osgi.jmx.service.permissionadmin:org.osgi.jmx.service.provisioning:org.osgi.jmx.service.useradmin:org.osgi.namespace.contract:org.osgi.namespace.extender:org.osgi.namespace.service:org.osgi.service.blueprint.container:org.osgi.service.blueprint.reflect:org.osgi.service.cm:org.osgi.service.component:org.osgi.service.component.annotations:org.osgi.service.coordinator:org.osgi.service.event:org.osgi.service.jdbc:org.osgi.service.jndi:org.osgi.service.log:org.osgi.service.metatype:org.osgi.service.provisioning:org.osgi.service.remoteserviceadmin:org.osgi.service.serviceloader:org.osgi.service.subsystem:org.osgi.service.useradmin</packages>
                                         </group>
                                         <group>
                                             <title>Module org.picketlink</title>

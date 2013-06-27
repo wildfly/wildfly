@@ -38,7 +38,6 @@
         <module name="org.jboss.as.managed-beans" />
         <module name="org.jboss.as.messaging" />
         <module name="org.jboss.as.naming" />
-        <module name="org.jboss.as.osgi" />
         <module name="org.jboss.as.remoting" />
         <module name="org.jboss.as.sar" />
         <module name="org.jboss.as.server" />
