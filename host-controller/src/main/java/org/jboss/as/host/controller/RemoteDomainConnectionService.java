@@ -145,8 +145,8 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private ExecutorService executor;
     private ScheduledExecutorService scheduledExecutorService;
 
-    private RemoteDomainConnection connection;
     private ManagementChannelHandler handler;
+    private volatile RemoteDomainConnection connection;
 
     private RemoteDomainConnectionService(final ModelController controller, final ExtensionRegistry extensionRegistry,
                                           final LocalHostControllerInfo localHostControllerInfo, final ProductConfig productConfig,

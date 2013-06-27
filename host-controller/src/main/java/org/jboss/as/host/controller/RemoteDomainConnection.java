@@ -22,6 +22,8 @@
 
 package org.jboss.as.host.controller;
 
+import javax.net.ssl.SSLContext;
+import javax.security.auth.callback.CallbackHandler;
 import java.io.DataInput;
 import java.io.IOException;
 import java.net.URI;
@@ -33,9 +35,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import javax.net.ssl.SSLContext;
-import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -152,21 +151,19 @@ class RemoteDomainConnection extends FutureManagementChannel {
 
     @Override
     public void close() throws IOException {
-        synchronized (this) {
-            try {
-                if(isConnected()) {
-                    try {
-                        channelHandler.executeRequest(new UnregisterModelControllerRequest(), null).getResult().await();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            } finally {
+        try {
+            if(prepareClose() && isConnected()) {
                 try {
-                    connectionManager.shutdown();
-                } finally {
-                    super.close();
+                    channelHandler.executeRequest(new UnregisterModelControllerRequest(), null).getResult().await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 }
+            }
+        } finally {
+            try {
+                super.close();
+            } finally {
+                connectionManager.shutdown();
             }
         }
     }

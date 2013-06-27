@@ -35,9 +35,9 @@ import java.io.IOException;
  */
 public class ProtocolConnectionManager {
 
-    private Connection connection;
     private ConnectTask connectTask;
-    private boolean shutdown;
+    private volatile boolean shutdown;
+    private volatile Connection connection;
 
     protected ProtocolConnectionManager(final ConnectTask initial) {
         if(initial == null) {
