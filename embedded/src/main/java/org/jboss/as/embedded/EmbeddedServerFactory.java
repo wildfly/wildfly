@@ -36,6 +36,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Properties;
+
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import java.util.logging.LogManager;
@@ -187,12 +188,10 @@ public class EmbeddedServerFactory {
     }
 
     private static void setupBundlePath(final String bundlePath) {
-        assert bundlePath != null : "bundlePath not null";
-
-        final File bundlesDir = new File(bundlePath);
-        assert bundlesDir.isDirectory() : "bundlesDir not a directory";
-
-        WildFlySecurityManager.setPropertyPrivileged(SYSPROP_KEY_JBOSS_BUNDLES_DIR, bundlesDir.getAbsolutePath());
+        if (bundlePath != null && new File(bundlePath).isDirectory()) {
+            String absolutePath = new File(bundlePath).getAbsolutePath();
+            WildFlySecurityManager.setPropertyPrivileged(SYSPROP_KEY_JBOSS_BUNDLES_DIR, absolutePath);
+        }
     }
 
     private static void setupVfsModule(final ModuleLoader moduleLoader) {

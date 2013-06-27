@@ -1195,7 +1195,6 @@
                                                     <fileset dir="../modcluster/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../naming/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../network/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../osgi/service/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../platform-mbean/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../pojo/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../process-controller/src/main/java"><include name="**/*.java"/></fileset>

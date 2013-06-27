@@ -50,10 +50,6 @@
            paramOutputFile="${generated.configs.standalone}/standalone.xml"/>
       <generate-server-config
            paramTemplateFile="configuration/standalone/template.xml"
-           paramSubsystemsFile="configuration/standalone/subsystems-osgi.xml"
-           paramOutputFile="${generated.configs.standalone}/standalone-osgi.xml"/>
-      <generate-server-config
-           paramTemplateFile="configuration/standalone/template.xml"
            paramSubsystemsFile="configuration/standalone/subsystems-full.xml"
            paramOutputFile="${generated.configs.standalone}/standalone-full.xml"/>
       <generate-server-config 
@@ -76,10 +72,6 @@
                   paramOutputFile="${generated.configs.standalone}/standalone-jbossweb.xml"/>
 
       <!-- Example configs -->
-      <generate-server-config 
-		   paramTemplateFile="configuration/standalone/template-osgi.xml" 
-		   paramSubsystemsFile="configuration/examples/subsystems-osgi-only.xml"
-		   paramOutputFile="${generated.configs.examples}/standalone-osgi-only.xml"/>
       <generate-server-config 
            paramTemplateFile="configuration/standalone/template.xml" 
            paramSubsystemsFile="configuration/examples/subsystems-hornetq-colocated.xml"

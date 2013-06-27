@@ -40,12 +40,6 @@
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-build</artifactId>
             <type>pom</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>org.osgi.foundation</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>

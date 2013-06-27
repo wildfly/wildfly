@@ -49,12 +49,4 @@
 	      </logger>
       </replacement>
    </supplement>
-   <supplement name="osgi">
-      <replacement placeholder="@@append@@" attributeValue="false"/>
-      <replacement placeholder="LOGGERS">
-	       <logger category="org.jboss.osgi">
-	           <level name="DEBUG"/>
-	       </logger>
-      </replacement>
-   </supplement>
 </config>

@@ -30,8 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.jboss.osgi.spi.util.UnmodifiableDictionary;
-
 /**
  * Maintains a set of {@link Dictionary}s keyed be persistent ID (PID).
  *

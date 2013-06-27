@@ -227,8 +227,6 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
 
         String bundlesPath = modulesDir.getParent() + File.separator + "bundles";
         File bundlesDir = new File(bundlesPath);
-        if (bundlesDir.isDirectory() == false)
-            throw new IllegalStateException("Cannot find: " + bundlesDir);
 
         File modulesJar = new File(jbossHomeDir + File.separatorChar + "jboss-modules.jar");
         if (!modulesJar.exists())
