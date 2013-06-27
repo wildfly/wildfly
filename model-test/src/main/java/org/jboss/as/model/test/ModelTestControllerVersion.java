@@ -27,7 +27,9 @@ import java.util.Properties;
 public enum ModelTestControllerVersion {
     MASTER (CurrentVersion.VERSION, null),
     V7_1_2_FINAL ("7.1.2.Final", "7.1.2"),
-    V7_1_3_FINAL ("7.1.3.Final", "7.1.2");
+    V7_1_3_FINAL ("7.1.3.Final", "7.1.2"),
+    V7_2_0_FINAL ("7.2.0.Final", "7.2.0"),
+    ;
 
     String mavenGavVersion;
     String testControllerVersion;
