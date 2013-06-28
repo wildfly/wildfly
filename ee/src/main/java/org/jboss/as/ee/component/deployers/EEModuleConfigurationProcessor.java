@@ -83,7 +83,10 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
                     moduleConfiguration.addComponentConfiguration(componentConfiguration);
                 } catch (Exception e) {
                     if (componentDescription.isOptional()) {
-                        ROOT_LOGGER.componentInstallationFailure(e, componentDescription.getComponentName());
+                        // https://issues.jboss.org/browse/WFLY-924 Just log a WARN summary of which component failed and then log the cause at DEBUG level
+                        ROOT_LOGGER.componentInstallationFailure(componentDescription.getComponentName());
+                        ROOT_LOGGER.debugf(e, "Not installing optional component %s due to an exception", componentDescription.getComponentName());
+                        // keep track of failed optional components
                         failed.add(componentDescription.getStartServiceName());
                         failed.add(componentDescription.getCreateServiceName());
                         failed.add(componentDescription.getServiceName());
