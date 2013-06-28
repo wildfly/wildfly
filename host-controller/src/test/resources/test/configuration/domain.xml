@@ -41,7 +41,6 @@
         <!--<extension module="org.jboss.as.managed-beans"/>-->
         <!--<extension module="org.jboss.as.messaging"/>-->
         <!--<extension module="org.jboss.as.naming"/>-->
-        <!--<extension module="org.jboss.as.osgi"/>-->
         <!--<extension module="org.jboss.as.remoting"/>-->
         <!--<extension module="org.jboss.as.sar"/>-->
         <!--<extension module="org.jboss.as.threads"/>-->

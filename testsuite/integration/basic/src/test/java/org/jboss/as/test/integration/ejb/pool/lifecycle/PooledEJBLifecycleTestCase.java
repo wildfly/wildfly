@@ -16,6 +16,10 @@
  */
 package org.jboss.as.test.integration.ejb.pool.lifecycle;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.InputStream;
 
 import javax.ejb.EJB;
@@ -39,21 +43,17 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.arquillian.protocol.jmx.ManifestBuilder;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
-import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests instance lifecycle of EJB components which can potentially be pooled. Note that this testcase does *not* mandate that the components being tested be pooled. It's completely upto the container

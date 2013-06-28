@@ -9,7 +9,7 @@ Defining the Subsystems
 Subsystems are defined by a simple comma seperated list of identifiers
 Each identifier can be qualified with a supplement identifier.
 
-	<standalone.subsystems>logging:osgi,osgi:eager,configadmin,deployment-scanner</standalone.subsystems>
+	<standalone.subsystems>logging:default,configadmin,deployment-scanner</standalone.subsystems>
 	
 Subsystem Definition Output
 ---------------------------
@@ -20,9 +20,6 @@ Given the above input the Ant task will generate a subsystem definition file
 	
 	<config xmlns="urn:subsystems-config:1.0">
 	    <subsystems>
-	        <subsystem supplement="osgi">configuration/subsystems/logging.xml</subsystem>
-	        <subsystem supplement="minimal">configuration/subsystems/osgi.xml</subsystem>
-	        <subsystem>configuration/subsystems/configadmin.xml</subsystem>
 	        <subsystem>configuration/subsystems/deployment-scanner.xml</subsystem>
 	    </subsystems>
 	</config>

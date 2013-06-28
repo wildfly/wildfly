@@ -34,21 +34,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.jar.Manifest;
-
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
-import org.jboss.as.server.deployment.ManifestHelper;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.ear.spec.EarMetaData;
@@ -252,9 +248,11 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         }
         // Augment with meta data from annotations in /WEB-INF/classes
         WebMetaData annotatedMetaData = annotationsMetaData.get("classes");
+        /*
         if (annotatedMetaData == null && deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
             annotatedMetaData = annotationsMetaData.get(deploymentUnit.getName());
         }
+        */
         if (annotatedMetaData != null) {
             if (isComplete) {
                 // Discard @WebFilter, @WebListener and @WebServlet
@@ -327,13 +325,14 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         JBossWebMetaDataMerger.merge(mergedMetaData, metaData, specMetaData);
         // FIXME: Incorporate any ear level overrides
 
-        // Use the OSGi Web-ContextPath if not given otherwise
+        /* Use the OSGi Web-ContextPath if not given otherwise
         String contextRoot = mergedMetaData.getContextRoot();
         Manifest manifest = deploymentUnit.getAttachment(Attachments.OSGI_MANIFEST);
         if (contextRoot == null && manifest != null) {
             contextRoot = ManifestHelper.getMainAttributeValue(manifest, "Web-ContextPath");
             mergedMetaData.setContextRoot(contextRoot);
         }
+        */
         warMetaData.setMergedJBossWebMetaData(mergedMetaData);
 
         if (mergedMetaData.isMetadataComplete()) {

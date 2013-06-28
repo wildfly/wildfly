@@ -81,9 +81,10 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         if (deploymentUnit.hasAttachment(Attachments.MODULE))
             return;
 
-        // No {@link ModuleSpec} creation for OSGi deployments
+        /* No {@link ModuleSpec} creation for OSGi deployments
         if (deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST))
             return;
+        */
 
         deployModuleSpec(phaseContext);
     }

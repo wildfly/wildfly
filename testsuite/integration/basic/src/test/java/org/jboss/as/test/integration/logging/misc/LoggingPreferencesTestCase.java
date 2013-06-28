@@ -34,23 +34,22 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import org.junit.Assert;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.protocol.jmx.ManifestBuilder;
 import org.jboss.as.test.integration.logging.util.LoggingBean;
-import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * 
+ *
  * @author Petr Křemenský <pkremens@redhat.com>
  */
 
@@ -64,7 +63,7 @@ public class LoggingPreferencesTestCase {
 	private static final File logDir = new File(
 			System.getProperty("jbossas.ts.submodule.dir"), "target" + FS
 					+ "jbossas" + FS + "standalone" + FS + "log");
-	
+
 	private static final File logFile = new File(logDir,
 			"jboss-logging-properties-test.log");
 

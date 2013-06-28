@@ -53,45 +53,6 @@
     </dependencies>
         
     <profiles>
-        <profile>
-            <id>modular-osgi</id>
-            <activation>
-                <property>
-                	<name>modular</name>
-                	<value>osgi</value>
-                </property>
-            </activation>
-            <properties>
-            	<modular.config.name>osgi</modular.config.name>
-            	<standalone.subsystems>logging:osgi,osgi:minimal,configadmin,deployment-scanner</standalone.subsystems>
-            	<standalone.template>configuration/standalone/template-osgi.xml</standalone.template>
-            	<console.enabled>true</console.enabled>
-            	<domain.enabled>false</domain.enabled>
-            </properties>
-            <build>
-		        <plugins>
-		            <plugin>
-		                <groupId>org.apache.maven.plugins</groupId>
-		                <artifactId>maven-antrun-plugin</artifactId>
-		                <inherited>false</inherited>
-		                <executions>
-		                    <execution>
-		                        <id>modular-config</id>
-		                        <goals>
-		                            <goal>run</goal>
-		                        </goals>
-		                        <phase>generate-resources</phase>
-		                        <configuration>
-		                            <target>
-		                                <ant antfile="src/main/resources/build-modular-config.xml" target="all" inheritRefs="true"/>
-		                            </target>
-		                        </configuration>
-		                    </execution>
-		                </executions>
-		            </plugin>
-		        </plugins>
-            </build>
-        </profile>
     </profiles>
 
 </project>

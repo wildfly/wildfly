@@ -44,7 +44,7 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
         if (config.getCleanServerBaseDir() != null) {
             SecurityActions.setSystemProperty(EmbeddedStandAloneServerFactory.JBOSS_EMBEDDED_ROOT, config.getCleanServerBaseDir());
         }
-        server = EmbeddedServerFactory.create(config.getJbossHome(), config.getModulePath(), config.getBundlePath());
+        server = EmbeddedServerFactory.create(config.getJbossHome(), config.getModulePath());
     }
 
     @Override
