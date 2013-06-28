@@ -51,7 +51,7 @@ public class DuplicateUserCheckStateTestCase extends PropertyTestHelper {
                 expectedDisplayText(MESSAGES.isCorrectPrompt() + " " + MESSAGES.yes() + "/" + MESSAGES.no() + "?").
                 expectedDisplayText(" ").
                 expectedInput("yes").
-                expectedDisplayText(MESSAGES.addedUser(values.getUserName(), values.getPropertiesFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(MESSAGES.addedUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddPropertiesUser.NEW_LINE).
                 expectedDisplayText(MESSAGES.addedRoles(values.getUserName(), values.getRoles(),values.getRoleFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddPropertiesUser.NEW_LINE);
@@ -72,7 +72,7 @@ public class DuplicateUserCheckStateTestCase extends PropertyTestHelper {
         PreModificationState userCheckState = new PreModificationState(consoleMock, values);
 
         AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
-                expectedDisplayText(MESSAGES.updateUser(values.getUserName(), values.getPropertiesFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(MESSAGES.updateUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddPropertiesUser.NEW_LINE).
                 expectedDisplayText(MESSAGES.updatedRoles(values.getUserName(), values.getRoles(), values.getRoleFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddPropertiesUser.NEW_LINE);

@@ -67,6 +67,7 @@ public class UpdateUser extends UpdatePropertiesHandler implements State {
         UserPropertiesFileHandler propertiesHandler = new UserPropertiesFileHandler(file.getAbsolutePath());
         try {
             propertiesHandler.start(null);
+            propertiesHandler.setRealmName(stateValues.getRealm());
             Properties prob = propertiesHandler.getProperties();
             prob.setProperty(entry[0], entry[1]);
             propertiesHandler.persistProperties();

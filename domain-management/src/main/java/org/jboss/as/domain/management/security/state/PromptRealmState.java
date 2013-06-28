@@ -60,19 +60,26 @@ public class PromptRealmState implements State {
          * Prompt for realm.
          */
         theConsole.printf(MESSAGES.realmPrompt(stateValues.getRealm()));
-        String temp = theConsole.readLine(" : ");
-        if (temp == null) {
-            /*
-             * This will return user to the command prompt so add a new line to ensure the command prompt is on the next line.
-             */
+        if (stateValues.isRealmAlreadyDefined()) {
+            theConsole.printf(" : ");
             theConsole.printf(NEW_LINE);
-            return null;
-        }
-        if (temp.length() > 0) {
-            stateValues.setRealm(temp);
-        }
+            return new PromptNewUserState(theConsole, stateValues);
+        } else {
+            String temp = theConsole.readLine(" : ");
+            if (temp == null) {
+                /*
+                 * This will return user to the command prompt so add a new line to ensure the command prompt is on the next
+                 * line.
+                 */
+                theConsole.printf(NEW_LINE);
+                return null;
+            }
+            if (temp.length() > 0) {
+                stateValues.setRealm(temp);
+            }
 
-        return new ValidateRealmState(theConsole, stateValues);
+            return new ValidateRealmState(theConsole, stateValues);
+        }
     }
 
 }

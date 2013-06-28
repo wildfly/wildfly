@@ -44,7 +44,7 @@ public class AddUserTestCase extends PropertyTestHelper {
         AddUser addUserState = new AddUser(consoleMock, values);
 
         AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
-                expectedDisplayText(MESSAGES.addedUser(values.getUserName(), values.getPropertiesFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(MESSAGES.addedUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddPropertiesUser.NEW_LINE).
                 expectedDisplayText(MESSAGES.addedRoles(values.getUserName(), values.getRoles(),values.getRoleFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddPropertiesUser.NEW_LINE);

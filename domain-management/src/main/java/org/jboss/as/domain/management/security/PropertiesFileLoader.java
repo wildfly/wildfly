@@ -54,10 +54,16 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
  */
 public abstract class PropertiesFileLoader {
 
-    public static final char[] ESCAPE_ARRAY = new char[]{'='};
+    private static final char[] ESCAPE_ARRAY = new char[] { '=' };
+    private static final String COMMENT_PREFIX = "#";
+    private static final String REALM_COMMENT_PREFIX = "$REALM_NAME=";
+    private static final String REALM_COMMENT_SUFFIX = "$";
+    private static final String REALM_COMMENT_COMMENT = " This line is used by the add-user utility to identify the realm name already used in this file.";
+
     private final String path;
     private final InjectedValue<String> relativeTo = new InjectedValue<String>();
 
+    private String realmName;
     private File propertiesFile;
     private volatile long fileUpdated = -1;
     private volatile Properties properties = null;
@@ -89,6 +95,22 @@ public abstract class PropertiesFileLoader {
     }
 
     public Properties getProperties() throws IOException {
+        loadAsRequired();
+
+        return properties;
+    }
+
+    public String getRealmName() throws IOException {
+        loadAsRequired();
+
+        return realmName;
+    }
+
+    public void setRealmName(final String realmName) {
+        this.realmName = realmName;
+    }
+
+    private void loadAsRequired() throws IOException {
         /*
          * This method does attempt to minimise the effect of race conditions, however this is not overly critical as if you
          * have users attempting to authenticate at the exact point their details are added to the file there is also a chance
@@ -113,6 +135,25 @@ public abstract class PropertiesFileLoader {
                     }
                     verifyProperties(props);
 
+                    String realmName = null;
+                    BufferedReader br = new BufferedReader(new FileReader(propertiesFile));
+                    try {
+                        String currentLine = null;
+                        while (realmName == null && (currentLine = br.readLine()) != null) {
+                            String trimmed = currentLine.trim();
+                            if (trimmed.startsWith(COMMENT_PREFIX) && trimmed.contains(REALM_COMMENT_PREFIX)) {
+                                int start = trimmed.indexOf(REALM_COMMENT_PREFIX) + REALM_COMMENT_PREFIX.length();
+                                int end = trimmed.indexOf(REALM_COMMENT_SUFFIX, start);
+                                if (end > -1) {
+                                    realmName = trimmed.substring(start, end);
+                                }
+                            }
+                        }
+                    } finally {
+                        safeClose(br);
+                    }
+
+                    this.realmName = realmName;
                     properties = props;
                     // Update this last otherwise the check outside the synchronized block could return true before the file is
                     // set.
@@ -120,8 +161,6 @@ public abstract class PropertiesFileLoader {
                 }
             }
         }
-
-        return properties;
     }
 
     /**
@@ -137,12 +176,19 @@ public abstract class PropertiesFileLoader {
         FileReader fileReader = new FileReader(propertiesFile);
         BufferedReader bufferedFileReader = new BufferedReader(fileReader);
 
+        boolean realmDefinitionFound = false;
         // Read the properties file into memory
         // Shouldn't be so bad - it's a small file
         try {
             String line = null;
             int i = 0;
             while ((line = bufferedFileReader.readLine()) != null) {
+                if (realmDefinitionFound == false) {
+                    String trimmed = line.trim();
+                    if (trimmed.startsWith(COMMENT_PREFIX) && trimmed.contains(REALM_COMMENT_PREFIX)) {
+                        realmDefinitionFound = true;
+                    }
+                }
                 content.add(line);
             }
         } finally {
@@ -151,12 +197,19 @@ public abstract class PropertiesFileLoader {
         }
 
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(propertiesFile), "UTF8"));
+        if (realmDefinitionFound == false) {
+          writeRealm(bw, realmName, true);
+        }
 
         try {
             for (String line : content) {
                 String trimmed = line.trim();
-                if (trimmed.startsWith("#")) {
-                    bw.append(line);
+                if (trimmed.startsWith(COMMENT_PREFIX)) {
+                    if (trimmed.contains(REALM_COMMENT_PREFIX)) {
+                        writeRealm(bw, realmName, false);
+                    } else {
+                        bw.append(line);
+                    }
                     bw.newLine();
                 } else if (trimmed.length() == 0) {
                     bw.newLine();
@@ -182,6 +235,23 @@ public abstract class PropertiesFileLoader {
             }
         } finally {
             safeClose(bw);
+        }
+    }
+
+    private void writeRealm(final BufferedWriter bw, final String realmName, final boolean wrap) throws IOException {
+        if (wrap) {
+            bw.append(COMMENT_PREFIX);
+            bw.newLine();
+        }
+        bw.append(COMMENT_PREFIX);
+        bw.append(REALM_COMMENT_PREFIX);
+        bw.append(realmName);
+        bw.append(REALM_COMMENT_SUFFIX);
+        bw.append(REALM_COMMENT_COMMENT);
+        if (wrap) {
+            bw.newLine();
+            bw.append(COMMENT_PREFIX);
+            bw.newLine();
         }
     }
 

@@ -78,7 +78,7 @@ public abstract class UpdatePropertiesHandler {
             return new ErrorState(theConsole, e.getMessage(), null, stateValues);
         }
 
-        for (File current : stateValues.getPropertiesFiles()) {
+        for (File current : stateValues.getUserFiles()) {
             try {
                 persist(entry, current);
                 if (stateValues.isSilent() == false) {
