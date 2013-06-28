@@ -796,6 +796,19 @@ public interface DomainManagementMessages {
     @Message(id = Message.NONE, value = "Are you sure you want to set the realm to '%s'")
     String realmConfirmation(final String chosenRealm);
 
+    /**
+     * Parsing the user property file different realm names have been detected, the add-user utility requires the same realm
+     * name to be used across all propery files a user is being added to.
+     */
+    @Message(id = 15273, value = "Different realm names detected '%s', '%s' reading user property files, all realms must be equal.")
+    String multipleRealmsDetected(final String realmOne, final String realmTwo);
+
+    /**
+     * The user has supplied a realm name but the supplied name does not match the name discovered from the property files.
+     */
+    @Message(id = 15274, value = "The user supplied realm name '%s' does not match the realm name discovered from the property file(s) '%s'.")
+    String userRealmNotMatchDiscovered(final String supplied, final String discovered);
+
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
      * this range commencing 15200.

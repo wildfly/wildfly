@@ -25,6 +25,7 @@ package org.jboss.as.domain.management.security.state;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.AddPropertiesUser.NEW_LINE;
 
+import org.jboss.as.domain.management.security.AddPropertiesUser.RealmMode;
 import org.jboss.as.domain.management.security.ConsoleWrapper;
 
 /**
@@ -60,19 +61,26 @@ public class PromptRealmState implements State {
          * Prompt for realm.
          */
         theConsole.printf(MESSAGES.realmPrompt(stateValues.getRealm()));
-        String temp = theConsole.readLine(" : ");
-        if (temp == null) {
-            /*
-             * This will return user to the command prompt so add a new line to ensure the command prompt is on the next line.
-             */
+        if (stateValues.getRealmMode() == RealmMode.DISCOVERED || stateValues.getRealmMode() == RealmMode.USER_SUPPLIED) {
+            theConsole.printf(" : ");
             theConsole.printf(NEW_LINE);
-            return null;
-        }
-        if (temp.length() > 0) {
-            stateValues.setRealm(temp);
-        }
+            return new PromptNewUserState(theConsole, stateValues);
+        } else {
+            String temp = theConsole.readLine(" : ");
+            if (temp == null) {
+                /*
+                 * This will return user to the command prompt so add a new line to ensure the command prompt is on the next
+                 * line.
+                 */
+                theConsole.printf(NEW_LINE);
+                return null;
+            }
+            if (temp.length() > 0) {
+                stateValues.setRealm(temp);
+            }
 
-        return new ValidateRealmState(theConsole, stateValues);
+            return new ValidateRealmState(theConsole, stateValues);
+        }
     }
 
 }

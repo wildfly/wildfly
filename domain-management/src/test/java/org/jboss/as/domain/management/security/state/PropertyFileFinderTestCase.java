@@ -82,8 +82,8 @@ public class PropertyFileFinderTestCase extends PropertyTestHelper {
         State nextState = propertyFileFinder.execute();
         assertTrue(nextState instanceof PromptRealmState);
         assertTrue("Expected to find the "+USER_NAME+" in the list of known users",values.getKnownUsers().contains(USER_NAME));
-        assertTrue("Expected the values.getPropertiesFiles() contained the "+standaloneMgmtUserFile,values.getPropertiesFiles().contains(standaloneMgmtUserFile));
-        assertTrue("Expected the values.getPropertiesFiles() contained the "+domainMgmtUserFile,values.getPropertiesFiles().contains(domainMgmtUserFile));
+        assertTrue("Expected the values.getPropertiesFiles() contained the "+standaloneMgmtUserFile,values.getUserFiles().contains(standaloneMgmtUserFile));
+        assertTrue("Expected the values.getPropertiesFiles() contained the "+domainMgmtUserFile,values.getUserFiles().contains(domainMgmtUserFile));
     }
 
     @Test
@@ -103,8 +103,8 @@ public class PropertyFileFinderTestCase extends PropertyTestHelper {
         State nextState = propertyFileFinder.execute();
         assertTrue(nextState instanceof PromptRealmState);
 
-        File locatedDomainPropertyFile = values.getPropertiesFiles().get(values.getPropertiesFiles().indexOf(domainUserFile));
-        File locatedStandalonePropertyFile = values.getPropertiesFiles().get(values.getPropertiesFiles().indexOf(standaloneUserFile));
+        File locatedDomainPropertyFile = values.getUserFiles().get(values.getUserFiles().indexOf(domainUserFile));
+        File locatedStandalonePropertyFile = values.getUserFiles().get(values.getUserFiles().indexOf(standaloneUserFile));
         UpdateUser updateUserState = new UpdateUser(consoleMock, values);
 
         AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().

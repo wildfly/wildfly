@@ -42,7 +42,7 @@ public class UpdateUserTestCase extends PropertyTestHelper {
         UpdateUser updateUserState = new UpdateUser(consoleMock, values);
 
         AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
-                expectedDisplayText(updateUserState.consoleUserMessage(values.getPropertiesFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(updateUserState.consoleUserMessage(values.getUserFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddPropertiesUser.NEW_LINE);
         consoleMock.setResponses(consoleBuilder);
         updateUserState.update(values);
@@ -57,7 +57,7 @@ public class UpdateUserTestCase extends PropertyTestHelper {
         values.setRoles(ROLES);
         UpdateUser updateUserState = new UpdateUser(consoleMock, values);
         AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
-                expectedDisplayText(updateUserState.consoleUserMessage(values.getPropertiesFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(updateUserState.consoleUserMessage(values.getUserFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddPropertiesUser.NEW_LINE).
                 expectedDisplayText(updateUserState.consoleRolesMessage(values.getRoleFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddPropertiesUser.NEW_LINE);
