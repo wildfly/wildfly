@@ -37,13 +37,14 @@ import java.util.Set;
 */
 public class StateValues {
     private AddPropertiesUser.Interactiveness howInteractive = AddPropertiesUser.Interactiveness.INTERACTIVE;
+    private boolean realmAlreadyDefined;
     private String realm;
     private String userName;
     private char[] password;
     private boolean management;
     private String roles;
     private boolean existingUser = false;
-    private List<File> propertiesFiles;
+    private List<File> userFiles;
     private List<File> roleFiles;
     private Set<String> knownUsers;
     private Map<String,String> knownRoles;
@@ -82,6 +83,14 @@ public class StateValues {
         this.realm = realm;
     }
 
+    public boolean isRealmAlreadyDefined() {
+        return realmAlreadyDefined;
+    }
+
+    public void setRealmAlreadyDefined(boolean realmAlreadyDefined) {
+        this.realmAlreadyDefined = realmAlreadyDefined;
+    }
+
     public String getUserName() {
         return userName;
     }
@@ -114,12 +123,12 @@ public class StateValues {
         this.roles = roles;
     }
 
-    public List<File> getPropertiesFiles() {
-        return propertiesFiles;
+    public List<File> getUserFiles() {
+        return userFiles;
     }
 
-    public void setPropertiesFiles(List<File> propertiesFiles) {
-        this.propertiesFiles = propertiesFiles;
+    public void setUserFiles(List<File> userFiles) {
+        this.userFiles = userFiles;
     }
 
     public List<File> getRoleFiles() {

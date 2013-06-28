@@ -62,7 +62,7 @@ public class PropertyTestHelper {
         rolesPropertyFileList.add(rolesPropertyFile);
 
         values = new StateValues();
-        values.setPropertiesFiles(usersPropertyFileList);
+        values.setUserFiles(usersPropertyFileList);
         values.setRoleFiles(rolesPropertyFileList);
         values.setUserName(USER_NAME);
         values.setPassword("1sT%l<[pzD".toCharArray());
@@ -79,7 +79,7 @@ public class PropertyTestHelper {
     }
 
     protected void assertUserPropertyFile(String userName) throws StartException, IOException {
-        Properties properties = loadProperties(values.getPropertiesFiles().get(0).getAbsolutePath());
+        Properties properties = loadProperties(values.getUserFiles().get(0).getAbsolutePath());
         String password = (String) properties.get(userName);
         assertNotNull(password);
     }

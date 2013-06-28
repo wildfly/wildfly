@@ -22,26 +22,30 @@
 
 package org.jboss.as.domain.management.security.state;
 
-import org.jboss.as.domain.management.security.ConsoleWrapper;
-import org.jboss.as.domain.management.security.PropertiesFileLoader;
-import org.jboss.msc.service.StartException;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.APPLICATION_ROLES_PROPERTIES;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.APPLICATION_USERS_PROPERTIES;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.DOMAIN_BASE_DIR;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.DOMAIN_CONFIG_DIR;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.DOMAIN_CONFIG_USER_DIR;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.MGMT_USERS_PROPERTIES;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.SERVER_BASE_DIR;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.SERVER_CONFIG_DIR;
+import static org.jboss.as.domain.management.security.AddPropertiesUser.SERVER_CONFIG_USER_DIR;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-import static org.jboss.as.domain.management.security.AddPropertiesUser.*;
+import org.jboss.as.domain.management.security.ConsoleWrapper;
+import org.jboss.as.domain.management.security.PropertiesFileLoader;
+import org.jboss.msc.service.StartException;
 
 /**
  * The first state executed, responsible for searching for the relevant properties files.
@@ -87,21 +91,54 @@ public class PropertyFileFinder implements State {
             }
         }
 
-        stateValues.setPropertiesFiles(foundFiles);
+        stateValues.setUserFiles(foundFiles);
 
+        String realmName = null;
         Set<String> foundUsers = new HashSet<String>();
-        for (File current : stateValues.getPropertiesFiles()) {
+        for (File current : stateValues.getUserFiles()) {
+            PropertiesFileLoader pfl = null;
             try {
-                foundUsers.addAll(loadUserNames(current));
+                pfl = loadUsersFile(current);
+                foundUsers.addAll(pfl.getProperties().stringPropertyNames());
+                if (realmName == null) {
+                    realmName = pfl.getRealmName();
+                } else {
+                    String nextRealm = pfl.getRealmName();
+                    if (realmName.equals(nextRealm)==false) {
+                        return new ErrorState(theConsole, MESSAGES.multipleRealmsDetected(realmName, nextRealm), null, stateValues);
+                    }
+                }
+                pfl.stop(null);
+                pfl = null;
             } catch (IOException e) {
                 return new ErrorState(theConsole, MESSAGES.unableToLoadUsers(current.getAbsolutePath(), e.getMessage()), null, stateValues);
+            } finally {
+                if (pfl != null) {
+                    pfl.stop(null);
+                    pfl = null;
+                }
             }
+        }
+        if (realmName != null) {
+            stateValues.setRealm(realmName);
+            stateValues.setRealmAlreadyDefined(true);
         }
         stateValues.setKnownUsers(foundUsers);
 
         // TODO - Should we go straight to user validation instead of prompting?
         return stateValues.isInteractive() ? new PromptRealmState(theConsole, stateValues) : new PromptNewUserState(theConsole,
                 stateValues);
+    }
+
+    private PropertiesFileLoader loadUsersFile(File file) throws IOException {
+        PropertiesFileLoader fileLoader = new UserPropertiesFileHandler(file.getAbsolutePath());
+        try {
+            fileLoader.start(null);
+        } catch (StartException e) {
+            throw new IOException(e);
+        }
+
+        return fileLoader;
     }
 
     private Map<String, String> loadAllRoles(List<File> foundRoleFiles) throws StartException, IOException {
@@ -147,21 +184,6 @@ public class PropertyFileFinder implements State {
             configDir = new File(baseDir, "configuration");
         }
         return new File(configDir, fileName);
-    }
-
-    private Set<String> loadUserNames(final File file) throws IOException {
-
-        InputStreamReader fis = null;
-        try {
-            fis = new InputStreamReader(new FileInputStream(file), Charset.forName("UTF-8"));
-            Properties tempProps = new Properties();
-            tempProps.load(fis);
-
-            return tempProps.stringPropertyNames();
-        } finally {
-            safeClose(fis);
-        }
-
     }
 
     private static void safeClose(Closeable c) {

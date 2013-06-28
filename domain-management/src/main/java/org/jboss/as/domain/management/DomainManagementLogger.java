@@ -67,9 +67,16 @@ public interface DomainManagementLogger extends BasicLogger {
     @Message(id = 15202, value = "The attribute 'password' is deprecated, 'keystore-password' should be used instead.")
     void passwordAttributeDeprecated();
 
+    /**
+     * Logs a message indicating that the name of the realm does not match the name used in the properties file.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 15203, value = "The realm name of the defined security realm '%s' does not match the realm name within the properties file '%s'.")
+    void realmMisMatch(final String realmRealmName, final String fileRealmName);
+
     /*
-     * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementMessages
-     * also contains messages in this range commencing 15220.
+     * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementMessages also contains messages
+     * in this range commencing 15220.
      */
 
 }

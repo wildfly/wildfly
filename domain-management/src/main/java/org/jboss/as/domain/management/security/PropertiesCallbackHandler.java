@@ -47,6 +47,8 @@ import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
@@ -114,6 +116,19 @@ CallbackHandlerService, CallbackHandler {
         final String admin = "admin";
         if (properties.contains(admin) && admin.equals(properties.get(admin))) {
             ROOT_LOGGER.userAndPasswordWarning();
+        }
+    }
+
+    @Override
+    public void start(StartContext context) throws StartException {
+        super.start(context);
+        try {
+            String fileRealm = getRealmName();
+            if (fileRealm != null && realm.equals(getRealmName()) == false) {
+                ROOT_LOGGER.realmMisMatch(realm, fileRealm);
+            }
+        } catch (IOException e) {
+            throw MESSAGES.unableToLoadProperties(e);
         }
     }
 
