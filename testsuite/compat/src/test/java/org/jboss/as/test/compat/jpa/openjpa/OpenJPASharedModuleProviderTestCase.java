@@ -44,7 +44,6 @@ import org.junit.runner.RunWith;
  * @author Antti Laisi
  */
 @RunWith(Arquillian.class)
-@Ignore  // only for manual testing currently
 public class OpenJPASharedModuleProviderTestCase {
 
     private static final String ARCHIVE_NAME = "openjpa_module_test";
@@ -59,8 +58,7 @@ public class OpenJPASharedModuleProviderTestCase {
         "           <property name=\"openjpa.jdbc.SynchronizeMappings\" value=\"buildSchema(SchemaAction='drop,add')\"/>" +
         "           <property name=\"openjpa.InitializeEagerly\" value=\"true\"/>" +
         "           <property name=\"openjpa.RuntimeUnenhancedClasses\" value=\"supported\"/>" +
-        "           <property name=\"jboss.as.jpa.providerModule\" value=\"org.apache.openjpa\"/>" +
-        "           <property name=\"jboss.as.jpa.adapterModule\" value=\"org.jboss.as.jpa.openjpa\"/>" +
+        "           <property name=\"jboss.as.jpa.providerModule\" value=\"org.apache.openjpa:test\"/>" +
         "       </properties>" +
         "  </persistence-unit>" +
         "</persistence>";

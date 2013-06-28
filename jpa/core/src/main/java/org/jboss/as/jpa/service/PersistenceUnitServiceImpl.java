@@ -234,6 +234,8 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private EntityManagerFactory createContainerEntityManagerFactory() {
         persistenceProviderAdaptor.beforeCreateContainerEntityManagerFactory(pu);
         try {
+            JPA_LOGGER.tracef("calling createContainerEntityManagerFactory for pu=%s with integration properties=%s, application properties=%s",
+                    pu.getScopedPersistenceUnitName(), properties.getValue(), pu.getProperties());
             return persistenceProvider.createContainerEntityManagerFactory(pu, properties.getValue());
         } finally {
             try {
