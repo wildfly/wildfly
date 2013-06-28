@@ -125,12 +125,11 @@ public interface EeLogger extends BasicLogger {
     /**
      * Logs a warning message indicating the component is not being installed due to an exception.
      *
-     * @param cause the cause of the error.
      * @param name  the name of the component.
      */
     @LogMessage(level = WARN)
-    @Message(id = 11006, value = "Not installing optional component %s due to exception")
-    void componentInstallationFailure(@Cause Throwable cause, String name);
+    @Message(id = 11006, value = "Not installing optional component %s due to an exception (enable DEBUG log level to see the cause)")
+    void componentInstallationFailure(String name);
 
     /**
      * Logs a warning message indicating the property, represented by the {@code name} parameter, is be ignored due to
