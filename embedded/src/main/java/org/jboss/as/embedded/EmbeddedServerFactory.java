@@ -71,17 +71,16 @@ public class EmbeddedServerFactory {
     private static final String SYSPROP_KEY_LOGMANAGER = "java.util.logging.manager";
     private static final String SYSPROP_KEY_JBOSS_HOME_DIR = "jboss.home.dir";
     private static final String SYSPROP_KEY_JBOSS_MODULES_DIR = "jboss.modules.dir";
-    private static final String SYSPROP_KEY_JBOSS_BUNDLES_DIR = "jboss.bundles.dir";
     private static final String SYSPROP_VALUE_JBOSS_LOGMANAGER = "org.jboss.logmanager.LogManager";
 
     private EmbeddedServerFactory() {
     }
 
-    public static StandaloneServer create(String jbossHomePath, String modulePath, String bundlePath, String... systemPackages) {
-        return create(jbossHomePath, modulePath, bundlePath, systemPackages, null);
+    public static StandaloneServer create(String jbossHomePath, String modulePath, String... systemPackages) {
+        return create(jbossHomePath, modulePath, systemPackages, null);
     }
 
-    public static StandaloneServer create(String jbossHomePath, String modulePath, String bundlePath, String[] systemPackages, String[] cmdargs) {
+    public static StandaloneServer create(String jbossHomePath, String modulePath, String[] systemPackages, String[] cmdargs) {
         if (jbossHomePath == null || jbossHomePath.isEmpty()) {
             throw MESSAGES.invalidJBossHome(jbossHomePath);
         }
@@ -92,20 +91,16 @@ public class EmbeddedServerFactory {
 
         if (modulePath == null)
             modulePath = jbossHomeDir.getAbsolutePath() + File.separator + "modules";
-        if (bundlePath == null)
-            bundlePath = jbossHomeDir.getAbsolutePath() + File.separator + "bundles";
 
-        return create(setupModuleLoader(modulePath, systemPackages), jbossHomeDir, bundlePath, cmdargs);
+        return create(setupModuleLoader(modulePath, systemPackages), jbossHomeDir, cmdargs);
     }
 
     public static StandaloneServer create(ModuleLoader moduleLoader, File jbossHomeDir) {
-        String bundlePath = jbossHomeDir.getAbsolutePath() + File.separator + "bundles";
-        return create(moduleLoader, jbossHomeDir, bundlePath, new String[0]);
+        return create(moduleLoader, jbossHomeDir, new String[0]);
     }
 
-    private static StandaloneServer create(ModuleLoader moduleLoader, File jbossHomeDir, String bundlePath, String[] cmdargs) {
+    private static StandaloneServer create(ModuleLoader moduleLoader, File jbossHomeDir, String[] cmdargs) {
 
-        setupBundlePath(bundlePath);
         setupVfsModule(moduleLoader);
         setupLoggingSystem(moduleLoader);
 
@@ -184,15 +179,6 @@ public class EmbeddedServerFactory {
             // Return to previous state for classpath prop
             WildFlySecurityManager.setPropertyPrivileged(SYSPROP_KEY_CLASS_PATH, classPath);
         }
-    }
-
-    private static void setupBundlePath(final String bundlePath) {
-        assert bundlePath != null : "bundlePath not null";
-
-        final File bundlesDir = new File(bundlePath);
-        assert bundlesDir.isDirectory() : "bundlesDir not a directory";
-
-        WildFlySecurityManager.setPropertyPrivileged(SYSPROP_KEY_JBOSS_BUNDLES_DIR, bundlesDir.getAbsolutePath());
     }
 
     private static void setupVfsModule(final ModuleLoader moduleLoader) {

@@ -225,11 +225,6 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
         if (modulesDir.isDirectory() == false)
             throw new IllegalStateException("Cannot find: " + modulesDir);
 
-        String bundlesPath = modulesDir.getParent() + File.separator + "bundles";
-        File bundlesDir = new File(bundlesPath);
-        if (bundlesDir.isDirectory() == false)
-            throw new IllegalStateException("Cannot find: " + bundlesDir);
-
         File modulesJar = new File(jbossHomeDir + File.separatorChar + "jboss-modules.jar");
         if (!modulesJar.exists())
             throw new IllegalStateException("Cannot find: " + modulesJar);
@@ -248,7 +243,6 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
 
         cmd.add("-Djboss.home.dir=" + jbossHomeDir);
         cmd.addAll(loggingOptsCmd);
-        cmd.add("-Djboss.bundles.dir=" + bundlesDir.getCanonicalPath());
         cmd.add("-Djboss.domain.default.config=" + config.getDomainConfig());
         cmd.add("-Djboss.host.default.config=" + config.getHostConfig());
         cmd.add("-jar");

@@ -61,6 +61,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -146,7 +147,7 @@ public class ManagementAccessTestCase {
 
         Assert.assertEquals(returnVal, slaveReturnVal);
 
-        // Now try a resource below root
+        /* Now try a resource below root
         response = masterClient.execute(getReadAttributeOperation(OTHER_SERVER_GROUP_ADDRESS, PROFILE));
         returnVal = validateResponse(response);
         Assert.assertEquals("osgi", returnVal.asString());
@@ -155,9 +156,11 @@ public class ManagementAccessTestCase {
         slaveReturnVal = validateResponse(response);
 
         Assert.assertEquals(returnVal, slaveReturnVal);
+        */
     }
 
     @Test
+    @Ignore("osgi not available any more")
     public void testCompositeDomainReadAccess() throws IOException {
 
         ModelNode request = getEmptyOperation(COMPOSITE, null);

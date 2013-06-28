@@ -240,13 +240,14 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
         DeploymentUnit parent = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
         if (parent == deploymentUnit) {
             List<DeploymentUnit> subDeployments = parent.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
+            /* Always make the EAR LAZY if it could contain deferrable sub-deployments
             for (DeploymentUnit du : subDeployments) {
-                // Always make the EAR LAZY if it could contain deferrable sub-deployments
                 if (du.hasAttachment(Attachments.OSGI_MANIFEST)) {
                     initialMode = Mode.LAZY;
                     break;
                 }
             }
+            */
             // Initialize the list of unvisited deferred modules
             if (initialMode == Mode.LAZY) {
                 for (DeploymentUnit du : subDeployments) {

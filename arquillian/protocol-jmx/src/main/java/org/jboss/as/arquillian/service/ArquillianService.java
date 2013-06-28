@@ -22,6 +22,8 @@
 
 package org.jboss.as.arquillian.service;
 
+import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -30,7 +32,6 @@ import java.util.Set;
 import javax.management.MBeanServer;
 
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
-import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -49,11 +50,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
 
 /**
  * Service responsible for creating and managing the life-cycle of the Arquillian service.
@@ -219,10 +216,8 @@ public class ArquillianService implements Service<ArquillianService> {
             final ContextManagerBuilder builder = new ContextManagerBuilder();
             final DeploymentUnit depUnit = config.getDeploymentUnit();
             final Module module = depUnit.getAttachment(Attachments.MODULE);
-            final Bundle bundle = ArquillianConfig.getAssociatedBundle(module);
-            if (bundle == null && module != null) {
-                builder.add(new TCCLSetupAction(module.getClassLoader()));
-            }
+            builder.add(new TCCLSetupAction(module.getClassLoader()));
+
             builder.addAll(depUnit);
             ContextManager contextManager = builder.build();
             contextManager.setup(properties);
@@ -238,10 +233,6 @@ public class ArquillianService implements Service<ArquillianService> {
             final ArquillianConfig arqConfig = getArquillianConfig(className, -1);
             if (arqConfig == null)
                 throw new ClassNotFoundException("No Arquillian config found for: " + className);
-
-            // Make the BundleContext available to the {@link OSGiTestEnricher}
-            BundleContext bundleContext = arqConfig.getBundleContext();
-            BundleContextAssociation.setBundleContext(bundleContext);
 
             return arqConfig.loadClass(className);
         }

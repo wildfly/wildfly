@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.jar.Manifest;
-
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
@@ -250,11 +248,12 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
             specMetaData = new Web31MetaData();
             specMetaData.setVersion("3.1");
         }
-        // Augment with meta data from annotations in /WEB-INF/classes
         WebMetaData annotatedMetaData = annotationsMetaData.get("classes");
+        /* Augment with meta data from annotations in /WEB-INF/classes
         if (annotatedMetaData == null && deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
             annotatedMetaData = annotationsMetaData.get(deploymentUnit.getName());
         }
+        */
         if (annotatedMetaData != null) {
             if (isComplete) {
                 // Discard @WebFilter, @WebListener and @WebServlet
@@ -327,13 +326,14 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         JBossWebMetaDataMerger.merge(mergedMetaData, metaData, specMetaData);
         // FIXME: Incorporate any ear level overrides
 
-        // Use the OSGi Web-ContextPath if not given otherwise
+        /* Use the OSGi Web-ContextPath if not given otherwise
         String contextRoot = mergedMetaData.getContextRoot();
         Manifest manifest = deploymentUnit.getAttachment(Attachments.OSGI_MANIFEST);
         if (contextRoot == null && manifest != null) {
             contextRoot = manifest.getMainAttributes().getValue("Web-ContextPath");
             mergedMetaData.setContextRoot(contextRoot);
         }
+        */
         warMetaData.setMergedJBossWebMetaData(mergedMetaData);
 
         if (mergedMetaData.isMetadataComplete()) {

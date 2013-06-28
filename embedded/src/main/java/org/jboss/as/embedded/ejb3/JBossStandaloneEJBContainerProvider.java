@@ -82,7 +82,7 @@ public class JBossStandaloneEJBContainerProvider implements EJBContainerProvider
         final boolean barren = Boolean.getBoolean("org.jboss.as.embedded.ejb3.BARREN");
         final StandaloneServer server;
         if (barren)
-            server = EmbeddedServerFactory.create(jbossHomeProp, null, null, "org.jboss.logmanager");
+            server = EmbeddedServerFactory.create(jbossHomeProp, null, "org.jboss.logmanager");
         else
             server = EmbeddedServerFactory.create(Module.getContextModuleLoader(), jbossHomeDir);
         try {

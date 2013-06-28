@@ -116,10 +116,12 @@ public class ReadEnvironmentVariablesTestCase {
             Assert.assertFalse(env.containsKey("DOMAIN_TEST_SERVER"));
             Assert.assertFalse(env.containsKey("DOMAIN_TEST_JVM"));
 
+            /*
             env = getEnvironmentVariables(client, "slave", "other-two", "osgi-sockets");
             Assert.assertFalse(env.containsKey("DOMAIN_TEST_MAIN_GROUP"));
             Assert.assertFalse(env.containsKey("DOMAIN_TEST_SERVER"));
             Assert.assertFalse(env.containsKey("DOMAIN_TEST_JVM"));
+            */
 
         } finally {
             DeploymentPlanResult result = manager.execute(manager.newDeploymentPlan().undeploy("env-test.war").build()).get();

@@ -121,8 +121,6 @@
         <version.org.apache.ant>1.8.2</version.org.apache.ant>
         <version.org.apache.cxf>2.7.5</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.6.1</version.org.apache.cxf.xjcplugins>
-        <version.org.apache.felix.configadmin>1.2.8</version.org.apache.felix.configadmin>
-        <version.org.apache.felix.log>1.0.0</version.org.apache.felix.log>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
         <version.org.apache.httpcomponents.httpclient>4.2.1</version.org.apache.httpcomponents.httpclient>
         <version.org.apache.httpcomponents.httpcore>4.2.1</version.org.apache.httpcomponents.httpcore>
@@ -161,7 +159,6 @@
         <version.org.jdom>1.1.2</version.org.jdom>
         <version.org.jboss.aesh>0.33.3</version.org.jboss.aesh>
         <version.org.jboss.arquillian.core>1.0.3.Final</version.org.jboss.arquillian.core>
-        <version.org.jboss.arquillian.osgi>2.0.0.CR3</version.org.jboss.arquillian.osgi>
         <version.org.jboss.as.console>1.6.1.Final</version.org.jboss.as.console>
         <version.org.jboss.as.jbossweb-native>2.0.10.Final</version.org.jboss.as.jbossweb-native>
         <version.org.jboss.byteman>2.0.1</version.org.jboss.byteman>
@@ -190,15 +187,6 @@
         <version.org.jboss.mod_cluster>1.2.3.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.modules.jboss-modules>1.2.2.Final</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.2.0.Beta1</version.org.jboss.msc.jboss-msc>
-        <version.org.jboss.osgi.deployment>2.0.0.Final</version.org.jboss.osgi.deployment>
-        <version.org.jboss.osgi.framework>3.0.0.Final</version.org.jboss.osgi.framework>
-        <version.org.jboss.osgi.logging>1.0.0.Final</version.org.jboss.osgi.logging>
-        <version.org.jboss.osgi.metadata>3.0.0.Final</version.org.jboss.osgi.metadata>
-        <version.org.jboss.osgi.provision>1.0.0.Final</version.org.jboss.osgi.provision>
-        <version.org.jboss.osgi.resolver>4.0.0.Final</version.org.jboss.osgi.resolver>
-        <version.org.jboss.osgi.repository>3.0.0.Final</version.org.jboss.osgi.repository>
-        <version.org.jboss.osgi.spi>4.0.0.Final</version.org.jboss.osgi.spi>
-        <version.org.jboss.osgi.vfs>2.0.0.Final</version.org.jboss.osgi.vfs>
         <version.org.jboss.remote-naming>1.0.6.Final</version.org.jboss.remote-naming>
         <version.org.jboss.remoting>4.0.0.Beta1</version.org.jboss.remoting>
         <version.org.jboss.remotingjmx.remoting-jmx>2.0.0.Beta1</version.org.jboss.remotingjmx.remoting-jmx>
@@ -268,7 +256,6 @@
         <version.org.testng>6.1.1</version.org.testng>
         <version.org.wildfly.security.manager>1.0.0.Beta1</version.org.wildfly.security.manager>
         <version.org.yaml.snakeyaml>1.8</version.org.yaml.snakeyaml>
-        <version.osgi>5.0.0</version.osgi>
         <version.sun.jaxb>2.2.5.jboss-1</version.sun.jaxb>
         <version.sun.saaj-impl>1.3.16-jbossorg-1</version.sun.saaj-impl>
         <version.rhino.js>1.7R2</version.rhino.js>
@@ -946,12 +933,6 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-configadmin</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-config-assembly</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1186,60 +1167,6 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-pojo</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-osgi-configadmin</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-osgi-service</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-osgi-http</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-osgi-jmx</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-osgi-jpa</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-osgi-jta</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-osgi-launcher</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-osgi-naming</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-osgi-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -3166,28 +3093,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>org.apache.felix.configadmin</artifactId>
-                <version>${version.org.apache.felix.configadmin}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>org.apache.felix.log</artifactId>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.felix</groupId>
-                        <artifactId>org.osgi.core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.felix</groupId>
-                        <artifactId>org.osgi.compendium</artifactId>
-                    </exclusion>
-                </exclusions>
-                <version>${version.org.apache.felix.log}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
                 <version>${version.org.apache.httpcomponents.httpclient}</version>
@@ -3927,12 +3832,6 @@
 
             <dependency>
               <groupId>org.jboss.arquillian.container</groupId>
-              <artifactId>arquillian-container-osgi</artifactId>
-              <version>${version.org.jboss.arquillian.osgi}</version>
-            </dependency>
-
-            <dependency>
-              <groupId>org.jboss.arquillian.container</groupId>
               <artifactId>arquillian-container-spi</artifactId>
               <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
@@ -4053,12 +3952,6 @@
                 <groupId>org.jboss.arquillian.testenricher</groupId>
                 <artifactId>arquillian-testenricher-initialcontext</artifactId>
                 <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.arquillian.testenricher</groupId>
-                <artifactId>arquillian-testenricher-osgi</artifactId>
-                <version>${version.org.jboss.arquillian.osgi}</version>
             </dependency>
 
             <dependency>
@@ -4764,88 +4657,6 @@
                         <artifactId>jboss-as-console-resources</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.osgi.deployment</groupId>
-                <artifactId>jbosgi-deployment</artifactId>
-                <version>${version.org.jboss.osgi.deployment}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.osgi.framework</groupId>
-                <artifactId>jbosgi-framework-core</artifactId>
-                <version>${version.org.jboss.osgi.framework}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.osgi</groupId>
-                        <artifactId>org.osgi.compendium</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.msc</groupId>
-                        <artifactId>jboss-msc</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.osgi.logging</groupId>
-                <artifactId>jboss-osgi-logging</artifactId>
-                <version>${version.org.jboss.osgi.logging}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.osgi.metadata</groupId>
-                <artifactId>jbosgi-metadata</artifactId>
-                <version>${version.org.jboss.osgi.metadata}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.osgi.provision</groupId>
-                <artifactId>jbosgi-provision-core</artifactId>
-                <version>${version.org.jboss.osgi.provision}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.osgi.resolver</groupId>
-                <artifactId>jbosgi-resolver-api</artifactId>
-                <version>${version.org.jboss.osgi.resolver}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.osgi.resolver</groupId>
-                <artifactId>jbosgi-resolver-felix</artifactId>
-                <version>${version.org.jboss.osgi.resolver}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.osgi.repository</groupId>
-                <artifactId>jbosgi-repository-api</artifactId>
-                <version>${version.org.jboss.osgi.repository}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.osgi.spi</groupId>
-                <artifactId>jbosgi-spi</artifactId>
-                <version>${version.org.jboss.osgi.spi}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>args4j</groupId>
-                        <artifactId>args4j</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.osgi.vfs</groupId>
-                <artifactId>jbosgi-vfs</artifactId>
-                <version>${version.org.jboss.osgi.vfs}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.osgi.vfs</groupId>
-                <artifactId>jbosgi-vfs30</artifactId>
-                <version>${version.org.jboss.osgi.vfs}</version>
             </dependency>
 
             <dependency>
@@ -6107,12 +5918,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.core</artifactId>
-                <version>${version.osgi}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.picketbox</groupId>
                 <artifactId>picketbox</artifactId>
                 <version>${version.org.picketbox}</version>
@@ -6388,7 +6193,6 @@
                 <module>client/shade</module>
                 <module>clustering</module>
                 <module>cmp</module>
-                <module>configadmin</module>
                 <module>config-assembly</module>
                 <module>connector</module>
                 <module>core-model-test</module>
@@ -6410,7 +6214,6 @@
                 <module>modcluster</module>
                 <module>model-test</module>
                 <module>naming</module>
-                <module>osgi</module>
                 <module>pojo</module>
                 <module>remoting-test</module>
                 <module>system-jmx</module>
