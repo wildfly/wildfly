@@ -242,11 +242,6 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
-    public void testStandaloneOSGiXml() throws Exception {
-        standaloneXmlTest(getGeneratedExampleConfigFile("standalone-osgi-only.xml"));
-    }
-
-    @Test
     public void testStandaloneXtsXml() throws Exception {
         standaloneXmlTest(getGeneratedExampleConfigFile("standalone-xts.xml"));
     }
@@ -335,11 +330,6 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
-    public void test710StandaloneOsgiOnlyXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-0-osgi-only.xml"));
-    }
-
-    @Test
     public void test710StandaloneXtsXml() throws Exception {
         standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-0-xts.xml"));
     }
@@ -372,11 +362,6 @@ public class ParseAndMarshalModelsTestCase {
     @Test
     public void test711StandaloneMinimalisticXml() throws Exception {
         standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-1-minimalistic.xml"));
-    }
-
-    @Test
-    public void test711StandaloneOsgiOnlyXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-1-osgi-only.xml"));
     }
 
     @Test
@@ -418,11 +403,6 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
-    public void test712StandaloneOsgiOnlyXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-osgi-only.xml"));
-    }
-
-    @Test
     public void test712StandaloneXtsXml() throws Exception {
         standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-xts.xml"));
     }
@@ -461,11 +441,6 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
-    public void test713StandaloneOsgiOnlyXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-3-osgi-only.xml"));
-    }
-
-    @Test
     public void test713StandaloneXtsXml() throws Exception {
         standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-3-xts.xml"));
     }
@@ -480,9 +455,6 @@ public class ParseAndMarshalModelsTestCase {
         ModelNode originalModel = loadServerModel(file);
 
         ModelNode reparsedModel = loadServerModel(file);
-
-        fixupOSGiStandalone(originalModel);
-        fixupOSGiStandalone(reparsedModel);
 
         compare(originalModel, reparsedModel);
 
@@ -540,17 +512,6 @@ public class ParseAndMarshalModelsTestCase {
 
         compare(originalModel, reparsedModel);
     }
-
-    //TODO Leave commented out until domain-osgi-only.xml and domain-jts.xml are definitely removed from the configuration
-//    @Test @TargetsContainer("class-jbossas")
-//    public void testDomainOSGiOnlyXml() throws Exception {
-//        domainXmlTest(getExampleConfigFile("domain-osgi-only.xml"));
-//    }
-//
-//    @Test @TargetsContainer("class-jbossas")
-//    public void testDomainJtsXml() throws Exception {
-//        domainXmlTest(getExampleConfigFile("domain-jts.xml"));
-//    }
 
     @Test
     @TargetsContainer("class-jbossas")
@@ -613,26 +574,9 @@ public class ParseAndMarshalModelsTestCase {
         ModelNode originalModel = loadDomainModel(file);
         ModelNode reparsedModel = loadDomainModel(file);
 
-        fixupOSGiDomain(originalModel);
-        fixupOSGiDomain(reparsedModel);
         compare(originalModel, reparsedModel);
 
         return reparsedModel;
-    }
-
-    private static void fixupOSGiStandalone(ModelNode node) {
-        //These multiline properties get extra indentation when marshalled. Put them on one line to compare properly
-        node.get("subsystem", "osgi", "property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node.get("subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
-        node.get("subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node.get("subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
-    }
-
-    private static void fixupOSGiDomain(ModelNode node) {
-        //These multiline properties get extra indentation when marshalled. Put them on one line to compare properly
-        node.get("profile", "default", "subsystem", "osgi", "property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node.get("profile", "default", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
-        node.get("profile", "default", "subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node.get("profile", "default", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
-
-        node.get("profile", "ha", "subsystem", "osgi", "property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
-        node.get("profile", "ha", "subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
     }
 
     private static String convertToSingleLine(String value) {

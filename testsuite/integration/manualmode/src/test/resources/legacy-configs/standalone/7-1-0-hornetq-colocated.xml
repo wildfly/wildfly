@@ -452,7 +452,6 @@
         <socket-binding name="messaging" port="5445"/>
         <socket-binding name="messaging-backup" port="5545"/>
         <socket-binding name="messaging-throughput" port="5455"/>
-        <socket-binding name="osgi-http" interface="management" port="8090"/>
         <socket-binding name="remoting" port="4447"/>
         <socket-binding name="txn-recovery-environment" port="4712"/>
         <socket-binding name="txn-status-manager" port="4713"/>
