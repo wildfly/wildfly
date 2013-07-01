@@ -28,6 +28,7 @@ import static org.jboss.as.domain.management.security.AddPropertiesUser.DEFAULT_
 import java.util.Locale;
 
 import org.jboss.as.domain.management.security.AddPropertiesUser;
+import org.jboss.as.domain.management.security.AddPropertiesUser.RealmMode;
 import org.jboss.as.domain.management.security.ConsoleWrapper;
 
 /**
@@ -65,14 +66,20 @@ public class PropertyFilePrompt implements State {
             return null;
         }
 
+        boolean setRealm = stateValues.getRealmMode() != RealmMode.USER_SUPPLIED;
+
         switch (convertResponse(temp)) {
             case MANAGEMENT:
                 stateValues.setManagement(true);
-                stateValues.setRealm(DEFAULT_MANAGEMENT_REALM);
+                if (setRealm) {
+                    stateValues.setRealm(DEFAULT_MANAGEMENT_REALM);
+                }
                 return new PropertyFileFinder(theConsole, stateValues);
             case APPLICATION:
                 stateValues.setManagement(false);
-                stateValues.setRealm(DEFAULT_APPLICATION_REALM);
+                if (setRealm) {
+                    stateValues.setRealm(DEFAULT_APPLICATION_REALM);
+                }
                 return new PropertyFileFinder(theConsole, stateValues);
             default:
                 return new ErrorState(theConsole, MESSAGES.invalidChoiceResponse(), this);
