@@ -31,8 +31,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacement;
+import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -84,6 +87,8 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
             return;
         }
 
+        final Set<String> componentClassNames = new HashSet<String>();
+
         final String beanArchiveIdPrefix = deploymentUnit.getName() + ".external.";
 
         final List<DeploymentUnit> deploymentUnits = new ArrayList<DeploymentUnit>();
@@ -127,6 +132,13 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
             } catch (MalformedURLException e) {
                 throw new DeploymentUnitProcessingException(e);
             }
+
+            EEModuleDescription moduleDesc = deployment.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+            if(moduleDesc != null) {
+                for(ComponentDescription component : moduleDesc.getComponentDescriptions()) {
+                    componentClassNames.add(component.getComponentClassName());
+                }
+            }
         }
 
         for (DeploymentUnit deployment : deploymentUnits) {
@@ -164,6 +176,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
             if(!urlScanner.handleBeansXml(entry.getKey(), discoveredClasses)) {
                 continue;
             }
+            discoveredClasses.removeAll(componentClassNames);
 
             final BeanDeploymentArchiveImpl bda = new BeanDeploymentArchiveImpl(new HashSet<String>(discoveredClasses), beansXml, module, beanArchiveIdPrefix + entry.getKey().toExternalForm());
 
