@@ -49,11 +49,13 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     private final Class<?> messageListenerInterface;
     private final Properties activationProps;
     private final String resourceAdapterName;
+    private final boolean deliveryActive;
     private final InjectedValue<ResourceAdapter> resourceAdapterInjectedValue = new InjectedValue<ResourceAdapter>();
     private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<PoolConfig>();
     private final InjectedValue<DefaultResourceAdapterService> defaultResourceAdapterServiceInjectedValue = new InjectedValue<DefaultResourceAdapterService>();
     private final InjectedValue<EJBUtilities> ejbUtilitiesInjectedValue = new InjectedValue<EJBUtilities>();
     private final ClassLoader moduleClassLoader;
+
     /**
      * Construct a new instance.
      *
@@ -64,6 +66,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
 
         final MessageDrivenComponentDescription componentDescription = (MessageDrivenComponentDescription) componentConfiguration.getComponentDescription();
         this.resourceAdapterName = this.stripDotRarSuffix(componentDescription.getResourceAdapterName());
+        this.deliveryActive = componentDescription.isDeliveryActive();
         // see MessageDrivenComponentDescription.<init>
         this.messageListenerInterface = messageListenerInterface;
 
@@ -86,8 +89,9 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
         } else {
             activeResourceAdapterName = resourceAdapterName;
         }
+
         final ActivationSpec activationSpec = getEndpointDeployer().createActivationSpecs(activeResourceAdapterName, messageListenerInterface, activationProps, getDeploymentClassLoader());
-        final MessageDrivenComponent component = new MessageDrivenComponent(this, messageListenerInterface, activationSpec);
+        final MessageDrivenComponent component = new MessageDrivenComponent(this, messageListenerInterface, activationSpec, deliveryActive);
         // set the resource adapter
         final ResourceAdapter resourceAdapter = this.resourceAdapterInjectedValue.getValue();
         component.setResourceAdapter(resourceAdapter);

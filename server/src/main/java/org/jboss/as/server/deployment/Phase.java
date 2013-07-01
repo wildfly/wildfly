@@ -395,6 +395,7 @@ public enum Phase {
     public static final int POST_MODULE_EJB_SECURITY_MISSING_METHOD_PERMISSIONS = 0x0613;
     public static final int POST_MODULE_EJB_CACHE                       = 0x0614;
     public static final int POST_MODULE_EJB_CLUSTERED                   = 0x0615;
+    public static final int POST_MODULE_EJB_DELIVERY_ACTIVE_MERGE       = 0x0616;
     public static final int POST_MODULE_WELD_WEB_INTEGRATION            = 0x0700;
     public static final int POST_MODULE_WELD_COMPONENT_INTEGRATION      = 0x0800;
     public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0A00;

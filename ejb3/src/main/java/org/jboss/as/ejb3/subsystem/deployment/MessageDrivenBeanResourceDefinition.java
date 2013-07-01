@@ -22,6 +22,13 @@
 
 package org.jboss.as.ejb3.subsystem.deployment;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for a {@link org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent}.
  *
@@ -31,7 +38,30 @@ public class MessageDrivenBeanResourceDefinition extends AbstractEJBComponentRes
 
     public static final MessageDrivenBeanResourceDefinition INSTANCE = new MessageDrivenBeanResourceDefinition();
 
+    public static final AttributeDefinition DELIVERY_ACTIVE = new SimpleAttributeDefinitionBuilder("delivery-active", ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(true))
+            .setStorageRuntime()
+            .build();
+
+    static final String START_DELIVERY = "start-delivery";
+    static final String STOP_DELIVERY = "stop-delivery";
+
     private MessageDrivenBeanResourceDefinition() {
         super(EJBComponentType.MESSAGE_DRIVEN);
+    }
+
+    @Override
+    public void registerAttributes(ManagementResourceRegistration registry) {
+        super.registerAttributes(registry);
+
+        registry.registerReadOnlyAttribute(DELIVERY_ACTIVE, MessageDrivenBeanRuntimeHandler.INSTANCE);
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration registry) {
+        super.registerOperations(registry);
+
+        registry.registerOperationHandler(new SimpleOperationDefinition(START_DELIVERY, getResourceDescriptionResolver()), MessageDrivenBeanRuntimeHandler.INSTANCE);
+        registry.registerOperationHandler(new SimpleOperationDefinition(STOP_DELIVERY, getResourceDescriptionResolver()), MessageDrivenBeanRuntimeHandler.INSTANCE);
     }
 }
