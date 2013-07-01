@@ -18,14 +18,13 @@ package org.jboss.as.weld.discovery;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Inherited;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.weld.WeldMessages;
 import org.jboss.as.weld.util.Indices;
+import org.jboss.as.weld.util.Reflections;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -49,18 +48,7 @@ import com.google.common.collect.ImmutableSet;
 public class WeldAnnotationDiscovery implements ExtendedAnnotationDiscovery, BootstrapService {
 
     private static final DotName INHERITED_NAME = DotName.createSimple(Inherited.class.getName());
-
-    private class LoadAffectedClassNames extends CacheLoader<Class<? extends Annotation>, Set<String>> {
-        @Override
-        public Set<String> load(Class<? extends Annotation> key) throws Exception {
-            // we enumerate a set of all the annotations annotated by the given meta-annotation plus the given annotation itself
-            Set<AnnotationType> firstLevelAnnotations = new HashSet<AnnotationType>(annotatedAnnotations.get(key));
-            firstLevelAnnotations.add(new AnnotationType(DotName.createSimple(key.getName()), key.isAnnotationPresent(Inherited.class)));
-
-            Collection<ClassInfo> affectedClasses = helper.getAffectedClasses(firstLevelAnnotations);
-            return ImmutableSet.copyOf(Collections2.transform(affectedClasses, Indices.CLASS_INFO_TO_FQCN));
-        }
-    }
+    private static final DotName OBJECT_NAME = DotName.createSimple(Object.class.getName());
 
     private class LoadAnnotatedAnnotations extends CacheLoader<Class<? extends Annotation>, Set<AnnotationType>> {
         @Override
@@ -80,27 +68,61 @@ public class WeldAnnotationDiscovery implements ExtendedAnnotationDiscovery, Boo
     }
 
     private CompositeIndex index;
-    private final RequiredAnnotationTargetDiscovery helper;
 
     // caching
-    private final LoadingCache<Class<? extends Annotation>, Set<String>> affectedClasses = CacheBuilder.newBuilder().build(new LoadAffectedClassNames());
     private final LoadingCache<Class<? extends Annotation>, Set<AnnotationType>> annotatedAnnotations = CacheBuilder.newBuilder().build(new LoadAnnotatedAnnotations());
 
     public WeldAnnotationDiscovery(CompositeIndex index) {
         this.index = index;
-        this.helper = new RequiredAnnotationTargetDiscovery(IndexAdapter.forCompositeIndex(index));
     }
 
     @Override
-    public boolean containsAnnotation(Class<?> javaClass, Class<? extends Annotation> annotation) {
+    public boolean containsAnnotation(Class<?> javaClass, Class<? extends Annotation> requiredAnnotation) {
         if (index == null) {
             throw WeldMessages.MESSAGES.cannotUseAtRuntime(AnnotationDiscovery.class.getSimpleName());
         }
-        try {
-            return affectedClasses.get(annotation).contains(javaClass.getName());
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
+        DotName className = DotName.createSimple(javaClass.getName());
+        DotName requiredAnnotationName = DotName.createSimple(requiredAnnotation.getName());
+        return containsAnnotation(className, requiredAnnotationName, javaClass, requiredAnnotation);
+    }
+
+    private boolean containsAnnotation(DotName className, DotName requiredAnnotationName, Class<?> originalClass, Class<? extends Annotation> requiredAnnotation) {
+        final ClassInfo clazz = index.getClassByName(className);
+        if (clazz == null) {
+            // we are accessing a class that is outside of the jandex index
+            // fallback to using reflection
+            return Reflections.containsAnnotation(originalClass, requiredAnnotation);
         }
+
+        // type and members
+        if (clazz.annotations().containsKey(requiredAnnotationName)) {
+            return true;
+        }
+        // meta-annotations
+        for (DotName annotation : clazz.annotations().keySet()) {
+            ClassInfo annotationClassInfo = index.getClassByName(annotation);
+            if (annotationClassInfo != null) {
+                if (annotationClassInfo.annotations().containsKey(requiredAnnotationName)) {
+                    return true;
+                }
+            } else {
+                // the annotation is not indexed, let's try to load the class and inspect using reflection
+                Class<?> annotationClass;
+                try {
+                    annotationClass = originalClass.getClassLoader().loadClass(annotation.toString());
+                    if (annotationClass.isAnnotationPresent(requiredAnnotation)) {
+                        return true;
+                    }
+                } catch (ClassNotFoundException ignored) {
+                }
+            }
+        }
+        // superclass
+        final DotName superName = clazz.superName();
+        if (superName != null && !OBJECT_NAME.equals(superName) && containsAnnotation(superName, requiredAnnotationName, originalClass, requiredAnnotation)) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -117,7 +139,6 @@ public class WeldAnnotationDiscovery implements ExtendedAnnotationDiscovery, Boo
 
     @Override
     public void cleanupAfterBoot() {
-        this.affectedClasses.cleanUp();
         this.annotatedAnnotations.cleanUp();
         this.index = null;
     }
