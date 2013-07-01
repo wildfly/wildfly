@@ -67,9 +67,13 @@ public class AddPropertiesUser {
 
     protected State nextState;
 
-    protected AddPropertiesUser(ConsoleWrapper console) {
+    protected AddPropertiesUser(ConsoleWrapper console, final String realm) {
         theConsole = console;
         StateValues stateValues = new StateValues();
+        if (realm != null) {
+            stateValues.setRealm(realm);
+            stateValues.setRealmMode(RealmMode.USER_SUPPLIED);
+        }
         stateValues.setJBossHome(System.getenv("JBOSS_HOME"));
 
         if (theConsole.getConsole() == null) {
@@ -78,7 +82,7 @@ public class AddPropertiesUser {
         nextState = new PropertyFilePrompt(theConsole, stateValues);
     }
 
-    private AddPropertiesUser(ConsoleWrapper console, final boolean management, final String user, final String password, final String realm) {
+    private AddPropertiesUser(ConsoleWrapper console, final boolean management, final String user, final String password, final String realm, final RealmMode realmMode) {
         StateValues stateValues = new StateValues();
         stateValues.setJBossHome(System.getenv("JBOSS_HOME"));
 
@@ -109,6 +113,7 @@ public class AddPropertiesUser {
         }
         stateValues.setPassword(password.toCharArray());
         stateValues.setRealm(realm);
+        stateValues.setRealmMode(realmMode);
         stateValues.setManagement(management);
         stateValues.setRoles(argsCliProps.getProperty(CommandLineArgument.ROLE.key()));
 
@@ -116,7 +121,7 @@ public class AddPropertiesUser {
     }
 
     private AddPropertiesUser(ConsoleWrapper consoleWrapper, boolean management, final String user, final String password) {
-        this(consoleWrapper, management, user, password, management ? DEFAULT_MANAGEMENT_REALM : DEFAULT_APPLICATION_REALM);
+        this(consoleWrapper, management, user, password, management ? DEFAULT_MANAGEMENT_REALM : DEFAULT_APPLICATION_REALM, RealmMode.DEFAULT);
     }
 
     protected void run() {
@@ -190,12 +195,16 @@ public class AddPropertiesUser {
             final String password = argsCliProps.getProperty(CommandLineArgument.PASSWORD.key());
             final String user = argsCliProps.getProperty(CommandLineArgument.USER.key());
             if (argsCliProps.containsKey(CommandLineArgument.REALM.key())) {
-                new AddPropertiesUser(javaConsole, management, user, password, argsCliProps.getProperty(CommandLineArgument.REALM.key())).run();
+                new AddPropertiesUser(javaConsole, management, user, password, argsCliProps.getProperty(CommandLineArgument.REALM.key()), RealmMode.USER_SUPPLIED).run();
             } else {
                 new AddPropertiesUser(javaConsole, management, user, password).run();
             }
         } else {
-            new AddPropertiesUser(javaConsole).run();
+            String realm = null;
+            if (argsCliProps.containsKey(CommandLineArgument.REALM.key())) {
+                realm = argsCliProps.getProperty(CommandLineArgument.REALM.key());
+            }
+            new AddPropertiesUser(javaConsole, realm).run();
         }
     }
 
@@ -205,6 +214,10 @@ public class AddPropertiesUser {
 
     public enum Interactiveness {
         SILENT, NON_INTERACTIVE, INTERACTIVE
+    }
+
+    public enum RealmMode {
+        USER_SUPPLIED, DEFAULT, DISCOVERED
     }
 
     /**

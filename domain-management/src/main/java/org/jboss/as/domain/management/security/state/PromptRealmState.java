@@ -25,6 +25,7 @@ package org.jboss.as.domain.management.security.state;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.AddPropertiesUser.NEW_LINE;
 
+import org.jboss.as.domain.management.security.AddPropertiesUser.RealmMode;
 import org.jboss.as.domain.management.security.ConsoleWrapper;
 
 /**
@@ -60,7 +61,7 @@ public class PromptRealmState implements State {
          * Prompt for realm.
          */
         theConsole.printf(MESSAGES.realmPrompt(stateValues.getRealm()));
-        if (stateValues.isRealmAlreadyDefined()) {
+        if (stateValues.getRealmMode() == RealmMode.DISCOVERED || stateValues.getRealmMode() == RealmMode.USER_SUPPLIED) {
             theConsole.printf(" : ");
             theConsole.printf(NEW_LINE);
             return new PromptNewUserState(theConsole, stateValues);

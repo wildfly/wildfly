@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.domain.management.security.AddPropertiesUser.RealmMode;
 import org.jboss.as.domain.management.security.ConsoleWrapper;
 import org.jboss.as.domain.management.security.PropertiesFileLoader;
 import org.jboss.msc.service.StartException;
@@ -120,8 +121,13 @@ public class PropertyFileFinder implements State {
             }
         }
         if (realmName != null) {
+            if (stateValues.getRealmMode() == RealmMode.USER_SUPPLIED && realmName.equals(stateValues.getRealm()) == false) {
+                return new ErrorState(theConsole, MESSAGES.userRealmNotMatchDiscovered(stateValues.getRealm(), realmName),
+                        null, stateValues);
+            }
+
             stateValues.setRealm(realmName);
-            stateValues.setRealmAlreadyDefined(true);
+            stateValues.setRealmMode(RealmMode.DISCOVERED);
         }
         stateValues.setKnownUsers(foundUsers);
 
