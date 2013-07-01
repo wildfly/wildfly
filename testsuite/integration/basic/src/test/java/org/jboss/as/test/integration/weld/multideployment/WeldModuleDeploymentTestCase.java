@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.weld.multideployment;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,8 +39,12 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.dmr.ModelNode;
+import org.jboss.jandex.Index;
+import org.jboss.jandex.IndexWriter;
+import org.jboss.jandex.Indexer;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -101,8 +106,19 @@ public class WeldModuleDeploymentTestCase {
         copyFile(new File(file, "module.xml"), url.openStream());
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "weldTest.jar");
-        jar.addClasses(SimpleBean.class);
+        jar.addClasses(SimpleBean.class, ModuleEjb.class);
         jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+
+
+        Indexer indexer = new Indexer();
+        try (final InputStream resource = ModuleEjb.class.getResourceAsStream(ModuleEjb.class.getSimpleName() + ".class")) {
+            indexer.index(resource);
+        }
+        Index index = indexer.complete();
+        ByteArrayOutputStream data = new ByteArrayOutputStream();
+        IndexWriter writer = new IndexWriter(data);
+        writer.write(index);
+        jar.addAsManifestResource(new ByteArrayAsset(data.toByteArray()), "jandex.idx");
         FileOutputStream jarFile = new FileOutputStream(new File(file, "weldTest.jar"));
         try {
             jar.as(ZipExporter.class).exportTo(jarFile);
@@ -154,15 +170,19 @@ public class WeldModuleDeploymentTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "d2.jar");
         jar.addClasses(WeldModuleDeploymentTestCase.class);
         jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
-        jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.test.weldModule meta-inf\n"), "MANIFEST.MF");
+        jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.test.weldModule meta-inf annotations\n"), "MANIFEST.MF");
         return jar;
     }
 
     @Inject
     private SimpleBean bean;
 
+    @Inject
+    private ModuleEjb moduleEjb;
+
     @Test
     public void testSimpleBeanInjected() throws Exception {
         Assert.assertNotNull(bean);
+        Assert.assertNotNull(moduleEjb);
     }
 }
