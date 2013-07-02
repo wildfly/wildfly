@@ -27,7 +27,7 @@
         <property name="jboss.api" value="private"/>
     </properties>
 
-    <main-class name="org.jboss.as.domain.management.security.AddPropertiesUser"/>
+    <main-class name="org.jboss.as.domain.management.security.adduser.AddUser"/>
 
     <resources>
         <!-- Insert resources here -->
