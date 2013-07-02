@@ -72,6 +72,12 @@ public class LazyValidatorFactory implements ValidatorFactory {
         return result;
     }
 
+    public void replaceDelegate(ValidatorFactory validatorFactory) {
+        synchronized (this) {
+            delegate = validatorFactory;
+        }
+    }
+
     @Override
     public Validator getValidator() {
         return getDelegate().getValidator();

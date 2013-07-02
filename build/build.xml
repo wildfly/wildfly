@@ -757,6 +757,10 @@
             <maven-resource group="org.hibernate" artifact="hibernate-validator"/>
         </module-def>
 
+        <module-def name="org.hibernate.validator.cdi">
+            <maven-resource group="org.hibernate" artifact="hibernate-validator-cdi"/>
+        </module-def>
+
         <module-def name="org.hornetq">
             <maven-resource group="org.hornetq" artifact="hornetq-core-client"/>
             <maven-resource group="org.hornetq" artifact="hornetq-server"/>
