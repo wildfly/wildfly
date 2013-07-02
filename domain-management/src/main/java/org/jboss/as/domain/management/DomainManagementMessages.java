@@ -677,70 +677,70 @@ public interface DomainManagementMessages {
     String sureToSetPassword(String password);
 
     /**
-     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#USAGE} command line argument.
+     * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#USAGE} command line argument.
      * @return the message.
      */
     @Message(id = Message.NONE, value = "Usage: ./add-user.sh [args...]%nwhere args include:")
     String argUsage();
 
     /**
-     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#APPLICATION_USERS} command line argument.
+     * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#APPLICATION_USERS} command line argument.
      * @return the message.
      */
     @Message(id = Message.NONE, value = "If set add an application user instead of a management user")
     String argApplicationUsers();
 
     /**
-     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#DOMAIN_CONFIG_DIR_USERS} command line argument.
+     * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#DOMAIN_CONFIG_DIR_USERS} command line argument.
      * @return the message.
      */
     @Message(id = Message.NONE, value = "Define the system property to use for the domain config directory (default is \"jboss.domain.config.dir\")")
     String argDomainConfigDirUsers();
 
     /**
-     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#SERVER_CONFIG_DIR_USERS} command line argument.
+     * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#SERVER_CONFIG_DIR_USERS} command line argument.
      * @return the message.
      */
     @Message(id = Message.NONE, value = "Define the system property to use for the server config directory (default is \"jboss.server.config.dir\")")
     String argServerConfigDirUsers();
 
     /**
-     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#PASSWORD} command line argument.
+     * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#PASSWORD} command line argument.
      * @return the message.
      */
     @Message(id = Message.NONE, value = "Password of the user. Should not be same as the username")
     String argPassword();
 
     /**
-     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#USER} command line argument.
+     * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#USER} command line argument.
      * @return the message.
      */
     @Message(id = Message.NONE, value = "Name of the user")
     String argUser();
 
     /**
-     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#REALM} command line argument.
+     * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#REALM} command line argument.
      * @return the message.
      */
     @Message(id = Message.NONE, value = "Name of the realm used to secure the management interfaces (default is \"ManagementRealm\")")
     String argRealm();
 
     /**
-     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#SILENT} command line argument.
+     * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#SILENT} command line argument.
      * @return the message.
      */
     @Message(id = Message.NONE, value = "Activate the silent mode (no output to the console)")
     String argSilent();
 
     /**
-     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#ROLE} command line argument.
+     * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#ROLE} command line argument.
      * @return the message.
      */
     @Message(id = Message.NONE, value = "Comma-separated list of roles for the user (only for application users, see -a)")
     String argRole();
 
     /**
-     * Instructions for the {@link org.jboss.as.domain.management.security.AddPropertiesUser.CommandLineArgument#HELP} command line argument.
+     * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#HELP} command line argument.
      * @return the message.
      */
     @Message(id = Message.NONE, value = "Display this message and exit")
