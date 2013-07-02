@@ -89,7 +89,7 @@ public abstract class UpdatePropertiesHandler {
             }
         }
 
-        if (!stateValues.isManagement() && stateValues.getRoles() != null) {
+        if (stateValues.rolePropertiesFound() && stateValues.getRoles() != null) {
             for (final File current : stateValues.getRoleFiles()) {
                 String[] role = {stateValues.getUserName(), stateValues.getRoles()};
                 try {

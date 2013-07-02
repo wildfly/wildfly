@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.domain.management.security.PropertiesFileLoader;
+import org.jboss.as.domain.management.security.adduser.AddUser.FileMode;
 import org.jboss.as.domain.management.security.adduser.AddUser.RealmMode;
 import org.jboss.msc.service.StartException;
 
@@ -67,26 +68,30 @@ public class PropertyFileFinder implements State {
     @Override
     public State execute() {
         stateValues.setKnownRoles(new HashMap<String, String>());
-        String jbossHome = stateValues.getJBossHome();
-        if (jbossHome == null) {
-            return new ErrorState(theConsole, MESSAGES.jbossHomeNotSet(), null, stateValues);
+
+        if (stateValues.getOptions().getGroupProperties() != null && stateValues.getOptions().getUserProperties() == null) {
+            return new ErrorState(theConsole, MESSAGES.groupPropertiesButNoRoleProperties(stateValues.getOptions()
+                    .getGroupProperties()), null, stateValues);
         }
 
         List<File> foundFiles = new ArrayList<File>(2);
-        final String fileName = stateValues.isManagement() ? MGMT_USERS_PROPERTIES : APPLICATION_USERS_PROPERTIES;
-        if (!findFiles(jbossHome, foundFiles, fileName)) {
+        String fileName = stateValues.getOptions().getUserProperties();
+        fileName = fileName == null ? stateValues.getFileMode() == FileMode.MANAGEMENT ? MGMT_USERS_PROPERTIES : APPLICATION_USERS_PROPERTIES : fileName;
+        if (!findFiles(foundFiles, fileName)) {
             return new ErrorState(theConsole, MESSAGES.propertiesFileNotFound(fileName), null, stateValues);
         }
-        if (!stateValues.isManagement()) {
+        fileName = stateValues.getOptions().getGroupProperties();
+        if (fileName != null || stateValues.getFileMode() == FileMode.APPLICATION) {
             List<File> foundRoleFiles = new ArrayList<File>(2);
-            if (!findFiles(jbossHome, foundRoleFiles, APPLICATION_ROLES_PROPERTIES)) {
-                return new ErrorState(theConsole, MESSAGES.propertiesFileNotFound(APPLICATION_ROLES_PROPERTIES), null, stateValues);
+            fileName = fileName == null ? APPLICATION_ROLES_PROPERTIES : fileName;
+            if (!findFiles(foundRoleFiles, fileName)) {
+                return new ErrorState(theConsole, MESSAGES.propertiesFileNotFound(fileName), null, stateValues);
             }
             stateValues.setRoleFiles(foundRoleFiles);
             try {
                 stateValues.setKnownRoles(loadAllRoles(foundRoleFiles));
             } catch (Exception e) {
-                return new ErrorState(theConsole, MESSAGES.propertiesFileNotFound(APPLICATION_ROLES_PROPERTIES), null, stateValues);
+                return new ErrorState(theConsole, MESSAGES.propertiesFileNotFound(fileName), null, stateValues);
             }
         }
 
@@ -162,12 +167,20 @@ public class PropertyFileFinder implements State {
         return loadedRoles;
     }
 
-    private boolean findFiles(final String jbossHome, final List<File> foundFiles, final String fileName) {
-        File standaloneProps = buildFilePath(jbossHome, SERVER_CONFIG_USER_DIR, SERVER_CONFIG_DIR, SERVER_BASE_DIR, "standalone", fileName);
+    private boolean findFiles(final List<File> foundFiles, final String fileName) {
+        File singleFile = new File(fileName);
+        if (singleFile.exists()) {
+            foundFiles.add(singleFile);
+            return true;
+        }
+
+        File standaloneProps = buildFilePath(SERVER_CONFIG_USER_DIR, stateValues.getOptions().getServerConfigDir(),
+                                             SERVER_CONFIG_DIR, SERVER_BASE_DIR, "standalone", fileName);
         if (standaloneProps.exists()) {
             foundFiles.add(standaloneProps);
         }
-        File domainProps = buildFilePath(jbossHome, DOMAIN_CONFIG_USER_DIR, DOMAIN_CONFIG_DIR, DOMAIN_BASE_DIR, "domain", fileName);
+        File domainProps = buildFilePath(DOMAIN_CONFIG_USER_DIR, stateValues.getOptions().getDomainConfigDir(),
+                                         DOMAIN_CONFIG_DIR, DOMAIN_BASE_DIR, "domain", fileName);
         if (domainProps.exists()) {
             foundFiles.add(domainProps);
         }
@@ -175,28 +188,43 @@ public class PropertyFileFinder implements State {
         return !foundFiles.isEmpty();
     }
 
-    private File buildFilePath(final String jbossHome, final String serverCofigUserDirPropertyName, final String serverConfigDirPropertyName,
-                               final String serverBaseDirPropertyName, final String defaultBaseDir, final String fileName) {
-
-        String configUserDirConfiguredPath = System.getProperty(serverCofigUserDirPropertyName);
-        String configDirConfiguredPath = configUserDirConfiguredPath != null ? configUserDirConfiguredPath : System.getProperty(serverConfigDirPropertyName);
-
-        File configDir = configDirConfiguredPath != null ? new File(configDirConfiguredPath) : null;
-        if (configDir == null) {
-            String baseDirConfiguredPath = System.getProperty(serverBaseDirPropertyName);
-            File baseDir = baseDirConfiguredPath != null ? new File(baseDirConfiguredPath) : new File(jbossHome, defaultBaseDir);
-            configDir = new File(baseDir, "configuration");
-        }
-        return new File(configDir, fileName);
+    private File buildFilePath(final String serverConfigUserDirPropertyName, final String suppliedConfigDir,
+            final String serverConfigDirPropertyName, final String serverBaseDirPropertyName, final String defaultBaseDir,
+            final String fileName) {
+        return new File(buildDirPath(serverConfigUserDirPropertyName, suppliedConfigDir, serverConfigDirPropertyName,
+                                     serverBaseDirPropertyName, defaultBaseDir), fileName);
     }
 
-    private static void safeClose(Closeable c) {
-        if (c != null) {
-            try {
-                c.close();
-            } catch (IOException e) {
-            }
+    /**
+     * This method attempts to locate a suitable directory by checking a number of different configuration sources.
+     *
+     * 1 - serverConfigUserDirPropertyName - This value is used to check it a matching system property has been set. 2 -
+     * suppliedConfigDir - If a path was specified on the command line it is expected to be passed in as this parameter. 3 -
+     * serverConfigDirPropertyName - This is a second system property to check.
+     *
+     * And finally if none of these match defaultBaseDir specifies the configuration being searched and is appended to the JBoss
+     * Home value discovered when the utility started.
+     */
+    private File buildDirPath(final String serverConfigUserDirPropertyName, final String suppliedConfigDir,
+            final String serverConfigDirPropertyName, final String serverBaseDirPropertyName, final String defaultBaseDir) {
+        String propertyDir = System.getProperty(serverConfigUserDirPropertyName);
+        if (propertyDir != null) {
+            return new File(propertyDir);
         }
+        if (suppliedConfigDir != null) {
+            return new File(suppliedConfigDir);
+        }
+        propertyDir = System.getProperty(serverConfigDirPropertyName);
+        if (propertyDir != null) {
+            return new File(propertyDir);
+        }
+
+        propertyDir = System.getProperty(serverBaseDirPropertyName);
+        if (propertyDir != null) {
+            return new File(propertyDir);
+        }
+
+        return new File(new File(stateValues.getOptions().getJBossHome(), defaultBaseDir), "configuration");
     }
 
 }

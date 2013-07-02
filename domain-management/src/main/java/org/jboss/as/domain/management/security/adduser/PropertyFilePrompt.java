@@ -27,6 +27,7 @@ import static org.jboss.as.domain.management.security.adduser.AddUser.DEFAULT_MA
 
 import java.util.Locale;
 
+import org.jboss.as.domain.management.security.adduser.AddUser.FileMode;
 import org.jboss.as.domain.management.security.adduser.AddUser.RealmMode;
 
 /**
@@ -68,13 +69,13 @@ public class PropertyFilePrompt implements State {
 
         switch (convertResponse(temp)) {
             case MANAGEMENT:
-                stateValues.setManagement(true);
+                stateValues.setFileMode(FileMode.MANAGEMENT);
                 if (setRealm) {
                     stateValues.setRealm(DEFAULT_MANAGEMENT_REALM);
                 }
                 return new PropertyFileFinder(theConsole, stateValues);
             case APPLICATION:
-                stateValues.setManagement(false);
+                stateValues.setFileMode(FileMode.APPLICATION);
                 if (setRealm) {
                     stateValues.setRealm(DEFAULT_APPLICATION_REALM);
                 }

@@ -59,7 +59,8 @@ public class PromptRealmState implements State {
         /*
          * Prompt for realm.
          */
-        theConsole.printf(MESSAGES.realmPrompt(stateValues.getRealm()));
+        String existingRealm = stateValues.getRealm();
+        theConsole.printf(MESSAGES.realmPrompt(existingRealm == null ? "" : existingRealm));
         if (stateValues.getRealmMode() == RealmMode.DISCOVERED || stateValues.getRealmMode() == RealmMode.USER_SUPPLIED) {
             theConsole.printf(" : ");
             theConsole.printf(NEW_LINE);
@@ -74,7 +75,7 @@ public class PromptRealmState implements State {
                 theConsole.printf(NEW_LINE);
                 return null;
             }
-            if (temp.length() > 0) {
+            if (temp.length() > 0 || stateValues.getRealm() == null) {
                 stateValues.setRealm(temp);
             }
 

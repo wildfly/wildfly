@@ -23,6 +23,7 @@
 package org.jboss.as.domain.management.security.adduser;
 
 import org.jboss.as.domain.management.security.adduser.AddUser;
+import org.jboss.as.domain.management.security.adduser.AddUser.FileMode;
 import org.jboss.msc.service.StartException;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,8 +48,8 @@ public class PropertyFileFinderTestCase extends PropertyTestHelper {
 
     @Before
     public void setup() throws IOException {
-        values.setManagement(true);
-        values.setJBossHome(getProperty("java.io.tmpdir"));
+        values.setFileMode(FileMode.MANAGEMENT);
+        values.getOptions().setJBossHome(getProperty("java.io.tmpdir"));
     }
 
     private File createPropertyFile(String filename, String mode) throws IOException {
@@ -95,7 +96,7 @@ public class PropertyFileFinderTestCase extends PropertyTestHelper {
         String newUserName = "Hugh.Jackman";
         values.setRoles(null);
         values.setUserName(newUserName);
-        values.setManagement(false);
+        values.setFileMode(FileMode.APPLICATION);
         System.setProperty("jboss.server.config.user.dir", domainUserFile.getParent());
         System.setProperty("jboss.domain.config.user.dir", standaloneUserFile.getParent());
         State propertyFileFinder = new PropertyFileFinder(consoleMock, values);
