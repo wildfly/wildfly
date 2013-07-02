@@ -466,6 +466,7 @@ public enum Phase {
     public static final int INSTALL_WELD_DEPLOYMENT                     = 0x1B00;
     public static final int INSTALL_WELD_BEAN_MANAGER                   = 0x1C00;
     public static final int INSTALL_JNDI_DEPENDENCIES                   = 0x1C01;
+    public static final int INSTALL_CDI_VALIDATOR_FACTORY               = 0x1C02;
     public static final int INSTALL_WS_UNIVERSAL_META_DATA_MODEL        = 0x1C10;
     public static final int INSTALL_WS_DEPLOYMENT_ASPECTS               = 0x1C11;
     // IMPORTANT: WS integration installs deployment aspects dynamically

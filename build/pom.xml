@@ -753,6 +753,11 @@
 
                 <dependency>
                     <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-validator-cdi</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.hibernate</groupId>
                     <artifactId>hibernate-envers</artifactId>
                 </dependency>
 
@@ -2137,6 +2142,7 @@
                                         <include>org.hibernate:hibernate-envers</include>
                                         <include>org.hibernate:hibernate-infinispan</include>
                                         <include>org.hibernate:hibernate-validator</include>
+                                        <include>org.hibernate:hibernate-validator-cdi</include>
                                         <include>org.hibernate.javax.persistence:hibernate-jpa-2.1-api</include>
                                         <include>org.hornetq:hornetq-commons</include>
                                         <include>org.hornetq:hornetq-core-client</include>
@@ -2913,6 +2919,10 @@
                                         <group>
                                             <title>Module org.hibernate.validator</title>
                                             <packages>org.hibernate.validator:org.hibernate.validator.cfg:org.hibernate.validator.cfg.context:org.hibernate.validator.cfg.defs:org.hibernate.validator.constraints:org.hibernate.validator.constraints.br:org.hibernate.validator.group:org.hibernate.validator.internal.cfg.context:org.hibernate.validator.internal.constraintvalidators:org.hibernate.validator.internal.engine:org.hibernate.validator.internal.engine.groups:org.hibernate.validator.internal.engine.resolver:org.hibernate.validator.internal.metadata:org.hibernate.validator.internal.metadata.aggregated:org.hibernate.validator.internal.metadata.core:org.hibernate.validator.internal.metadata.descriptor:org.hibernate.validator.internal.metadata.location:org.hibernate.validator.internal.metadata.provider:org.hibernate.validator.internal.metadata.raw:org.hibernate.validator.internal.util:org.hibernate.validator.internal.util.annotationfactory:org.hibernate.validator.internal.util.logging:org.hibernate.validator.internal.util.privilegedactions:org.hibernate.validator.internal.util.scriptengine:org.hibernate.validator.internal.xml:org.hibernate.validator.messageinterpolation:org.hibernate.validator.method:org.hibernate.validator.method.metadata:org.hibernate.validator.resourceloading:org.hibernate.validator.spi.group:org.hibernate.validator.spi.resourceloading</packages>
+                                        </group>
+                                        <group>
+                                            <title>Module org.hibernate.validator.cdi</title>
+                                            <packages>org.hibernate.validator.cdi:org.hibernate.validator.internal.cdi:org.hibernate.validator.internal.cdi.interceptor</packages>
                                         </group>
                                         <group>
                                             <title>Module org.hornetq</title>

@@ -47,6 +47,7 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
     private static ModuleIdentifier WELD_CORE_ID = ModuleIdentifier.create("org.jboss.weld.core");
     private static ModuleIdentifier WELD_API_ID = ModuleIdentifier.create("org.jboss.weld.api");
     private static ModuleIdentifier WELD_SPI_ID = ModuleIdentifier.create("org.jboss.weld.spi");
+    private static ModuleIdentifier CDI_BEAN_VALIDATION_ID = ModuleIdentifier.create("org.hibernate.validator.cdi");
 
     /**
      * Add dependencies for modules required for weld deployments, if managed weld configurations are attached to the deployment
@@ -71,6 +72,9 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
         dep.addImportFilter(PathFilters.getMetaInfFilter(), true);
         dep.addExportFilter(PathFilters.getMetaInfFilter(), true);
         moduleSpecification.addSystemDependency(dep);
+
+        ModuleDependency cdiBeanValidationDep = new ModuleDependency(moduleLoader, CDI_BEAN_VALIDATION_ID, false, false, true, false);
+        moduleSpecification.addSystemDependency(cdiBeanValidationDep);
     }
 
     private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
