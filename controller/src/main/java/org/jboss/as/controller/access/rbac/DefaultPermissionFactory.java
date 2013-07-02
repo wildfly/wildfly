@@ -71,9 +71,14 @@ public class DefaultPermissionFactory implements PermissionFactory {
     private boolean rolePermissionsConfigured;
 
     public DefaultPermissionFactory(CombinationPolicy combinationPolicy, RoleMapper roleMapper) {
+        this(combinationPolicy, roleMapper, getStandardConstraintFactories());
+    }
+
+    DefaultPermissionFactory(CombinationPolicy combinationPolicy, RoleMapper roleMapper,
+                             Set<ConstraintFactory> constraintFactories) {
         this.combinationPolicy = combinationPolicy;
         this.roleMapper = roleMapper;
-        this.constraintFactories = getStandardConstraintFactories();
+        this.constraintFactories = constraintFactories;
     }
 
     @Override
@@ -133,6 +138,8 @@ public class DefaultPermissionFactory implements PermissionFactory {
         if (combined == null) {
             result = simple;
         } else {
+            // TODO if I get here, I'm screwed -- requiredPerms are always MgmtPermColl(SimpleMgmtPerm),
+            // TODO so this MgmtPermColl(CombinationMgmtPerm) will never .imply() any of the requiredPerms
             result = new ManagementPermissionCollection(CombinationManagementPermission.class);
             for (CombinationManagementPermission cmp : combined.values()) {
                 result.add(cmp);
@@ -204,6 +211,7 @@ public class DefaultPermissionFactory implements PermissionFactory {
 
     private synchronized Map<String, ManagementPermissionCollection> configureDefaultPermissions() {
         Set<ConstraintFactory> factories;
+        // TODO not needed, the method is already synchronized
         synchronized (this) {
             factories = new HashSet<ConstraintFactory>(this.constraintFactories);
         }

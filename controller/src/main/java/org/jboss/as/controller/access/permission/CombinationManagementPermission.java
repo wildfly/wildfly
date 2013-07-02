@@ -48,8 +48,11 @@ public class CombinationManagementPermission extends ManagementPermission {
     }
 
     public void addUnderlyingPermission(ManagementPermission underlyingPermission) {
+        // TODO I believe that check for CombinationPolicy.REJECTING belongs here
         assert underlyingPermission.getActionEffect() == getActionEffect() : "incompatible ActionEffect";
         synchronized (underlyingPermissions) {
+            // TODO I believe that either underlyingPermissions should be a List, or SimpleManagementPermission
+            // TODO equality and hashCode should take Constraints into account
             underlyingPermissions.add(underlyingPermission);
         }
     }
@@ -99,6 +102,8 @@ public class CombinationManagementPermission extends ManagementPermission {
         if (o == null || getClass() != o.getClass()) return false;
 
         CombinationManagementPermission that = (CombinationManagementPermission) o;
+
+        // TODO I believe that actionEffect should be taken into account here (and in hashCode)
 
         return combinationPolicy == that.combinationPolicy && underlyingPermissions.equals(that.underlyingPermissions);
 
