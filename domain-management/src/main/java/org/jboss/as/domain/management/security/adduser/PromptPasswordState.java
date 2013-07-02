@@ -76,8 +76,9 @@ public class PromptPasswordState implements State {
                 }
 
                 // As long as it matches the actual value has already been validated.
-                return stateValues.isManagement() ? new PreModificationState(theConsole, stateValues) : new PromptRolesState(
-                        theConsole, stateValues);
+                // Rather than checking if we are in management mode we need to check if we found any group property files.
+                return stateValues.rolePropertiesFound() ? new PromptRolesState(theConsole, stateValues)
+                        : new PreModificationState(theConsole, stateValues);
             }
         }
 

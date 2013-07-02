@@ -38,7 +38,7 @@ import java.util.Properties;
  */
 public class AddUser {
 
-    public static final String[] BAD_USER_NAMES = {"admin", "administrator", "root"};
+    private static final String JBOSS_HOME_ENV = "JBOSS_HOME";
 
     public static final String SERVER_BASE_DIR = "jboss.server.base.dir";
     public static final String SERVER_CONFIG_DIR = "jboss.server.config.dir";
@@ -61,24 +61,27 @@ public class AddUser {
 
     protected State nextState;
 
-    protected AddUser(ConsoleWrapper console, final String realm) {
-        theConsole = console;
-        StateValues stateValues = new StateValues();
+    protected AddUser(RuntimeOptions options, final String realm) {
+        theConsole = options.getConsoleWrapper();
+        StateValues stateValues = new StateValues(options);
         if (realm != null) {
             stateValues.setRealm(realm);
             stateValues.setRealmMode(RealmMode.USER_SUPPLIED);
         }
-        stateValues.setJBossHome(System.getenv("JBOSS_HOME"));
 
         if (theConsole.getConsole() == null) {
             throw MESSAGES.noConsoleAvailable();
         }
-        nextState = new PropertyFilePrompt(theConsole, stateValues);
+        if (options.getUserProperties() != null || options.getGroupProperties() != null) {
+            // If we have property files specified we do not need to check the running mode.
+            nextState = new PropertyFileFinder(theConsole, stateValues);
+        } else {
+            nextState = new PropertyFilePrompt(theConsole, stateValues);
+        }
     }
 
-    private AddUser(ConsoleWrapper console, final boolean management, final String user, final String password, final String realm, final RealmMode realmMode) {
-        StateValues stateValues = new StateValues();
-        stateValues.setJBossHome(System.getenv("JBOSS_HOME"));
+    private AddUser(RuntimeOptions options, final FileMode fileMode, final String user, final String password, final String realm, final RealmMode realmMode) {
+        StateValues stateValues = new StateValues(options);
 
         final Interactiveness howInteractive;
         boolean silent = Boolean.valueOf(argsCliProps.getProperty(CommandLineArgument.SILENT.key()));
@@ -90,7 +93,7 @@ public class AddUser {
         stateValues.setHowInteractive(howInteractive);
 
         // Silent modes still need to be able to output an error on failure.
-        theConsole = console;
+        theConsole = options.getConsoleWrapper();
         if (theConsole.getConsole() == null && !howInteractive.equals(Interactiveness.SILENT)) {
             throw MESSAGES.noConsoleAvailable();
         }
@@ -108,14 +111,14 @@ public class AddUser {
         stateValues.setPassword(password.toCharArray());
         stateValues.setRealm(realm);
         stateValues.setRealmMode(realmMode);
-        stateValues.setManagement(management);
+        stateValues.setFileMode(fileMode);
         stateValues.setRoles(argsCliProps.getProperty(CommandLineArgument.ROLE.key()));
 
         nextState = new PropertyFileFinder(theConsole, stateValues);
     }
 
-    private AddUser(ConsoleWrapper consoleWrapper, boolean management, final String user, final String password) {
-        this(consoleWrapper, management, user, password, management ? DEFAULT_MANAGEMENT_REALM : DEFAULT_APPLICATION_REALM, RealmMode.DEFAULT);
+    private AddUser(RuntimeOptions options, final FileMode fileMode, final String user, final String password) {
+        this(options, fileMode, user, password, fileMode == FileMode.MANAGEMENT ? DEFAULT_MANAGEMENT_REALM : DEFAULT_APPLICATION_REALM, RealmMode.DEFAULT);
     }
 
     protected void run() {
@@ -128,8 +131,10 @@ public class AddUser {
      */
     public static void main(String[] args) {
 
-        boolean management = true;
-        JavaConsole javaConsole = new JavaConsole();
+        FileMode fileMode = FileMode.MANAGEMENT;
+        RuntimeOptions options = new RuntimeOptions();
+        options.setConsoleWrapper(new JavaConsole());
+        options.setJBossHome(System.getenv(JBOSS_HOME_ENV));
 
         if (args.length >= 1) {
 
@@ -138,15 +143,19 @@ public class AddUser {
             while (it.hasNext()) {
                 temp = it.next();
                 if (CommandLineArgument.HELP.match(temp)) {
-                    usage(javaConsole);
+                    usage(options.getConsoleWrapper());
                     return;
                 }
                 if (CommandLineArgument.DOMAIN_CONFIG_DIR_USERS.match(temp)) {
-                    System.setProperty(DOMAIN_CONFIG_DIR, it.next());
+                    options.setDomainConfigDir(it.next());
                 } else if (CommandLineArgument.SERVER_CONFIG_DIR_USERS.match(temp)) {
-                    System.setProperty(SERVER_CONFIG_DIR, it.next());
+                    options.setServerConfigDir(it.next());
                 } else if (CommandLineArgument.APPLICATION_USERS.match(temp)) {
-                    management = false;
+                    fileMode = FileMode.APPLICATION;
+                } else if (CommandLineArgument.USER_PROPERTIES.match(temp)) {
+                    options.setUserProperties(it.next());
+                } else if (CommandLineArgument.GROUP_PROPERTIES.match(temp)) {
+                    options.setGroupProperties(it.next());
                 } else {
                     // Find the command-line option
                     CommandLineArgument commandLineArgument = findCommandLineOption(temp);
@@ -189,16 +198,16 @@ public class AddUser {
             final String password = argsCliProps.getProperty(CommandLineArgument.PASSWORD.key());
             final String user = argsCliProps.getProperty(CommandLineArgument.USER.key());
             if (argsCliProps.containsKey(CommandLineArgument.REALM.key())) {
-                new AddUser(javaConsole, management, user, password, argsCliProps.getProperty(CommandLineArgument.REALM.key()), RealmMode.USER_SUPPLIED).run();
+                new AddUser(options, fileMode, user, password, argsCliProps.getProperty(CommandLineArgument.REALM.key()), RealmMode.USER_SUPPLIED).run();
             } else {
-                new AddUser(javaConsole, management, user, password).run();
+                new AddUser(options, fileMode, user, password).run();
             }
         } else {
             String realm = null;
             if (argsCliProps.containsKey(CommandLineArgument.REALM.key())) {
                 realm = argsCliProps.getProperty(CommandLineArgument.REALM.key());
             }
-            new AddUser(javaConsole, realm).run();
+            new AddUser(options, realm).run();
         }
     }
 
@@ -212,6 +221,10 @@ public class AddUser {
 
     public enum RealmMode {
         USER_SUPPLIED, DEFAULT, DISCOVERED
+    }
+
+    public enum FileMode {
+        MANAGEMENT, APPLICATION, UNDEFINED
     }
 
     /**
@@ -258,6 +271,30 @@ public class AddUser {
             public String instructions() {
                 return MESSAGES.argServerConfigDirUsers();
             }
+        },
+        USER_PROPERTIES("-up", "--user-properties") {
+            @Override
+            public String argumentExample() {
+                return super.argumentExample().concat(" <value>");
+            }
+
+            @Override
+            public String instructions() {
+                return MESSAGES.argUserProperties();
+            }
+
+        },
+        GROUP_PROPERTIES("-gp", "--group-properties") {
+            @Override
+            public String argumentExample() {
+                return super.argumentExample().concat(" <value>");
+            }
+
+            @Override
+            public String instructions() {
+                return MESSAGES.argGroupProperties();
+            }
+
         },
         PASSWORD("-p", "--password") {
             @Override

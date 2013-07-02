@@ -694,15 +694,29 @@ public interface DomainManagementMessages {
      * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#DOMAIN_CONFIG_DIR_USERS} command line argument.
      * @return the message.
      */
-    @Message(id = Message.NONE, value = "Define the system property to use for the domain config directory (default is \"jboss.domain.config.dir\")")
+    @Message(id = Message.NONE, value = "Define the location of the domain config directory.")
     String argDomainConfigDirUsers();
 
     /**
      * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#SERVER_CONFIG_DIR_USERS} command line argument.
      * @return the message.
      */
-    @Message(id = Message.NONE, value = "Define the system property to use for the server config directory (default is \"jboss.server.config.dir\")")
+    @Message(id = Message.NONE, value = "Define the location the server config directory.")
     String argServerConfigDirUsers();
+
+    /**
+     * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#USER_PROPERTIES} command line argument.
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "The file name of the user properties file which can be an absolute path.")
+    String argUserProperties();
+
+    /**
+     * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#GROUP_PROPERTIES} command line argument.
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "The file name of the group properties file which can be an absolute path. (If group properties is specified then user properties MUST also be specified).")
+    String argGroupProperties();
 
     /**
      * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#PASSWORD} command line argument.
@@ -818,6 +832,18 @@ public interface DomainManagementMessages {
      */
     @Message(id = 15274, value = "The user supplied realm name '%s' does not match the realm name discovered from the property file(s) '%s'.")
     String userRealmNotMatchDiscovered(final String supplied, final String discovered);
+
+    /**
+     * The user has supplied a group properties file name but no user propertites file name.
+     */
+    @Message(id = 15275, value = "A group properties file '%s' has been specified, however no user properties has been specified.")
+    String groupPropertiesButNoRoleProperties(final String groupProperties);
+
+    /**
+     * There is no default realm name and the user has not specified one either.
+     */
+    @Message(id = 15276, value = "A realm name must be specified.")
+    String realmMustBeSpecified();
 
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in

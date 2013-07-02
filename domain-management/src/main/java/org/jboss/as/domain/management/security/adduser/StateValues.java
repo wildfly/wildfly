@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.domain.management.security.adduser.AddUser.FileMode;
 import org.jboss.as.domain.management.security.adduser.AddUser.Interactiveness;
 import org.jboss.as.domain.management.security.adduser.AddUser.RealmMode;
 
@@ -36,19 +37,27 @@ import org.jboss.as.domain.management.security.adduser.AddUser.RealmMode;
 * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
 */
 public class StateValues {
-    private AddUser.Interactiveness howInteractive = AddUser.Interactiveness.INTERACTIVE;
+    private final RuntimeOptions options;
+    private AddUser.Interactiveness howInteractive = Interactiveness.INTERACTIVE;
     private AddUser.RealmMode realmMode = RealmMode.DEFAULT;
     private String realm;
     private String userName;
     private char[] password;
-    private boolean management;
+    private AddUser.FileMode fileMode = FileMode.UNDEFINED;
     private String roles;
     private boolean existingUser = false;
     private List<File> userFiles;
     private List<File> roleFiles;
     private Set<String> knownUsers;
     private Map<String,String> knownRoles;
-    private String jbossHome;
+
+    public StateValues() {
+        options = new RuntimeOptions();
+    }
+
+    public StateValues(final RuntimeOptions options) {
+        this.options = options;
+    }
 
     public boolean isSilentOrNonInteractive() {
         return (howInteractive == AddUser.Interactiveness.NON_INTERACTIVE) || isSilent();
@@ -107,12 +116,12 @@ public class StateValues {
         this.password = password;
     }
 
-    public boolean isManagement() {
-        return management;
+    public AddUser.FileMode getFileMode() {
+        return fileMode;
     }
 
-    public void setManagement(boolean management) {
-        this.management = management;
+    public void setFileMode(AddUser.FileMode fileMode) {
+        this.fileMode = fileMode;
     }
 
     public String getRoles() {
@@ -139,6 +148,10 @@ public class StateValues {
         this.roleFiles = roleFiles;
     }
 
+    public boolean rolePropertiesFound() {
+        return roleFiles != null && roleFiles.size() > 0;
+    }
+
     public Set<String> getKnownUsers() {
         return knownUsers;
     }
@@ -155,11 +168,8 @@ public class StateValues {
         this.knownRoles = knownRoles;
     }
 
-    public String getJBossHome() {
-        return this.jbossHome;
+    public RuntimeOptions getOptions() {
+        return options;
     }
 
-    public void setJBossHome(String path) {
-        this.jbossHome = path;
-    }
 }
