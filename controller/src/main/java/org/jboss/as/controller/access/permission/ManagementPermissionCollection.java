@@ -32,7 +32,7 @@ import java.util.Map;
 import org.jboss.as.controller.access.Action;
 
 /**
-* {@link PermissionCollection} for use with {@link ManagementPermission}.
+* {@link PermissionCollection} for use with {@link ManagementPermission}. It's homogeneous.
 *
 * @author Brian Stansberry (c) 2013 Red Hat Inc.
 */
@@ -64,6 +64,8 @@ public class ManagementPermissionCollection extends PermissionCollection {
 
     @Override
     public boolean implies(Permission permission) {
+        // TODO this doesn't work in case of users with multiple roles, as CombinationMgmtPerm and SimpleMgmtPerm
+        // TODO are different (this is the same TODO as in DefaultPermissionFactory.getUserPermissions)
         if (type.isAssignableFrom(permission.getClass())) {
             ManagementPermission mperm = (ManagementPermission) permission;
             ManagementPermission provided = permissions.get(mperm.getActionEffect());
