@@ -28,14 +28,16 @@ import org.jboss.as.controller.ResourceDefinition;
 
 /**
  * TODO: temporary workaround for the need to avoid adding methods to ResourceDefinition in EAP 6.x.
- * In WildFly these methods should be moved to ResourceDefinition one porting of RBAC to EAP is complete.
+ * In WildFly these methods should be moved to ResourceDefinition once porting of RBAC to EAP is complete.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
 public interface ConstrainedResourceDefinition extends ResourceDefinition {
 
-    //TODO I don't think this is necessary?
-    //void registerConstraints(final ManagementResourceRegistration resourceRegistration);
-
+    /**
+     * Get the definition of any access constraints associated with the resource.
+     *
+     * @return the access constraints or an empty list; will not return {@code null}.
+     */
     List<AccessConstraintDefinition> getAccessConstraints();
 }

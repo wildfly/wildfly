@@ -142,6 +142,7 @@ public class ModelTestModelDescriptionValidator {
         validOperationKeys.put(REQUEST_PROPERTIES, NullDescriptorValidator.INSTANCE);
         validOperationKeys.put(REPLY_PROPERTIES, NullDescriptorValidator.INSTANCE);
         validOperationKeys.put(DEPRECATED, DeprecatedDescriptorValidator.INSTANCE);
+        validOperationKeys.put(ACCESS_CONSTRAINTS, AccessConstraintValidator.INSTANCE);
         VALID_OPERATION_KEYS = Collections.unmodifiableMap(validOperationKeys);
 
         Map<String, AttributeOrParameterArbitraryDescriptorValidator> validParameterKeys = new HashMap<String, AttributeOrParameterArbitraryDescriptorValidator>();

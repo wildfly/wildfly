@@ -24,6 +24,8 @@ package org.jboss.as.server.controller.resources;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.MapAttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -31,6 +33,8 @@ import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -63,11 +67,14 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
 
     public static AttributeDefinition[] ALL_ATTRIBUTES = new AttributeDefinition[]{CODE, VAULT_OPTIONS};
 
+    private final List<AccessConstraintDefinition> accessConstraints;
+
     public VaultResourceDefinition(AbstractVaultReader vaultReader) {
         super(PathElement.pathElement(CORE_SERVICE, VAULT),
                 ServerDescriptions.getResourceDescriptionResolver(VAULT),
                 new VaultAddHandler(vaultReader),
                 new VaultRemoveHandler(vaultReader));
+        this.accessConstraints = SensitiveTargetAccessConstraintDefinition.SECURITY_VAULT.wrapAsList();
     }
 
     @Override
@@ -76,5 +83,10 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition def : ALL_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(def, null, write);
         }
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 }

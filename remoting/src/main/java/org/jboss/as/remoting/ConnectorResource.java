@@ -29,6 +29,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
@@ -51,10 +52,14 @@ public class ConnectorResource extends SimpleResourceDefinition {
             .setAttributeMarshaller(new WrappedAttributeMarshaller(Attribute.NAME))
             .build();
 
-    static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinition(CommonAttributes.SOCKET_BINDING, ModelType.STRING, false);
-    static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(
-            CommonAttributes.SECURITY_REALM, ModelType.STRING, true).setValidator(
-            new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).build();
+    static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(CommonAttributes.SOCKET_BINDING, ModelType.STRING, false)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .build();
+
+    static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(CommonAttributes.SECURITY_REALM, ModelType.STRING, true)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
+            .build();
 
     private ConnectorResource() {
         super(PATH, RemotingExtension.getResourceDescriptionResolver(CONNECTOR),

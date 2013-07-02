@@ -21,10 +21,8 @@
 */
 package org.jboss.as.server.controller.resources;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE_CONTAINER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -97,7 +95,6 @@ import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayPriority;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeRemotingManagementResourceDefinition;
-import org.jboss.as.server.operations.DumpServicesHandler;
 import org.jboss.as.server.operations.LaunchTypeHandler;
 import org.jboss.as.server.operations.ProcessTypeHandler;
 import org.jboss.as.server.operations.RootResourceHack;
@@ -349,9 +346,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         management.registerSubModel(HttpManagementResourceDefinition.INSTANCE);
 
         // Other core services
-        ManagementResourceRegistration serviceContainer = resourceRegistration.registerSubModel(
-                new SimpleResourceDefinition(PathElement.pathElement(CORE_SERVICE, SERVICE_CONTAINER), ServerDescriptions.getResourceDescriptionResolver("core", SERVICE_CONTAINER)));
-        serviceContainer.registerOperationHandler(DumpServicesHandler.DEFINITION, DumpServicesHandler.INSTANCE);
+        resourceRegistration.registerSubModel(new ServiceContainerResourceDefinition());
 
         resourceRegistration.registerSubModel(new ModuleLoadingResourceDefinition());
 

@@ -25,8 +25,12 @@ package org.jboss.as.server.mgmt;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_REMOTING_INTERFACE;
 
+import java.util.List;
+
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.as.server.operations.NativeRemotingManagementAddHandler;
@@ -44,10 +48,18 @@ public class NativeRemotingManagementResourceDefinition extends SimpleResourceDe
 
     public static final NativeRemotingManagementResourceDefinition INSTANCE = new NativeRemotingManagementResourceDefinition();
 
+    private final List<AccessConstraintDefinition> accessConstraints;
+
     private NativeRemotingManagementResourceDefinition() {
         super(RESOURCE_PATH,
                 ServerDescriptions.getResourceDescriptionResolver("core.management.native-remoting-interface"),
                 NativeRemotingManagementAddHandler.INSTANCE, NativeRemotingManagementRemoveHandler.INSTANCE,
                 OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_NONE);
+        this.accessConstraints = SensitiveTargetAccessConstraintDefinition.MANAGEMENT_INTERFACES.wrapAsList();
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 }

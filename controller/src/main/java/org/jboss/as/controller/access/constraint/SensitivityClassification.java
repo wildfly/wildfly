@@ -31,16 +31,31 @@ package org.jboss.as.controller.access.constraint;
  */
 public class SensitivityClassification extends AbstractSensitivity {
 
-    public static final SensitivityClassification SECURITY_REALM = new SensitivityClassification("SECURITY_REALM", true, true);
-    public static final SensitivityClassification SOCKET_BINDING = new SensitivityClassification("SOCKET_BINDING", false, false);
-    public static final SensitivityClassification SOCKET_CONFIG = new SensitivityClassification("SOCKET_CONFIG", false, false);
+    public static final SensitivityClassification ACCESS_CONTROL = new SensitivityClassification("access-control", false, true, true);
+    public static final SensitivityClassification CREDENTIAL = new SensitivityClassification("credential", false, true, true);
+    public static final SensitivityClassification DOMAIN_CONTROLLER = new SensitivityClassification("domain-controller", false, false, true);
+    public static final SensitivityClassification DOMAIN_NAMES = new SensitivityClassification("domain-names", false, false, true);
+    public static final SensitivityClassification EXTENSIONS = new SensitivityClassification("extensions", false, false, true);
+    public static final SensitivityClassification JVM = new SensitivityClassification("jvm", false, false, true);
+    public static final SensitivityClassification MANAGEMENT_INTERFACES = new SensitivityClassification("management-interfaces", false, false, true);
+    public static final SensitivityClassification MODULE_LOADING = new SensitivityClassification("module-loading", false, false, true);
+    public static final SensitivityClassification SECURITY_REALM = new SensitivityClassification("security-realm", true, true, true);
+    public static final SensitivityClassification SECURITY_REALM_REF = new SensitivityClassification("security-realm-ref", true, true, true);
+    public static final SensitivityClassification SECURITY_DOMAIN = new SensitivityClassification("security-domain", true, true, true);
+    public static final SensitivityClassification SECURITY_DOMAIN_REF = new SensitivityClassification("security-domain-ref", true, true, true);
+    public static final SensitivityClassification SECURITY_VAULT = new SensitivityClassification("security-vault", false, true, true);
+    public static final SensitivityClassification SERVICE_CONTAINER = new SensitivityClassification("service-container", false, false, true);
+    public static final SensitivityClassification SOCKET_BINDING_REF = new SensitivityClassification("socket-binding-ref", false, false, false);
+    public static final SensitivityClassification SOCKET_CONFIG = new SensitivityClassification("socket-config", false, false, true);
+    public static final SensitivityClassification SNAPSHOTS = new SensitivityClassification("snapshots", false, false, false);
+    public static final SensitivityClassification SYSTEM_PROPERTY = new SensitivityClassification("system-property", false, false, true);
 
     private final boolean core;
     private final String subsystem;
     private final String name;
 
-    private SensitivityClassification(String name, boolean accessDefault, boolean readDefault) {
-        super(accessDefault, readDefault, true);
+    private SensitivityClassification(String name, boolean accessDefault, boolean readDefault, boolean writeDefault) {
+        super(accessDefault, readDefault, writeDefault);
         this.core = true;
         this.subsystem = null;
         this.name = name;

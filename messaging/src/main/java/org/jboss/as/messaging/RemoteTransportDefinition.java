@@ -30,6 +30,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -49,6 +50,7 @@ public class RemoteTransportDefinition extends AbstractTransportDefinition {
                     }
                 }
             })
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
 
     static AttributeDefinition[] ATTRIBUTES = { SOCKET_BINDING };

@@ -69,8 +69,6 @@ public class SensitiveTargetConstraint extends AllowAllowNotConstraint {
 
         /** Singleton */
         private Factory() {
-            addSensitivity(SensitivityClassification.SECURITY_REALM);
-            addSensitivity(SensitivityClassification.SOCKET_BINDING);
         }
 
         @Override

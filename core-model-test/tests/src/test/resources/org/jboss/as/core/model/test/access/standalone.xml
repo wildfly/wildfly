@@ -4,7 +4,7 @@
       <access-constraints>
          <vault-expression-sensitivity requires-access="false" requires-read="false" requires-write="false"/>
          <sensitive-classifications>
-            <sensitive-classification name="SECURITY_REALM">
+            <sensitive-classification name="security-realm">
                <type name="core" requires-access="false" requires-read="false" requires-write="false"/>
             </sensitive-classification>
          </sensitive-classifications>

@@ -24,10 +24,14 @@ package org.jboss.as.controller.extension;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 
+import java.util.List;
+
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -45,10 +49,13 @@ public class ExtensionResourceDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.MODULE, ModelType.STRING, false)
             .setValidator(new StringLengthValidator(1)).build();
 
+    private final List<AccessConstraintDefinition> accessConstraints;
+
     public ExtensionResourceDefinition(final ExtensionRegistry extensionRegistry, final boolean parallelBoot, final boolean standalone, final boolean slaveHC) {
         super(PathElement.pathElement(EXTENSION), ControllerResolver.getResolver(EXTENSION),
                 new ExtensionAddHandler(extensionRegistry, parallelBoot, standalone, slaveHC), new ExtensionRemoveHandler(extensionRegistry),
                 OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_NONE);
+        this.accessConstraints = SensitiveTargetAccessConstraintDefinition.EXTENSIONS.wrapAsList();
     }
 
     @Override
@@ -59,5 +66,10 @@ public class ExtensionResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerSubModel(new ExtensionSubsystemResourceDefinition());
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 }

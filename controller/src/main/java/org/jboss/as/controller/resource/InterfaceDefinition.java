@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -45,7 +44,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
@@ -184,7 +182,6 @@ public class InterfaceDefinition extends SimpleResourceDefinition {
             MULTICAST, POINT_TO_POINT, PUBLIC_ADDRESS, SITE_LOCAL_ADDRESS, UP, VIRTUAL};*/
 
     private final boolean updateRuntime;
-
     private final List<AccessConstraintDefinition> sensitivity;
 
     public InterfaceDefinition(InterfaceAddHandler addHandler, InterfaceRemoveHandler removeHandler, boolean updateRuntime) {
@@ -193,8 +190,7 @@ public class InterfaceDefinition extends SimpleResourceDefinition {
                 addHandler,
                 removeHandler);
         this.updateRuntime = updateRuntime;
-        AccessConstraintDefinition acd = new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.SOCKET_BINDING);
-        sensitivity = Collections.singletonList(acd);
+        this.sensitivity = SensitiveTargetAccessConstraintDefinition.SOCKET_CONFIG.wrapAsList();
     }
 
     public static String localName(final Element element) {
