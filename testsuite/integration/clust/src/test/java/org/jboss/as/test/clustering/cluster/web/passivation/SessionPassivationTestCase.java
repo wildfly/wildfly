@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 import java.net.URL;
+import java.util.Formatter;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -80,7 +81,7 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
                 // This will trigger passivation of session1
                 response = client2.execute(new HttpGet(SessionOperationServlet.createSetURI(baseURL1, "a", "2")));
                 try {
-                    Assert.assertTrue(response.containsHeader(SessionOperationServlet.SESSION_ID));
+                    checkResponseForHeader(response, SessionOperationServlet.SESSION_ID);
                     Assert.assertFalse(response.containsHeader(SessionOperationServlet.ACTIVATED_SESSIONS));
                     passivated = response.containsHeader(SessionOperationServlet.PASSIVATED_SESSIONS);
                     session2 = response.getFirstHeader(SessionOperationServlet.SESSION_ID).getValue();
@@ -101,9 +102,9 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
             // This should trigger activation of session1 and passivation of session2
             response = client1.execute(new HttpGet(SessionOperationServlet.createGetURI(baseURL1, "a")));
             try {
-                Assert.assertTrue(response.containsHeader(SessionOperationServlet.RESULT));
+                checkResponseForHeader(response,SessionOperationServlet.RESULT);
                 Assert.assertEquals("1", response.getFirstHeader(SessionOperationServlet.RESULT).getValue());
-                Assert.assertTrue(response.containsHeader(SessionOperationServlet.ACTIVATED_SESSIONS));
+                checkResponseForHeader(response,SessionOperationServlet.ACTIVATED_SESSIONS);
                 passivated = response.containsHeader(SessionOperationServlet.PASSIVATED_SESSIONS);
                 Assert.assertEquals(session1, response.getFirstHeader(SessionOperationServlet.ACTIVATED_SESSIONS).getValue());
             } finally {
@@ -114,7 +115,7 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
             while (!passivated && ((now - start) < MAX_PASSIVATION_WAIT)) {
                 response = client1.execute(new HttpGet(SessionOperationServlet.createGetURI(baseURL1, "a")));
                 try {
-                    Assert.assertTrue(response.containsHeader(SessionOperationServlet.RESULT));
+                    checkResponseForHeader(response,SessionOperationServlet.RESULT);
                     Assert.assertEquals("1", response.getFirstHeader(SessionOperationServlet.RESULT).getValue());
                     Assert.assertFalse(response.containsHeader(SessionOperationServlet.ACTIVATED_SESSIONS));
                     passivated = response.containsHeader(SessionOperationServlet.PASSIVATED_SESSIONS);
@@ -135,9 +136,9 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
             // This should trigger activation of session2 and passivation of session1
             response = client2.execute(new HttpGet(SessionOperationServlet.createGetURI(baseURL1, "a")));
             try {
-                Assert.assertTrue(response.containsHeader(SessionOperationServlet.RESULT));
+                checkResponseForHeader(response,SessionOperationServlet.RESULT);
                 Assert.assertEquals("2", response.getFirstHeader(SessionOperationServlet.RESULT).getValue());
-                Assert.assertTrue(response.containsHeader(SessionOperationServlet.ACTIVATED_SESSIONS));
+                checkResponseForHeader(response,SessionOperationServlet.ACTIVATED_SESSIONS);
                 passivated = response.containsHeader(SessionOperationServlet.PASSIVATED_SESSIONS);
                 Assert.assertEquals(session2, response.getFirstHeader(SessionOperationServlet.ACTIVATED_SESSIONS).getValue());
             } finally {
@@ -148,7 +149,7 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
             while (!passivated && ((now - start) < MAX_PASSIVATION_WAIT)) {
                 response = client2.execute(new HttpGet(SessionOperationServlet.createGetURI(baseURL1, "a")));
                 try {
-                    Assert.assertTrue(response.containsHeader(SessionOperationServlet.RESULT));
+                    checkResponseForHeader(response,SessionOperationServlet.RESULT);
                     Assert.assertEquals("2", response.getFirstHeader(SessionOperationServlet.RESULT).getValue());
                     Assert.assertFalse(response.containsHeader(SessionOperationServlet.ACTIVATED_SESSIONS));
                     passivated = response.containsHeader(SessionOperationServlet.PASSIVATED_SESSIONS);
@@ -165,6 +166,20 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
             HttpClientUtils.closeQuietly(client1);
             HttpClientUtils.closeQuietly(client2);
         }
+    }
+
+    static private void checkResponseForHeader(HttpResponse response, String headerName) {
+        Assert.assertTrue("response doesn't contain header '"+headerName+"', all response headers=" +
+                showHeaders(response.getAllHeaders()),response.containsHeader(headerName));
+    }
+
+    static private String showHeaders(final org.apache.http.Header[] headers) {
+        StringBuilder stringBuilder = new StringBuilder();
+        Formatter result = new Formatter(stringBuilder);
+        for (int looper = 0; looper < headers.length;looper++) {
+            result.format("{name=%s, value=%s}, ", headers[looper].getName(), headers[looper].getValue());
+        }
+        return result.toString();
     }
 
     @Override
