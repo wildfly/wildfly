@@ -112,6 +112,10 @@ public class AbstractPatchingTest {
         return apply(builder, ContentVerificationPolicy.STRICT, PatchStepAssertions.APPLY);
     }
 
+    protected PatchingResult apply(final PatchingTestStepBuilder builder, final ContentVerificationPolicy verificationPolicy) throws PatchingException {
+        return apply(builder, verificationPolicy, PatchStepAssertions.APPLY);
+    }
+
     protected PatchingResult apply(final PatchingTestStepBuilder builder, final ContentVerificationPolicy verificationPolicy, final PatchStepAssertions assertions) throws PatchingException {
         final Patch patch = builder.build();
         final File installation = new File(tempDir, JBOSS_INSTALLATION);
@@ -132,6 +136,30 @@ public class AbstractPatchingTest {
         //
         final PatchTool patchTool = PatchTool.Factory.create(installationManager);
         final PatchingResult result = patchTool.applyPatch(builder.getPatchDir(), verificationPolicy);
+        result.commit();
+        try {
+            assertions.after(installation, patch, installationManager);
+        } catch (IOException e) {
+            throw new PatchingException(e);
+        }
+        return result;
+    }
+
+    protected PatchingResult rollback(PatchingTestStepBuilder step, ContentVerificationPolicy verificationPolicy) throws PatchingException {
+        return rollback(step, verificationPolicy, PatchStepAssertions.ROLLBACK);
+    }
+
+    protected PatchingResult rollback(final PatchingTestStepBuilder builder, final ContentVerificationPolicy verificationPolicy, final PatchStepAssertions assertions) throws PatchingException {
+        final Patch patch = builder.build();
+        final File installation = new File(tempDir, JBOSS_INSTALLATION);
+        try {
+            assertions.before(installation, patch, installationManager);
+        } catch (IOException e) {
+            throw new PatchingException(e);
+        }
+        final String patchId = patch.getPatchId();
+        final PatchTool patchTool = PatchTool.Factory.create(installationManager);
+        final PatchingResult result = patchTool.rollback(patchId, verificationPolicy, false, false);
         result.commit();
         try {
             assertions.after(installation, patch, installationManager);

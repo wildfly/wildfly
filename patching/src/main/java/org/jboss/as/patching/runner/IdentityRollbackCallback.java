@@ -47,19 +47,24 @@ class IdentityRollbackCallback implements IdentityPatchContext.FinalizeCallback 
     }
 
     @Override
-    public void completed() {
+    public void completed(IdentityPatchContext context) {
         final InstalledImage installedImage = directoryStructure.getInstalledImage();
-        // delete all resources associated to the rolled back patches
-        for (final String rollback : patches) {
-            recursiveDelete(installedImage.getPatchHistoryDir(rollback));
-            // Leave the patch dir to for the GC operation
-            // IoUtils.recursiveDelete(structure.getPatchDirectory(rollback));
-        }
         recursiveDelete(installedImage.getPatchHistoryDir(patch.getPatchId()));
+        // Cleanup all the recorded rollbacks
+        cleanupEntry(context.getLayers());
+        cleanupEntry(context.getAddOns());
+        cleanupEntry(Collections.singleton(context.getIdentityEntry()));
     }
 
     @Override
-    public void operationCancelled() {
+    public void operationCancelled(IdentityPatchContext context) {
         // nothing to do here
     }
+
+    static void cleanupEntry(final Collection<IdentityPatchContext.PatchEntry> entries) {
+        for (final IdentityPatchContext.PatchEntry entry : entries) {
+            entry.cleanupRollbacks();
+        }
+    }
+
 }
