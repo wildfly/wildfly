@@ -25,6 +25,7 @@ package org.jboss.as.patching.tests;
 import java.io.File;
 import java.io.IOException;
 
+import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.installation.PatchableTarget;
@@ -65,7 +66,9 @@ abstract class PatchStepAssertions {
     };
 
     static void assertApplied(final Patch patch, InstalledIdentity installedIdentity) throws IOException {
+        final PatchableTarget.TargetInfo identity = installedIdentity.getIdentity().loadTargetInfo();
         assertIsApplied(patch.getIdentity().getPatchType(), patch.getPatchId(), installedIdentity.getIdentity().loadTargetInfo());
+        assertExists(identity.getDirectoryStructure().getInstalledImage().getPatchHistoryDir(patch.getPatchId()));
         for (final PatchElement element : patch.getElements()) {
             final PatchElementProvider provider = element.getProvider();
             final PatchableTarget target = provider.isAddOn() ? installedIdentity.getAddOn(provider.getName()) : installedIdentity.getLayer(provider.getName());
@@ -74,7 +77,9 @@ abstract class PatchStepAssertions {
     }
 
     static void assertNotApplied(final Patch patch, InstalledIdentity installedIdentity) throws IOException {
-        assertNotApplied(patch.getIdentity().getPatchType(), patch.getPatchId(), installedIdentity.getIdentity().loadTargetInfo());
+        final PatchableTarget.TargetInfo identity = installedIdentity.getIdentity().loadTargetInfo();
+        assertNotApplied(patch.getIdentity().getPatchType(), patch.getPatchId(), identity);
+        assertDoesNotExists(identity.getDirectoryStructure().getInstalledImage().getPatchHistoryDir(patch.getPatchId()));
         for (final PatchElement element : patch.getElements()) {
             final PatchElementProvider provider = element.getProvider();
             final PatchableTarget target = provider.isAddOn() ? installedIdentity.getAddOn(provider.getName()) : installedIdentity.getLayer(provider.getName());
@@ -90,6 +95,9 @@ abstract class PatchStepAssertions {
         } else {
             Assert.assertFalse(targetInfo.getPatchIDs().contains(patchId));
         }
+        final DirectoryStructure structure = targetInfo.getDirectoryStructure();
+        assertDoesNotExists(structure.getBundlesPatchDirectory(patchId));
+        assertDoesNotExists(structure.getModulePatchDirectory(patchId));
     }
 
     static void assertIsApplied(final Patch.PatchType patchType, final String patchId, final PatchableTarget.TargetInfo targetInfo) {
@@ -101,6 +109,21 @@ abstract class PatchStepAssertions {
             Assert.assertTrue(targetInfo.getPatchIDs().isEmpty());
         } else {
             Assert.assertTrue(targetInfo.getPatchIDs().contains(patchId));
+        }
+        final DirectoryStructure structure = targetInfo.getDirectoryStructure();
+        assertExists(structure.getBundlesPatchDirectory(patchId));
+        assertExists(structure.getModulePatchDirectory(patchId));
+    }
+
+    static void assertExists(final File file) {
+        if (file != null) {
+            Assert.assertTrue(file.getAbsolutePath(), file.exists());
+        }
+    }
+
+    static void assertDoesNotExists(final File file) {
+        if (file != null) {
+            Assert.assertFalse(file.getAbsolutePath(), file.exists());
         }
     }
 

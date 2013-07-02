@@ -9,10 +9,12 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jboss.as.patching.Constants;
@@ -104,6 +106,10 @@ class IdentityPatchContext implements PatchContentProvider {
         return identityEntry;
     }
 
+    PatchEntry getEntry(final String name, boolean addOn) {
+        return addOn ? addOns.get(name) : layers.get(name);
+    }
+
     Collection<PatchEntry> getLayers() {
         return layers.values();
     }
@@ -191,7 +197,7 @@ class IdentityPatchContext implements PatchContentProvider {
             callback.finishPatch(processedPatch, rollbackPatch, this);
         } catch (Exception e) {
             if (undoChanges()) {
-                callback.operationCancelled();
+                callback.operationCancelled(this);
             }
             throw e;
         }
@@ -232,7 +238,7 @@ class IdentityPatchContext implements PatchContentProvider {
             public void commit() {
                 if (state == State.FINISHED) {
                     try {
-                        callback.completed();
+                        callback.completed(IdentityPatchContext.this);
                         modification.complete();
                         state = State.COMPLETED;
                     } catch (Exception e) {
@@ -249,7 +255,7 @@ class IdentityPatchContext implements PatchContentProvider {
             public void rollback() {
                 if (undoChanges()) {
                     try {
-                        callback.operationCancelled();
+                        callback.operationCancelled(IdentityPatchContext.this);
                     } finally {
                         modification.cancel();
                     }
@@ -439,6 +445,7 @@ class IdentityPatchContext implements PatchContentProvider {
         private final List<ContentModification> modifications = new ArrayList<ContentModification>();
         private final List<ContentModification> rollbackActions = new ArrayList<ContentModification>();
         private final Map<Location, PatchingTasks.ContentTaskDefinition> definitions = new LinkedHashMap<Location, PatchingTasks.ContentTaskDefinition>();
+        private final Set<String> rollbacks = new HashSet<String>();
 
         PatchEntry(final InstallationManager.MutablePatchingTarget delegate, final PatchElement element) {
             assert delegate != null;
@@ -466,6 +473,7 @@ class IdentityPatchContext implements PatchContentProvider {
 
         @Override
         public void rollback(String patchId) {
+            rollbacks.add(patchId);
             // Rollback
             delegate.rollback(patchId);
             // Record rollback loader
@@ -579,6 +587,14 @@ class IdentityPatchContext implements PatchContentProvider {
             }
             return PatchContentLoader.getModulePath(root, (ModuleItem) item);
         }
+
+        protected void cleanupRollbacks() {
+            final DirectoryStructure structure = getDirectoryStructure();
+            for (final String rollback : rollbacks) {
+                IoUtils.recursiveDelete(structure.getBundlesPatchDirectory(rollback));
+                IoUtils.recursiveDelete(structure.getModulePatchDirectory(rollback));
+            }
+        }
     }
 
     /**
@@ -603,9 +619,19 @@ class IdentityPatchContext implements PatchContentProvider {
          */
         void finishPatch(Patch processedPatch, RollbackPatch rollbackPatch, IdentityPatchContext context) throws Exception;
 
-        void completed();
+        /**
+         * Completed.
+         *
+         * @param context the context
+         */
+        void completed(IdentityPatchContext context);
 
-        void operationCancelled();
+        /**
+         * Cancelled.
+         *
+         * @param context the context
+         */
+        void operationCancelled(IdentityPatchContext context);
     }
 
     /**

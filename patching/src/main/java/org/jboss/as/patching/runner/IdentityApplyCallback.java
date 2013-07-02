@@ -9,6 +9,7 @@ import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.metadata.PatchElement;
 import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.patching.metadata.RollbackPatch;
 
@@ -57,17 +58,25 @@ class IdentityApplyCallback implements IdentityPatchContext.FinalizeCallback {
     }
 
     @Override
-    public void completed() {
+    public void completed(IdentityPatchContext context) {
         // nothing to do
     }
 
     @Override
-    public void operationCancelled() {
+    public void operationCancelled(IdentityPatchContext context) {
         // Cleanup history, bundles and module patch directories
         final InstalledImage image = structure.getInstalledImage();
         IoUtils.recursiveDelete(image.getPatchHistoryDir(patchId));
         IoUtils.recursiveDelete(structure.getBundlesPatchDirectory(patchId));
         IoUtils.recursiveDelete(structure.getModulePatchDirectory(patchId));
+        for (final PatchElement element : original.getElements()) {
+            boolean addOn = element.getProvider().isAddOn();
+            final IdentityPatchContext.PatchEntry entry = context.getEntry(element.getProvider().getName(), addOn);
+            final DirectoryStructure structure = entry.getDirectoryStructure();
+            IoUtils.recursiveDelete(structure.getBundlesPatchDirectory(element.getId()));
+            IoUtils.recursiveDelete(structure.getModulePatchDirectory(element.getId()));
+        }
+
     }
 
 }

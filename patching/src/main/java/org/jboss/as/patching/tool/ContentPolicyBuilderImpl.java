@@ -46,7 +46,7 @@ class ContentPolicyBuilderImpl implements PatchTool.ContentPolicyBuilder {
             public boolean ignoreContentValidation(ContentItem item) {
                 final ContentType type = item.getContentType();
                 if(type == ContentType.MODULE || type == ContentType.BUNDLE) {
-                    return ignoreModulesChanges;
+                    return ignoreModulesChanges | overrideAll;
                 }
                 final MiscContentItem misc = (MiscContentItem) item;
                 final String path = misc.getRelativePath();
