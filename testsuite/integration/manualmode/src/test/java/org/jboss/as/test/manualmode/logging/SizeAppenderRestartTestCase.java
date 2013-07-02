@@ -296,7 +296,7 @@ public class SizeAppenderRestartTestCase {
             Assert.fail(response.get(FAILURE_DESCRIPTION).toString());
         }
         if (validateResult) {
-            Assert.assertTrue("result exists", response.has(RESULT));
+            Assert.assertTrue("result exists", response.hasDefined(RESULT));
         }
         if (response == null) {
             Assert.fail("response was null");

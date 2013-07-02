@@ -200,11 +200,11 @@ public class SizeRotatingHandlerTestCase extends AbstractLoggingOperationsTestCa
 
     private ModelNode validateResponse(ModelNode operation, boolean validateResult) throws Exception {
         final ModelNode response = executeOperation(operation);
-        if (!SUCCESS.equals(response.get(OUTCOME).asString())) {
-            Assert.fail(response.get(FAILURE_DESCRIPTION).toString());
-        }
+        if (!Operations.isSuccessfulOutcome(response)) {
+           Assert.fail(Operations.getFailureDescription(response).toString());
+  	}
         if (validateResult) {
-            Assert.assertTrue("result exists", response.has(RESULT));
+            Assert.assertTrue("result exists", response.hasDefined(RESULT));
         }
         return response.get(RESULT);
     }
