@@ -22,7 +22,6 @@
 package org.jboss.as.domain.management.security.adduser;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-import static org.jboss.as.domain.management.security.AddPropertiesUser.BAD_USER_NAMES;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,6 +37,8 @@ import java.util.Locale;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class ValidateUserState extends AbstractValidationState {
+
+    private static final String[] BAD_USER_NAMES = {"admin", "administrator", "root"};
 
     private static final char[] VALID_PUNCTUATION;
 

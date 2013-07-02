@@ -26,6 +26,8 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.adduser.AddUser.DEFAULT_APPLICATION_REALM;
 import static org.jboss.as.domain.management.security.adduser.AddUser.DEFAULT_MANAGEMENT_REALM;
 
+import org.jboss.as.domain.management.security.adduser.AddUser.FileMode;
+
 /**
  * State to perform some validation in the entered realm.
  *
@@ -50,16 +52,23 @@ public class ValidateRealmState implements State {
 
     @Override
     public State execute() {
-        final String expectedRealm = stateValues.isManagement() ? DEFAULT_MANAGEMENT_REALM : DEFAULT_APPLICATION_REALM;
         String enteredRealm = stateValues.getRealm();
+        if (enteredRealm.length() == 0) {
+            return new ErrorState(theConsole, MESSAGES.realmMustBeSpecified(), new PromptRealmState(theConsole, stateValues));
+        }
 
-        if (expectedRealm.equals(enteredRealm) == false) {
-            String message = MESSAGES.alternativeRealm(expectedRealm);
-            String prompt = MESSAGES.realmConfirmation(enteredRealm) + " " + MESSAGES.yes() + "/" + MESSAGES.no() + "?";
+        if (stateValues.getFileMode() != FileMode.UNDEFINED) {
+            final String expectedRealm = stateValues.getFileMode() == FileMode.MANAGEMENT ? DEFAULT_MANAGEMENT_REALM
+                    : DEFAULT_APPLICATION_REALM;
 
-            return new ConfirmationChoice(theConsole, message, prompt, new PromptNewUserState(theConsole, stateValues),
-                    new PromptRealmState(theConsole, stateValues));
+            if (expectedRealm.equals(enteredRealm) == false) {
+                String message = MESSAGES.alternativeRealm(expectedRealm);
+                String prompt = MESSAGES.realmConfirmation(enteredRealm) + " " + MESSAGES.yes() + "/" + MESSAGES.no() + "?";
 
+                return new ConfirmationChoice(theConsole, message, prompt, new PromptNewUserState(theConsole, stateValues),
+                        new PromptRealmState(theConsole, stateValues));
+
+            }
         }
 
         return new PromptNewUserState(theConsole, stateValues);

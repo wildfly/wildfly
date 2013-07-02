@@ -41,7 +41,7 @@ public class PromptRolesState implements State {
     @Override
     public State execute() {
         if (stateValues.isSilentOrNonInteractive() == false) {
-            if (!stateValues.isManagement()) {
+            if (!stateValues.getRoleFiles().isEmpty()) {
                 theConsole.printf(MESSAGES.rolesPrompt());
                 String userRoles = stateValues.getKnownRoles().get(stateValues.getUserName());
                 stateValues.setRoles(theConsole.readLine("[%1$2s]: ", (userRoles == null ? "" : userRoles)));
