@@ -34,6 +34,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -270,11 +271,29 @@ class Constants {
 
     static SimpleAttributeDefinition CONNECTION_PROPERTY_VALUE = new SimpleAttributeDefinition(CONNECTION_PROPERTY_VALUE_NAME, DataSource.Tag.CONNECTION_PROPERTY.getLocalName(), new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition USERNAME = new SimpleAttributeDefinition(USERNAME_NAME, Credential.Tag.USER_NAME.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition USERNAME = new SimpleAttributeDefinitionBuilder(USERNAME_NAME, ModelType.STRING)
+            .setXmlName(Credential.Tag.USER_NAME.getLocalName())
+            .setAllowExpression(true)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode())
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .build();
 
-    static SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinition(PASSWORD_NAME, Credential.Tag.PASSWORD.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinitionBuilder(PASSWORD_NAME, ModelType.STRING)
+            .setXmlName(Credential.Tag.PASSWORD.getLocalName())
+            .setAllowExpression(true)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode())
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .build();
 
-    static SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinition(SECURITY_DOMAIN_NAME, CommonSecurity.Tag.SECURITY_DOMAIN.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(SECURITY_DOMAIN_NAME, ModelType.STRING)
+            .setXmlName(CommonSecurity.Tag.SECURITY_DOMAIN.getLocalName())
+            .setAllowExpression(true)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode())
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
+            .build();
 
     static SimpleAttributeDefinition PREPARED_STATEMENTS_CACHE_SIZE = new SimpleAttributeDefinition(PREPAREDSTATEMENTSCACHESIZE_NAME, Statement.Tag.PREPARED_STATEMENT_CACHE_SIZE.getLocalName(), new ModelNode(), ModelType.LONG, true, true, MeasurementUnit.NONE);
 
@@ -389,11 +408,28 @@ class Constants {
             VALID_CONNECTION_CHECKER_PROPERTIES,
     };
 
-    static SimpleAttributeDefinition RECOVERY_USERNAME = new SimpleAttributeDefinition(RECOVERY_USERNAME_NAME, Credential.Tag.USER_NAME.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition RECOVERY_USERNAME = new SimpleAttributeDefinitionBuilder(RECOVERY_USERNAME_NAME, ModelType.STRING)
+                .setXmlName(Credential.Tag.USER_NAME.getLocalName())
+                .setAllowExpression(true)
+                .setAllowNull(true)
+                .setDefaultValue(new ModelNode())
+                .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+                .build();
 
-    static SimpleAttributeDefinition RECOVERY_PASSWORD = new SimpleAttributeDefinition(RECOVERY_PASSWORD_NAME, Credential.Tag.PASSWORD.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+        static SimpleAttributeDefinition RECOVERY_PASSWORD = new SimpleAttributeDefinitionBuilder(RECOVERY_PASSWORD_NAME, ModelType.STRING)
+                .setXmlName(Credential.Tag.PASSWORD.getLocalName())
+                .setAllowExpression(true)
+                .setAllowNull(true)
+                .setDefaultValue(new ModelNode())
+                .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+                .build();
 
-    static SimpleAttributeDefinition RECOVERY_SECURITY_DOMAIN = new SimpleAttributeDefinition(RECOVERY_SECURITY_DOMAIN_NAME, Credential.Tag.SECURITY_DOMAIN.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+        static SimpleAttributeDefinition RECOVERY_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(RECOVERY_SECURITY_DOMAIN_NAME, ModelType.STRING)
+                .setXmlName(CommonSecurity.Tag.SECURITY_DOMAIN.getLocalName())
+                .setAllowExpression(true)
+                .setAllowNull(true)
+                .setDefaultValue(new ModelNode())
+                .build();
 
     static SimpleAttributeDefinition RECOVER_PLUGIN_CLASSNAME = new SimpleAttributeDefinition(RECOVER_PLUGIN_CLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 

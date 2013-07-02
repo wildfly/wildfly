@@ -30,6 +30,7 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringBytesLengthValidator;
@@ -53,13 +54,17 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setValidator(new StringLengthValidator(1))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.BINDING.getLocalName())
-            .setAllowExpression(true).build();
+            .setAllowExpression(true)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .build();
 
     public static final SimpleAttributeDefinition STATUS_BINDING = new SimpleAttributeDefinitionBuilder(CommonAttributes.STATUS_BINDING, ModelType.STRING, false)
             .setValidator(new StringLengthValidator(1))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.STATUS_BINDING.getLocalName())
-            .setAllowExpression(true).build();
+            .setAllowExpression(true)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .build();
 
     public static final SimpleAttributeDefinition RECOVERY_LISTENER = new SimpleAttributeDefinitionBuilder(CommonAttributes.RECOVERY_LISTENER, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
@@ -85,7 +90,9 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAlternatives("process-id-uuid")
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.BINDING.getLocalName())
-            .setAllowExpression(true).build();
+            .setAllowExpression(true)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .build();
 
     public static final SimpleAttributeDefinition PROCESS_ID_SOCKET_MAX_PORTS = new SimpleAttributeDefinitionBuilder("process-id-socket-max-ports", ModelType.INT, true)
             .setValidator(new IntRangeValidator(1, true))
@@ -93,7 +100,9 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setRequires("process-id-socket-binding")
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.SOCKET_PROCESS_ID_MAX_PORTS.getLocalName())
-            .setAllowExpression(true).build();
+            .setAllowExpression(true)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_CONFIG)
+            .build();
 
     public static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(PathResourceDefinition.RELATIVE_TO)
             .setDefaultValue(new ModelNode().set("jboss.server.data.dir"))

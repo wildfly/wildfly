@@ -24,7 +24,7 @@ package org.jboss.as.security;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.security.Principal;
-import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
@@ -36,10 +36,11 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
@@ -59,16 +60,18 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     private final boolean registerRuntimeOnly;
+    private final List<AccessConstraintDefinition> accessConstraints;
 
     SecurityDomainResourceDefinition(boolean registerRuntimeOnly) {
         super(SecurityExtension.SECURITY_DOMAIN_PATH,
                 SecurityExtension.getResourceDescriptionResolver(Constants.SECURITY_DOMAIN), SecurityDomainAdd.INSTANCE, SecurityDomainRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
+        this.accessConstraints = SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN.wrapAsList();
     }
 
+    @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(CACHE_TYPE, null, new SecurityDomainReloadWriteHandler(CACHE_TYPE));
-
     }
 
     @Override
@@ -79,6 +82,11 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
             resourceRegistration.registerOperationHandler(ListCachePrincipals.DEFINITION, ListCachePrincipals.INSTANCE);
             resourceRegistration.registerOperationHandler(FlushOperation.DEFINITION,FlushOperation.INSTANCE);
         }
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 
     public static ServiceName getSecurityDomainServiceName(PathAddress pathAddress) {
@@ -102,6 +110,7 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
                 .setRuntimeOnly()
                 .setReplyType(ModelType.LIST)
                 .setReplyValueType(ModelType.STRING)
+                .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN)
                 .build();
 
 
@@ -134,11 +143,13 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
 
     static final class FlushOperation extends AbstractRuntimeOnlyHandler {
         static final FlushOperation INSTANCE = new FlushOperation();
-        static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinition(Constants.FLUSH_CACHE,
-                SecurityExtension.getResourceDescriptionResolver(Constants.SECURITY_DOMAIN),
-                OperationEntry.EntryType.PUBLIC, EnumSet.of(Flag.RUNTIME_ONLY),
-                new SimpleAttributeDefinition(Constants.PRINCIPAL_ARGUMENT, ModelType.STRING, true)
-                );
+        static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(Constants.FLUSH_CACHE,
+                SecurityExtension.getResourceDescriptionResolver(Constants.SECURITY_DOMAIN))
+                .setEntryType(OperationEntry.EntryType.PUBLIC)
+                .setRuntimeOnly()
+                .addParameter(new SimpleAttributeDefinition(Constants.PRINCIPAL_ARGUMENT, ModelType.STRING, true))
+                .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN)
+                .build();
 
         @Override
         protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {

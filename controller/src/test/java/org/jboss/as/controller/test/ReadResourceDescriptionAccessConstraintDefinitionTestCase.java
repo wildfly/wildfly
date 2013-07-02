@@ -330,9 +330,6 @@ public class ReadResourceDescriptionAccessConstraintDefinitionTestCase extends A
             return Collections.singletonList(DEPLOYMENT_APPLICATION_CONSTRAINT);
         }
 
-//        @Override
-//        public void registerConstraints(ManagementResourceRegistration resourceRegistration) {
-//        }
     }
 
     private static class TestWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {

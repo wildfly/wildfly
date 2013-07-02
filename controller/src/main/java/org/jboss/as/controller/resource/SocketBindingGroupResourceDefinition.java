@@ -24,6 +24,8 @@ package org.jboss.as.controller.resource;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 
+import java.util.List;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -42,6 +44,8 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
@@ -103,7 +107,7 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
 
     private final boolean forDomainModel;
     private final ResourceDefinition[] children;
-
+    private final List<AccessConstraintDefinition> accessConstraints;
 
     public SocketBindingGroupResourceDefinition(final OperationStepHandler addHandler, final OperationStepHandler removeHandler, final boolean forDomainModel, ResourceDefinition...children) {
         super(PATH,
@@ -111,6 +115,7 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
                 addHandler, removeHandler, OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
         this.forDomainModel = forDomainModel;
         this.children = children;
+        this.accessConstraints = SensitiveTargetAccessConstraintDefinition.SOCKET_CONFIG.wrapAsList();
     }
 
     @Override
@@ -149,6 +154,11 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
         for (ResourceDefinition child : children) {
             resourceRegistration.registerSubModel(child);
         }
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 
     public static void validateDefaultInterfaceReference(final OperationContext context, final ModelNode bindingGroup) throws OperationFailedException {

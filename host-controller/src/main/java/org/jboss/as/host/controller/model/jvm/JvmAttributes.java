@@ -31,6 +31,7 @@ import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -69,15 +70,18 @@ public class JvmAttributes {
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_AGENT_LIB, ModelType.STRING, true)
             .setAllowExpression(true)
             .setXmlName(JvmAttributes.VALUE)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.JVM)
             .build();
     public static final SimpleAttributeDefinition AGENT_PATH =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_AGENT_PATH, ModelType.STRING, true)
             .setAllowExpression(true)
             .setXmlName(JvmAttributes.VALUE)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.JVM)
             .build();
     public static final SimpleAttributeDefinition ENV_CLASSPATH_IGNORED =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_ENV_CLASSPATH_IGNORED, ModelType.BOOLEAN, true)
             .setAllowExpression(true)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.JVM)
             .build();
 
     public static final PropertiesAttributeDefinition ENVIRONMENT_VARIABLES = new PropertiesAttributeDefinition.Builder(JvmAttributes.JVM_ENV_VARIABLES, true)
@@ -86,17 +90,20 @@ public class JvmAttributes {
             .setAllowExpression(true)
             .setValidator(new StringLengthValidator(1, true, true))
             .setWrapperElement(JvmAttributes.JVM_ENV_VARIABLES)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.JVM)
             .build();
 
     public static final SimpleAttributeDefinition JAVA_AGENT =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_JAVA_AGENT, ModelType.STRING, true)
             .setAllowExpression(true)
             .setXmlName(JvmAttributes.VALUE)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.JVM)
             .build();
 
     public static final SimpleAttributeDefinition JAVA_HOME =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_JAVA_HOME, ModelType.STRING, true)
             .setAllowExpression(true)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.JVM)
             .build();
 
     /**
@@ -122,6 +129,7 @@ public class JvmAttributes {
                     }
                 }
             })
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.JVM)
             .build();
 
     public static final SimpleAttributeDefinition STACK_SIZE =
@@ -134,6 +142,7 @@ public class JvmAttributes {
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_TYPE, ModelType.STRING, true)
             .setAllowExpression(true)
             .setValidator(new EnumValidator<JvmType>(JvmType.class, true, true))
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.JVM)
             .build();
 
     public static final SimpleAttributeDefinition HEAP_SIZE =
@@ -163,11 +172,13 @@ public class JvmAttributes {
     public static final SimpleAttributeDefinition DEBUG_ENABLED =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_DEBUG_ENABLED, ModelType.BOOLEAN, true)
             .setAllowExpression(false)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.JVM)
             .build();
 
     public static final SimpleAttributeDefinition DEBUG_OPTIONS =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_DEBUG_OPTIONS, ModelType.STRING, true)
             .setAllowExpression(false)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.JVM)
             .build();
 
     private static final AttributeDefinition[] GLOBAL_ATTRIBUTES = new AttributeDefinition[] {
