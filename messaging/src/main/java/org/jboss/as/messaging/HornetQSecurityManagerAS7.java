@@ -62,78 +62,59 @@ public class HornetQSecurityManagerAS7 implements org.hornetq.spi.core.security.
     }
 
     @Override
-    public boolean validateUserAndRole(String username, String password, Set<Role> roles, CheckType checkType) {
+    public boolean validateUserAndRole(final String username, final String password, final Set<Role> roles, final CheckType checkType) {
         if (defaultUser.equals(username) && defaultPassword.equals(password))
             return true;
 
         if (securityDomainContext == null)
             throw MESSAGES.securityDomainContextNotSet();
 
-        Subject subject = new Subject();
+        final Subject subject = new Subject();
 
         // The authentication call here changes the subject and that subject must be used later.  That is why we don't call validateUser(String, String) here.
         boolean authenticated = securityDomainContext.getAuthenticationManager().isValid(new SimplePrincipal(username), password, subject);
 
         if (authenticated) {
-            SecurityContext securityContext = pushSecurityContext(subject, new SimplePrincipal(username), password);
-            Set<Principal> principals = new HashSet<Principal>();
-            for (Role role : roles) {
-                if (checkType.hasRole(role)) {
-                    principals.add(new SimplePrincipal(role.getName()));
+            authenticated = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
+                @Override
+                public Boolean run() {
+                    final SimplePrincipal principal = new SimplePrincipal(username);
+
+                    // push a new security context if there is not one.
+                    final SecurityContext currentSecurityContext = SecurityContextAssociation.getSecurityContext();
+                    final SecurityContext securityContext;
+                    if (currentSecurityContext == null) {
+                        try {
+                            securityContext = SecurityContextFactory.createSecurityContext(principal, password, subject, securityDomainContext.getAuthenticationManager().getSecurityDomain());
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    } else {
+                        securityContext = currentSecurityContext;
+                        securityContext.getUtil().createSubjectInfo(principal, password, subject);
+                    }
+                    SecurityContextAssociation.setSecurityContext(securityContext);
+
+                    final Set<Principal> principals = new HashSet<Principal>();
+                    for (Role role : roles) {
+                        if (checkType.hasRole(role)) {
+                            principals.add(new SimplePrincipal(role.getName()));
+                        }
+                    }
+
+                    final boolean authenticated = securityDomainContext.getAuthorizationManager().doesUserHaveRole(new SimplePrincipal(username), principals);
+
+                    // restore the previous security context if any
+                    SecurityContextAssociation.setSecurityContext(currentSecurityContext);
+
+                    return authenticated;
                 }
-            }
-
-            authenticated = securityDomainContext.getAuthorizationManager().doesUserHaveRole(new SimplePrincipal(username), principals);
-
-            // restore the previous security context if any
-            setSecurityContextOnAssociation(securityContext);
+            });
         }
 
         return authenticated;
     }
 
-    private SecurityContext pushSecurityContext(final Subject subject, final Principal principal, final Object credential) {
-        return AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
-
-            public SecurityContext run() {
-                final SecurityContext currentSecurityContext = SecurityContextAssociation.getSecurityContext();
-                final SecurityContext securityContext;
-                if (currentSecurityContext == null) {
-                    securityContext = createSecurityContext(subject, principal, credential, securityDomainContext.getAuthenticationManager().getSecurityDomain());
-                } else {
-                    securityContext = currentSecurityContext;
-                    securityContext.getUtil().createSubjectInfo(principal, credential, subject);
-                }
-                setSecurityContextOnAssociation(securityContext);
-                return currentSecurityContext;
-            }
-        });
-    }
-
-    private static void setSecurityContextOnAssociation(final SecurityContext sc) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-
-            @Override
-            public Void run() {
-                SecurityContextAssociation.setSecurityContext(sc);
-                return null;
-            }
-        });
-    }
-
-    private static SecurityContext createSecurityContext(final Subject subject, final Principal principal, final Object credential, final String domain) {
-        return AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
-
-            @Override
-            public SecurityContext run() {
-                try {
-                    return SecurityContextFactory.createSecurityContext(principal, credential, subject, domain);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-    }
 
     @Override
     public void addUser(String s, String s1) {
