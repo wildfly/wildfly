@@ -137,6 +137,10 @@ public class PathAddress implements Iterable<PathElement> {
         return pathAddress(Arrays.<PathElement>asList(elements));
     }
 
+    public static PathAddress pathAddress(String key, String value) {
+        return pathAddress(PathElement.pathElement(key, value));
+    }
+
     public static PathAddress pathAddress(PathAddress parent, PathElement... elements) {
         List<PathElement> list = new ArrayList<PathElement>(parent.pathAddressList);
         for (PathElement element : elements) {
