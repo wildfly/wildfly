@@ -1,12 +1,12 @@
 package org.wildfly.extension.cluster;
 
+import org.jboss.as.clustering.management.support.impl.ManagementAPIClusterSupportServiceProvider;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-import org.wildfly.extension.cluster.support.ManagementAPIClusterSupportServiceProvider;
 
 /**
  * Handler responsible for removing the subsystem resource from the model
@@ -28,7 +28,7 @@ class ClusterSubsystemRemove extends AbstractRemoveStepHandler {
         for (ServiceName channelServiceName : ClusterSubsystemHelper.getAllChannelServiceNames(registry)) {
 
             String channelName = ClusterSubsystemHelper.getChannelNameFromChannelServiceName(channelServiceName);
-            ServiceName managementSupportServiceName = ManagementAPIClusterSupportServiceProvider.getServiceName(channelName);
+            ServiceName managementSupportServiceName = (new ManagementAPIClusterSupportServiceProvider()).getServiceName(channelName);
             context.removeService(managementSupportServiceName);
         }
     }

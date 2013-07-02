@@ -1,4 +1,4 @@
-package org.wildfly.extension.cluster.support;
+package org.jboss.as.clustering.management.support.impl;
 
 import org.jboss.as.clustering.impl.CoreGroupCommunicationService;
 

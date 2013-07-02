@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.clustering.jgroups.JGroupsMessages;
+import org.jboss.as.clustering.management.support.impl.ManagementAPIClusterSupport;
+import org.jboss.as.clustering.management.support.impl.ManagementAPIClusterSupportService;
+import org.jboss.as.clustering.management.support.impl.RemoteClusterResponse;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -17,9 +20,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.cluster.support.ManagementAPIClusterSupport;
-import org.wildfly.extension.cluster.support.ManagementAPIClusterSupportService;
-import org.wildfly.extension.cluster.support.RemoteClusterResponse;
 
 /**
  * Handler for reading run-time only attributes from an underlying channel service.
@@ -77,7 +77,7 @@ public class ClusterMetricsHandler extends AbstractRuntimeOnlyHandler {
         if (metric == null) {
             context.getFailureDescription().set(JGroupsMessages.MESSAGES.unknownMetric(attrName));
         } else if (!started) {
-            // when the channel service is not available, return a null result
+            System.out.println("RPC service not started");
         } else {
             ManagementAPIClusterSupport support = (ManagementAPIClusterSupport) controller.getValue();
             List<RemoteClusterResponse> rsps = support.getClusterState(channelName);
@@ -92,12 +92,12 @@ public class ClusterMetricsHandler extends AbstractRuntimeOnlyHandler {
         context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
     }
 
-    private String createClusterView(List<RemoteClusterResponse> rsps) {
-        StringBuilder sb = new StringBuilder();
+    private ModelNode createClusterView(List<RemoteClusterResponse> rsps) {
+        ModelNode result = new ModelNode();
         for (RemoteClusterResponse rsp : rsps) {
-            // add in origin?
-            sb.append(rsp.getView());
+            // create a LIST of PROPERTY
+            result.add(rsp.getResponder().getName(), rsp.getView());
         }
-        return sb.toString();
+        return result;
     }
 }

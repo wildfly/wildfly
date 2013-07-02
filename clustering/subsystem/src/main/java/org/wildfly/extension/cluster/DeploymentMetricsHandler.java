@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.clustering.jgroups.JGroupsMessages;
+import org.jboss.as.clustering.management.support.impl.ManagementAPIClusterSupport;
+import org.jboss.as.clustering.management.support.impl.ManagementAPIClusterSupportService;
+import org.jboss.as.clustering.management.support.impl.RemoteCacheResponse;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -17,9 +20,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.cluster.support.ManagementAPIClusterSupport;
-import org.wildfly.extension.cluster.support.ManagementAPIClusterSupportService;
-import org.wildfly.extension.cluster.support.RemoteCacheResponse;
 
 /**
  * Handler for reading run-time only attributes from an underlying cache service.
@@ -78,9 +78,11 @@ public class DeploymentMetricsHandler extends AbstractRuntimeOnlyHandler {
         if (metric == null) {
             context.getFailureDescription().set(JGroupsMessages.MESSAGES.unknownMetric(attrName));
         } else if (!started) {
-            // when the channel service is not available, return a null result
+            System.out.println("RPC service not started");
         } else {
             ManagementAPIClusterSupport support = (ManagementAPIClusterSupport) controller.getValue();
+
+            // if the cache is not available on the other node, we can get service not found!
             List<RemoteCacheResponse> rsps = support.getCacheState(channelName, cacheName);
 
             switch (metric) {
@@ -93,12 +95,12 @@ public class DeploymentMetricsHandler extends AbstractRuntimeOnlyHandler {
         context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
     }
 
-    private String createCacheView(List<RemoteCacheResponse> rsps) {
-        StringBuilder sb = new StringBuilder();
+    private ModelNode createCacheView(List<RemoteCacheResponse> rsps) {
+        ModelNode result = new ModelNode();
         for (RemoteCacheResponse rsp : rsps) {
-            // add in origin?
-            sb.append(rsp.getView());
+            // create a LIST of PROPERTY
+            result.add(rsp.getResponder().getName(), rsp.getView());
         }
-        return sb.toString();
+        return result;
     }
 }

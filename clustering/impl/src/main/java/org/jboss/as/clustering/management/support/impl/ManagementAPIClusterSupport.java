@@ -1,4 +1,4 @@
-package org.wildfly.extension.cluster.support;
+package org.jboss.as.clustering.management.support.impl;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -22,6 +22,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceNotFoundException;
 import org.jgroups.JChannel;
 import org.jgroups.stack.IpAddress;
 
@@ -155,7 +156,10 @@ public class ManagementAPIClusterSupport implements GroupMembershipListener {
             rsps = rpcDispatcher.callMethodOnCluster(serviceName, methodName, new Object[] {channelName}, GET_CLUSTER_STATE_TYPES, excludeSelf, filter, methodTimeout, unordered);
         } catch(InterruptedException ie) {
             // handle this exception
-            System.out.println("InterruptedException: " + ie.toString());
+            System.out.println("getClusterState: InterruptedException: " + ie.toString());
+        } catch (Exception e) {
+            // handle this exception
+            System.out.println("getClusterState: exception = " + e.toString());
         }
         return rsps ;
     }
@@ -179,6 +183,9 @@ public class ManagementAPIClusterSupport implements GroupMembershipListener {
         } catch(InterruptedException ie) {
             // handle this exception
             System.out.println("InterruptedException: " + ie.toString());
+        } catch (Exception e) {
+            // handle this exception
+            System.out.println("getCacheState: exception = " + e.toString());
         }
         return rsps ;
     }
@@ -226,7 +233,15 @@ public class ManagementAPIClusterSupport implements GroupMembershipListener {
          // get the information we need from services directly without using management interface
          ServiceContainer registry = ServiceContainerHelper.getCurrentServiceContainer();
          ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
-         ServiceController<?> cacheController = cacheController = ServiceContainerHelper.getService(registry, cacheServiceName);
+
+         // this can result in service not found if the app has been undeployed
+         ServiceController<?> cacheController = null;
+         try {
+            cacheController = cacheController = ServiceContainerHelper.getService(registry, cacheServiceName);
+         } catch (ServiceNotFoundException snf) {
+             // this occurs if an app has been undeployed on this node only
+             result.setView("null view");
+         }
 
          // check that the service has been installed and started
          boolean started = cacheController != null && cacheController.getValue() != null;
@@ -242,7 +257,7 @@ public class ManagementAPIClusterSupport implements GroupMembershipListener {
                  System.out.println("Exception occurred: " + e.toString());
              }
          }
-        return result ;
+         return result ;
     }
 
     private ClusterNode cacheAddressToClusterNode(Address address) {
