@@ -28,6 +28,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.jboss.as.domain.management.security.PropertiesFileLoader;
+import org.jboss.as.domain.management.security.UserPropertiesFileLoader;
 import org.jboss.msc.service.StartException;
 
 /**
@@ -64,10 +66,18 @@ public class AddUserState extends UpdatePropertiesHandler implements State {
 
     @Override
     void persist(String[] entry, File file) throws IOException {
-        UserPropertiesFileHandler propertiesHandler = new UserPropertiesFileHandler(file.getAbsolutePath());
+        persist(entry, file, null);
+    }
+
+    @Override
+    void persist(String[] entry, File file, final String realm) throws IOException {
+        final PropertiesFileLoader propertiesHandler = realm == null ? new PropertiesFileLoader(file.getAbsolutePath())
+                : new UserPropertiesFileLoader(file.getAbsolutePath());
         try {
             propertiesHandler.start(null);
-            propertiesHandler.setRealmName(stateValues.getRealm());
+            if (realm != null) {
+                ((UserPropertiesFileLoader) propertiesHandler).setRealmName(realm);
+            }
             Properties prob = propertiesHandler.getProperties();
             prob.setProperty(entry[0], entry[1]);
             propertiesHandler.persistProperties();
@@ -76,7 +86,6 @@ public class AddUserState extends UpdatePropertiesHandler implements State {
         } finally {
             propertiesHandler.stop(null);
         }
-
     }
 
     @Override
