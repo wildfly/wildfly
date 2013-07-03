@@ -9,6 +9,9 @@
                     <local default-user="$local" />
                     <properties path="mgmt-users.properties" relative-to="jboss.domain.config.dir"/>
                 </authentication>
+                <authorization>
+                    <properties path="mgmt-groups.properties" relative-to="jboss.domain.config.dir"/>
+                </authorization>                
             </security-realm>
             <security-realm name="ApplicationRealm">
                 <authentication>

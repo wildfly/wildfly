@@ -159,6 +159,13 @@ public class DomainLifecycleUtil {
             pw.println("slave=" + new UsernamePasswordHashUtil().generateHashedHexURP("slave", "ManagementRealm", SLAVE_HOST_PASSWORD.toCharArray()));
             pw.close();
             fos.close();
+            // Put out empty mgmt-groups.properties.
+            File mgmtGroupsProps = new File(domainPath + "/configuration/mgmt-groups.properties");
+            fos = new FileOutputStream(mgmtGroupsProps);
+            pw = new PrintWriter(fos, true);
+            pw.println("# Management groups");
+            pw.close();
+            fos.close();
 
             // Put out empty application realm properties files so servers don't complain
             File appUsersProps = new File(domainPath + "/configuration/application-users.properties");
