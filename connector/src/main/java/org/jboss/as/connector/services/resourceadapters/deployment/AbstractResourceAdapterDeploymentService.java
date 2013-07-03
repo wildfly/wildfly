@@ -387,7 +387,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
         @Override
         protected PrintWriter getLogPrintWriter() {
-            return new PrintWriter(System.out);
+            return new PrintWriter(System.out, true);
         }
 
         @Override
