@@ -940,7 +940,7 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-cluster-subsystem</artifactId>
+                <artifactId>wildfly-clustering-subsystem</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

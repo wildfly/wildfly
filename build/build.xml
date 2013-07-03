@@ -883,7 +883,7 @@
         </module-def>
 
         <module-def name="org.wildfly.extension.cluster">
-            <maven-resource group="org.wildfly" artifact="wildfly-cluster-subsystem"/>
+            <maven-resource group="org.wildfly" artifact="wildfly-clustering-subsystem"/>
         </module-def>
 
         <module-def name="org.jboss.as.cmp">

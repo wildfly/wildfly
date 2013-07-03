@@ -961,7 +961,7 @@
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-cluster-subsystem</artifactId>
+                    <artifactId>wildfly-clustering-subsystem</artifactId>
                 </dependency>
 
                 <dependency>
@@ -2322,7 +2322,7 @@
                                         <exclude>org.wildfly:wildfly-clustering-web-infinispan</exclude>
                                         <exclude>org.wildfly:wildfly-clustering-web-spi</exclude>
                                         <exclude>org.wildfly:wildfly-clustering-web-undertow</exclude>
-                                        <exclude>org.wildfly:wildfly-cluster-subsystem</exclude>
+                                        <exclude>org.wildfly:wildfly-clustering-subsystem</exclude>
                                         <exclude>org.wildfly:wildfly-configadmin</exclude>
                                         <exclude>org.wildfly:wildfly-connector</exclude>
                                         <exclude>org.wildfly:wildfly-controller</exclude>

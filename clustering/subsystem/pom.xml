@@ -27,10 +27,10 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-clustering</artifactId>
-        <version>8.0.0.Alpha2-SNAPSHOT</version>
+        <version>8.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-cluster-subsystem</artifactId>
+    <artifactId>wildfly-clustering-subsystem</artifactId>
     <packaging>jar</packaging>
 
     <name>Wildfly: Cluster Subsystem</name>
