@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.util.Set;
 
 import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.AuthorizationResponse;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -666,9 +667,15 @@ public interface OperationContext extends ExpressionResolver {
 
     AuthorizationResult authorize(ModelNode operation, Set<Action.ActionEffect> effects);
 
+    AuthorizationResponse authorizeResource(boolean attributes);
+
+    //TODO javadoc attributes
     AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue);
 
     AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue, Set<Action.ActionEffect> effects);
+
+    //TODO javadoc operations
+    AuthorizationResult authorizeOperation(ModelNode operation, boolean access);
 
     /**
      * The stage at which a step should apply.

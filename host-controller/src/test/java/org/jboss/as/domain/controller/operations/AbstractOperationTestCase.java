@@ -62,6 +62,8 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.Action.ActionEffect;
+import org.jboss.as.controller.access.AuthorizationResponse;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.client.MessageSeverity;
@@ -504,6 +506,32 @@ public abstract class AbstractOperationTestCase {
         @Override
         public boolean isNormalServer() {
             return false;
+        }
+
+        @Override
+        public AuthorizationResult authorizeOperation(ModelNode operation, boolean access) {
+            return AuthorizationResult.PERMITTED;
+        }
+
+        @Override
+        public AuthorizationResponse authorizeResource(boolean attributes) {
+            return new AuthorizationResponse() {
+
+                @Override
+                public AuthorizationResult getResourceResult(ActionEffect actionEffect) {
+                    return AuthorizationResult.PERMITTED;
+                }
+
+                @Override
+                public AuthorizationResult getOperationResult(String operationName, boolean access) {
+                    return AuthorizationResult.PERMITTED;
+                }
+
+                @Override
+                public AuthorizationResult getAttributeResult(String attribute, ActionEffect actionEffect) {
+                    return AuthorizationResult.PERMITTED;
+                }
+            };
         }
     }
 

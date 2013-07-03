@@ -106,11 +106,7 @@ public abstract class AbstractControllerTestBase {
     }
 
     public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {
-        ModelNode rsp = getController().execute(operation, null, null, null);
-        if (FAILED.equals(rsp.get(OUTCOME).asString())) {
-            throw new OperationFailedException(rsp.get(FAILURE_DESCRIPTION));
-        }
-        return rsp.get(RESULT);
+        return executeCheckNoFailure(operation).get(RESULT);
     }
 
     public void executeForFailure(ModelNode operation) throws OperationFailedException {
@@ -120,6 +116,14 @@ public abstract class AbstractControllerTestBase {
         } catch (OperationFailedException expected) {
             // good
         }
+    }
+
+    public ModelNode executeCheckNoFailure(ModelNode operation) throws OperationFailedException {
+        ModelNode rsp = getController().execute(operation, null, null, null);
+        if (FAILED.equals(rsp.get(OUTCOME).asString())) {
+            throw new OperationFailedException(rsp.get(FAILURE_DESCRIPTION));
+        }
+        return rsp;
     }
 
     @Before

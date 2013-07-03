@@ -34,6 +34,7 @@ public class ModelDescriptionConstants {
 
     public static final String ACCESS_CONSTRAINT = "access-constraint";
     public static final String ACCESS_CONSTRAINTS = "access-constraints";
+    public static final String ACCESS_CONTROL = "access-control";
     /** The key for {@link org.jboss.as.controller.registry.AttributeAccess.AccessType} fields. */
     public static final String ACCESS_TYPE = "access-type";
     public static final String ADD = "add";
@@ -108,6 +109,7 @@ public class ModelDescriptionConstants {
     public static final String DUMP_SERVICES = "dump-services";
     public static final String ENABLE = "enable";
     public static final String ENABLED = "enabled";
+    public static final String EXECUTE = "execute";
     public static final String EXPRESSIONS_ALLOWED = "expressions-allowed";
     public static final String EXTENSION = "extension";
     public static final String FAILED = "failed";
@@ -339,6 +341,7 @@ public class ModelDescriptionConstants {
     public static final String WILDCARD = "wildcard";
     public static final String WRITE_ATTRIBUTE_OPERATION = "write-attribute";
     public static final String XML_NAMESPACES = "xml-namespaces";
+    public static final String CHECK_RESOURCE_ACCESS = "check-resource-access";
 
     private ModelDescriptionConstants() {
     }
