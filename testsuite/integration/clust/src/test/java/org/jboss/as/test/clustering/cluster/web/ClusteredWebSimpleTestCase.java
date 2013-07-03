@@ -100,6 +100,7 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
     }
 
     @Test
+    @InSequence(1)
     @OperateOnDeployment(DEPLOYMENT_1)
     public void testSerialized(@ArquillianResource(SimpleServlet.class) URL baseURL) throws ClientProtocolException,
             IOException {
@@ -128,6 +129,7 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
     }
 
     @Test
+    @InSequence(2)
     @OperateOnDeployment(DEPLOYMENT_2)
     // For change, operate on the 2nd deployment first
     public void testSessionReplication(
@@ -181,6 +183,7 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
      * @throws IOException when an HTTP client problem occurs
      */
     @Test
+    @InSequence(3)
     @OperateOnDeployment(DEPLOYMENT_1)
     @Ignore("bz-973610 Clustered authentication doesn't work")
     public void testAuthnPropagation(
@@ -223,7 +226,7 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
      * Test that a session is gracefully served when a clustered application is undeployed.
      */
     @Test
-    @InSequence(5)
+    @InSequence(4)
     public void testGracefulServeOnUndeploy(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
             throws IllegalStateException, IOException, InterruptedException, Exception {
@@ -234,7 +237,7 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
      * Test that a session is gracefully served when clustered AS instanced is shutdown.
      */
     @Test
-    @InSequence(10)
+    @InSequence(5)
     public void testGracefulServeOnShutdown(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
             throws IllegalStateException, IOException, InterruptedException, Exception {
