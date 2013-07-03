@@ -93,6 +93,12 @@ public class GlobalOperationHandlers {
             .setDefaultValue(new ModelNode(false))
             .build();
 
+    static final SimpleAttributeDefinition ACCESS_CONTROL = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ACCESS_CONTROL, ModelType.BOOLEAN)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
+
+
     static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING)
             .setValidator(new StringLengthValidator(1))
             .setAllowNull(false)
@@ -171,6 +177,14 @@ public class GlobalOperationHandlers {
         root.registerOperationHandler(ReadChildrenResourcesHandler.DEFINITION, ReadChildrenResourcesHandler.INSTANCE, true);
         root.registerOperationHandler(ReadOperationNamesHandler.DEFINITION, ReadOperationNamesHandler.INSTANCE, true);
         root.registerOperationHandler(ReadOperationDescriptionHandler.DEFINITION, ReadOperationDescriptionHandler.INSTANCE, true);
+        root.registerOperationHandler(ReadResourceDescriptionHandler.CheckResourceAccessHandler.DEFINITION, new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                //Just use an empty operation handler here, people who need
+                throw new OperationFailedException("This should never be called");
+            }
+        }, true);
+
         if (processType != ProcessType.DOMAIN_SERVER) {
             root.registerOperationHandler(org.jboss.as.controller.operations.global.WriteAttributeHandler.DEFINITION,
                                           org.jboss.as.controller.operations.global.WriteAttributeHandler.INSTANCE, true);

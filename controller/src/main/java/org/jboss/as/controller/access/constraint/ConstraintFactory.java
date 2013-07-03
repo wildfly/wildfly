@@ -23,9 +23,9 @@
 package org.jboss.as.controller.access.constraint;
 
 import org.jboss.as.controller.access.Action;
-import org.jboss.as.controller.access.rbac.StandardRole;
 import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
+import org.jboss.as.controller.access.rbac.StandardRole;
 
 /**
  * A factory for constraints.
