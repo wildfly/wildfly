@@ -355,7 +355,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     private DeploymentInfo createServletConfig() throws StartException {
         try {
-            mergedMetaData.resolveAnnotations();
+            if(!mergedMetaData.isMetadataComplete()) {
+                mergedMetaData.resolveAnnotations();
+            }
             final DeploymentInfo d = new DeploymentInfo();
             d.setContextPath(contextPath);
             if (mergedMetaData.getDescriptionGroup() != null) {
