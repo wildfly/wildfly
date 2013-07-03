@@ -296,10 +296,11 @@ public abstract class SessionExpirationTestCase extends ClusterAbstractTestCase 
                 Assert.assertTrue(response.containsHeader(SessionOperationServlet.DESTROYED_SESSIONS));
                 Assert.assertFalse(response.containsHeader(SessionOperationServlet.ADDED_ATTRIBUTES));
                 Assert.assertFalse(response.containsHeader(SessionOperationServlet.REPLACED_ATTRIBUTES));
-                Assert.assertEquals("a",response.getFirstHeader(SessionOperationServlet.REMOVED_ATTRIBUTES).getValue());
+                Assert.assertTrue(response.containsHeader(SessionOperationServlet.REMOVED_ATTRIBUTES));
                 Assert.assertFalse(response.containsHeader(SessionOperationServlet.BOUND_ATTRIBUTES));
                 Assert.assertTrue(response.containsHeader(SessionOperationServlet.UNBOUND_ATTRIBUTES));
                 Assert.assertEquals(response.getFirstHeader(SessionOperationServlet.SESSION_ID).getValue(), response.getFirstHeader(SessionOperationServlet.DESTROYED_SESSIONS).getValue());
+                Assert.assertEquals("a",response.getFirstHeader(SessionOperationServlet.REMOVED_ATTRIBUTES).getValue());
                 Assert.assertEquals("5", response.getFirstHeader(SessionOperationServlet.UNBOUND_ATTRIBUTES).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
