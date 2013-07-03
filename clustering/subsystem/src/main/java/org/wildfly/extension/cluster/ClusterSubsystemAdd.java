@@ -1,5 +1,7 @@
 package org.wildfly.extension.cluster;
 
+import static org.wildfly.extension.cluster.ClusterSubsystemLogger.ROOT_LOGGER;
+
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -51,6 +53,6 @@ class ClusterSubsystemAdd extends AbstractAddStepHandler {
             throws OperationFailedException {
 
         // this subsystem gets started before jgroups and infinispan! Need to have it started after these two.
-        System.out.println("Activating cluster subsystem.");
+        ROOT_LOGGER.activatingSubsystem();
     }
 }

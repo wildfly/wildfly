@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.clustering.jgroups.JGroupsMessages;
 import org.jboss.as.clustering.management.support.impl.ManagementAPIClusterSupport;
 import org.jboss.as.clustering.management.support.impl.ManagementAPIClusterSupportService;
 import org.jboss.as.clustering.management.support.impl.RemoteCacheResponse;
@@ -76,21 +75,27 @@ public class DeploymentMetricsHandler extends AbstractRuntimeOnlyHandler {
         ModelNode result = new ModelNode();
 
         if (metric == null) {
-            context.getFailureDescription().set(JGroupsMessages.MESSAGES.unknownMetric(attrName));
+            context.getFailureDescription().set(ClusterSubsystemMessages.MESSAGES.unknownMetric(attrName));
         } else if (!started) {
-            System.out.println("RPC service not started");
+            context.getFailureDescription().set(ClusterSubsystemMessages.MESSAGES.rpcServiceNotStarted(channelName));
         } else {
             ManagementAPIClusterSupport support = (ManagementAPIClusterSupport) controller.getValue();
 
-            // if the cache is not available on the other node, we can get service not found!
-            List<RemoteCacheResponse> rsps = support.getCacheState(channelName, cacheName);
+            try {
+                // if the cache is not available on the other node, we can get service not found!
+                List<RemoteCacheResponse> rsps = support.getCacheState(channelName, cacheName);
 
-            switch (metric) {
-                case CACHE_VIEW:
-                    result.set(createCacheView(rsps));
-                    break;
+                switch (metric) {
+                    case CACHE_VIEW:
+                        result.set(createCacheView(rsps));
+                        break;
+                }
+
+                context.getResult().set(result);
+
+            } catch(InterruptedException ie) {
+                context.getFailureDescription().set(ClusterSubsystemMessages.MESSAGES.interrupted(channelName));
             }
-            context.getResult().set(result);
         }
         context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
     }
