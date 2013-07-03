@@ -40,9 +40,14 @@ public abstract class UpdatePropertiesHandler {
     }
 
     /**
-     *  Implement the persistence handler for storing the properties
+     *  Implement the persistence handler for storing the group properties.
      */
     abstract void persist(String[] entry, File file) throws IOException;
+
+    /**
+     * Implement the persistence handler for storing the user properties.
+     */
+    abstract void persist(String[] entry, File file, final String realm) throws IOException;
 
     /**
      * Customize message for update or add users
@@ -79,7 +84,7 @@ public abstract class UpdatePropertiesHandler {
 
         for (File current : stateValues.getUserFiles()) {
             try {
-                persist(entry, current);
+                persist(entry, current, stateValues.getRealm());
                 if (stateValues.isSilent() == false) {
                     theConsole.printf(consoleUserMessage(current.getCanonicalPath()));
                     theConsole.printf(NEW_LINE);

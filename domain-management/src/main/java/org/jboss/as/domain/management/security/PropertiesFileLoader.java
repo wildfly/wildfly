@@ -22,10 +22,8 @@
 
 package org.jboss.as.domain.management.security;
 
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
+import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -43,8 +41,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * The base class for services depending on loading a properties file, loads the properties on
@@ -52,23 +52,28 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public abstract class PropertiesFileLoader {
+public class PropertiesFileLoader {
 
     private static final char[] ESCAPE_ARRAY = new char[] { '=' };
-    private static final String COMMENT_PREFIX = "#";
-    private static final String REALM_COMMENT_PREFIX = "$REALM_NAME=";
-    private static final String REALM_COMMENT_SUFFIX = "$";
-    private static final String REALM_COMMENT_COMMENT = " This line is used by the add-user utility to identify the realm name already used in this file.";
+    protected static final String COMMENT_PREFIX = "#";
 
     private final String path;
     private final InjectedValue<String> relativeTo = new InjectedValue<String>();
 
-    private String realmName;
-    private File propertiesFile;
+    protected File propertiesFile;
     private volatile long fileUpdated = -1;
     private volatile Properties properties = null;
 
-    protected PropertiesFileLoader(final String path) {
+    /*
+     * State maintained during persistence.
+     */
+    private Properties toSave = null;
+    /*
+     * End of state maintained during persistence.
+     */
+
+
+    public PropertiesFileLoader(final String path) {
         this.path = path;
     }
 
@@ -100,17 +105,7 @@ public abstract class PropertiesFileLoader {
         return properties;
     }
 
-    public String getRealmName() throws IOException {
-        loadAsRequired();
-
-        return realmName;
-    }
-
-    public void setRealmName(final String realmName) {
-        this.realmName = realmName;
-    }
-
-    private void loadAsRequired() throws IOException {
+    protected void loadAsRequired() throws IOException {
         /*
          * This method does attempt to minimise the effect of race conditions, however this is not overly critical as if you
          * have users attempting to authenticate at the exact point their details are added to the file there is also a chance
@@ -125,36 +120,7 @@ public abstract class PropertiesFileLoader {
                 long fileLastModified = propertiesFile.lastModified();
                 boolean loadReallyRequired = properties == null || fileUpdated != fileLastModified;
                 if (loadReallyRequired) {
-                    ROOT_LOGGER.debugf("Reloading properties file '%s'", propertiesFile.getAbsolutePath());
-                    Properties props = new Properties();
-                    InputStreamReader is = new InputStreamReader(new FileInputStream(propertiesFile), Charset.forName("UTF-8"));
-                    try {
-                        props.load(is);
-                    } finally {
-                        is.close();
-                    }
-                    verifyProperties(props);
-
-                    String realmName = null;
-                    BufferedReader br = new BufferedReader(new FileReader(propertiesFile));
-                    try {
-                        String currentLine = null;
-                        while (realmName == null && (currentLine = br.readLine()) != null) {
-                            String trimmed = currentLine.trim();
-                            if (trimmed.startsWith(COMMENT_PREFIX) && trimmed.contains(REALM_COMMENT_PREFIX)) {
-                                int start = trimmed.indexOf(REALM_COMMENT_PREFIX) + REALM_COMMENT_PREFIX.length();
-                                int end = trimmed.indexOf(REALM_COMMENT_SUFFIX, start);
-                                if (end > -1) {
-                                    realmName = trimmed.substring(start, end);
-                                }
-                            }
-                        }
-                    } finally {
-                        safeClose(br);
-                    }
-
-                    this.realmName = realmName;
-                    properties = props;
+                    load();
                     // Update this last otherwise the check outside the synchronized block could return true before the file is
                     // set.
                     fileUpdated = fileLastModified;
@@ -163,32 +129,37 @@ public abstract class PropertiesFileLoader {
         }
     }
 
+    protected void load() throws IOException {
+        ROOT_LOGGER.debugf("Reloading properties file '%s'", propertiesFile.getAbsolutePath());
+        Properties props = new Properties();
+        InputStreamReader is = new InputStreamReader(new FileInputStream(propertiesFile), Charset.forName("UTF-8"));
+        try {
+            props.load(is);
+        } finally {
+            is.close();
+        }
+        verifyProperties(props);
+        properties = props;
+    }
+
     /**
-     * Saves changes in properties file. It reads the property file into memory,
-     * modifies it and saves it back to the file.
+     * Saves changes in properties file. It reads the property file into memory, modifies it and saves it back to the file.
      *
      * @throws IOException
      */
     public synchronized void persistProperties() throws IOException {
-        Properties toSave = (Properties) properties.clone();
+        beginPersistence();
 
         List<String> content = new ArrayList<String>();
         FileReader fileReader = new FileReader(propertiesFile);
         BufferedReader bufferedFileReader = new BufferedReader(fileReader);
 
-        boolean realmDefinitionFound = false;
         // Read the properties file into memory
         // Shouldn't be so bad - it's a small file
         try {
             String line = null;
             int i = 0;
             while ((line = bufferedFileReader.readLine()) != null) {
-                if (realmDefinitionFound == false) {
-                    String trimmed = line.trim();
-                    if (trimmed.startsWith(COMMENT_PREFIX) && trimmed.contains(REALM_COMMENT_PREFIX)) {
-                        realmDefinitionFound = true;
-                    }
-                }
                 content.add(line);
             }
         } finally {
@@ -197,20 +168,12 @@ public abstract class PropertiesFileLoader {
         }
 
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(propertiesFile), "UTF8"));
-        if (realmDefinitionFound == false) {
-          writeRealm(bw, realmName, true);
-        }
 
         try {
             for (String line : content) {
                 String trimmed = line.trim();
                 if (trimmed.startsWith(COMMENT_PREFIX)) {
-                    if (trimmed.contains(REALM_COMMENT_PREFIX)) {
-                        writeRealm(bw, realmName, false);
-                    } else {
-                        bw.append(line);
-                    }
-                    bw.newLine();
+                    write(bw, line, true);
                 } else if (trimmed.length() == 0) {
                     bw.newLine();
                 } else {
@@ -219,40 +182,48 @@ public abstract class PropertiesFileLoader {
                         String userName = trimmed.substring(0, equals);
                         if (toSave.containsKey(userName)) {
                             String escapedUserName = escapeString(userName, ESCAPE_ARRAY);
-                            bw.append(escapedUserName + "=" + toSave.getProperty(userName));
-                            bw.newLine();
+                            write(bw, escapedUserName + "=" + toSave.getProperty(userName), true);
                             toSave.remove(userName);
                         }
                     }
                 }
             }
 
-            // Append any additional users to the end of the file.
-            for (Object currentKey : toSave.keySet()) {
-                String escapedUserName = escapeString((String) currentKey, ESCAPE_ARRAY);
-                bw.append(escapedUserName + "=" + toSave.getProperty((String) currentKey));
-                bw.newLine();
-            }
+            endPersistence(bw);
         } finally {
             safeClose(bw);
         }
     }
 
-    private void writeRealm(final BufferedWriter bw, final String realmName, final boolean wrap) throws IOException {
-        if (wrap) {
-            bw.append(COMMENT_PREFIX);
-            bw.newLine();
+    /**
+     * Method called to indicate the start of persisting the properties.
+     *
+     * @throws IOException
+     */
+    protected void beginPersistence() throws IOException {
+        toSave = (Properties) properties.clone();
+    }
+
+    protected void write(final BufferedWriter writer, final String line, final boolean newLine) throws IOException {
+        writer.append(line);
+        if (newLine) {
+            writer.newLine();
         }
-        bw.append(COMMENT_PREFIX);
-        bw.append(REALM_COMMENT_PREFIX);
-        bw.append(realmName);
-        bw.append(REALM_COMMENT_SUFFIX);
-        bw.append(REALM_COMMENT_COMMENT);
-        if (wrap) {
-            bw.newLine();
-            bw.append(COMMENT_PREFIX);
-            bw.newLine();
+    }
+
+    /**
+     * Method called to indicate persisting the properties file is now complete.
+     *
+     * @throws IOException
+     */
+    protected void endPersistence(final BufferedWriter writer) throws IOException {
+        // Append any additional users to the end of the file.
+        for (Object currentKey : toSave.keySet()) {
+            String escapedUserName = escapeString((String) currentKey, ESCAPE_ARRAY);
+            write(writer, escapedUserName + "=" + toSave.getProperty((String) currentKey), true);
         }
+
+        toSave = null;
     }
 
     public static String escapeString(String name, char[] escapeArray) {
@@ -276,7 +247,7 @@ public abstract class PropertiesFileLoader {
         return name;
     }
 
-    private void safeClose(final Closeable c) {
+    protected void safeClose(final Closeable c) {
         try {
             c.close();
         } catch (IOException ignored) {

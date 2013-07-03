@@ -58,7 +58,7 @@ import org.jboss.sasl.util.UsernamePasswordHashUtil;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class PropertiesCallbackHandler extends PropertiesFileLoader implements Service<CallbackHandlerService>,
+public class PropertiesCallbackHandler extends UserPropertiesFileLoader implements Service<CallbackHandlerService>,
 CallbackHandlerService, CallbackHandler {
 
     public static final String SERVICE_SUFFIX = "properties_authentication";
