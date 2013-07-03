@@ -31,7 +31,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Ladislav Thon <lthon@redhat.com>
  */
-public class BasicRbacTestCase extends AbstractControllerTestBase {
+public class BasicRbacTestCase extends AbstractRbacTestBase {
     public static final String UNCONSTRAINED_RESOURCE = "unconstrained-resource";
     public static final String APPLICATION_CONSTRAINED_RESOURCE = "application-constrained-resource";
     public static final String SENSITIVE_CONSTRAINED_RESOURCE = "sensitive-constrained-resource";
@@ -211,25 +211,6 @@ public class BasicRbacTestCase extends AbstractControllerTestBase {
 
     private void noAccess(String operation, PathAddress pathAddress, StandardRole role) {
         assertNoAccess(executeWithRole(Util.createOperation(operation, pathAddress), role));
-    }
-
-    protected ModelNode executeWithRole(ModelNode operation, StandardRole role) {
-        operation.get(OPERATION_HEADERS, "roles").add(role.name());
-        return getController().execute(operation, null, null, null);
-    }
-
-    private static void assertPermitted(ModelNode operationResult) {
-        assertEquals(SUCCESS, operationResult.get(OUTCOME).asString());
-    }
-
-    private static void assertDenied(ModelNode operationResult) {
-        assertEquals(FAILED, operationResult.get(OUTCOME).asString());
-        assertTrue(operationResult.get(FAILURE_DESCRIPTION).asString().contains("Permission denied"));
-    }
-
-    private static void assertNoAccess(ModelNode operationResult) {
-        assertEquals(FAILED, operationResult.get(OUTCOME).asString());
-        assertTrue(operationResult.get(FAILURE_DESCRIPTION).asString().contains("not found"));
     }
 
     // model definition

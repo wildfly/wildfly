@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Ladislav Thon <lthon@redhat.com>
  */
-public class FilteredReadResourceTestCase extends AbstractControllerTestBase {
+public class FilteredReadResourceTestCase extends AbstractRbacTestBase {
     public static final String UNCONSTRAINED_RESOURCE = "unconstrained-resource";
     public static final String SENSITIVE_CONSTRAINED_RESOURCE = "sensitive-constrained-resource";
 
@@ -114,15 +114,6 @@ public class FilteredReadResourceTestCase extends AbstractControllerTestBase {
         // TODO is this format stable? testing it isn't that important anyway...
         assertEquals(!sensitiveResourceVisible, result.get(RESPONSE_HEADERS, "access-control").get(0)
                 .get("hidden-children-types").get(0).asString().equals(SENSITIVE_CONSTRAINED_RESOURCE));
-    }
-
-    // test utils
-
-    private ModelNode executeWithRoles(ModelNode operation, StandardRole... roles) {
-        for (StandardRole role : roles) {
-            operation.get(OPERATION_HEADERS, "roles").add(role.name());
-        }
-        return getController().execute(operation, null, null, null);
     }
 
     // model definition
