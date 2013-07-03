@@ -26,9 +26,10 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -129,12 +130,14 @@ public class SessionOperationServlet extends HttpServlet {
         this.setHeader(resp, PASSIVATED_SESSIONS, SessionAttributeValue.passivatedSessions);
     }
 
-    private void setHeader(HttpServletResponse response, String header, Collection<String> values) {
-        if (values != null) {
-            for (String value: values) {
-                response.addHeader(header, value);
+    private void setHeader(HttpServletResponse response, String header, BlockingQueue<String> queue) {
+        if (queue != null) {
+            List<String> values = new LinkedList<>();
+            if (queue.drainTo(values) > 0) {
+                for (String value: values) {
+                    response.addHeader(header, value);
+                }
             }
-            values.clear();
         }
     }
 
@@ -148,8 +151,8 @@ public class SessionOperationServlet extends HttpServlet {
 
     public static class SessionAttributeValue implements Serializable, HttpSessionActivationListener {
         private static final long serialVersionUID = -8824497321979784527L;
-        static List<String> passivatedSessions = new CopyOnWriteArrayList<String>();
-        static List<String> activatedSessions = new CopyOnWriteArrayList<String>();
+        static BlockingQueue<String> passivatedSessions = new LinkedBlockingQueue<>();
+        static BlockingQueue<String> activatedSessions = new LinkedBlockingQueue<>();
 
         private final String value;
 
