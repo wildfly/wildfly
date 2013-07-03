@@ -634,11 +634,29 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case NATIVE_INTERFACE: {
-                    parseManagementInterface1_1(reader, address, false, expectedNs, list);
+                    switch (expectedNs) { // Will not be 1.0 as this method is called for 1.1 and above.
+                        case DOMAIN_1_1:
+                        case DOMAIN_1_2:
+                        case DOMAIN_1_3:
+                        case DOMAIN_1_4:
+                            parseManagementInterface1_1(reader, address, false, expectedNs, list);
+                            break;
+                        default:
+                            parseManagementInterface2_0(reader, address, false, expectedNs, list);
+                    }
                     break;
                 }
                 case HTTP_INTERFACE: {
-                    parseManagementInterface1_1(reader, address, true, expectedNs, list);
+                    switch (expectedNs) { // Will not be 1.0 as this method is called for 1.1 and above.
+                        case DOMAIN_1_1:
+                        case DOMAIN_1_2:
+                        case DOMAIN_1_3:
+                        case DOMAIN_1_4:
+                            parseManagementInterface1_1(reader, address, true, expectedNs, list);
+                            break;
+                        default:
+                            parseManagementInterface2_0(reader, address, true, expectedNs, list);
+                    }
                     break;
                 }
                 case NATIVE_REMOTING_INTERFACE: {
@@ -681,16 +699,97 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
                         }
                         break;
                     }
+                    default:
+                        throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        // Handle elements
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case SOCKET:
+                    if (http) {
+                        parseHttpManagementSocket(reader, addOp);
+                    } else {
+                        parseNativeManagementSocket(reader, addOp);
+                    }
+                    break;
+                case SOCKET_BINDING:
+                    if (http) {
+                        parseHttpManagementSocketBinding(reader, addOp);
+                    } else {
+                        parseNativeManagementSocketBinding(reader, addOp);
+                    }
+                    break;
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+
+        list.add(addOp);
+    }
+
+    private void parseHttpManagementInterfaceAttributes2_0(XMLExtendedStreamReader reader,ModelNode addOp) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case SECURITY_REALM: {
+                        HttpManagementResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case CONSOLE_ENABLED: {
+                        HttpManagementResourceDefinition.CONSOLE_ENABLED.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
                     case HTTP_UPGRADE_ENABLED: {
-                        if (http) {
-                            HttpManagementResourceDefinition.HTTP_UPGRADE_ENABLED.parseAndSetParameter(value, addOp, reader);
-                        }
+                        HttpManagementResourceDefinition.HTTP_UPGRADE_ENABLED.parseAndSetParameter(value, addOp, reader);
                         break;
                     }
                     default:
                         throw unexpectedAttribute(reader, i);
                 }
             }
+        }
+    }
+
+    private void parseNativeManagementInterfaceAttributes2_0(XMLExtendedStreamReader reader, ModelNode addOp) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case SECURITY_REALM: {
+                        NativeManagementResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    default:
+                        throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+    }
+
+    private void parseManagementInterface2_0(XMLExtendedStreamReader reader, ModelNode address, boolean http, Namespace expectedNs, List<ModelNode> list) throws XMLStreamException {
+        final ModelNode operationAddress = address.clone();
+        operationAddress.add(MANAGEMENT_INTERFACE, http ? HTTP_INTERFACE : NATIVE_INTERFACE);
+        final ModelNode addOp = Util.getEmptyOperation(ADD, operationAddress);
+
+        // Handle attributes
+        if (http) {
+            parseHttpManagementInterfaceAttributes2_0(reader, addOp);
+        } else {
+            parseNativeManagementInterfaceAttributes2_0(reader, addOp);
         }
 
         // Handle elements
