@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.domain.management.security.PropertiesFileLoader;
+import org.jboss.as.domain.management.security.UserPropertiesFileLoader;
 import org.jboss.as.domain.management.security.adduser.AddUser.FileMode;
 import org.jboss.as.domain.management.security.adduser.AddUser.RealmMode;
 import org.jboss.msc.service.StartException;
@@ -100,7 +101,7 @@ public class PropertyFileFinder implements State {
         String realmName = null;
         Set<String> foundUsers = new HashSet<String>();
         for (File current : stateValues.getUserFiles()) {
-            PropertiesFileLoader pfl = null;
+            UserPropertiesFileLoader pfl = null;
             try {
                 pfl = loadUsersFile(current);
                 foundUsers.addAll(pfl.getProperties().stringPropertyNames());
@@ -139,8 +140,8 @@ public class PropertyFileFinder implements State {
                 stateValues);
     }
 
-    private PropertiesFileLoader loadUsersFile(File file) throws IOException {
-        PropertiesFileLoader fileLoader = new UserPropertiesFileHandler(file.getAbsolutePath());
+    private UserPropertiesFileLoader loadUsersFile(File file) throws IOException {
+        UserPropertiesFileLoader fileLoader = new UserPropertiesFileLoader(file.getAbsolutePath());
         try {
             fileLoader.start(null);
         } catch (StartException e) {
@@ -155,7 +156,7 @@ public class PropertyFileFinder implements State {
         for (File file : foundRoleFiles) {
             PropertiesFileLoader propertiesLoad = null;
             try {
-                propertiesLoad = new UserPropertiesFileHandler(file.getCanonicalPath());
+                propertiesLoad = new PropertiesFileLoader(file.getCanonicalPath());
                 propertiesLoad.start(null);
                 loadedRoles.putAll((Map) propertiesLoad.getProperties());
             } finally {

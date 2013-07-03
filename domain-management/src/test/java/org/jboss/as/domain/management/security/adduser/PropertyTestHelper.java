@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
+import org.jboss.as.domain.management.security.PropertiesFileLoader;
 import org.jboss.msc.service.StartException;
 import org.junit.Before;
 
@@ -70,7 +71,7 @@ public class PropertyTestHelper {
     }
 
     protected Properties loadProperties(String filePath) throws StartException, IOException {
-        UserPropertiesFileHandler propertiesLoad = new UserPropertiesFileHandler(filePath);
+        PropertiesFileLoader propertiesLoad = new PropertiesFileLoader(filePath);
         propertiesLoad.start(null);
         Properties properties = (Properties) propertiesLoad.getProperties().clone();
         propertiesLoad.stop(null);
