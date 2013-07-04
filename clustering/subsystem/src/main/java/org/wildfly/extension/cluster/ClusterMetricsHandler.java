@@ -30,7 +30,9 @@ public class ClusterMetricsHandler extends AbstractRuntimeOnlyHandler {
     public static final ClusterMetricsHandler INSTANCE = new ClusterMetricsHandler();
 
     public enum ClusterMetrics {
-        VIEW(ClusterInstanceResourceDefinition.VIEW);
+        RPC_STATS(ClusterInstanceResourceDefinition.RPC_STATS),
+        VIEW(ClusterInstanceResourceDefinition.VIEW),
+        VIEW_HISTORY(ClusterInstanceResourceDefinition.VIEW_HISTORY);
 
         private static final Map<String, ClusterMetrics> MAP = new HashMap<String, ClusterMetrics>();
 
@@ -84,8 +86,14 @@ public class ClusterMetricsHandler extends AbstractRuntimeOnlyHandler {
                 List<RemoteClusterResponse> rsps = support.getClusterState(channelName);
 
                 switch (metric) {
+                    case RPC_STATS:
+                        result.set(createClusterRPCStats(rsps));
+                        break;
                     case VIEW:
                         result.set(createClusterView(rsps));
+                        break;
+                    case VIEW_HISTORY:
+                        result.set(createClusterViewHistory(rsps));
                         break;
                 }
 
@@ -98,11 +106,33 @@ public class ClusterMetricsHandler extends AbstractRuntimeOnlyHandler {
         context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
     }
 
+    private ModelNode createClusterRPCStats(List<RemoteClusterResponse> rsps) {
+        ModelNode result = new ModelNode();
+        for (RemoteClusterResponse rsp : rsps) {
+            // create a LIST of PROPERTY
+            int unicasts = rsp.getAsyncUnicasts() + rsp.getSyncUnicasts();
+            int multicasts = rsp.getAsyncMulticasts() + rsp.getSyncMulticasts();
+            int anycasts = rsp.getAsyncAnycasts() + rsp.getSyncAnycasts();
+            String stats = String.format("[u: %s, m: %s, a: %s]", unicasts, multicasts, anycasts);
+            result.add(rsp.getResponder().getName(), stats);
+        }
+        return result;
+    }
+
     private ModelNode createClusterView(List<RemoteClusterResponse> rsps) {
         ModelNode result = new ModelNode();
         for (RemoteClusterResponse rsp : rsps) {
             // create a LIST of PROPERTY
             result.add(rsp.getResponder().getName(), rsp.getView());
+        }
+        return result;
+    }
+
+    private ModelNode createClusterViewHistory(List<RemoteClusterResponse> rsps) {
+        ModelNode result = new ModelNode();
+        for (RemoteClusterResponse rsp : rsps) {
+            // create a LIST of PROPERTY
+            result.add(rsp.getResponder().getName(), rsp.getViewHistory());
         }
         return result;
     }

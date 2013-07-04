@@ -41,12 +41,23 @@ public class ClusterInstanceResourceDefinition extends SimpleResourceDefinition 
     private final boolean runtimeRegistration;
 
     // metrics
+    static final SimpleAttributeDefinition RPC_STATS =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.RPC_STATS, ModelType.STRING, true)
+                    .setStorageRuntime()
+                    .build();
+
     static final SimpleAttributeDefinition VIEW =
             new SimpleAttributeDefinitionBuilder(ModelKeys.VIEW, ModelType.STRING, true)
                     .setStorageRuntime()
                     .build();
 
-    static final AttributeDefinition[] CLUSTER_METRICS = {VIEW};
+    static final SimpleAttributeDefinition VIEW_HISTORY =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.VIEW_HISTORY, ModelType.STRING, true)
+                    .setStorageRuntime()
+                    .build();
+
+
+    static final AttributeDefinition[] CLUSTER_METRICS = {RPC_STATS, VIEW, VIEW_HISTORY};
 
     public ClusterInstanceResourceDefinition(boolean runtimeRegistration) {
 

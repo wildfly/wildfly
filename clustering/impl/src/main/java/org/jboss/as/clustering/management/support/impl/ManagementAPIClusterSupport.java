@@ -1,13 +1,18 @@
 package org.jboss.as.clustering.management.support.impl;
 
+import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.infinispan.Cache;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
+import org.infinispan.remoting.transport.jgroups.CommandAwareRpcDispatcher;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
+import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.statetransfer.StateTransferManager;
 import org.jboss.as.clustering.ClusterNode;
 import org.jboss.as.clustering.GroupMembershipListener;
@@ -23,6 +28,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceNotFoundException;
 import org.jgroups.JChannel;
+import org.jgroups.protocols.pbcast.GMS;
 import org.jgroups.stack.IpAddress;
 
 /**
@@ -188,9 +194,16 @@ public class ManagementAPIClusterSupport implements GroupMembershipListener {
     //
 
     /*
-     * Execute a services-based operation on all nodes in the cluster.
+     * Get the remote Channel and EmbeddedCacheManager state
      */
     private RemoteClusterResponse getClusterStateRemote(String channelName) {
+
+        final String SYNC_UNICASTS = "sync_unicasts" ;
+        final String ASYNC_UNICASTS = "async_unicasts" ;
+        final String SYNC_MULTICASTS = "sync_multicasts" ;
+        final String ASYNC_MULTICASTS = "async_multicasts" ;
+        final String SYNC_ANYCASTS = "sync_anycasts" ;
+        final String ASYNC_ANYCASTS = "async_anycasts" ;
 
         RemoteClusterResponse result = new RemoteClusterResponse(getLocalClusterNode());
 
@@ -200,15 +213,20 @@ public class ManagementAPIClusterSupport implements GroupMembershipListener {
         ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(channelName);
 
         try {
-            ServiceController<?> channelController = channelController = ServiceContainerHelper.getService(registry, channelServiceName);
+            ServiceController<?> channelController = ServiceContainerHelper.getService(registry, channelServiceName);
 
             // check that the service has been installed and started
             boolean started = channelController != null && channelController.getValue() != null;
             if (started) {
                 JChannel channel = (JChannel) channelController.getValue();
+
                 // get the view
                 String view = channel.getViewAsString();
                 result.setView(view);
+
+                // get the view history
+                GMS gms = (GMS) channel.getProtocolStack().findProtocol("GMS") ;
+                result.setViewHistory(gms.printPreviousViews());
             }
         } catch (ServiceNotFoundException snf) {
             // handle service not found - we need to access the service, but it ain't there
@@ -218,7 +236,64 @@ public class ManagementAPIClusterSupport implements GroupMembershipListener {
             // is there, but it ain't available (UP)
             // result: we cannot return a value for the cluster state - throw?
         }
+
+        try {
+            ServiceController<?> containerController = ServiceContainerHelper.getService(registry, containerServiceName);
+
+            // check that the service has been installed and started
+            boolean started = containerController != null && containerController.getValue() != null;
+            if (started) {
+                EmbeddedCacheManager container = (EmbeddedCacheManager) containerController.getValue();
+                CommandAwareRpcDispatcher dispatcher =  ((JGroupsTransport)container.getTransport()).getCommandAwareRpcDispatcher();
+
+                // get the unicast, multicast, anycast stats
+                result.setAsyncUnicasts(getAtomicIntField(dispatcher, ASYNC_UNICASTS));
+                result.setSyncUnicasts(getAtomicIntField(dispatcher, SYNC_UNICASTS));
+
+                result.setAsyncMulticasts(getAtomicIntField(dispatcher, ASYNC_MULTICASTS));
+                result.setSyncMulticasts(getAtomicIntField(dispatcher, SYNC_MULTICASTS));
+
+                result.setAsyncAnycasts(getAtomicIntField(dispatcher, ASYNC_ANYCASTS));
+                result.setSyncAnycasts(getAtomicIntField(dispatcher, ASYNC_ANYCASTS));
+            }
+        } catch (ServiceNotFoundException snf) {
+            // handle service not found - we need to access the service, but it ain't there
+            // result: we cannot return a value for the cluster state - throw?
+        } catch (IllegalStateException ise) {
+            // handle illegal state exception - we need to get the value of the service, and the service
+            // is there, but it ain't available (UP)
+            // result: we cannot return a value for the cluster state - throw?
+        }
+
         return result;
+    }
+
+    private int getAtomicIntField(Object o, String name) {
+
+        Class<?> c = o.getClass();
+        try {
+            Field f = getField(c, name);
+            f.setAccessible(true);
+            return ((AtomicInteger)f.get(o)).get();
+        } catch(NoSuchFieldException nsfe) {
+            System.out.println("No such field: " + name);
+        } catch(IllegalAccessException iae) {
+            System.out.println("Illegal access for field: " + name);
+        }
+        return 0;
+    }
+
+    private static Field getField(Class clazz, String fieldName) throws NoSuchFieldException {
+      try {
+        return clazz.getDeclaredField(fieldName);
+      } catch (NoSuchFieldException e) {
+        Class superClass = clazz.getSuperclass();
+        if (superClass == null) {
+          throw e;
+        } else {
+          return getField(superClass, fieldName);
+        }
+      }
     }
 
     /*
