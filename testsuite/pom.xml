@@ -535,11 +535,6 @@
             <modules><module>integration</module></modules>
         </profile>
         <profile>
-            <id>integ-osgi.module.profile</id>
-            <activation><property><name>ts.osgi</name></property></activation>
-            <modules><module>integration</module></modules>
-        </profile>
-        <profile>
             <id>integ-xts.module.profile</id>
             <activation><property><name>ts.xts</name></property></activation>
             <modules><module>integration</module></modules>
@@ -1200,7 +1195,6 @@
                                                     <fileset dir="../modcluster/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../naming/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../network/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../osgi/configadmin/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../osgi/service/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../platform-mbean/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../pojo/src/main/java"><include name="**/*.java"/></fileset>

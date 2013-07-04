@@ -53,7 +53,6 @@
             <modules>
                 <module>smoke</module>
                 <module>basic</module>
-                <module>osgi</module>
                 <module>iiop</module>
                 <module>xts</module>
                 <module>rts</module>
@@ -64,7 +63,7 @@
         </profile>
         <!-- Define ts.integration uber-group. -->
         <profile>
-            <id>ts.integ.allGroupsNoOSGi</id>
+            <id>ts.integ.allGroupsIntegration</id>
             <activation><property><name>ts.integration</name></property></activation>
             <modules>
                 <module>smoke</module>
@@ -111,15 +110,6 @@
             <activation><property><name>ts.iiop</name></property></activation>
             <modules>
                 <module>iiop</module>
-            </modules>
-        </profile>
-
-        <!-- -Dts.osgi -->
-        <profile>
-            <id>ts.integ.group.osgi</id>
-            <activation><property><name>ts.osgi</name></property></activation>
-            <modules>
-                <module>osgi</module>
             </modules>
         </profile>
 
