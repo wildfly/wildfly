@@ -106,5 +106,11 @@
             <include path="META-INF"/>
           </exports>
         </module>
+        <module name="org.jboss.xts">
+          <imports>
+            <include path="com.arjuna.mw.wst11.client"/>
+            <include path="org.jboss.jbossts.txbridge.outbound"/>
+          </imports>
+        </module>
     </dependencies>
 </module>
