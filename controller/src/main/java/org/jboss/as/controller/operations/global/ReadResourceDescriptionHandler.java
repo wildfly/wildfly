@@ -349,11 +349,13 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             .setPrivateEntry()
             .build();
 
+        private final boolean defaultSetting;
         private final ModelNode accessControlResult;
         private final ModelNode nodeDescription;
         private final Map<String, ModelNode> operations;
 
-        CheckResourceAccessHandler(ModelNode accessControlResult, ModelNode nodeDescription, Map<String, ModelNode> operations) {
+        CheckResourceAccessHandler(boolean defaultSetting, ModelNode accessControlResult, ModelNode nodeDescription, Map<String, ModelNode> operations) {
+            this.defaultSetting = defaultSetting;
             this.accessControlResult = accessControlResult;
             this.nodeDescription = nodeDescription;
             this.operations = operations;
@@ -364,7 +366,11 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             ModelNode result = new ModelNode();
             AuthorizationResponse authResp = context.authorizeResource(true);
             if (authResp.getResourceResult(ActionEffect.ACCESS).getDecision() == Decision.DENY) {
-                //We are not allowed to see the resource, so we don't set the accessControlResult, meaning that the ReadResourceAssemblyHandler will ignore it for this address
+                if (!defaultSetting) {
+                    //We are not allowed to see the resource, so we don't set the accessControlResult, meaning that the ReadResourceAssemblyHandler will ignore it for this address
+                } else {
+                    result.get(ActionEffect.ACCESS.toString()).set(false);
+                }
             } else {
                 addResourceAuthorizationResults(result, authResp);
 
@@ -403,9 +409,8 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                         result.get(ModelDescriptionConstants.OPERATIONS).set(ops);
                     }
                 }
-                accessControlResult.set(result);
             }
-            //context.getResult().set(result);
+            accessControlResult.set(result);
             context.stepCompleted();
         }
 
@@ -633,13 +638,13 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             if (opAddress.size() == 0 || opAddress.getLastElement().isWildcard()) {
                 final ModelNode op = Util.createOperation(CHECK_RESOURCE_ACCESS, opAddress);
                 defaultWildcardAccessControl = new ModelNode();
-                context.addStep(op, new CheckResourceAccessHandler(defaultWildcardAccessControl, nodeDescription, operations), OperationContext.Stage.MODEL, true);
+                context.addStep(op, new CheckResourceAccessHandler(true, defaultWildcardAccessControl, nodeDescription, operations), OperationContext.Stage.MODEL, true);
             }
             for (final PathAddress address : localResourceAddresses) {
                 final ModelNode op = Util.createOperation(CHECK_RESOURCE_ACCESS, address);
                 final ModelNode resultHolder = new ModelNode();
                 localResourceAccessControlResults.put(address, resultHolder);
-                context.addStep(op, new CheckResourceAccessHandler(resultHolder, nodeDescription, operations), OperationContext.Stage.MODEL, true);
+                context.addStep(op, new CheckResourceAccessHandler(false, resultHolder, nodeDescription, operations), OperationContext.Stage.MODEL, true);
             }
         }
     }
