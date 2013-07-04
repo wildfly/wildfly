@@ -40,7 +40,7 @@ public class ServletResourceManager implements ResourceManager {
                 VirtualFile child = overlay.getChild(p);
                 if (child.exists()) {
                     URL url = child.toURL();
-                    return new URLResource(url, url.openConnection());
+                    return new URLResource(url, url.openConnection(), path);
                 }
             }
         }
