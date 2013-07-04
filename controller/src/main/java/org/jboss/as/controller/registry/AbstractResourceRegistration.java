@@ -509,7 +509,7 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
             for (Map.Entry<String, ModelNode> entry : overrideDescriptionProvider.getAttributeOverrideDescriptions(locale).entrySet()) {
                 attrs.get(entry.getKey()).set(entry.getValue());
             }
-            ModelNode children = result.get(ModelDescriptionConstants.ATTRIBUTES);
+            ModelNode children = result.get(ModelDescriptionConstants.CHILDREN);
             for (Map.Entry<String, ModelNode> entry : overrideDescriptionProvider.getChildTypeOverrideDescriptions(locale).entrySet()) {
                 children.get(entry.getKey()).set(entry.getValue());
             }
