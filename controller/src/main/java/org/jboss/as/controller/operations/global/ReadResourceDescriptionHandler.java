@@ -120,7 +120,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        ReadResourceDescriptionAccessControlContext accessControlContext = getAccessControlContext() == null ? new ReadResourceDescriptionAccessControlContext(null) : getAccessControlContext();
+        ReadResourceDescriptionAccessControlContext accessControlContext = getAccessControlContext() == null ? new ReadResourceDescriptionAccessControlContext(address, null) : getAccessControlContext();
         if (getAccessControlContext() == null && address.isMultiTarget()) {
             executeMultiTarget(context, operation, accessControlContext);
         } else {
@@ -152,7 +152,6 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         }
 
         final String opName = operation.require(OP).asString();
-        final PathAddress opAddr = PathAddress.pathAddress(operation.get(OP_ADDR));
         final int recursiveDepth = RECURSIVE_DEPTH.resolveModelAttribute(context, operation).asInt();
         final boolean recursive = recursiveDepth > 0 || RECURSIVE.resolveModelAttribute(context, operation).asBoolean();
         final boolean proxies = PROXIES.resolveModelAttribute(context, operation).asBoolean();
@@ -161,7 +160,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         final boolean inheritedOps = INHERITED.resolveModelAttribute(context, operation).asBoolean();
         final boolean includeAccess = ACCESS_CONTROL.resolveModelAttribute(context, operation).asBoolean();
 
-        final ImmutableManagementResourceRegistration registry = getResourceRegistrationCheckForAlias(context, opAddr, accessControlContext);
+        final ImmutableManagementResourceRegistration registry = getResourceRegistrationCheckForAlias(context, accessControlContext.opAddress, accessControlContext);
 
         final DescriptionProvider descriptionProvider = registry.getModelDescription(PathAddress.EMPTY_ADDRESS);
         final Locale locale = GlobalOperationHandlers.getLocale(context, operation);
@@ -170,18 +169,15 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         final Map<String, ModelNode> operations = ops ? new HashMap<String, ModelNode>() : null;
         final Map<PathElement, ModelNode> childResources = recursive ? new HashMap<PathElement, ModelNode>() : Collections.<PathElement, ModelNode>emptyMap();
 
-        List<PathAddress> localResourceAddresses = null;
-        Map<PathAddress, ModelNode> localResourceAccessControlResults = null;
         if (includeAccess) {
-            localResourceAddresses = getLocalResourceAddresses(context, operation, accessControlContext);
-            localResourceAccessControlResults = new HashMap<PathAddress, ModelNode>();
+            accessControlContext.initLocalResourceAddresses(context, operation);
         }
 
 
         // We're going to add a bunch of steps that should immediately follow this one. We are going to add them
         // in reverse order of how they should execute, as that is the way adding a Stage.IMMEDIATE step works
         // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
-        final ReadResourceDescriptionAssemblyHandler assemblyHandler = new ReadResourceDescriptionAssemblyHandler(nodeDescription, operations, childResources, localResourceAccessControlResults);
+        final ReadResourceDescriptionAssemblyHandler assemblyHandler = new ReadResourceDescriptionAssemblyHandler(nodeDescription, operations, childResources, accessControlContext);
         context.addStep(assemblyHandler, OperationContext.Stage.MODEL, true);
 
         if (ops) {
@@ -228,7 +224,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         }
 
         if (includeAccess) {
-            checkResourceAccess(localResourceAccessControlResults, context, nodeDescription, localResourceAddresses, operations);
+            accessControlContext.checkResourceAccess(context, nodeDescription, operations);
         }
 
         if (recursive) {
@@ -246,18 +242,20 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
 
                 if (readChild) {
                     final int newDepth = recursiveDepth > 0 ? recursiveDepth - 1 : 0;
-                    ModelNode rrOp = operation.clone();
+                    final ModelNode rrOp = operation.clone();
+                    final PathAddress address;
                     try {
-                        rrOp.get(OP_ADDR).set(PathAddress.pathAddress(opAddr, element).toModelNode());
+                        address = PathAddress.pathAddress(accessControlContext.opAddress, element);
                     } catch (Exception e) {
                         continue;
                     }
+                    rrOp.get(OP_ADDR).set(address.toModelNode());
                     rrOp.get(RECURSIVE_DEPTH.getName()).set(newDepth);
-                    ModelNode rrRsp = new ModelNode();
+                    final ModelNode rrRsp = new ModelNode();
                     childResources.put(element, rrRsp);
 
                     final OperationStepHandler handler = childReg.isRemote() ? childReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, opName) :
-                        new NestedReadResourceDescriptionHandler(new ReadResourceDescriptionAccessControlContext(localResourceAddresses, accessControlContext)) {
+                        new NestedReadResourceDescriptionHandler(new ReadResourceDescriptionAccessControlContext(address, accessControlContext)) {
                             @Override
                             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                                 doExecute(context, operation, accessControlContext);
@@ -341,108 +339,6 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         });
     }
 
-    private List<PathAddress> getLocalResourceAddresses(OperationContext context, ModelNode operation, ReadResourceDescriptionAccessControlContext accessControlContext){
-        List<PathAddress> localResourceAddresses = null;
-        PathAddress opAddr = PathAddress.pathAddress(operation.require(OP_ADDR));
-        if (accessControlContext.parentAddresses == null) {
-            if (opAddr.size() == 0) {
-                return Collections.singletonList(PathAddress.EMPTY_ADDRESS);
-            } else {
-                localResourceAddresses = new ArrayList<>();
-                getAllActualResourceAddresses(context, operation, localResourceAddresses, PathAddress.EMPTY_ADDRESS, opAddr, accessControlContext);
-            }
-        } else {
-            localResourceAddresses = new ArrayList<>();
-            for (PathAddress pathAddress : accessControlContext.parentAddresses) {
-                getAllActualResourceAddresses(context, operation, localResourceAddresses, pathAddress, opAddr, accessControlContext);
-            }
-        }
-        return localResourceAddresses;
-
-    }
-
-    private void getAllActualResourceAddresses(OperationContext context, ModelNode operation, List<PathAddress> addresses, PathAddress currentAddress, PathAddress opAddress, ReadResourceDescriptionAccessControlContext accessControlContext) {
-        if (opAddress.size() == 0) {
-            return;
-        }
-
-        final int length = currentAddress.size();
-        final PathElement currentElement = opAddress.getElement(length);
-        if (currentElement.isWildcard()) {
-
-            Resource resource;
-            try {
-                resource = context.readResourceFromRoot(currentAddress);
-            } catch (UnauthorizedException e) {
-                //We could not read the resource, now check if that is due not to having access or read-config permissions
-                AuthorizationResponse response = context.authorizeResource(false);
-                if (response.getResourceResult(ActionEffect.ACCESS).getDecision() != Decision.PERMIT) {
-                    //We do not have access permissions
-                    return;
-                }
-                //We do not have read permissions, get the resource by other means
-                //TODO revisit this, since resource.getChildXXX() should probably need some authorization as well
-                resource = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
-                for (PathElement element : currentAddress) {
-                    resource = resource.getChild(element);
-                }
-            }
-
-            ImmutableManagementResourceRegistration directRegistration = context.getRootResourceRegistration().getSubModel(currentAddress);
-
-            Map<String, Set<String>> childAddresses = GlobalOperationHandlers.getChildAddresses(context,
-                                                                                    currentAddress,
-                                                                                    directRegistration,
-                                                                                    resource,
-                                                                                    currentElement.getKey());
-            Set<String> childNames = childAddresses.get(currentElement.getKey());
-            if (childNames != null) {
-                for (String name : childNames) {
-                    PathAddress address = currentAddress.append(PathElement.pathElement(currentElement.getKey(), name));
-                    if (addParentResource(context, addresses, address)) {
-                        if (address.size() == opAddress.size()) {
-                            addresses.add(address);
-                        } else {
-                            getAllActualResourceAddresses(context, operation, addresses, address, opAddress, accessControlContext);
-                        }
-                    }
-                }
-            }
-        } else {
-            PathAddress address = currentAddress.append(currentElement);
-            if (addParentResource(context, addresses, address)) {
-                if (address.size() == opAddress.size()) {
-                    addresses.add(address);
-                } else {
-                    getAllActualResourceAddresses(context, operation, addresses, address, opAddress, accessControlContext);
-                }
-            }
-        }
-    }
-
-    private void checkResourceAccess(final Map<PathAddress, ModelNode> accessControlResults, final OperationContext context,
-            final ModelNode nodeDescription, final List<PathAddress> localResourceAddresses, Map<String, ModelNode> operations) {
-        for (final PathAddress address : localResourceAddresses) {
-            final ModelNode op = Util.createOperation(CHECK_RESOURCE_ACCESS, address);
-            final ModelNode response = new ModelNode();
-            context.addStep(response, op, new CheckResourceAccessHandler(address, accessControlResults, nodeDescription, operations), OperationContext.Stage.MODEL, true);
-        }
-    }
-
-    private boolean addParentResource(OperationContext context, List<PathAddress> addresses, PathAddress address) {
-        try {
-            context.readResourceFromRoot(address);
-        } catch (NoSuchResourceException nsre) {
-            // Don't include the result
-            return false;
-        } catch (UnauthorizedException ue) {
-            //We are not allowed to read it, but still we know it exists
-        }
-        return true;
-    }
-
-
-
     /**
      *
      * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -453,14 +349,12 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             .setPrivateEntry()
             .build();
 
-        private final PathAddress address;
-        private final Map<PathAddress, ModelNode> accessControlResults;
+        private final ModelNode accessControlResult;
         private final ModelNode nodeDescription;
         private final Map<String, ModelNode> operations;
 
-        CheckResourceAccessHandler(PathAddress address, Map<PathAddress, ModelNode> accessControlResults, ModelNode nodeDescription, Map<String, ModelNode> operations) {
-            this.address = address;
-            this.accessControlResults = accessControlResults;
+        CheckResourceAccessHandler(ModelNode accessControlResult, ModelNode nodeDescription, Map<String, ModelNode> operations) {
+            this.accessControlResult = accessControlResult;
             this.nodeDescription = nodeDescription;
             this.operations = operations;
         }
@@ -470,13 +364,9 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             ModelNode result = new ModelNode();
             AuthorizationResponse authResp = context.authorizeResource(true);
             if (authResp.getResourceResult(ActionEffect.ACCESS).getDecision() == Decision.DENY) {
-                //We are not allowed to see the resource, delete it from the list of local resource addresses,
-                //so that if this is a recursive invocation the children don't need to include this in the list of
-                //parents
-                accessControlResults.remove(address);
+                //We are not allowed to see the resource, so we don't set the accessControlResult, meaning that the ReadResourceAssemblyHandler will ignore it for this address
             } else {
                 addResourceAuthorizationResults(result, authResp);
-                accessControlResults.put(address, result);
 
                 ModelNode attributes = new ModelNode();
                 attributes.setEmptyObject();
@@ -513,8 +403,9 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                         result.get(ModelDescriptionConstants.OPERATIONS).set(ops);
                     }
                 }
+                accessControlResult.set(result);
             }
-            context.getResult().set(result);
+            //context.getResult().set(result);
             context.stepCompleted();
         }
 
@@ -559,7 +450,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         private final ModelNode nodeDescription;
         private final Map<String, ModelNode> operations;
         private final Map<PathElement, ModelNode> childResources;
-        private final Map<PathAddress, ModelNode> localResourceAccessControl;
+        private final ReadResourceDescriptionAccessControlContext accessControlContext;
 
         /**
          * Creates a ReadResourceAssemblyHandler that will assemble the response using the contents
@@ -572,11 +463,11 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
          *                        value is the full read-resource response. Will not be {@code null}
          */
         private ReadResourceDescriptionAssemblyHandler(final ModelNode nodeDescription, final Map<String, ModelNode> operations,
-                final Map<PathElement, ModelNode> childResources, Map<PathAddress, ModelNode> localResourceAccessControl) {
+                final Map<PathElement, ModelNode> childResources, ReadResourceDescriptionAccessControlContext accessControlContext) {
             this.nodeDescription = nodeDescription;
             this.operations = operations;
             this.childResources = childResources;
-            this.localResourceAccessControl = localResourceAccessControl;
+            this.accessControlContext = accessControlContext;
         }
 
         @Override
@@ -598,11 +489,30 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                 }
             }
 
-            if (localResourceAccessControl != null) {
+            if (accessControlContext.defaultWildcardAccessControl != null && accessControlContext.localResourceAccessControlResults != null) {
                 ModelNode accessControl = new ModelNode();
                 accessControl.setEmptyObject();
-                for (Map.Entry<PathAddress, ModelNode> entry : localResourceAccessControl.entrySet()) {
-                    accessControl.get(entry.getKey().toModelNode().asString()).set(entry.getValue());
+
+                ModelNode defaultControl;
+                if (accessControlContext.defaultWildcardAccessControl != null) {
+                    accessControl.get(accessControlContext.opAddress.toModelNode().asString()).set(accessControlContext.defaultWildcardAccessControl);
+                    defaultControl = accessControlContext.defaultWildcardAccessControl;
+                } else {
+                    defaultControl = new ModelNode();
+                }
+
+
+                if (accessControlContext.localResourceAccessControlResults != null) {
+                    for (Map.Entry<PathAddress, ModelNode> entry : accessControlContext.localResourceAccessControlResults.entrySet()) {
+                        if (!entry.getValue().isDefined()) {
+                            //If access was denied CheckResourceAccessHandler will leave this as undefined
+                            continue;
+                        }
+                        if (!entry.getValue().equals(defaultControl)) {
+                            //This has different values to the default due to vault expressions being used for attribute values
+                            accessControl.get(entry.getKey().toModelNode().asString()).set(entry.getValue());
+                        }
+                    }
                 }
                 nodeDescription.get(ACCESS_CONTROL.getName()).set(accessControl);
             }
@@ -612,16 +522,125 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         }
     }
 
-    private final class ReadResourceDescriptionAccessControlContext {
+    static final class ReadResourceDescriptionAccessControlContext {
+        private final PathAddress opAddress;
         private final List<PathAddress> parentAddresses;
+        private List<PathAddress> localResourceAddresses = null;
+        private ModelNode defaultWildcardAccessControl;
+        private Map<PathAddress, ModelNode> localResourceAccessControlResults = new HashMap<PathAddress, ModelNode>();
 
-        ReadResourceDescriptionAccessControlContext(List<PathAddress> parentAddresses) {
-            this.parentAddresses = parentAddresses;
+        ReadResourceDescriptionAccessControlContext(PathAddress opAddress, ReadResourceDescriptionAccessControlContext parent) {
+            this.opAddress = opAddress;
+            this.parentAddresses = parent != null ? parent.parentAddresses : null;
         }
 
-        ReadResourceDescriptionAccessControlContext(List<PathAddress> parentAddresses,
-                ReadResourceDescriptionAccessControlContext parent) {
-            this.parentAddresses = parentAddresses;
+        private void initLocalResourceAddresses(OperationContext context, ModelNode operation){
+            localResourceAddresses = getLocalResourceAddresses(context, operation);
+        }
+
+        private List<PathAddress> getLocalResourceAddresses(OperationContext context, ModelNode operation){
+            List<PathAddress> localResourceAddresses = null;
+            PathAddress opAddr = PathAddress.pathAddress(operation.require(OP_ADDR));
+            if (parentAddresses == null) {
+                if (opAddr.size() == 0) {
+                    return Collections.singletonList(PathAddress.EMPTY_ADDRESS);
+                } else {
+                    localResourceAddresses = new ArrayList<>();
+                    getAllActualResourceAddresses(context, operation, localResourceAddresses, PathAddress.EMPTY_ADDRESS, opAddr);
+                }
+            } else {
+                localResourceAddresses = new ArrayList<>();
+                for (PathAddress pathAddress : parentAddresses) {
+                    getAllActualResourceAddresses(context, operation, localResourceAddresses, pathAddress, opAddr);
+                }
+            }
+            return localResourceAddresses;
+
+        }
+
+        private void getAllActualResourceAddresses(OperationContext context, ModelNode operation, List<PathAddress> addresses, PathAddress currentAddress, PathAddress opAddress) {
+            if (opAddress.size() == 0) {
+                return;
+            }
+
+            final int length = currentAddress.size();
+            final PathElement currentElement = opAddress.getElement(length);
+            if (currentElement.isWildcard()) {
+
+                Resource resource;
+                try {
+                    resource = context.readResourceFromRoot(currentAddress);
+                } catch (UnauthorizedException e) {
+                    //We could not read the resource, now check if that is due not to having access or read-config permissions
+                    AuthorizationResponse response = context.authorizeResource(false);
+                    if (response.getResourceResult(ActionEffect.ACCESS).getDecision() != Decision.PERMIT) {
+                        //We do not have access permissions
+                        return;
+                    }
+                    //We do not have read permissions, get the resource by other means
+                    //TODO revisit this, since resource.getChildXXX() should probably need some authorization as well
+                    resource = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
+                    for (PathElement element : currentAddress) {
+                        resource = resource.getChild(element);
+                    }
+                }
+
+                ImmutableManagementResourceRegistration directRegistration = context.getRootResourceRegistration().getSubModel(currentAddress);
+
+                Map<String, Set<String>> childAddresses = GlobalOperationHandlers.getChildAddresses(context,
+                                                                                        currentAddress,
+                                                                                        directRegistration,
+                                                                                        resource,
+                                                                                        currentElement.getKey());
+                Set<String> childNames = childAddresses.get(currentElement.getKey());
+                if (childNames != null) {
+                    for (String name : childNames) {
+                        PathAddress address = currentAddress.append(PathElement.pathElement(currentElement.getKey(), name));
+                        if (addParentResource(context, addresses, address)) {
+                            if (address.size() == opAddress.size()) {
+                                addresses.add(address);
+                            } else {
+                                getAllActualResourceAddresses(context, operation, addresses, address, opAddress);
+                            }
+                        }
+                    }
+                }
+            } else {
+                PathAddress address = currentAddress.append(currentElement);
+                if (addParentResource(context, addresses, address)) {
+                    if (address.size() == opAddress.size()) {
+                        addresses.add(address);
+                    } else {
+                        getAllActualResourceAddresses(context, operation, addresses, address, opAddress);
+                    }
+                }
+            }
+        }
+
+        private boolean addParentResource(OperationContext context, List<PathAddress> addresses, PathAddress address) {
+            try {
+                context.readResourceFromRoot(address);
+            } catch (NoSuchResourceException nsre) {
+                // Don't include the result
+                return false;
+            } catch (UnauthorizedException ue) {
+                //We are not allowed to read it, but still we know it exists
+            }
+            return true;
+        }
+
+        void checkResourceAccess(final OperationContext context, final ModelNode nodeDescription, Map<String, ModelNode> operations) {
+            if (opAddress.size() == 0 || opAddress.getLastElement().isWildcard()) {
+                final ModelNode op = Util.createOperation(CHECK_RESOURCE_ACCESS, opAddress);
+                defaultWildcardAccessControl = new ModelNode();
+                context.addStep(op, new CheckResourceAccessHandler(defaultWildcardAccessControl, nodeDescription, operations), OperationContext.Stage.MODEL, true);
+            }
+            for (final PathAddress address : localResourceAddresses) {
+                final ModelNode op = Util.createOperation(CHECK_RESOURCE_ACCESS, address);
+                final ModelNode resultHolder = new ModelNode();
+                localResourceAccessControlResults.put(address, resultHolder);
+                context.addStep(op, new CheckResourceAccessHandler(resultHolder, nodeDescription, operations), OperationContext.Stage.MODEL, true);
+            }
         }
     }
 
