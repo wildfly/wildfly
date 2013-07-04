@@ -206,6 +206,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .setSetupActions(setupActions)
                 .setOverlays(warMetaData.getOverlays())
                 .setExpressionFactoryWrappers(deploymentUnit.getAttachmentList(ExpressionFactoryWrapper.ATTACHMENT_KEY))
+                .setPredicatedHandlers(deploymentUnit.getAttachment(UndertowHandlersDeploymentProcessor.PREDICATED_HANDLERS))
                 .createUndertowDeploymentInfoService();
 
         final ServiceName deploymentInfoServiceName = deploymentServiceName.append(UndertowDeploymentInfoService.SERVICE_NAME);
