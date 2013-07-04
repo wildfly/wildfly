@@ -94,6 +94,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     private static final PathAddress ONE_A_TWO_B_ADDR = ONE_A_ADDR.append(TWO_B);
     private static final PathAddress ONE_B_TWO_A_ADDR = ONE_B_ADDR.append(TWO_A);
     private static final PathAddress ONE_B_TWO_B_ADDR = ONE_B_ADDR.append(TWO_B);
+    private static final PathAddress ONE_TWO_ADDR = PathAddress.pathAddress(ONE, TWO);
 
 
     private static final String ATTR_ACCESS_READ_WRITE = "access-read-write";
@@ -128,6 +129,36 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
 
     @Test
+    public void testNonRecursiveReadRootResourceDefinitionNoSensitivityAsMonitor() throws Exception {
+        registerOneChildRootResource();
+        ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MONITOR, false);
+        op.get(RECURSIVE).set(false);
+        ModelNode result = executeForResult(op);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
+        checkResourcePermissions(map, true, false, true, false);
+    }
+
+    @Test
+    public void testNonRecursiveReadRootResourceDefinitionNoSensitivityAsMaintainer() throws Exception {
+        registerOneChildRootResource();
+        ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MAINTAINER, false);
+        op.get(RECURSIVE).set(false);
+        ModelNode result = executeForResult(op);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
+        checkResourcePermissions(map, true, true, true, true);
+    }
+
+    @Test
+    public void testNonRecursiveReadRootResourceDefinitionNoSensitivityAsAdministrator() throws Exception {
+        registerOneChildRootResource();
+        ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.ADMINISTRATOR, false);
+        op.get(RECURSIVE).set(false);
+        ModelNode result = executeForResult(op);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
+        checkResourcePermissions(map, true, true, true, true);
+    }
+
+    @Test
     public void testRecursiveReadResourceDefinitionNoSensitivityAsMonitor() throws Exception {
         registerOneChildRootResource();
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MONITOR, false);
@@ -135,7 +166,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, false, true, false);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc, ONE_A_ADDR, ONE_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_ADDR);
         checkResourcePermissions(map, true, false, true, false);
     }
 
@@ -147,7 +178,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, true, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc, ONE_A_ADDR, ONE_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_ADDR);
         checkResourcePermissions(map, true, true, true, true);
     }
     @Test
@@ -158,7 +189,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, true, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc, ONE_A_ADDR, ONE_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_ADDR);
         checkResourcePermissions(map, true, true, true, true);
     }
 
@@ -167,7 +198,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerOneChildRootResource();
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_ADDR);
         checkResourcePermissions(map, true, false, true, false);
     }
 
@@ -176,7 +207,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerOneChildRootResource();
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_ADDR);
         checkResourcePermissions(map, true, true, true, true);
     }
 
@@ -185,7 +216,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerOneChildRootResource();
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_ADDR);
         checkResourcePermissions(map, true, true, true, true);
     }
 
@@ -219,7 +250,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, true, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc, ONE_A_ADDR, ONE_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_ADDR);
         checkResourcePermissions(map, true, true, true, true);
     }
 
@@ -244,7 +275,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionAccessReadWriteSensitivityAsAdministrator", true, true, true));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_ADDR);
         checkResourcePermissions(map, true, true, true, true);
     }
 
@@ -256,7 +287,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, false, true, false);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc, ONE_A_ADDR, ONE_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_ADDR);
         //Reads are sensitive so we cannot read them as the default says we can
         checkResourcePermissions(map, false, false, false, false);
     }
@@ -269,7 +300,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, true, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc, ONE_A_ADDR, ONE_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_ADDR);
         //Reads and writes are sensitive so we cannot read or write them as the default says we can
         checkResourcePermissions(map, false, false, false, false);
     }
@@ -282,7 +313,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, true, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc, ONE_A_ADDR, ONE_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_ADDR);
         checkResourcePermissions(map, true, true, true, true);
     }
 
@@ -291,7 +322,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionReadWriteSensitivityAsMonitor", false, true, true));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_ADDR);
         //Reads are sensitive so we cannot read them as the default says we can
         checkResourcePermissions(map, false, false, false, false);
     }
@@ -301,7 +332,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionReadWriteSensitivityAsMaintainer", false, true, true));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_ADDR);
         //Reads and writes are sensitive so we cannot read or write them as the default says we can
         checkResourcePermissions(map, false, false, false, false);
     }
@@ -311,7 +342,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionReadWriteSensitivityAsAdministrator", false, true, true));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_ADDR);
         checkResourcePermissions(map, true, true, true, true);
     }
 
@@ -323,7 +354,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, false, true, false);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc, ONE_A_ADDR, ONE_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_ADDR);
         checkResourcePermissions(map, true, false, true, false);
 
     }
@@ -336,7 +367,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, true, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc, ONE_A_ADDR, ONE_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_ADDR);
         //Writes are sensitive so we cannot write them as the default says we can
         checkResourcePermissions(map, true, false, true, false);
 
@@ -350,7 +381,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, true, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc, ONE_A_ADDR, ONE_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_ADDR);
         checkResourcePermissions(map, true, true, true, true);
     }
 
@@ -359,7 +390,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionWriteSensitivityAsMonitor", false, false, true));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_ADDR);
         //Reads are sensitive so we cannot read them as the default says we can
         checkResourcePermissions(map, true, false, true, false);
     }
@@ -369,7 +400,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionWriteSensitivityAsMaintainer", false, false, true));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_ADDR);
         //Writes are sensitive so we cannot write them as the default says we can
         checkResourcePermissions(map, true, false, true, false);
     }
@@ -379,7 +410,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionWriteSensitivityAsAdministrator", false, false, true));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_ADDR);
         checkResourcePermissions(map, true, true, true, true);
     }
 
@@ -392,7 +423,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, false, true, false);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc, ONE_A_ADDR, ONE_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_ADDR);
         //Reads are sensitive so we cannot read them as the default says we can
         checkResourcePermissions(map, false, false, false, false);
     }
@@ -406,7 +437,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, true, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc, ONE_A_ADDR, ONE_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_ADDR);
         //Reads are sensitive so we cannot read them as the default says we can
         checkResourcePermissions(map, false, true, false, true);
     }
@@ -420,7 +451,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, true, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc, ONE_A_ADDR, ONE_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_ADDR);
         checkResourcePermissions(map, true, true, true, true);
     }
 
@@ -430,7 +461,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionReadSensitivityAsMonitor", false, true, false));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_ADDR);
         //Reads are sensitive so we cannot read them as the default says we can
         checkResourcePermissions(map, false, false, false, false);
     }
@@ -441,7 +472,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionReadSensitivityAsMaintainer", false, true, false));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_ADDR);
         //Reads are sensitive so we cannot read them as the default says we can
         checkResourcePermissions(map, false, true, false, true);
     }
@@ -452,7 +483,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionReadSensitivityAsAdministrator", false, true, false));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_ADDR);
         checkResourcePermissions(map, true, true, true, true);
     }
 
@@ -474,7 +505,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MONITOR, false);
         ModelNode result = executeForResult(op);
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(getChildDescription(result, ONE), ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(getChildDescription(result, ONE), ONE_ADDR);
         Map<String, ModelNode> attributes = checkAttributeAccessControlNames(map, ATTR_READ_WRITE, ATTR_WRITE, ATTR_READ, ATTR_NONE);
         checkAttributePermissions(attributes, ATTR_READ_WRITE, false, false, null, null);
         checkAttributePermissions(attributes, ATTR_WRITE, true, false, null, null);
@@ -488,7 +519,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MAINTAINER, false);
         ModelNode result = executeForResult(op);
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(getChildDescription(result, ONE), ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(getChildDescription(result, ONE), ONE_ADDR);
         Map<String, ModelNode> attributes = checkAttributeAccessControlNames(map, ATTR_READ_WRITE, ATTR_WRITE, ATTR_READ, ATTR_NONE);
         checkAttributePermissions(attributes, ATTR_READ_WRITE, false, false, null, null);
         checkAttributePermissions(attributes, ATTR_WRITE, true, false, null, null);
@@ -502,7 +533,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.ADMINISTRATOR, false);
         ModelNode result = executeForResult(op);
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(getChildDescription(result, ONE), ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(getChildDescription(result, ONE), ONE_ADDR);
         Map<String, ModelNode> attributes = checkAttributeAccessControlNames(map, ATTR_ACCESS_READ_WRITE, ATTR_READ_WRITE, ATTR_WRITE, ATTR_READ, ATTR_NONE);
         checkAttributePermissions(attributes, ATTR_ACCESS_READ_WRITE, true, true, null, null);
         checkAttributePermissions(attributes, ATTR_READ_WRITE, true, true, null, null);
@@ -536,7 +567,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MONITOR, true);
         ModelNode result = executeForResult(op);
         //TODO check root resource ops
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(getChildDescription(result, ONE), ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(getChildDescription(result, ONE), ONE_ADDR);
         Map<String, Boolean> operations = checkOperationAccessControlNames(map, ADD, REMOVE,
                 OP_CONFIG_RW_READ_WRITE, OP_CONFIG_RW_WRITE, OP_CONFIG_RW_READ, OP_CONFIG_RW_NONE,
                 OP_RUNTIME_RW_READ_WRITE, OP_RUNTIME_RW_WRITE, OP_RUNTIME_RW_READ, OP_RUNTIME_RW_NONE,
@@ -570,7 +601,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MAINTAINER, true);
         ModelNode result = executeForResult(op);
         //TODO check root resource ops
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(getChildDescription(result, ONE), ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(getChildDescription(result, ONE), ONE_ADDR);
         Map<String, Boolean> operations = checkOperationAccessControlNames(map, ADD, REMOVE,
                 OP_CONFIG_RW_READ_WRITE, OP_CONFIG_RW_WRITE, OP_CONFIG_RW_READ, OP_CONFIG_RW_NONE,
                 OP_RUNTIME_RW_READ_WRITE, OP_RUNTIME_RW_WRITE, OP_RUNTIME_RW_READ, OP_RUNTIME_RW_NONE,
@@ -604,7 +635,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.ADMINISTRATOR, true);
         ModelNode result = executeForResult(op);
         //TODO check root resource ops
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(getChildDescription(result, ONE), ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(getChildDescription(result, ONE), ONE_ADDR);
         Map<String, Boolean> operations = checkOperationAccessControlNames(map, ADD, REMOVE,
                 OP_CONFIG_RW_ACCESS_READ_WRITE, OP_CONFIG_RW_READ_WRITE, OP_CONFIG_RW_WRITE, OP_CONFIG_RW_READ, OP_CONFIG_RW_NONE,
                 OP_RUNTIME_RW_ACCESS_READ_WRITE, OP_RUNTIME_RW_READ_WRITE, OP_RUNTIME_RW_WRITE, OP_RUNTIME_RW_READ, OP_RUNTIME_RW_NONE,
@@ -720,13 +751,12 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, true, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc, ONE_A_ADDR, ONE_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_ADDR);
         checkResourcePermissions(map, true, true, true, true);
         childDesc = getChildDescription(childDesc, TWO);
-        map = getResourceAccessControl(childDesc, ONE_A_TWO_A_ADDR, ONE_A_TWO_B_ADDR, ONE_B_TWO_A_ADDR, ONE_B_TWO_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_TWO_ADDR);
         checkResourcePermissions(map, true, true, true, true);
     }
-
 
     @Test
     public void testDeepDirectLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsMonitor() throws Exception {
@@ -759,10 +789,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_ADDR);
         checkResourcePermissions(map, true, true, true, true);
         ModelNode childDesc = getChildDescription(result, TWO);
-        map = getResourceAccessControl(childDesc, ONE_A_TWO_A_ADDR, ONE_A_TWO_B_ADDR, ONE_B_TWO_A_ADDR, ONE_B_TWO_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_TWO_ADDR);
         checkResourcePermissions(map, true, true, true, true);
     }
 
@@ -793,7 +823,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
         ModelNode op = createReadResourceDescriptionOperation(TWO_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_TWO_A_ADDR, ONE_A_TWO_B_ADDR, ONE_B_TWO_A_ADDR, ONE_B_TWO_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_TWO_ADDR);
         checkResourcePermissions(map, true, true, true, true);
     }
 
@@ -807,10 +837,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, false, true, false);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc, ONE_A_ADDR, ONE_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_ADDR);
         checkResourcePermissions(map, false, false, false, false);
         childDesc = getChildDescription(childDesc, TWO);
-        map = getResourceAccessControl(childDesc, ONE_A_TWO_A_ADDR, ONE_A_TWO_B_ADDR, ONE_B_TWO_A_ADDR, ONE_B_TWO_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_TWO_ADDR);
         checkResourcePermissions(map, false, false, false, false);
     }
 
@@ -824,10 +854,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, true, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc, ONE_A_ADDR, ONE_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_ADDR);
         checkResourcePermissions(map, false, false, false, false);
         childDesc = getChildDescription(childDesc, TWO);
-        map = getResourceAccessControl(childDesc, ONE_A_TWO_A_ADDR, ONE_A_TWO_B_ADDR, ONE_B_TWO_A_ADDR, ONE_B_TWO_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_TWO_ADDR);
         checkResourcePermissions(map, false, false, false, false);
     }
 
@@ -841,10 +871,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, true, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc, ONE_A_ADDR, ONE_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_ADDR);
         checkResourcePermissions(map, true, true, true, true);
         childDesc = getChildDescription(childDesc, TWO);
-        map = getResourceAccessControl(childDesc, ONE_A_TWO_A_ADDR, ONE_A_TWO_B_ADDR, ONE_B_TWO_A_ADDR, ONE_B_TWO_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_TWO_ADDR);
         checkResourcePermissions(map, true, true, true, true);
     }
 
@@ -854,10 +884,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerDeepResource(constraint);
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_ADDR);
         checkResourcePermissions(map, false, false, false, false);
         ModelNode childDesc = getChildDescription(result, TWO);
-        map = getResourceAccessControl(childDesc, ONE_A_TWO_A_ADDR, ONE_A_TWO_B_ADDR, ONE_B_TWO_A_ADDR, ONE_B_TWO_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_TWO_ADDR);
         checkResourcePermissions(map, false, false, false, false);
     }
 
@@ -867,10 +897,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerDeepResource(constraint);
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_ADDR);
         checkResourcePermissions(map, false, false, false, false);
         ModelNode childDesc = getChildDescription(result, TWO);
-        map = getResourceAccessControl(childDesc, ONE_A_TWO_A_ADDR, ONE_A_TWO_B_ADDR, ONE_B_TWO_A_ADDR, ONE_B_TWO_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_TWO_ADDR);
         checkResourcePermissions(map, false, false, false, false);
     }
 
@@ -880,10 +910,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerDeepResource(constraint);
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_ADDR, ONE_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_ADDR);
         checkResourcePermissions(map, true, true, true, true);
         ModelNode childDesc = getChildDescription(result, TWO);
-        map = getResourceAccessControl(childDesc, ONE_A_TWO_A_ADDR, ONE_A_TWO_B_ADDR, ONE_B_TWO_A_ADDR, ONE_B_TWO_B_ADDR);
+        map = getResourceAccessControl(childDesc, ONE_TWO_ADDR);
         checkResourcePermissions(map, true, true, true, true);
     }
 
@@ -893,7 +923,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerDeepResource(constraint);
         ModelNode op = createReadResourceDescriptionOperation(TWO_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_TWO_A_ADDR, ONE_A_TWO_B_ADDR, ONE_B_TWO_A_ADDR, ONE_B_TWO_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_TWO_ADDR);
         checkResourcePermissions(map, false, false, false, false);
     }
 
@@ -903,7 +933,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerDeepResource(constraint);
         ModelNode op = createReadResourceDescriptionOperation(TWO_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_TWO_A_ADDR, ONE_A_TWO_B_ADDR, ONE_B_TWO_A_ADDR, ONE_B_TWO_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_TWO_ADDR);
         checkResourcePermissions(map, false, false, false, false);
     }
 
@@ -913,7 +943,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerDeepResource(constraint);
         ModelNode op = createReadResourceDescriptionOperation(TWO_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_A_TWO_A_ADDR, ONE_A_TWO_B_ADDR, ONE_B_TWO_A_ADDR, ONE_B_TWO_B_ADDR);
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(result, ONE_TWO_ADDR);
         checkResourcePermissions(map, true, true, true, true);
     }
 
@@ -932,7 +962,11 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Assert.assertTrue(description.hasDefined(ACCESS_CONTROL));
         Map<PathAddress, ModelNode> map = new HashMap<PathAddress, ModelNode>();
         for (Property prop : description.get(ACCESS_CONTROL).asPropertyList()) {
-            map.put(PathAddress.pathAddress(ModelNode.fromString(prop.getName())), prop.getValue());
+            if (prop.getValue().isDefined()) {
+                //If it was not defined it means access was denied
+                //TODO a better way to handle this case
+                map.put(PathAddress.pathAddress(ModelNode.fromString(prop.getName())), prop.getValue());
+            }
         }
         List<PathAddress> expected = Arrays.asList(addresses);
         Assert.assertTrue(map.keySet().containsAll(expected));

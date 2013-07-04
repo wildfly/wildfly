@@ -22,14 +22,17 @@
 package org.jboss.as.domain.controller.operations;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
@@ -189,8 +192,19 @@ public abstract class AbstractOperationTestCase {
         }
 
         public void addStep(ModelNode operation, OperationStepHandler step, OperationContext.Stage stage) throws IllegalArgumentException {
+            addStep(operation, step, stage, false);
+        }
+        public void addStep(ModelNode operation, OperationStepHandler step, OperationContext.Stage stage, boolean addFirst) throws IllegalArgumentException {
             final PathAddress opAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
             if (!expectedSteps.contains(opAddress)) {
+                if (opAddress.size() == 2){
+                    //Ignore the add/removing running server add step done by ServerAddHandler and ServerRemoveHandler
+                    if (opAddress.getElement(0).getKey().equals(HOST) && opAddress.getElement(1).getKey().equals(SERVER) &&
+                            (operation.get(OP).asString().equals(ADD) || operation.get(OP).asString().equals(REMOVE))){
+                        return;
+                    }
+
+                }
                 fail("Should not have added step for: " + opAddress);
             }
             expectedSteps.remove(opAddress);
