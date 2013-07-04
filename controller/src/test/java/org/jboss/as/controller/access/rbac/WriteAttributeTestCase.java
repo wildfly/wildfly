@@ -23,8 +23,10 @@
 package org.jboss.as.controller.access.rbac;
 
 import org.jboss.as.controller.*;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
@@ -52,6 +54,7 @@ import static org.junit.Assert.assertEquals;
 public class WriteAttributeTestCase extends AbstractRbacTestBase {
     public static final String UNCONSTRAINED_RESOURCE = "unconstrained-resource";
     public static final String SENSITIVE_CONSTRAINED_RESOURCE = "sensitive-constrained-resource";
+    public static final String APPLICATION_CONSTRAINED_RESOURCE = "application-constrained-resource";
 
     public static final String UNCONSTRAINED_READWRITE_ATTRIBUTE = "unconstrained-readwrite-attribute";
     public static final String OLD_VALUE_OF_UNCONSTRAINED_READWRITE_ATTRIBUTE = "old value of unconstrained-readwrite-attribute";
@@ -61,6 +64,10 @@ public class WriteAttributeTestCase extends AbstractRbacTestBase {
     public static final String OLD_VALUE_OF_SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE = "old value of sensitive-constrained-readwrite-attribute";
     public static final String NEW_VALUE_OF_SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE = "new value of sensitive-constrained-readwrite-attribute";
 
+    public static final String APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE = "application-constrained-readwrite-attribute";
+    public static final String OLD_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE = "old value of application-constrained-readwrite-attribute";
+    public static final String NEW_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE = "new value of application-constrained-readwrite-attribute";
+
     public static final String FOO = "foo";
 
     @Before
@@ -69,6 +76,9 @@ public class WriteAttributeTestCase extends AbstractRbacTestBase {
         executeWithRoles(operation, StandardRole.SUPERUSER);
 
         operation = Util.createOperation(ADD, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO));
+        executeWithRoles(operation, StandardRole.SUPERUSER);
+
+        operation = Util.createOperation(ADD, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO));
         executeWithRoles(operation, StandardRole.SUPERUSER);
     }
 
@@ -85,6 +95,54 @@ public class WriteAttributeTestCase extends AbstractRbacTestBase {
     @Test
     public void testMaintainer() {
         test(true, false, StandardRole.MAINTAINER);
+    }
+
+    @Test
+    public void testDeployer() {
+        // would be hard to reuse test(..., StandardRole.DEPLOYER)
+
+        StandardRole role = StandardRole.DEPLOYER;
+
+        ResultExpectation readExpectation = ResultExpectation.NO_ACCESS;
+        ResultExpectation writeExpectation = ResultExpectation.NO_ACCESS;
+
+        testOperation(readExpectation, writeExpectation, UNCONSTRAINED_RESOURCE, UNCONSTRAINED_READWRITE_ATTRIBUTE,
+                OLD_VALUE_OF_UNCONSTRAINED_READWRITE_ATTRIBUTE,
+                NEW_VALUE_OF_UNCONSTRAINED_READWRITE_ATTRIBUTE, role);
+        testOperation(readExpectation, writeExpectation, UNCONSTRAINED_RESOURCE, SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE,
+                OLD_VALUE_OF_SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE,
+                NEW_VALUE_OF_SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE, role);
+        testOperation(readExpectation, writeExpectation, UNCONSTRAINED_RESOURCE, APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE,
+                OLD_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE,
+                NEW_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE, role);
+
+        testOperation(readExpectation, writeExpectation, SENSITIVE_CONSTRAINED_RESOURCE, UNCONSTRAINED_READWRITE_ATTRIBUTE,
+                OLD_VALUE_OF_UNCONSTRAINED_READWRITE_ATTRIBUTE,
+                NEW_VALUE_OF_UNCONSTRAINED_READWRITE_ATTRIBUTE, role);
+        testOperation(readExpectation, writeExpectation, SENSITIVE_CONSTRAINED_RESOURCE, SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE,
+                OLD_VALUE_OF_SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE,
+                NEW_VALUE_OF_SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE, role);
+        testOperation(readExpectation, writeExpectation, SENSITIVE_CONSTRAINED_RESOURCE, APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE,
+                OLD_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE,
+                NEW_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE, role);
+
+        readExpectation = ResultExpectation.PERMITTED;
+        writeExpectation = ResultExpectation.PERMITTED;
+        testOperation(readExpectation, writeExpectation, APPLICATION_CONSTRAINED_RESOURCE, UNCONSTRAINED_READWRITE_ATTRIBUTE,
+                OLD_VALUE_OF_UNCONSTRAINED_READWRITE_ATTRIBUTE,
+                NEW_VALUE_OF_UNCONSTRAINED_READWRITE_ATTRIBUTE, role);
+
+        readExpectation = ResultExpectation.DENIED;
+        writeExpectation = ResultExpectation.DENIED;
+        testOperation(readExpectation, writeExpectation, APPLICATION_CONSTRAINED_RESOURCE, SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE,
+                OLD_VALUE_OF_SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE,
+                NEW_VALUE_OF_SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE, role);
+
+        readExpectation = ResultExpectation.PERMITTED;
+        writeExpectation = ResultExpectation.PERMITTED;
+        testOperation(readExpectation, writeExpectation, APPLICATION_CONSTRAINED_RESOURCE, APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE,
+                OLD_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE,
+                NEW_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE, role);
     }
 
     @Test
@@ -169,6 +227,12 @@ public class WriteAttributeTestCase extends AbstractRbacTestBase {
                 OLD_VALUE_OF_SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE,
                 NEW_VALUE_OF_SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE, roles);
 
+        readExpectation = ResultExpectation.PERMITTED;
+        writeExpectation = canWrite ? ResultExpectation.PERMITTED : ResultExpectation.DENIED;
+        testOperation(readExpectation, writeExpectation, UNCONSTRAINED_RESOURCE, APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE,
+                OLD_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE,
+                NEW_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE, roles);
+
         readExpectation = canAccessSensitive ? ResultExpectation.PERMITTED : ResultExpectation.NO_ACCESS;
         writeExpectation = canAccessSensitive && canWrite ? ResultExpectation.PERMITTED : ResultExpectation.NO_ACCESS;
         if (canAccessSensitive && !canWrite) {
@@ -181,6 +245,27 @@ public class WriteAttributeTestCase extends AbstractRbacTestBase {
         testOperation(readExpectation, writeExpectation, SENSITIVE_CONSTRAINED_RESOURCE, SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE,
                 OLD_VALUE_OF_SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE,
                 NEW_VALUE_OF_SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE, roles);
+        testOperation(readExpectation, writeExpectation, SENSITIVE_CONSTRAINED_RESOURCE, APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE,
+                OLD_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE,
+                NEW_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE, roles);
+
+        readExpectation = ResultExpectation.PERMITTED;
+        writeExpectation = canWrite ? ResultExpectation.PERMITTED : ResultExpectation.DENIED;
+        testOperation(readExpectation, writeExpectation, APPLICATION_CONSTRAINED_RESOURCE, UNCONSTRAINED_READWRITE_ATTRIBUTE,
+                OLD_VALUE_OF_UNCONSTRAINED_READWRITE_ATTRIBUTE,
+                NEW_VALUE_OF_UNCONSTRAINED_READWRITE_ATTRIBUTE, roles);
+
+        readExpectation = canAccessSensitive ? ResultExpectation.PERMITTED : ResultExpectation.DENIED;
+        writeExpectation = canAccessSensitive && canWrite ? ResultExpectation.PERMITTED : ResultExpectation.DENIED;
+        testOperation(readExpectation, writeExpectation, APPLICATION_CONSTRAINED_RESOURCE, SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE,
+                OLD_VALUE_OF_SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE,
+                NEW_VALUE_OF_SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE, roles);
+
+        readExpectation = ResultExpectation.PERMITTED;
+        writeExpectation = canWrite ? ResultExpectation.PERMITTED : ResultExpectation.DENIED;
+        testOperation(readExpectation, writeExpectation, APPLICATION_CONSTRAINED_RESOURCE, APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE,
+                OLD_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE,
+                NEW_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE, roles);
     }
 
     // model definition
@@ -190,6 +275,11 @@ public class WriteAttributeTestCase extends AbstractRbacTestBase {
     private static final AccessConstraintDefinition MY_SENSITIVE_CONSTRAINT
             = new SensitiveTargetAccessConstraintDefinition(MY_SENSITIVITY);
 
+    private static final ApplicationTypeConfig MY_APPLICATION_TYPE
+            = new ApplicationTypeConfig("test", "my-application-type", true);
+    private static final AccessConstraintDefinition MY_APPLICATION_CONSTRAINT
+            = new ApplicationTypeAccessConstraintDefinition(MY_APPLICATION_TYPE);
+
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration registration) {
         GlobalOperationHandlers.registerGlobalOperations(registration, ProcessType.EMBEDDED_SERVER);
@@ -197,6 +287,8 @@ public class WriteAttributeTestCase extends AbstractRbacTestBase {
         registration.registerSubModel(new TestResourceDefinition(UNCONSTRAINED_RESOURCE));
         registration.registerSubModel(new TestResourceDefinition(SENSITIVE_CONSTRAINED_RESOURCE,
                 MY_SENSITIVE_CONSTRAINT));
+        registration.registerSubModel(new TestResourceDefinition(APPLICATION_CONSTRAINED_RESOURCE,
+                MY_APPLICATION_CONSTRAINT));
     }
 
     private static final class TestResourceDefinition extends SimpleResourceDefinition {
@@ -227,6 +319,14 @@ public class WriteAttributeTestCase extends AbstractRbacTestBase {
                     .create(SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE, ModelType.STRING)
                     .setDefaultValue(new ModelNode(OLD_VALUE_OF_SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE))
                     .setAccessConstraints(MY_SENSITIVE_CONSTRAINT)
+                    .build();
+            resourceRegistration.registerReadWriteAttribute(attributeDefinition, null,
+                    new ModelOnlyWriteAttributeHandler(attributeDefinition));
+
+            attributeDefinition = SimpleAttributeDefinitionBuilder
+                    .create(APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE, ModelType.STRING)
+                    .setDefaultValue(new ModelNode(OLD_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE))
+                    .setAccessConstraints(MY_APPLICATION_CONSTRAINT)
                     .build();
             resourceRegistration.registerReadWriteAttribute(attributeDefinition, null,
                     new ModelOnlyWriteAttributeHandler(attributeDefinition));

@@ -23,8 +23,10 @@
 package org.jboss.as.controller.access.rbac;
 
 import org.jboss.as.controller.*;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
@@ -54,14 +56,19 @@ public class ReadAttributeTestCase extends AbstractRbacTestBase {
     // ..._RESOURCE_2 -> own implementation of read attribute handler
     public static final String UNCONSTRAINED_RESOURCE_1 = "unconstrained-resource-1";
     public static final String SENSITIVE_CONSTRAINED_RESOURCE_1 = "sensitive-constrained-resource-1";
+    public static final String APPLICATION_CONSTRAINED_RESOURCE_1 = "application-constrained-resource-1";
     public static final String UNCONSTRAINED_RESOURCE_2 = "unconstrained-resource-2";
     public static final String SENSITIVE_CONSTRAINED_RESOURCE_2 = "sensitive-constrained-resource-2";
+    public static final String APPLICATION_CONSTRAINED_RESOURCE_2 = "application-constrained-resource-2";
 
     public static final String UNCONSTRAINED_READONLY_ATTRIBUTE = "unconstrained-readonly-attribute";
     public static final String VALUE_OF_UNCONSTRAINED_READONLY_ATTRIBUTE = "value of unconstrained-readonly-attribute";
 
     public static final String SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE = "sensitive-constrained-readonly-attribute";
     public static final String VALUE_OF_SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE = "value of sensitive-constrained-readonly-attribute";
+
+    public static final String APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE = "application-constrained-readonly-attribute";
+    public static final String VALUE_OF_APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE = "value of application-constrained-readonly-attribute";
 
     public static final String FOO = "foo";
 
@@ -70,10 +77,16 @@ public class ReadAttributeTestCase extends AbstractRbacTestBase {
         ModelNode operation = Util.createOperation(ADD, pathAddress(UNCONSTRAINED_RESOURCE_1, FOO));
         executeWithRoles(operation, StandardRole.SUPERUSER);
 
+        operation = Util.createOperation(ADD, pathAddress(APPLICATION_CONSTRAINED_RESOURCE_1, FOO));
+        executeWithRoles(operation, StandardRole.SUPERUSER);
+
         operation = Util.createOperation(ADD, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE_1, FOO));
         executeWithRoles(operation, StandardRole.SUPERUSER);
 
         operation = Util.createOperation(ADD, pathAddress(UNCONSTRAINED_RESOURCE_2, FOO));
+        executeWithRoles(operation, StandardRole.SUPERUSER);
+
+        operation = Util.createOperation(ADD, pathAddress(APPLICATION_CONSTRAINED_RESOURCE_2, FOO));
         executeWithRoles(operation, StandardRole.SUPERUSER);
 
         operation = Util.createOperation(ADD, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE_2, FOO));
@@ -93,6 +106,59 @@ public class ReadAttributeTestCase extends AbstractRbacTestBase {
     @Test
     public void testMaintainer() {
         test(false, StandardRole.MAINTAINER);
+    }
+
+    @Test
+    public void testDeployer() {
+        // would be hard to reuse test(..., StandardRole.DEPLOYER)
+
+        StandardRole role = StandardRole.DEPLOYER;
+
+        ResultExpectation readExpectation = ResultExpectation.NO_ACCESS;
+
+        testOperation(readExpectation, UNCONSTRAINED_RESOURCE_1,
+                UNCONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_UNCONSTRAINED_READONLY_ATTRIBUTE, role);
+        testOperation(readExpectation, UNCONSTRAINED_RESOURCE_2,
+                UNCONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_UNCONSTRAINED_READONLY_ATTRIBUTE, role);
+        testOperation(readExpectation, UNCONSTRAINED_RESOURCE_1,
+                SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, role);
+        testOperation(readExpectation, UNCONSTRAINED_RESOURCE_2,
+                SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, role);
+        testOperation(readExpectation, UNCONSTRAINED_RESOURCE_1,
+                APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, role);
+        testOperation(readExpectation, UNCONSTRAINED_RESOURCE_2,
+                APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, role);
+
+        testOperation(readExpectation, SENSITIVE_CONSTRAINED_RESOURCE_1,
+                UNCONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_UNCONSTRAINED_READONLY_ATTRIBUTE, role);
+        testOperation(readExpectation, SENSITIVE_CONSTRAINED_RESOURCE_2,
+                UNCONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_UNCONSTRAINED_READONLY_ATTRIBUTE, role);
+        testOperation(readExpectation, SENSITIVE_CONSTRAINED_RESOURCE_1,
+                SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, role);
+        testOperation(readExpectation, SENSITIVE_CONSTRAINED_RESOURCE_2,
+                SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, role);
+        testOperation(readExpectation, SENSITIVE_CONSTRAINED_RESOURCE_1,
+                APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, role);
+        testOperation(readExpectation, SENSITIVE_CONSTRAINED_RESOURCE_2,
+                APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, role);
+
+        readExpectation = ResultExpectation.PERMITTED;
+        testOperation(readExpectation, APPLICATION_CONSTRAINED_RESOURCE_1,
+                UNCONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_UNCONSTRAINED_READONLY_ATTRIBUTE, role);
+        testOperation(readExpectation, APPLICATION_CONSTRAINED_RESOURCE_2,
+                UNCONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_UNCONSTRAINED_READONLY_ATTRIBUTE, role);
+
+        readExpectation = ResultExpectation.DENIED;
+        testOperation(readExpectation, APPLICATION_CONSTRAINED_RESOURCE_1,
+                SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, role);
+        testOperation(readExpectation, APPLICATION_CONSTRAINED_RESOURCE_2,
+                SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, role);
+
+        readExpectation = ResultExpectation.PERMITTED;
+        testOperation(readExpectation, APPLICATION_CONSTRAINED_RESOURCE_1,
+                APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, role);
+        testOperation(readExpectation, APPLICATION_CONSTRAINED_RESOURCE_2,
+                APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, role);
     }
 
     @Test
@@ -148,6 +214,10 @@ public class ReadAttributeTestCase extends AbstractRbacTestBase {
                 SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, roles);
         testOperation(canAccessSensitive ? ResultExpectation.PERMITTED : ResultExpectation.DENIED, UNCONSTRAINED_RESOURCE_2,
                 SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, roles);
+        testOperation(ResultExpectation.PERMITTED, UNCONSTRAINED_RESOURCE_1,
+                APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, roles);
+        testOperation(ResultExpectation.PERMITTED, UNCONSTRAINED_RESOURCE_2,
+                APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, roles);
 
         testOperation(canAccessSensitive ? ResultExpectation.PERMITTED : ResultExpectation.NO_ACCESS, SENSITIVE_CONSTRAINED_RESOURCE_1,
                 UNCONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_UNCONSTRAINED_READONLY_ATTRIBUTE, roles);
@@ -157,6 +227,23 @@ public class ReadAttributeTestCase extends AbstractRbacTestBase {
                 SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, roles);
         testOperation(canAccessSensitive ? ResultExpectation.PERMITTED : ResultExpectation.NO_ACCESS, SENSITIVE_CONSTRAINED_RESOURCE_2,
                 SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, roles);
+        testOperation(canAccessSensitive ? ResultExpectation.PERMITTED : ResultExpectation.NO_ACCESS, SENSITIVE_CONSTRAINED_RESOURCE_1,
+                APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, roles);
+        testOperation(canAccessSensitive ? ResultExpectation.PERMITTED : ResultExpectation.NO_ACCESS, SENSITIVE_CONSTRAINED_RESOURCE_2,
+                APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, roles);
+
+        testOperation(ResultExpectation.PERMITTED, APPLICATION_CONSTRAINED_RESOURCE_1,
+                UNCONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_UNCONSTRAINED_READONLY_ATTRIBUTE, roles);
+        testOperation(ResultExpectation.PERMITTED, APPLICATION_CONSTRAINED_RESOURCE_2,
+                UNCONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_UNCONSTRAINED_READONLY_ATTRIBUTE, roles);
+        testOperation(canAccessSensitive ? ResultExpectation.PERMITTED : ResultExpectation.DENIED, APPLICATION_CONSTRAINED_RESOURCE_1,
+                SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, roles);
+        testOperation(canAccessSensitive ? ResultExpectation.PERMITTED : ResultExpectation.DENIED, APPLICATION_CONSTRAINED_RESOURCE_2,
+                SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, roles);
+        testOperation(ResultExpectation.PERMITTED, APPLICATION_CONSTRAINED_RESOURCE_1,
+                APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, roles);
+        testOperation(ResultExpectation.PERMITTED, APPLICATION_CONSTRAINED_RESOURCE_2,
+                APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, roles);
     }
 
     // model definition
@@ -166,6 +253,11 @@ public class ReadAttributeTestCase extends AbstractRbacTestBase {
     private static final AccessConstraintDefinition MY_SENSITIVE_CONSTRAINT
             = new SensitiveTargetAccessConstraintDefinition(MY_SENSITIVITY);
 
+    private static final ApplicationTypeConfig MY_APPLICATION_TYPE
+            = new ApplicationTypeConfig("test", "my-application-type", true);
+    private static final AccessConstraintDefinition MY_APPLICATION_CONSTRAINT
+            = new ApplicationTypeAccessConstraintDefinition(MY_APPLICATION_TYPE);
+
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration registration) {
         GlobalOperationHandlers.registerGlobalOperations(registration, ProcessType.EMBEDDED_SERVER);
@@ -173,9 +265,13 @@ public class ReadAttributeTestCase extends AbstractRbacTestBase {
         registration.registerSubModel(new TestResourceDefinition(UNCONSTRAINED_RESOURCE_1, true));
         registration.registerSubModel(new TestResourceDefinition(SENSITIVE_CONSTRAINED_RESOURCE_1, true,
                 MY_SENSITIVE_CONSTRAINT));
+        registration.registerSubModel(new TestResourceDefinition(APPLICATION_CONSTRAINED_RESOURCE_1, true,
+                MY_APPLICATION_CONSTRAINT));
         registration.registerSubModel(new TestResourceDefinition(UNCONSTRAINED_RESOURCE_2, false));
         registration.registerSubModel(new TestResourceDefinition(SENSITIVE_CONSTRAINED_RESOURCE_2, false,
                 MY_SENSITIVE_CONSTRAINT));
+        registration.registerSubModel(new TestResourceDefinition(APPLICATION_CONSTRAINED_RESOURCE_2, false,
+                MY_APPLICATION_CONSTRAINT));
     }
 
     private static final class TestResourceDefinition extends SimpleResourceDefinition {
@@ -217,6 +313,18 @@ public class ReadAttributeTestCase extends AbstractRbacTestBase {
                     .create(SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, ModelType.STRING)
                     .setDefaultValue(defaultValue)
                     .setAccessConstraints(MY_SENSITIVE_CONSTRAINT)
+                    .build();
+            resourceRegistration.registerReadOnlyAttribute(attributeDefinition, readAttributeHandler);
+
+            readAttributeHandler = useDefaultReadAttributeHandler
+                    ? null : new TestReadAttributeHandler(new ModelNode(VALUE_OF_APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE));
+            defaultValue = useDefaultReadAttributeHandler
+                    ? new ModelNode(VALUE_OF_APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE) : null;
+
+            attributeDefinition = SimpleAttributeDefinitionBuilder
+                    .create(APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, ModelType.STRING)
+                    .setDefaultValue(defaultValue)
+                    .setAccessConstraints(MY_APPLICATION_CONSTRAINT)
                     .build();
             resourceRegistration.registerReadOnlyAttribute(attributeDefinition, readAttributeHandler);
         }
