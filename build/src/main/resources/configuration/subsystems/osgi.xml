@@ -7,7 +7,7 @@
     <?CAPABILITIES?>
     </subsystem>
     <supplement name="default">
-        <replacement placeholder="@@activation@@" attributeValue="lazy" />
+        <replacement placeholder="@@activation@@" attributeValue="eager" />
         <replacement placeholder="PROPERTIES">
             <properties>
                 <!-- Specifies the beginning start level of the framework -->
