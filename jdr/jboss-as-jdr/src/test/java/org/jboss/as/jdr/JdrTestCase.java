@@ -44,17 +44,22 @@ public class JdrTestCase {
         JdrEnvironment env = new JdrEnvironment();
         env.setJbossHome("/foo/bar/baz");
         env.setHostControllerName("host");
+        env.setOutputDirectory("target");
+        String name;
         JdrZipFile zf = new JdrZipFile(env);
-        String name = zf.name();
-
         try {
-            assertTrue(name.endsWith(".zip"));
-            assertTrue(name.contains("host"));
+            name = zf.name();
+            zf.close();
         }
         finally {
+            safeClose(zf);
             File f = new File(zf.name());
             f.delete();
         }
+
+        assertTrue(name.endsWith(".zip"));
+        assertTrue(name.contains("host"));
+        assertTrue(name.startsWith("target"));
     }
 
     @Test
@@ -133,4 +138,11 @@ public class JdrTestCase {
         assertFalse(filter.accepts(bad2));
         assertFalse(filter.accepts(winbad));
     }
+
+    private void safeClose(JdrZipFile zf) {
+        try {
+            zf.close();
+        } catch (Exception ignored) { }
+    }
+
 }
