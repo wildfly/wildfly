@@ -26,6 +26,7 @@ import java.io.File;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Arrays;
+import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
@@ -41,6 +42,8 @@ import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.FileSystemPathArgument;
 import org.jboss.as.cli.operation.ParsedCommandLine;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.tool.PatchOperationBuilder;
 import org.jboss.as.patching.tool.PatchOperationTarget;
 import org.jboss.dmr.ModelNode;
@@ -69,6 +72,8 @@ public class PatchHandler extends CommandHandlerWithHelp {
     private final ArgumentWithoutValue overrideAll;
     private final ArgumentWithValue override;
     private final ArgumentWithValue preserve;
+
+    private final ArgumentWithoutValue distribution;
 
     public PatchHandler(final CommandContext context) {
         super(PATCH, false);
@@ -176,6 +181,16 @@ public class PatchHandler extends CommandHandlerWithHelp {
             }
         };
         keepConfiguration.addRequiredPreceding(action);
+
+        distribution = new FileSystemPathArgument(this, pathCompleter, "--distribution") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                // TODO this is hidden from the tab-completion for now (and also not documented),
+                // although if the argument name is typed in and followed with the '=',
+                // the tab-completion for its value will work
+                return false;
+            }
+        };
     }
 
     private boolean canOnlyAppearAfterActions(CommandContext ctx, String... actions) {
@@ -197,10 +212,45 @@ public class PatchHandler extends CommandHandlerWithHelp {
             throw new CommandLineException("Unable to apply patch", e);
         }
         if (!Util.isSuccess(result)) {
-            throw new CommandFormatException(Util.getFailureDescription(result));
+            final ModelNode fd = result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION);
+            if(!fd.isDefined()) {
+                throw new CommandLineException("Failed to apply patch: " + result.asString());
+            }
+            if(fd.has(Constants.CONFLICTS)) {
+                final StringBuilder buf = new StringBuilder();
+                buf.append(fd.get(Constants.MESSAGE).asString()).append(": ");
+                final ModelNode conflicts = fd.get(Constants.CONFLICTS);
+                String title = "";
+                if(conflicts.has(Constants.BUNDLES)) {
+                    formatConflictsList(buf, conflicts, "", Constants.BUNDLES);
+                    title = ", ";
+                }
+                if(conflicts.has(Constants.MODULES)) {
+                    formatConflictsList(buf, conflicts, title, Constants.MODULES);
+                    title = ", ";
+                }
+                if(conflicts.has(Constants.MISC)) {
+                    formatConflictsList(buf, conflicts, title, Constants.MISC);
+                }
+                throw new CommandLineException(buf.toString());
+            } else {
+                throw new CommandLineException(Util.getFailureDescription(result));
+            }
         }
         ctx.printLine(result.toJSONString(false));
+    }
 
+    protected void formatConflictsList(final StringBuilder buf, final ModelNode conflicts, String title, String contentType) {
+        buf.append(title);
+        final List<ModelNode> list = conflicts.get(contentType).asList();
+        int i = 0;
+        while(i < list.size()) {
+            final ModelNode item = list.get(i++);
+            buf.append(item.asString());
+            if(i < list.size()) {
+                buf.append(", ");
+            }
+        }
     }
 
     private PatchOperationBuilder createPatchOperationBuilder(ParsedCommandLine args) throws CommandFormatException {
@@ -260,7 +310,7 @@ public class PatchHandler extends CommandHandlerWithHelp {
                 target = PatchOperationTarget.createStandalone(ctx.getModelControllerClient());
             }
         } else {
-            final String jbossHome = getJBossHome();
+            final String jbossHome = getJBossHome(ctx.getParsedCommandLine());
             try {
                 target = PatchOperationTarget.createLocal(new File(jbossHome));
             } catch (Exception e) {
@@ -270,7 +320,11 @@ public class PatchHandler extends CommandHandlerWithHelp {
         return target;
     }
 
-    private static String getJBossHome() {
+    private String getJBossHome(ParsedCommandLine args) {
+        final String targetDistro = distribution.getValue(args);
+        if(targetDistro != null) {
+            return targetDistro;
+        }
         final String env = "JBOSS_HOME";
         if (System.getSecurityManager() == null) {
             return System.getenv(env);

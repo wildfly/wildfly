@@ -98,6 +98,9 @@ public class PatchElementProviderImpl implements PatchElementProvider, PatchElem
     public void oneOffPatch(String target) {
         this.patchType = Patch.PatchType.ONE_OFF;
         this.cumulativeTarget = target;
+        if(target == null) {
+            throw new IllegalArgumentException("The cumulative target is null");
+        }
     }
 
     @Override
@@ -128,7 +131,7 @@ public class PatchElementProviderImpl implements PatchElementProvider, PatchElem
         }
         if (patchType == Patch.PatchType.ONE_OFF) {
             if (cumulativeTarget == null) {
-                throw new IllegalStateException();
+                throw new IllegalStateException("Cumulative target is missing");
             }
         }
         return clazz.cast(this);

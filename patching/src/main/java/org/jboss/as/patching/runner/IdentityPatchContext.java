@@ -23,6 +23,7 @@ import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.installation.InstalledImage;
@@ -161,9 +162,6 @@ class IdentityPatchContext implements PatchContentProvider {
             final InstallationManager.MutablePatchingTarget target = modification.resolve(layerName, layerType);
             entry = new PatchEntry(target, element);
             map.put(layerName, entry);
-        }
-        if (entry == null) {
-            throw new PatchingException("failed to resolve target for " + element);
         }
         // Maintain the most recent element
         entry.updateElement(element);

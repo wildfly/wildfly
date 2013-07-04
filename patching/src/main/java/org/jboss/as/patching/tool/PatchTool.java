@@ -30,14 +30,16 @@ import java.util.Collections;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerService;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.runner.PatchToolImpl;
-import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modules.LocalModuleFinder;
+import org.jboss.modules.ModuleFinder;
 import org.jboss.modules.ModuleLoader;
 
 /**
@@ -151,7 +153,21 @@ public interface PatchTool {
          * @throws IOException
          */
         public static PatchTool loadFromRoot(final File jbossHome) throws IOException {
-            final ModuleLoader loader = ModuleLoader.forClass(PatchTool.class);
+            ModuleLoader loader = ModuleLoader.forClass(PatchTool.class);
+            if(loader == null) {
+                // not running with the module class loader, so try creating a local one
+                String[] path = new String[]{"modules", "system", "layers", "base"};
+                File modulesRoot = jbossHome;
+                for(String step : path) {
+                    modulesRoot = new File(modulesRoot, step);
+                }
+
+                if(!modulesRoot.exists()) {
+                    throw new IllegalStateException("Failed to determine the modules directory.");
+                }
+
+                loader = new ModuleLoader(new ModuleFinder[]{new LocalModuleFinder(new File[]{modulesRoot})}){};
+            }
             final ProductConfig config = new ProductConfig(loader, jbossHome.getAbsolutePath(), Collections.emptyMap());
             final InstallationManager manager = InstallationManagerService.load(jbossHome, config);
             return create(manager);
@@ -166,7 +182,6 @@ public interface PatchTool {
         public static PatchTool create(final InstallationManager manager) {
             return new PatchToolImpl(manager);
         }
-
     }
 
     public interface ContentPolicyBuilder {
