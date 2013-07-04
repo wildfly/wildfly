@@ -54,7 +54,13 @@
         <fixcrlf srcdir="${output.dir}/bin" includes="**/*.conf" eol="lf" />
         <!-- These files contain digested passwords, which should not be visible to external users -->
         <chmod perm="600" file="${output.dir}/domain/configuration/mgmt-users.properties"/>
+        <chmod perm="600" file="${output.dir}/domain/configuration/mgmt-groups.properties"/>
+        <chmod perm="600" file="${output.dir}/domain/configuration/application-users.properties"/>
+        <chmod perm="600" file="${output.dir}/domain/configuration/application-roles.properties"/>
         <chmod perm="600" file="${output.dir}/standalone/configuration/mgmt-users.properties"/>
+        <chmod perm="600" file="${output.dir}/standalone/configuration/mgmt-groups.properties"/>
+        <chmod perm="600" file="${output.dir}/standalone/configuration/application-users.properties"/>
+        <chmod perm="600" file="${output.dir}/standalone/configuration/application-roles.properties"/>
         <chmod perm="755">
             <fileset dir="${output.dir}/bin">
                 <include name="**/*.sh"/>
