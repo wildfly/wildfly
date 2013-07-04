@@ -65,7 +65,6 @@ import org.jboss.as.controller.registry.DelegatingImmutableManagementResourceReg
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -929,15 +928,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                     authResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, authResp.targetResource);
                     authResp.addOperationResult(operationName, access, authResult);
                 } else {
-                    EnumSet<Flag> flags = operationEntry.getFlags();
-                    Action action = targetAction.limitAction(flags.contains(Flag.RUNTIME_ONLY) ? ActionEffect.READ_RUNTIME : ActionEffect.READ_CONFIG);
-                    authResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, authResp.targetResource);
-                    if (authResult.getDecision() != AuthorizationResult.Decision.DENY) {
-                        //if (!flags.contains(Flag.READ_ONLY)) {
-                            action = targetAction.limitAction(flags.contains(Flag.RUNTIME_ONLY) ? ActionEffect.WRITE_RUNTIME : ActionEffect.WRITE_CONFIG);
-                            authResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, authResp.targetResource);
-                        //}
-                    }
+                    authResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, targetAction, authResp.targetResource);
                     authResp.addOperationResult(operationName, access, authResult);
                 }
             }
