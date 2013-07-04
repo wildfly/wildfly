@@ -228,7 +228,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, false, true, false);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc); //Since access is restricted, the monitor role cannot see any of the resources
+        assertNonAccessibleDefaultAccessControl(childDesc, ONE_ADDR); //Since access is restricted, the maintainer role cannot access the resources
     }
 
     @Test
@@ -239,7 +239,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, true, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc); //Since access is restricted, the maintainer role cannot see any of the resources
+        assertNonAccessibleDefaultAccessControl(childDesc, ONE_ADDR); //Since access is restricted, the maintainer role cannot access the resources
     }
 
     @Test
@@ -259,7 +259,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionAccessReadWriteSensitivityAsMonitor", true, true, true));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result);//Since access is restricted, the monitor role cannot see any of the resources
+        assertNonAccessibleDefaultAccessControl(result, ONE_ADDR);//Since access is restricted, the monitor role should not be able to access the resource
     }
 
     @Test
@@ -267,7 +267,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionAccessReadWriteSensitivityAsMaintainer", true, true, true));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result);//Since access is restricted, the maintainer role cannot see any of the resources
+        assertNonAccessibleDefaultAccessControl(result, ONE_ADDR);//Since access is restricted, the maintainer role should not be able to access the resource
     }
 
     @Test
@@ -721,9 +721,9 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, false, true, false);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc); //Since access is restricted, the monitor role cannot see any of the resources
+        assertNonAccessibleDefaultAccessControl(childDesc, ONE_ADDR);//Since access is restricted, the monitor role access any of the resources
         childDesc = getChildDescription(childDesc, TWO);
-        map = getResourceAccessControl(childDesc); //Since access is restricted, the monitor role cannot see any of the resources
+        assertNonAccessibleDefaultAccessControl(childDesc, TWO_ADDR);//Since access is restricted, the monitor role access any of the resources
     }
 
     @Test
@@ -736,9 +736,9 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Map<PathAddress, ModelNode> map = getResourceAccessControl(result, PathAddress.EMPTY_ADDRESS);
         checkResourcePermissions(map, true, true, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
-        map = getResourceAccessControl(childDesc); //Since access is restricted, the maintainer role cannot see any of the resources
+        assertNonAccessibleDefaultAccessControl(childDesc, ONE_ADDR); //Since access is restricted, the maintainer role cannot access the resources
         childDesc = getChildDescription(childDesc, TWO);
-        map = getResourceAccessControl(childDesc); //Since access is restricted, the maintainer role cannot see any of the resources
+        assertNonAccessibleDefaultAccessControl(childDesc, TWO_ADDR); //Since access is restricted, the maintainer role cannot access the resources
     }
 
     @Test
@@ -765,9 +765,9 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result); //Since access is restricted, the monitor role cannot see any of the resources
+        assertNonAccessibleDefaultAccessControl(result, ONE_ADDR); //Since access is restricted, the monitor role cannot access the resources
         ModelNode childDesc = getChildDescription(result, TWO);
-        map = getResourceAccessControl(childDesc); //Since access is restricted, the monitor role cannot see any of the resources
+        assertNonAccessibleDefaultAccessControl(childDesc, TWO_ADDR); //Since access is restricted, the monitor role cannot access the resources
     }
 
     @Test
@@ -777,9 +777,9 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result); //Since access is restricted, the monitor role cannot see any of the resources
+        assertNonAccessibleDefaultAccessControl(result, ONE_ADDR); //Since access is restricted, the monitor role cannot access the resources
         ModelNode childDesc = getChildDescription(result, TWO);
-        map = getResourceAccessControl(childDesc); //Since access is restricted, the monitor role cannot see any of the resources
+        assertNonAccessibleDefaultAccessControl(childDesc, TWO_ADDR); //Since access is restricted, the monitor role cannot access the resources
     }
 
     @Test
@@ -803,7 +803,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
         ModelNode op = createReadResourceDescriptionOperation(TWO_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result);//Since access is restricted, the monitor role cannot see any of the resources
+        assertNonAccessibleDefaultAccessControl(result, TWO_ADDR); //Since access is restricted, the monitor role cannot access the resources
     }
 
     @Test
@@ -813,7 +813,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
         ModelNode op = createReadResourceDescriptionOperation(TWO_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        Map<PathAddress, ModelNode> map = getResourceAccessControl(result);//Since access is restricted, the maintainer role cannot see any of the resources
+        assertNonAccessibleDefaultAccessControl(result, TWO_ADDR); //Since access is restricted, the maintainer role cannot access the resources
     }
 
     @Test
@@ -958,15 +958,23 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         return childDesc;
     }
 
+    private void assertNonAccessibleDefaultAccessControl(ModelNode description, PathAddress address) {
+        if (address.size() > 0 && !address.getLastElement().isWildcard()) {
+            Assert.fail("Not a wildcard address");
+        }
+        Map<PathAddress, ModelNode> map = getResourceAccessControl(description, address);
+        ModelNode accessControl = map.get(address);
+        Assert.assertEquals(1, accessControl.keys().size());
+        Assert.assertTrue(accessControl.hasDefined(ActionEffect.ACCESS.toString()));
+        Assert.assertFalse(accessControl.get(ActionEffect.ACCESS.toString()).asBoolean());
+    }
+
     private Map<PathAddress, ModelNode> getResourceAccessControl(ModelNode description, PathAddress...addresses){
         Assert.assertTrue(description.hasDefined(ACCESS_CONTROL));
         Map<PathAddress, ModelNode> map = new HashMap<PathAddress, ModelNode>();
         for (Property prop : description.get(ACCESS_CONTROL).asPropertyList()) {
-            if (prop.getValue().isDefined()) {
-                //If it was not defined it means access was denied
-                //TODO a better way to handle this case
-                map.put(PathAddress.pathAddress(ModelNode.fromString(prop.getName())), prop.getValue());
-            }
+            Assert.assertTrue(prop.getValue().isDefined());
+            map.put(PathAddress.pathAddress(ModelNode.fromString(prop.getName())), prop.getValue());
         }
         List<PathAddress> expected = Arrays.asList(addresses);
         Assert.assertTrue(map.keySet().containsAll(expected));
