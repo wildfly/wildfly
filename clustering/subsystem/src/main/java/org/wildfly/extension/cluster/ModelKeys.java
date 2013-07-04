@@ -7,9 +7,13 @@ package org.wildfly.extension.cluster;
  */
 public class ModelKeys {
     static final String CACHE_VIEW = "cache-view";
+    static final String CACHE_VIEW_HISTORY = "cache-view-history";
     static final String DEPLOYMENT = "deployment";
+    static final String DISTRIBUTION = "distribution";
     static final String NAME = "name";
+    static final String OPERATION_STATS = "operation-stats";
     static final String RPC_STATS = "rpc-stats";
+    static final String TXN_STATS = "txn-stats";
     static final String VIEW = "view";
     static final String VIEW_HISTORY = "view-history";
 }

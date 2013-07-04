@@ -3,12 +3,17 @@ package org.jboss.as.clustering.management.support.impl;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.infinispan.Cache;
+import org.infinispan.interceptors.CacheMgmtInterceptor;
+import org.infinispan.interceptors.TxInterceptor;
+import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.remoting.rpc.RpcManagerImpl;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.jgroups.CommandAwareRpcDispatcher;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
@@ -249,10 +254,8 @@ public class ManagementAPIClusterSupport implements GroupMembershipListener {
                 // get the unicast, multicast, anycast stats
                 result.setAsyncUnicasts(getAtomicIntField(dispatcher, ASYNC_UNICASTS));
                 result.setSyncUnicasts(getAtomicIntField(dispatcher, SYNC_UNICASTS));
-
                 result.setAsyncMulticasts(getAtomicIntField(dispatcher, ASYNC_MULTICASTS));
                 result.setSyncMulticasts(getAtomicIntField(dispatcher, SYNC_MULTICASTS));
-
                 result.setAsyncAnycasts(getAtomicIntField(dispatcher, ASYNC_ANYCASTS));
                 result.setSyncAnycasts(getAtomicIntField(dispatcher, ASYNC_ANYCASTS));
             }
@@ -266,34 +269,6 @@ public class ManagementAPIClusterSupport implements GroupMembershipListener {
         }
 
         return result;
-    }
-
-    private int getAtomicIntField(Object o, String name) {
-
-        Class<?> c = o.getClass();
-        try {
-            Field f = getField(c, name);
-            f.setAccessible(true);
-            return ((AtomicInteger)f.get(o)).get();
-        } catch(NoSuchFieldException nsfe) {
-            System.out.println("No such field: " + name);
-        } catch(IllegalAccessException iae) {
-            System.out.println("Illegal access for field: " + name);
-        }
-        return 0;
-    }
-
-    private static Field getField(Class clazz, String fieldName) throws NoSuchFieldException {
-      try {
-        return clazz.getDeclaredField(fieldName);
-      } catch (NoSuchFieldException e) {
-        Class superClass = clazz.getSuperclass();
-        if (superClass == null) {
-          throw e;
-        } else {
-          return getField(superClass, fieldName);
-        }
-      }
     }
 
     /*
@@ -314,10 +289,37 @@ public class ManagementAPIClusterSupport implements GroupMembershipListener {
             boolean started = cacheController != null && cacheController.getValue() != null;
             if (started) {
                 Cache<?, ?> cache = (Cache<?, ?>) cacheController.getValue();
+
                 // get the view (in JGroupsAddress format)
                 StateTransferManager stateTransferManager = cache.getAdvancedCache().getComponentRegistry().getStateTransferManager();
                 List<Address> cacheMembers = stateTransferManager.getCacheTopology().getMembers();
                 result.setView(cacheMembers.toString());
+
+                // get the operation stats and distribution
+                CacheMgmtInterceptor cacheMgmtInterceptor = getFirstInterceptorWhichExtends(cache.getAdvancedCache().getInterceptorChain(), CacheMgmtInterceptor.class);
+                if (cacheMgmtInterceptor != null) {
+                    result.setHits(cacheMgmtInterceptor.getHits());
+                    result.setMisses(cacheMgmtInterceptor.getMisses());
+                    result.setStores(cacheMgmtInterceptor.getStores());
+                    result.setRemoveHits(cacheMgmtInterceptor.getRemoveHits());
+                    result.setRemoveMisses(cacheMgmtInterceptor.getRemoveMisses());
+                    result.setEntries(cacheMgmtInterceptor.getNumberOfEntries());
+                }
+
+                // get the RPC stats
+                RpcManagerImpl rpcManager = (RpcManagerImpl) cache.getAdvancedCache().getRpcManager();
+                if (rpcManager != null) {
+                    result.setRPCCount(rpcManager.getReplicationCount());
+                    result.setRPCMisses(rpcManager.getReplicationFailures());
+                }
+
+                // get the txn stats
+                TxInterceptor txInterceptor = getFirstInterceptorWhichExtends(cache.getAdvancedCache().getInterceptorChain(), TxInterceptor.class);
+                if (txInterceptor != null) {
+                    result.setPrepares(txInterceptor.getPrepares());
+                    result.setCommits(txInterceptor.getCommits());
+                    result.setRollbacks(txInterceptor.getRollbacks());
+                }
             }
         } catch (ServiceNotFoundException snf) {
             // handle service not found - we need to access the cache service, but it ain't there
@@ -373,6 +375,46 @@ public class ManagementAPIClusterSupport implements GroupMembershipListener {
             }
         }
         return result;
+    }
+
+    private int getAtomicIntField(Object o, String name) {
+
+        Class<?> c = o.getClass();
+        try {
+            Field f = getField(c, name);
+            f.setAccessible(true);
+            return ((AtomicInteger)f.get(o)).get();
+        } catch(NoSuchFieldException nsfe) {
+            System.out.println("No such field: " + name);
+        } catch(IllegalAccessException iae) {
+            System.out.println("Illegal access for field: " + name);
+        }
+        return 0;
+    }
+
+    private static Field getField(Class clazz, String fieldName) throws NoSuchFieldException {
+      try {
+        return clazz.getDeclaredField(fieldName);
+      } catch (NoSuchFieldException e) {
+        Class superClass = clazz.getSuperclass();
+        if (superClass == null) {
+          throw e;
+        } else {
+          return getField(superClass, fieldName);
+        }
+      }
+    }
+
+    private static <T extends CommandInterceptor> T getFirstInterceptorWhichExtends(List<CommandInterceptor> interceptors,
+                                                                                    Class<T> interceptorClass) {
+        for (CommandInterceptor interceptor : interceptors) {
+            boolean isSubclass = interceptorClass.isAssignableFrom(interceptor.getClass());
+            if (isSubclass) {
+                Collections.emptyList();
+                return interceptorClass.cast(interceptor);
+            }
+        }
+        return null;
     }
 
 }

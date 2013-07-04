@@ -113,7 +113,7 @@ public class ClusterMetricsHandler extends AbstractRuntimeOnlyHandler {
             int unicasts = rsp.getAsyncUnicasts() + rsp.getSyncUnicasts();
             int multicasts = rsp.getAsyncMulticasts() + rsp.getSyncMulticasts();
             int anycasts = rsp.getAsyncAnycasts() + rsp.getSyncAnycasts();
-            String stats = String.format("[u: %s, m: %s, a: %s]", unicasts, multicasts, anycasts);
+            String stats = String.format("unicasts: %s, multicasts: %s, anycasts: %s", unicasts, multicasts, anycasts);
             result.add(rsp.getResponder().getName(), stats);
         }
         return result;

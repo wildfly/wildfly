@@ -46,7 +46,33 @@ public class DeploymentInstanceResourceDefinition extends SimpleResourceDefiniti
                     .setStorageRuntime()
                     .build();
 
-    static final AttributeDefinition[] DEPLOYMENT_METRICS = {CACHE_VIEW};
+    // not yet implemented in ISPN
+    static final SimpleAttributeDefinition CACHE_VIEW_HISTORY =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.CACHE_VIEW_HISTORY, ModelType.STRING, true)
+                    .setStorageRuntime()
+                    .build();
+
+    static final SimpleAttributeDefinition DISTRIBUTION =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.DISTRIBUTION, ModelType.STRING, true)
+                    .setStorageRuntime()
+                    .build();
+
+    static final SimpleAttributeDefinition OPERATION_STATS =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.OPERATION_STATS, ModelType.STRING, true)
+                    .setStorageRuntime()
+                    .build();
+
+    static final SimpleAttributeDefinition RPC_STATS =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.RPC_STATS, ModelType.STRING, true)
+                    .setStorageRuntime()
+                    .build();
+
+    static final SimpleAttributeDefinition TXN_STATS =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.TXN_STATS, ModelType.STRING, true)
+                    .setStorageRuntime()
+                    .build();
+
+    static final AttributeDefinition[] DEPLOYMENT_METRICS = {CACHE_VIEW, DISTRIBUTION, OPERATION_STATS, RPC_STATS, TXN_STATS};
 
     public DeploymentInstanceResourceDefinition(boolean runtimeRegistration) {
 

@@ -30,7 +30,11 @@ public class DeploymentMetricsHandler extends AbstractRuntimeOnlyHandler {
     public static final DeploymentMetricsHandler INSTANCE = new DeploymentMetricsHandler();
 
     public enum DeploymentMetrics {
-        CACHE_VIEW(DeploymentInstanceResourceDefinition.CACHE_VIEW);
+        CACHE_VIEW(DeploymentInstanceResourceDefinition.CACHE_VIEW),
+        DISTRIBUTION(DeploymentInstanceResourceDefinition.DISTRIBUTION),
+        OPERATION_STATS(DeploymentInstanceResourceDefinition.OPERATION_STATS),
+        RPC_STATS(DeploymentInstanceResourceDefinition.RPC_STATS),
+        TXN_STATS(DeploymentInstanceResourceDefinition.TXN_STATS);
 
         private static final Map<String, DeploymentMetrics> MAP = new HashMap<String, DeploymentMetrics>();
 
@@ -89,6 +93,18 @@ public class DeploymentMetricsHandler extends AbstractRuntimeOnlyHandler {
                     case CACHE_VIEW:
                         result.set(createCacheView(rsps));
                         break;
+                    case DISTRIBUTION:
+                        result.set(createDistribution(rsps));
+                        break;
+                    case OPERATION_STATS:
+                        result.set(createOperationStats(rsps));
+                        break;
+                    case RPC_STATS:
+                        result.set(createRpcStats(rsps));
+                        break;
+                    case TXN_STATS:
+                        result.set(createTxnStats(rsps));
+                        break;
                 }
 
                 context.getResult().set(result);
@@ -108,4 +124,46 @@ public class DeploymentMetricsHandler extends AbstractRuntimeOnlyHandler {
         }
         return result;
     }
+
+    private ModelNode createDistribution(List<RemoteCacheResponse> rsps) {
+        ModelNode result = new ModelNode();
+        for (RemoteCacheResponse rsp : rsps) {
+            // create a LIST of PROPERTY
+            String stats = String.format("entries: %s", rsp.getEntries());
+            result.add(rsp.getResponder().getName(), stats);
+        }
+        return result;
+    }
+
+    private ModelNode createOperationStats(List<RemoteCacheResponse> rsps) {
+        ModelNode result = new ModelNode();
+        for (RemoteCacheResponse rsp : rsps) {
+            // create a LIST of PROPERTY
+            String stats = String.format("get hits: %s get misses: %s, puts %s, remove hits: %s remove misses: %s",
+                    rsp.getHits(), rsp.getMisses(), rsp.getStores(), rsp.getRemoveHits(), rsp.getRemoveMisses());
+            result.add(rsp.getResponder().getName(), stats);
+        }
+        return result;
+    }
+
+    private ModelNode createRpcStats(List<RemoteCacheResponse> rsps) {
+        ModelNode result = new ModelNode();
+        for (RemoteCacheResponse rsp : rsps) {
+            // create a LIST of PROPERTY
+            String stats = String.format("RPC count: %s, RPC misses: %s", rsp.getRPCCount(), rsp.getRPCMisses());
+            result.add(rsp.getResponder().getName(), stats);
+        }
+        return result;
+    }
+
+    private ModelNode createTxnStats(List<RemoteCacheResponse> rsps) {
+        ModelNode result = new ModelNode();
+        for (RemoteCacheResponse rsp : rsps) {
+            // create a LIST of PROPERTY
+            String stats = String.format("prepares: %s, commits: %s, rollbacks: %s", rsp.getPrepares(), rsp.getCommits(), rsp.getRollbacks());
+            result.add(rsp.getResponder().getName(), stats);
+        }
+        return result;
+    }
+
 }
