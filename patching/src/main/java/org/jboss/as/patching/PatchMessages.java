@@ -25,9 +25,10 @@ package org.jboss.as.patching;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Set;
 
-import org.jboss.as.patching.runner.PatchingException;
+import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
@@ -82,6 +83,9 @@ public interface PatchMessages {
     @Message(id = Message.NONE, value = "Print version and exit")
     String argVersion();
 
+    @Message(id = Message.NONE, value = "Conflicts detected")
+    String detectedConflicts();
+
     @Message(id = 16840, value = "Patch does not apply - expected (%s), but was (%s)")
     PatchingException doesNotApply(String appliesTo, String version);
 
@@ -128,4 +132,6 @@ public interface PatchMessages {
     @Message(id = 16853, value = "Patch is incompatible with patch '%s'")
     PatchingException incompatibePatch(String patchId);
 
+    @Message(id = 16854, value = "Conflicts detected")
+    ContentConflictsException conflictsDetected(@Param Collection<ContentItem> conflicts);
 }

@@ -15,6 +15,7 @@ import java.util.Map;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.installation.InstalledImage;
@@ -452,7 +453,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         }
         // If there were problems report them
         if (!conflicts.isEmpty()) {
-            throw new PatchingException(conflicts);
+            throw PatchMessages.MESSAGES.conflictsDetected(conflicts);
         }
         // Execute the tasks
         for (final PreparedTask task : tasks) {

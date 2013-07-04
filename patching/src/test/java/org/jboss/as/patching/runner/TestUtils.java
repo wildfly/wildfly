@@ -25,24 +25,32 @@ package org.jboss.as.patching.runner;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 import static org.jboss.as.patching.Constants.BASE;
+import static org.jboss.as.patching.Constants.LAYERS;
+import static org.jboss.as.patching.Constants.SYSTEM;
+import static org.jboss.as.patching.IoUtils.mkdir;
+import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.patching.IoUtils.safeClose;
 import static org.jboss.as.patching.PatchLogger.ROOT_LOGGER;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Properties;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
+import java.util.jar.Attributes.Name;
 
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
-import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.ZipUtils;
 import org.jboss.as.patching.metadata.ModuleItem;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
+import org.jboss.as.protocol.StreamUtils;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012, Red Hat Inc
@@ -96,11 +104,22 @@ public class TestUtils {
         }
     }
 
-    public static File createModuleXmlFile(File mainDir, String moduleName, String... resources) throws IOException {
+    public static File createModuleXmlFile(File mainDir, String moduleSpec, String... resources) throws IOException {
+        final int c1 = moduleSpec.lastIndexOf(':');
+        final String name;
+        final String slot;
+        if (c1 != -1) {
+            name = moduleSpec.substring(0, c1);
+            slot = moduleSpec.substring(c1 + 1);
+        } else {
+            name = moduleSpec;
+            slot = "main";
+        }
+
         StringBuilder content = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        content.append(format("<module xmlns=\"urn:jboss:module:1.2\" name=\"%s\" slot=\"main\" />\n", moduleName));
+        content.append(format("<module xmlns=\"urn:jboss:module:1.2\" name=\"%s\" slot=\"%s\">\n", name, slot));
         content.append("  <resources>\n");
-        content.append("    resource-root path=\".\"/>\n");
+        content.append("    <resource-root path=\".\"/>\n");
         for (String resource : resources) {
             content.append(format("    <resource-root path=\"%s\"/>\n", resource));
         }
@@ -143,6 +162,12 @@ public class TestUtils {
         return mainDir.getParentFile();
     }
 
+    public static File createModule1(File baseDir, String moduleName, String... resourceFileNames) throws IOException {
+        File mainDir = createModuleRoot(baseDir, moduleName);
+        createModuleXmlFile(mainDir, moduleName, resourceFileNames);
+        return mainDir.getParentFile();
+    }
+
     public static File createModuleRoot(File baseDir, String moduleSpec) throws IOException {
         final int c1 = moduleSpec.lastIndexOf(':');
         final String name;
@@ -176,6 +201,10 @@ public class TestUtils {
     }
 
     public static void createPatchXMLFile(File dir, Patch patch) throws Exception {
+        createPatchXMLFile(dir, patch, false);
+    }
+
+    public static void createPatchXMLFile(File dir, Patch patch, boolean logContent) throws Exception {
         File patchXMLfile = new File(dir, "patch.xml");
         patchXMLfile.createNewFile();
         FileOutputStream fos = new FileOutputStream(patchXMLfile);
@@ -183,6 +212,18 @@ public class TestUtils {
             PatchXml.marshal(fos, patch);
         } finally {
             safeClose(fos);
+        }
+
+        if(logContent) {
+            java.io.FileInputStream fis = null;
+            try {
+                fis = new java.io.FileInputStream(new java.io.File(dir, "patch.xml"));
+                final byte[] bytes = new byte[fis.available()];
+                fis.read(bytes);
+                System.out.println(new String(bytes));
+            } finally {
+                StreamUtils.safeClose(fis);
+            }
         }
     }
 
@@ -193,4 +234,54 @@ public class TestUtils {
         return zipFile;
     }
 
+    /**
+     * Creates (a part of) the distribution on the filesystem necessary to the run the tests.
+     *
+     * @param env  the directory structure to be created
+     * @param identity  the identity name
+     * @param productName  release name
+     * @param productVersion  release version
+     * @return  the bin directory
+     * @throws Exception  if anything goes wrong
+     */
+    public static File createInstalledImage(DirectoryStructure env, String identity, String productName, String productVersion) throws Exception {
+        // start from a base installation
+        // with a file in it
+        File binDir = mkdir(env.getInstalledImage().getJbossHome(), "bin");
+
+        // create product.conf
+        File productConf = new File(binDir, "product.conf");
+        assertTrue("Failed to create product.conf", productConf.createNewFile());
+        Properties props = new Properties();
+        props.setProperty("slot", identity);
+        FileWriter writer = null;
+        try {
+            writer = new FileWriter(productConf);
+            props.store(writer, null);
+        } finally {
+            StreamUtils.safeClose(writer);
+        }
+
+        // create the product module
+        final File modulesDir = newFile(env.getInstalledImage().getModulesDir(), SYSTEM, LAYERS, BASE);
+        if(!modulesDir.exists()) {
+            modulesDir.mkdirs();
+        }
+        final File moduleDir = TestUtils.createModule1(modulesDir, "org.jboss.as.product:" + identity, "product.jar");
+
+        final Manifest manifest = new Manifest();
+        manifest.getMainAttributes().putValue(Name.MANIFEST_VERSION.toString(), "xxx");
+        manifest.getMainAttributes().putValue("JBoss-Product-Release-Name", productName);
+        manifest.getMainAttributes().putValue("JBoss-Product-Release-Version", productVersion);
+
+        final File moduleJar = new File(new File(moduleDir, identity), "product.jar");
+        JarOutputStream jar = null;
+        try {
+            jar = new JarOutputStream(new FileOutputStream(moduleJar), manifest);
+            jar.flush();
+        } finally {
+            StreamUtils.safeClose(jar);
+        }
+        return binDir;
+    }
 }

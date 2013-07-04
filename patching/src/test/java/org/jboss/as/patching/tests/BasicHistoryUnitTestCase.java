@@ -31,7 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.jboss.as.patching.runner.PatchingException;
+import org.jboss.as.patching.PatchingException;
 import org.junit.Assert;
 import org.junit.Test;
 

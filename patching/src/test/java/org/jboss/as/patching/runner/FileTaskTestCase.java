@@ -23,7 +23,6 @@
 package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.HashUtils.hashFile;
-import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileContent;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileDoesNotExist;

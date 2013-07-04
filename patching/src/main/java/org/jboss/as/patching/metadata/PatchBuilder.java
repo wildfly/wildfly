@@ -115,6 +115,7 @@ public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implem
 
     public PatchElementBuilder addElement(final String patchId, final String layerName, final boolean addOn) {
         final PatchElementBuilder builder = new PatchElementBuilder(patchId, layerName, addOn, this);
+        //builder.cumulativePatch();
         elements.add(builder);
         return builder;
     }

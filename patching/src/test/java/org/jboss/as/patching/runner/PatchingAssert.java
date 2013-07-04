@@ -40,6 +40,8 @@ import java.util.List;
 import java.util.Scanner;
 
 import junit.framework.Assert;
+
+import org.jboss.as.patching.ContentConflictsException;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchInfo;
@@ -222,7 +224,7 @@ public class PatchingAssert {
         }
     }
 
-    static void assertPatchHasNotBeenApplied(PatchingException result, Patch patch, ContentItem problematicItem, DirectoryStructure structure) {
+    static void assertPatchHasNotBeenApplied(ContentConflictsException result, Patch patch, ContentItem problematicItem, DirectoryStructure structure) {
         assertFalse("patch should have failed", result.getConflicts().isEmpty());
         assertTrue(problematicItem + " is not reported in the problems " + result.getConflicts(), result.getConflicts().contains(problematicItem));
 

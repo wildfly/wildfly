@@ -124,7 +124,8 @@ public class PatchGenerator {
             final PatchBuilderWrapper wrapper = new PatchBuilderWrapper() {
                 @Override
                 PatchElementBuilder modifyLayer(String name, boolean addOn) {
-                    return addElement(randomUUID().toString(), name, addOn);
+                    //return addElement(randomUUID().toString(), name, addOn);
+                    return cumulativePatchElement(randomUUID().toString(), name, addOn);
                 }
             };
 
