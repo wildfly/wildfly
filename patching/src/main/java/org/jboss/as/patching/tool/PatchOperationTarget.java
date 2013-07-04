@@ -45,10 +45,12 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.patching.Constants;
+import org.jboss.as.patching.ContentConflictsException;
 import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentType;
-import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.dmr.ModelNode;
 
@@ -194,19 +196,21 @@ public abstract class PatchOperationTarget {
     static ModelNode formatFailedResponse(final PatchingException e) {
         final ModelNode result = new ModelNode();
         result.get(OUTCOME).set(FAILED);
-        if(e.hasConflicts()) {
+        if(e instanceof ContentConflictsException) {
             final ModelNode failureDescription = result.get(FAILURE_DESCRIPTION);
-            for(final ContentItem item : e.getConflicts()) {
+            failureDescription.get(Constants.MESSAGE).set(PatchMessages.MESSAGES.detectedConflicts());
+            final ModelNode conflicts = failureDescription.get(Constants.CONFLICTS);
+            for(final ContentItem item : ((ContentConflictsException)e).getConflicts()) {
                 final ContentType type = item.getContentType();
                 switch (type) {
                     case BUNDLE:
-                        failureDescription.get(Constants.BUNDLES).add(item.getRelativePath());
+                        conflicts.get(Constants.BUNDLES).add(item.getRelativePath());
                         break;
                     case MODULE:
-                        failureDescription.get(Constants.MODULES).add(item.getRelativePath());
+                        conflicts.get(Constants.MODULES).add(item.getRelativePath());
                         break;
                     case MISC:
-                        failureDescription.get(Constants.MISC).add(item.getRelativePath());
+                        conflicts.get(Constants.MISC).add(item.getRelativePath());
                         break;
                 }
             }

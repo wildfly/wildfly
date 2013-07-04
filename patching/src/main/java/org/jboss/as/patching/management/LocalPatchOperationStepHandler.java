@@ -31,12 +31,13 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.patching.Constants;
+import org.jboss.as.patching.ContentConflictsException;
+import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerService;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentType;
 import org.jboss.as.patching.tool.ContentVerificationPolicy;
-import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.as.patching.tool.PatchTool;
 import org.jboss.dmr.ModelNode;
@@ -83,9 +84,9 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
             });
         } catch (PatchingException e) {
             installationManager.clearRestartRequired();
-            if(e.hasConflicts()) {
+            if(e instanceof ContentConflictsException) {
                 final ModelNode failureDescription = context.getFailureDescription();
-                for(final ContentItem item : e.getConflicts()) {
+                for(final ContentItem item : ((ContentConflictsException)e).getConflicts()) {
                     final ContentType type = item.getContentType();
                     switch (type) {
                         case BUNDLE:

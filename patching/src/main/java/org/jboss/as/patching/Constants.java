@@ -30,7 +30,9 @@ import org.jboss.msc.service.ServiceName;
 public class Constants {
 
     public static final String BUNDLES = "bundles";
+    public static final String CONFLICTS = "conflicts";
     public static final String CUMULATIVE = "cumulative-patch-id";
+    public static final String MESSAGE = "message";
     public static final String MISC = "misc";
     public static final String MODULES = "modules";
     public static final String NAME = "name";

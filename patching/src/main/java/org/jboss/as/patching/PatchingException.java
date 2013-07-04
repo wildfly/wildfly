@@ -20,44 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.runner;
+package org.jboss.as.patching;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import org.jboss.as.patching.metadata.ContentItem;
 
 /**
  * @author Emanuel Muckenhuber
  */
 public class PatchingException extends Exception {
 
-    private final Collection<ContentItem> conflicts;
+    private static final long serialVersionUID = 1L;
 
     public PatchingException() {
         super("patching exception");
-        conflicts = Collections.emptyList();
-    }
-
-    public PatchingException(Collection<ContentItem> conflicts) {
-        // FIXME message is mandatory to wrap it into a OperationFailedException
-        super("Conflicts detected: " + conflicts.toString());
-        this.conflicts = conflicts;
     }
 
     public PatchingException(String message) {
         super(message);
-        this.conflicts = Collections.emptyList();
     }
 
     public PatchingException(String message, Throwable cause) {
         super(message, cause);
-        this.conflicts = Collections.emptyList();
     }
 
     public PatchingException(Throwable cause) {
         super(cause);
-        this.conflicts = Collections.emptyList();
     }
 
     public PatchingException(String format, Object... args) {
@@ -67,23 +53,4 @@ public class PatchingException extends Exception {
     public PatchingException(Throwable cause, String format, Object... args) {
         this(String.format(format, args), cause);
     }
-
-    /**
-     * Get the conflicting content items.
-     *
-     * @return the conflicting content items
-     */
-    public Collection<ContentItem> getConflicts() {
-        return conflicts;
-    }
-
-    /**
-     * Check if there content-item conflicts.
-     *
-     * @return
-     */
-    public boolean hasConflicts() {
-        return ! conflicts.isEmpty();
-    }
-
 }

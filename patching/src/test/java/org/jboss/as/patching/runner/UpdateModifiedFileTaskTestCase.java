@@ -37,6 +37,7 @@ import static org.junit.Assert.assertArrayEquals;
 import java.io.File;
 
 import org.jboss.as.patching.Constants;
+import org.jboss.as.patching.ContentConflictsException;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerImpl;
 import org.jboss.as.patching.installation.InstalledIdentity;
@@ -126,7 +127,7 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
     public void testUpdateModifiedFileWithSTRICT() throws Exception {
         try {
             runner.applyPatch(zippedPatch, ContentVerificationPolicy.STRICT);
-        } catch (PatchingException e) {
+        } catch (ContentConflictsException e) {
             assertPatchHasNotBeenApplied(e, patch, fileUpdated.getItem(), env);
 
             /// file has not been modified in the AS7 installation
@@ -154,7 +155,7 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
     public void testUpdateModifiedFileWithPRESERVE_ALL() throws Exception {
         try {
             runner.applyPatch(zippedPatch, ContentVerificationPolicy.PRESERVE_ALL);
-        } catch (PatchingException e) {
+        } catch (ContentConflictsException e) {
             assertPatchHasNotBeenApplied(e, patch, fileUpdated.getItem(), env);
 
             /// file has not been modified in the AS7 installation

@@ -32,7 +32,7 @@ import static org.jboss.as.patching.tool.PatchTool.Factory.policyBuilder;
 import java.io.File;
 
 import org.jboss.as.patching.metadata.ModuleItem;
-import org.jboss.as.patching.runner.PatchingException;
+import org.jboss.as.patching.ContentConflictsException;
 import org.jboss.as.patching.tool.ContentVerificationPolicy;
 import org.junit.Assert;
 import org.junit.Test;
@@ -76,7 +76,7 @@ public class PatchConflictsUnitTestCase extends AbstractPatchingTest {
         try {
             apply(oneOff1);
             Assert.fail("should have detected conflicts");
-        } catch (PatchingException expected) {
+        } catch (ContentConflictsException expected) {
             final ModuleItem item = new ModuleItem("org.jboss.test", "main", moduleHash);
             Assert.assertTrue(expected.getConflicts().contains(item));
         }
