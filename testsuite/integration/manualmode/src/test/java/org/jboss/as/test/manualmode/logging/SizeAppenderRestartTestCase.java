@@ -95,7 +95,6 @@ public class SizeAppenderRestartTestCase {
         deployer.deploy(DEPLOYMENT);
 
         logFile = getAbsoluteLogFilePath(client);
-        clearLogs(logFile);
 
         // Create the size-rotating handler
         ModelNode op = Operations.createAddOperation(SIZE_HANDLER_ADDRESS);
@@ -125,12 +124,12 @@ public class SizeAppenderRestartTestCase {
         op = Operations.createRemoveOperation(SIZE_HANDLER_ADDRESS);
         validateResponse(op);
 
-        // Remove log files
-        clearLogs(logFile);
-
         // Stop the container
         container.stop(CONTAINER);
         Assert.assertFalse("Container is not stopped", managementClient.isServerInRunningState());
+
+        // Remove log files
+        clearLogs(logFile);
 
         safeClose(client);
         safeClose(managementClient);
@@ -164,8 +163,7 @@ public class SizeAppenderRestartTestCase {
         // set append attribute & reload server
         ModelNode op = Operations.createWriteAttributeOperation(SIZE_HANDLER_ADDRESS, "append", append);
         validateResponse(op);
-        clearLogs(logFile);
-        restartServer();
+        restartServer(true);
 
         // make some (more than server start) logs, remember the size of log file, reload server, check new size of file
         op = Operations.createReadResourceOperation(SIZE_HANDLER_ADDRESS);
@@ -175,7 +173,7 @@ public class SizeAppenderRestartTestCase {
         }
         checkLogs(message, true);
         fileSize = logFile.length();
-        restartServer();
+        restartServer(false);
 
         // logFile.getParentFile().listFiles().length creates array with length of 3
         int count = 0;
@@ -208,8 +206,7 @@ public class SizeAppenderRestartTestCase {
         validateResponse(op);
         op = Operations.createWriteAttributeOperation(SIZE_HANDLER_ADDRESS, ROTATE_ON_RESTART, true);
         validateResponse(op);
-        clearLogs(logFile);
-        restartServer();
+        restartServer(true);
 
         // make some logs, remember file size, restart
         for (int i = 0; i < 100; i++) {
@@ -217,7 +214,7 @@ public class SizeAppenderRestartTestCase {
         }
         checkLogs(oldMessage, true);
         fileSize = logFile.length();
-        restartServer();
+        restartServer(false);
 
         // make log to new rotated log file
         makeLog(newMessage, url);
@@ -237,10 +234,13 @@ public class SizeAppenderRestartTestCase {
         Assert.assertEquals("There should be two log files", 2, count);
     }
 
-    private void restartServer() {
+    private void restartServer(boolean deleteLogs) {
         Assert.assertTrue("Container is not runnig", managementClient.isServerInRunningState());
         // Stop the container
         container.stop(CONTAINER);
+        if (deleteLogs) {
+            clearLogs(logFile);
+        }
         // Start the server again
         container.start(CONTAINER);
         Assert.assertTrue("Container is not started", managementClient.isServerInRunningState());
