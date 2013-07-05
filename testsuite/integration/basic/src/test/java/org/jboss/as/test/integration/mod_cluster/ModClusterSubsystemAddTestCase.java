@@ -61,7 +61,7 @@ public class ModClusterSubsystemAddTestCase {
             ctx.connectController();
 
             // Add the mod_cluster extension first (not in this profile by default)
-            ModelNode request = ctx.buildRequest("/extension=org.wildfly.extension.mod_cluster:add");
+            ModelNode request = ctx.buildRequest("/extension=org.jboss.as.modcluster:add");
             ModelNode response = controllerClient.execute(request);
             String outcome = response.get("outcome").asString();
             Assert.assertEquals("Adding mod_cluster extension failed! " + request.toJSONString(false), "success", outcome);
@@ -69,9 +69,9 @@ public class ModClusterSubsystemAddTestCase {
             // Now lets execute subsystem add operation but we need to specify a connector
             ctx.getBatchManager().activateNewBatch();
             Batch b = ctx.getBatchManager().getActiveBatch();
-            b.add(ctx.toBatchedCommand("/socket-binding-group=standard-sockets/socket-binding=mod_cluster:add(multicast-port=23364, multicast-address=224.0.1.105)"));
+            b.add(ctx.toBatchedCommand("/socket-binding-group=standard-sockets/socket-binding=modcluster:add(multicast-port=23364, multicast-address=224.0.1.105)"));
             b.add(ctx.toBatchedCommand("/subsystem=modcluster:add"));
-            b.add(ctx.toBatchedCommand("/subsystem=modcluster/mod-cluster-config=configuration:add(connector=http,advertise-socket=mod_cluster)"));
+            b.add(ctx.toBatchedCommand("/subsystem=modcluster/mod-cluster-config=configuration:add(connector=http,advertise-socket=modcluster)"));
             request = b.toRequest();
             b.clear();
             ctx.getBatchManager().discardActiveBatch();
@@ -100,13 +100,13 @@ public class ModClusterSubsystemAddTestCase {
             Assert.assertEquals("Removing mod_cluster subsystem failed! " + request.toJSONString(false), "success", outcome);
 
             // Cleanup socket binding
-            request = ctx.buildRequest("/socket-binding-group=standard-sockets/socket-binding=mod_cluster:remove");
+            request = ctx.buildRequest("/socket-binding-group=standard-sockets/socket-binding=modcluster:remove");
             response = controllerClient.execute(request);
             outcome = response.get("outcome").asString();
             Assert.assertEquals("Removing socket binding failed! " + request.toJSONString(false), "success", outcome);
 
             // Cleanup and remove the extension
-            request = ctx.buildRequest("/extension=org.wildfly.extension.mod_cluster:remove");
+            request = ctx.buildRequest("/extension=org.jboss.as.modcluster:remove");
             response = controllerClient.execute(request);
             outcome = response.get("outcome").asString();
             Assert.assertEquals("Removing mod_cluster extension failed! " + request.toJSONString(false), "success", outcome);
