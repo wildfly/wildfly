@@ -266,17 +266,17 @@ public class DefaultPermissionFactoryTestCase {
         @Override
         public Constraint getStandardUserConstraint(StandardRole role, Action.ActionEffect actionEffect) {
             boolean allowed = allowedRoles.contains(role);
-            return new TestConstraint(allowed, Constraint.ControlFlag.REQUIRED);
+            return new TestConstraint(allowed);
         }
 
         @Override
         public Constraint getRequiredConstraint(Action.ActionEffect actionEffect, Action action, TargetAttribute target) {
-            return new TestConstraint(true, Constraint.ControlFlag.REQUIRED);
+            return new TestConstraint(true);
         }
 
         @Override
         public Constraint getRequiredConstraint(Action.ActionEffect actionEffect, Action action, TargetResource target) {
-            return new TestConstraint(true, Constraint.ControlFlag.REQUIRED);
+            return new TestConstraint(true);
         }
 
         @Override
@@ -292,11 +292,9 @@ public class DefaultPermissionFactoryTestCase {
 
     private static final class TestConstraint implements Constraint {
         private final boolean allowed;
-        private final ControlFlag controlFlag;
 
-        private TestConstraint(boolean allowed, ControlFlag controlFlag) {
+        private TestConstraint(boolean allowed) {
             this.allowed = allowed;
-            this.controlFlag = controlFlag;
         }
 
         @Override
@@ -305,11 +303,6 @@ public class DefaultPermissionFactoryTestCase {
                 return this.allowed != ((TestConstraint) other).allowed;
             }
             return false;
-        }
-
-        @Override
-        public ControlFlag getControlFlag() {
-            return controlFlag;
         }
 
         @Override

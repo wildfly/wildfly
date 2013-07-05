@@ -47,11 +47,11 @@ public class ApplicationTypeConstraint extends AllowAllowNotConstraint {
     private static final ApplicationTypeConstraint NON_APPLICATION = new ApplicationTypeConstraint(false);
 
     private ApplicationTypeConstraint(boolean isApplication) {
-        super(ControlFlag.REQUIRED, isApplication);
+        super(isApplication);
     }
 
     private ApplicationTypeConstraint(boolean allowsApplication, boolean allowsNonApplication) {
-        super(ControlFlag.REQUIRED, allowsApplication, allowsNonApplication);
+        super(allowsApplication, allowsNonApplication);
     }
 
     @Override

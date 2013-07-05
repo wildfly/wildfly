@@ -43,11 +43,11 @@ public class NonAuditConstraint extends AllowAllowNotConstraint {
     private static final NonAuditConstraint DISALLOWS = new NonAuditConstraint(true, false);
 
     private NonAuditConstraint(boolean isAudit) {
-        super(ControlFlag.REQUIRED, isAudit);
+        super(isAudit);
     }
 
     private NonAuditConstraint(boolean allowsAudit, boolean allowsNonAudit) {
-        super(ControlFlag.REQUIRED, allowsAudit, allowsNonAudit);
+        super(allowsAudit, allowsNonAudit);
     }
 
     @Override

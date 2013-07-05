@@ -29,16 +29,9 @@ package org.jboss.as.controller.access.constraint;
  */
 public abstract class AbstractConstraint implements Constraint {
 
-    private final ControlFlag controlFlag;
-
-    protected AbstractConstraint(ControlFlag controlFlag) {
-        this.controlFlag = controlFlag;
+    protected AbstractConstraint() {
     }
 
-    @Override
-    public ControlFlag getControlFlag() {
-        return controlFlag;
-    }
 
     @Override
     public int compareTo(Constraint o) {
@@ -53,8 +46,7 @@ public abstract class AbstractConstraint implements Constraint {
             return otherPref * -1;
         }
 
-        // If o passing is SUFFICIENT, let them go first. Otherwise, we came first, so we stay first
-        return o.getControlFlag() == ControlFlag.SUFFICIENT ? 1 : -1;
+        return -1;
     }
 
     /**

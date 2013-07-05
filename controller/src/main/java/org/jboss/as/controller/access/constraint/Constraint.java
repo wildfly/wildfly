@@ -27,26 +27,7 @@ package org.jboss.as.controller.access.constraint;
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-//public interface Constraint<T> extends Comparable<Constraint<?>> {
 public interface Constraint extends Comparable<Constraint> {
 
-    enum ControlFlag {
-        REQUIRED,
-        REQUISITE,
-        SUFFICIENT,
-        OPTIONAL
-    }
-
-//    Class<T> getConstraintInputType();
-
-//    List<Constraint<?>> combine(Constraint<?> other);
-
-//    boolean violates(Constraint<?> other);
     boolean violates(Constraint other);
-
-//    boolean violates(T constraintData);
-
-    ControlFlag getControlFlag();
-
-//    void setPermission(Permission permission);
 }

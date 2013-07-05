@@ -49,11 +49,11 @@ public class SensitiveVaultExpressionConstraint extends AllowAllowNotConstraint 
     private static final SensitiveVaultExpressionConstraint DISALLOWS = new SensitiveVaultExpressionConstraint(false, true);
 
     private SensitiveVaultExpressionConstraint(boolean sensitive) {
-        super(ControlFlag.REQUIRED, sensitive);
+        super(sensitive);
     }
 
     private SensitiveVaultExpressionConstraint(boolean allowsSensitive, boolean allowsNonSensitive) {
-        super(ControlFlag.REQUIRED, allowsSensitive, allowsNonSensitive);
+        super(allowsSensitive, allowsNonSensitive);
     }
 
     @Override

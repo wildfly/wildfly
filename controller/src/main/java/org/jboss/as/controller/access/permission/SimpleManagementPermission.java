@@ -63,39 +63,15 @@ public class SimpleManagementPermission extends ManagementPermission {
             // Validate constraints
             assert constraints.length == other.constraints.length : String.format("incompatible ManagementPermission; " +
                     "differing constraint counts %d vs %d", constraints.length, other.constraints.length);
-            Constraint violatedRequisiteConstraint = null;
-            Constraint violatedRequiredConstraint = null;
-            Constraint violatedOptionalConstraint = null;
-            for (int i = 0; i < constraints.length && violatedRequisiteConstraint == null; i++) {
+            for (int i = 0; i < constraints.length; i++) {
                 Constraint ours = constraints[i];
                 Constraint theirs = other.constraints[i];
                 assert ours.getClass() == theirs.getClass() : "incompatible constraints: ours = " + ours.getClass() + " -- theirs = " + theirs.getClass();
                 if (ours.violates(theirs)) {
-                    switch (ours.getControlFlag()) {
-                        case REQUISITE:
-                            violatedRequisiteConstraint = constraints[i];
-                            break;
-                        case REQUIRED:
-                        case SUFFICIENT:
-                            if (violatedRequiredConstraint == null) {
-                                violatedRequiredConstraint = constraints[i];
-                            }
-                            break;
-                        case OPTIONAL:
-                            if (violatedOptionalConstraint == null) {
-                                violatedOptionalConstraint = constraints[i];
-                            }
-                            break;
-                        default:
-                            throw new IllegalStateException();
-                    }
-                } else if (constraints[i].getControlFlag() == Constraint.ControlFlag.SUFFICIENT) {
-                    // passes
-                    violatedOptionalConstraint = null;
-                    break;
+                    return false;
                 }
             }
-            return violatedRequisiteConstraint == null && violatedRequiredConstraint == null && violatedOptionalConstraint == null;
+            return true;
         }
         return false;
     }

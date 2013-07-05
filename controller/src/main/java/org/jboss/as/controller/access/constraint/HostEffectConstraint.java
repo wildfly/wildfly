@@ -33,7 +33,7 @@ import org.jboss.as.controller.access.TargetResource;
 import org.jboss.as.controller.access.rbac.StandardRole;
 
 /**
- * TODO class javadoc.
+ * Constraint related to whether the target resource is associated with one or more managed domain hosts.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
@@ -48,12 +48,12 @@ public class HostEffectConstraint extends AbstractConstraint implements ScopingC
     private final Set<String> specific = new HashSet<String>();
 
     private HostEffectConstraint() {
-        super(Constraint.ControlFlag.REQUIRED);
+        super();
         this.global = true;
     }
 
     private HostEffectConstraint(Collection<String> allowed) {
-        super(Constraint.ControlFlag.REQUIRED);
+        super();
         this.global = false;
         specific.addAll(allowed);
     }

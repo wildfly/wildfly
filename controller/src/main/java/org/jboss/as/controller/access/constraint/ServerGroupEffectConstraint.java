@@ -32,7 +32,7 @@ import org.jboss.as.controller.access.TargetResource;
 import org.jboss.as.controller.access.rbac.StandardRole;
 
 /**
- * TODO class javadoc.
+ * Constraint related to whether the target resource is associated with one or more managed domain server groups.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
@@ -47,12 +47,12 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements S
     private final Set<String> specific = new HashSet<String>();
 
     private ServerGroupEffectConstraint() {
-        super(ControlFlag.REQUIRED);
+        super();
         this.global = true;
     }
 
     private ServerGroupEffectConstraint(Collection<String> allowed) {
-        super(ControlFlag.REQUIRED);
+        super();
         this.global = false;
         specific.addAll(allowed);
     }
