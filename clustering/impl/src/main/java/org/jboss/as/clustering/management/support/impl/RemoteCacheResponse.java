@@ -15,6 +15,7 @@ public class RemoteCacheResponse implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public final ClusterNode responder;
+    private boolean inView = false;
     private String view = null ;
     private String view_history = null ;
     private long hits = 0L;
@@ -27,7 +28,7 @@ public class RemoteCacheResponse implements Serializable {
     private long rollbacks = 0L;
     private long entries = 0L;
     private long rpc_count = 0L;
-    private long rpc_misses = 0L;
+    private long rpc_failures = 0L;
 
     RemoteCacheResponse(ClusterNode responder) {
         this.responder = responder;
@@ -35,6 +36,14 @@ public class RemoteCacheResponse implements Serializable {
 
     public ClusterNode getResponder() {
         return responder;
+    }
+
+    public boolean isInView() {
+        return inView;
+    }
+
+    public void setInView(boolean inView) {
+        this.inView = inView;
     }
 
     public String getView() {
@@ -133,11 +142,11 @@ public class RemoteCacheResponse implements Serializable {
         this.rpc_count = rpc_count;
     }
 
-    public long getRPCMisses() {
-        return rpc_misses;
+    public long getRPCFailures() {
+        return rpc_failures;
     }
 
-    public void setRPCMisses(long rpc_misses) {
-        this.rpc_misses = rpc_misses;
+    public void setRPCFailures(long rpc_failures) {
+        this.rpc_failures = rpc_failures;
     }
 }

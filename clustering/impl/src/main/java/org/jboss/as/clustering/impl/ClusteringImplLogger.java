@@ -43,7 +43,7 @@ import org.jgroups.Address;
 /**
  * ClusteringImplLogger
  *
- * logging id range: 10220 - 10239
+ * logging id range: 10220 - 10239, 20720 - 20729
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
@@ -247,4 +247,27 @@ public interface ClusteringImplLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 10238, value = "Number of cluster members: %d")
     void numberOfClusterMembers(int size);
+
+    /**
+     * Logs an error message indicating that a required service was not found.
+     *
+     * @param serviceName the name of the service.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 10239, value = "Service %s required but not found")
+    void serviceNotFound(String serviceName);
+
+    /**
+     * Logs an error message indicating that a required service was found but not started.
+     *
+     * @param serviceName the name of the service.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 20720, value = "Service %s required but not started")
+    void serviceNotStarted(String serviceName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 20721, value = "Failed to stop management API cluster support")
+    void managementAPIClusterSupportStopFailed(@Cause Throwable cause);
+
 }

@@ -70,4 +70,62 @@ public interface ClusterSubsystemMessages {
     @Message(id = 20712, value = "RPC service call interrupted for channel %s")
     String interrupted(String channelName);
 
+    /**
+     * Creates a message describing group communication statistics..
+     *
+     * @param unicasts the number of unicast communications.
+     * @param multicasts the number of multicast communications.
+     * @param anycasts the number of anycast communications.
+     *
+     * @return a {@link String} describing the statistics.
+     */
+    @Message(id = 20713, value = "unicasts: %s, multicasts: %s, anycasts: %s")
+    String clusterRPCStats(int unicasts, int multicasts, int anycasts);
+
+    /**
+     * Creates a message describing cache distribution statistics..
+     *
+     * @param entries the number of cache entries.
+     *
+     * @return a {@link String} describing the statistics.
+     */
+    @Message(id = 20714, value = "cache entries: %s")
+    String cacheDistributionStats(long entries);
+
+    /**
+     * Creates a message describing cache operation statistics..
+     *
+     * @param hits the number of cache get hits.
+     * @param misses the number of cache get misses.
+     * @param stores the number of cache puts.
+     * @param remove_hits the number of cache remove hits.
+     * @param remove_misses the number of cache remove misses.
+     *
+     * @return a {@link String} describing the statistics.
+     */
+    @Message(id = 20715, value = "get(hits): %s, get(misses): %s, puts %s, remove(hits): %s, remove(misses): %s")
+    String cacheOperationStats(long hits, long misses, long stores, long remove_hits, long remove_misses);
+
+    /**
+     * Creates a message describing cache RPC communication statistics..
+     *
+     * @param count the number of cache RPC communications.
+     * @param failures the number of cache RPC communication failures.
+     *
+     * @return a {@link String} describing the statistics.
+     */
+    @Message(id = 20716, value = "RPC count: %s, RPC failures: %s")
+    String cacheRPCStats(long count, long failures);
+
+    /**
+     * Creates a message describing cache transaction statistics..
+     *
+     * @param prepares the number of cache transaction prepares.
+     * @param commits the number of cache transaction commits.
+     * @param rollbacks the number of cache transaction commits.
+     *
+     * @return a {@link String} describing the statistics.
+     */
+    @Message(id = 20717, value = "prepares: %s, commits: %s, rollbacks: %s")
+    String cacheTxnStats(long prepares, long commits, long rollbacks);
 }

@@ -24,6 +24,7 @@ import org.jboss.as.clustering.GroupMembershipListener;
 import org.jboss.as.clustering.GroupMembershipNotifier;
 import org.jboss.as.clustering.GroupRpcDispatcher;
 import org.jboss.as.clustering.ResponseFilter;
+import org.jboss.as.clustering.impl.ClusteringImplLogger;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
@@ -234,12 +235,13 @@ public class ManagementAPIClusterSupport implements GroupMembershipListener {
                 result.setViewHistory(gms.printPreviousViews());
             }
         } catch (ServiceNotFoundException snf) {
-            // handle service not found - we need to access the service, but it ain't there
-            // result: we cannot return a value for the cluster state - throw?
+            // this should not happen as a management service should only be installed and started
+            // once a channel service is installed and started
+            ClusteringImplLogger.ROOT_LOGGER.serviceNotFound(channelServiceName.toString());
         } catch (IllegalStateException ise) {
-            // handle illegal state exception - we need to get the value of the service, and the service
-            // is there, but it ain't available (UP)
-            // result: we cannot return a value for the cluster state - throw?
+            // we need to get the value of the service, and the service is there, but it ain't available (UP)
+            // again, this should not happen
+            ClusteringImplLogger.ROOT_LOGGER.serviceNotStarted(channelServiceName.toString());
         }
 
         try {
@@ -260,14 +262,14 @@ public class ManagementAPIClusterSupport implements GroupMembershipListener {
                 result.setSyncAnycasts(getAtomicIntField(dispatcher, ASYNC_ANYCASTS));
             }
         } catch (ServiceNotFoundException snf) {
-            // handle service not found - we need to access the service, but it ain't there
-            // result: we cannot return a value for the cluster state - throw?
+            // this should not happen as a management service should only be installed and started
+            // once a channel service is installed and started
+            ClusteringImplLogger.ROOT_LOGGER.serviceNotFound(containerServiceName.toString());
         } catch (IllegalStateException ise) {
-            // handle illegal state exception - we need to get the value of the service, and the service
-            // is there, but it ain't available (UP)
-            // result: we cannot return a value for the cluster state - throw?
+            // we need to get the value of the service, and the service is there, but it ain't available (UP)
+            // again, this should not happen
+            ClusteringImplLogger.ROOT_LOGGER.serviceNotStarted(channelServiceName.toString());
         }
-
         return result;
     }
 
@@ -290,9 +292,14 @@ public class ManagementAPIClusterSupport implements GroupMembershipListener {
             if (started) {
                 Cache<?, ?> cache = (Cache<?, ?>) cacheController.getValue();
 
+                // if we get here, we know the service exists on this host and so we are in the deployment
+                result.setInView(true);
+
                 // get the view (in JGroupsAddress format)
                 StateTransferManager stateTransferManager = cache.getAdvancedCache().getComponentRegistry().getStateTransferManager();
                 List<Address> cacheMembers = stateTransferManager.getCacheTopology().getMembers();
+
+                // only process data if we are in the cache view
                 result.setView(cacheMembers.toString());
 
                 // get the operation stats and distribution
@@ -310,7 +317,7 @@ public class ManagementAPIClusterSupport implements GroupMembershipListener {
                 RpcManagerImpl rpcManager = (RpcManagerImpl) cache.getAdvancedCache().getRpcManager();
                 if (rpcManager != null) {
                     result.setRPCCount(rpcManager.getReplicationCount());
-                    result.setRPCMisses(rpcManager.getReplicationFailures());
+                    result.setRPCFailures(rpcManager.getReplicationFailures());
                 }
 
                 // get the txn stats
@@ -324,11 +331,11 @@ public class ManagementAPIClusterSupport implements GroupMembershipListener {
         } catch (ServiceNotFoundException snf) {
             // handle service not found - we need to access the cache service, but it ain't there
             // this can occur if an app has been undeployed on this node only
-            result.setView("null view");
+            result.setInView(false);
         } catch (IllegalStateException ise) {
-            // handle illegal state exception - we need to get the value of the service, and the service
-            // is there, but it ain't available (UP)
-            // result: we cannot return a value for the cluster state - throw?
+            // we need to get the value of the service, and the service is there, but it ain't available (UP)
+            // this can happen if the cache service is stopped on this node
+            result.setInView(false);
         }
         return result;
     }
@@ -385,9 +392,9 @@ public class ManagementAPIClusterSupport implements GroupMembershipListener {
             f.setAccessible(true);
             return ((AtomicInteger)f.get(o)).get();
         } catch(NoSuchFieldException nsfe) {
-            System.out.println("No such field: " + name);
+            // no-op
         } catch(IllegalAccessException iae) {
-            System.out.println("Illegal access for field: " + name);
+            // no-op
         }
         return 0;
     }

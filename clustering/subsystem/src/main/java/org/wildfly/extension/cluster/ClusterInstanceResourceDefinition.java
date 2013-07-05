@@ -41,6 +41,8 @@ public class ClusterInstanceResourceDefinition extends SimpleResourceDefinition 
     private final boolean runtimeRegistration;
 
     // metrics
+    // these attributes are actually LIST<PROPERTY>, but are not part of the persistence model
+
     static final SimpleAttributeDefinition RPC_STATS =
             new SimpleAttributeDefinitionBuilder(ModelKeys.RPC_STATS, ModelType.STRING, true)
                     .setStorageRuntime()

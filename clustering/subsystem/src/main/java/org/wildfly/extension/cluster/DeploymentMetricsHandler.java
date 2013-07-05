@@ -2,6 +2,7 @@ package org.wildfly.extension.cluster;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.wildfly.extension.cluster.ClusterSubsystemMessages.MESSAGES;
 
 import java.util.HashMap;
 import java.util.List;
@@ -116,11 +117,17 @@ public class DeploymentMetricsHandler extends AbstractRuntimeOnlyHandler {
         context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
     }
 
+    /*
+     * NOTE: for {A,B,C} if a cache is undeployed on B, we do not want the replies displayed
+     * on A and C to refer to B. We use rsp.isInView() for this.
+     */
+
     private ModelNode createCacheView(List<RemoteCacheResponse> rsps) {
         ModelNode result = new ModelNode();
         for (RemoteCacheResponse rsp : rsps) {
-            // create a LIST of PROPERTY
-            result.add(rsp.getResponder().getName(), rsp.getView());
+            if (rsp.isInView()) {
+                result.add(rsp.getResponder().getName(), rsp.getView());
+            }
         }
         return result;
     }
@@ -128,9 +135,9 @@ public class DeploymentMetricsHandler extends AbstractRuntimeOnlyHandler {
     private ModelNode createDistribution(List<RemoteCacheResponse> rsps) {
         ModelNode result = new ModelNode();
         for (RemoteCacheResponse rsp : rsps) {
-            // create a LIST of PROPERTY
-            String stats = String.format("entries: %s", rsp.getEntries());
-            result.add(rsp.getResponder().getName(), stats);
+            if (rsp.isInView()) {
+                result.add(rsp.getResponder().getName(), MESSAGES.cacheDistributionStats(rsp.getEntries()));
+            }
         }
         return result;
     }
@@ -138,10 +145,10 @@ public class DeploymentMetricsHandler extends AbstractRuntimeOnlyHandler {
     private ModelNode createOperationStats(List<RemoteCacheResponse> rsps) {
         ModelNode result = new ModelNode();
         for (RemoteCacheResponse rsp : rsps) {
-            // create a LIST of PROPERTY
-            String stats = String.format("get hits: %s get misses: %s, puts %s, remove hits: %s remove misses: %s",
-                    rsp.getHits(), rsp.getMisses(), rsp.getStores(), rsp.getRemoveHits(), rsp.getRemoveMisses());
-            result.add(rsp.getResponder().getName(), stats);
+            if (rsp.isInView()) {
+                String stats = MESSAGES.cacheOperationStats(rsp.getHits(), rsp.getMisses(), rsp.getStores(), rsp.getRemoveHits(), rsp.getRemoveMisses());
+                result.add(rsp.getResponder().getName(), stats);
+            }
         }
         return result;
     }
@@ -149,9 +156,10 @@ public class DeploymentMetricsHandler extends AbstractRuntimeOnlyHandler {
     private ModelNode createRpcStats(List<RemoteCacheResponse> rsps) {
         ModelNode result = new ModelNode();
         for (RemoteCacheResponse rsp : rsps) {
-            // create a LIST of PROPERTY
-            String stats = String.format("RPC count: %s, RPC misses: %s", rsp.getRPCCount(), rsp.getRPCMisses());
-            result.add(rsp.getResponder().getName(), stats);
+            if (rsp.isInView()) {
+                String stats = MESSAGES.cacheRPCStats(rsp.getRPCCount(), rsp.getRPCFailures());
+                result.add(rsp.getResponder().getName(), stats);
+            }
         }
         return result;
     }
@@ -159,11 +167,11 @@ public class DeploymentMetricsHandler extends AbstractRuntimeOnlyHandler {
     private ModelNode createTxnStats(List<RemoteCacheResponse> rsps) {
         ModelNode result = new ModelNode();
         for (RemoteCacheResponse rsp : rsps) {
-            // create a LIST of PROPERTY
-            String stats = String.format("prepares: %s, commits: %s, rollbacks: %s", rsp.getPrepares(), rsp.getCommits(), rsp.getRollbacks());
-            result.add(rsp.getResponder().getName(), stats);
+            if (rsp.isInView()) {
+                String stats = MESSAGES.cacheTxnStats(rsp.getPrepares(), rsp.getCommits(), rsp.getRollbacks());
+                result.add(rsp.getResponder().getName(), stats);
+            }
         }
         return result;
     }
-
 }

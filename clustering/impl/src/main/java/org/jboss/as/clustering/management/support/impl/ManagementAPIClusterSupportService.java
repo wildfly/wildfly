@@ -1,5 +1,6 @@
 package org.jboss.as.clustering.management.support.impl;
 
+import org.jboss.as.clustering.impl.ClusteringImplLogger;
 import org.jboss.as.clustering.impl.CoreGroupCommunicationService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -44,7 +45,7 @@ public class ManagementAPIClusterSupportService implements Service<ManagementAPI
             try {
                 this.support.stop();
             } catch (Exception e) {
-                System.out.println("can't stop");
+                ClusteringImplLogger.ROOT_LOGGER.managementAPIClusterSupportStopFailed(e);
             }
         }
     }

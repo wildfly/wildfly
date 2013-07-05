@@ -2,6 +2,7 @@ package org.wildfly.extension.cluster;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.wildfly.extension.cluster.ClusterSubsystemMessages.MESSAGES;
 
 import java.util.HashMap;
 import java.util.List;
@@ -113,8 +114,7 @@ public class ClusterMetricsHandler extends AbstractRuntimeOnlyHandler {
             int unicasts = rsp.getAsyncUnicasts() + rsp.getSyncUnicasts();
             int multicasts = rsp.getAsyncMulticasts() + rsp.getSyncMulticasts();
             int anycasts = rsp.getAsyncAnycasts() + rsp.getSyncAnycasts();
-            String stats = String.format("unicasts: %s, multicasts: %s, anycasts: %s", unicasts, multicasts, anycasts);
-            result.add(rsp.getResponder().getName(), stats);
+            result.add(rsp.getResponder().getName(), MESSAGES.clusterRPCStats(unicasts, multicasts, anycasts));
         }
         return result;
     }
@@ -132,7 +132,17 @@ public class ClusterMetricsHandler extends AbstractRuntimeOnlyHandler {
         ModelNode result = new ModelNode();
         for (RemoteClusterResponse rsp : rsps) {
             // create a LIST of PROPERTY
-            result.add(rsp.getResponder().getName(), rsp.getViewHistory());
+            String viewHistory = rsp.getViewHistory();
+            if (viewHistory != null) {
+                String[] viewHistoryElements = viewHistory.split("\n");
+                ModelNode parts = new ModelNode();
+                for (String viewHistoryElement : viewHistoryElements) {
+                    parts.add(new ModelNode(viewHistoryElement));
+                }
+                result.add(rsp.getResponder().getName(), parts);
+            } else {
+                result.add(rsp.getResponder().getName(), new ModelNode());
+            }
         }
         return result;
     }
