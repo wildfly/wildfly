@@ -239,7 +239,8 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         // bundles
         info = connection.getMBeanInfo(createObjectName(LEGACY_DOMAIN + ":subsystem=jmx"));
         Assert.assertNotNull(info);
-        Assert.assertEquals("The configuration of the JMX subsystem.", info.getDescription());
+        Assert.assertEquals(JMXExtension.getResourceDescriptionResolver("").getResourceBundle(Locale.getDefault())
+                .getString(CommonAttributes.JMX), info.getDescription());
 
         info = connection.getMBeanInfo(createObjectName(LEGACY_DOMAIN + ":subsystem=test"));
         Assert.assertNotNull(info);
@@ -321,7 +322,8 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         // bundles
         info = connection.getMBeanInfo(createObjectName(LEGACY_DOMAIN + ":subsystem=jmx"));
         Assert.assertNotNull(info);
-        Assert.assertEquals("The configuration of the JMX subsystem.", info.getDescription());
+        Assert.assertEquals(JMXExtension.getResourceDescriptionResolver("").getResourceBundle(Locale.getDefault())
+                .getString(CommonAttributes.JMX), info.getDescription());
 
         info = connection.getMBeanInfo(createObjectName(LEGACY_DOMAIN + ":subsystem=test"));
         Assert.assertNotNull(info);
@@ -363,7 +365,8 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         // bundles
         info = connection.getMBeanInfo(createObjectName(EXPR_DOMAIN + ":subsystem=jmx"));
         Assert.assertNotNull(info);
-        Assert.assertEquals("The configuration of the JMX subsystem.", info.getDescription());
+        Assert.assertEquals(JMXExtension.getResourceDescriptionResolver("").getResourceBundle(Locale.getDefault())
+                .getString(CommonAttributes.JMX), info.getDescription());
 
         info = connection.getMBeanInfo(createObjectName(EXPR_DOMAIN + ":subsystem=test"));
         Assert.assertNotNull(info);
