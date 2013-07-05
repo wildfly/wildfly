@@ -1392,13 +1392,23 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                             return session;
                         }
 
-                        IncomingDistributableSessionData data = this.distributedCacheManager.getSessionData(realId, initialLoad);
-                        if (data != null) {
-                            session.update(data);
-                        } else {
-                            // Clunky; we set the session variable to null to indicate
-                            // no data so move on
-                            session = null;
+                        BatchingManager bm = this.distributedCacheManager.getBatchingManager();
+                        try {
+                            if (!bm.isBatchInProgress()) {
+                                bm.startBatch();
+                            }
+                            IncomingDistributableSessionData data = this.distributedCacheManager.getSessionData(realId, initialLoad);
+                            if (data != null) {
+                                session.update(data);
+                            } else {
+                                // Clunky; we set the session variable to null to indicate
+                                // no data so move on
+                                session = null;
+                                bm.setBatchRollbackOnly();
+                                bm.endBatch();
+                            }
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
                         }
 
                         if (session != null) {

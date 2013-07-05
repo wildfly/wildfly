@@ -66,6 +66,7 @@ import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.session.StandardSession;
 import org.apache.catalina.session.StandardSessionFacade;
 import org.apache.catalina.util.Enumerator;
+import org.jboss.as.clustering.web.BatchingManager;
 import org.jboss.as.clustering.web.DistributableSessionMetadata;
 import org.jboss.as.clustering.web.DistributedCacheManager;
 import org.jboss.as.clustering.web.IncomingDistributableSessionData;
@@ -559,7 +560,16 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
             isNew = true;
         }
 
-        this.relinquishSessionOwnership(false);
+        BatchingManager bm = this.distributedCacheManager.getBatchingManager();
+        try {
+            if (bm.isBatchInProgress()) {
+                bm.endBatch();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            this.relinquishSessionOwnership(false);
+        }
     }
 
     private void relinquishSessionOwnership(boolean remove) {
@@ -621,8 +631,18 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
         boolean localCall = true;
         boolean localOnly = false;
         expire(notify, localCall, localOnly, ClusteredSessionNotificationCause.INVALIDATE);
-        // Preemptively relinquish ownership that was acquired in access() - don't wait for endAccess()
-        this.relinquishSessionOwnership(false);
+
+        BatchingManager bm = this.distributedCacheManager.getBatchingManager();
+        try {
+            if (bm.isBatchInProgress()) {
+                bm.endBatch();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            // Preemptively relinquish ownership that was acquired in access() - don't wait for endAccess()
+            this.relinquishSessionOwnership(true);
+        }
     }
 
     @Override
