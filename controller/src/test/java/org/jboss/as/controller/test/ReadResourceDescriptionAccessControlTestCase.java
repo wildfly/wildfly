@@ -243,7 +243,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDirectReadResourceDefinitionNoSensitivityAsMonitor() throws Exception {
+    public void testDirectWildcardReadResourceDefinitionNoSensitivityAsMonitor() throws Exception {
         registerOneChildRootResource();
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
@@ -252,7 +252,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDirectReadResourceDefinitionNoSensitivityAsMaintainer() throws Exception {
+    public void testDirectWildcardReadResourceDefinitionNoSensitivityAsMaintainer() throws Exception {
         registerOneChildRootResource();
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
@@ -261,13 +261,42 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDirectReadResourceDefinitionNoSensitivityAsAdministrator() throws Exception {
+    public void testDirectWildcardReadResourceDefinitionNoSensitivityAsAdministrator() throws Exception {
         registerOneChildRootResource();
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
+
+    @Test
+    public void testDirectReadResourceDefinitionNoSensitivityAsMonitor() throws Exception {
+        registerOneChildRootResource();
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.MONITOR, false);
+        ModelNode result = executeForResult(op);
+        System.out.println(result);
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+    }
+
+    @Test
+    public void testDirectReadResourceDefinitionNoSensitivityAsMaintainer() throws Exception {
+        registerOneChildRootResource();
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.MAINTAINER, false);
+        ModelNode result = executeForResult(op);
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+    }
+
+    @Test
+    public void testDirectReadResourceDefinitionNoSensitivityAsAdministrator() throws Exception {
+        registerOneChildRootResource();
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.ADMINISTRATOR, false);
+        ModelNode result = executeForResult(op);
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+    }
+
 
     @Test
     public void testRecursiveReadResourceDefinitionAccessReadWriteSensitivityAsMonitor() throws Exception {
@@ -304,26 +333,51 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDirectReadResourceDefinitionAccessReadWriteSensitivityAsMonitor() throws Exception {
-        registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionAccessReadWriteSensitivityAsMonitor", true, true, true));
+    public void testDirectWildcardReadResourceDefinitionAccessReadWriteSensitivityAsMonitor() throws Exception {
+        registerOneChildRootResource(createSensitivityConstraint("testDirectWildcardReadResourceDefinitionAccessReadWriteSensitivityAsMonitor", true, true, true));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         assertNonAccessibleDefaultAccessControl(result);//Since access is restricted, the monitor role should not be able to access the resource
     }
 
     @Test
-    public void testDirectReadResourceDefinitionAccessReadWriteSensitivityAsMaintainer() throws Exception {
-        registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionAccessReadWriteSensitivityAsMaintainer", true, true, true));
+    public void testDirectWildcardReadResourceDefinitionAccessReadWriteSensitivityAsMaintainer() throws Exception {
+        registerOneChildRootResource(createSensitivityConstraint("testDirectWildcardReadResourceDefinitionAccessReadWriteSensitivityAsMaintainer", true, true, true));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         assertNonAccessibleDefaultAccessControl(result);//Since access is restricted, the maintainer role should not be able to access the resource
     }
 
     @Test
-    public void testDirectReadResourceDefinitionAccessReadWriteSensitivityAsAdministrator() throws Exception {
-        registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionAccessReadWriteSensitivityAsAdministrator", true, true, true));
+    public void testDirectWildcardReadResourceDefinitionAccessReadWriteSensitivityAsAdministrator() throws Exception {
+        registerOneChildRootResource(createSensitivityConstraint("testDirectWildcardReadResourceDefinitionAccessReadWriteSensitivityAsAdministrator", true, true, true));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+    }
+
+    @Test
+    public void testDirectReadResourceDefinitionAccessReadWriteSensitivityAsMonitor() throws Exception {
+        registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionAccessReadWriteSensitivityAsMonitor", true, true, true));
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.MONITOR, false);
+        ModelNode result = executeForResult(op);
+        assertNonAccessibleDefaultAccessControl(result);//Since access is restricted, the monitor role should not be able to access the resource
+    }
+
+    @Test
+    public void testDirectReadResourceDefinitionAccessReadWriteSensitivityAsMaintainer() throws Exception {
+        registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionAccessReadWriteSensitivityAsMaintainer", true, true, true));
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.MAINTAINER, false);
+        ModelNode result = executeForResult(op);
+        assertNonAccessibleDefaultAccessControl(result);//Since access is restricted, the maintainer role should not be able to access the resource
+    }
+
+    @Test
+    public void testDirectReadResourceDefinitionAccessReadWriteSensitivityAsAdministrator() throws Exception {
+        registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionAccessReadWriteSensitivityAsAdministrator", true, true, true));
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.ADMINISTRATOR, false);
+        ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
@@ -367,8 +421,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDirectReadResourceDefinitionReadWriteSensitivityAsMonitor() throws Exception {
-        registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionReadWriteSensitivityAsMonitor", false, true, true));
+    public void testDirectWildcardReadResourceDefinitionReadWriteSensitivityAsMonitor() throws Exception {
+        registerOneChildRootResource(createSensitivityConstraint("testDirectWildcardReadResourceDefinitionReadWriteSensitivityAsMonitor", false, true, true));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
@@ -377,8 +431,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDirectReadResourceDefinitionReadWriteSensitivityAsMaintainer() throws Exception {
-        registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionReadWriteSensitivityAsMaintainer", false, true, true));
+    public void testDirectWildcardReadResourceDefinitionReadWriteSensitivityAsMaintainer() throws Exception {
+        registerOneChildRootResource(createSensitivityConstraint("testDirectWildcardReadResourceDefinitionReadWriteSensitivityAsMaintainer", false, true, true));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
@@ -387,10 +441,39 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDirectReadResourceDefinitionReadWriteSensitivityAsAdministrator() throws Exception {
-        registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionReadWriteSensitivityAsAdministrator", false, true, true));
+    public void testDirectWildcardReadResourceDefinitionReadWriteSensitivityAsAdministrator() throws Exception {
+        registerOneChildRootResource(createSensitivityConstraint("testDirectWildcardReadResourceDefinitionReadWriteSensitivityAsAdministrator", false, true, true));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+    }
+
+    @Test
+    public void testDirectReadResourceDefinitionReadWriteSensitivityAsMonitor() throws Exception {
+        registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionReadWriteSensitivityAsMonitor", false, true, true));
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.MONITOR, false);
+        ModelNode result = executeForResult(op);
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        //Reads are sensitive so we cannot read them as the default says we can
+        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+    }
+
+    @Test
+    public void testDirectReadResourceDefinitionReadWriteSensitivityAsMaintainer() throws Exception {
+        registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionReadWriteSensitivityAsMaintainer", false, true, true));
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.MAINTAINER, false);
+        ModelNode result = executeForResult(op);
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        //Reads and writes are sensitive so we cannot read or write them as the default says we can
+        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+    }
+
+    @Test
+    public void testDirectReadResourceDefinitionReadWriteSensitivityAsAdministrator() throws Exception {
+        registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionReadWriteSensitivityAsAdministrator", false, true, true));
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.ADMINISTRATOR, false);
+        ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
@@ -435,8 +518,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDirectReadResourceDefinitionWriteSensitivityAsMonitor() throws Exception {
-        registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionWriteSensitivityAsMonitor", false, false, true));
+    public void testDirectWildcardReadResourceDefinitionWriteSensitivityAsMonitor() throws Exception {
+        registerOneChildRootResource(createSensitivityConstraint("testDirectWildcardReadResourceDefinitionWriteSensitivityAsMonitor", false, false, true));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
@@ -445,8 +528,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDirectReadResourceDefinitionWriteSensitivityAsMaintainer() throws Exception {
-        registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionWriteSensitivityAsMaintainer", false, false, true));
+    public void testDirectWildcardReadResourceDefinitionWriteSensitivityAsMaintainer() throws Exception {
+        registerOneChildRootResource(createSensitivityConstraint("testDirectWildcardReadResourceDefinitionWriteSensitivityAsMaintainer", false, false, true));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
@@ -455,13 +538,43 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDirectReadResourceDefinitionWriteSensitivityAsAdministrator() throws Exception {
-        registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionWriteSensitivityAsAdministrator", false, false, true));
+    public void testDirectWildcardReadResourceDefinitionWriteSensitivityAsAdministrator() throws Exception {
+        registerOneChildRootResource(createSensitivityConstraint("testDirectWildcardReadResourceDefinitionWriteSensitivityAsAdministrator", false, false, true));
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
+
+    @Test
+    public void testDirectReadResourceDefinitionWriteSensitivityAsMonitor() throws Exception {
+        registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionWriteSensitivityAsMonitor", false, false, true));
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.MONITOR, false);
+        ModelNode result = executeForResult(op);
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        //Reads are sensitive so we cannot read them as the default says we can
+        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+    }
+
+    @Test
+    public void testDirectReadResourceDefinitionWriteSensitivityAsMaintainer() throws Exception {
+        registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionWriteSensitivityAsMaintainer", false, false, true));
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.MAINTAINER, false);
+        ModelNode result = executeForResult(op);
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        //Writes are sensitive so we cannot write them as the default says we can
+        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+    }
+
+    @Test
+    public void testDirectReadResourceDefinitionWriteSensitivityAsAdministrator() throws Exception {
+        registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionWriteSensitivityAsAdministrator", false, false, true));
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.ADMINISTRATOR, false);
+        ModelNode result = executeForResult(op);
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+    }
+
 
     @Test
     public void testRecursiveReadResourceDefinitionReadSensitivityAsMonitor() throws Exception {
@@ -505,11 +618,43 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
+    public void testDirectWildcardReadResourceDefinitionReadSensitivityAsMonitor() throws Exception {
+        //Does it really make sense to be able to configure that reads are sensitive but not writes?
+        registerOneChildRootResource(createSensitivityConstraint("testDirectWildcardReadResourceDefinitionReadSensitivityAsMonitor", false, true, false));
+        ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
+        ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        //Reads are sensitive so we cannot read them as the default says we can
+        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+    }
+
+    @Test
+    public void testDirectWildcardReadResourceDefinitionReadSensitivityAsMaintainer() throws Exception {
+        //Does it really make sense to be able to configure that reads are sensitive but not writes?
+        registerOneChildRootResource(createSensitivityConstraint("testDirectWildcardReadResourceDefinitionReadSensitivityAsMaintainer", false, true, false));
+        ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MAINTAINER, false);
+        ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        //Reads are sensitive so we cannot read them as the default says we can
+        checkResourcePermissions(accessControl.defaultControl, false, true, false, true);
+    }
+
+    @Test
+    public void testDirectWildcardReadResourceDefinitionReadSensitivityAsAdministrator() throws Exception {
+        //Does it really make sense to be able to configure that reads are sensitive but not writes?
+        registerOneChildRootResource(createSensitivityConstraint("testDirectWildcardReadResourceDefinitionReadSensitivityAsAdministrator", false, true, false));
+        ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
+        ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+    }
+
+    @Test
     public void testDirectReadResourceDefinitionReadSensitivityAsMonitor() throws Exception {
         //Does it really make sense to be able to configure that reads are sensitive but not writes?
         registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionReadSensitivityAsMonitor", false, true, false));
-        ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
-        ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.MONITOR, false);
+        ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         //Reads are sensitive so we cannot read them as the default says we can
         checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
@@ -519,8 +664,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     public void testDirectReadResourceDefinitionReadSensitivityAsMaintainer() throws Exception {
         //Does it really make sense to be able to configure that reads are sensitive but not writes?
         registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionReadSensitivityAsMaintainer", false, true, false));
-        ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MAINTAINER, false);
-        ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.MAINTAINER, false);
+        ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         //Reads are sensitive so we cannot read them as the default says we can
         checkResourcePermissions(accessControl.defaultControl, false, true, false, true);
@@ -530,8 +675,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     public void testDirectReadResourceDefinitionReadSensitivityAsAdministrator() throws Exception {
         //Does it really make sense to be able to configure that reads are sensitive but not writes?
         registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionReadSensitivityAsAdministrator", false, true, false));
-        ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
-        ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.ADMINISTRATOR, false);
+        ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
@@ -808,8 +953,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDeepDirectLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsMonitor() throws Exception {
-        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsMonitor", true, true, true);
+    public void testDeepDirectWildcardLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsMonitor() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectWildcardLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsMonitor", true, true, true);
         registerDeepResource(constraint);
 
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
@@ -820,8 +965,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDeepDirectLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsMaintainer() throws Exception {
-        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsMaintainer", true, true, true);
+    public void testDeepDirectWildcardLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsMaintainer() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectWildcardLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsMaintainer", true, true, true);
         registerDeepResource(constraint);
 
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MAINTAINER, false);
@@ -832,8 +977,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDeepDirectLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsAdministrator() throws Exception {
-        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsAdministrator", true, true, true);
+    public void testDeepDirectWildcardLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsAdministrator() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectWildcardLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsAdministrator", true, true, true);
         registerDeepResource(constraint);
 
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
@@ -846,8 +991,46 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDeepDirectLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsMonitor() throws Exception {
-        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsMonitor", true, true, true);
+    public void testDeepDirectLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsMonitor() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsMonitor", true, true, true);
+        registerDeepResource(constraint);
+
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.MONITOR, false);
+        ModelNode result = executeForResult(op);
+        assertNonAccessibleDefaultAccessControl(result); //Since access is restricted, the monitor role cannot access the resources
+        ModelNode childDesc = getChildDescription(result, TWO);
+        assertNonAccessibleDefaultAccessControl(childDesc); //Since access is restricted, the monitor role cannot access the resources
+    }
+
+    @Test
+    public void testDeepDirectLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsMaintainer() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsMaintainer", true, true, true);
+        registerDeepResource(constraint);
+
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.MAINTAINER, false);
+        ModelNode result = executeForResult(op);
+        assertNonAccessibleDefaultAccessControl(result); //Since access is restricted, the monitor role cannot access the resources
+        ModelNode childDesc = getChildDescription(result, TWO);
+        assertNonAccessibleDefaultAccessControl(childDesc); //Since access is restricted, the monitor role cannot access the resources
+    }
+
+    @Test
+    public void testDeepDirectLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsAdministrator() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsAdministrator", true, true, true);
+        registerDeepResource(constraint);
+
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.ADMINISTRATOR, false);
+        ModelNode result = executeForResult(op);
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        ModelNode childDesc = getChildDescription(result, TWO);
+        accessControl = getResourceAccessControl(childDesc);
+        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+    }
+
+    @Test
+    public void testDeepDirectWildcardLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsMonitor() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectWildcardLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsMonitor", true, true, true);
         registerDeepResource(constraint);
 
         ModelNode op = createReadResourceDescriptionOperation(TWO_ADDR, StandardRole.MONITOR, false);
@@ -856,8 +1039,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDeepDirectLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsMaintainer() throws Exception {
-        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsMaintainer", true, true, true);
+    public void testDeepDirectWildcardLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsMaintainer() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectWildcardLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsMaintainer", true, true, true);
         registerDeepResource(constraint);
 
         ModelNode op = createReadResourceDescriptionOperation(TWO_ADDR, StandardRole.MAINTAINER, false);
@@ -866,12 +1049,43 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDeepDirectLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsAdministrator() throws Exception {
-        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsAdministrator", true, true, true);
+    public void testDeepDirectWildcardLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsAdministrator() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectWildcardLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsAdministrator", true, true, true);
         registerDeepResource(constraint);
 
         ModelNode op = createReadResourceDescriptionOperation(TWO_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+    }
+
+    @Test
+    public void testDeepDirectLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsMonitor() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsMonitor", true, true, true);
+        registerDeepResource(constraint);
+
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_TWO_A_ADDR, StandardRole.MONITOR, false);
+        ModelNode result = executeForResult(op);
+        assertNonAccessibleDefaultAccessControl(result); //Since access is restricted, the monitor role cannot access the resources
+    }
+
+    @Test
+    public void testDeepDirectLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsMaintainer() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsMaintainer", true, true, true);
+        registerDeepResource(constraint);
+
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_TWO_A_ADDR, StandardRole.MAINTAINER, false);
+        ModelNode result = executeForResult(op);
+        assertNonAccessibleDefaultAccessControl(result); //Since access is restricted, the maintainer role cannot access the resources
+    }
+
+    @Test
+    public void testDeepDirectLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsAdministrator() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsAdministrator", true, true, true);
+        registerDeepResource(constraint);
+
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_TWO_A_ADDR, StandardRole.ADMINISTRATOR, false);
+        ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
@@ -928,8 +1142,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDeepDirectLevelOneReadResourceDefinitionReadWriteSensitivityAsMonitor() throws Exception {
-        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelOneReadResourceDefinitionReadWriteSensitivityAsMonitor", false, true, true);
+    public void testDeepDirectWildcardLevelOneReadResourceDefinitionReadWriteSensitivityAsMonitor() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectWildcardLevelOneReadResourceDefinitionReadWriteSensitivityAsMonitor", false, true, true);
         registerDeepResource(constraint);
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
@@ -941,8 +1155,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDeepDirectLevelOneReadResourceDefinitionReadWriteSensitivityAsMaintainer() throws Exception {
-        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelOneReadResourceDefinitionReadWriteSensitivityAsMaintainer", false, true, true);
+    public void testDeepDirectWildcardLevelOneReadResourceDefinitionReadWriteSensitivityAsMaintainer() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectWildcardLevelOneReadResourceDefinitionReadWriteSensitivityAsMaintainer", false, true, true);
         registerDeepResource(constraint);
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
@@ -954,8 +1168,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDeepDirectLevelOneReadResourceDefinitionReadWriteSensitivityAsAdministrator() throws Exception {
-        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelOneReadResourceDefinitionReadWriteSensitivityAsAdministrator", false, true, true);
+    public void testDeepDirectWildcardLevelOneReadResourceDefinitionReadWriteSensitivityAsAdministrator() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectWildcardLevelOneReadResourceDefinitionReadWriteSensitivityAsAdministrator", false, true, true);
         registerDeepResource(constraint);
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
@@ -967,8 +1181,47 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDeepDirectLevelTwoReadResourceDefinitionReadWriteSensitivityAsMonitor() throws Exception {
-        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelTwoReadResourceDefinitionReadWriteSensitivityAsMonitor", false, true, true);
+    public void testDeepDirectLevelOneReadResourceDefinitionReadWriteSensitivityAsMonitor() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelOneReadResourceDefinitionReadWriteSensitivityAsMonitor", false, true, true);
+        registerDeepResource(constraint);
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.MONITOR, false);
+        ModelNode result = executeForResult(op);
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        ModelNode childDesc = getChildDescription(result, TWO);
+        accessControl = getResourceAccessControl(childDesc);
+        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+    }
+
+    @Test
+    public void testDeepDirectLevelOneReadResourceDefinitionReadWriteSensitivityAsMaintainer() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelOneReadResourceDefinitionReadWriteSensitivityAsMaintainer", false, true, true);
+        registerDeepResource(constraint);
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.MAINTAINER, false);
+        ModelNode result = executeForResult(op);
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        ModelNode childDesc = getChildDescription(result, TWO);
+        accessControl = getResourceAccessControl(childDesc);
+        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+    }
+
+    @Test
+    public void testDeepDirectLevelOneReadResourceDefinitionReadWriteSensitivityAsAdministrator() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelOneReadResourceDefinitionReadWriteSensitivityAsAdministrator", false, true, true);
+        registerDeepResource(constraint);
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.ADMINISTRATOR, false);
+        ModelNode result = executeForResult(op);
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        ModelNode childDesc = getChildDescription(result, TWO);
+        accessControl = getResourceAccessControl(childDesc);
+        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+    }
+
+    @Test
+    public void testDeepDirectWildcardLevelTwoReadResourceDefinitionReadWriteSensitivityAsMonitor() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectWildcardLevelTwoReadResourceDefinitionReadWriteSensitivityAsMonitor", false, true, true);
         registerDeepResource(constraint);
         ModelNode op = createReadResourceDescriptionOperation(TWO_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
@@ -977,8 +1230,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDeepDirectLevelTwoReadResourceDefinitionReadWriteSensitivityAsMaintainer() throws Exception {
-        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelTwoReadResourceDefinitionReadWriteSensitivityAsMaintainer", false, true, true);
+    public void testDeepDirectWildcardLevelTwoReadResourceDefinitionReadWriteSensitivityAsMaintainer() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectWildcardLevelTwoReadResourceDefinitionReadWriteSensitivityAsMaintainer", false, true, true);
         registerDeepResource(constraint);
         ModelNode op = createReadResourceDescriptionOperation(TWO_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
@@ -987,11 +1240,41 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     }
 
     @Test
-    public void testDeepDirectLevelTwoReadResourceDefinitionReadWriteSensitivityAsAdministrator() throws Exception {
-        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelTwoReadResourceDefinitionReadWriteSensitivityAsAdministrator", false, true, true);
+    public void testDeepDirectWildcardLevelTwoReadResourceDefinitionReadWriteSensitivityAsAdministrator() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectWildcardLevelTwoReadResourceDefinitionReadWriteSensitivityAsAdministrator", false, true, true);
         registerDeepResource(constraint);
         ModelNode op = createReadResourceDescriptionOperation(TWO_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+    }
+
+    @Test
+    public void testDeepDirectLevelTwoReadResourceDefinitionReadWriteSensitivityAsMonitor() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelTwoReadResourceDefinitionReadWriteSensitivityAsMonitor", false, true, true);
+        registerDeepResource(constraint);
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_TWO_A_ADDR, StandardRole.MONITOR, false);
+        ModelNode result = executeForResult(op);
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+    }
+
+    @Test
+    public void testDeepDirectLevelTwoReadResourceDefinitionReadWriteSensitivityAsMaintainer() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelTwoReadResourceDefinitionReadWriteSensitivityAsMaintainer", false, true, true);
+        registerDeepResource(constraint);
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_TWO_A_ADDR, StandardRole.MAINTAINER, false);
+        ModelNode result = executeForResult(op);
+        ResourceAccessControl accessControl = getResourceAccessControl(result);
+        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+    }
+
+    @Test
+    public void testDeepDirectLevelTwoReadResourceDefinitionReadWriteSensitivityAsAdministrator() throws Exception {
+        SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelTwoReadResourceDefinitionReadWriteSensitivityAsAdministrator", false, true, true);
+        registerDeepResource(constraint);
+        ModelNode op = createReadResourceDescriptionOperation(ONE_A_TWO_A_ADDR, StandardRole.ADMINISTRATOR, false);
+        ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
