@@ -104,8 +104,10 @@ public class SensitiveVaultExpressionConstraint extends AllowAllowNotConstraint 
             if (value.getType() == ModelType.EXPRESSION
                     || value.getType() == ModelType.STRING) {
                 String valueString = value.asString();
-                return ExpressionResolver.EXPRESSION_PATTERN.matcher(valueString).matches()
-                        && VAULT_PATTERN.matcher(valueString).matches();
+                if (ExpressionResolver.EXPRESSION_PATTERN.matcher(valueString).matches()) {
+                    valueString = valueString.substring(valueString.indexOf("${") + 2, valueString.indexOf("}"));
+                    return VAULT_PATTERN.matcher(valueString).matches();
+                }
             }
             return false;
         }

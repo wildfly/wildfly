@@ -26,6 +26,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHECK_RESOURCE_ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXCEPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXECUTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
@@ -500,14 +502,17 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
 
                 ModelNode defaultControl;
                 if (accessControlContext.defaultWildcardAccessControl != null) {
-                    accessControl.get(accessControlContext.opAddress.toModelNode().asString()).set(accessControlContext.defaultWildcardAccessControl);
+                    accessControl.get(DEFAULT).set(accessControlContext.defaultWildcardAccessControl);
                     defaultControl = accessControlContext.defaultWildcardAccessControl;
                 } else {
+                    //TODO this should always be present
                     defaultControl = new ModelNode();
                 }
 
 
                 if (accessControlContext.localResourceAccessControlResults != null) {
+                    ModelNode exceptions = accessControl.get(EXCEPTIONS);
+                    exceptions.setEmptyObject();
                     for (Map.Entry<PathAddress, ModelNode> entry : accessControlContext.localResourceAccessControlResults.entrySet()) {
                         if (!entry.getValue().isDefined()) {
                             //If access was denied CheckResourceAccessHandler will leave this as undefined
@@ -515,7 +520,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                         }
                         if (!entry.getValue().equals(defaultControl)) {
                             //This has different values to the default due to vault expressions being used for attribute values
-                            accessControl.get(entry.getKey().toModelNode().asString()).set(entry.getValue());
+                            exceptions.get(entry.getKey().toModelNode().asString()).set(entry.getValue());
                         }
                     }
                 }
