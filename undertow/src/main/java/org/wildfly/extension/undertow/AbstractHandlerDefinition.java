@@ -42,14 +42,24 @@ public abstract class AbstractHandlerDefinition extends PersistentResourceDefini
     protected final String name;
 
     protected AbstractHandlerDefinition(final String name, AbstractAddStepHandler addHandler, AbstractRemoveStepHandler removeHandler) {
-        super(PathElement.pathElement(name), UndertowExtension.getResolver(Constants.HANDLER, name), addHandler, removeHandler);
-        this.name = name;
+        this(name, Constants.HANDLER, addHandler, removeHandler);
     }
 
     protected AbstractHandlerDefinition(final String name) {
-        super(PathElement.pathElement(name), UndertowExtension.getResolver(Constants.HANDLER, name));
+        this(name, Constants.HANDLER);
+    }
+
+
+    protected AbstractHandlerDefinition(final String name, String prefix, AbstractAddStepHandler addHandler, AbstractRemoveStepHandler removeHandler) {
+        super(PathElement.pathElement(name), UndertowExtension.getResolver(prefix, name), addHandler, removeHandler);
         this.name = name;
     }
+
+    protected AbstractHandlerDefinition(final String name, String prefix) {
+        super(PathElement.pathElement(name), UndertowExtension.getResolver(prefix, name));
+        this.name = name;
+    }
+
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {

@@ -26,6 +26,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.wildfly.extension.undertow.AbstractHandlerDefinition;
+import org.wildfly.extension.undertow.Constants;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
@@ -34,7 +35,7 @@ abstract class Filter extends AbstractHandlerDefinition {
     private String name;
 
     protected Filter(String name) {
-        super(name);
+        super(name, Constants.FILTER);
         this.name = name;
     }
 
