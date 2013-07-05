@@ -640,11 +640,10 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         }
 
         void checkResourceAccess(final OperationContext context, final ModelNode nodeDescription, Map<String, ModelNode> operations) {
-            if (opAddress.size() == 0 || opAddress.getLastElement().isWildcard()) {
-                final ModelNode op = Util.createOperation(CHECK_RESOURCE_ACCESS, opAddress);
-                defaultWildcardAccessControl = new ModelNode();
-                context.addStep(op, new CheckResourceAccessHandler(true, defaultWildcardAccessControl, nodeDescription, operations), OperationContext.Stage.MODEL, true);
-            }
+            final ModelNode defaultAccess = Util.createOperation(CHECK_RESOURCE_ACCESS, opAddress);
+            defaultWildcardAccessControl = new ModelNode();
+            context.addStep(defaultAccess, new CheckResourceAccessHandler(true, defaultWildcardAccessControl, nodeDescription, operations), OperationContext.Stage.MODEL, true);
+
             for (final PathAddress address : localResourceAddresses) {
                 final ModelNode op = Util.createOperation(CHECK_RESOURCE_ACCESS, address);
                 final ModelNode resultHolder = new ModelNode();
