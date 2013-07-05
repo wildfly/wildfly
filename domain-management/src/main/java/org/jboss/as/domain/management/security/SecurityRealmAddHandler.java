@@ -80,7 +80,8 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        context.createResource(PathAddress.EMPTY_ADDRESS);
+        ModelNode model = context.createResource(PathAddress.EMPTY_ADDRESS).getModel();
+        SecurityRealmResourceDefinition.MAP_GROUPS_TO_ROLES.validateAndSet(operation, model);
 
         // Add a step validating that we have the correct authentication child resources
         ModelNode validationOp = AuthenticationValidatingHandler.createOperation(operation);
@@ -110,7 +111,8 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        final SecurityRealmService securityRealmService = new SecurityRealmService(realmName);
+        final boolean mapGroupsToRoles = SecurityRealmResourceDefinition.MAP_GROUPS_TO_ROLES.resolveModelAttribute(context, model).asBoolean();
+        final SecurityRealmService securityRealmService = new SecurityRealmService(realmName, mapGroupsToRoles);
         final ServiceName realmServiceName = SecurityRealmService.BASE_SERVICE_NAME.append(realmName);
         ServiceBuilder<?> realmBuilder = serviceTarget.addService(realmServiceName, securityRealmService);
 

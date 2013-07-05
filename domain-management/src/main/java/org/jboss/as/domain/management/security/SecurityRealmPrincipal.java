@@ -26,15 +26,15 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import java.security.Principal;
 
 /**
- * Base class for Principals define in DomainManagement.
+ * Base class for Principals defined for security realms.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public abstract class DomainManagementPrincipal implements Principal {
+public abstract class SecurityRealmPrincipal implements Principal {
 
     private final String name;
 
-    public DomainManagementPrincipal(final String name) {
+    SecurityRealmPrincipal(final String name) {
         if (name == null) {
             throw MESSAGES.canNotBeNull("name");
         }
@@ -55,10 +55,10 @@ public abstract class DomainManagementPrincipal implements Principal {
 
     @Override
     public boolean equals(Object obj) {
-        return obj != null && this.getClass().equals(obj.getClass()) ? equals((DomainManagementPrincipal) obj) : false;
+        return obj != null && this.getClass().equals(obj.getClass()) ? equals((SecurityRealmPrincipal) obj) : false;
     }
 
-    protected boolean equals(DomainManagementPrincipal principal) {
+    protected boolean equals(SecurityRealmPrincipal principal) {
         return this == principal || name.equals(principal.name);
     }
 
