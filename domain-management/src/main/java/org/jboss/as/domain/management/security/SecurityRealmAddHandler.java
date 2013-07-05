@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAP_GROUPS_TO_ROLES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
@@ -78,7 +79,8 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        context.createResource(PathAddress.EMPTY_ADDRESS);
+        ModelNode model = context.createResource(PathAddress.EMPTY_ADDRESS).getModel();
+        model.get(MAP_GROUPS_TO_ROLES).set(operation.get(MAP_GROUPS_TO_ROLES));
 
         // Add a step validating that we have the correct authentication child resources
         ModelNode validationOp = AuthenticationValidatingHandler.createOperation(operation);
@@ -108,7 +110,8 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        final SecurityRealmService securityRealmService = new SecurityRealmService(realmName);
+        final boolean mapGroupsToRoles = model.hasDefined(MAP_GROUPS_TO_ROLES) ? model.get(MAP_GROUPS_TO_ROLES).asBoolean() : false;
+        final SecurityRealmService securityRealmService = new SecurityRealmService(realmName, mapGroupsToRoles);
         final ServiceName realmServiceName = SecurityRealmService.BASE_SERVICE_NAME.append(realmName);
         ServiceBuilder<?> realmBuilder = serviceTarget.addService(realmServiceName, securityRealmService);
 

@@ -87,22 +87,22 @@ public class PropertiesSubjectSupplemental extends PropertiesFileLoader implemen
         Set<Principal> principals = subject.getPrincipals();
         Properties properties = getProperties();
         // In general we expect exactly one RealmUser, however we could cope with multiple
-        // identities so load the roles for them all.
+        // identities so load the groups for them all.
         for (RealmUser current : users) {
-            principals.addAll(loadRoles(properties, current));
+            principals.addAll(loadGroups(properties, current));
         }
     }
 
-    private Set<RealmRole> loadRoles(final Properties properties, final RealmUser user) {
-        Set<RealmRole> response;
-        String rolesString = properties.getProperty(user.getName(), "").trim();
-        if (rolesString.length() > 0) {
-            String[] roles = rolesString.split(COMMA);
-            response = new HashSet<RealmRole>(roles.length);
-            for (String current : roles) {
+    private Set<RealmGroup> loadGroups(final Properties properties, final RealmUser user) {
+        Set<RealmGroup> response;
+        String groupString = properties.getProperty(user.getName(), "").trim();
+        if (groupString.length() > 0) {
+            String[] groups = groupString.split(COMMA);
+            response = new HashSet<RealmGroup>(groups.length);
+            for (String current : groups) {
                 String cleaned = current.trim();
                 if (cleaned.length() > 0) {
-                    response.add(new RealmRole(cleaned));
+                    response.add(new RealmGroup(cleaned));
                 }
             }
         } else {

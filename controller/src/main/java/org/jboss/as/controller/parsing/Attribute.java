@@ -78,6 +78,7 @@ public enum Attribute {
     KEY_PASSWORD("key-password"),
     KEYSTORE_PASSWORD("keystore-password"),
     MANAGEMENT_SUBSYSTEM_ENDPOINT("management-subsystem-endpoint"),
+    MAP_GROUPS_TO_ROLES("map-groups-to-roles"),
     MAX_SIZE("max-size"),
     MAX_THREADS("max-threads"),
     MECHANISM("mechanism"),

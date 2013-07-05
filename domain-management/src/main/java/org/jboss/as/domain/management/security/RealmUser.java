@@ -29,7 +29,7 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RealmUser extends DomainManagementPrincipal {
+public class RealmUser extends SecurityRealmPrincipal {
 
     private final String realm;
 
