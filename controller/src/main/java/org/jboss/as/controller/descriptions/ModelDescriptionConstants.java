@@ -342,7 +342,6 @@ public class ModelDescriptionConstants {
     public static final String WILDCARD = "wildcard";
     public static final String WRITE_ATTRIBUTE_OPERATION = "write-attribute";
     public static final String XML_NAMESPACES = "xml-namespaces";
-    public static final String CHECK_RESOURCE_ACCESS = "check-resource-access";
 
     private ModelDescriptionConstants() {
     }

@@ -131,7 +131,14 @@ public class GlobalOperationHandlers {
         root.registerOperationHandler(ReadResourceDescriptionHandler.CheckResourceAccessHandler.DEFINITION, new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                //Just use an empty operation handler here, people who need
+                //Just use an empty operation handler here, this is a private operation and people who want to call it need to instantiate the step handler
+                throw new OperationFailedException("This should never be called");
+            }
+        }, true);
+        root.registerOperationHandler(ReadResourceDescriptionHandler.CheckResourceAccessHandler.DEFAULT_DEFINITION, new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                //Just use an empty operation handler here, this is a private operation and people who want to call it need to instantiate the step handler
                 throw new OperationFailedException("This should never be called");
             }
         }, true);
@@ -143,6 +150,10 @@ public class GlobalOperationHandlers {
                                           org.jboss.as.controller.operations.global.UndefineAttributeHandler.INSTANCE, true);
         }
     }
+
+    public static final String CHECK_DEFAULT_RESOURCE_ACCESS = "check-default-resource-access";
+
+    public static final String CHECK_RESOURCE_ACCESS = "check-resource-access";
 
     private GlobalOperationHandlers() {
         //

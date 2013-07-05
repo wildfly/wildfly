@@ -667,7 +667,7 @@ public interface OperationContext extends ExpressionResolver {
 
     AuthorizationResult authorize(ModelNode operation, Set<Action.ActionEffect> effects);
 
-    AuthorizationResponse authorizeResource(boolean attributes);
+    AuthorizationResponse authorizeResource(boolean attributes, boolean isDefaultResource);
 
     //TODO javadoc attributes
     AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue);

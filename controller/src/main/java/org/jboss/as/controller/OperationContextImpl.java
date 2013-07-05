@@ -57,6 +57,7 @@ import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.ReadResourceHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -830,9 +831,9 @@ final class OperationContextImpl extends AbstractOperationContext {
     }
 
     @Override
-    public AuthorizationResponse authorizeResource(boolean attributes) {
+    public AuthorizationResponse authorizeResource(boolean attributes, boolean isDefaultResponse) {
         ModelNode op = new ModelNode();
-        op.get(OP).set(ReadResourceHandler.DEFINITION.getName());
+        op.get(OP).set(isDefaultResponse ? GlobalOperationHandlers.CHECK_DEFAULT_RESOURCE_ACCESS : GlobalOperationHandlers.CHECK_RESOURCE_ACCESS);
         op.get(OP_ADDR).set(activeStep.operation.get(OP_ADDR));
         if (activeStep.operation.hasDefined(OPERATION_HEADERS)) {
             op.get(OPERATION_HEADERS).set(activeStep.operation.get(OPERATION_HEADERS));
@@ -869,7 +870,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                     TargetAttribute targetAttribute = null;
                     if (authResp.getAttributeResult(attr, ActionEffect.ACCESS) == null) {
                         if (targetAttribute == null) {
-                            targetAttribute = createTargetAttribute(authResp, attr);
+                            targetAttribute = createTargetAttribute(authResp, attr, isDefaultResponse);
                         }
                         Action action = authResp.standardAction.limitAction(ActionEffect.ACCESS);
                         authResp.addAttributeResult(attr, ActionEffect.ACCESS, modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, targetAttribute));
@@ -879,7 +880,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                         if (authResult == null) {
                             Action action = authResp.standardAction.limitAction(actionEffect);
                             if (targetAttribute == null) {
-                                targetAttribute = createTargetAttribute(authResp, attr);
+                                targetAttribute = createTargetAttribute(authResp, attr, isDefaultResponse);
                             }
                             authResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, targetAttribute);
                             authResp.addAttributeResult(attr, actionEffect, authResult);
@@ -893,9 +894,15 @@ final class OperationContextImpl extends AbstractOperationContext {
         return authResp;
     }
 
-    private TargetAttribute createTargetAttribute(AuthorizationResponseImpl authResp, String attributeName) {
+    private TargetAttribute createTargetAttribute(AuthorizationResponseImpl authResp, String attributeName, boolean isDefaultResponse) {
         ModelNode model = authResp.targetResource.getResource().getModel();
-        ModelNode currentValue = model.has(attributeName) ? model.get(attributeName) : new ModelNode();
+        ModelNode currentValue;
+        if (isDefaultResponse) {
+            //Just use an empty model node to avoid using vault expressions
+            currentValue = new ModelNode();
+        } else {
+            currentValue = model.has(attributeName) ? model.get(attributeName) : new ModelNode();
+        }
         AttributeAccess attributeAccess = authResp.targetResource.getResourceRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
         return new TargetAttribute(attributeAccess, currentValue, authResp.targetResource);
 

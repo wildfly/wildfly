@@ -384,7 +384,7 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     }
 
     @Override
-    public AuthorizationResponse authorizeResource(boolean attributes) {
-        return primaryContext.authorizeResource(attributes);
+    public AuthorizationResponse authorizeResource(boolean attributes, boolean isDefaultResource) {
+        return primaryContext.authorizeResource(attributes, isDefaultResource);
     }
 }
