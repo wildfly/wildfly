@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.access.Environment;
@@ -75,6 +76,7 @@ public class DefaultPermissionFactory implements PermissionFactory {
         this(combinationPolicy, roleMapper, getStandardConstraintFactories());
     }
 
+    /** Only for testing use, other than the delegation from the primary constructor */
     DefaultPermissionFactory(CombinationPolicy combinationPolicy, RoleMapper roleMapper,
                              Set<ConstraintFactory> constraintFactories) {
         this.combinationPolicy = combinationPolicy;
@@ -98,7 +100,7 @@ public class DefaultPermissionFactory implements PermissionFactory {
         Map<Action.ActionEffect, CombinationManagementPermission> combined = null;
         for (String roleName : user) {
             if (combinationPolicy == CombinationPolicy.REJECTING && simple != null) {
-                throw new SecurityException("Users with multiple roles are not allowed");
+                throw ControllerMessages.MESSAGES.illegalMultipleRoles();
             }
             ManagementPermissionCollection role = null;
             synchronized (this) {
@@ -139,8 +141,6 @@ public class DefaultPermissionFactory implements PermissionFactory {
         if (combined == null) {
             result = simple;
         } else {
-            // TODO if I get here, I'm screwed -- requiredPerms are always MgmtPermColl(SimpleMgmtPerm),
-            // TODO so this MgmtPermColl(CombinationMgmtPerm) will never .imply() any of the requiredPerms
             result = new ManagementPermissionCollection(CombinationManagementPermission.class);
             for (CombinationManagementPermission cmp : combined.values()) {
                 result.add(cmp);
@@ -211,18 +211,14 @@ public class DefaultPermissionFactory implements PermissionFactory {
     }
 
     private synchronized Map<String, ManagementPermissionCollection> configureDefaultPermissions() {
-        Set<ConstraintFactory> factories;
-        // TODO not needed, the method is already synchronized
-        synchronized (this) {
-            factories = new HashSet<ConstraintFactory>(this.constraintFactories);
-        }
+
         Map<String, ManagementPermissionCollection> result = new HashMap<String, ManagementPermissionCollection>();
         for (StandardRole standardRole : StandardRole.values()) {
             ManagementPermissionCollection rolePerms = new ManagementPermissionCollection(SimpleManagementPermission.class);
             for (Action.ActionEffect actionEffect : Action.ActionEffect.values()) {
                 if (standardRole.isActionEffectAllowed(actionEffect)) {
                     Set<Constraint> constraints = new TreeSet<Constraint>();
-                    for (ConstraintFactory factory : factories) {
+                    for (ConstraintFactory factory : this.constraintFactories) {
                         constraints.add(factory.getStandardUserConstraint(standardRole, actionEffect));
                     }
                     rolePerms.add(new SimpleManagementPermission(actionEffect, constraints.toArray(new Constraint[constraints.size()])));

@@ -57,7 +57,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -173,26 +172,22 @@ public class WriteAttributeTestCase extends AbstractRbacTestBase {
     }
 
     @Test
-    @Ignore("ManagementPermissionCollection.implies doesn't work in case of users with multiple roles")
     public void testMonitorOperator() {
         test(true, false, StandardRole.MONITOR, StandardRole.OPERATOR);
     }
 
     @Test
-    @Ignore("ManagementPermissionCollection.implies doesn't work in case of users with multiple roles")
     public void testMonitorAdministrator() {
         test(true, true, StandardRole.MONITOR, StandardRole.ADMINISTRATOR);
     }
 
     @Test
-    @Ignore("ManagementPermissionCollection.implies doesn't work in case of users with multiple roles")
     public void testAdministratorAuditor() {
         test(true, true, StandardRole.ADMINISTRATOR, StandardRole.AUDITOR);
     }
 
     @Test
-    @Ignore("ManagementPermissionCollection.implies doesn't work in case of users with multiple roles")
-    public void testMopnitorAuditor() {
+    public void testMonitorAuditor() {
         test(false, true, StandardRole.MONITOR, StandardRole.AUDITOR);
     }
 

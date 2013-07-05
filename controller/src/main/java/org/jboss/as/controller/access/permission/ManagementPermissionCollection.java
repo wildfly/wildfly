@@ -64,9 +64,7 @@ public class ManagementPermissionCollection extends PermissionCollection {
 
     @Override
     public boolean implies(Permission permission) {
-        // TODO this doesn't work in case of users with multiple roles, as CombinationMgmtPerm and SimpleMgmtPerm
-        // TODO are different (this is the same TODO as in DefaultPermissionFactory.getUserPermissions)
-        if (type.isAssignableFrom(permission.getClass())) {
+        if (permission instanceof ManagementPermission) {
             ManagementPermission mperm = (ManagementPermission) permission;
             ManagementPermission provided = permissions.get(mperm.getActionEffect());
             return provided != null && provided.implies(mperm);
