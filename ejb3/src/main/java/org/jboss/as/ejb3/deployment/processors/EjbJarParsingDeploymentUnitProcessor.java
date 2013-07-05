@@ -42,6 +42,7 @@ import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacement;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.cache.EJBBoundCacheParser;
 import org.jboss.as.ejb3.clustering.EJBBoundClusteringMetaDataParser;
+import org.jboss.as.ejb3.deliveryactive.parser.EJBBoundDeliveryActiveMetaDataParser;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.interceptor.ContainerInterceptorsParser;
@@ -299,6 +300,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         parsers.put(SecurityRoleMetaDataParser.NAMESPACE_URI, SecurityRoleMetaDataParser.INSTANCE);
         parsers.put(EJBBoundResourceAdapterBindingMetaDataParser.LEGACY_NAMESPACE_URI, EJBBoundResourceAdapterBindingMetaDataParser.INSTANCE);
         parsers.put(EJBBoundResourceAdapterBindingMetaDataParser.NAMESPACE_URI, EJBBoundResourceAdapterBindingMetaDataParser.INSTANCE);
+        parsers.put(EJBBoundDeliveryActiveMetaDataParser.NAMESPACE_URI, EJBBoundDeliveryActiveMetaDataParser.INSTANCE);
         parsers.put("urn:iiop", new IIOPMetaDataParser());
         parsers.put("urn:iiop:1.0", new IIOPMetaDataParser());
         parsers.put("urn:trans-timeout", new TransactionTimeoutMetaDataParser());

@@ -68,6 +68,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     private final MessageEndpointFactory endpointFactory;
     private final Class<?> messageListenerInterface;
     private final ClassLoader classLoader;
+    private volatile boolean deliveryActive;
     private ResourceAdapter resourceAdapter;
     private Endpoint endpoint;
 
@@ -75,8 +76,9 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
      * Construct a new instance.
      *
      * @param ejbComponentCreateService the component configuration
+     * @param deliveryActive true if the component must start delivering messages as soon as it is started
      */
-    protected MessageDrivenComponent(final MessageDrivenComponentCreateService ejbComponentCreateService, final Class<?> messageListenerInterface, final ActivationSpec activationSpec) {
+    protected MessageDrivenComponent(final MessageDrivenComponentCreateService ejbComponentCreateService, final Class<?> messageListenerInterface, final ActivationSpec activationSpec, final boolean deliveryActive) {
         super(ejbComponentCreateService);
 
         StatelessObjectFactory<MessageDrivenComponentInstance> factory = new StatelessObjectFactory<MessageDrivenComponentInstance>() {
@@ -142,6 +144,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
             }
         };
         this.endpointFactory = new JBossMessageEndpointFactory(componentClassLoader, service, (Class<Object>) getComponentClass());
+        this.deliveryActive = deliveryActive;
     }
 
     @Override
@@ -176,14 +179,8 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         getShutDownInterceptorFactory().start();
         super.start();
 
-        ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-        try {
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
-            this.endpoint.activate(endpointFactory, activationSpec);
-        } catch (ResourceException e) {
-            throw new RuntimeException(e);
-        } finally {
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
+        if (deliveryActive) {
+            activate();
         }
 
         if (this.pool != null) {
@@ -194,6 +191,31 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     @Override
     public void stop() {
 
+        deactivate();
+        deliveryActive = false;
+
+        getShutDownInterceptorFactory().shutdown();
+        if (this.pool != null) {
+            this.pool.stop();
+        }
+
+        super.stop();
+    }
+
+    private void activate() {
+        ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        try {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+
+            this.endpoint.activate(endpointFactory, activationSpec);
+        } catch (ResourceException e) {
+            throw new RuntimeException(e);
+        } finally {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
+        }
+    }
+
+    private void deactivate() {
         ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
@@ -203,14 +225,20 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
         }
+    }
 
-        getShutDownInterceptorFactory().shutdown();
-        if (this.pool != null) {
-            this.pool.stop();
-        }
+    public void startDelivery() {
+        this.deliveryActive = true;
+        activate();
+    }
 
+    public void stopDelivery() {
+        this.deactivate();
+        this.deliveryActive = false;
+    }
 
-        super.stop();
+    public boolean isDeliveryActive() {
+        return deliveryActive;
     }
 
     @Override
