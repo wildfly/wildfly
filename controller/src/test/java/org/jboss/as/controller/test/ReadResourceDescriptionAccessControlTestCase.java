@@ -164,47 +164,39 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
     // These three are the same for different roles
     @Test
-    public void testNonRecursiveReadRootResourceDefinitionNoSensitivityNoResourceAsMonitor() throws Exception {
+    public void testDirectWildcardReadResourceDefinitionNoSensitivityNoResourceAsMonitor() throws Exception {
         registerOneChildRootResource();
         //Remove the childred to make sure the access-control=default part gets populated anyway
         rootResource.removeChild(ONE_A);
         rootResource.removeChild(ONE_B);
-        ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MONITOR, false);
-        ModelNode result = executeForResult(op);
+        ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
+        ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
-        ModelNode childDesc = getChildDescription(result, ONE);
-        accessControl = getResourceAccessControl(childDesc);
         checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
     }
 
     @Test
-    public void testNonRecursiveReadRootResourceDefinitionNoSensitivityNoResourceAsMaintainer() throws Exception {
+    public void testDirectWildcardReadResourceDefinitionNoSensitivityNoResourceAsMaintainer() throws Exception {
         registerOneChildRootResource();
         //Remove the childred to make sure the access-control=default part gets populated anyway
         rootResource.removeChild(ONE_A);
         rootResource.removeChild(ONE_B);
-        ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MAINTAINER, false);
-        ModelNode result = executeForResult(op);
+        ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MAINTAINER, false);
+        ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
+        System.out.println(result);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
-        ModelNode childDesc = getChildDescription(result, ONE);
-        accessControl = getResourceAccessControl(childDesc);
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
     @Test
-    public void testNonRecursiveReadRootResourceDefinitionNoSensitivityNoResourceAsAdministrator() throws Exception {
+    public void testDirectWildcardReadResourceDefinitionNoSensitivityNoResourceAsAdministrator() throws Exception {
         registerOneChildRootResource();
         //Remove the childred to make sure the access-control=default part gets populated anyway
         rootResource.removeChild(ONE_A);
         rootResource.removeChild(ONE_B);
-        ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.ADMINISTRATOR, false);
-        ModelNode result = executeForResult(op);
+        ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
+        ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
-        ModelNode childDesc = getChildDescription(result, ONE);
-        accessControl = getResourceAccessControl(childDesc);
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
@@ -250,6 +242,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerOneChildRootResource();
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
+        System.out.println(op);
+        System.out.println(result);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
     }
