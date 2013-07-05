@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.jboss.as.controller.ModelVersion;
@@ -44,8 +45,11 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.subsystem.test.SingleClassFilter;
 import org.jboss.dmr.ModelNode;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -54,6 +58,19 @@ import org.junit.Test;
  * </p>
  */
 public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTest {
+
+    private static Locale defaultLocale;
+
+    @BeforeClass
+    public static void setDefaultLocale() {
+        defaultLocale = Locale.getDefault();
+        Locale.setDefault(new Locale("jbossloves", "FR"));
+    }
+
+    @AfterClass
+    public static void restoreDefaultLocale() {
+        Locale.setDefault(defaultLocale);
+    }
 
     public SecurityDomainModelv12UnitTestCase() {
         super(SecurityExtension.SUBSYSTEM_NAME, new SecurityExtension());
@@ -132,7 +149,8 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
 
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.MASTER, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-security:" +"7.2.0.Final")
+                .addMavenResourceURL("org.jboss.as:jboss-as-security:" + "7.2.0.Final")
+                .excludeFromParent(SingleClassFilter.createFilter(SecurityLogger.class))
                 .dontPersistXml();
 
 
@@ -173,6 +191,7 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-security:" + controllerVersion.getMavenGavVersion())
+                .excludeFromParent(SingleClassFilter.createFilter(SecurityLogger.class))
                 .dontPersistXml();
 
 
@@ -196,6 +215,7 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-security:" + controllerVersion.getMavenGavVersion())
+                .excludeFromParent(SingleClassFilter.createFilter(SecurityLogger.class))
                 .dontPersistXml();
 
         KernelServices mainServices = builder.build();

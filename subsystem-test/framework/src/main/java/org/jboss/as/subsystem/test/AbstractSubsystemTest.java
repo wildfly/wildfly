@@ -4,6 +4,7 @@ import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.jboss.as.controller.Extension;
@@ -41,6 +42,7 @@ public abstract class AbstractSubsystemTest {
 
     @SuppressWarnings("deprecation")
     protected AbstractSubsystemTest(final String mainSubsystemName, final Extension mainExtension, final Comparator<PathAddress> removeOrderComparator) {
+        Locale.setDefault(new Locale("jbossloves", "FR"));
         this.mainSubsystemName = mainSubsystemName;
         this.delegate = new SubsystemTestDelegate(this.getClass(), mainSubsystemName, mainExtension, removeOrderComparator);
     }

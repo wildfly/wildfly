@@ -1,24 +1,24 @@
 /*
-* JBoss, Home of Professional Open Source.
-* Copyright 2011, Red Hat Middleware LLC, and individual contributors
-* as indicated by the @author tags. See the copyright.txt file in the
-* distribution for a full listing of individual contributors.
-*
-* This is free software; you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as
-* published by the Free Software Foundation; either version 2.1 of
-* the License, or (at your option) any later version.
-*
-* This software is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this software; if not, write to the Free
-* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.txn;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -46,6 +46,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -58,9 +59,12 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.subsystem.test.SingleClassFilter;
 import org.jboss.as.txn.subsystem.TransactionExtension;
 import org.jboss.dmr.ModelNode;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -68,6 +72,19 @@ import org.junit.Test;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
+
+    private static Locale defaultLocale;
+
+    @BeforeClass
+    public static void setDefaultLocale() {
+        defaultLocale = Locale.getDefault();
+        Locale.setDefault(new Locale("jbossloves", "FR"));
+    }
+
+    @AfterClass
+    public static void restoreDefaultLocale() {
+        Locale.setDefault(defaultLocale);
+    }
 
     public TransactionSubsystemTestCase() {
         super(TransactionExtension.SUBSYSTEM_NAME, new TransactionExtension());
@@ -123,7 +140,8 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_2_FINAL, modelVersion)
-            .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.2.Final");
+            .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.2.Final")
+            .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -142,7 +160,8 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_3_FINAL, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.3.Final");
+            .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.3.Final")
+            .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -150,7 +169,6 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         checkSubsystemModelTransformation(mainServices, modelVersion);
     }
-
 
     @Test
     public void testTransformersFull110() throws Exception {
@@ -162,7 +180,8 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_2_FINAL, modelVersion)
-            .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.2.Final");
+            .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.2.Final")
+            .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -182,7 +201,6 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     }
 
-
     @Test
     public void testTransformersFull111() throws Exception {
         String subsystemXml = readResource("full-expressions.xml");
@@ -193,8 +211,9 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         final PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, mainSubsystemName));
         // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_3_FINAL, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_3_FINAL, modelVersion).addChildFirstClassPattern(ADD)
                 .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.3.Final")
+                .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class))
                 .addOperationValidationResolve(ADD, subsystemAddress);
 
         KernelServices mainServices = builder.build();
@@ -212,7 +231,8 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         // Add legacy subsystems
         ModelVersion version_1_1 = ModelVersion.create(1, 1, 0);
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_2_FINAL, version_1_1)
-            .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.2.Final");
+            .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.2.Final")
+            .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
 
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());
@@ -223,21 +243,21 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         List<ModelNode> ops = builder.parseXmlResource("full-expressions.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1, ops, new FailedOperationTransformationConfig()
             .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)),
-                    new FailedOperationTransformationConfig.RejectExpressionsConfig(
-                            DEFAULT_TIMEOUT,
-                            ENABLE_STATISTICS,
-                            ENABLE_TSM_STATUS,
-                            BINDING,
-                            STATUS_BINDING,
-                            RECOVERY_LISTENER,
-                            NODE_IDENTIFIER,
-                            PATH,
-                            RELATIVE_TO,
-                            PROCESS_ID_SOCKET_BINDING,
-                            PROCESS_ID_SOCKET_MAX_PORTS,
-                            OBJECT_STORE_PATH,
-                            OBJECT_STORE_RELATIVE_TO
-                            )));
+                new FailedOperationTransformationConfig.RejectExpressionsConfig(
+                DEFAULT_TIMEOUT,
+                ENABLE_STATISTICS,
+                ENABLE_TSM_STATUS,
+                BINDING,
+                STATUS_BINDING,
+                RECOVERY_LISTENER,
+                NODE_IDENTIFIER,
+                PATH,
+                RELATIVE_TO,
+                PROCESS_ID_SOCKET_BINDING,
+                PROCESS_ID_SOCKET_MAX_PORTS,
+                OBJECT_STORE_PATH,
+                OBJECT_STORE_RELATIVE_TO
+                )));
     }
 
     @Test
@@ -247,7 +267,8 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         // Add legacy subsystems
         ModelVersion version_1_1_1 = ModelVersion.create(1, 1, 1);
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_3_FINAL, version_1_1_1)
-                .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.3.Final");
+            .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.3.Final")
+            .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
 
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());

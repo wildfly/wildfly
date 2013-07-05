@@ -34,6 +34,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import org.jboss.modules.filter.ClassFilter;
 
 import org.sonatype.aether.collection.DependencyCollectionException;
 import org.sonatype.aether.resolution.DependencyResolutionException;
@@ -62,6 +63,7 @@ public class ChildFirstClassLoaderBuilder {
     private final List<URL> classloaderURLs = new ArrayList<URL>();
     private final List<Pattern> parentFirst = new ArrayList<Pattern>();
     private final List<Pattern> childFirst = new ArrayList<Pattern>();
+    private ClassFilter parentExclusionFilter;
 
 
     public ChildFirstClassLoaderBuilder() {
@@ -250,11 +252,16 @@ public class ChildFirstClassLoaderBuilder {
 
     public ClassLoader build() {
         ClassLoader parent = this.getClass().getClassLoader() != null ? this.getClass().getClassLoader() : null;
-        return new ChildFirstClassLoader(parent, parentFirst, childFirst, classloaderURLs.toArray(new URL[classloaderURLs.size()]));
+        return new ChildFirstClassLoader(parent, parentFirst, childFirst, parentExclusionFilter, classloaderURLs.toArray(
+                new URL[classloaderURLs.size()]));
     }
 
     private Pattern compilePattern(String pattern) {
         return Pattern.compile(pattern.replace(".", "\\.").replace("*", ".*"));
+    }
+
+    public void excludeFromParent(ClassFilter exclusionFilter) {
+        this.parentExclusionFilter = exclusionFilter;
     }
 
 }

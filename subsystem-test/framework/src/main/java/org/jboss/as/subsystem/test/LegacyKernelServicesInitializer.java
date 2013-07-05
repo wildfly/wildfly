@@ -28,6 +28,7 @@ import java.net.URL;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.OperationFixer;
+import org.jboss.modules.filter.ClassFilter;
 
 
 /**
@@ -116,7 +117,6 @@ public interface LegacyKernelServicesInitializer {
     LegacyKernelServicesInitializer dontPersistXml();
 
     /**
-<<<<<<< HEAD
      * By default the {@link KernelServicesBuilder#build()} method will use the boot operations passed into the
      * legacy controller and try to boot up the current controller with those. This is for checking that e.g. cli scripts written
      * against the legacy controller still work with the current one. To turn this check off call this method.
@@ -170,4 +170,12 @@ public interface LegacyKernelServicesInitializer {
      * @param pathAddress the address of the operation, the pathAddress may use {@code *} as a wildcard for both the key and the value of {@link org.jboss.as.controller.PathElement}s
      */
     LegacyKernelServicesInitializer addOperationValidationResolve(String name, PathAddress pathAddress);
+
+    /**
+     * By default all the parent classloader classes are available to be kernel which may provides conflict with classesloaded
+     * through the service initializer. Thus we provide an exclusion mecanism.
+     *
+     * @param exclusionFilter the class filter used to exclude class from the the parent classloader when resolving.
+     */
+    LegacyKernelServicesInitializer excludeFromParent(ClassFilter exclusionFilter);
 }
