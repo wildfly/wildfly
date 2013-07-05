@@ -1,0 +1,47 @@
+<html>
+	<head>
+		<title>Logout Page</title>
+	</head>
+	<body>
+		<script type="text/javascript">		
+			function sendRequest(path, user, pw, resultCB) {
+				var req = getXMLHttpRequestObject();
+				req.open("POST", path, true, user, pw);
+				req.onreadystatechange = function() {
+					if (req.readyState == 4) {
+						resultCB(req.responseText);
+					}
+				}
+				req.send(null);
+			}
+
+			function getXMLHttpRequestObject() {
+				var ref = null;
+				if (window.XMLHttpRequest) {
+					ref = new XMLHttpRequest();
+				} else {
+					ref = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+				}
+				return ref;
+			}
+
+			window.onload = function() {
+				// 1. Call logout with bad credentials
+				sendRequest("/logout/LogoutHandler?action=step1", "enter-login-here", "blah", function () {
+					// 2. Call logout with browser credentials
+					sendRequest("/logout/LogoutHandler?action=step2", null, null, function() {
+						// 3. Call logout with browser credentials one last time (necessary for some browsers)
+						sendRequest("/logout/LogoutHandler?action=step3", null, null, function() {
+							window.location.replace("/console/");
+						});
+					});
+				});
+			}
+		</script>
+		
+		<div>
+			If this page does not automatically refresh in 3 seconds, 
+			<a href="/">click here to complete the logout.</a>
+		</div>
+	</body>
+</html>

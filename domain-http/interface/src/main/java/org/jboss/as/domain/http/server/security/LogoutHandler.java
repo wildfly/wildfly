@@ -22,17 +22,12 @@
 
 package org.jboss.as.domain.http.server.security;
 
+import static io.undertow.predicate.Predicates.not;
+import static io.undertow.predicate.Predicates.path;
 import static io.undertow.util.Headers.AUTHORIZATION;
 import static io.undertow.util.Headers.HOST;
-import static io.undertow.util.Headers.LOCATION;
 import static io.undertow.util.Headers.REFERER;
 import static io.undertow.util.Headers.USER_AGENT;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.List;
-
 import io.undertow.io.IoCallback;
 import io.undertow.security.idm.DigestAlgorithm;
 import io.undertow.security.impl.DigestAuthenticationMechanism;
@@ -40,8 +35,21 @@ import io.undertow.security.impl.DigestQop;
 import io.undertow.security.impl.SimpleNonceManager;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.PredicateHandler;
+import io.undertow.server.handlers.RedirectHandler;
+import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.StatusCodes;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.List;
+
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
 
 /**
  *
@@ -51,6 +59,9 @@ import io.undertow.util.StatusCodes;
 public class LogoutHandler implements HttpHandler {
 
     public static final String PATH = "/logout";
+
+    private static final String DOMAIN_HTTP_INTERFACE_MODULE = "org.jboss.as.domain-http-interface";
+    private static final String DOMAIN_HTTP_INTERFACE_SLOT = "main";
 
     private final DigestAuthenticationMechanism digestMechanism;
     private final DigestAuthenticationMechanism fakeRealmdigestMechanism;
@@ -64,12 +75,36 @@ public class LogoutHandler implements HttpHandler {
                 "/management", new SimpleNonceManager());
     }
 
+    public static HttpHandler createLogoutContext(String realmName) throws ModuleLoadException {
+        final ClassPathResourceManager resource = new ClassPathResourceManager(getClassLoader(Module.getCallerModuleLoader(), DOMAIN_HTTP_INTERFACE_MODULE, DOMAIN_HTTP_INTERFACE_SLOT), "");
+        final io.undertow.server.handlers.resource.ResourceHandler handler = new io.undertow.server.handlers.resource.ResourceHandler()
+                .setCacheTime(60 * 60 * 24 * 31)
+                .setAllowed(not(path("META-INF")))
+                .setResourceManager(resource)
+                .setDirectoryListingEnabled(false);
+
+        LogoutHandler logoutHandler = new LogoutHandler(realmName);
+        // If the request is for /Logout.html, use the resource handler, otherwise, use LogoutHandler itself
+        PredicateHandler handleLogoutHTML = new PredicateHandler(path("/Logout.html"), handler, logoutHandler);
+        // If the request is for "", redirect to /Logout.html, otherwise use the above handler
+        PredicateHandler redirectToLogoutHTML = new PredicateHandler(path(""), new RedirectHandler(PATH + "/Logout.html"), handleLogoutHTML);
+        return redirectToLogoutHTML;
+    }
+
+    private static ClassLoader getClassLoader(final ModuleLoader moduleLoader, final String module, final String slot) throws ModuleLoadException {
+        ModuleIdentifier id = ModuleIdentifier.create(module, slot);
+        ClassLoader cl = moduleLoader.loadModule(id).getClassLoader();
+
+        return cl;
+    }
+
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         final HeaderMap requestHeaders = exchange.getRequestHeaders();
         final HeaderMap responseHeaders = exchange.getResponseHeaders();
 
         String authorization = requestHeaders.getFirst(AUTHORIZATION);
+        String action = exchange.getQueryParameters().get("action").getFirst();
         String rawQuery = exchange.getQueryString();
         boolean query = rawQuery != null && rawQuery.contains("logout");
 
@@ -100,40 +135,33 @@ public class LogoutHandler implements HttpHandler {
                 return;
             }
         }
-        /*
-         * Main sequence of events:
-         *
-         * 1. Redirect to self using user:pass@host form of authority. This forces Safari to overwrite its cache. (Also forces
-         * FF and Chrome, but not absolutely necessary) Set the logout query param as a state signal for step 2 2. Send 401
-         * digest without a nonce stale marker, this will force FF and Chrome and likely other browsers to assume an invalid
-         * (old) password. In the case of Opera, which doesn't invalidate under such a circumstance, send an invalid realm. This
-         * will overwrite its auth cache, since it indexes it by host and not realm. 3. The credentials in 307 redirect wlll be
-         * transparently accepted and a final redirect to the console is performed. Opera ignores these, so the user must hit
-         * escape which will use javascript to perform the redirect
-         *
-         * In the case of Internet Explorer, all of this will be bypassed and will simply redirect to the console. The console
-         * MUST use a special javascript call before redirecting to logout.
+
+        /**
+         * The basic flow here is:
+         * 1. User views /logout/Logout.html
+         * 2. Logout.html sends an ajax request to /logout/LogoutHandler?action=step1, while attempting to send fake credentials
+         *      - This returns a 401
+         *      - If the browser send the fake credentials, include a DigestAuthentication request
+         *      - Otherwise, do not (this avoids some browsers popping up a login dialog)
+         * 3. Logout.html sends another ajax request. Just reject it with a 401
+         *      - This steps prevents some browsers (Chrome/Chromium) from eventually resurrecting past credentials
+         * 4. Finally, the Logout.html page sends the step3 request. This is accepted with 200 OK, triggering the browser
+         *    to replace its cache credentials on all future requests.
+         * 5. Logout.html redirects back to / 
          */
-        if (!win && (authorization == null || !authorization.contains("enter-login-here"))) {
-            if (!query) {
-                responseHeaders.add(LOCATION, protocol + "://enter-login-here:blah@" + host + "/logout?logout");
-                exchange.setResponseCode(StatusCodes.TEMPORARY_REDIRECT);
-
-                return;
+        if (action.equalsIgnoreCase("step1")) {
+            if (authorization == null) {
+                DigestAuthenticationMechanism mech = opera ? fakeRealmdigestMechanism : digestMechanism;
+                mech.sendChallenge(exchange, null);
             }
-
-            DigestAuthenticationMechanism mech = opera ? fakeRealmdigestMechanism : digestMechanism;
-            mech.sendChallenge(exchange, null);
-            String reply = "<html><script type='text/javascript'>window.location=\"" + protocol + "://" + host
-                    + "/\";</script></html>";
             exchange.setResponseCode(StatusCodes.UNAUTHORIZED);
-            exchange.getResponseSender().send(reply, IoCallback.END_EXCHANGE);
-
-            return;
+            exchange.getResponseSender().send("Step 1 complete", IoCallback.END_EXCHANGE);
+        } else if (action.equalsIgnoreCase("step2")) {
+            exchange.setResponseCode(StatusCodes.UNAUTHORIZED);
+            exchange.getResponseSender().send("Step 2 complete", IoCallback.END_EXCHANGE);
+        } else if (action.equalsIgnoreCase("step3")) {
+            exchange.setResponseCode(StatusCodes.OK);
+            exchange.getResponseSender().send("Step 3 complete", IoCallback.END_EXCHANGE);
         }
-
-        // Success, now back to the login screen
-        responseHeaders.add(LOCATION, protocol + "://" + host + "/");
-        exchange.setResponseCode(StatusCodes.TEMPORARY_REDIRECT);
     }
 }
