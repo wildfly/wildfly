@@ -131,6 +131,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     private volatile ManagementResourceRegistration rootRegistration;
     private volatile Resource rootResource;
 
+    // These three are the same for different roles
     @Test
     public void testNonRecursiveReadRootResourceDefinitionNoSensitivityAsMonitor() throws Exception {
         registerOneChildRootResource();
@@ -161,6 +162,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
+    // These three are the same for different roles
     @Test
     public void testNonRecursiveReadRootResourceDefinitionNoSensitivityNoResourceAsMonitor() throws Exception {
         registerOneChildRootResource();
@@ -206,7 +208,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
-
+    // These three are the same for different roles
     @Test
     public void testRecursiveReadResourceDefinitionNoSensitivityAsMonitor() throws Exception {
         registerOneChildRootResource();
@@ -242,6 +244,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
+    // These three are the same for different roles
     @Test
     public void testDirectWildcardReadResourceDefinitionNoSensitivityAsMonitor() throws Exception {
         registerOneChildRootResource();
@@ -269,12 +272,13 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
+    // These three are the same for different roles - similar to the testDirectWildcardReadResourceDefinitionNoSensitivityXXX() ones but for a fixed resource
+
     @Test
     public void testDirectReadResourceDefinitionNoSensitivityAsMonitor() throws Exception {
         registerOneChildRootResource();
         ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.MONITOR, false);
         ModelNode result = executeForResult(op);
-        System.out.println(result);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
     }
@@ -297,6 +301,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
+    // These three are the same for different roles
 
     @Test
     public void testRecursiveReadResourceDefinitionAccessReadWriteSensitivityAsMonitor() throws Exception {
@@ -332,6 +337,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
+    // These three are the same for different roles
+
     @Test
     public void testDirectWildcardReadResourceDefinitionAccessReadWriteSensitivityAsMonitor() throws Exception {
         registerOneChildRootResource(createSensitivityConstraint("testDirectWildcardReadResourceDefinitionAccessReadWriteSensitivityAsMonitor", true, true, true));
@@ -357,6 +364,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
+    // These three are the same for different roles - similar to the testDirectWildcardReadResourceDefinitionAccessReadWriteSensitivityAsXXXX() ones but for a fixed resource
+
     @Test
     public void testDirectReadResourceDefinitionAccessReadWriteSensitivityAsMonitor() throws Exception {
         registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionAccessReadWriteSensitivityAsMonitor", true, true, true));
@@ -381,6 +390,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
+
+    // These three are the same for different roles
 
     @Test
     public void testRecursiveReadResourceDefinitionReadWriteSensitivityAsMonitor() throws Exception {
@@ -420,6 +431,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
+    // These three are the same for different roles
+
     @Test
     public void testDirectWildcardReadResourceDefinitionReadWriteSensitivityAsMonitor() throws Exception {
         registerOneChildRootResource(createSensitivityConstraint("testDirectWildcardReadResourceDefinitionReadWriteSensitivityAsMonitor", false, true, true));
@@ -449,6 +462,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
+    // These three are the same for different roles  - similar to the testDirectWildcardReadResourceDefinitionReadWriteSensitivityAsXXX() ones but for a fixed resource
     @Test
     public void testDirectReadResourceDefinitionReadWriteSensitivityAsMonitor() throws Exception {
         registerOneChildRootResource(createSensitivityConstraint("testDirectReadResourceDefinitionReadWriteSensitivityAsMonitor", false, true, true));
@@ -477,6 +491,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
+
+    // These three are the same for different roles
 
     @Test
     public void testRecursiveReadResourceDefinitionWriteSensitivityAsMonitor() throws Exception {
@@ -517,6 +533,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
+    // These three are the same for different roles
+
     @Test
     public void testDirectWildcardReadResourceDefinitionWriteSensitivityAsMonitor() throws Exception {
         registerOneChildRootResource(createSensitivityConstraint("testDirectWildcardReadResourceDefinitionWriteSensitivityAsMonitor", false, false, true));
@@ -545,6 +563,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
+
+    // These three are the same for different roles  - similar to the testDirectWildcardReadResourceDefinitionWriteSensitivityAsXXX() ones but for a fixed resource
 
     @Test
     public void testDirectReadResourceDefinitionWriteSensitivityAsMonitor() throws Exception {
@@ -575,6 +595,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
+    // These three are the same for different roles
 
     @Test
     public void testRecursiveReadResourceDefinitionReadSensitivityAsMonitor() throws Exception {
@@ -617,6 +638,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
+    // These three are the same for different roles
+
     @Test
     public void testDirectWildcardReadResourceDefinitionReadSensitivityAsMonitor() throws Exception {
         //Does it really make sense to be able to configure that reads are sensitive but not writes?
@@ -648,6 +671,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
+
+    // These three are the same for different roles  - similar to the testDirectWildcardReadResourceDefinitionReadSensitivityAsXXX() ones but for a fixed resource
 
     @Test
     public void testDirectReadResourceDefinitionReadSensitivityAsMonitor() throws Exception {
@@ -692,6 +717,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         resourceB.getModel().get("attr1").set("test-a");
         rootResource.registerChild(ONE_B, resourceB);
     }
+
+    // These three are the same for different roles
 
     @Test
     public void testAttributeSensitivityAsMonitor() throws Exception {
@@ -754,6 +781,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         rootResource.registerChild(ONE_A, resourceA);
         rootResource.registerChild(ONE_B, Resource.Factory.create());
     }
+
+    // These three are the same for different roles
 
     @Test
     public void testOperationSensitivityAsMonitor() throws Exception {
@@ -905,6 +934,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         rootResource.requireChild(ONE_B).registerChild(TWO_B, Resource.Factory.create());
     }
 
+    // These three are the same for different roles
+
     @Test
     public void testDeepRecursiveReadResourceDefinitionAccessReadWriteSensitivityAsMonitor() throws Exception {
         SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepRecursiveReadResourceDefinitionAccessReadWriteSensitivityAsMonitor", true, true, true);
@@ -952,6 +983,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
+    // These three are the same for different roles
+
     @Test
     public void testDeepDirectWildcardLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsMonitor() throws Exception {
         SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectWildcardLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsMonitor", true, true, true);
@@ -989,6 +1022,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         accessControl = getResourceAccessControl(childDesc);
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
+
+    // These three are the same for different roles  - similar to the testDeepDirectWildcardLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsXXXX() ones but for a fixed resource
 
     @Test
     public void testDeepDirectLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsMonitor() throws Exception {
@@ -1028,6 +1063,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
+    // These three are the same for different roles
     @Test
     public void testDeepDirectWildcardLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsMonitor() throws Exception {
         SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectWildcardLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsMonitor", true, true, true);
@@ -1058,6 +1094,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
+
+    // These three are the same for different roles  - similar to the testDeepDirectWildcardLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsXXXX() ones but for a fixed resource
 
     @Test
     public void testDeepDirectLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsMonitor() throws Exception {
@@ -1090,6 +1128,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
+    // These three are the same for different roles
     @Test
     public void testDeepRecursiveReadResourceDefinitionReadWriteSensitivityAsMonitor() throws Exception {
         SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepRecursiveReadResourceDefinitionReadWriteSensitivityAsMonitor", false, true, true);
@@ -1141,6 +1180,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
+    // These three are the same for different roles
     @Test
     public void testDeepDirectWildcardLevelOneReadResourceDefinitionReadWriteSensitivityAsMonitor() throws Exception {
         SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectWildcardLevelOneReadResourceDefinitionReadWriteSensitivityAsMonitor", false, true, true);
@@ -1180,6 +1220,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
+    // These three are the same for different roles  - similar to the testDeepDirectWildcardLevelOneReadResourceDefinitionReadWriteSensitivityAsXXXX() ones but for a fixed resource
     @Test
     public void testDeepDirectLevelOneReadResourceDefinitionReadWriteSensitivityAsMonitor() throws Exception {
         SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelOneReadResourceDefinitionReadWriteSensitivityAsMonitor", false, true, true);
@@ -1219,6 +1260,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
+    // These three are the same for different roles
     @Test
     public void testDeepDirectWildcardLevelTwoReadResourceDefinitionReadWriteSensitivityAsMonitor() throws Exception {
         SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectWildcardLevelTwoReadResourceDefinitionReadWriteSensitivityAsMonitor", false, true, true);
@@ -1249,6 +1291,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
 
+    // These three are the same for different roles  - similar to the testDeepDirectWildcardLevelTwoReadResourceDefinitionReadWriteSensitivityAsXXXX() ones but for a fixed resource
     @Test
     public void testDeepDirectLevelTwoReadResourceDefinitionReadWriteSensitivityAsMonitor() throws Exception {
         SensitiveTargetAccessConstraintDefinition constraint = createSensitivityConstraint("testDeepDirectLevelTwoReadResourceDefinitionReadWriteSensitivityAsMonitor", false, true, true);
@@ -1278,6 +1321,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
     }
+
+    // These three are the same for different roles
 
     @Test
     public void testAttributeSensitivityWithVaultExpressionVaultAccessReadWriteAsMonitor() throws Exception {
@@ -1368,6 +1413,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
             VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresWritePermission(null);
         }
     }
+
+    // These three are the same for different roles
 
     @Test
     public void testAttributeSensitivityWithVaultExpressionVaultReadAsMonitor() throws Exception {
@@ -1460,6 +1507,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
             VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresWritePermission(null);
         }
     }
+
+    // These three are the same for different roles
 
     @Test
     public void testAttributeSensitivityWithVaultExpressionVaultWriteAsMonitor() throws Exception {
@@ -1558,6 +1607,78 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         modelA.get(ATTR_VAULT).set("${VAULT::AA::bb::cc}");
         rootResource.registerChild(ONE_A, resourceA);
         rootResource.registerChild(ONE_B, Resource.Factory.create());
+    }
+
+    // These two are related to see that a fixed resource gets included as a default and also listed as an exception if it is sensitive due to vault expressions
+    @Test
+    public void testFixedChildWithNoSensitivityAsMaintainer() throws Exception {
+        registerAttributeVaultSensitivityFixedResource();
+        VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(false);
+        VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresReadPermission(false);
+        VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresWritePermission(false);
+        try {
+            ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MAINTAINER, true);
+            ModelNode result = executeForResult(op);
+
+            ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE_A));
+            Map<String, ModelNode> defaultAttributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_NONE, ATTR_VAULT);
+            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true, null, null);
+            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true, null, null);
+
+            Map<String, Boolean> defaultOps = checkOperationAccessControlNames(accessControl.defaultControl, ADD, REMOVE);
+            Assert.assertEquals(true, defaultOps.get(ADD));
+            Assert.assertEquals(true, defaultOps.get(REMOVE));
+
+        } finally {
+            VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(null);
+            VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresReadPermission(null);
+            VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresWritePermission(null);
+        }
+    }
+
+    @Test
+    public void testFixedChildWithVaultWriteSensitivityAsMaintainer() throws Exception {
+        registerAttributeVaultSensitivityFixedResource();
+        VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(false);
+        VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresReadPermission(false);
+        VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresWritePermission(true);
+        try {
+            ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MAINTAINER, true);
+            ModelNode result = executeForResult(op);
+
+            ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE_A), ONE_A_ADDR);
+            Map<String, ModelNode> defaultAttributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_NONE, ATTR_VAULT);
+            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true, null, null);
+            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true, null, null);
+            Map<String, ModelNode> exceptionAttributes = checkAttributeAccessControlNames(accessControl.exceptions.get(ONE_A_ADDR), ATTR_NONE, ATTR_VAULT);
+            checkAttributePermissions(exceptionAttributes, ATTR_NONE, true, true, null, null);
+            checkAttributePermissions(exceptionAttributes, ATTR_VAULT, true, false, null, null);
+
+
+            Map<String, Boolean> defaultOps = checkOperationAccessControlNames(accessControl.defaultControl, ADD, REMOVE);
+            Assert.assertEquals(true, defaultOps.get(ADD));
+            Assert.assertEquals(true, defaultOps.get(REMOVE));
+            Map<String, Boolean> exceptionOps = checkOperationAccessControlNames(accessControl.exceptions.get(ONE_A_ADDR), ADD, REMOVE);
+            Assert.assertEquals(true, exceptionOps.get(ADD));
+            //TODO since this has attributes which are sensitive due to a vault expressions, remove should not be executable
+            //Assert.assertEquals(false, exceptionOps.get(REMOVE));
+        } finally {
+            VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(null);
+            VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresReadPermission(null);
+            VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresWritePermission(null);
+        }
+    }
+
+    private void registerAttributeVaultSensitivityFixedResource() {
+        ChildResourceDefinition oneChild = new ChildResourceDefinition(ONE_A);
+        oneChild.addAttribute(ATTR_NONE);
+        oneChild.addAttribute(ATTR_VAULT);
+        rootRegistration.registerSubModel(oneChild);
+        Resource resourceA = Resource.Factory.create();
+        ModelNode modelA = resourceA.getModel();
+        modelA.get(ATTR_NONE).set("hello");
+        modelA.get(ATTR_VAULT).set("${VAULT::AA::bb::cc}");
+        rootResource.registerChild(ONE_A, resourceA);
     }
 
     private SensitiveTargetAccessConstraintDefinition createSensitivityConstraint(String name, boolean access, boolean read, boolean write) {

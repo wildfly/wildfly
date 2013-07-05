@@ -24,7 +24,6 @@ package org.jboss.as.controller.operations.global;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHECK_RESOURCE_ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXCEPTIONS;
@@ -347,7 +346,11 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
      */
     static final class CheckResourceAccessHandler implements OperationStepHandler {
 
-        static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.CHECK_RESOURCE_ACCESS, new NonResolvingResourceDescriptionResolver())
+        static final OperationDefinition DEFAULT_DEFINITION = new SimpleOperationDefinitionBuilder(GlobalOperationHandlers.CHECK_DEFAULT_RESOURCE_ACCESS, new NonResolvingResourceDescriptionResolver())
+            .setPrivateEntry()
+            .build();
+
+        static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(GlobalOperationHandlers.CHECK_RESOURCE_ACCESS, new NonResolvingResourceDescriptionResolver())
             .setPrivateEntry()
             .build();
 
@@ -366,7 +369,8 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             ModelNode result = new ModelNode();
-            AuthorizationResponse authResp = context.authorizeResource(true);
+            boolean customDefaultCheck = operation.get(OP).asString().equals(GlobalOperationHandlers.CHECK_DEFAULT_RESOURCE_ACCESS);
+            AuthorizationResponse authResp = context.authorizeResource(true, customDefaultCheck);
             if (authResp.getResourceResult(ActionEffect.ACCESS).getDecision() == Decision.DENY) {
                 if (!defaultSetting) {
                     //We are not allowed to see the resource, so we don't set the accessControlResult, meaning that the ReadResourceAssemblyHandler will ignore it for this address
@@ -582,7 +586,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                     resource = context.readResourceFromRoot(currentAddress);
                 } catch (UnauthorizedException e) {
                     //We could not read the resource, now check if that is due not to having access or read-config permissions
-                    AuthorizationResponse response = context.authorizeResource(false);
+                    AuthorizationResponse response = context.authorizeResource(false, false);
                     if (response.getResourceResult(ActionEffect.ACCESS).getDecision() != Decision.PERMIT) {
                         //We do not have access permissions
                         return;
@@ -640,12 +644,15 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         }
 
         void checkResourceAccess(final OperationContext context, final ModelNode nodeDescription, Map<String, ModelNode> operations) {
-            final ModelNode defaultAccess = Util.createOperation(CHECK_RESOURCE_ACCESS, opAddress);
+            final ModelNode defaultAccess = Util.createOperation(
+                    opAddress.size() > 0 && !opAddress.getLastElement().isWildcard() ?
+                            GlobalOperationHandlers.CHECK_DEFAULT_RESOURCE_ACCESS : GlobalOperationHandlers.CHECK_RESOURCE_ACCESS,
+                    opAddress);
             defaultWildcardAccessControl = new ModelNode();
             context.addStep(defaultAccess, new CheckResourceAccessHandler(true, defaultWildcardAccessControl, nodeDescription, operations), OperationContext.Stage.MODEL, true);
 
             for (final PathAddress address : localResourceAddresses) {
-                final ModelNode op = Util.createOperation(CHECK_RESOURCE_ACCESS, address);
+                final ModelNode op = Util.createOperation(GlobalOperationHandlers.CHECK_RESOURCE_ACCESS, address);
                 final ModelNode resultHolder = new ModelNode();
                 localResourceAccessControlResults.put(address, resultHolder);
                 context.addStep(op, new CheckResourceAccessHandler(false, resultHolder, nodeDescription, operations), OperationContext.Stage.MODEL, true);

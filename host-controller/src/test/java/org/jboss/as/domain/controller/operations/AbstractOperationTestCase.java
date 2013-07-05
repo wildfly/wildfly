@@ -516,7 +516,7 @@ public abstract class AbstractOperationTestCase {
         }
 
         @Override
-        public AuthorizationResponse authorizeResource(boolean attributes) {
+        public AuthorizationResponse authorizeResource(boolean attributes, boolean isDefaultResource) {
             return new AuthorizationResponse() {
 
                 @Override
