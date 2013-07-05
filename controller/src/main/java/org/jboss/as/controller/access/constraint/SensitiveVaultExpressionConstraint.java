@@ -39,20 +39,20 @@ import org.jboss.dmr.Property;
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public class SensitiveVaultExpressionContstraint extends AllowAllowNotConstraint {
+public class SensitiveVaultExpressionConstraint extends AllowAllowNotConstraint {
 
     public static final ConstraintFactory FACTORY = new Factory();
 
-    private static final SensitiveVaultExpressionContstraint SENSITIVE = new SensitiveVaultExpressionContstraint(true);
-    private static final SensitiveVaultExpressionContstraint NOT_SENSITIVE = new SensitiveVaultExpressionContstraint(false);
-    private static final SensitiveVaultExpressionContstraint ALLOWS = new SensitiveVaultExpressionContstraint(true, true);
-    private static final SensitiveVaultExpressionContstraint DISALLOWS = new SensitiveVaultExpressionContstraint(false, true);
+    private static final SensitiveVaultExpressionConstraint SENSITIVE = new SensitiveVaultExpressionConstraint(true);
+    private static final SensitiveVaultExpressionConstraint NOT_SENSITIVE = new SensitiveVaultExpressionConstraint(false);
+    private static final SensitiveVaultExpressionConstraint ALLOWS = new SensitiveVaultExpressionConstraint(true, true);
+    private static final SensitiveVaultExpressionConstraint DISALLOWS = new SensitiveVaultExpressionConstraint(false, true);
 
-    private SensitiveVaultExpressionContstraint(boolean sensitive) {
+    private SensitiveVaultExpressionConstraint(boolean sensitive) {
         super(ControlFlag.REQUIRED, sensitive);
     }
 
-    private SensitiveVaultExpressionContstraint(boolean allowsSensitive, boolean allowsNonSensitive) {
+    private SensitiveVaultExpressionConstraint(boolean allowsSensitive, boolean allowsNonSensitive) {
         super(ControlFlag.REQUIRED, allowsSensitive, allowsNonSensitive);
     }
 

@@ -46,7 +46,7 @@ import org.jboss.as.controller.access.constraint.HostEffectConstraint;
 import org.jboss.as.controller.access.constraint.NonAuditConstraint;
 import org.jboss.as.controller.access.constraint.ScopingConstraint;
 import org.jboss.as.controller.access.constraint.SensitiveTargetConstraint;
-import org.jboss.as.controller.access.constraint.SensitiveVaultExpressionContstraint;
+import org.jboss.as.controller.access.constraint.SensitiveVaultExpressionConstraint;
 import org.jboss.as.controller.access.constraint.ServerGroupEffectConstraint;
 import org.jboss.as.controller.access.permission.CombinationManagementPermission;
 import org.jboss.as.controller.access.permission.CombinationPolicy;
@@ -261,7 +261,7 @@ public class DefaultPermissionFactory implements PermissionFactory {
         result.add(NonAuditConstraint.FACTORY);
         result.add(HostEffectConstraint.FACTORY);
         result.add(SensitiveTargetConstraint.FACTORY);
-        result.add(SensitiveVaultExpressionContstraint.FACTORY);
+        result.add(SensitiveVaultExpressionConstraint.FACTORY);
         result.add(ServerGroupEffectConstraint.FACTORY);
         return result;
     }
