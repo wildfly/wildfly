@@ -50,7 +50,6 @@ public class UndertowService implements Service<UndertowService> {
     public static final ServiceName LISTENER = UNDERTOW.append(Constants.LISTENER);
     public static final ServiceName HANDLER = UNDERTOW.append(Constants.HANDLER);
     public static final ServiceName FILTER = UNDERTOW.append(Constants.FILTER);
-    public static final ServiceName ERROR_HANDLER = UNDERTOW.append(Constants.ERROR_HANDLER);
     /**
      * The base name for web deployments.
      */
