@@ -22,7 +22,27 @@
 
 package org.jboss.as.controller.access.rbac;
 
-import org.jboss.as.controller.*;
+import static org.jboss.as.controller.PathAddress.pathAddress;
+import static org.jboss.as.controller.PathElement.pathElement;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.junit.Assert.assertEquals;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
@@ -36,17 +56,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import static org.jboss.as.controller.PathAddress.pathAddress;
-import static org.jboss.as.controller.PathElement.pathElement;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Ladislav Thon <lthon@redhat.com>
@@ -177,19 +187,16 @@ public class ReadAttributeTestCase extends AbstractRbacTestBase {
     }
 
     @Test
-    @Ignore("ManagementPermissionCollection.implies doesn't work in case of users with multiple roles")
     public void testMonitorOperator() {
         test(false, StandardRole.MONITOR, StandardRole.OPERATOR);
     }
 
     @Test
-    @Ignore("ManagementPermissionCollection.implies doesn't work in case of users with multiple roles")
     public void testMonitorAdministrator() {
         test(true, StandardRole.MONITOR, StandardRole.ADMINISTRATOR);
     }
 
     @Test
-    @Ignore("ManagementPermissionCollection.implies doesn't work in case of users with multiple roles")
     public void testAdministratorAuditor() {
         test(true, StandardRole.ADMINISTRATOR, StandardRole.AUDITOR);
     }

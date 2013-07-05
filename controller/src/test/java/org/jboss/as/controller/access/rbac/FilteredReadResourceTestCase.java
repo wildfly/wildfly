@@ -22,6 +22,23 @@
 
 package org.jboss.as.controller.access.rbac;
 
+import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
+import static org.jboss.as.controller.PathAddress.pathAddress;
+import static org.jboss.as.controller.PathElement.pathElement;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.ProcessType;
@@ -34,22 +51,9 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.test.AbstractControllerTestBase;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
-import static org.jboss.as.controller.PathAddress.pathAddress;
-import static org.jboss.as.controller.PathElement.pathElement;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Ladislav Thon <lthon@redhat.com>
@@ -105,19 +109,16 @@ public class FilteredReadResourceTestCase extends AbstractRbacTestBase {
     }
 
     @Test
-    @Ignore("ManagementPermissionCollection.implies doesn't work in case of users with multiple roles")
     public void testMonitorOperator() {
         test(false, StandardRole.MONITOR, StandardRole.OPERATOR);
     }
 
     @Test
-    @Ignore("ManagementPermissionCollection.implies doesn't work in case of users with multiple roles")
     public void testMonitorAdministrator() {
         test(true, StandardRole.MONITOR, StandardRole.ADMINISTRATOR);
     }
 
     @Test
-    @Ignore("ManagementPermissionCollection.implies doesn't work in case of users with multiple roles")
     public void testAdministratorAuditor() {
         test(true, StandardRole.ADMINISTRATOR, StandardRole.AUDITOR);
     }

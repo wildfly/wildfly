@@ -30,9 +30,9 @@ public enum CombinationPolicy {
     /** If multiple permissions with the same action exist, if any of them are implied,
      * the overall collection is implied. */
     PERMISSIVE,
-    /** If multiple permissions with the same action exist, only if all of them are implied is
-     * the overall collection is implied. */
-    RESTRICTIVE,
+//    /** If multiple permissions with the same action exist, only if all of them are implied is
+//     * the overall collection is implied. */
+//    RESTRICTIVE,
     /** Reject any attempt to create a combined set of permissions. */
     REJECTING
 }

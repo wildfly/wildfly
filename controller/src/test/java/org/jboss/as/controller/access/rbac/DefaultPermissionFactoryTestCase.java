@@ -22,23 +22,30 @@
 
 package org.jboss.as.controller.access.rbac;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import java.security.Permission;
+import java.security.PermissionCollection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.access.*;
+import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.Caller;
+import org.jboss.as.controller.access.Environment;
+import org.jboss.as.controller.access.TargetAttribute;
+import org.jboss.as.controller.access.TargetResource;
 import org.jboss.as.controller.access.constraint.Constraint;
 import org.jboss.as.controller.access.constraint.ConstraintFactory;
 import org.jboss.as.controller.access.permission.CombinationPolicy;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import java.security.Permission;
-import java.security.PermissionCollection;
-import java.util.*;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 /**
  * @author Ladislav Thon <lthon@redhat.com>
@@ -87,7 +94,6 @@ public class DefaultPermissionFactoryTestCase {
     }
 
     @Test
-    @Ignore("ManagementPermissionCollection.implies doesn't work in case of users with multiple roles")
     public void testMoreUserRolesSingleAllowedRole() {
         testResource(CombinationPolicy.PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
                 new StandardRole[] {StandardRole.MONITOR}, true);
@@ -105,7 +111,6 @@ public class DefaultPermissionFactoryTestCase {
     }
 
     @Test
-    @Ignore("ManagementPermissionCollection.implies doesn't work in case of users with multiple roles")
     public void testMoreUserRolesMoreAllowedRoles() {
         testResource(CombinationPolicy.PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
                 new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR}, true);

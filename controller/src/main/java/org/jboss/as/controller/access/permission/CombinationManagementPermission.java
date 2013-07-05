@@ -24,10 +24,12 @@ package org.jboss.as.controller.access.permission;
 
 import java.security.Permission;
 import java.security.PermissionCollection;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.constraint.ScopingConstraint;
 
@@ -40,7 +42,7 @@ import org.jboss.as.controller.access.constraint.ScopingConstraint;
 public class CombinationManagementPermission extends ManagementPermission {
 
     private final CombinationPolicy combinationPolicy;
-    private final Set<ManagementPermission> underlyingPermissions = new HashSet<ManagementPermission>();
+    private final List<ManagementPermission> underlyingPermissions = new ArrayList<ManagementPermission>();
 
     public CombinationManagementPermission(CombinationPolicy combinationPolicy, Action.ActionEffect actionEffect) {
         super("CombinationManagementPermission", actionEffect);
@@ -48,11 +50,11 @@ public class CombinationManagementPermission extends ManagementPermission {
     }
 
     public void addUnderlyingPermission(ManagementPermission underlyingPermission) {
-        // TODO I believe that check for CombinationPolicy.REJECTING belongs here
         assert underlyingPermission.getActionEffect() == getActionEffect() : "incompatible ActionEffect";
+        if (combinationPolicy == CombinationPolicy.REJECTING && underlyingPermissions.size() > 0) {
+            throw ControllerMessages.MESSAGES.illegalMultipleRoles();
+        }
         synchronized (underlyingPermissions) {
-            // TODO I believe that either underlyingPermissions should be a List, or SimpleManagementPermission
-            // TODO equality and hashCode should take Constraints into account
             underlyingPermissions.add(underlyingPermission);
         }
     }

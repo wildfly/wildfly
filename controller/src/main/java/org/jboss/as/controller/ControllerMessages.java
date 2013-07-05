@@ -2641,6 +2641,8 @@ public interface ControllerMessages {
     @Message(id = 14899, value = "read only context")
     IllegalStateException readOnlyContext();
 
+    // END OF 148xx SERIES USABLE FOR NON-LOGGER MESSAGES
+
     @Message(id = 13450, value = "We are trying to read data from the master host controller, which is currently busy executing another set of operations. This is a temporary situation, please retry")
     String cannotGetControllerLock();
 
@@ -2662,4 +2664,9 @@ public interface ControllerMessages {
 
     @Message(id = 13456, value = "Unauthorized to execute operation '%s' for resource '%s' -- %s")
     UnauthorizedException unauthorized(String name, PathAddress address, ModelNode explanation);
+
+    @Message(id = 13457, value = "Users with multiple roles are not allowed")
+    SecurityException illegalMultipleRoles();
+
+    // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 }

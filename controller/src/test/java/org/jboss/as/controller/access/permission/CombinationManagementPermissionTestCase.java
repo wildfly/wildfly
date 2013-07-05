@@ -22,14 +22,17 @@
 
 package org.jboss.as.controller.access.permission;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.security.Permission;
+import java.util.Set;
+
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.constraint.ScopingConstraint;
 import org.junit.Test;
-
-import java.security.Permission;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Ladislav Thon <lthon@redhat.com>
@@ -59,14 +62,18 @@ public class CombinationManagementPermissionTestCase {
         assertTrue(cmp.implies(ACCESS_1));
         assertFalse(cmp.implies(ACCESS_2));
 
-        // TODO I believe that this should work, see also the TODO in CombinationManagementPermission
-//        try {
-//            cmp.addUnderlyingPermission(ACCESS_2);
-//            fail();
-//        } catch (Exception e) { /* expected */ }
+        try {
+            cmp.addUnderlyingPermission(ACCESS_2);
+            fail();
+        } catch (Exception e) { /* expected */ }
     }
 
-    // TODO CombinationPolicy.RESTRICTIVE is going to be removed, so no test for it...
+    @Test
+    public void testRestrictive() {
+        // CombinationPolicy.RESTRICTIVE has been removed
+        CombinationPolicy[] policySet = CombinationPolicy.values();
+        assertEquals(2, policySet.length);
+    }
 
     // ---
 

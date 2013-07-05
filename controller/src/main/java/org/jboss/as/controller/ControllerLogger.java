@@ -452,4 +452,6 @@ public interface ControllerLogger extends BasicLogger {
             "subsystem resources on this server will result in failure.")
     @LogMessage(level = INFO)
     void ignoringUnsupportedLegacyExtension(List<String> subsystemNames, String extensionName);
+
+    // 13449 IS END OF 134xx SERIES USABLE FOR LOGGER MESSAGES
 }
