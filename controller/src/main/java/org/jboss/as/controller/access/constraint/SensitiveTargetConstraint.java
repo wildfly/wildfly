@@ -49,11 +49,11 @@ public class SensitiveTargetConstraint extends AllowAllowNotConstraint {
     private static final SensitiveTargetConstraint DISALLOWS = new SensitiveTargetConstraint(false, true);
 
     private SensitiveTargetConstraint(boolean isSensitive) {
-        super(ControlFlag.REQUIRED, isSensitive);
+        super(isSensitive);
     }
 
     private SensitiveTargetConstraint(boolean allowsSensitive, boolean allowsNonSensitive) {
-        super(ControlFlag.REQUIRED, allowsSensitive, allowsNonSensitive);
+        super(allowsSensitive, allowsNonSensitive);
     }
 
     @Override

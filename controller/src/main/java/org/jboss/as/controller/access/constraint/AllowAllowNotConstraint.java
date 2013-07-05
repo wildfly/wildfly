@@ -23,7 +23,8 @@
 package org.jboss.as.controller.access.constraint;
 
 /**
- * TODO class javadoc.
+ * A constraint meant for use in situations where the Action or Target "is" or "is not" something
+ * and the user "allows" or "allowsNot".
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
@@ -33,14 +34,14 @@ public abstract class AllowAllowNotConstraint extends AbstractConstraint {
     private final Boolean allows;
     private final Boolean allowsNot;
 
-    protected AllowAllowNotConstraint(ControlFlag controlFlag, boolean is) {
-        super(controlFlag);
+    protected AllowAllowNotConstraint(boolean is) {
+        super();
         this.is = is;
         this.allows = this.allowsNot = null;
     }
 
-    protected AllowAllowNotConstraint(ControlFlag controlFlag, boolean allows, boolean allowsNot) {
-        super(controlFlag);
+    protected AllowAllowNotConstraint(boolean allows, boolean allowsNot) {
+        super();
         this.is = null;
         this.allows = allows;
         this.allowsNot = allowsNot;

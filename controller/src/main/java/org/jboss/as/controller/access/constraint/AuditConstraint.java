@@ -43,11 +43,11 @@ public class AuditConstraint extends AllowAllowNotConstraint {
     private static final AuditConstraint DISALLOWS = new AuditConstraint(false, true);
 
     private AuditConstraint(boolean isAudit) {
-        super(ControlFlag.REQUIRED, isAudit);
+        super(isAudit);
     }
 
     private AuditConstraint(boolean allowsAudit, boolean allowsNonAudit) {
-        super(ControlFlag.REQUIRED, allowsAudit, allowsNonAudit);
+        super(allowsAudit, allowsNonAudit);
     }
 
     @Override
