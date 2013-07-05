@@ -333,7 +333,7 @@
             <xs:documentation>
                 Configuration defining how to load the authorization information for the authenticated user.
 
-                After a user has been authenticated additional information such as roles can be loaded and
+                After a user has been authenticated additional information such as groups or roles can be loaded and
                 associated with the user for subsequent authorization checks, this type is used to define
                 how the roles are loaded.
             </xs:documentation>
@@ -342,6 +342,15 @@
             <xs:element name="properties" type="propertiesFileType" minOccurs="0" />
             <xs:element name="plug-in" type="plug-inAuthType" minOccurs="0" />
         </xs:choice>
+        <xs:attribute name="map-groups-to-roles" type="xs:boolean" default="false" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    The membership information loaded is the authenticated identities group membership, commonly there
+                    is a 1:1 mapping between group membership and the applicable roles, this attribute allows for the 
+                    mapping to be performed automatically. 
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>        
     </xs:complexType>
 
     <xs:complexType name="server-identitiesType">

@@ -146,6 +146,7 @@ public class ModelDescriptionConstants {
     public static final String MANAGEMENT_MAJOR_VERSION = "management-major-version";
     public static final String MANAGEMENT_MINOR_VERSION = "management-minor-version";
     public static final String MANAGEMENT_MICRO_VERSION = "management-micro-version";
+    public static final String MAP_GROUPS_TO_ROLES = "map-groups-to-roles";
     public static final String MASK = "mask";
     public static final String MASTER = "master";
     public static final String MAX = "max";

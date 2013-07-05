@@ -34,6 +34,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAP_GROUPS_TO_ROLES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_REMOTING_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -91,6 +92,7 @@ import org.jboss.as.domain.management.security.PropertiesAuthorizationResourceDe
 import org.jboss.as.domain.management.security.PropertyResourceDefinition;
 import org.jboss.as.domain.management.security.SSLServerIdentityResourceDefinition;
 import org.jboss.as.domain.management.security.SecretServerIdentityResourceDefinition;
+import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 import org.jboss.as.domain.management.security.UserResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -395,7 +397,7 @@ public class ManagementXml {
                     break;
                 }
                 case AUTHORIZATION:
-                    parseAuthorization_1_1(reader, expectedNs, realmAddress, list);
+                    parseAuthorization_1_1(reader, expectedNs, add, list);
                     break;
                 default: {
                     throw unexpectedElement(reader);
@@ -433,7 +435,14 @@ public class ManagementXml {
                     break;
                 }
                 case AUTHORIZATION:
-                    parseAuthorization_1_3(reader, expectedNs, realmAddress, list);
+                    switch (expectedNs) {
+                        case DOMAIN_1_3:
+                        case DOMAIN_1_4:
+                            parseAuthorization_1_3(reader, expectedNs, add, list);
+                            break;
+                        default:
+                            parseAuthorization_2_0(reader, expectedNs, add, list);
+                    }
                     break;
                 default: {
                     throw unexpectedElement(reader);
@@ -1282,7 +1291,12 @@ public class ManagementXml {
     }
 
     private void parseAuthorization_1_1(final XMLExtendedStreamReader reader, final Namespace expectedNs,
-            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+            final ModelNode realmAdd, final List<ModelNode> list) throws XMLStreamException {
+        ModelNode realmAddress = realmAdd.get(OP_ADDR);
+        // This property was not supported before version 2.0 of the schema, however it is set to true here to ensure
+        // the default behaviour if a document based on and schema is parsed, 2.0 now defaults this to false.
+        realmAdd.get(MAP_GROUPS_TO_ROLES).set(true);
+
         boolean authzFound = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -1306,7 +1320,62 @@ public class ManagementXml {
     }
 
     private void parseAuthorization_1_3(final XMLExtendedStreamReader reader, final Namespace expectedNs,
-            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+            final ModelNode realmAdd, final List<ModelNode> list) throws XMLStreamException {
+        ModelNode realmAddress = realmAdd.get(OP_ADDR);
+        // This property was not supported before version 2.0 of the schema, however it is set to true here to ensure
+        // the default behaviour if a document based on and schema is parsed, 2.0 now defaults this to false.
+        realmAdd.get(MAP_GROUPS_TO_ROLES).set(true);
+
+        boolean authzFound = false;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            // Only a single element within the authorization element is currently supported.
+            if (authzFound) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                case PROPERTIES: {
+                    parsePropertiesAuthorization(reader, realmAddress, list);
+                    authzFound = true;
+                    break;
+                }
+                case PLUG_IN: {
+                    ModelNode parentAddress = realmAddress.clone().add(AUTHORIZATION);
+                    parsePlugIn_Authorization(reader, expectedNs, parentAddress, list);
+                    authzFound = true;
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+
+        }
+    }
+
+    private void parseAuthorization_2_0(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode realmAdd, final List<ModelNode> list) throws XMLStreamException {
+        ModelNode realmAddress = realmAdd.get(OP_ADDR);
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case MAP_GROUPS_TO_ROLES:
+                        SecurityRealmResourceDefinition.MAP_GROUPS_TO_ROLES.parseAndSetParameter(value, realmAdd, reader);
+                        break;
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
         boolean authzFound = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -1680,6 +1749,7 @@ public class ManagementXml {
 
     private void writeAuthorization(XMLExtendedStreamWriter writer, ModelNode realm) throws XMLStreamException {
         writer.writeStartElement(Element.AUTHORIZATION.getLocalName());
+        SecurityRealmResourceDefinition.MAP_GROUPS_TO_ROLES.marshallAsAttribute(realm, writer);
         ModelNode authorization = realm.require(AUTHORIZATION);
         if (authorization.hasDefined(PROPERTIES)) {
             ModelNode properties = authorization.require(PROPERTIES);

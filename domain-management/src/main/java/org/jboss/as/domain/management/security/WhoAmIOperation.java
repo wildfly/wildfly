@@ -23,6 +23,7 @@
 package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.GROUPS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.IDENTITY;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.REALM;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.ROLES;
@@ -95,10 +96,20 @@ public class WhoAmIOperation implements OperationStepHandler {
         }
 
         if (verbose) {
-            ModelNode roles = result.get(ROLES);
+            Set<RealmGroup> groupSet = subject.getPrincipals(RealmGroup.class);
+            if (groupSet.size() > 0) {
+                ModelNode groups = result.get(GROUPS);
+                for (RealmGroup current : groupSet) {
+                    groups.add(current.getName());
+                }
+            }
+
             Set<RealmRole> roleSet = subject.getPrincipals(RealmRole.class);
-            for (RealmRole current : roleSet) {
-                roles.add(current.getName());
+            if (roleSet.size() > 0) {
+                ModelNode roles = result.get(ROLES);
+                for (RealmRole current : roleSet) {
+                    roles.add(current.getName());
+                }
             }
         }
 

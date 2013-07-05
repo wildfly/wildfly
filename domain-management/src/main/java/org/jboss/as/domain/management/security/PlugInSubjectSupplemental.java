@@ -80,16 +80,16 @@ public class PlugInSubjectSupplemental extends AbstractPlugInService implements 
                 // In general we expect exactly one RealmUser, however we could cope with multiple
                 // identities so load the roles for them all.
                 for (RealmUser current : users) {
-                    principals.addAll(loadRoles(current));
+                    principals.addAll(loadGroups(current));
                 }
             }
 
-            private Set<RealmRole> loadRoles(final RealmUser user) throws IOException {
-                Set<RealmRole> response;
-                String[] roles = ap.loadRoles(user.getName(), getRealmName());
-                response = new HashSet<RealmRole>(roles.length);
-                for (String current : roles) {
-                    response.add(new RealmRole(current));
+            private Set<RealmGroup> loadGroups(final RealmUser user) throws IOException {
+                Set<RealmGroup> response;
+                String[] groups = ap.loadRoles(user.getName(), getRealmName());
+                response = new HashSet<RealmGroup>(groups.length);
+                for (String current : groups) {
+                    response.add(new RealmGroup(current));
                 }
                 return response;
             }

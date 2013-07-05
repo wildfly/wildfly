@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -71,10 +72,12 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
     private final InjectedSetValue<CallbackHandlerService> callbackHandlerServices = new InjectedSetValue<CallbackHandlerService>();
 
     private final String name;
+    private final boolean mapGroupsToRoles;
     private final Map<AuthMechanism, CallbackHandlerService> registeredServices = new HashMap<AuthMechanism, CallbackHandlerService>();
 
-    public SecurityRealmService(String name) {
+    public SecurityRealmService(String name, boolean mapGroupsToRoles) {
         this.name = name;
+        this.mapGroupsToRoles = mapGroupsToRoles;
     }
 
     /*
@@ -185,6 +188,15 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
                 if (subjectSupplementalService != null) {
                     SubjectSupplemental subjectSupplemental = subjectSupplementalService.getSubjectSupplemental(sharedState);
                     subjectSupplemental.supplementSubject(subject);
+                }
+
+                if (mapGroupsToRoles) {
+                    Set<RealmGroup> groups = subject.getPrincipals(RealmGroup.class);
+                    Set<RealmRole> roles = new HashSet<RealmRole>(groups.size());
+                    for (RealmGroup current : groups) {
+                        roles.add(new RealmRole(current.getName()));
+                    }
+                    subject.getPrincipals().addAll(roles);
                 }
 
                 return new RealmSubjectUserInfo(subject);
