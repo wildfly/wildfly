@@ -116,7 +116,7 @@ public class ReadEnvironmentVariablesTestCase {
             Assert.assertFalse(env.containsKey("DOMAIN_TEST_SERVER"));
             Assert.assertFalse(env.containsKey("DOMAIN_TEST_JVM"));
 
-            env = getEnvironmentVariables(client, "slave", "other-two", "osgi-sockets");
+            env = getEnvironmentVariables(client, "slave", "other-two", "other-sockets");
             Assert.assertFalse(env.containsKey("DOMAIN_TEST_MAIN_GROUP"));
             Assert.assertFalse(env.containsKey("DOMAIN_TEST_SERVER"));
             Assert.assertFalse(env.containsKey("DOMAIN_TEST_JVM"));

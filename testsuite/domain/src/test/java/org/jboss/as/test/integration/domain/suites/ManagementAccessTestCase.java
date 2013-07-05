@@ -149,7 +149,7 @@ public class ManagementAccessTestCase {
         // Now try a resource below root
         response = masterClient.execute(getReadAttributeOperation(OTHER_SERVER_GROUP_ADDRESS, PROFILE));
         returnVal = validateResponse(response);
-        Assert.assertEquals("osgi", returnVal.asString());
+        Assert.assertEquals("other", returnVal.asString());
 
         response = slaveClient.execute(getReadAttributeOperation(OTHER_SERVER_GROUP_ADDRESS, PROFILE));
         slaveReturnVal = validateResponse(response);
@@ -171,7 +171,7 @@ public class ManagementAccessTestCase {
         ModelNode returnVal = validateResponse(response);
         validateResponse(returnVal.get("step-1"));
         ModelNode profile = validateResponse(returnVal.get("step-2"));
-        Assert.assertEquals("osgi", profile.asString());
+        Assert.assertEquals("other", profile.asString());
 
         response = slaveClient.execute(request);
         System.out.println(response);

@@ -109,7 +109,7 @@
                     <inet-address value="${jboss.test.host.slave.address}"/>
                 </interface>
             </interfaces>
-            <socket-bindings socket-binding-group="osgi-sockets" port-offset="550"/>
+            <socket-bindings socket-binding-group="other-sockets" port-offset="550"/>
         </server>
         <server name="reload-two" group="reload-test-group"  auto-start="false">
             <jvm name="default" />
