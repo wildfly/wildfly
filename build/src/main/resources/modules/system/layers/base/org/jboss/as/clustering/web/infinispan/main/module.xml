@@ -32,8 +32,6 @@
     </resources>
 
     <dependencies>
-        <module name="org.infinispan"/>
-        <module name="org.jboss.as.clustering.infinispan"/>
         <module name="org.wildfly.clustering.web.infinispan" services="import" export="true"/>
     </dependencies>
 </module>
