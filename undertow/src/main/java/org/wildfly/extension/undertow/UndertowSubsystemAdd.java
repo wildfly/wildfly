@@ -44,6 +44,7 @@ import org.wildfly.extension.undertow.deployment.ServletContainerInitializerDepl
 import org.wildfly.extension.undertow.deployment.TldParsingDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.UndertowDependencyProcessor;
 import org.wildfly.extension.undertow.deployment.UndertowDeploymentProcessor;
+import org.wildfly.extension.undertow.deployment.UndertowHandlersDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.UndertowJSRWebSocketDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.WarAnnotationDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.WarDeploymentInitializingProcessor;
@@ -129,6 +130,7 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EL_EXPRESSION_FACTORY, new ELExpressionFactoryProcessor());
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_UNDERTOW_WEBSOCKETS, new UndertowJSRWebSocketDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_UNDERTOW_HANDLERS, new UndertowHandlersDeploymentProcessor());
 
 
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_SERVLET_INIT_DEPLOYMENT, new ServletContainerInitializerDeploymentProcessor());
