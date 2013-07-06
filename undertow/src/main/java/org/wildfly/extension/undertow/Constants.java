@@ -61,8 +61,7 @@ public interface Constants {
     String DEFAULT_SERVER = "default-server";
     String ALIAS = "alias";
     String ERROR_PAGE = "error-page";
-    String ERROR_HANDLER = "error-handler";
-    String ERROR_HANDLERS = "error-handlers";
+    String ERROR_PAGES = "error-pages";
     String SIMPLE_ERROR_PAGE = "simple-error-page";
     String SCHEME = "scheme";
     /*JSP config */

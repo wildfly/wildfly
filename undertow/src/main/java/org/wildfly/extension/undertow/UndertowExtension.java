@@ -28,7 +28,6 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
@@ -41,9 +40,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 public class UndertowExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "undertow";
-    public static final PathElement PATH_ERROR_PAGE = PathElement.pathElement(Constants.ERROR_PAGE);
-    public static final PathElement PATH_SIMPLE_ERROR_PAGE = PathElement.pathElement(Constants.SIMPLE_ERROR_PAGE);
-    public static final PathElement PATH_ERROR_HANDLERS = PathElement.pathElement(Constants.CONFIGURATION, Constants.ERROR_HANDLER);
+    public static final PathElement PATH_ERROR_PAGES = PathElement.pathElement(Constants.CONFIGURATION, Constants.ERROR_PAGE);
     public static final PathElement PATH_HANDLERS = PathElement.pathElement(Constants.CONFIGURATION, Constants.HANDLER);
     public static final PathElement PATH_FILTERS = PathElement.pathElement(Constants.CONFIGURATION, Constants.FILTER);
     protected static final PathElement PATH_JSP = PathElement.pathElement(Constants.SETTING, Constants.JSP);
@@ -61,13 +58,11 @@ public class UndertowExtension implements Extension {
     public static final PathElement PATH_FILTER_REF = PathElement.pathElement(Constants.FILTER_REF);
 
     public static StandardResourceDescriptionResolver getResolver(final String... keyPrefix) {
-        /*StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
+        StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
         for (String kp : keyPrefix) {
             prefix.append('.').append(kp);
         }
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, UndertowExtension.class.getClassLoader(), true, false);*/
-        //todo for now we don't care about this and since model is subject to often change in this phase, no need to resolve properties
-        return new NonResolvingResourceDescriptionResolver();
+        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, UndertowExtension.class.getClassLoader(), true, false);
     }
 
     @Override

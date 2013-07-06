@@ -71,10 +71,9 @@
                         max-age="1000"/>
     </servlet-container>
 
-    <error-handlers>
+    <error-pages>
         <error-page name="404-handler" code="404" path="/opt/data/404.html"/>
-        <simple-error-page name="401-handler" code="401"/>
-    </error-handlers>
+    </error-pages>
 
     <handlers>
         <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true"/>

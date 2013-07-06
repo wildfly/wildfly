@@ -38,9 +38,7 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-import org.wildfly.extension.undertow.errorhandler.ErrorHandlerDefinitions;
 import org.wildfly.extension.undertow.errorhandler.ErrorPageDefinition;
-import org.wildfly.extension.undertow.errorhandler.SimpleErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.BasicAuthHandler;
 import org.wildfly.extension.undertow.filters.ConnectionLimitHandler;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
@@ -132,17 +130,9 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                 )
                 )
                 .addChild(
-                        builder(ErrorHandlerDefinitions.INSTANCE)
-                                .setNoAddOperation(true)
-                                .setXmlElementName(Constants.ERROR_HANDLERS)
-                                .addChild(
-                                        builder(ErrorPageDefinition.INSTANCE)
-                                                .addAttributes(ErrorPageDefinition.CODE, ErrorPageDefinition.PATH))
-                                .addChild(
-                                        builder(SimpleErrorPageDefinition.INSTANCE)
-                                                .addAttributes(SimpleErrorPageDefinition.CODE)
-                                )
-                )
+                        builder(ErrorPageDefinition.INSTANCE)
+                                                .addAttributes(ErrorPageDefinition.CODE, ErrorPageDefinition.PATH)
+                                                .setXmlWrapperElement(Constants.ERROR_PAGES))
                 .addChild(
                         builder(HandlerDefinitions.INSTANCE)
                                 .setXmlElementName(Constants.HANDLERS)
@@ -177,7 +167,6 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                     public void additionalOperations(final PathAddress address, final ModelNode addOperation, final List<ModelNode> operations) {
                         operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_FILTERS)));
                         operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_HANDLERS)));
-                        operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_ERROR_HANDLERS)));
                     }
                 })
                 .build();
