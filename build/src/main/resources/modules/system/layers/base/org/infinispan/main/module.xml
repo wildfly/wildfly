@@ -29,6 +29,9 @@
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
         <module name="net.jcip"/>
+        <module name="org.infinispan.cachestore.jdbc" optional="true"/>
+        <module name="org.infinispan.cachestore.remote" optional="true"/>
+        <module name="org.infinispan.client.hotrod" optional="true"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.marshalling"/>
