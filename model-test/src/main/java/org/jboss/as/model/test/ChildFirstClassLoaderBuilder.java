@@ -35,8 +35,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.sonatype.aether.collection.DependencyCollectionException;
-import org.sonatype.aether.resolution.DependencyResolutionException;
+import org.eclipse.aether.collection.DependencyCollectionException;
+import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.xnio.IoUtils;
 
 /**
@@ -112,7 +112,7 @@ public class ChildFirstClassLoaderBuilder {
                 file = file.getParentFile();
             }
             if (file != null) {
-                String separator = cacheFolderName.indexOf("/") != -1 ? "/" : "\\";
+                String separator = cacheFolderName.contains("/") ? "/" : "\\\\";
                 for (String part : cacheFolderName.split(separator)) {
                     file = new File(file, part);
                     if (file.exists()) {

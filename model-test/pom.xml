@@ -68,75 +68,53 @@
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-aether-provider</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.apache.maven.wagon</groupId>
-            <artifactId>wagon-http-lightweight</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-controller</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.jboss.shrinkwrap</groupId>
             <artifactId>shrinkwrap-api</artifactId>
             <scope>test</scope>
         </dependency>
-        
         <dependency>
             <groupId>org.jboss.shrinkwrap</groupId>
             <artifactId>shrinkwrap-impl-base</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.aether</groupId>
+            <artifactId>aether-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.aether</groupId>
+            <artifactId>aether-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.aether</groupId>
+            <artifactId>aether-util</artifactId>
+        </dependency>
 
-	     <dependency>
-	         <groupId>org.sonatype.aether</groupId>
-	         <artifactId>aether-api</artifactId>
-	    </dependency>
-
-	     <dependency>
-	         <groupId>org.sonatype.aether</groupId>
-	         <artifactId>aether-spi</artifactId>
-	     </dependency>
-
-	     <dependency>
-	         <groupId>org.sonatype.aether</groupId>
-	         <artifactId>aether-util</artifactId>
-	     </dependency>
-
-	     <dependency>
-	         <groupId>org.sonatype.aether</groupId>
-	         <artifactId>aether-impl</artifactId>
-	     </dependency>
-
-	     <dependency>
-	         <groupId>org.sonatype.aether</groupId>
-	         <artifactId>aether-connector-file</artifactId>
-	     </dependency>
-
-	     <dependency>
-               <groupId>org.sonatype.aether</groupId>
-               <artifactId>aether-connector-asynchttpclient</artifactId>
-               <exclusions>
-                  <!-- use io.netty:netty instead -->
-                   <exclusion>
-                       <groupId>org.jboss.netty</groupId>
-                       <artifactId>netty</artifactId>
-                   </exclusion>
-               </exclusions>
-           </dependency>
-
-	     <dependency>
-	         <groupId>org.sonatype.aether</groupId>
-	         <artifactId>aether-connector-wagon</artifactId>
-	     </dependency>
-
-    </dependencies>
+        <dependency>
+            <groupId>org.eclipse.aether</groupId>
+            <artifactId>aether-connector-basic</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.aether</groupId>
+            <artifactId>aether-transport-file</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.aether</groupId>
+            <artifactId>aether-transport-http</artifactId>
+        </dependency>
+        <!-- slf4j needed for aether -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+     </dependencies>
 </project>

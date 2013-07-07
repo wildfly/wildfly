@@ -86,6 +86,7 @@ public class MailSubsystem11Test extends AbstractSubsystemBaseTest {
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-mail:" + mavenVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + controllerVersion.getMavenGavVersion())
                 .dontPersistXml();
 
         KernelServices mainServices = builder.build();
