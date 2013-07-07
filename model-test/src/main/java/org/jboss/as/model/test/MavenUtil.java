@@ -21,42 +21,6 @@
 */
 package org.jboss.as.model.test;
 
-import org.apache.maven.repository.internal.MavenRepositorySystemSession;
-import org.apache.maven.repository.internal.MavenServiceLocator;
-import org.apache.maven.wagon.Wagon;
-import org.codehaus.plexus.DefaultPlexusContainer;
-import org.codehaus.plexus.PlexusContainer;
-import org.sonatype.aether.AbstractRepositoryListener;
-import org.sonatype.aether.RepositoryEvent;
-import org.sonatype.aether.RepositorySystem;
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.artifact.Artifact;
-import org.sonatype.aether.collection.CollectRequest;
-import org.sonatype.aether.collection.DependencyCollectionException;
-import org.sonatype.aether.connector.file.FileRepositoryConnectorFactory;
-import org.sonatype.aether.connector.wagon.WagonProvider;
-import org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory;
-import org.sonatype.aether.graph.Dependency;
-import org.sonatype.aether.graph.DependencyFilter;
-import org.sonatype.aether.graph.DependencyNode;
-import org.sonatype.aether.repository.LocalRepository;
-import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.resolution.ArtifactRequest;
-import org.sonatype.aether.resolution.ArtifactResolutionException;
-import org.sonatype.aether.resolution.ArtifactResult;
-import org.sonatype.aether.resolution.DependencyRequest;
-import org.sonatype.aether.resolution.DependencyResolutionException;
-import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
-import org.sonatype.aether.transfer.AbstractTransferListener;
-import org.sonatype.aether.transfer.TransferEvent;
-import org.sonatype.aether.transfer.TransferResource;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
-import org.sonatype.aether.util.filter.ExclusionsDependencyFilter;
-import org.sonatype.aether.util.graph.PreorderNodeListGenerator;
-import org.sonatype.aether.util.version.GenericVersionScheme;
-import org.sonatype.aether.version.InvalidVersionSpecificationException;
-import org.sonatype.aether.version.VersionScheme;
-
 import java.io.File;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
@@ -71,15 +35,57 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.maven.repository.internal.DefaultArtifactDescriptorReader;
+import org.apache.maven.repository.internal.DefaultVersionRangeResolver;
+import org.apache.maven.repository.internal.DefaultVersionResolver;
+import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
+import org.apache.maven.repository.internal.SnapshotMetadataGeneratorFactory;
+import org.apache.maven.repository.internal.VersionsMetadataGeneratorFactory;
+import org.eclipse.aether.AbstractRepositoryListener;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.RepositoryEvent;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.collection.DependencyCollectionException;
+import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
+import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.DependencyFilter;
+import org.eclipse.aether.graph.DependencyNode;
+import org.eclipse.aether.impl.ArtifactDescriptorReader;
+import org.eclipse.aether.impl.DefaultServiceLocator;
+import org.eclipse.aether.impl.MetadataGeneratorFactory;
+import org.eclipse.aether.impl.VersionRangeResolver;
+import org.eclipse.aether.impl.VersionResolver;
+import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.resolution.DependencyRequest;
+import org.eclipse.aether.resolution.DependencyResolutionException;
+import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
+import org.eclipse.aether.spi.connector.transport.TransporterFactory;
+import org.eclipse.aether.transfer.AbstractTransferListener;
+import org.eclipse.aether.transfer.TransferEvent;
+import org.eclipse.aether.transfer.TransferResource;
+import org.eclipse.aether.transport.file.FileTransporterFactory;
+import org.eclipse.aether.transport.http.HttpTransporterFactory;
+import org.eclipse.aether.util.filter.ExclusionsDependencyFilter;
+import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
+import org.eclipse.aether.util.version.GenericVersionScheme;
+import org.eclipse.aether.version.InvalidVersionSpecificationException;
+import org.eclipse.aether.version.VersionScheme;
+
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 class MavenUtil {
     private static final RepositorySystem REPOSITORY_SYSTEM = newRepositorySystem();
-    private static final String AETHER_API_NAME = File.separatorChar == '/' ? "/org/sonatype/aether/aether-api/" : "\\org\\sonatype\\aether\\aether-api\\";
+    private static final String AETHER_API_NAME = File.separatorChar == '/' ? "/org/eclipse/aether/aether-api/" : "\\org\\eclipse\\aether\\aether-api\\";
     private static String mavenRepository;
-
 
     static URL createMavenGavURL(String artifactGav) throws MalformedURLException {
         Artifact artifact = new DefaultArtifact(artifactGav);
@@ -107,16 +113,17 @@ class MavenUtil {
 
         ArtifactRequest artifactRequest = new ArtifactRequest();
         artifactRequest.setArtifact(artifact);
-        for (RemoteRepository remoteRepo : remoteRepositories){
+        for (RemoteRepository remoteRepo : remoteRepositories) {
             artifactRequest.addRepository(remoteRepo);
         }
 
         ArtifactResult artifactResult;
         try {
             artifactResult = REPOSITORY_SYSTEM.resolveArtifact(session, artifactRequest);
-        } catch(ArtifactResolutionException e) {
+        } catch (ArtifactResolutionException e) {
             throw new RuntimeException(e);
         }
+
 
         File file = artifactResult.getArtifact().getFile().getAbsoluteFile();
         System.out.println(file);
@@ -149,14 +156,14 @@ class MavenUtil {
 
         ArtifactRequest artifactRequest = new ArtifactRequest();
         artifactRequest.setArtifact(artifact);
-        for (RemoteRepository remoteRepo : remoteRepositories){
+        for (RemoteRepository remoteRepo : remoteRepositories) {
             artifactRequest.addRepository(remoteRepo);
         }
 
         ArtifactResult artifactResult;
         try {
             artifactResult = REPOSITORY_SYSTEM.resolveArtifact(session, artifactRequest);
-        } catch(ArtifactResolutionException e) {
+        } catch (ArtifactResolutionException e) {
             throw new RuntimeException(e);
         }
 
@@ -164,18 +171,19 @@ class MavenUtil {
         urls.add(artifactToUrl(artifactResult.getArtifact()));
 
         CollectRequest collectRequest = new CollectRequest();
-        collectRequest.setRoot(new Dependency(artifact, "compile" ));
+        collectRequest.setRoot(new Dependency(artifact, "compile"));
         for (RemoteRepository remoteRepo : remoteRepositories) {
-            collectRequest.addRepository( remoteRepo );
+            collectRequest.addRepository(remoteRepo);
         }
-        DependencyNode node = REPOSITORY_SYSTEM.collectDependencies( session, collectRequest ).getRoot();
-        DependencyFilter filter = new ExclusionsDependencyFilter(Arrays.asList(excludes));
-        DependencyRequest dependencyRequest = new DependencyRequest( node, filter );
 
-        REPOSITORY_SYSTEM.resolveDependencies( session, dependencyRequest  );
+        DependencyNode node = REPOSITORY_SYSTEM.collectDependencies(session, collectRequest).getRoot();
+        DependencyFilter filter = new ExclusionsDependencyFilter(Arrays.asList(excludes));
+        DependencyRequest dependencyRequest = new DependencyRequest(node, filter);
+
+        REPOSITORY_SYSTEM.resolveDependencies(session, dependencyRequest);
 
         PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
-        node.accept( nlg );
+        node.accept(nlg);
         for (Artifact cur : nlg.getArtifacts(false)) {
             urls.add(artifactToUrl(cur));
         }
@@ -189,33 +197,30 @@ class MavenUtil {
 
     private static List<RemoteRepository> createRemoteRepositories() {
         String remoteReposFromSysProp = System.getProperty(ChildFirstClassLoaderBuilder.MAVEN_REPOSITORY_URLS);
-        if (remoteReposFromSysProp == null || remoteReposFromSysProp.trim().length() == 0){
-            return Collections.singletonList(new RemoteRepository("jboss-developer", "default", "http://repository.jboss.org/nexus/content/groups/developer/"));
+        if (remoteReposFromSysProp == null || remoteReposFromSysProp.trim().length() == 0 || remoteReposFromSysProp.startsWith("${")) {
+            return Collections.singletonList(new RemoteRepository.Builder("jboss-developer", "default", "http://repository.jboss.org/nexus/content/groups/developer/").build());
         } else {
             int i = 0;
             List<RemoteRepository> remoteRepositories = new ArrayList<RemoteRepository>();
-            for (String repoUrl : remoteReposFromSysProp.split(",")){
-                remoteRepositories.add(new RemoteRepository("repo" + i, "default", repoUrl.trim()));
+            for (String repoUrl : remoteReposFromSysProp.split(",")) {
+                //remoteRepositories.add(new RemoteRepository("repo" + i, "default", repoUrl.trim()));
+                remoteRepositories.add(new RemoteRepository.Builder("repo" + i, "default", repoUrl.trim()).build());
                 i++;
             }
             return remoteRepositories;
         }
     }
 
-    private static RepositorySystemSession newRepositorySystemSession() {
-
-        MavenRepositorySystemSession session = new MavenRepositorySystemSession();
+    protected static RepositorySystemSession newRepositorySystemSession() {
+        DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 
         //TODO make local repo more pluggable?
         LocalRepository localRepo = new LocalRepository(determineLocalMavenRepositoryHack());
-        session.setLocalRepositoryManager( REPOSITORY_SYSTEM.newLocalRepositoryManager(localRepo));
+        session.setLocalRepositoryManager(REPOSITORY_SYSTEM.newLocalRepositoryManager(session, localRepo));
 
         //Copy these from the aether demo if they are nice to have
         session.setTransferListener(new ConsoleTransferListener());
         session.setRepositoryListener(new ConsoleRepositoryListener());
-
-        // uncomment to generate dirty trees
-        // session.setDependencyGraphTransformer( null );
 
         return session;
     }
@@ -232,43 +237,41 @@ class MavenUtil {
         return mavenRepository;
     }
 
-
     private static URL artifactToUrl(Artifact artifact) throws MalformedURLException {
         return artifact.getFile().toURI().toURL();
     }
 
     public static RepositorySystem newRepositorySystem() {
-        /*
-         * Aether's components implement
-         * org.sonatype.aether.spi.locator.Service to ease manual wiring and
-         * using the prepopulated DefaultServiceLocator, we only need to
-         * register the repository connector factories.
-         */
-        MavenServiceLocator locator = new MavenServiceLocator();
-        locator.addService(RepositoryConnectorFactory.class, FileRepositoryConnectorFactory.class);
-        locator.addService(RepositoryConnectorFactory.class, WagonRepositoryConnectorFactory.class);
-        locator.setServices(WagonProvider.class, new ManualWagonProvider());
+            /*
+             * Aether's components implement
+             * org.sonatype.aether.spi.locator.Service to ease manual wiring and
+             * using the prepopulated DefaultServiceLocator, we only need to
+             * register the repository connector factories.
+             */
+
+        DefaultServiceLocator locator = new DefaultServiceLocator();
+        locator.addService(ArtifactDescriptorReader.class, DefaultArtifactDescriptorReader.class);
+        locator.addService(VersionResolver.class, DefaultVersionResolver.class);
+        locator.addService(VersionRangeResolver.class, DefaultVersionRangeResolver.class);
+        locator.addService(MetadataGeneratorFactory.class, SnapshotMetadataGeneratorFactory.class);
+        locator.addService(MetadataGeneratorFactory.class, VersionsMetadataGeneratorFactory.class);
+        locator.setErrorHandler(new MyErrorHandler());
+
+        locator.addService(RepositoryConnectorFactory.class, BasicRepositoryConnectorFactory.class);
+        locator.addService(TransporterFactory.class, FileTransporterFactory.class);
+        //locator.addService(TransporterFactory.class, WagonTransporterFactory.class);
+        locator.addService(TransporterFactory.class, HttpTransporterFactory.class);
 
         return locator.getService(RepositorySystem.class);
     }
 
-    private static class ManualWagonProvider implements WagonProvider {
-
-        public Wagon lookup(String roleHint) throws Exception {
-            if ("http".equals(roleHint)) {
-                PlexusContainer container= new DefaultPlexusContainer();
-                Wagon httpWagon = (Wagon) container.lookup( org.apache.maven.wagon.Wagon.ROLE, "http" );
-                container.dispose();
-                return httpWagon;
-            }
-            return null;
-        }
-
-        public void release(Wagon wagon) {
-
+    protected static class MyErrorHandler extends DefaultServiceLocator.ErrorHandler {
+        @Override
+        public void serviceCreationFailed(Class<?> type, Class<?> impl, Throwable exception) {
+            System.out.println("Could not create type: " + type + " impl: " + impl);
+            exception.printStackTrace();
         }
     }
-
 
     private static class ConsoleRepositoryListener extends AbstractRepositoryListener {
 
@@ -355,9 +358,7 @@ class MavenUtil {
     private static class ConsoleTransferListener extends AbstractTransferListener {
 
         private PrintStream out;
-
         private Map<TransferResource, Long> downloads = new ConcurrentHashMap<TransferResource, Long>();
-
         private int lastLength;
 
         public ConsoleTransferListener() {
