@@ -130,18 +130,50 @@
         <attribute name="name" default="wildfly"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
         <attribute name="config.dir.name" default="standalone/configuration"/>
-
-        <attribute name="containerdef" default="cache-container.xml"/>
+        <attribute name="cacheLoader" />
+        <attribute name="cacheType" />
+        <attribute name="mode" />
 
         <sequential>
-            <echo message="Adding a cache container to Infinispan subsystem for config @{name}"/>
-
+            <echo message="Adding a cache container to Infinispan subsystem for config @{name}" />
+                
             <execute-xslt-transform transform="addCacheContainer.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
                 <transform-params>
-                    <param name="filename" expression="@{containerdef}"/>
+                    <param name="cacheLoader" expression="@{cacheLoader}" />
+                    <param name="cacheType" expression="@{cacheType}" />
+                    <param name="mode" expression="@{mode}" />
                 </transform-params>
             </execute-xslt-transform>
+        </sequential>
+    </macrodef>
 
+    <macrodef name="ts.config-as.change-database" description="Change database configuration">
+
+        <attribute name="name" default="wildfly" />
+        <attribute name="output.dir" default="${project.build.directory}" />
+        <attribute name="config.dir.name" default="standalone/configuration" />
+        <attribute name="ds.jdbc.url" default="jdbc:h2:mem:test;DB_CLOSE_DELAY=-1" />
+        <attribute name="ds.jdbc.user" default="sa" />
+        <attribute name="ds.jdbc.pass" default="sa" />
+        <attribute name="ds.jdbc.driver.jar" default="h2" />
+        <attribute name="ds.jdbc.driver" default="org.h2.jdbcx.JdbcDataSource" />
+        <attribute name="ds.jdbc.driver.module" default="com.h2database.h2" />
+        <attribute name="ds.jdbc.isModule" default="true" />
+        
+        <sequential>
+            <echo message="Adding a cache container to Infinispan subsystem for config @{name}" />
+           
+            <execute-xslt-transform transform="changeDatabase.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+                <transform-params>
+                    <param name="ds.jdbc.url" expression="@{ds.jdbc.url}" />
+                    <param name="ds.jdbc.user" expression="@{ds.jdbc.user}" />
+                    <param name="ds.jdbc.pass" expression="@{ds.jdbc.pass}" />
+                    <param name="ds.jdbc.driver.jar" expression="@{ds.jdbc.driver.jar}" />
+                    <param name="ds.jdbc.driver" expression="@{ds.jdbc.driver}" />
+                    <param name="ds.jdbc.driver.module" expression="@{ds.jdbc.driver.module}" />
+                    <param name="ds.jdbc.isModule" expression="@{ds.jdbc.isModule}" />
+                </transform-params>
+            </execute-xslt-transform>
         </sequential>
     </macrodef>
 
