@@ -1372,8 +1372,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
             Assert.assertEquals(true, defaultOps.get(REMOVE));
             Map<String, Boolean> exceptionOps = checkOperationAccessControlNames(accessControl.exceptions.get(ONE_A_ADDR), ADD, REMOVE);
             Assert.assertEquals(true, exceptionOps.get(ADD));
-            //TODO since this has attributes which are sensitive due to a vault expressions, remove should not be executable
-            //Assert.assertEquals(false, exceptionOps.get(REMOVE));
+            //Since this has attributes which are sensitive due to a vault expressions, remove should not be executable
+            Assert.assertEquals(false, exceptionOps.get(REMOVE));
 
         } finally {
             VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(null);
@@ -1467,7 +1467,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
             Assert.assertEquals(true, defaultOps.get(REMOVE));
             Map<String, Boolean> exceptionOps = checkOperationAccessControlNames(accessControl.exceptions.get(ONE_A_ADDR), ADD, REMOVE);
             Assert.assertEquals(true, exceptionOps.get(ADD));
-            Assert.assertEquals(true, exceptionOps.get(REMOVE));
+            // Since this has attributes which are sensitive due to a vault expressions, remove should not be executable
+            Assert.assertEquals(false, exceptionOps.get(REMOVE));
 
         } finally {
             VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(null);
@@ -1554,8 +1555,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
             Assert.assertEquals(true, defaultOps.get(REMOVE));
             Map<String, Boolean> exceptionOps = checkOperationAccessControlNames(accessControl.exceptions.get(ONE_A_ADDR), ADD, REMOVE);
             Assert.assertEquals(true, exceptionOps.get(ADD));
-            //TODO since this has attributes which are sensitive due to a vault expressions, remove should not be executable
-            //Assert.assertEquals(false, exceptionOps.get(REMOVE));
+            // Since this has attributes which are sensitive due to a vault expressions, remove should not be executable
+            Assert.assertEquals(false, exceptionOps.get(REMOVE));
 
         } finally {
             VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(null);
@@ -1654,8 +1655,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
             Assert.assertEquals(true, defaultOps.get(REMOVE));
             Map<String, Boolean> exceptionOps = checkOperationAccessControlNames(accessControl.exceptions.get(ONE_A_ADDR), ADD, REMOVE);
             Assert.assertEquals(true, exceptionOps.get(ADD));
-            //TODO since this has attributes which are sensitive due to a vault expressions, remove should not be executable
-            //Assert.assertEquals(false, exceptionOps.get(REMOVE));
+            //Since this has attributes which are sensitive due to a vault expressions, remove should not be executable
+            Assert.assertEquals(false, exceptionOps.get(REMOVE));
         } finally {
             VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(null);
             VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresReadPermission(null);
