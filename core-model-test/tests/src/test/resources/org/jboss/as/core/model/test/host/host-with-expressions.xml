@@ -19,7 +19,7 @@
                     <local default-user="${local.auth.default-user:$local}" allowed-users="${local.auth.allowed-user:*}" />
                     <properties path="${authentication.props.path:application-users.properties}" relative-to="jboss.domain.config.dir" />
                 </authentication>
-                <authorization map-groups-to-roles="true">
+                <authorization>
                     <properties path="${authorization.props.path:application-roles.properties}" relative-to="jboss.domain.config.dir"/>
                 </authorization>
             </security-realm>

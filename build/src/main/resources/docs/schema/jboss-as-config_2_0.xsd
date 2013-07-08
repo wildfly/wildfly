@@ -342,7 +342,7 @@
             <xs:element name="properties" type="propertiesFileType" minOccurs="0" />
             <xs:element name="plug-in" type="plug-inAuthType" minOccurs="0" />
         </xs:choice>
-        <xs:attribute name="map-groups-to-roles" type="xs:boolean" default="false" use="optional">
+        <xs:attribute name="map-groups-to-roles" type="xs:boolean" default="true" use="optional">
             <xs:annotation>
                 <xs:documentation>
                     The membership information loaded is the authenticated identities group membership, commonly there
