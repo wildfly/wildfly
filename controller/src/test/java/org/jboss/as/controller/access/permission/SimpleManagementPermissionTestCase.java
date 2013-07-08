@@ -22,12 +22,12 @@
 
 package org.jboss.as.controller.access.permission;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.constraint.Constraint;
 import org.junit.Test;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Ladislav Thon <lthon@redhat.com>

@@ -22,12 +22,16 @@
 
 package org.jboss.as.controller.access.rbac;
 
-import org.jboss.as.controller.test.AbstractControllerTestBase;
-import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import org.jboss.as.controller.test.AbstractControllerTestBase;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author Ladislav Thon <lthon@redhat.com>

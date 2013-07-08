@@ -28,7 +28,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.security.Permission;
-import java.util.Set;
 
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.constraint.ScopingConstraint;

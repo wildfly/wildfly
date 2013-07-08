@@ -22,15 +22,17 @@
 
 package org.jboss.as.controller.access.permission;
 
-import org.jboss.as.controller.access.Action;
-import org.jboss.as.controller.access.constraint.ScopingConstraint;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.security.Permission;
 import java.util.Enumeration;
 
-import static org.junit.Assert.*;
+import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.constraint.ScopingConstraint;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Ladislav Thon <lthon@redhat.com>
