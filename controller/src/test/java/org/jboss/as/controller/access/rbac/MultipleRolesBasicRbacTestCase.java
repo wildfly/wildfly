@@ -22,10 +22,9 @@
 
 package org.jboss.as.controller.access.rbac;
 
-import org.jboss.dmr.ModelNode;
-import org.junit.internal.AssumptionViolatedException;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author Ladislav Thon <lthon@redhat.com>

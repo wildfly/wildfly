@@ -22,21 +22,24 @@
 
 package org.jboss.as.controller.access.permission;
 
-import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.access.*;
-import org.jboss.as.controller.access.constraint.ScopingConstraint;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.dmr.ModelNode;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.security.Permission;
 import java.security.PermissionCollection;
 import java.util.EnumSet;
-import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.AuthorizationResult;
+import org.jboss.as.controller.access.Caller;
+import org.jboss.as.controller.access.Environment;
+import org.jboss.as.controller.access.TargetAttribute;
+import org.jboss.as.controller.access.TargetResource;
+import org.jboss.as.controller.access.constraint.ScopingConstraint;
+import org.jboss.dmr.ModelNode;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Ladislav Thon <lthon@redhat.com>
