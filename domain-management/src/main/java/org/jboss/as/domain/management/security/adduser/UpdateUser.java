@@ -93,8 +93,8 @@ public class UpdateUser extends UpdatePropertiesHandler implements State {
     }
 
     @Override
-    String consoleRolesMessage(String fileName) {
-        return MESSAGES.updatedRoles(stateValues.getUserName(), stateValues.getRoles(), fileName);
+    String consoleGroupsMessage(String fileName) {
+        return MESSAGES.updatedGroups(stateValues.getUserName(), stateValues.getGroups(), fileName);
     }
 
     @Override

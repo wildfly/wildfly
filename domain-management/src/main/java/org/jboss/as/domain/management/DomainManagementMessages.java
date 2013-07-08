@@ -464,24 +464,24 @@ public interface DomainManagementMessages {
     String filePrompt();
 
     /**
-     * Prompt the user for the roles to add the user to
+     * Prompt the user for the groups to add the user to
      * @return
      */
-    @Message(id = Message.NONE, value = "What roles do you want this user to belong to? (Please enter a comma separated list, or leave blank for none)")
-    String rolesPrompt();
+    @Message(id = Message.NONE, value = "What groups do you want this user to belong to? (Please enter a comma separated list, or leave blank for none)")
+    String groupsPrompt();
 
 
     /**
-     * Message to inform user that the new user has been added to the roles file identified.
+     * Message to inform user that the new user has been added to the groups file identified.
      *
      * @param username - The new username.
-     * @param roles - The new roles.
+     * @param groups - The new groups.
      * @param fileName - The file the user has been added to.
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = Message.NONE, value = "Added user '%s' with roles %s to file '%s'")
-    String addedRoles(String username, String roles, String fileName);
+    @Message(id = Message.NONE, value = "Added user '%s' with groups %s to file '%s'")
+    String addedGroups(String username, String groups, String fileName);
 
     /**
      * The error message if the choice response is invalid.
@@ -528,16 +528,16 @@ public interface DomainManagementMessages {
     String unableToUpdateUser(String absolutePath, String message);
 
     /**
-     * Message to inform user that the user has been updated to the roles file identified.
+     * Message to inform user that the user has been updated to the groups file identified.
      *
      * @param username - The new username.
-     * @param roles - The new roles.
+     * @param groups - The new groups.
      * @param fileName - The file the user has been added to.
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = Message.NONE, value = "Updated user '%s' with roles %s to file '%s'")
-    String updatedRoles(String username, String roles, String fileName);
+    @Message(id = Message.NONE, value = "Updated user '%s' with groups %s to file '%s'")
+    String updatedGroups(String username, String groups, String fileName);
 
     /**
      * IOException to indicate the user attempting to use local authentication has been rejected.
@@ -750,8 +750,15 @@ public interface DomainManagementMessages {
      * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#ROLE} command line argument.
      * @return the message.
      */
-    @Message(id = Message.NONE, value = "Comma-separated list of roles for the user (only for application users, see -a)")
+    @Message(id = Message.NONE, value = "Comma-separated list of roles for the user.")
     String argRole();
+
+    /**
+     * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#GROUP} command line argument.
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Comma-separated list of groups for the user.")
+    String argGroup();
 
     /**
      * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#HELP} command line argument.
@@ -837,7 +844,7 @@ public interface DomainManagementMessages {
      * The user has supplied a group properties file name but no user propertites file name.
      */
     @Message(id = 15275, value = "A group properties file '%s' has been specified, however no user properties has been specified.")
-    String groupPropertiesButNoRoleProperties(final String groupProperties);
+    String groupPropertiesButNoUserProperties(final String groupProperties);
 
     /**
      * There is no default realm name and the user has not specified one either.
