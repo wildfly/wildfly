@@ -32,135 +32,16 @@ import org.jboss.dmr.ModelNode;
 public class MultipleRolesBasicRbacTestCase extends BasicRbacTestCase {
     @Override
     protected ModelNode executeWithRole(ModelNode operation, StandardRole role) {
-        StandardRole additionalRole = role != StandardRole.AUDITOR ? StandardRole.AUDITOR : StandardRole.DEPLOYER;
+        // usually, just add "monitor", as that won't widen the permissions
+        // for the "monitor" role, adding "deployer" won't widen the perms either
+        StandardRole additionalRole = role != StandardRole.MONITOR ? StandardRole.MONITOR : StandardRole.DEPLOYER;
+        // but for the "deployer" role, there's no role that won't widen the perms
+        // so in this case, don't add any other role
+        if (role == StandardRole.DEPLOYER) {
+            additionalRole = StandardRole.DEPLOYER;
+        }
+
         operation.get(OPERATION_HEADERS, "roles").add(role.name()).add(additionalRole.name());
         return getController().execute(operation, null, null, null);
-    }
-
-    // ---
-    // this entire section is to be deleted once multiple roles are properly implemented
-
-    private void ignore() {
-        throw new AssumptionViolatedException("ManagementPermissionCollection.implies doesn't work in case of users with multiple roles");
-    }
-
-    @Override
-    public void testMonitorNoAccess() {
-        ignore();
-    }
-
-    @Override
-    public void testMonitorReadConfigPermitted() {
-        ignore();
-    }
-
-    @Override
-    public void testMonitorWriteConfigDenied() {
-        ignore();
-    }
-
-    @Override
-    public void testMonitorReadRuntimePermitted() {
-        ignore();
-    }
-
-    @Override
-    public void testMonitorWriteRuntimeDenied() {
-        ignore();
-    }
-
-    @Override
-    public void testOperatorNoAccess() {
-        ignore();
-    }
-
-    @Override
-    public void testOperatorReadConfigPermitted() {
-        ignore();
-    }
-
-    @Override
-    public void testOperatorWriteConfigDenied() {
-        ignore();
-    }
-
-    @Override
-    public void testOperatorReadRuntimePermitted() {
-        ignore();
-    }
-
-    @Override
-    public void testOperatorWriteRuntimePermitted() {
-        ignore();
-    }
-
-    @Override
-    public void testMaintainerNoAccess() {
-        ignore();
-    }
-
-    @Override
-    public void testMaintainerReadConfigPermitted() {
-        ignore();
-    }
-
-    @Override
-    public void testMaintainerWriteConfigPermitted() {
-        ignore();
-    }
-
-    @Override
-    public void testMaintainerReadRuntimePermitted() {
-        ignore();
-    }
-
-    @Override
-    public void testMaintainerWriteRuntimePermitted() {
-        ignore();
-    }
-
-    @Override
-    public void testDeployerNoAccess() {
-        ignore();
-    }
-
-    @Override
-    public void testDeployerReadConfigPermitted() {
-        ignore();
-    }
-
-    @Override
-    public void testDeployerWriteConfigPermitted() {
-        ignore();
-    }
-
-    @Override
-    public void testDeployerReadRuntimePermitted() {
-        ignore();
-    }
-
-    @Override
-    public void testDeployerWriteRuntimePermitted() {
-        ignore();
-    }
-
-    @Override
-    public void testAdministratorReadConfigPermitted() {
-        ignore();
-    }
-
-    @Override
-    public void testAdministratorWriteConfigPermitted() {
-        ignore();
-    }
-
-    @Override
-    public void testAdministratorReadRuntimePermitted() {
-        ignore();
-    }
-
-    @Override
-    public void testAdministratorWriteRuntimePermitted() {
-        ignore();
     }
 }
