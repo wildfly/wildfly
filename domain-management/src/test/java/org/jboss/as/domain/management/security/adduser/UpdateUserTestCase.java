@@ -37,7 +37,7 @@ public class UpdateUserTestCase extends PropertyTestHelper {
 
     @Test
     public void testState() throws IOException, StartException {
-        values.setRoles(null);
+        values.setGroups(null);
         UpdateUser updateUserState = new UpdateUser(consoleMock, values);
 
         AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
@@ -53,12 +53,12 @@ public class UpdateUserTestCase extends PropertyTestHelper {
 
     @Test
     public void testStateRoles() throws IOException, StartException {
-        values.setRoles(ROLES);
+        values.setGroups(ROLES);
         UpdateUser updateUserState = new UpdateUser(consoleMock, values);
         AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
                 expectedDisplayText(updateUserState.consoleUserMessage(values.getUserFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddUser.NEW_LINE).
-                expectedDisplayText(updateUserState.consoleRolesMessage(values.getRoleFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(updateUserState.consoleGroupsMessage(values.getGroupFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddUser.NEW_LINE);
         consoleMock.setResponses(consoleBuilder);
         updateUserState.update(values);

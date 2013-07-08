@@ -39,13 +39,13 @@ public class AddUserTestCase extends PropertyTestHelper {
 
     @Test
     public void testAddUser() throws IOException, StartException {
-        values.setRoles(ROLES);
+        values.setGroups(ROLES);
         AddUserState addUserState = new AddUserState(consoleMock, values);
 
         AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
                 expectedDisplayText(MESSAGES.addedUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddUser.NEW_LINE).
-                expectedDisplayText(MESSAGES.addedRoles(values.getUserName(), values.getRoles(),values.getRoleFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(MESSAGES.addedGroups(values.getUserName(), values.getGroups(),values.getGroupFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddUser.NEW_LINE);
         consoleMock.setResponses(consoleBuilder);
         addUserState.update(values);

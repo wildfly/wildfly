@@ -50,6 +50,7 @@ public class AddUser {
     public static final String DEFAULT_MANAGEMENT_REALM = "ManagementRealm";
     public static final String DEFAULT_APPLICATION_REALM = "ApplicationRealm";
     public static final String MGMT_USERS_PROPERTIES = "mgmt-users.properties";
+    public static final String MGMT_GROUPS_PROPERTIES = "mgmt-groups.properties";
     public static final String APPLICATION_USERS_PROPERTIES = "application-users.properties";
     public static final String APPLICATION_ROLES_PROPERTIES = "application-roles.properties";
 
@@ -112,7 +113,11 @@ public class AddUser {
         stateValues.setRealm(realm);
         stateValues.setRealmMode(realmMode);
         stateValues.setFileMode(fileMode);
-        stateValues.setRoles(argsCliProps.getProperty(CommandLineArgument.ROLE.key()));
+        String groups = argsCliProps.getProperty(CommandLineArgument.GROUPS.key());
+        if (groups == null) {
+            groups = argsCliProps.getProperty(CommandLineArgument.ROLE.key());
+        }
+        stateValues.setGroups(groups);
 
         nextState = new PropertyFileFinder(theConsole, stateValues);
     }
@@ -284,6 +289,17 @@ public class AddUser {
             }
 
         },
+        GROUPS("-g", "--group") {
+            @Override
+            public String argumentExample() {
+                return super.argumentExample().concat(" <value>");
+            }
+
+            @Override
+            public String instructions() {
+                return MESSAGES.argGroup();
+            }
+        },
         GROUP_PROPERTIES("-gp", "--group-properties") {
             @Override
             public String argumentExample() {
@@ -336,6 +352,10 @@ public class AddUser {
             }
         },
         ROLE("-ro", "--role") {
+            /*
+             * Deprecated in favour of groups.
+             */
+
             @Override
             public String argumentExample() {
                 return super.argumentExample().concat(" <value>");
@@ -435,7 +455,9 @@ public class AddUser {
                 final StringBuilder sb = new StringBuilder();
                 sb.append(MESSAGES.argUsage()).append(NEW_LINE);
                 for (CommandLineArgument arg : CommandLineArgument.values()) {
-                    sb.append(arg.toString()).append(NEW_LINE);
+                    if (arg != ROLE) { // Deprecated
+                        sb.append(arg.toString()).append(NEW_LINE);
+                    }
                 }
                 USAGE = sb.toString();
             }

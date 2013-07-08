@@ -24,16 +24,16 @@ package org.jboss.as.domain.management.security.adduser;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 /**
- * State responsible for prompting for the list of roles for a user.
+ * State responsible for prompting for the list of groups for a user.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class PromptRolesState implements State {
+public class PromptGroupsState implements State {
 
     private final StateValues stateValues;
     private final ConsoleWrapper theConsole;
 
-    public PromptRolesState(ConsoleWrapper theConsole, final StateValues stateValues) {
+    public PromptGroupsState(ConsoleWrapper theConsole, final StateValues stateValues) {
         this.theConsole = theConsole;
         this.stateValues = stateValues;
     }
@@ -41,10 +41,10 @@ public class PromptRolesState implements State {
     @Override
     public State execute() {
         if (stateValues.isSilentOrNonInteractive() == false) {
-            if (!stateValues.getRoleFiles().isEmpty()) {
-                theConsole.printf(MESSAGES.rolesPrompt());
-                String userRoles = stateValues.getKnownRoles().get(stateValues.getUserName());
-                stateValues.setRoles(theConsole.readLine("[%1$2s]: ", (userRoles == null ? "" : userRoles)));
+            if (!stateValues.getGroupFiles().isEmpty()) {
+                theConsole.printf(MESSAGES.groupsPrompt());
+                String userGroups = stateValues.getKnownGroups().get(stateValues.getUserName());
+                stateValues.setGroups(theConsole.readLine("[%1$2s]: ", (userGroups == null ? "" : userGroups)));
             }
         }
 

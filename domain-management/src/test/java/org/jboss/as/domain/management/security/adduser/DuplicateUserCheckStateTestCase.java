@@ -41,7 +41,7 @@ public class DuplicateUserCheckStateTestCase extends PropertyTestHelper {
     @Test
     public void newUser() throws IOException {
         values.setExistingUser(false);
-        values.setRoles(ROLES);
+        values.setGroups(ROLES);
         PreModificationState userCheckState = new PreModificationState(consoleMock, values);
 
         AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
@@ -52,7 +52,7 @@ public class DuplicateUserCheckStateTestCase extends PropertyTestHelper {
                 expectedInput("yes").
                 expectedDisplayText(MESSAGES.addedUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddUser.NEW_LINE).
-                expectedDisplayText(MESSAGES.addedRoles(values.getUserName(), values.getRoles(),values.getRoleFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(MESSAGES.addedGroups(values.getUserName(), values.getGroups(),values.getGroupFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddUser.NEW_LINE);
         consoleMock.setResponses(consoleBuilder);
 
@@ -67,13 +67,13 @@ public class DuplicateUserCheckStateTestCase extends PropertyTestHelper {
     @Test
     public void existingUSer() throws IOException {
         values.setExistingUser(true);
-        values.setRoles(ROLES);
+        values.setGroups(ROLES);
         PreModificationState userCheckState = new PreModificationState(consoleMock, values);
 
         AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
                 expectedDisplayText(MESSAGES.updateUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddUser.NEW_LINE).
-                expectedDisplayText(MESSAGES.updatedRoles(values.getUserName(), values.getRoles(), values.getRoleFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(MESSAGES.updatedGroups(values.getUserName(), values.getGroups(), values.getGroupFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddUser.NEW_LINE);
         consoleMock.setResponses(consoleBuilder);
 

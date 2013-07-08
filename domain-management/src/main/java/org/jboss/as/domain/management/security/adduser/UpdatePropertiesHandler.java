@@ -57,14 +57,14 @@ public abstract class UpdatePropertiesHandler {
     abstract String consoleUserMessage(String fileName);
 
     /**
-     * Customize message for update or add roles
+     * Customize message for update or add groups
      * @param fileName - the filename of the updated property file;
      * @return the console message that should be present to the user
      */
-    abstract String consoleRolesMessage(String fileName);
+    abstract String consoleGroupsMessage(String fileName);
 
     /**
-     * Customize error message for update or add users roles / properties
+     * Customize error message for update or add users groups / properties
      * @param fileName - the filename of the updated property file;
      * @return the console message that should be present to the user
      */
@@ -94,13 +94,13 @@ public abstract class UpdatePropertiesHandler {
             }
         }
 
-        if (stateValues.rolePropertiesFound() && stateValues.getRoles() != null) {
-            for (final File current : stateValues.getRoleFiles()) {
-                String[] role = {stateValues.getUserName(), stateValues.getRoles()};
+        if (stateValues.groupPropertiesFound() && stateValues.getGroups() != null) {
+            for (final File current : stateValues.getGroupFiles()) {
+                String[] groups = {stateValues.getUserName(), stateValues.getGroups()};
                 try {
-                    persist(role, current);
+                    persist(groups, current);
                     if (stateValues.isSilent() == false) {
-                        theConsole.printf(consoleRolesMessage(current.getCanonicalPath()));
+                        theConsole.printf(consoleGroupsMessage(current.getCanonicalPath()));
                         theConsole.printf(NEW_LINE);
                     }
                 } catch (IOException e) {

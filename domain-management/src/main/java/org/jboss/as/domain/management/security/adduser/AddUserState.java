@@ -94,8 +94,8 @@ public class AddUserState extends UpdatePropertiesHandler implements State {
     }
 
     @Override
-    String consoleRolesMessage(String filePath) {
-        return MESSAGES.addedRoles(stateValues.getUserName(), stateValues.getRoles(), filePath);
+    String consoleGroupsMessage(String filePath) {
+        return MESSAGES.addedGroups(stateValues.getUserName(), stateValues.getGroups(), filePath);
     }
 
     @Override
