@@ -161,15 +161,15 @@ public abstract class AbstractControllerTestBase {
 
     }
 
-    class ModelControllerService extends TestModelControllerService {
+    public class ModelControllerService extends TestModelControllerService {
 
-        ModelControllerService(final ProcessType processType) {
+        public ModelControllerService(final ProcessType processType) {
             super(processType, new EmptyConfigurationPersister(), new ControlledProcessState(true),
                     ResourceBuilder.Factory.create(PathElement.pathElement("root"), new NonResolvingResourceDescriptionResolver()).build()
             );
         }
 
-        ModelControllerService(final ProcessType processType, ResourceDefinition resourceDefinition){
+        public ModelControllerService(final ProcessType processType, ResourceDefinition resourceDefinition){
             super(processType, new EmptyConfigurationPersister(), new ControlledProcessState(true), resourceDefinition);
         }
 
