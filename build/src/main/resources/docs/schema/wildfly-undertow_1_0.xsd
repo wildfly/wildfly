@@ -44,7 +44,7 @@
             <xs:element name="buffer-caches" type="buffer-cachesType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="server" type="serverType" minOccurs="1" maxOccurs="unbounded"/>
             <xs:element name="servlet-container" type="servletContainerType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="error-handlers" type="servletContainerType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="error-pages" type="errorPagesType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="handlers" type="handlerType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="filters" type="servletContainerType" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
@@ -138,9 +138,9 @@
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="errorHandlerType">
+    <xs:complexType name="errorPagesType">
         <xs:sequence>
-            <xs:element name="file-error-page" type="file-error-page-type" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="error-page" type="errorPageType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -148,10 +148,10 @@
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="handler" use="required" type="xs:string"/>
     </xs:complexType>
-    <xs:complexType name="file-error-page-type">
+    <xs:complexType name="errorPageType">
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="code" use="required" type="xs:string"/>
-        <xs:attribute name="file" use="required" type="xs:string"/>
+        <xs:attribute name="path" use="required" type="xs:string"/>
     </xs:complexType>
     <xs:complexType name="file-handlerType">
         <xs:attribute name="name" use="required" type="xs:string"/>
