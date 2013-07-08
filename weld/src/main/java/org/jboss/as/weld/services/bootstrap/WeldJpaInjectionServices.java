@@ -92,7 +92,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
     @Override
     public ResourceReferenceFactory<EntityManagerFactory> registerPersistenceUnitInjectionPoint(final InjectionPoint injectionPoint) {
         //TODO: cache this stuff
-        final PersistenceUnit context = injectionPoint.getAnnotated().getAnnotation(PersistenceUnit.class);
+        final PersistenceUnit context = getResourceAnnotated(injectionPoint).getAnnotation(PersistenceUnit.class);
         if (context == null) {
             throw WeldMessages.MESSAGES.annotationNotFound(PersistenceUnit.class, injectionPoint.getMember());
         }
