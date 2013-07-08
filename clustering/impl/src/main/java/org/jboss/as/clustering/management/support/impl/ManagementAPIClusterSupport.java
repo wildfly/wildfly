@@ -137,11 +137,15 @@ public class ManagementAPIClusterSupport implements GroupMembershipListener {
 
     @Override
     public synchronized void membershipChanged(List<ClusterNode> deadMembers, List<ClusterNode> newMembers, List<ClusterNode> allMembers) {
-        // fill me in
+        // update the membership
+        this.members.clear();
+        this.members.addAll(allMembers);
+
+        // update any structures which depend on membership
     }
 
     public synchronized void membershipChangedDuringMerge(List<ClusterNode> deadMembers, List<ClusterNode> newMembers, List<ClusterNode> allMembers, List<List<ClusterNode>> originatingGroups) {
-        // fill me in
+        membershipChanged(deadMembers, newMembers, allMembers);
     }
 
     //

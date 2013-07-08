@@ -23,8 +23,8 @@ package org.wildfly.extension.cluster;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
@@ -41,20 +41,22 @@ public class ClusterInstanceResourceDefinition extends SimpleResourceDefinition 
     private final boolean runtimeRegistration;
 
     // metrics
-    // these attributes are actually LIST<PROPERTY>, but are not part of the persistence model
+    static final AttributeDefinition NODE_RESULT = new SimpleAttributeDefinitionBuilder(ModelKeys.NODE_RESULT, ModelType.PROPERTY, true)
+                     .setAllowNull(false)
+                     .build();
 
-    static final SimpleAttributeDefinition RPC_STATS =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.RPC_STATS, ModelType.STRING, true)
+    static final SimpleListAttributeDefinition RPC_STATS =
+            SimpleListAttributeDefinition.Builder.of(ModelKeys.RPC_STATS, NODE_RESULT)
                     .setStorageRuntime()
                     .build();
 
-    static final SimpleAttributeDefinition VIEW =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.VIEW, ModelType.STRING, true)
+    static final SimpleListAttributeDefinition VIEW =
+            SimpleListAttributeDefinition.Builder.of(ModelKeys.VIEW, NODE_RESULT)
                     .setStorageRuntime()
                     .build();
 
-    static final SimpleAttributeDefinition VIEW_HISTORY =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.VIEW_HISTORY, ModelType.STRING, true)
+    static final SimpleListAttributeDefinition VIEW_HISTORY =
+            SimpleListAttributeDefinition.Builder.of(ModelKeys.VIEW_HISTORY, NODE_RESULT)
                     .setStorageRuntime()
                     .build();
 

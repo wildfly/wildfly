@@ -23,8 +23,8 @@ package org.wildfly.extension.cluster;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
@@ -41,34 +41,38 @@ public class DeploymentInstanceResourceDefinition extends SimpleResourceDefiniti
     private final boolean runtimeRegistration;
 
     // metrics
-    static final SimpleAttributeDefinition CACHE_VIEW =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.CACHE_VIEW, ModelType.STRING, true)
+    static final AttributeDefinition NODE_RESULT = new SimpleAttributeDefinitionBuilder(ModelKeys.NODE_RESULT, ModelType.PROPERTY, true)
+                     .setAllowNull(false)
+                     .build();
+
+    static final SimpleListAttributeDefinition CACHE_VIEW =
+            SimpleListAttributeDefinition.Builder.of(ModelKeys.CACHE_VIEW, NODE_RESULT)
                     .setStorageRuntime()
                     .build();
 
     // not yet implemented in ISPN
-    static final SimpleAttributeDefinition CACHE_VIEW_HISTORY =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.CACHE_VIEW_HISTORY, ModelType.STRING, true)
+    static final SimpleListAttributeDefinition CACHE_VIEW_HISTORY =
+            SimpleListAttributeDefinition.Builder.of(ModelKeys.CACHE_VIEW_HISTORY, NODE_RESULT)
                     .setStorageRuntime()
                     .build();
 
-    static final SimpleAttributeDefinition DISTRIBUTION =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.DISTRIBUTION, ModelType.STRING, true)
+    static final SimpleListAttributeDefinition DISTRIBUTION =
+            SimpleListAttributeDefinition.Builder.of(ModelKeys.DISTRIBUTION, NODE_RESULT)
                     .setStorageRuntime()
                     .build();
 
-    static final SimpleAttributeDefinition OPERATION_STATS =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.OPERATION_STATS, ModelType.STRING, true)
+    static final SimpleListAttributeDefinition OPERATION_STATS =
+            SimpleListAttributeDefinition.Builder.of(ModelKeys.OPERATION_STATS, NODE_RESULT)
                     .setStorageRuntime()
                     .build();
 
-    static final SimpleAttributeDefinition RPC_STATS =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.RPC_STATS, ModelType.STRING, true)
+    static final SimpleListAttributeDefinition RPC_STATS =
+            SimpleListAttributeDefinition.Builder.of(ModelKeys.RPC_STATS, NODE_RESULT)
                     .setStorageRuntime()
                     .build();
 
-    static final SimpleAttributeDefinition TXN_STATS =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.TXN_STATS, ModelType.STRING, true)
+    static final SimpleListAttributeDefinition TXN_STATS =
+            SimpleListAttributeDefinition.Builder.of(ModelKeys.TXN_STATS, NODE_RESULT)
                     .setStorageRuntime()
                     .build();
 
