@@ -831,7 +831,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     }
 
     @Override
-    public AuthorizationResponse authorizeResource(boolean attributes, boolean isDefaultResponse) {
+    public AuthorizationResponseImpl authorizeResource(boolean attributes, boolean isDefaultResponse) {
         ModelNode op = new ModelNode();
         op.get(OP).set(isDefaultResponse ? GlobalOperationHandlers.CHECK_DEFAULT_RESOURCE_ACCESS : GlobalOperationHandlers.CHECK_RESOURCE_ACCESS);
         op.get(OP_ADDR).set(activeStep.operation.get(OP_ADDR));
@@ -921,7 +921,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         } else {
             final String operationName = operation.require(OP).asString();
             AuthorizationResponseImpl authResp = authorizations.get(opId);
-            assert authResp != null : "perform resource authorization before attribute authorization";
+            assert authResp != null : "perform resource authorization before operation authorization";
 
             AuthorizationResult authResult = authResp.getOperationResult(operationName, access);
             if (authResult == null) {
@@ -937,6 +937,23 @@ final class OperationContextImpl extends AbstractOperationContext {
                 } else {
                     authResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, targetAction, authResp.targetResource);
                     authResp.addOperationResult(operationName, access, authResult);
+
+                    //When authorizing the remove operation, make sure that all the attributes are accessible
+                    if (authResult.getDecision() == AuthorizationResult.Decision.PERMIT && !access && operationName.equals(ModelDescriptionConstants.REMOVE)) {
+                        if (!authResp.attributesComplete) {
+                            authResp = authorizeResource(true, false);
+                        }
+                        out:
+                        for (ActionEffect actionEffect : targetAction.getActionEffects()) {
+                            for (Map<Action.ActionEffect, AuthorizationResult> attributeResults : authResp.attributeResults.values()) {
+                                authResult = attributeResults.get(actionEffect);
+                                if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
+                                    authResp.addOperationResult(operationName, access, authResult);
+                                    break out;
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
