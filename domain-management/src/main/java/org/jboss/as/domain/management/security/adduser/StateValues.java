@@ -44,12 +44,12 @@ public class StateValues {
     private String userName;
     private char[] password;
     private AddUser.FileMode fileMode = FileMode.UNDEFINED;
-    private String roles;
+    private String groups;
     private boolean existingUser = false;
     private List<File> userFiles;
-    private List<File> roleFiles;
+    private List<File> groupFiles;
     private Set<String> knownUsers;
-    private Map<String,String> knownRoles;
+    private Map<String, String> knownGroups;
 
     public StateValues() {
         options = new RuntimeOptions();
@@ -124,12 +124,12 @@ public class StateValues {
         this.fileMode = fileMode;
     }
 
-    public String getRoles() {
-        return roles;
+    public String getGroups() {
+        return groups;
     }
 
-    public void setRoles(String roles) {
-        this.roles = roles;
+    public void setGroups(String groups) {
+        this.groups = groups;
     }
 
     public List<File> getUserFiles() {
@@ -140,16 +140,16 @@ public class StateValues {
         this.userFiles = userFiles;
     }
 
-    public List<File> getRoleFiles() {
-        return roleFiles;
+    public List<File> getGroupFiles() {
+        return groupFiles;
     }
 
-    public void setRoleFiles(List<File> roleFiles) {
-        this.roleFiles = roleFiles;
+    public void setGroupFiles(List<File> groupFiles) {
+        this.groupFiles = groupFiles;
     }
 
-    public boolean rolePropertiesFound() {
-        return roleFiles != null && roleFiles.size() > 0;
+    public boolean groupPropertiesFound() {
+        return groupFiles != null && groupFiles.size() > 0;
     }
 
     public Set<String> getKnownUsers() {
@@ -160,12 +160,12 @@ public class StateValues {
         this.knownUsers = knownUsers;
     }
 
-    public Map<String, String> getKnownRoles() {
-        return knownRoles;
+    public Map<String, String> getKnownGroups() {
+        return knownGroups;
     }
 
-    public void setKnownRoles(Map<String, String> knownRoles) {
-        this.knownRoles = knownRoles;
+    public void setKnownGroups(Map<String, String> knownGroups) {
+        this.knownGroups = knownGroups;
     }
 
     public RuntimeOptions getOptions() {

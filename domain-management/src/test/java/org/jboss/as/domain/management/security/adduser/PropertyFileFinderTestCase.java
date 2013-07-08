@@ -94,7 +94,7 @@ public class PropertyFileFinderTestCase extends PropertyTestHelper {
         File standaloneRolesFile = createPropertyFile("application-roles.properties", "standalone");
 
         String newUserName = "Hugh.Jackman";
-        values.setRoles(null);
+        values.setGroups(null);
         values.setUserName(newUserName);
         values.setFileMode(FileMode.APPLICATION);
         System.setProperty("jboss.server.config.user.dir", domainUserFile.getParent());

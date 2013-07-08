@@ -29,6 +29,7 @@ import static org.jboss.as.domain.management.security.adduser.AddUser.DOMAIN_BAS
 import static org.jboss.as.domain.management.security.adduser.AddUser.DOMAIN_CONFIG_DIR;
 import static org.jboss.as.domain.management.security.adduser.AddUser.DOMAIN_CONFIG_USER_DIR;
 import static org.jboss.as.domain.management.security.adduser.AddUser.MGMT_USERS_PROPERTIES;
+import static org.jboss.as.domain.management.security.adduser.AddUser.MGMT_GROUPS_PROPERTIES;
 import static org.jboss.as.domain.management.security.adduser.AddUser.SERVER_BASE_DIR;
 import static org.jboss.as.domain.management.security.adduser.AddUser.SERVER_CONFIG_DIR;
 import static org.jboss.as.domain.management.security.adduser.AddUser.SERVER_CONFIG_USER_DIR;
@@ -68,10 +69,10 @@ public class PropertyFileFinder implements State {
 
     @Override
     public State execute() {
-        stateValues.setKnownRoles(new HashMap<String, String>());
+        stateValues.setKnownGroups(new HashMap<String, String>());
 
         if (stateValues.getOptions().getGroupProperties() != null && stateValues.getOptions().getUserProperties() == null) {
-            return new ErrorState(theConsole, MESSAGES.groupPropertiesButNoRoleProperties(stateValues.getOptions()
+            return new ErrorState(theConsole, MESSAGES.groupPropertiesButNoUserProperties(stateValues.getOptions()
                     .getGroupProperties()), null, stateValues);
         }
 
@@ -82,15 +83,24 @@ public class PropertyFileFinder implements State {
             return new ErrorState(theConsole, MESSAGES.propertiesFileNotFound(fileName), null, stateValues);
         }
         fileName = stateValues.getOptions().getGroupProperties();
-        if (fileName != null || stateValues.getFileMode() == FileMode.APPLICATION) {
-            List<File> foundRoleFiles = new ArrayList<File>(2);
+
+
+        if (fileName != null || stateValues.getFileMode() != FileMode.UNDEFINED) {
+            boolean groupFileMandatory = true;
+            List<File> foundGroupFiles = new ArrayList<File>(2);
+            if (fileName == null && stateValues.getFileMode() == FileMode.APPLICATION) {
+                fileName = APPLICATION_ROLES_PROPERTIES;
+            } else if (fileName == null) {
+                fileName = MGMT_GROUPS_PROPERTIES;
+                groupFileMandatory = false;
+            }
             fileName = fileName == null ? APPLICATION_ROLES_PROPERTIES : fileName;
-            if (!findFiles(foundRoleFiles, fileName)) {
+            if (!findFiles(foundGroupFiles, fileName) && groupFileMandatory) {
                 return new ErrorState(theConsole, MESSAGES.propertiesFileNotFound(fileName), null, stateValues);
             }
-            stateValues.setRoleFiles(foundRoleFiles);
+            stateValues.setGroupFiles(foundGroupFiles);
             try {
-                stateValues.setKnownRoles(loadAllRoles(foundRoleFiles));
+                stateValues.setKnownGroups(loadAllGroups(foundGroupFiles));
             } catch (Exception e) {
                 return new ErrorState(theConsole, MESSAGES.propertiesFileNotFound(fileName), null, stateValues);
             }
@@ -151,21 +161,21 @@ public class PropertyFileFinder implements State {
         return fileLoader;
     }
 
-    private Map<String, String> loadAllRoles(List<File> foundRoleFiles) throws StartException, IOException {
-        Map<String, String> loadedRoles = new HashMap<String, String>();
-        for (File file : foundRoleFiles) {
+    private Map<String, String> loadAllGroups(List<File> foundGroupsFiles) throws StartException, IOException {
+        Map<String, String> loadedGroups = new HashMap<String, String>();
+        for (File file : foundGroupsFiles) {
             PropertiesFileLoader propertiesLoad = null;
             try {
                 propertiesLoad = new PropertiesFileLoader(file.getCanonicalPath());
                 propertiesLoad.start(null);
-                loadedRoles.putAll((Map) propertiesLoad.getProperties());
+                loadedGroups.putAll((Map) propertiesLoad.getProperties());
             } finally {
                 if (propertiesLoad != null) {
                     propertiesLoad.stop(null);
                 }
             }
         }
-        return loadedRoles;
+        return loadedGroups;
     }
 
     private boolean findFiles(final List<File> foundFiles, final String fileName) {
