@@ -23,431 +23,462 @@
 
 <project>
 
-    <!--
+	<!--
         Change node IP addresses and mcast addresses.
         Attribute node can be used to provide defaults for node parameters; attribute mcast can be used
         to provide default for
     -->
-    <macrodef name="ts.config-as.ip-with-multicast-longform" description="Changes the IP *and* multicast addresses of a node configuration">
+	<macrodef name="ts.config-as.ip-with-multicast-longform" description="Changes the IP *and* multicast addresses of a node configuration">
 
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
+		<attribute name="name" default="wildfly" />
+		<attribute name="output.dir" default="${project.build.directory}" />
+		<attribute name="config.dir.name" default="standalone/configuration" />
 
-        <attribute name="managementIPAddress"/>
-        <attribute name="publicIPAddress"/>
-        <attribute name="udpMcastAddress"/>
-        <attribute name="diagnosticsMcastAddress"/>
-        <attribute name="mpingMcastAddress"/>
-        <attribute name="modclusterMcastAddress"/>
+		<attribute name="managementIPAddress" />
+		<attribute name="publicIPAddress" />
+		<attribute name="udpMcastAddress" />
+		<attribute name="diagnosticsMcastAddress" />
+		<attribute name="mpingMcastAddress" />
+		<attribute name="modclusterMcastAddress" />
 
-        <sequential>
-            <echo message="Changing IP and mcast addresses for config @{name}:"/>
-            <echo>  managementIPAddress: @{managementIPAddress}</echo>
-            <echo>  publicIPAddress: @{publicIPAddress}</echo>
-            <echo>  udpMcastAddress: @{udpMcastAddress}</echo>
-            <echo>  diagnosticsMcastAddress: @{diagnosticsMcastAddress}</echo>
-            <echo>  mpingMcastAddress: @{mpingMcastAddress}</echo>
-            <echo>  modclusterMcastAddress: @{modclusterMcastAddress}</echo>
+		<sequential>
+			<echo message="Changing IP and mcast addresses for config @{name}:" />
+			<echo>  managementIPAddress: @{managementIPAddress}</echo>
+			<echo>  publicIPAddress: @{publicIPAddress}</echo>
+			<echo>  udpMcastAddress: @{udpMcastAddress}</echo>
+			<echo>  diagnosticsMcastAddress: @{diagnosticsMcastAddress}</echo>
+			<echo>  mpingMcastAddress: @{mpingMcastAddress}</echo>
+			<echo>  modclusterMcastAddress: @{modclusterMcastAddress}</echo>
 
-            <execute-xslt-transform transform="changeIPAddresses.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="managementIPAddress" expression="@{managementIPAddress}"/>
-                    <param name="publicIPAddress"     expression="@{publicIPAddress}"/>
+			<execute-xslt-transform transform="changeIPAddresses.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+				<transform-params>
+					<param name="managementIPAddress" expression="@{managementIPAddress}" />
+					<param name="publicIPAddress" expression="@{publicIPAddress}" />
 
-                    <param name="udpMcastAddress"         expression="@{udpMcastAddress}"/>
-                    <param name="diagnosticsMcastAddress" expression="@{diagnosticsMcastAddress}"/>
-                    <param name="mpingMcastAddress"       expression="@{mpingMcastAddress}"/>
-                    <param name="modclusterMcastAddress"  expression="@{modclusterMcastAddress}"/>
-                </transform-params>
-            </execute-xslt-transform>
+					<param name="udpMcastAddress" expression="@{udpMcastAddress}" />
+					<param name="diagnosticsMcastAddress" expression="@{diagnosticsMcastAddress}" />
+					<param name="mpingMcastAddress" expression="@{mpingMcastAddress}" />
+					<param name="modclusterMcastAddress" expression="@{modclusterMcastAddress}" />
+				</transform-params>
+			</execute-xslt-transform>
 
-        </sequential>
-    </macrodef>
+		</sequential>
+	</macrodef>
 
-    <!--
+	<!--
         Change default transport stack in clustering server profiles.
     -->
-    <macrodef name="ts.config-as.change-transport-stack" description="Change default transport stack in clustering server profiles.">
+	<macrodef name="ts.config-as.change-transport-stack" description="Change default transport stack in clustering server profiles.">
 
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
+		<attribute name="name" default="wildfly" />
+		<attribute name="output.dir" default="${project.build.directory}" />
+		<attribute name="config.dir.name" default="standalone/configuration" />
 
-        <attribute name="defaultStack" default="udp"/>
+		<attribute name="defaultStack" default="udp" />
 
-        <sequential>
-            <echo message="Changing JGroups stack for config @{name}"/>
+		<sequential>
+			<echo message="Changing JGroups stack for config @{name}" />
 
-            <execute-xslt-transform transform="changeTransportStack.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="defaultStack" expression="@{defaultStack}"/>
-                </transform-params>
-            </execute-xslt-transform>
+			<execute-xslt-transform transform="changeTransportStack.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+				<transform-params>
+					<param name="defaultStack" expression="@{defaultStack}" />
+				</transform-params>
+			</execute-xslt-transform>
 
-        </sequential>
-    </macrodef>
+		</sequential>
+	</macrodef>
 
-    <!--
+	<!--
         Change default cache mode in clustering server profiles.
     -->
-    <macrodef name="ts.config-as.change-cache-mode" description="Change default cache mode in clustering server profiles.">
+	<macrodef name="ts.config-as.change-cache-mode" description="Change default cache mode in clustering server profiles.">
 
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
+		<attribute name="name" default="wildfly" />
+		<attribute name="output.dir" default="${project.build.directory}" />
+		<attribute name="config.dir.name" default="standalone/configuration" />
 
-        <attribute name="cacheMode" default="SYNC"/>
+		<attribute name="cacheMode" default="SYNC" />
 
-        <sequential>
-            <echo message="Changing cache mode for config @{name}"/>
+		<sequential>
+			<echo message="Changing cache mode for config @{name}" />
 
-            <!-- WEB Cache -->
-            <execute-xslt-transform transform="changeCacheMode.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="name" expression="web"/>
-                    <param name="mode" expression="@{cacheMode}"/>
-                </transform-params>
-            </execute-xslt-transform>
+			<!-- WEB Cache -->
+			<execute-xslt-transform transform="changeCacheMode.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+				<transform-params>
+					<param name="name" expression="web" />
+					<param name="mode" expression="@{cacheMode}" />
+				</transform-params>
+			</execute-xslt-transform>
 
-            <!-- EJB Cache -->
-            <execute-xslt-transform transform="changeCacheMode.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="name" expression="ejb"/>
-                    <param name="mode" expression="@{cacheMode}"/>
-                </transform-params>
-            </execute-xslt-transform>
+			<!-- EJB Cache -->
+			<execute-xslt-transform transform="changeCacheMode.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+				<transform-params>
+					<param name="name" expression="ejb" />
+					<param name="mode" expression="@{cacheMode}" />
+				</transform-params>
+			</execute-xslt-transform>
 
-        </sequential>
-    </macrodef>
+		</sequential>
+	</macrodef>
 
-    <!--
+	<!--
         Add a new cache container to the Infinispan subsystem.
         The container definition is loaded from a file.
     -->
-    <macrodef name="ts.config-as.add-cache-container" description="Add a cache container to the Infinispan subsystem">
+	<macrodef name="ts.config-as.add-cache-container" description="Add a cache container to the Infinispan subsystem">
 
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
+		<attribute name="name" default="wildfly" />
+		<attribute name="output.dir" default="${project.build.directory}" />
+		<attribute name="config.dir.name" default="standalone/configuration" />
+		<attribute name="cacheLoader" />
+		<attribute name="cacheType" />
+		<attribute name="mode" />
 
-        <attribute name="containerdef" default="cache-container.xml"/>
+		<sequential>
+			<echo message="Adding a cache container to Infinispan subsystem for config @{name}" />
 
-        <sequential>
-            <echo message="Adding a cache container to Infinispan subsystem for config @{name}"/>
+			<execute-xslt-transform transform="addCacheContainer.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+				<transform-params>
+					<param name="cacheLoader" expression="@{cacheLoader}" />
+					<param name="cacheType" expression="@{cacheType}" />
+					<param name="mode" expression="@{mode}" />
+				</transform-params>
+			</execute-xslt-transform>
 
-            <execute-xslt-transform transform="addCacheContainer.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="filename" expression="@{containerdef}"/>
-                </transform-params>
-            </execute-xslt-transform>
+		</sequential>
+	</macrodef>
 
-        </sequential>
-    </macrodef>
+	<macrodef name="ts.config-as.change-database" description="Change database configuration">
 
-    <!--
+		<attribute name="name" default="wildfly" />
+		<attribute name="output.dir" default="${project.build.directory}" />
+		<attribute name="config.dir.name" default="standalone/configuration" />
+		<attribute name="ds.jdbc.url" default="jdbc:h2:mem:test;DB_CLOSE_DELAY=-1" />
+		<attribute name="ds.jdbc.user" default="sa" />
+		<attribute name="ds.jdbc.pass" default="sa" />
+		<attribute name="ds.jdbc.driver.jar" default="h2" />
+		<attribute name="ds.jdbc.driver" default="org.h2.jdbcx.JdbcDataSource" />
+		<attribute name="ds.jdbc.driver.module" default="com.h2database.h2" />
+		<attribute name="ds.jdbc.isModule" default="true" />
+
+		<sequential>
+			<echo message="Adding a cache container to Infinispan subsystem for config @{name}" />
+
+			<execute-xslt-transform transform="changeDatabase.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+				<transform-params>
+					<param name="ds.jdbc.url" expression="@{ds.jdbc.url}" />
+					<param name="ds.jdbc.user" expression="@{ds.jdbc.user}" />
+					<param name="ds.jdbc.pass" expression="@{ds.jdbc.pass}" />
+					<param name="ds.jdbc.driver.jar" expression="@{ds.jdbc.driver.jar}" />
+					<param name="ds.jdbc.driver" expression="@{ds.jdbc.driver}" />
+					<param name="ds.jdbc.driver.module" expression="@{ds.jdbc.driver.module}" />
+					<param name="ds.jdbc.isModule" expression="@{ds.jdbc.isModule}" />
+				</transform-params>
+			</execute-xslt-transform>
+
+		</sequential>
+	</macrodef>
+
+	<!--
         Make a copy of a cache container in the Infinispan subsystem.
     -->
-    <macrodef name="ts.config-as.copy-cache-container" description="Make a copy of a cache container in the Infinispan subsystem">
+	<macrodef name="ts.config-as.copy-cache-container" description="Make a copy of a cache container in the Infinispan subsystem">
 
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
+		<attribute name="name" default="wildfly" />
+		<attribute name="output.dir" default="${project.build.directory}" />
+		<attribute name="config.dir.name" default="standalone/configuration" />
 
-        <attribute name="container.name" default="new-name"/>
-        <attribute name="container.base" default="web"/>
-        <attribute name="container.default-cache" default="default-cache"/>
+		<attribute name="container.name" default="new-name" />
+		<attribute name="container.base" default="web" />
+		<attribute name="container.default-cache" default="default-cache" />
 
-        <sequential>
-            <echo message="Copying cache container @{container.base} to cache container @{container.name} in Infinispan subsystem for config @{name}"/>
+		<sequential>
+			<echo message="Copying cache container @{container.base} to cache container @{container.name} in Infinispan subsystem for config @{name}" />
 
-            <execute-xslt-transform transform="copyCacheContainer.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="container.name" expression="@{container.name}"/>
-                    <param name="container.base" expression="@{container.base}"/>
-                    <param name="container.default-cache" expression="@{container.default-cache}"/>
-                </transform-params>
-            </execute-xslt-transform>
+			<execute-xslt-transform transform="copyCacheContainer.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+				<transform-params>
+					<param name="container.name" expression="@{container.name}" />
+					<param name="container.base" expression="@{container.base}" />
+					<param name="container.default-cache" expression="@{container.default-cache}" />
+				</transform-params>
+			</execute-xslt-transform>
 
-        </sequential>
-    </macrodef>
+		</sequential>
+	</macrodef>
 
-    <!--
+	<!--
         Make a copy of a stack in the JGroups subsystem.
     -->
-    <macrodef name="ts.config-as.copy-stack" description="Make a copy of a stack in the JGroups subsystem">
+	<macrodef name="ts.config-as.copy-stack" description="Make a copy of a stack in the JGroups subsystem">
 
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
+		<attribute name="name" default="wildfly" />
+		<attribute name="output.dir" default="${project.build.directory}" />
+		<attribute name="config.dir.name" default="standalone/configuration" />
 
-        <attribute name="stack.name" default="new-name"/>
-        <attribute name="stack.base" default="udp"/>
+		<attribute name="stack.name" default="new-name" />
+		<attribute name="stack.base" default="udp" />
 
-        <sequential>
-            <echo message="Copying stack @{stack.base} to stack @{stack.name} in JGroups subsystem for config @{name}"/>
+		<sequential>
+			<echo message="Copying stack @{stack.base} to stack @{stack.name} in JGroups subsystem for config @{name}" />
 
-            <execute-xslt-transform transform="copyStack.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="stack.name" expression="@{stack.name}"/>
-                    <param name="stack.base" expression="@{stack.base}"/>
-                </transform-params>
-            </execute-xslt-transform>
+			<execute-xslt-transform transform="copyStack.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+				<transform-params>
+					<param name="stack.name" expression="@{stack.name}" />
+					<param name="stack.base" expression="@{stack.base}" />
+				</transform-params>
+			</execute-xslt-transform>
 
-        </sequential>
-    </macrodef>
+		</sequential>
+	</macrodef>
 
-    <!--
+	<!--
         Make a copy of a cache in the Infinispan subsystem.
     -->
-    <macrodef name="ts.config-as.copy-cache" description="Make a copy of a cache in the Infinispan subsystem">
+	<macrodef name="ts.config-as.copy-cache" description="Make a copy of a cache in the Infinispan subsystem">
 
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
+		<attribute name="name" default="wildfly" />
+		<attribute name="output.dir" default="${project.build.directory}" />
+		<attribute name="config.dir.name" default="standalone/configuration" />
 
-        <attribute name="container.name" default="web"/>
-        <attribute name="cache.base" default="repl"/>
-        <attribute name="cache.name" default="new-cache"/>
-        <attribute name="cache-type" default="replicated-cache"/>
+		<attribute name="container.name" default="web" />
+		<attribute name="cache.base" default="repl" />
+		<attribute name="cache.name" default="new-cache" />
+		<attribute name="cache-type" default="replicated-cache" />
 
-        <sequential>
-            <echo message="Copying cache @{cache.base} to cache @{cache.name} in container @{container.name} in Infinispan subsystem for config @{name}"/>
+		<sequential>
+			<echo message="Copying cache @{cache.base} to cache @{cache.name} in container @{container.name} in Infinispan subsystem for config @{name}" />
 
-            <execute-xslt-transform transform="copyCache.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="container.name" expression="@{container.name}"/>
-                    <param name="cache.base" expression="@{cache.base}"/>
-                    <param name="cache.name" expression="@{cache.name}"/>
-                    <param name="cache-type" expression="@{cache-type}"/>
-                </transform-params>
-            </execute-xslt-transform>
+			<execute-xslt-transform transform="copyCache.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+				<transform-params>
+					<param name="container.name" expression="@{container.name}" />
+					<param name="cache.base" expression="@{cache.base}" />
+					<param name="cache.name" expression="@{cache.name}" />
+					<param name="cache-type" expression="@{cache-type}" />
+				</transform-params>
+			</execute-xslt-transform>
 
-        </sequential>
-    </macrodef>
+		</sequential>
+	</macrodef>
 
-    <!--
+	<!--
         Add a relay protocol layer and a child remote site to a stack in the JGroups subsystem.
     -->
-    <macrodef name="ts.config-as.add-xsite-relay" description="Add a relay layer to a stack in the JGroups subsystem">
+	<macrodef name="ts.config-as.add-xsite-relay" description="Add a relay layer to a stack in the JGroups subsystem">
 
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
+		<attribute name="name" default="wildfly" />
+		<attribute name="output.dir" default="${project.build.directory}" />
+		<attribute name="config.dir.name" default="standalone/configuration" />
 
-        <attribute name="stack" default="udp"/>
-        <attribute name="relay.site" default="siteA"/>
-        <attribute name="remote-site.site" default="siteB"/>
-        <attribute name="remote-site.stack" default="tcp"/>
-        <attribute name="remote-site.cluster" default="bridge"/>
+		<attribute name="stack" default="udp" />
+		<attribute name="relay.site" default="siteA" />
+		<attribute name="remote-site.site" default="siteB" />
+		<attribute name="remote-site.stack" default="tcp" />
+		<attribute name="remote-site.cluster" default="bridge" />
 
-        <sequential>
-            <echo message="Adding relay layer to stack @{stack} in JGroups subsystem for config @{name}"/>
+		<sequential>
+			<echo message="Adding relay layer to stack @{stack} in JGroups subsystem for config @{name}" />
 
-            <execute-xslt-transform transform="addXsiteRelay.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="stack" expression="@{stack}"/>
-                    <param name="relay.site" expression="@{relay.site}"/>
-                    <param name="remote-site.site" expression="@{remote-site.site}"/>
-                    <param name="remote-site.stack" expression="@{remote-site.stack}"/>
-                    <param name="remote-site.cluster" expression="@{remote-site.cluster}"/>
-                </transform-params>
-            </execute-xslt-transform>
+			<execute-xslt-transform transform="addXsiteRelay.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+				<transform-params>
+					<param name="stack" expression="@{stack}" />
+					<param name="relay.site" expression="@{relay.site}" />
+					<param name="remote-site.site" expression="@{remote-site.site}" />
+					<param name="remote-site.stack" expression="@{remote-site.stack}" />
+					<param name="remote-site.cluster" expression="@{remote-site.cluster}" />
+				</transform-params>
+			</execute-xslt-transform>
 
-        </sequential>
-    </macrodef>
+		</sequential>
+	</macrodef>
 
-    <!--
+	<!--
         Add a remote site to an existing relay protocol layer for a stack in the JGroups subsystem.
     -->
-    <macrodef name="ts.config-as.add-xsite-remote-site" description="Add a remote-site to a stack in the JGroups subsystem">
+	<macrodef name="ts.config-as.add-xsite-remote-site" description="Add a remote-site to a stack in the JGroups subsystem">
 
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
+		<attribute name="name" default="wildfly" />
+		<attribute name="output.dir" default="${project.build.directory}" />
+		<attribute name="config.dir.name" default="standalone/configuration" />
 
-        <attribute name="stack" default="udp"/>
-        <attribute name="remote-site.site" default="siteB"/>
-        <attribute name="remote-site.stack" default="tcp"/>
-        <attribute name="remote-site.cluster" default="bridge"/>
+		<attribute name="stack" default="udp" />
+		<attribute name="remote-site.site" default="siteB" />
+		<attribute name="remote-site.stack" default="tcp" />
+		<attribute name="remote-site.cluster" default="bridge" />
 
-        <sequential>
-            <echo message="Adding relay layer to stack @{stack} in JGroups subsystem for config @{name}"/>
+		<sequential>
+			<echo message="Adding relay layer to stack @{stack} in JGroups subsystem for config @{name}" />
 
-            <execute-xslt-transform transform="addXsiteRemoteSite.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="stack" expression="@{stack}"/>
-                    <param name="remote-site.site" expression="@{remote-site.site}"/>
-                    <param name="remote-site.stack" expression="@{remote-site.stack}"/>
-                    <param name="remote-site.cluster" expression="@{remote-site.cluster}"/>
-                </transform-params>
-            </execute-xslt-transform>
+			<execute-xslt-transform transform="addXsiteRemoteSite.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+				<transform-params>
+					<param name="stack" expression="@{stack}" />
+					<param name="remote-site.site" expression="@{remote-site.site}" />
+					<param name="remote-site.stack" expression="@{remote-site.stack}" />
+					<param name="remote-site.cluster" expression="@{remote-site.cluster}" />
+				</transform-params>
+			</execute-xslt-transform>
 
-        </sequential>
-    </macrodef>
+		</sequential>
+	</macrodef>
 
-    <!--
+	<!--
         Add a backup element to a cache in the Infinispan subsystem.
     -->
-    <macrodef name="ts.config-as.add-xsite-backup" description="Add a backup element to a cache in the Infinispan subsystem">
+	<macrodef name="ts.config-as.add-xsite-backup" description="Add a backup element to a cache in the Infinispan subsystem">
 
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
+		<attribute name="name" default="wildfly" />
+		<attribute name="output.dir" default="${project.build.directory}" />
+		<attribute name="config.dir.name" default="standalone/configuration" />
 
-        <attribute name="container" default="web"/>
-        <attribute name="cache-type" default="replicated-cache"/>
-        <attribute name="cache" default="repl"/>
-        <attribute name="backup.site" default="siteB"/>
-        <attribute name="backup.failure-policy" default="WARN"/>
-        <attribute name="backup.strategy" default="SYNC"/>
-        <attribute name="backup.replication-timeout" default="10000"/>
-        <attribute name="backup.enabled" default="true"/>
+		<attribute name="container" default="web" />
+		<attribute name="cache-type" default="replicated-cache" />
+		<attribute name="cache" default="repl" />
+		<attribute name="backup.site" default="siteB" />
+		<attribute name="backup.failure-policy" default="WARN" />
+		<attribute name="backup.strategy" default="SYNC" />
+		<attribute name="backup.replication-timeout" default="10000" />
+		<attribute name="backup.enabled" default="true" />
 
-        <sequential>
-            <echo message="Adding backup element to cache @{cache} in container @{container} in Infinispan subsystem for config @{name}"/>
+		<sequential>
+			<echo message="Adding backup element to cache @{cache} in container @{container} in Infinispan subsystem for config @{name}" />
 
-            <execute-xslt-transform transform="addXsiteBackup.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="container" expression="@{container}"/>
-                    <param name="cache-type" expression="@{cache-type}"/>
-                    <param name="cache" expression="@{cache}"/>
-                    <param name="backup.site" expression="@{backup.site}"/>
-                    <param name="backup.failure-policy" expression="@{backup.failure-policy}"/>
-                    <param name="backup.strategy" expression="@{backup.strategy}"/>
-                    <param name="backup.replication-timeout" expression="@{backup.replication-timeout}"/>
-                    <param name="backup.enabled" expression="@{backup.enabled}"/>
-                </transform-params>
-            </execute-xslt-transform>
-        </sequential>
-    </macrodef>
+			<execute-xslt-transform transform="addXsiteBackup.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+				<transform-params>
+					<param name="container" expression="@{container}" />
+					<param name="cache-type" expression="@{cache-type}" />
+					<param name="cache" expression="@{cache}" />
+					<param name="backup.site" expression="@{backup.site}" />
+					<param name="backup.failure-policy" expression="@{backup.failure-policy}" />
+					<param name="backup.strategy" expression="@{backup.strategy}" />
+					<param name="backup.replication-timeout" expression="@{backup.replication-timeout}" />
+					<param name="backup.enabled" expression="@{backup.enabled}" />
+				</transform-params>
+			</execute-xslt-transform>
+		</sequential>
+	</macrodef>
 
-    <!--
+	<!--
         Add a backups element to a cache in the Infinispan subsystem.
     -->
-    <macrodef name="ts.config-as.add-xsite-backups" description="Add a backup element to a cache in the Infinispan subsystem">
+	<macrodef name="ts.config-as.add-xsite-backups" description="Add a backup element to a cache in the Infinispan subsystem">
 
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
+		<attribute name="name" default="wildfly" />
+		<attribute name="output.dir" default="${project.build.directory}" />
+		<attribute name="config.dir.name" default="standalone/configuration" />
 
-        <attribute name="container" default="web"/>
-        <attribute name="cache-type" default="replicated-cache"/>
-        <attribute name="cache" default="repl"/>
-        <attribute name="backup.site" default="siteB"/>
-        <attribute name="backup.failure-policy" default="WARN"/>
-        <attribute name="backup.strategy" default="SYNC"/>
-        <attribute name="backup.replication-timeout" default="10000"/>
-        <attribute name="backup.enabled" default="true"/>
+		<attribute name="container" default="web" />
+		<attribute name="cache-type" default="replicated-cache" />
+		<attribute name="cache" default="repl" />
+		<attribute name="backup.site" default="siteB" />
+		<attribute name="backup.failure-policy" default="WARN" />
+		<attribute name="backup.strategy" default="SYNC" />
+		<attribute name="backup.replication-timeout" default="10000" />
+		<attribute name="backup.enabled" default="true" />
 
-        <sequential>
-            <echo message="Adding backups element to cache @{cache} in container @{container} in Infinispan subsystem for config @{name}"/>
+		<sequential>
+			<echo message="Adding backups element to cache @{cache} in container @{container} in Infinispan subsystem for config @{name}" />
 
-            <execute-xslt-transform transform="addXsiteBackups.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="container" expression="@{container}"/>
-                    <param name="cache-type" expression="@{cache-type}"/>
-                    <param name="cache" expression="@{cache}"/>
-                    <param name="backup.site" expression="@{backup.site}"/>
-                    <param name="backup.failure-policy" expression="@{backup.failure-policy}"/>
-                    <param name="backup.strategy" expression="@{backup.strategy}"/>
-                    <param name="backup.replication-timeout" expression="@{backup.replication-timeout}"/>
-                    <param name="backup.enabled" expression="@{backup.enabled}"/>
-                </transform-params>
-            </execute-xslt-transform>
-        </sequential>
-    </macrodef>
+			<execute-xslt-transform transform="addXsiteBackups.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+				<transform-params>
+					<param name="container" expression="@{container}" />
+					<param name="cache-type" expression="@{cache-type}" />
+					<param name="cache" expression="@{cache}" />
+					<param name="backup.site" expression="@{backup.site}" />
+					<param name="backup.failure-policy" expression="@{backup.failure-policy}" />
+					<param name="backup.strategy" expression="@{backup.strategy}" />
+					<param name="backup.replication-timeout" expression="@{backup.replication-timeout}" />
+					<param name="backup.enabled" expression="@{backup.enabled}" />
+				</transform-params>
+			</execute-xslt-transform>
+		</sequential>
+	</macrodef>
 
-    <!--
+	<!--
         Add a backup-for element to a cache in the Infinispan subsystem.
     -->
-    <macrodef name="ts.config-as.add-xsite-backup-for" description="Add a backup-for element to a cache in the Infinispan subsystem">
+	<macrodef name="ts.config-as.add-xsite-backup-for" description="Add a backup-for element to a cache in the Infinispan subsystem">
 
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
+		<attribute name="name" default="wildfly" />
+		<attribute name="output.dir" default="${project.build.directory}" />
+		<attribute name="config.dir.name" default="standalone/configuration" />
 
-        <attribute name="container" default="web"/>
-        <attribute name="cache-type" default="replicated-cache"/>
-        <attribute name="cache" default="repl"/>
-        <attribute name="remote-site" default="LON"/>
-        <attribute name="remote-cache" default="repl"/>
+		<attribute name="container" default="web" />
+		<attribute name="cache-type" default="replicated-cache" />
+		<attribute name="cache" default="repl" />
+		<attribute name="remote-site" default="LON" />
+		<attribute name="remote-cache" default="repl" />
 
-        <sequential>
-            <echo message="Adding backup-for element to cache @{cache} in container @{container} in Infinispan subsystem for config @{name}"/>
+		<sequential>
+			<echo message="Adding backup-for element to cache @{cache} in container @{container} in Infinispan subsystem for config @{name}" />
 
-            <execute-xslt-transform transform="addXsiteBackupFor.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="container" expression="@{container}"/>
-                    <param name="cache-type" expression="@{cache-type}"/>
-                    <param name="cache" expression="@{cache}"/>
-                    <param name="remote-site" expression="@{remote-site}"/>
-                    <param name="remote-cache" expression="@{remote-cache}"/>
-                </transform-params>
-            </execute-xslt-transform>
-        </sequential>
-    </macrodef>
+			<execute-xslt-transform transform="addXsiteBackupFor.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+				<transform-params>
+					<param name="container" expression="@{container}" />
+					<param name="cache-type" expression="@{cache-type}" />
+					<param name="cache" expression="@{cache}" />
+					<param name="remote-site" expression="@{remote-site}" />
+					<param name="remote-cache" expression="@{remote-cache}" />
+				</transform-params>
+			</execute-xslt-transform>
+		</sequential>
+	</macrodef>
 
-    <!--
+	<!--
         Add a backup element to a cache in the Infinispan subsystem.
     -->
-    <macrodef name="ts.config-as.change-container-transport-stack" description="Change the transport stack for a container in the Infinispan subsystem">
+	<macrodef name="ts.config-as.change-container-transport-stack" description="Change the transport stack for a container in the Infinispan subsystem">
 
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
+		<attribute name="name" default="wildfly" />
+		<attribute name="output.dir" default="${project.build.directory}" />
+		<attribute name="config.dir.name" default="standalone/configuration" />
 
-        <attribute name="container" default="web"/>
-        <attribute name="stack" default="udp"/>
+		<attribute name="container" default="web" />
+		<attribute name="stack" default="udp" />
 
-        <sequential>
-            <echo message="Change transport stack in container @{container} in Infinispan subsystem for config @{name}"/>
+		<sequential>
+			<echo message="Change transport stack in container @{container} in Infinispan subsystem for config @{name}" />
 
-            <execute-xslt-transform transform="changeContainerTransportStack.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="container" expression="@{container}"/>
-                    <param name="stack" expression="@{stack}"/>
-                </transform-params>
-            </execute-xslt-transform>
-        </sequential>
-    </macrodef>
+			<execute-xslt-transform transform="changeContainerTransportStack.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+				<transform-params>
+					<param name="container" expression="@{container}" />
+					<param name="stack" expression="@{stack}" />
+				</transform-params>
+			</execute-xslt-transform>
+		</sequential>
+	</macrodef>
 
-    <!--
+	<!--
         Execute an XSLT transform in place.
     -->
-    <macrodef name="execute-xslt-transform" description="Execute an XSLT transform on an xml file (in place)">
+	<macrodef name="execute-xslt-transform" description="Execute an XSLT transform on an xml file (in place)">
 
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
+		<attribute name="name" default="wildfly" />
+		<attribute name="output.dir" default="${project.build.directory}" />
+		<attribute name="config.dir.name" default="standalone/configuration" />
 
-        <attribute name="transform"/>
-        <element name="transform-params" optional="yes"/>
+		<attribute name="transform" />
+		<element name="transform-params" optional="yes" />
 
-        <sequential>
-            <!-- Process *.xml to *.xml.mod. -->
-            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
-                  style="${jbossas.ts.integ.dir}/src/test/xslt/@{transform}"
-                  extension=".xml.mod"
-                  useImplicitFileset="false">
-                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                    <include name="**/standalone-ha.xml"/>
-                    <include name="**/standalone.xml"/>
-                    <include name="**/standalone-full.xml"/>
-                </fileset>
-                <transform-params/>
-            </xslt>
+		<sequential>
+			<!-- Process *.xml to *.xml.mod. -->
+			<xslt destdir="@{output.dir}/@{name}/@{config.dir.name}" style="${jbossas.ts.integ.dir}/src/test/xslt/@{transform}" extension=".xml.mod" useImplicitFileset="false">
+				<fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+					<include name="**/standalone-ha.xml" />
+					<include name="**/standalone.xml" />
+					<include name="**/standalone-full.xml" />
+				</fileset>
+				<transform-params />
+			</xslt>
 
-            <!-- Move processed files back. -->
-            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
-               <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                   <include name="**/standalone-ha.xml.mod"/>
-                   <include name="**/standalone.xml.mod"/>
-                   <include name="**/standalone-full.xml.mod"/>
-               </fileset>
-               <mapper type="glob" from="*.mod" to="*"/>
-             </move>
-        </sequential>
-    </macrodef>
+			<!-- Move processed files back. -->
+			<move todir="@{output.dir}/@{name}/@{config.dir.name}">
+				<fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+					<include name="**/standalone-ha.xml.mod" />
+					<include name="**/standalone.xml.mod" />
+					<include name="**/standalone-full.xml.mod" />
+				</fileset>
+				<mapper type="glob" from="*.mod" to="*" />
+			</move>
+		</sequential>
+	</macrodef>
 
 </project>

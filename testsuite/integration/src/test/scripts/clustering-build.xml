@@ -1,184 +1,165 @@
 <?xml version="1.0"?>
 <project name="clustering-build scripts">
 
-    <!-- Import shared ant targets -->
-    <import file="common-targets.xml" as="common"/>
-    <import file="clustering-common-targets.xml" as="clustering-common"/>
+	<!-- Import shared ant targets -->
+	<import file="common-targets.xml" as="common" />
+	<import file="clustering-common-targets.xml" as="clustering-common" />
 
-    <!-- Shared clustering config target -->
-    <target name="abstract-build-clustering" description="Builds two server configuration for given JGroups stack and cache mode">
+	<!-- Shared clustering config target -->
+	<target name="abstract-build-clustering" description="Builds two server configuration for given JGroups stack and cache mode">
 
-        <echo>clustering-${cacheMode}-${stack}-0 node0: ${node0}</echo>
-        <echo>clustering-${cacheMode}-${stack}-0 node1: ${node1}</echo>
-        <echo>clustering-${cacheMode}-${stack}-0 mcast: ${mcast}</echo>
+		<echo>clustering-${cacheMode}-${stack}-0 node0: ${node0}</echo>
+		<echo>clustering-${cacheMode}-${stack}-0 node1: ${node1}</echo>
+		<echo>clustering-${cacheMode}-${stack}-0 mcast: ${mcast}</echo>
 
-        <echo message="  =========  Building config clustering-${cacheMode}-${stack}-0  =========  "/>
-        <copy todir="target/jbossas-clustering-${cacheMode}-${stack}-0" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
-        </copy>
-        <ts.config-as.ip-with-multicast name="jbossas-clustering-${cacheMode}-${stack}-0"
-                                        node="${node0}"
-                                        mcast="${mcast}"
-                />
-        <ts.config-as.add-port-offset name="jbossas-clustering-${cacheMode}-${stack}-0"/>
-        <ts.config-as.change-transport-stack name="jbossas-clustering-${cacheMode}-${stack}-0"
-                                             defaultStack="${stack}"
-                />
-        <ts.config-as.change-cache-mode name="jbossas-clustering-${cacheMode}-${stack}-0"
-                                        cacheMode="${cacheMode}"
-                />
+		<echo message="  =========  Building config clustering-${cacheMode}-${stack}-0  =========  " />
+		<copy todir="target/jbossas-clustering-${cacheMode}-${stack}-0" overwrite="true">
+			<fileset dir="${basedir}/target/jbossas" />
+		</copy>
+		<ts.config-as.ip-with-multicast name="jbossas-clustering-${cacheMode}-${stack}-0" node="${node0}" mcast="${mcast}" />
+		<ts.config-as.add-port-offset name="jbossas-clustering-${cacheMode}-${stack}-0" />
+		<ts.config-as.change-transport-stack name="jbossas-clustering-${cacheMode}-${stack}-0" defaultStack="${stack}" />
+		<ts.config-as.change-cache-mode name="jbossas-clustering-${cacheMode}-${stack}-0" cacheMode="${cacheMode}" />
 
-        <echo message="  =========  Building config clustering-${cacheMode}-${stack}-1  =========  "/>
-        <copy todir="target/jbossas-clustering-${cacheMode}-${stack}-1" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
-        </copy>
-        <ts.config-as.ip-with-multicast name="jbossas-clustering-${cacheMode}-${stack}-1"
-                                        node="${node1}"
-                                        mcast="${mcast}"
-                />
-        <ts.config-as.add-port-offset name="jbossas-clustering-${cacheMode}-${stack}-1" offset="100" nativePort="9999" httpPort="9990"/>
-        <ts.config-as.change-transport-stack name="jbossas-clustering-${cacheMode}-${stack}-1"
-                                             defaultStack="${stack}"
-                />
-        <ts.config-as.change-cache-mode name="jbossas-clustering-${cacheMode}-${stack}-1"
-                                        cacheMode="${cacheMode}"
-                />
+		<echo message="  =========  Building config clustering-${cacheMode}-${stack}-1  =========  " />
+		<copy todir="target/jbossas-clustering-${cacheMode}-${stack}-1" overwrite="true">
+			<fileset dir="${basedir}/target/jbossas" />
+		</copy>
+		<ts.config-as.ip-with-multicast name="jbossas-clustering-${cacheMode}-${stack}-1" node="${node1}" mcast="${mcast}" />
+		<ts.config-as.add-port-offset name="jbossas-clustering-${cacheMode}-${stack}-1" offset="100" nativePort="9999" httpPort="9990" />
+		<ts.config-as.change-transport-stack name="jbossas-clustering-${cacheMode}-${stack}-1" defaultStack="${stack}" />
+		<ts.config-as.change-cache-mode name="jbossas-clustering-${cacheMode}-${stack}-1" cacheMode="${cacheMode}" />
 
-    </target>
+	</target>
 
-    <!-- Build SYNC-tcp stack configs -->
-    <target name="build-clustering" description="Builds server configuration for SYNC-tcp tests">
-        <antcall target="abstract-build-clustering">
-            <param name="cacheMode" value="SYNC"/>
-            <param name="stack" value="tcp"/>
-        </antcall>
-    </target>
+	<!-- Build SYNC-tcp stack configs -->
+	<target name="build-clustering" description="Builds server configuration for SYNC-tcp tests">
+		<antcall target="abstract-build-clustering">
+			<param name="cacheMode" value="SYNC" />
+			<param name="stack" value="tcp" />
+		</antcall>
+		<antcall target="change-url">
+			<param name="cacheMode" value="SYNC" />
+			<param name="stack" value="tcp" />
+		</antcall>
+		<antcall target="add-cache">
+			<param name="cacheMode" value="SYNC" />
+			<param name="stack" value="tcp" />
+		</antcall>
+	</target>
 
-    <!-- Build remaining configs for extended tests -->
-    <target name="build-clustering-extended" description="Builds server configurations for extended tests">
-        <antcall target="abstract-build-clustering">
-            <param name="cacheMode" value="ASYNC"/>
-            <param name="stack" value="tcp"/>
-        </antcall>
-        <antcall target="abstract-build-clustering">
-            <param name="cacheMode" value="SYNC"/>
-            <param name="stack" value="udp"/>
-        </antcall>
-        <antcall target="abstract-build-clustering">
-            <param name="cacheMode" value="ASYNC"/>
-            <param name="stack" value="udp"/>
-        </antcall>
-    </target>
+	<!-- Build remaining configs for extended tests -->
+	<target name="build-clustering-extended" description="Builds server configurations for extended tests">
+		<antcall target="abstract-build-clustering">
+			<param name="cacheMode" value="ASYNC" />
+			<param name="stack" value="tcp" />
+		</antcall>
+		<antcall target="abstract-build-clustering">
+			<param name="cacheMode" value="SYNC" />
+			<param name="stack" value="udp" />
+		</antcall>
+		<antcall target="abstract-build-clustering">
+			<param name="cacheMode" value="ASYNC" />
+			<param name="stack" value="udp" />
+		</antcall>
+	</target>
 
-    <!-- Single node tests -->
-    <target name="build-clustering-udp-jdbc-store" description="Builds server configuration for UDP tests with jdbc-store enabled">
+	<!-- Single node tests -->
+	<target name="build-clustering-udp-jdbc-store" description="Builds server configuration for UDP tests with jdbc-store enabled">
 
-        <echo message="Building config clustering-udp-jdbc-store"/>
-        <echo>clustering-udp-jdbc-store node0: ${node0}</echo>
-        <copy todir="target/jbossas-clustering-udp-jdbc-store" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
-        </copy>
-        <ts.config-as.add-cache-container name="jbossas-clustering-udp-jdbc-store" containerdef="${cache.container.def}" />
-        <ts.config-as.ip-with-multicast name="jbossas-clustering-udp-jdbc-store"
-                                        node="${node0}"
-                                        mcast="${mcast}"
-                />
-        <ts.config-as.add-port-offset name="jbossas-clustering-udp-jdbc-store"/>
+		<echo message="Building config clustering-udp-jdbc-store" />
+		<echo>clustering-udp-jdbc-store node0: ${node0}</echo>
+		<copy todir="target/jbossas-clustering-udp-jdbc-store" overwrite="true">
+			<fileset dir="${basedir}/target/jbossas" />
+		</copy>
+		<ts.config-as.add-cache-container name="jbossas-clustering-udp-jdbc-store" cacheLoader="${cacheLoader}" cacheType="${cacheType}" mode="${mode}" />
+		<ts.config-as.ip-with-multicast name="jbossas-clustering-udp-jdbc-store" node="${node0}" mcast="${mcast}" />
+		<ts.config-as.add-port-offset name="jbossas-clustering-udp-jdbc-store" />
 
-    </target>
+	</target>
 
-    <!-- x-site test deployment:
+	<target name="add-cache">
+		<ts.config-as.add-cache-container name="jbossas-clustering-${cacheMode}-${stack}-0" cacheLoader="${cacheLoader}" cacheType="${cacheType}" mode="${mode}" />
+		<ts.config-as.add-cache-container name="jbossas-clustering-${cacheMode}-${stack}-1" cacheLoader="${cacheLoader}" cacheType="${cacheType}" mode="${mode}" />
+	</target>
+
+	<target name="change-url" unless="ds" description="Change database unless no database profile is activated.">
+		<ts.config-as.change-database name="jbossas-clustering-${cacheMode}-${stack}-0" ds.jdbc.url="jdbc:h2:file:test;FILE_LOCK=NO;DB_CLOSE_DELAY=-1" />
+		<ts.config-as.change-database name="jbossas-clustering-${cacheMode}-${stack}-1" ds.jdbc.url="jdbc:h2:file:test;FILE_LOCK=NO;DB_CLOSE_DELAY=-1" />
+	</target>
+
+	<!-- x-site test deployment:
          4 nodes: ${node0}, ${node1}, ${node2}, ${node3}
          3 sites: LON (node0, node1), NYC (node2), SFO (node3)
 
          NOTE: the TCP bridge between sites makes use of MPING and so a common mcast address needs to be used.
      -->
-    <target name="build-clustering-xsite" description="Builds server configurations for x-site testing on three sites">
+	<target name="build-clustering-xsite" description="Builds server configurations for x-site testing on three sites">
 
-        <echo>Building x-site configs with sites LON, NYC, SFO</echo>
+		<echo>Building x-site configs with sites LON, NYC, SFO</echo>
 
-        <!--
+		<!--
            Configuration for testing backups using standard backup naming conventions
         -->
 
-        <!-- site LON, node 0, mcast 0 -->
-        <echo message="Building config clustering-xsite-LON-0"/>
-        <copy todir="target/wildfly-clustering-xsite-LON-0" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
-        </copy>
-        <ts.config-as.ip-with-multicast-longform name="wildfly-clustering-xsite-LON-0"
-                                                 managementIPAddress="${node0}" publicIPAddress="${node0}"
-                                                 udpMcastAddress="${mcast-lon}" diagnosticsMcastAddress="${mcast-lon}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-lon}"/>
-        <ts.config-as.add-port-offset name="wildfly-clustering-xsite-LON-0"/>
-        <!-- define relay at JGroups level on udp stack -->
-        <ts.config-as.add-xsite-relay name="wildfly-clustering-xsite-LON-0" stack="udp" relay.site="LON"
-                                      remote-site.site="NYC" remote-site.stack="tcp" remote-site.cluster="bridge"/>
-        <ts.config-as.add-xsite-remote-site name="wildfly-clustering-xsite-LON-0" stack="udp"
-                                      remote-site.site="SFO" remote-site.stack="tcp" remote-site.cluster="bridge"/>
-        <!-- define cache to be backed up at Infinispan level -->
-        <ts.config-as.add-xsite-backups name="wildfly-clustering-xsite-LON-0" container="web"
-                                       cache-type="replicated-cache" cache="repl" backup.site="NYC"/>
-        <ts.config-as.add-xsite-backup name="wildfly-clustering-xsite-LON-0" container="web"
-                                       cache-type="replicated-cache" cache="repl" backup.site="SFO"/>
+		<!-- site LON, node 0, mcast 0 -->
+		<echo message="Building config clustering-xsite-LON-0" />
+		<copy todir="target/wildfly-clustering-xsite-LON-0" overwrite="true">
+			<fileset dir="${basedir}/target/jbossas" />
+		</copy>
+		<ts.config-as.ip-with-multicast-longform name="wildfly-clustering-xsite-LON-0" managementIPAddress="${node0}" publicIPAddress="${node0}" udpMcastAddress="${mcast-lon}" diagnosticsMcastAddress="${mcast-lon}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-lon}" />
+		<ts.config-as.add-port-offset name="wildfly-clustering-xsite-LON-0" />
+		<!-- define relay at JGroups level on udp stack -->
+		<ts.config-as.add-xsite-relay name="wildfly-clustering-xsite-LON-0" stack="udp" relay.site="LON" remote-site.site="NYC" remote-site.stack="tcp" remote-site.cluster="bridge" />
+		<ts.config-as.add-xsite-remote-site name="wildfly-clustering-xsite-LON-0" stack="udp" remote-site.site="SFO" remote-site.stack="tcp" remote-site.cluster="bridge" />
+		<!-- define cache to be backed up at Infinispan level -->
+		<ts.config-as.add-xsite-backups name="wildfly-clustering-xsite-LON-0" container="web" cache-type="replicated-cache" cache="repl" backup.site="NYC" />
+		<ts.config-as.add-xsite-backup name="wildfly-clustering-xsite-LON-0" container="web" cache-type="replicated-cache" cache="repl" backup.site="SFO" />
 
-        <!-- site LON, node 1, mcast 0 -->
-        <echo message="Building config clustering-xsite-LON-1"/>
-        <copy todir="target/wildfly-clustering-xsite-LON-1" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
-        </copy>
-        <ts.config-as.ip-with-multicast-longform name="wildfly-clustering-xsite-LON-1"
-                                                 managementIPAddress="${node1}" publicIPAddress="${node1}"
-                                                 udpMcastAddress="${mcast-lon}" diagnosticsMcastAddress="${mcast-lon}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-lon}"/>
-        <ts.config-as.add-port-offset name="wildfly-clustering-xsite-LON-1" offset="100" nativePort="9999" httpPort="9990"/>
-        <!-- define relay at JGroups level -->
-        <ts.config-as.add-xsite-relay name="wildfly-clustering-xsite-LON-1" stack="udp" relay.site="LON"
-                                      remote-site.site="NYC" remote-site.stack="tcp" remote-site.cluster="bridge"/>
-        <ts.config-as.add-xsite-remote-site name="wildfly-clustering-xsite-LON-1" stack="udp"
-                                      remote-site.site="SFO" remote-site.stack="tcp" remote-site.cluster="bridge"/>
-        <!-- define cache to be backed up at Infinispan level -->
-        <ts.config-as.add-xsite-backups name="wildfly-clustering-xsite-LON-1" container="web"
-                                       cache-type="replicated-cache" cache="repl" backup.site="NYC"/>
-        <ts.config-as.add-xsite-backup name="wildfly-clustering-xsite-LON-1" container="web"
-                                       cache-type="replicated-cache" cache="repl" backup.site="SFO"/>
+		<!-- site LON, node 1, mcast 0 -->
+		<echo message="Building config clustering-xsite-LON-1" />
+		<copy todir="target/wildfly-clustering-xsite-LON-1" overwrite="true">
+			<fileset dir="${basedir}/target/jbossas" />
+		</copy>
+		<ts.config-as.ip-with-multicast-longform name="wildfly-clustering-xsite-LON-1" managementIPAddress="${node1}" publicIPAddress="${node1}" udpMcastAddress="${mcast-lon}" diagnosticsMcastAddress="${mcast-lon}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-lon}" />
+		<ts.config-as.add-port-offset name="wildfly-clustering-xsite-LON-1" offset="100" nativePort="9999" httpPort="9990" />
+		<!-- define relay at JGroups level -->
+		<ts.config-as.add-xsite-relay name="wildfly-clustering-xsite-LON-1" stack="udp" relay.site="LON" remote-site.site="NYC" remote-site.stack="tcp" remote-site.cluster="bridge" />
+		<ts.config-as.add-xsite-remote-site name="wildfly-clustering-xsite-LON-1" stack="udp" remote-site.site="SFO" remote-site.stack="tcp" remote-site.cluster="bridge" />
+		<!-- define cache to be backed up at Infinispan level -->
+		<ts.config-as.add-xsite-backups name="wildfly-clustering-xsite-LON-1" container="web" cache-type="replicated-cache" cache="repl" backup.site="NYC" />
+		<ts.config-as.add-xsite-backup name="wildfly-clustering-xsite-LON-1" container="web" cache-type="replicated-cache" cache="repl" backup.site="SFO" />
 
-        <!-- site NYC, node 2, mcast 1 -->
-        <echo message="Building config clustering-xsite-NYC-0"/>
-        <copy todir="target/wildfly-clustering-xsite-NYC-0" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
-        </copy>
-        <ts.config-as.ip-with-multicast-longform name="wildfly-clustering-xsite-NYC-0"
-                                                 managementIPAddress="${node2}" publicIPAddress="${node2}"
-                                                 udpMcastAddress="${mcast-nyc}" diagnosticsMcastAddress="${mcast-nyc}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-nyc}"/>
-        <ts.config-as.add-port-offset name="wildfly-clustering-xsite-NYC-0" offset="200" nativePort="9999" httpPort="9990"/>
-        <!-- define relay at JGroups level -->
-        <ts.config-as.add-xsite-relay name="wildfly-clustering-xsite-NYC-0" stack="udp" relay.site="NYC"
-                                      remote-site.site="LON" remote-site.stack="tcp" remote-site.cluster="bridge"/>
-        <ts.config-as.add-xsite-remote-site name="wildfly-clustering-xsite-NYC-0" stack="udp"
-                                      remote-site.site="SFO" remote-site.stack="tcp" remote-site.cluster="bridge"/>
+		<!-- site NYC, node 2, mcast 1 -->
+		<echo message="Building config clustering-xsite-NYC-0" />
+		<copy todir="target/wildfly-clustering-xsite-NYC-0" overwrite="true">
+			<fileset dir="${basedir}/target/jbossas" />
+		</copy>
+		<ts.config-as.ip-with-multicast-longform name="wildfly-clustering-xsite-NYC-0" managementIPAddress="${node2}" publicIPAddress="${node2}" udpMcastAddress="${mcast-nyc}" diagnosticsMcastAddress="${mcast-nyc}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-nyc}" />
+		<ts.config-as.add-port-offset name="wildfly-clustering-xsite-NYC-0" offset="200" nativePort="9999" httpPort="9990" />
+		<!-- define relay at JGroups level -->
+		<ts.config-as.add-xsite-relay name="wildfly-clustering-xsite-NYC-0" stack="udp" relay.site="NYC" remote-site.site="LON" remote-site.stack="tcp" remote-site.cluster="bridge" />
+		<ts.config-as.add-xsite-remote-site name="wildfly-clustering-xsite-NYC-0" stack="udp" remote-site.site="SFO" remote-site.stack="tcp" remote-site.cluster="bridge" />
 
-        <!-- site SFO, node 3, mcast 2 -->
-        <echo message="Building config clustering-xsite-SFO-0"/>
-        <copy todir="target/wildfly-clustering-xsite-SFO-0" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
-        </copy>
-        <ts.config-as.ip-with-multicast-longform name="wildfly-clustering-xsite-SFO-0"
-                                                 managementIPAddress="${node3}" publicIPAddress="${node3}"
-                                                 udpMcastAddress="${mcast-sfo}" diagnosticsMcastAddress="${mcast-sfo}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-sfo}"/>
-        <ts.config-as.add-port-offset name="wildfly-clustering-xsite-SFO-0" offset="300" nativePort="9999" httpPort="9990"/>
-        <!-- define relay at JGroups level -->
-        <ts.config-as.add-xsite-relay name="wildfly-clustering-xsite-SFO-0" stack="udp" relay.site="SFO"
-                                      remote-site.site="LON" remote-site.stack="tcp" remote-site.cluster="bridge"/>
-        <ts.config-as.add-xsite-remote-site name="wildfly-clustering-xsite-SFO-0" stack="udp"
-                                      remote-site.site="NYC" remote-site.stack="tcp" remote-site.cluster="bridge"/>
+		<!-- site SFO, node 3, mcast 2 -->
+		<echo message="Building config clustering-xsite-SFO-0" />
+		<copy todir="target/wildfly-clustering-xsite-SFO-0" overwrite="true">
+			<fileset dir="${basedir}/target/jbossas" />
+		</copy>
+		<ts.config-as.ip-with-multicast-longform name="wildfly-clustering-xsite-SFO-0" managementIPAddress="${node3}" publicIPAddress="${node3}" udpMcastAddress="${mcast-sfo}" diagnosticsMcastAddress="${mcast-sfo}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-sfo}" />
+		<ts.config-as.add-port-offset name="wildfly-clustering-xsite-SFO-0" offset="300" nativePort="9999" httpPort="9990" />
+		<!-- define relay at JGroups level -->
+		<ts.config-as.add-xsite-relay name="wildfly-clustering-xsite-SFO-0" stack="udp" relay.site="SFO" remote-site.site="LON" remote-site.stack="tcp" remote-site.cluster="bridge" />
+		<ts.config-as.add-xsite-remote-site name="wildfly-clustering-xsite-SFO-0" stack="udp" remote-site.site="NYC" remote-site.stack="tcp" remote-site.cluster="bridge" />
 
-        <!-- create a named backup cache based on repl for LON:web:dist and mark as backup-for
+		<!-- create a named backup cache based on repl for LON:web:dist and mark as backup-for
         <ts.config-as.copy-cache name="wildfly-clustering-xsite-SFO-0" container.name="web"
                                        cache-type="replicated-cache" cache.base="repl" cache.name="LONrepl"/>
         <ts.config-as.add-xsite-backup-for name="wildfly-clustering-xsite-SFO-0" container="web"
                                        cache-type="replicated-cache" cache="LONrepl" remote-site="LON" remote-cache="repl"/>
         -->
 
-    </target>
+	</target>
 
 
 </project>
