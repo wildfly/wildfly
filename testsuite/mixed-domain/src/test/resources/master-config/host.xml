@@ -16,7 +16,7 @@
                      <local default-user="$local" allowed-users="*"/>
                      <properties path="domain/configuration/application-users.properties" relative-to="jboss.home.dir" />
                 </authentication>
-                <authorization map-groups-to-roles="true">
+                <authorization>
                      <properties path="domain/configuration/application-roles.properties" relative-to="jboss.home.dir" />
                 </authorization>
             </security-realm>

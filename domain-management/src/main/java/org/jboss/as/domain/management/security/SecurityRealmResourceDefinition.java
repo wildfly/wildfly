@@ -47,7 +47,7 @@ public class SecurityRealmResourceDefinition extends SimpleResourceDefinition {
     public static final SecurityRealmResourceDefinition INSTANCE = new SecurityRealmResourceDefinition();
 
     public static final SimpleAttributeDefinition MAP_GROUPS_TO_ROLES = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.MAP_GROUPS_TO_ROLES, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(new ModelNode(true))
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();

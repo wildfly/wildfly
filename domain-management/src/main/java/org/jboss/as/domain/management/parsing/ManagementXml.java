@@ -1293,9 +1293,6 @@ public class ManagementXml {
     private void parseAuthorization_1_1(final XMLExtendedStreamReader reader, final Namespace expectedNs,
             final ModelNode realmAdd, final List<ModelNode> list) throws XMLStreamException {
         ModelNode realmAddress = realmAdd.get(OP_ADDR);
-        // This property was not supported before version 2.0 of the schema, however it is set to true here to ensure
-        // the default behaviour if a document based on and schema is parsed, 2.0 now defaults this to false.
-        realmAdd.get(MAP_GROUPS_TO_ROLES).set(true);
 
         boolean authzFound = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -1322,9 +1319,6 @@ public class ManagementXml {
     private void parseAuthorization_1_3(final XMLExtendedStreamReader reader, final Namespace expectedNs,
             final ModelNode realmAdd, final List<ModelNode> list) throws XMLStreamException {
         ModelNode realmAddress = realmAdd.get(OP_ADDR);
-        // This property was not supported before version 2.0 of the schema, however it is set to true here to ensure
-        // the default behaviour if a document based on and schema is parsed, 2.0 now defaults this to false.
-        realmAdd.get(MAP_GROUPS_TO_ROLES).set(true);
 
         boolean authzFound = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
