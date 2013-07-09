@@ -30,6 +30,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.test.AbstractControllerTestBase;
 import org.jboss.dmr.ModelNode;
 
@@ -70,5 +72,17 @@ public abstract class AbstractRbacTestBase extends AbstractControllerTestBase {
             case DENIED:    assertDenied(operationResult); break;
             case NO_ACCESS: assertNoAccess(operationResult); break;
         }
+    }
+
+    protected void permitted(String operation, PathAddress pathAddress, StandardRole role) {
+        assertPermitted(executeWithRole(Util.createOperation(operation, pathAddress), role));
+    }
+
+    protected void denied(String operation, PathAddress pathAddress, StandardRole role) {
+        assertDenied(executeWithRole(Util.createOperation(operation, pathAddress), role));
+    }
+
+    protected void noAccess(String operation, PathAddress pathAddress, StandardRole role) {
+        assertNoAccess(executeWithRole(Util.createOperation(operation, pathAddress), role));
     }
 }
