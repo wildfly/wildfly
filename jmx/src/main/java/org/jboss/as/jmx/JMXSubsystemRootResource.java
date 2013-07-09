@@ -26,6 +26,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
+import java.util.List;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
@@ -35,6 +37,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -55,11 +58,14 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
             .addFlag(AttributeAccess.Flag.ALIAS)
             .build();
 
+    private final List<AccessConstraintDefinition> accessConstraints;
+
     JMXSubsystemRootResource() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME),
                 JMXExtension.getResourceDescriptionResolver(JMXExtension.SUBSYSTEM_NAME),
                 JMXSubsystemAdd.INSTANCE,
                 JMXSubsystemRemove.INSTANCE);
+        this.accessConstraints = JMXExtension.JMX_SENSITIVITY_DEF.wrapAsList();
     }
 
     @Override
@@ -80,6 +86,10 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(RemotingConnectorResource.INSTANCE);
     }
 
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
+    }
 
     private static class ShowModelAliasWriteHandler implements OperationStepHandler {
         static final ShowModelAliasWriteHandler INSTANCE = new ShowModelAliasWriteHandler();

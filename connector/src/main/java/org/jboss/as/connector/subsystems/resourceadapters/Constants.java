@@ -227,6 +227,7 @@ public class Constants {
             .setAllowNull(true)
             .setAlternatives(SECURITY_DOMAIN_AND_APPLICATION_NAME, APPLICATION_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
+            .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .build();
 
 
@@ -236,6 +237,7 @@ public class Constants {
             .setAllowNull(true)
             .setAlternatives(SECURITY_DOMAIN_NAME, APPLICATION_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
+            .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .build();
 
     static final SimpleAttributeDefinition APPLICATION = new SimpleAttributeDefinitionBuilder(APPLICATION_NAME,ModelType.BOOLEAN)
@@ -246,6 +248,7 @@ public class Constants {
             .setMeasurementUnit(MeasurementUnit.NONE)
             .setAlternatives(SECURITY_DOMAIN_NAME,SECURITY_DOMAIN_AND_APPLICATION_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
+            .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .build();
 
 
@@ -280,6 +283,7 @@ public class Constants {
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.NONE)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .build();
 
     static SimpleAttributeDefinition RECOVERY_PASSWORD = new SimpleAttributeDefinitionBuilder(RECOVERY_PASSWORD_NAME, ModelType.STRING, true)
@@ -288,6 +292,7 @@ public class Constants {
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.NONE)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .build();
 
     static SimpleAttributeDefinition RECOVERY_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(RECOVERY_SECURITY_DOMAIN_NAME, ModelType.STRING, true)
@@ -296,6 +301,7 @@ public class Constants {
             .setMeasurementUnit(MeasurementUnit.NONE)
             .setDefaultValue(new ModelNode())
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
+            .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .build();
 
     static SimpleAttributeDefinition NO_RECOVERY = new SimpleAttributeDefinition(NO_RECOVERY_NAME, Recovery.Attribute.NO_RECOVERY.getLocalName(),  new ModelNode(false), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);

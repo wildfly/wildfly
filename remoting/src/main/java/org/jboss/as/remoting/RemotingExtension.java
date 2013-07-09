@@ -73,6 +73,8 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
@@ -111,8 +113,16 @@ public class RemotingExtension implements Extension {
     }
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 3;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+
+    static final SensitivityClassification REMOTING_SECURITY =
+            new SensitivityClassification(SUBSYSTEM_NAME, "remoting-security", false, true, true);
+
+    static final SensitiveTargetAccessConstraintDefinition REMOTING_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(REMOTING_SECURITY);
+
+
+
 
     private static final ModelVersion VERSION_1_1 = ModelVersion.create(1, 1);
 

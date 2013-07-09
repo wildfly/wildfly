@@ -22,8 +22,11 @@
 
 package org.jboss.as.messaging;
 
+import java.util.List;
+
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
@@ -34,6 +37,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 public class SecuritySettingDefinition extends SimpleResourceDefinition {
 
     private final boolean registerRuntimeOnly;
+    private final List<AccessConstraintDefinition> sensitivity;
 
     public SecuritySettingDefinition(final boolean registerRuntimeOnly) {
         super(PathElement.pathElement(CommonAttributes.SECURITY_SETTING),
@@ -41,6 +45,7 @@ public class SecuritySettingDefinition extends SimpleResourceDefinition {
                 SecuritySettingAdd.INSTANCE,
                 SecuritySettingRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
+        this.sensitivity = CommonAttributes.MESSAGING_SECURITY_DEF.wrapAsList();
     }
 
     @Override
@@ -48,5 +53,10 @@ public class SecuritySettingDefinition extends SimpleResourceDefinition {
         super.registerChildren(registry);
 
         registry.registerSubModel(SecurityRoleDefinition.newSecurityRoleDefinition(registerRuntimeOnly));
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return sensitivity;
     }
 }

@@ -53,6 +53,8 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
@@ -78,7 +80,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
     public static final String SUBSYSTEM_NAME = "modcluster";
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 3;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 4;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME);
@@ -97,6 +99,16 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         }
         return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, ModClusterExtension.class.getClassLoader(), true, false);
     }
+
+    static final SensitivityClassification MOD_CLUSTER_SECURITY =
+          new SensitivityClassification(SUBSYSTEM_NAME, "mod_cluster-security", false, true, true);
+
+    static final SensitiveTargetAccessConstraintDefinition MOD_CLUSTER_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(MOD_CLUSTER_SECURITY);
+
+    static final SensitivityClassification MOD_CLUSTER_PROXIES =
+            new SensitivityClassification(SUBSYSTEM_NAME, "mod_cluster-proxies", false, false, false);
+
+    static final SensitiveTargetAccessConstraintDefinition MOD_CLUSTER_PROXIES_DEF = new SensitiveTargetAccessConstraintDefinition(MOD_CLUSTER_PROXIES);
 
 
     /**

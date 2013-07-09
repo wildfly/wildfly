@@ -25,6 +25,7 @@ package org.jboss.as.modcluster;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -62,6 +63,7 @@ public class ModClusterDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setStorageRuntime()
             .setDefaultValue(new ModelNode(10))
+            .setMeasurementUnit(MeasurementUnit.SECONDS)
             .build();
 
     private final boolean runtimeOnly;

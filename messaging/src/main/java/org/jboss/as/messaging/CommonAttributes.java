@@ -52,6 +52,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -67,6 +68,16 @@ public interface CommonAttributes {
 
     String DISCOVERY_GROUP_NAME = "discovery-group-name";
     String ENTRIES = "entries";
+
+    SensitivityClassification MESSAGING_MANAGEMENT =
+            new SensitivityClassification(MessagingExtension.SUBSYSTEM_NAME, "messaging-management", false, false, true);
+
+    SensitiveTargetAccessConstraintDefinition MESSAGING_MANAGEMENT_DEF = new SensitiveTargetAccessConstraintDefinition(MESSAGING_MANAGEMENT);
+
+    SensitivityClassification MESSAGING_SECURITY =
+            new SensitivityClassification(MessagingExtension.SUBSYSTEM_NAME, "messaging-security", false, false, true);
+
+    SensitiveTargetAccessConstraintDefinition MESSAGING_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(MESSAGING_SECURITY);
 
     SimpleAttributeDefinition ALLOW_FAILBACK = create("allow-failback", BOOLEAN)
             .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.isDefaultAllowAutoFailback()))
@@ -136,6 +147,7 @@ public interface CommonAttributes {
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .addAccessConstraint(MESSAGING_SECURITY_DEF)
             .build();
 
     SimpleAttributeDefinition CLUSTER_USER = create("cluster-user", ModelType.STRING)
@@ -144,6 +156,7 @@ public interface CommonAttributes {
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .addAccessConstraint(MESSAGING_SECURITY_DEF)
             .build();
 
     AttributeDefinition CONSUMER_COUNT = create("consumer-count", INT)
@@ -291,6 +304,7 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .addAccessConstraint(MESSAGING_MANAGEMENT_DEF)
             .build();
 
     SimpleAttributeDefinition JMX_MANAGEMENT_ENABLED = create("jmx-management-enabled", BOOLEAN)
@@ -298,6 +312,7 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .addAccessConstraint(MESSAGING_MANAGEMENT_DEF)
             .build();
 
     // no default values, depends on whether NIO or AIO is used.
@@ -436,6 +451,7 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .addAccessConstraint(MESSAGING_MANAGEMENT_DEF)
             .build();
 
     SimpleAttributeDefinition MANAGEMENT_NOTIFICATION_ADDRESS = create("management-notification-address", ModelType.STRING)
@@ -443,6 +459,7 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .addAccessConstraint(MESSAGING_MANAGEMENT_DEF)
             .build();
 
     AttributeDefinition MAX_RETRY_INTERVAL = create("max-retry-interval", LONG)
@@ -643,6 +660,7 @@ public interface CommonAttributes {
             .setAllowExpression(false) // references the security domain service name
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
+            .addAccessConstraint(MESSAGING_SECURITY_DEF)
             .build();
 
     SimpleAttributeDefinition SECURITY_ENABLED = create("security-enabled", BOOLEAN)
@@ -650,6 +668,7 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .addAccessConstraint(MESSAGING_SECURITY_DEF)
             .build();
 
     SimpleAttributeDefinition SECURITY_INVALIDATION_INTERVAL = create("security-invalidation-interval", LONG)
@@ -658,6 +677,7 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .addAccessConstraint(MESSAGING_SECURITY_DEF)
             .build();
 
     SimpleAttributeDefinition SELECTOR = create("selector", ModelType.STRING)

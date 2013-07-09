@@ -29,6 +29,8 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
@@ -45,7 +47,7 @@ public class JdrReportExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "jdr";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
@@ -59,6 +61,11 @@ public class JdrReportExtension implements Extension {
         }
         return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, JdrReportExtension.class.getClassLoader(), true, false);
     }
+
+    static final SensitivityClassification JDR_SENSITIVITY =
+            new SensitivityClassification(SUBSYSTEM_NAME, "jdr", false, false, true);
+
+    static final SensitiveTargetAccessConstraintDefinition JDR_SENSITIVITY_DEF = new SensitiveTargetAccessConstraintDefinition(JDR_SENSITIVITY);
 
     public void initialize(ExtensionContext context) {
         SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,

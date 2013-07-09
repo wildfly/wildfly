@@ -45,8 +45,11 @@ public class JdrReportRequestHandler implements OperationStepHandler {
 
     static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, JdrReportExtension.getResourceDescriptionResolver())
             .setReplyParameters(CommonAttributes.START_TIME, CommonAttributes.END_TIME, CommonAttributes.REPORT_LOCATION)
+            .setReadOnly()
             .setRuntimeOnly()
+            .addAccessConstraint(JdrReportExtension.JDR_SENSITIVITY_DEF)
             .build();
+
     private final ParametersValidator validator = new ParametersValidator();
 
     private JdrReportRequestHandler() {
