@@ -226,21 +226,6 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
 
     // auditor, superuser -- TODO AuditContraint
 
-    // ---
-    // testing utils
-
-    private void permitted(String operation, PathAddress pathAddress, StandardRole role) {
-        assertPermitted(executeWithRole(Util.createOperation(operation, pathAddress), role));
-    }
-
-    private void denied(String operation, PathAddress pathAddress, StandardRole role) {
-        assertDenied(executeWithRole(Util.createOperation(operation, pathAddress), role));
-    }
-
-    private void noAccess(String operation, PathAddress pathAddress, StandardRole role) {
-        assertNoAccess(executeWithRole(Util.createOperation(operation, pathAddress), role));
-    }
-
     // model definition
 
     private static final SensitivityClassification MY_SENSITIVITY
