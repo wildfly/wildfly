@@ -122,4 +122,5 @@ public abstract class AbstractRuntimeOnlyHandler implements OperationStepHandler
      * @throws OperationFailedException if the operation failed <b>before</b> calling {@code context.completeStep()}
      */
     protected abstract void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException;
+
 }
