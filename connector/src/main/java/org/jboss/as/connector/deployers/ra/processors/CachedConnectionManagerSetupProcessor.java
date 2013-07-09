@@ -93,7 +93,10 @@ public class CachedConnectionManagerSetupProcessor implements DeploymentUnitProc
         @Override
         public void setup(final Map<String, Object> properties) {
             try {
-                cachedConnectionManager.getValue().pushMetaAwareObject(this, unsharable);
+                final CachedConnectionManager connectionManager = cachedConnectionManager.getOptionalValue();
+                if (connectionManager != null) {
+                    connectionManager.pushMetaAwareObject(this, unsharable);
+                }
             } catch (ResourceException e) {
                 throw new RuntimeException(e);
             }
@@ -102,7 +105,10 @@ public class CachedConnectionManagerSetupProcessor implements DeploymentUnitProc
         @Override
         public void teardown(final Map<String, Object> properties) {
             try {
-                cachedConnectionManager.getValue().popMetaAwareObject(unsharable);
+                final CachedConnectionManager connectionManager = cachedConnectionManager.getOptionalValue();
+                if (connectionManager != null) {
+                    connectionManager.popMetaAwareObject(unsharable);
+                }
             } catch (ResourceException e) {
                 throw new RuntimeException(e);
             }

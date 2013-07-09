@@ -40,6 +40,7 @@ import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
+import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceTarget;
@@ -68,6 +69,8 @@ public class RaDeploymentActivator {
         RaRepositoryService raRepositoryService = new RaRepositoryService();
         controllers.add(serviceTarget.addService(ConnectorServices.RA_REPOSITORY_SERVICE, raRepositoryService)
             .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, raRepositoryService.getMdrInjector())
+            .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
+                           raRepositoryService.getTransactionIntegrationInjector())
             .addListener(listeners)
             .install());
 
