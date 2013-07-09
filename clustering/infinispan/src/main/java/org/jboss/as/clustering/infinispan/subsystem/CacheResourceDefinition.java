@@ -194,9 +194,12 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
 
 
     private final ResolvePathHandler resolvePathHandler;
-    public CacheResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler) {
+    private final boolean runtimeRegistration;
+
+    public CacheResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler, boolean runtimeRegistration) {
         super(pathElement, descriptionResolver, addHandler, removeHandler);
         this.resolvePathHandler = resolvePathHandler;
+        this.runtimeRegistration = runtimeRegistration;
     }
 
     @Override
@@ -229,10 +232,18 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(new EvictionResourceDefinition());
         resourceRegistration.registerSubModel(new ExpirationResourceDefinition());
         resourceRegistration.registerSubModel(new StoreResourceDefinition());
-        resourceRegistration.registerSubModel(new FileStoreResourceDefinition(resolvePathHandler));
+        resourceRegistration.registerSubModel(new FileStoreResourceDefinition(getResolvePathHandler()));
         resourceRegistration.registerSubModel(new StringKeyedJDBCStoreResourceDefinition());
         resourceRegistration.registerSubModel(new BinaryKeyedJDBCStoreResourceDefinition());
         resourceRegistration.registerSubModel(new MixedKeyedJDBCStoreResourceDefinition());
         resourceRegistration.registerSubModel(new RemoteStoreResourceDefinition());
+    }
+
+    public boolean isRuntimeRegistration() {
+        return runtimeRegistration;
+    }
+
+    public ResolvePathHandler getResolvePathHandler() {
+        return resolvePathHandler;
     }
 }

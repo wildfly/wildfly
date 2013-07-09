@@ -159,12 +159,15 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
     static final AttributeDefinition[] CACHE_CONTAINER_METRICS = {CACHE_MANAGER_STATUS, CLUSTER_NAME, COORDINATOR_ADDRESS, IS_COORDINATOR, LOCAL_ADDRESS};
 
     private final ResolvePathHandler resolvePathHandler;
-    public CacheContainerResourceDefinition(final ResolvePathHandler resolvePathHandler) {
+    private final boolean runtimeRegistration;
+
+    public CacheContainerResourceDefinition(final ResolvePathHandler resolvePathHandler, final boolean runtimeRegistration) {
         super(CONTAINER_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.CACHE_CONTAINER),
                 CacheContainerAdd.INSTANCE,
                 CacheContainerRemove.INSTANCE);
         this.resolvePathHandler = resolvePathHandler;
+        this.runtimeRegistration = runtimeRegistration;
     }
 
     @Override
@@ -196,9 +199,17 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
 
         // child resources
         resourceRegistration.registerSubModel(new TransportResourceDefinition());
-        resourceRegistration.registerSubModel(new LocalCacheResourceDefinition(resolvePathHandler));
-        resourceRegistration.registerSubModel(new InvalidationCacheResourceDefinition(resolvePathHandler));
-        resourceRegistration.registerSubModel(new ReplicatedCacheResourceDefinition(resolvePathHandler));
-        resourceRegistration.registerSubModel(new DistributedCacheResourceDefinition(resolvePathHandler));
+        resourceRegistration.registerSubModel(new LocalCacheResourceDefinition(getResolvePathHandler(), isRuntimeRegistration()));
+        resourceRegistration.registerSubModel(new InvalidationCacheResourceDefinition(getResolvePathHandler(), isRuntimeRegistration()));
+        resourceRegistration.registerSubModel(new ReplicatedCacheResourceDefinition(getResolvePathHandler(), isRuntimeRegistration()));
+        resourceRegistration.registerSubModel(new DistributedCacheResourceDefinition(getResolvePathHandler(), isRuntimeRegistration()));
+    }
+
+    public boolean isRuntimeRegistration() {
+        return runtimeRegistration;
+    }
+
+    public ResolvePathHandler getResolvePathHandler() {
+        return resolvePathHandler;
     }
 }

@@ -110,8 +110,8 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
 
     static final AttributeDefinition[] CLUSTERED_CACHE_METRICS = {AVERAGE_REPLICATION_TIME, REPLICATION_COUNT, REPLICATION_FAILURES, SUCCESS_RATIO};
 
-    public ClusteredCacheResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler) {
-        super(pathElement, descriptionResolver, addHandler, removeHandler, resolvePathHandler);
+    public ClusteredCacheResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler, boolean runtimeRegistration) {
+        super(pathElement, descriptionResolver, addHandler, removeHandler, resolvePathHandler, runtimeRegistration);
     }
 
     @Override

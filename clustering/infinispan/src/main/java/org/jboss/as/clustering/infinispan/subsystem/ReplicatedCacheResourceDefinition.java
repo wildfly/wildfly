@@ -36,10 +36,10 @@ public class ReplicatedCacheResourceDefinition extends SharedCacheResourceDefini
 
     // attributes
 
-    public ReplicatedCacheResourceDefinition(final ResolvePathHandler resolvePathHandler) {
+    public ReplicatedCacheResourceDefinition(final ResolvePathHandler resolvePathHandler, final boolean runtimeRegistration) {
         super(REPLICATED_CACHE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REPLICATED_CACHE),
                 ReplicatedCacheAdd.INSTANCE,
-                CacheRemove.INSTANCE, resolvePathHandler);
+                CacheRemove.INSTANCE, resolvePathHandler, runtimeRegistration);
     }
 }

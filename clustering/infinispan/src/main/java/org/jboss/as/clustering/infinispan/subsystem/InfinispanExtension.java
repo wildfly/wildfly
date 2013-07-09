@@ -78,7 +78,7 @@ public class InfinispanExtension implements Extension {
             resolvePathHandler = null;
         }
 
-        subsystem.registerSubsystemModel(new InfinispanSubsystemRootResourceDefinition(resolvePathHandler));
+        subsystem.registerSubsystemModel(new InfinispanSubsystemRootResourceDefinition(resolvePathHandler, context.isRuntimeOnlyRegistrationValid()));
         subsystem.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
         if (context.isRegisterTransformers()) {
             // TODO move transformation out of this utility class and into the ResourceDefinition impls
