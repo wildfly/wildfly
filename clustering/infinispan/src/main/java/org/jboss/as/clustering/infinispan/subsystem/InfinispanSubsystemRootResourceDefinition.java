@@ -39,12 +39,15 @@ import org.jboss.as.controller.services.path.ResolvePathHandler;
 public class InfinispanSubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
     private final ResolvePathHandler resolvePathHandler;
-    public InfinispanSubsystemRootResourceDefinition(final ResolvePathHandler resolvePathHandler) {
+    private final boolean runtimeRegistration;
+
+    public InfinispanSubsystemRootResourceDefinition(final ResolvePathHandler resolvePathHandler, final boolean runtimeRegistration) {
         super(PathElement.pathElement(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME),
                 InfinispanExtension.getResourceDescriptionResolver(),
                 InfinispanSubsystemAdd.INSTANCE,
                 ReloadRequiredRemoveStepHandler.INSTANCE);
         this.resolvePathHandler = resolvePathHandler;
+        this.runtimeRegistration = runtimeRegistration;
     }
 
     @Override
@@ -61,8 +64,14 @@ public class InfinispanSubsystemRootResourceDefinition extends SimpleResourceDef
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(new CacheContainerResourceDefinition(resolvePathHandler));
+        resourceRegistration.registerSubModel(new CacheContainerResourceDefinition(getResolvePathHandler(), isRuntimeRegistration()));
     }
 
+    public ResolvePathHandler getResolvePathHandler() {
+        return resolvePathHandler;
+    }
 
+    public boolean isRuntimeRegistration() {
+        return runtimeRegistration;
+    }
 }

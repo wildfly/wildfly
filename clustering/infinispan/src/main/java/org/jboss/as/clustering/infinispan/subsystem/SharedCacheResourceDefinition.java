@@ -37,8 +37,8 @@ import org.jboss.as.controller.services.path.ResolvePathHandler;
  */
 public class SharedCacheResourceDefinition extends ClusteredCacheResourceDefinition {
 
-    public SharedCacheResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler) {
-        super(pathElement, descriptionResolver, addHandler, removeHandler, resolvePathHandler);
+    public SharedCacheResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler, boolean runtimeRegistration) {
+        super(pathElement, descriptionResolver, addHandler, removeHandler, resolvePathHandler, runtimeRegistration);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class SharedCacheResourceDefinition extends ClusteredCacheResourceDefinit
         super.registerChildren(registration);
 
         registration.registerSubModel(new StateTransferResourceDefinition());
-        registration.registerSubModel(new BackupSiteResource());
+        registration.registerSubModel(new BackupSiteResource(isRuntimeRegistration()));
         registration.registerSubModel(new BackupForResourceDefinition());
     }
 }

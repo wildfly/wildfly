@@ -206,4 +206,14 @@ public interface InfinispanMessages {
     @Message(id = 10386, value = "Unknown metric %s")
     String unknownMetric(String metricName);
 
+    /**
+     * Creates an exception indicating failure to invoke an operation.
+     *
+     * @param operation the operation name.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 10387, value = "Failed to invoke operation: %s")
+    OperationFailedException failedToInvokeOperation(@Cause Throwable cause, String operation);
+
 }

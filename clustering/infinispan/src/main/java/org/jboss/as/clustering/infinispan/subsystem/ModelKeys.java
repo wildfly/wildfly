@@ -41,6 +41,7 @@ public class ModelKeys {
     static final String BATCHING = "batching";
     static final String BINARY_KEYED_TABLE = "binary-keyed-table";
     static final String BINARY_KEYED_TABLE_NAME = "BINARY_KEYED_TABLE";
+    static final String BRING_SITE_ONLINE = "bring-site-online";
     static final String BUCKET_TABLE = "bucket-table";
     static final String CACHE = "cache";
     // static final String CACHE_MODE = "cache-mode";
@@ -125,6 +126,7 @@ public class ModelKeys {
     static final String SHUTDOWN_TIMEOUT = "shutdown-timeout";
     static final String SINGLETON = "singleton";
     static final String SITE = "site";
+    static final String SITE_STATUS = "site-status";
     static final String SOCKET_TIMEOUT = "socket-timeout";
     static final String STACK = "stack";
     static final String START = "start";
@@ -137,6 +139,7 @@ public class ModelKeys {
     static final String STRIPING = "striping";
     static final String TAKE_BACKUP_OFFLINE_AFTER_FAILURES = "after-failures";
     static final String TAKE_BACKUP_OFFLINE_MIN_WAIT = "min-wait";
+    static final String TAKE_SITE_OFFLINE = "take-site-offline";
     static final String TCP_NO_DELAY = "tcp-no-delay";
     static final String THREAD_POOL_SIZE = "thread-pool-size";
     static final String TIMEOUT = "timeout";

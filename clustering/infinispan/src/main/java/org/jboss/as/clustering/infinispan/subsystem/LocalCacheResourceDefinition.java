@@ -36,11 +36,11 @@ public class LocalCacheResourceDefinition extends CacheResourceDefinition {
 
     // attributes
 
-    public LocalCacheResourceDefinition(final ResolvePathHandler resolvePathHandler) {
+    public LocalCacheResourceDefinition(final ResolvePathHandler resolvePathHandler, final boolean runtimeRegistration) {
         super(LOCAL_CACHE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.LOCAL_CACHE),
                 LocalCacheAdd.INSTANCE,
-                CacheRemove.INSTANCE, resolvePathHandler);
+                CacheRemove.INSTANCE, resolvePathHandler, runtimeRegistration);
     }
 
 

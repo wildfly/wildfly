@@ -22,22 +22,35 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.infinispan.Cache;
 import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
 import org.infinispan.configuration.cache.BackupFailurePolicy;
+import org.infinispan.xsite.XSiteAdminOperations;
 import org.jboss.as.clustering.infinispan.subsystem.CacheConfigOperationHandlers.CacheConfigAdd;
+import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Paul Ferraro
@@ -92,8 +105,25 @@ public class BackupSiteResource extends SimpleResourceDefinition {
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { FAILURE_POLICY, STRATEGY, REPLICATION_TIMEOUT, ENABLED, TAKE_OFFLINE_AFTER_FAILURES, TAKE_OFFLINE_MIN_WAIT };
 
-    BackupSiteResource() {
+        // operations
+    static final OperationDefinition BACKUP_BRING_SITE_ONLINE =
+            new SimpleOperationDefinitionBuilder(ModelKeys.BRING_SITE_ONLINE, InfinispanExtension.getResourceDescriptionResolver("backup.ops"))
+                .build();
+
+    static final OperationDefinition BACKUP_TAKE_SITE_OFFLINE =
+            new SimpleOperationDefinitionBuilder(ModelKeys.TAKE_SITE_OFFLINE, InfinispanExtension.getResourceDescriptionResolver("backup.ops"))
+                .build();
+
+    static final OperationDefinition BACKUP_SITE_STATUS =
+            new SimpleOperationDefinitionBuilder(ModelKeys.SITE_STATUS, InfinispanExtension.getResourceDescriptionResolver("backup.ops"))
+                .build();
+
+
+    private final boolean runtimeRegistration;
+
+    BackupSiteResource(final boolean runtimeRegistration) {
         super(PathElement.pathElement(ModelKeys.BACKUP), InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BACKUP), new CacheConfigAdd(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        this.runtimeRegistration = runtimeRegistration;
     }
 
     @Override
@@ -103,4 +133,129 @@ public class BackupSiteResource extends SimpleResourceDefinition {
             registration.registerReadWriteAttribute(attribute, null, writeHandler);
         }
     }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+        super.registerOperations(resourceRegistration);
+        if (isRuntimeRegistration()) {
+            resourceRegistration.registerOperationHandler(BackupSiteResource.BACKUP_BRING_SITE_ONLINE, new BackupBringSiteOnline());
+            resourceRegistration.registerOperationHandler(BackupSiteResource.BACKUP_TAKE_SITE_OFFLINE, new BackupTakeSiteOffline());
+            resourceRegistration.registerOperationHandler(BackupSiteResource.BACKUP_SITE_STATUS, new BackupSiteStatus());
+        }
+    }
+
+    public boolean isRuntimeRegistration() {
+        return runtimeRegistration;
+    }
+
+    // operation handler definitions
+
+    /*
+     * Operation to bring a backup site online
+     *
+     *  backup=X:bring-site-online()
+     *
+     * where X is the name of the site.
+     */
+    private class BackupBringSiteOnline extends AbstractRuntimeOnlyHandler {
+        @Override
+        protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
+            //
+            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            final String cacheContainerName = address.getElement(address.size()-3).getValue();
+            final String cacheName = address.getElement(address.size()-2).getValue();
+            final String site = address.getLastElement().getValue();
+
+            final ServiceName cacheServiceName = CacheService.getServiceName(cacheContainerName, cacheName);
+            final ServiceController<?> controller = context.getServiceRegistry(false).getService(cacheServiceName);
+            Cache<?, ?> cache = (Cache<?, ?>) controller.getValue();
+
+            ModelNode result = null;
+            try {
+                XSiteAdminOperations xSiteAdminOperations = cache.getAdvancedCache().getComponentRegistry().getComponent(XSiteAdminOperations.class);
+                String stringResult = xSiteAdminOperations.bringSiteOnline(site);
+                result = new ModelNode().set(stringResult);
+            } catch(Exception e) {
+                throw MESSAGES.failedToInvokeOperation(e.getCause(), "bring-site-online");
+            }
+
+            if (result != null) {
+                context.getResult().set(result);
+            }
+            context.stepCompleted();
+        }
+    }
+
+    /*
+     * Operation to take a site offline
+     *
+     *  backup=X:take-site-offline()
+     *
+     * where X is the name of the site.
+     */
+    private class BackupTakeSiteOffline extends AbstractRuntimeOnlyHandler {
+        @Override
+        protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
+            //
+            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            final String cacheContainerName = address.getElement(address.size()-3).getValue();
+            final String cacheName = address.getElement(address.size()-2).getValue();
+            final String site = address.getLastElement().getValue();
+
+            final ServiceName cacheServiceName = CacheService.getServiceName(cacheContainerName, cacheName);
+            final ServiceController<?> controller = context.getServiceRegistry(false).getService(cacheServiceName);
+            Cache<?, ?> cache = (Cache<?, ?>) controller.getValue();
+
+            ModelNode result = null;
+            try {
+                XSiteAdminOperations xSiteAdminOperations = cache.getAdvancedCache().getComponentRegistry().getComponent(XSiteAdminOperations.class);
+                String stringResult = xSiteAdminOperations.takeSiteOffline(site);
+                result = new ModelNode().set(stringResult);
+            } catch(Exception e) {
+                throw MESSAGES.failedToInvokeOperation(e.getCause(), "take-site-offline");
+            }
+
+            if (result != null) {
+                context.getResult().set(result);
+            }
+            context.stepCompleted();
+        }
+    }
+
+    /*
+     * Operation to display the backup site status
+     *
+     *  backup=X:site-status
+     *
+     * where X is the name of the site.
+     */
+    private class BackupSiteStatus extends AbstractRuntimeOnlyHandler {
+        @Override
+        protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
+            //
+            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            final String cacheContainerName = address.getElement(address.size()-3).getValue();
+            final String cacheName = address.getElement(address.size()-2).getValue();
+            final String site = address.getLastElement().getValue();
+
+            final ServiceName cacheServiceName = CacheService.getServiceName(cacheContainerName, cacheName);
+            final ServiceController<?> controller = context.getServiceRegistry(false).getService(cacheServiceName);
+            Cache<?, ?> cache = (Cache<?, ?>) controller.getValue();
+
+            ModelNode result = null;
+            try {
+                XSiteAdminOperations xSiteAdminOperations = cache.getAdvancedCache().getComponentRegistry().getComponent(XSiteAdminOperations.class);
+                String stringResult = xSiteAdminOperations.siteStatus(site);
+                result = new ModelNode().set(stringResult);
+            } catch(Exception e) {
+                throw MESSAGES.failedToInvokeOperation(e.getCause(), "site-status");
+            }
+
+            if (result != null) {
+                context.getResult().set(result);
+            }
+            context.stepCompleted();
+        }
+    }
+
 }
