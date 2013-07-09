@@ -333,6 +333,7 @@ public enum Phase {
     public static final int DEPENDENCIES_SUB_DEPLOYMENTS                = 0x0E00;
     public static final int DEPENDENCIES_PERSISTENCE_ANNOTATION         = 0x0F00;
     public static final int DEPENDENCIES_JPA                            = 0x1000;
+    public static final int DEPENDENCIES_TRANSACTIONS                   = 0x1100;
     public static final int DEPENDENCIES_JDK                            = 0x1200;
     public static final int DEPENDENCIES_JACORB                         = 0x1300;
     public static final int DEPENDENCIES_CMP                            = 0x1500;
