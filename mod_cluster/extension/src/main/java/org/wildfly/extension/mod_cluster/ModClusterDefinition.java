@@ -25,6 +25,7 @@ package org.wildfly.extension.mod_cluster;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -57,6 +58,7 @@ public class ModClusterDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setStorageRuntime()
             .setDefaultValue(new ModelNode(10))
+            .setMeasurementUnit(MeasurementUnit.SECONDS)
             .build();
 
     private final boolean runtimeOnly;

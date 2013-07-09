@@ -29,6 +29,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -41,12 +42,19 @@ import org.jboss.dmr.ModelType;
  * @since 7.1.0
  */
 class MailServerDefinition extends SimpleResourceDefinition {
+
+    static final SensitivityClassification MAIL_SERVER_SECURITY =
+            new SensitivityClassification(MailExtension.SUBSYSTEM_NAME, "mail-server-security", false, false, true);
+
+    static final SensitiveTargetAccessConstraintDefinition MAIL_SERVER_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(MAIL_SERVER_SECURITY);
+
     protected static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING_REF =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.OUTBOUND_SOCKET_BINDING_REF, ModelType.STRING, false)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
                     .build();
+
     protected static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING_REF_OPTIONAL = SimpleAttributeDefinitionBuilder.create(OUTBOUND_SOCKET_BINDING_REF)
             .setAllowNull(true)
             .build();
@@ -56,6 +64,7 @@ class MailServerDefinition extends SimpleResourceDefinition {
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(false))
+                    .addAccessConstraint(MAIL_SERVER_SECURITY_DEF)
                     .build();
 
 
@@ -64,6 +73,7 @@ class MailServerDefinition extends SimpleResourceDefinition {
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(false))
+                    .addAccessConstraint(MAIL_SERVER_SECURITY_DEF)
                     .build();
 
     protected static final SimpleAttributeDefinition USERNAME =
@@ -72,6 +82,7 @@ class MailServerDefinition extends SimpleResourceDefinition {
                     .setXmlName(MailSubsystemModel.LOGIN_USERNAME)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+                    .addAccessConstraint(MAIL_SERVER_SECURITY_DEF)
                     .build();
 
     protected static final SimpleAttributeDefinition PASSWORD =
@@ -79,6 +90,7 @@ class MailServerDefinition extends SimpleResourceDefinition {
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+                    .addAccessConstraint(MAIL_SERVER_SECURITY_DEF)
                     .build();
 
     protected static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder(ModelDescriptionConstants.PROPERTIES, true)

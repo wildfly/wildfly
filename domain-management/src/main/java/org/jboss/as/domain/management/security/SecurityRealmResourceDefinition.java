@@ -58,7 +58,6 @@ public class SecurityRealmResourceDefinition extends SimpleResourceDefinition {
 
     private final List<AccessConstraintDefinition> sensitivity;
 
-
     private SecurityRealmResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SECURITY_REALM),
                 ControllerResolver.getResolver("core.management.security-realm"),

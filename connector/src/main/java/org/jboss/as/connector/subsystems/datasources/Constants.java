@@ -34,6 +34,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
@@ -190,6 +191,11 @@ class Constants {
 
     private static final String NO_RECOVERY_NAME = "no-recovery";
 
+    static final SensitivityClassification DS_SECURITY =
+            new SensitivityClassification(DataSourcesExtension.SUBSYSTEM_NAME, "data-source-security", false, true, true);
+
+    static final SensitiveTargetAccessConstraintDefinition DS_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(DS_SECURITY);
+
     static final SimpleAttributeDefinition DEPLOYMENT_NAME = SimpleAttributeDefinitionBuilder.create("deployment-name", ModelType.STRING)
             .setAllowExpression(true)
             .setAllowNull(true)
@@ -277,6 +283,7 @@ class Constants {
             .setAllowNull(true)
             .addAlternatives(SECURITY_DOMAIN_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .addAccessConstraint(DS_SECURITY_DEF)
             .build();
 
     static SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinitionBuilder(PASSWORD_NAME, ModelType.STRING)
@@ -285,6 +292,7 @@ class Constants {
             .setAllowNull(true)
             .setRequires(USERNAME_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .addAccessConstraint(DS_SECURITY_DEF)
             .build();
 
     static SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(SECURITY_DOMAIN_NAME, ModelType.STRING)
@@ -293,6 +301,7 @@ class Constants {
             .setAllowNull(true)
             .addAlternatives(USERNAME_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
+            .addAccessConstraint(DS_SECURITY_DEF)
             .build();
 
     static SimpleAttributeDefinition PREPARED_STATEMENTS_CACHE_SIZE = new SimpleAttributeDefinition(PREPAREDSTATEMENTSCACHESIZE_NAME, Statement.Tag.PREPARED_STATEMENT_CACHE_SIZE.getLocalName(), new ModelNode(), ModelType.LONG, true, true, MeasurementUnit.NONE);

@@ -26,6 +26,7 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.messaging.CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_REF_STRING;
 import static org.jboss.as.messaging.CommonAttributes.HA;
+import static org.jboss.as.messaging.CommonAttributes.MESSAGING_SECURITY_DEF;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
@@ -81,6 +82,7 @@ public class BridgeDefinition extends SimpleResourceDefinition {
             .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.getDefaultClusterPassword()))
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .addAccessConstraint(MESSAGING_SECURITY_DEF)
             .build();
 
     public static final SimpleAttributeDefinition USER = create("user", STRING)
@@ -89,6 +91,7 @@ public class BridgeDefinition extends SimpleResourceDefinition {
             .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.getDefaultClusterUser()))
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .addAccessConstraint(MESSAGING_SECURITY_DEF)
             .build();
 
     public static final SimpleAttributeDefinition USE_DUPLICATE_DETECTION = create("use-duplicate-detection", BOOLEAN)

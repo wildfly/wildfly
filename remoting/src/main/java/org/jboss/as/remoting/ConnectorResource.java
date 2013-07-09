@@ -50,6 +50,7 @@ public class ConnectorResource extends SimpleResourceDefinition {
             .setDefaultValue(null)
             .setAllowNull(true)
             .setAttributeMarshaller(new WrappedAttributeMarshaller(Attribute.NAME))
+            .addAccessConstraint(RemotingExtension.REMOTING_SECURITY_DEF)
             .build();
 
     static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(CommonAttributes.SOCKET_BINDING, ModelType.STRING, false)
@@ -59,6 +60,7 @@ public class ConnectorResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(CommonAttributes.SECURITY_REALM, ModelType.STRING, true)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
+            .addAccessConstraint(RemotingExtension.REMOTING_SECURITY_DEF)
             .build();
 
     private ConnectorResource() {

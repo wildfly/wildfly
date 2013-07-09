@@ -43,6 +43,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
@@ -81,11 +82,14 @@ public class SaslResource extends SimpleResourceDefinition {
 
     static final AttributeDefinition[] ATTRIBUTES = {INCLUDE_MECHANISMS_ATTRIBUTE, QOP_ATTRIBUTE, STRENGTH_ATTRIBUTE, SERVER_AUTH_ATTRIBUTE, REUSE_SESSION_ATTRIBUTE};
 
+    private final List<AccessConstraintDefinition> accessConstraints;
+
     private SaslResource() {
         super(SASL_CONFIG_PATH,
                 RemotingExtension.getResourceDescriptionResolver(SASL),
                 SaslAdd.INSTANCE,
                 SaslRemove.INSTANCE);
+        this.accessConstraints = RemotingExtension.REMOTING_SECURITY_DEF.wrapAsList();
     }
 
     @Override
@@ -98,6 +102,11 @@ public class SaslResource extends SimpleResourceDefinition {
         resourceRegistration.registerReadWriteAttribute(STRENGTH_ATTRIBUTE, null, writeHandler);
         resourceRegistration.registerReadWriteAttribute(REUSE_SESSION_ATTRIBUTE, null, writeHandler);
         resourceRegistration.registerReadWriteAttribute(SERVER_AUTH_ATTRIBUTE, null, writeHandler);
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 
     private static class SaslListAttributeDefinition extends ListAttributeDefinition {

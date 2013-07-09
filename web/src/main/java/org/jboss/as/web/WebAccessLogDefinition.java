@@ -22,10 +22,15 @@
 
 package org.jboss.as.web;
 
+import java.util.List;
+
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -84,12 +89,16 @@ public class WebAccessLogDefinition extends SimpleResourceDefinition {
             ROTATE
     };
 
+    private final List<AccessConstraintDefinition> accessConstraints;
+
 
     private WebAccessLogDefinition() {
         super(WebExtension.ACCESS_LOG_PATH,
                 WebExtension.getResourceDescriptionResolver("virtual-server.access-log"),
                 WebAccessLogAdd.INSTANCE,
                 WebAccessLogRemove.INSTANCE);
+        SensitivityClassification sc = new SensitivityClassification(WebExtension.SUBSYSTEM_NAME, "web-access-log", false, false, false);
+        this.accessConstraints = new SensitiveTargetAccessConstraintDefinition(sc).wrapAsList();
     }
 
     @Override
@@ -97,5 +106,10 @@ public class WebAccessLogDefinition extends SimpleResourceDefinition {
         for (SimpleAttributeDefinition def : ACCESS_LOG_ATTRIBUTES) {
             accesslog.registerReadWriteAttribute(def, null, new ReloadRequiredWriteAttributeHandler(def));
         }
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 }

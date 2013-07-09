@@ -134,7 +134,8 @@ public class FilteredReadResourceTestCase extends AbstractRbacTestBase {
         assertEquals(sensitiveResourceVisible, result.get(RESULT, SENSITIVE_CONSTRAINED_RESOURCE).has(FOO));
         assertEquals(sensitiveResourceVisible, result.get(RESULT, SENSITIVE_CONSTRAINED_RESOURCE).has(BAR));
 
-        // TODO is this format stable? testing it isn't that important anyway...
+        // lthon asks: is this format stable? testing it isn't that important anyway...
+        // BES 2013/07/08 Yes, it's stable and needs testing as automated clients will be relying on it
         assertEquals(!sensitiveResourceVisible, result.get(RESPONSE_HEADERS, "access-control").get(0)
                 .get("hidden-children-types").get(0).asString().equals(SENSITIVE_CONSTRAINED_RESOURCE));
     }

@@ -43,6 +43,7 @@ public class ModClusterAddProxy implements OperationStepHandler {
                 .addParameter(ModClusterDefinition.HOST)
                 .addParameter(ModClusterDefinition.PORT)
                 .setRuntimeOnly()
+                .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
                 .build();
     }
 

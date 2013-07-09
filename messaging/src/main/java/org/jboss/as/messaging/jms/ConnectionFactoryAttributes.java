@@ -28,6 +28,7 @@ import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.PER_SECOND;
 import static org.jboss.as.messaging.AttributeMarshallers.NOOP_MARSHALLER;
+import static org.jboss.as.messaging.CommonAttributes.MESSAGING_SECURITY_DEF;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttribute.create;
 import static org.jboss.dmr.ModelType.BIG_DECIMAL;
@@ -400,6 +401,7 @@ public interface ConnectionFactoryAttributes {
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+                .addAccessConstraint(MESSAGING_SECURITY_DEF)
                 .build();
 
         /**
@@ -464,6 +466,7 @@ public interface ConnectionFactoryAttributes {
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+                .addAccessConstraint(MESSAGING_SECURITY_DEF)
                 .build();
 
         /**
