@@ -23,9 +23,13 @@
 package org.wildfly.extension.mod_cluster;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.modcluster.ModClusterServiceMBean;
 import org.jboss.msc.service.ServiceController;
 
@@ -37,6 +41,15 @@ import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
 public class ModClusterGetProxyInfo implements OperationStepHandler {
 
     static final ModClusterGetProxyInfo INSTANCE = new ModClusterGetProxyInfo();
+
+    static OperationDefinition getDefinition(ResourceDescriptionResolver descriptionResolver) {
+        return new SimpleOperationDefinitionBuilder(CommonAttributes.READ_PROXIES_INFO, descriptionResolver)
+                    .setReadOnly()
+                    .setRuntimeOnly()
+                    .setReplyType(ModelType.LIST)
+                    .setReplyValueType(ModelType.STRING)
+                    .build();
+    }
 
 
     @Override
@@ -52,11 +65,10 @@ public class ModClusterGetProxyInfo implements OperationStepHandler {
                     ROOT_LOGGER.debugf("Mod_cluster ProxyInfo %s", map);
                     if (!map.isEmpty()) {
                         final ModelNode result = new ModelNode();
-                        Object[] addr = map.keySet().toArray();
-                        for (int i = 0; i < addr.length; i++) {
-                            InetSocketAddress address = (InetSocketAddress) addr[i];
+                        InetSocketAddress[] addr = map.keySet().toArray(new InetSocketAddress[map.size()]);
+                        for (InetSocketAddress address : addr) {
                             result.add(address.getHostName() + ":" + address.getPort());
-                            result.add(map.get(addr[i]));
+                            result.add(map.get(address));
                         }
                         context.getResult().set(result);
                     }

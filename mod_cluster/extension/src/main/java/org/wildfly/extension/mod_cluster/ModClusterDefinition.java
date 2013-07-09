@@ -25,16 +25,12 @@ package org.wildfly.extension.mod_cluster;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import java.util.EnumSet;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
@@ -60,6 +56,7 @@ public class ModClusterDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition WAIT_TIME = SimpleAttributeDefinitionBuilder.create(CommonAttributes.WAIT_TIME, ModelType.INT, true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setStorageRuntime()
+            .setDefaultValue(new ModelNode(10))
             .build();
 
     private final boolean runtimeOnly;
@@ -91,51 +88,38 @@ public class ModClusterDefinition extends SimpleResourceDefinition {
 
 
     public void registerRuntimeOperations(ManagementResourceRegistration registration) {
-        EnumSet<OperationEntry.Flag> runtimeOnlyFlags = EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY);
+
         final ResourceDescriptionResolver rootResolver = getResourceDescriptionResolver();
 
-        final DescriptionProvider listProxiesDescription = new DefaultOperationDescriptionProvider(CommonAttributes.LIST_PROXIES, rootResolver);
-        registration.registerOperationHandler(CommonAttributes.LIST_PROXIES, ModClusterListProxies.INSTANCE, listProxiesDescription, false, runtimeOnlyFlags);
+        registration.registerOperationHandler(ModClusterListProxies.getDefinition(rootResolver), ModClusterListProxies.INSTANCE);
 
-        final DescriptionProvider readProxiesInfoDescription = new DefaultOperationDescriptionProvider(CommonAttributes.READ_PROXIES_INFO, rootResolver);
-        registration.registerOperationHandler(CommonAttributes.READ_PROXIES_INFO, ModClusterGetProxyInfo.INSTANCE, readProxiesInfoDescription, false, runtimeOnlyFlags);
+        registration.registerOperationHandler(ModClusterGetProxyInfo.getDefinition(rootResolver), ModClusterGetProxyInfo.INSTANCE);
 
-        final DescriptionProvider readProxiesInfoConfiguration = new DefaultOperationDescriptionProvider(CommonAttributes.READ_PROXIES_CONFIGURATION, rootResolver);
-        registration.registerOperationHandler(CommonAttributes.READ_PROXIES_CONFIGURATION, ModClusterGetProxyConfiguration.INSTANCE, readProxiesInfoConfiguration, false, runtimeOnlyFlags);
+        registration.registerOperationHandler(ModClusterGetProxyConfiguration.getDefinition(rootResolver), ModClusterGetProxyConfiguration.INSTANCE);
 
         // add/remove a proxy from the proxy-list (it is not persisted operation).
-        final DescriptionProvider addProxy = new DefaultOperationDescriptionProvider(CommonAttributes.ADD_PROXY, rootResolver, HOST, PORT);
-        registration.registerOperationHandler(CommonAttributes.ADD_PROXY, ModClusterAddProxy.INSTANCE, addProxy, false, runtimeOnlyFlags);
+        registration.registerOperationHandler(ModClusterAddProxy.getDefinition(rootResolver), ModClusterAddProxy.INSTANCE);
 
-        final DescriptionProvider removeProxy = new DefaultOperationDescriptionProvider(CommonAttributes.REMOVE_PROXY, rootResolver, HOST, PORT);
-        registration.registerOperationHandler(CommonAttributes.REMOVE_PROXY, ModClusterRemoveProxy.INSTANCE, removeProxy, false, runtimeOnlyFlags);
+        registration.registerOperationHandler(ModClusterRemoveProxy.getDefinition(rootResolver), ModClusterRemoveProxy.INSTANCE);
 
         // node related operations.
-        final DescriptionProvider refresh = new DefaultOperationDescriptionProvider(CommonAttributes.REFRESH, rootResolver);
-        registration.registerOperationHandler(CommonAttributes.REFRESH, ModClusterRefresh.INSTANCE, refresh, false, runtimeOnlyFlags);
+        registration.registerOperationHandler(ModClusterRefresh.getDefinition(rootResolver), ModClusterRefresh.INSTANCE);
 
-        final DescriptionProvider reset = new DefaultOperationDescriptionProvider(CommonAttributes.RESET, rootResolver);
-        registration.registerOperationHandler(CommonAttributes.RESET, ModClusterReset.INSTANCE, reset, false, runtimeOnlyFlags);
+        registration.registerOperationHandler(ModClusterReset.getDefinition(rootResolver), ModClusterReset.INSTANCE);
 
         // node (all contexts) related operations.
-        final DescriptionProvider enable = new DefaultOperationDescriptionProvider(CommonAttributes.ENABLE, rootResolver);
-        registration.registerOperationHandler(CommonAttributes.ENABLE, ModClusterEnable.INSTANCE, enable, false, runtimeOnlyFlags);
+        registration.registerOperationHandler(ModClusterEnable.getDefinition(rootResolver), ModClusterEnable.INSTANCE);
 
-        final DescriptionProvider disable = new DefaultOperationDescriptionProvider(CommonAttributes.DISABLE, rootResolver);
-        registration.registerOperationHandler(CommonAttributes.DISABLE, ModClusterDisable.INSTANCE, disable, false, runtimeOnlyFlags);
+        registration.registerOperationHandler(ModClusterDisable.getDefinition(rootResolver), ModClusterDisable.INSTANCE);
 
-        final DescriptionProvider stop = new DefaultOperationDescriptionProvider(CommonAttributes.STOP, rootResolver);
-        registration.registerOperationHandler(CommonAttributes.STOP, ModClusterStop.INSTANCE, stop, false, runtimeOnlyFlags);
+        registration.registerOperationHandler(ModClusterStop.getDefinition(rootResolver), ModClusterStop.INSTANCE);
 
         // Context related operations.
-        final DescriptionProvider enableContext = new DefaultOperationDescriptionProvider(CommonAttributes.ENABLE_CONTEXT, rootResolver, VIRTUAL_HOST, CONTEXT);
-        registration.registerOperationHandler(CommonAttributes.ENABLE_CONTEXT, ModClusterEnableContext.INSTANCE, enableContext, false, runtimeOnlyFlags);
+        registration.registerOperationHandler(ModClusterEnableContext.getDefinition(rootResolver), ModClusterEnableContext.INSTANCE);
 
-        final DescriptionProvider disableContext = new DefaultOperationDescriptionProvider(CommonAttributes.DISABLE_CONTEXT, rootResolver, VIRTUAL_HOST, CONTEXT);
-        registration.registerOperationHandler(CommonAttributes.DISABLE_CONTEXT, ModClusterDisableContext.INSTANCE, disableContext, false, runtimeOnlyFlags);
+        registration.registerOperationHandler(ModClusterDisableContext.getDefinition(rootResolver), ModClusterDisableContext.INSTANCE);
 
-        final DescriptionProvider stopContext = new DefaultOperationDescriptionProvider(CommonAttributes.STOP_CONTEXT, rootResolver, VIRTUAL_HOST, CONTEXT, WAIT_TIME);
-        registration.registerOperationHandler(CommonAttributes.STOP_CONTEXT, ModClusterStopContext.INSTANCE, stopContext, false, runtimeOnlyFlags);
+        registration.registerOperationHandler(ModClusterStopContext.getDefinition(rootResolver), ModClusterStopContext.INSTANCE);
     }
 
 
