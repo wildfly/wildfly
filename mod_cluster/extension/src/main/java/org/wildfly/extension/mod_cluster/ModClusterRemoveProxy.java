@@ -25,8 +25,11 @@ package org.wildfly.extension.mod_cluster;
 import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modcluster.ModClusterServiceMBean;
 import org.jboss.msc.service.ServiceController;
@@ -34,6 +37,14 @@ import org.jboss.msc.service.ServiceController;
 public class ModClusterRemoveProxy implements OperationStepHandler {
 
     static final ModClusterRemoveProxy INSTANCE = new ModClusterRemoveProxy();
+
+    static OperationDefinition getDefinition(ResourceDescriptionResolver descriptionResolver) {
+        return new SimpleOperationDefinitionBuilder(CommonAttributes.REMOVE_PROXY, descriptionResolver)
+                .addParameter(ModClusterDefinition.HOST)
+                .addParameter(ModClusterDefinition.PORT)
+                .setRuntimeOnly()
+                .build();
+    }
 
     @Override
     public void execute(OperationContext context, ModelNode operation)

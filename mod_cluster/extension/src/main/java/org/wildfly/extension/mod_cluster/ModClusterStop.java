@@ -22,21 +22,28 @@
 
 package org.wildfly.extension.mod_cluster;
 
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.modcluster.ModClusterServiceMBean;
 import org.jboss.msc.service.ServiceController;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class ModClusterStop implements OperationStepHandler {
 
     static final ModClusterStop INSTANCE = new ModClusterStop();
+
+    static OperationDefinition getDefinition(ResourceDescriptionResolver descriptionResolver) {
+        return new SimpleOperationDefinitionBuilder(CommonAttributes.STOP, descriptionResolver)
+                .addParameter(ModClusterDefinition.WAIT_TIME)
+                .setRuntimeOnly()
+                .build();
+    }
 
 
     @Override
@@ -48,15 +55,13 @@ public class ModClusterStop implements OperationStepHandler {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     ServiceController<?> controller = context.getServiceRegistry(false).getService(ContainerEventHandlerService.SERVICE_NAME);
                     final ModClusterServiceMBean service = (ModClusterServiceMBean) controller.getValue();
-                    List<Property> list = operation.asPropertyList();
-                    Iterator<Property> it = list.iterator();
-                    int waittime = 10;
-                    while (it.hasNext()) {
-                        Property prop = it.next();
-                        if (prop.getName().equals("waittime")) {
-                            waittime = Integer.parseInt(ContextHost.RemoveQuotes(prop.getValue().toString()));
-                        }
+                    // TODO all this just for this ContextHost.RemoveQuotes business that shouldn't be necessary
+                    ModelNode dummyOp = new ModelNode();
+                    if (operation.hasDefined(CommonAttributes.WAIT_TIME)) {
+                        dummyOp.get(CommonAttributes.WAIT_TIME).set(ContextHost.RemoveQuotes(operation.get(CommonAttributes.WAIT_TIME).asString()));
                     }
+
+                    int waittime = ModClusterDefinition.WAIT_TIME.resolveModelAttribute(context, dummyOp).asInt();
                     service.stop(waittime, TimeUnit.SECONDS);
 
                     context.completeStep(new OperationContext.RollbackHandler() {
