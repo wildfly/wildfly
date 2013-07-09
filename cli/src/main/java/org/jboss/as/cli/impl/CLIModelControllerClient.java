@@ -80,6 +80,7 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
         try {
             endpoint = Remoting.createEndpoint("cli-client", OptionMap.create(Options.THREAD_DAEMON, true));
             endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.EMPTY);
+            endpoint.addConnectionProvider("remoting", new RemoteConnectionProviderFactory(), OptionMap.EMPTY);
             endpoint.addConnectionProvider("http-remoting", new HttpUpgradeConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
             endpoint.addConnectionProvider("https-remoting", new HttpUpgradeConnectionProviderFactory(),  OptionMap.create(Options.SSL_ENABLED, Boolean.TRUE));
         } catch (IOException e) {
