@@ -176,6 +176,9 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
     }
 
     private static void recursiveDelete(File file) {
+        if(file == null) {
+            return;
+        }
         for(File f : file.listFiles()) {
             recursiveDelete(f);
         }
