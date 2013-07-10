@@ -23,6 +23,7 @@
 package org.jboss.as.appclient.service;
 
 import java.io.IOException;
+import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Set;
 
@@ -35,6 +36,7 @@ import javax.security.sasl.RealmCallback;
 
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
+import org.jboss.security.SubjectInfo;
 import org.jboss.security.identity.Identity;
 import org.jboss.security.identity.extensions.CredentialIdentity;
 
@@ -51,13 +53,13 @@ public class DefaultApplicationClientCallbackHandler implements CallbackHandler 
 
     @Override
     public void handle(final Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-        final SecurityContext context = doPrivileged(securityContext());
+        final SecurityContext context = doPrivileged(SECURITY_CONTEXT);
 
         for (final Callback current : callbacks) {
             if (current instanceof NameCallback) {
                 final NameCallback ncb = (NameCallback) current;
                 if (context != null) {
-                    final Set<Identity> identities = context.getSubjectInfo().getIdentities();
+                    final Set<Identity> identities = getSubjectInfo(context).getIdentities();
                     if (identities.isEmpty()) {
                         ncb.setName(DOLLAR_LOCAL);
                     } else {
@@ -70,7 +72,7 @@ public class DefaultApplicationClientCallbackHandler implements CallbackHandler 
             } else if (current instanceof PasswordCallback) {
                 if (context != null) {
                     final PasswordCallback pcb = (PasswordCallback) current;
-                    final Set<Identity> identities = context.getSubjectInfo().getIdentities();
+                    final Set<Identity> identities = getSubjectInfo(context).getIdentities();
                     if (identities.isEmpty()) {
                         throw new UnsupportedCallbackException(current);
                     } else {
@@ -92,11 +94,23 @@ public class DefaultApplicationClientCallbackHandler implements CallbackHandler 
     }
 
 
-    private static PrivilegedAction<SecurityContext> securityContext() {
-        return new PrivilegedAction<SecurityContext>() {
-            public SecurityContext run() {
-                return SecurityContextAssociation.getSecurityContext();
+    private static PrivilegedAction<SecurityContext> SECURITY_CONTEXT = new PrivilegedAction<SecurityContext>() {
+        public SecurityContext run() {
+            return SecurityContextAssociation.getSecurityContext();
+        }
+    };
+
+    private SubjectInfo getSubjectInfo(final SecurityContext context) {
+        if(System.getSecurityManager() == null) {
+            return context.getSubjectInfo();
+        }
+        return AccessController.doPrivileged(new PrivilegedAction<SubjectInfo>() {
+            @Override
+            public SubjectInfo run() {
+                return context.getSubjectInfo();
             }
-        };
+        });
     }
+
+
 }
