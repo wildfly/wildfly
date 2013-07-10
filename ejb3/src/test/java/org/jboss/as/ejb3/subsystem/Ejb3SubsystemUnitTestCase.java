@@ -45,9 +45,6 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.util.List;
-
 /**
  * @author Emanuel Muckenhuber
  */
@@ -217,6 +214,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
             if (useQualfified.getType() == ModelType.STRING) {
                 useQualfified.set(useQualfified.asBoolean());
             }
+            //
             // Bogus 'name' attributes that weren't in the legacy resource definition.
             // We don't include them in transformed resources either; if the server wants
             // them at runtime, the bogus server code will add them anyway
