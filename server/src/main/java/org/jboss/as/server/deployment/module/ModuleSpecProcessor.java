@@ -137,7 +137,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             return;
         }
         for (final AdditionalModuleSpecification module : additionalModules) {
-            addSystemDependencies(moduleSpec, module);
+            addAllDependencies(moduleSpec, module);
             List<ResourceRoot> roots = module.getResourceRoots();
             ServiceName serviceName = createModuleService(phaseContext, deploymentUnit, roots, module, module.getModuleIdentifier());
             phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, serviceName);
@@ -145,15 +145,21 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
     }
 
     /**
-     * Gives any additional modules the same system dependencies as the primary module.
+     * Gives any additional modules the same dependencies as the primary module.
      * <p/>
      * This makes sure they can access all API classes etc.
      *
      * @param moduleSpecification The primary module spec
      * @param module              The additional module
      */
-    private void addSystemDependencies(final ModuleSpecification moduleSpecification, final AdditionalModuleSpecification module) {
+    private void addAllDependencies(final ModuleSpecification moduleSpecification, final AdditionalModuleSpecification module) {
         module.addSystemDependencies(moduleSpecification.getSystemDependencies());
+        module.addLocalDependencies(moduleSpecification.getLocalDependencies());
+        for(ModuleDependency dep : moduleSpecification.getUserDependencies()) {
+            if(!dep.getIdentifier().equals(module.getModuleIdentifier())) {
+                module.addUserDependency(dep);
+            }
+        }
     }
 
     private static final Permissions DEFAULT_PERMISSIONS;
