@@ -285,7 +285,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
 
         if (element == Element.MANAGEMENT) {
             ManagementXml managementXml = new ManagementXml(this);
-            managementXml.parseManagement(reader, address, DOMAIN_1_0, list, true, false);
+            managementXml.parseManagement_1_0(reader, address, DOMAIN_1_0, list, true, false);
             element = nextElement(reader, DOMAIN_1_0);
         }
         if (element == Element.DOMAIN_CONTROLLER) {
@@ -386,7 +386,18 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         }
         if (element == Element.MANAGEMENT) {
             ManagementXml managementXml = new ManagementXml(this);
-            managementXml.parseManagement(reader, address, namespace, list, true, true);
+            switch (namespace) {
+                case DOMAIN_1_1: // Version 1.0 is handled elsewhere.
+                case DOMAIN_1_2:
+                case DOMAIN_1_3:
+                case DOMAIN_1_4:
+                    managementXml.parseManagement_1_0(reader, address, namespace, list, true, true);
+                    break;
+                default:
+                    managementXml.parseManagement_1_5(reader, address, namespace, list, true, true);
+                    break;
+
+            }
             element = nextElement(reader, namespace);
         } else {
             throw missingRequiredElement(reader, EnumSet.of(Element.MANAGEMENT));
