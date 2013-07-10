@@ -48,7 +48,19 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-annotations</artifactId>
+            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
+                  projects that depend on this project.-->
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-processor</artifactId>
+            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
+                  projects that depend on this project.-->
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.jboss.spec.javax.servlet</groupId>
@@ -71,10 +83,10 @@
                         	org.osgi.service.http;uses:="javax.servlet.http,javax.servlet";version="1.2.1",
                         </Export-Package>
                         <Import-Package>
-                            javax.servlet;version="[3.0,4.0)", 
+                            javax.servlet;version="[3.0,4.0)",
                             javax.servlet.http;version="[3.0,4.0)",
-                            javax.management, 
-                            javax.security.auth.x500, 
+                            javax.management,
+                            javax.security.auth.x500,
                             org.osgi.framework;version="[1.5,2.0)",
                         	org.osgi.service.http;version="[1.2.1,1.2.2)",
                             org.jboss.logging,
@@ -90,8 +102,8 @@
                             org.jboss.osgi.framework.spi,
                             org.jboss.osgi.resolver,
                             !org.jboss.as.controller*,
-                            !org.jboss.as.osgi*, 
-                            !org.jboss.as.server*, 
+                            !org.jboss.as.osgi*,
+                            !org.jboss.as.server*,
                             !org.jboss.as.web*,
                             !io.undertow*,
                         </Import-Package>
