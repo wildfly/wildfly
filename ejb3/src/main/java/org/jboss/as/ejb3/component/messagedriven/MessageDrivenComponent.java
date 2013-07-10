@@ -143,7 +143,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
                 return componentClassLoader;
             }
         };
-        this.endpointFactory = new JBossMessageEndpointFactory(componentClassLoader, service, (Class<Object>) getComponentClass());
+        this.endpointFactory = new JBossMessageEndpointFactory(componentClassLoader, service, (Class<Object>) getComponentClass(), messageListenerInterface);
         this.deliveryActive = deliveryActive;
     }
 
