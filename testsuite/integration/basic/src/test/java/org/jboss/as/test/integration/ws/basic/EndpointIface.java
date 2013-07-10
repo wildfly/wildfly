@@ -35,4 +35,6 @@ public interface EndpointIface {
     public HelloObject helloBean(HelloObject input);
 
     public HelloObject[] helloArray(HelloObject[] input);
+
+    public String helloError(String input);
 }

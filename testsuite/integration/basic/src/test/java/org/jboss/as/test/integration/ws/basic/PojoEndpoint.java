@@ -22,6 +22,13 @@
 package org.jboss.as.test.integration.ws.basic;
 
 import javax.jws.WebService;
+import javax.xml.namespace.QName;
+import javax.xml.soap.SOAPConstants;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPFactory;
+import javax.xml.soap.SOAPFault;
+import javax.xml.ws.BindingType;
+import javax.xml.ws.soap.SOAPFaultException;
 
 /**
  * Simple POJO endpoint
@@ -32,7 +39,8 @@ import javax.jws.WebService;
         serviceName = "POJOService",
         targetNamespace = "http://jbossws.org/basic",
         endpointInterface = "org.jboss.as.test.integration.ws.basic.EndpointIface"
-)
+        )
+@BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public class PojoEndpoint implements EndpointIface {
 
     public String helloString(String input) {
@@ -49,5 +57,19 @@ public class PojoEndpoint implements EndpointIface {
             reply[n] = helloBean(input[n]);
         }
         return reply;
+    }
+
+    public String helloError(String input) {
+        try {
+            SOAPFault fault = SOAPFactory.newInstance(SOAPConstants.SOAP_1_2_PROTOCOL).createFault(input,
+                    SOAPConstants.SOAP_VERSIONMISMATCH_FAULT);
+            fault.setFaultActor("mr.actor");
+            fault.addDetail().addChildElement("test");
+            fault.appendFaultSubcode(new QName("http://ws.gss.redhat.com/", "NullPointerException"));
+            throw new SOAPFaultException(fault);
+        } catch (SOAPException ex) {
+            ex.printStackTrace();
+        }
+        return "Failure!";
     }
 }

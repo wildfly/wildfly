@@ -32,7 +32,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 /**
@@ -41,13 +40,12 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("AS7-6319")
 public class PojoEndpointTestCase extends BasicTests {
 
     @ArquillianResource
     URL baseUrl;
-    
-    @Deployment( testable=false )
+
+    @Deployment(testable = false)
     public static Archive<?> deployment() {
         WebArchive pojoWar = ShrinkWrap.create(WebArchive.class, "jaxws-basic-pojo.war")
                 .addClasses(EndpointIface.class, PojoEndpoint.class, HelloObject.class);
