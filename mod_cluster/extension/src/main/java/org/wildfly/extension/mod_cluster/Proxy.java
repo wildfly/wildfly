@@ -59,6 +59,6 @@ public class Proxy {
                    port = 0;
             }
         }
-        if (host == null || port == 0) { throw new OperationFailedException(new ModelNode().set(MESSAGES.needHostAndPort())); }
+        if (host == null || port == 0) { throw new OperationFailedException(MESSAGES.needHostAndPort()); }
     }
 }
