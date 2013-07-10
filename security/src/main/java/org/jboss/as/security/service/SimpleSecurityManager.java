@@ -24,6 +24,7 @@ package org.jboss.as.security.service;
 import static java.security.AccessController.doPrivileged;
 
 import java.lang.reflect.Method;
+import java.security.AccessController;
 import java.security.CodeSource;
 import java.security.Principal;
 import java.security.PrivilegedAction;
@@ -117,7 +118,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
          */
         Principal principal = securityContext.getIncomingRunAs();
         if (principal == null)
-            principal = getPrincipal(securityContext.getSubjectInfo().getAuthenticatedSubject());
+            principal = getPrincipal(getSubjectInfo(securityContext).getAuthenticatedSubject());
         if (principal == null)
             return getUnauthenticatedIdentity().asPrincipal();
         return principal;
@@ -126,7 +127,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
     public Subject getSubject() {
         final SecurityContext securityContext = doPrivileged(securityContext());
         if (securityContext != null) {
-            return securityContext.getSubjectInfo().getAuthenticatedSubject();
+            return getSubjectInfo(securityContext).getAuthenticatedSubject();
         }
         return null;
     }
@@ -188,7 +189,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
             AuthorizationManager am = securityContext.getAuthorizationManager();
             SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(securityContext);
 
-            roleGroup = am.getSubjectRoles(securityContext.getSubjectInfo().getAuthenticatedSubject(), scb);
+            roleGroup = am.getSubjectRoles(getSubjectInfo(securityContext).getAuthenticatedSubject(), scb);
         }
 
         List<Role> roles = roleGroup.getRoles();
@@ -274,7 +275,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         contexts.push(previous);
         SecurityContext current = establishSecurityContext(securityDomain);
         if (previous != null) {
-            current.setSubjectInfo(previous.getSubjectInfo());
+            current.setSubjectInfo(getSubjectInfo(previous));
             current.setIncomingRunAs(previous.getOutgoingRunAs());
         }
 
@@ -323,7 +324,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         contexts.push(previous);
         SecurityContext current = establishSecurityContext(securityDomain);
         if (previous != null) {
-            current.setSubjectInfo(previous.getSubjectInfo());
+            current.setSubjectInfo(getSubjectInfo(previous));
             current.setIncomingRunAs(previous.getOutgoingRunAs());
         }
 
@@ -366,7 +367,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
 
     private boolean authenticate(SecurityContext context, Subject subject) {
         SecurityContextUtil util = context.getUtil();
-        SubjectInfo subjectInfo = context.getSubjectInfo();
+        SubjectInfo subjectInfo = getSubjectInfo(context);
         if (subject == null) {
             subject = new Subject();
         }
@@ -455,5 +456,18 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         auditEvent.setContextMap(ctxMap);
         auditManager.audit(auditEvent);
     }
+
+    private SubjectInfo getSubjectInfo(final SecurityContext context) {
+        if(System.getSecurityManager() == null) {
+            return context.getSubjectInfo();
+        }
+        return AccessController.doPrivileged(new PrivilegedAction<SubjectInfo>() {
+            @Override
+            public SubjectInfo run() {
+                return context.getSubjectInfo();
+            }
+        });
+    }
+
 
 }
