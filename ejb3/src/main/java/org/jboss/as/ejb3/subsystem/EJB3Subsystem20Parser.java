@@ -59,9 +59,36 @@ public class EJB3Subsystem20Parser extends EJB3Subsystem14Parser {
                 parseTimerService(reader, operations);
                 break;
             }
+            case DISABLE_DEFAULT_EJB_PERMISSIONS: {
+                parseDisableDefaultEjbPermissions(reader, ejb3SubsystemAddOperation);
+                break;
+            }
             default: {
                 super.readElement(reader, element, operations, ejb3SubsystemAddOperation);
             }
+        }
+    }
+
+    private void parseDisableDefaultEjbPermissions(XMLExtendedStreamReader reader, ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        final EnumSet<EJB3SubsystemXMLAttribute> missingRequiredAttributes = EnumSet.of(EJB3SubsystemXMLAttribute.VALUE);
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case VALUE:
+                    EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
+                    // found the mandatory attribute
+                    missingRequiredAttributes.remove(EJB3SubsystemXMLAttribute.VALUE);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        requireNoContent(reader);
+        if (!missingRequiredAttributes.isEmpty()) {
+            throw missingRequired(reader, missingRequiredAttributes);
         }
     }
 

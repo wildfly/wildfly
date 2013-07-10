@@ -42,6 +42,7 @@ import org.jboss.as.ejb3.deployment.processors.ApplicationExceptionAnnotationPro
 import org.jboss.as.ejb3.deployment.processors.BusinessViewAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.DeploymentRepositoryProcessor;
 import org.jboss.as.ejb3.deployment.processors.EJBClientDescriptorMetaDataProcessor;
+import org.jboss.as.ejb3.deployment.processors.EJBDefaultPermissionsProcessor;
 import org.jboss.as.ejb3.deployment.processors.EJBDefaultSecurityDomainProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbCleanUpProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbClientContextSetupProcessor;
@@ -155,10 +156,12 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BE
 class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor;
+    private final EJBDefaultPermissionsProcessor ejbDefaultPermissionsProcessor;
     private final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor;
 
-    EJB3SubsystemAdd(final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor, final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor) {
+    EJB3SubsystemAdd(final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor, EJBDefaultPermissionsProcessor ejbDefaultPermissionsProcessor, final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor) {
         this.defaultSecurityDomainDeploymentProcessor = defaultSecurityDomainDeploymentProcessor;
+        this.ejbDefaultPermissionsProcessor = ejbDefaultPermissionsProcessor;
         this.missingMethodPermissionsDenyAccessMergingProcessor = missingMethodPermissionsDenyAccessMergingProcessor;
     }
 
@@ -205,6 +208,11 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         final boolean defaultMissingMethodValue = defaultMissingMethod.asBoolean();
         this.missingMethodPermissionsDenyAccessMergingProcessor.setDenyAccessByDefault(defaultMissingMethodValue);
 
+
+        final ModelNode disableDefaultPermissions = EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS.resolveModelAttribute(context, model);
+        final boolean disableDefaultPermissionsValue = disableDefaultPermissions.asBoolean();
+        this.ejbDefaultPermissionsProcessor.setEnabled(!disableDefaultPermissionsValue);
+
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
             protected void execute(DeploymentProcessorTarget processorTarget) {
@@ -222,6 +230,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EJB_ASSEMBLY_DESC_DD, new AssemblyDescriptorProcessor());
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EJB_DEFAULT_SECURITY_DOMAIN, EJB3SubsystemAdd.this.defaultSecurityDomainDeploymentProcessor);
 
+                processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_EJB_PERMISSIONS, ejbDefaultPermissionsProcessor);
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_EJB, new EjbDependencyDeploymentUnitProcessor());
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_HOME_MERGE, new HomeViewMergingProcessor(appclient));
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_REF, new EjbRefProcessor(appclient));

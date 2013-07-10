@@ -33,22 +33,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import javax.xml.stream.XMLStreamException;
 import java.util.List;
 
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ASYNC;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_DISTINCT_NAME;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SECURITY_DOMAIN;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ENABLE_STATISTICS;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IIOP;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.*;
 
 /**
  * The {@link XMLElementWriter} that handles the EJB subsystem. As we only write out the most recent version of
@@ -240,6 +225,14 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         if (model.hasDefined(DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS)) {
             writer.writeStartElement(EJB3SubsystemXMLElement.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS.getLocalName());
             writer.writeAttribute(EJB3SubsystemXMLAttribute.VALUE.getLocalName(), model.get(DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS).asString());
+            writer.writeEndElement();
+        }
+
+
+        // disable-default-ejb-permissions element
+        if (model.hasDefined(DISABLE_DEFAULT_EJB_PERMISSIONS)) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.DISABLE_DEFAULT_EJB_PERMISSIONS.getLocalName());
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.VALUE.getLocalName(), model.get(DISABLE_DEFAULT_EJB_PERMISSIONS).asString());
             writer.writeEndElement();
         }
 
