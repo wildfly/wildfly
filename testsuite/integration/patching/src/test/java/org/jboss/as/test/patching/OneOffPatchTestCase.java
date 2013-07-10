@@ -38,7 +38,6 @@ import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.version.ProductConfig;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -56,7 +55,7 @@ public class OneOffPatchTestCase {
      * Prepare a one-off patch which adds a misc file. Apply it, check that the file was created.
      * Roll it back, check that the file was deleted.
      */
-    @Test @Ignore
+    @Test
     public void testOneOffPatchAddingAMiscFile() throws Exception {
         // prepare the patch
         File tempDir = mkdir(new File(System.getProperty("java.io.tmpdir")), randomString());
