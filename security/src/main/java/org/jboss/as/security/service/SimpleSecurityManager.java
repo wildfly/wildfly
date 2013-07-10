@@ -94,7 +94,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         // Do not use SecurityFactory.establishSecurityContext, its static init is broken.
         try {
             final SecurityContext securityContext = SecurityContextFactory.createSecurityContext(securityDomain);
-            if(securityManagement == null)
+            if (securityManagement == null)
                 throw SecurityMessages.MESSAGES.securityManagementNotInjected();
             securityContext.setSecurityManagement(securityManagement);
             SecurityContextAssociation.setSecurityContext(securityContext);
@@ -104,7 +104,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         }
     }
 
-    public void setSecurityManagement(ISecurityManagement iSecurityManagement){
+    public void setSecurityManagement(ISecurityManagement iSecurityManagement) {
         securityManagement = iSecurityManagement;
     }
 
@@ -164,11 +164,10 @@ public class SimpleSecurityManager implements ServerSecurityManager {
     }
 
     /**
-     *
      * @param incommingMappedRoles The principal vs roles mapping (if any). Can be null.
-     * @param roleLinks The role link map where the key is a alias role name and the value is the collection of
-     *                  role names, that alias represents. Can be null.
-     * @param roleNames The role names for which the caller is being checked for
+     * @param roleLinks            The role link map where the key is a alias role name and the value is the collection of
+     *                             role names, that alias represents. Can be null.
+     * @param roleNames            The role names for which the caller is being checked for
      * @return true if the user is in <b>any</b> one of the <code>roleNames</code>. Else returns false
      */
     public boolean isCallerInRole(final Object incommingMappedRoles, final Map<String, Collection<String>> roleLinks,
@@ -189,7 +188,8 @@ public class SimpleSecurityManager implements ServerSecurityManager {
             AuthorizationManager am = securityContext.getAuthorizationManager();
             SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(securityContext);
 
-            roleGroup = am.getSubjectRoles(getSubjectInfo(securityContext).getAuthenticatedSubject(), scb);
+            final Subject authenticatedSubject = getSubjectInfo(securityContext).getAuthenticatedSubject();
+            roleGroup = getSubjectRoles(am, scb, authenticatedSubject);
         }
 
         List<Role> roles = roleGroup.getRoles();
@@ -255,8 +255,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         try {
             AbstractEJBAuthorizationHelper helper = SecurityHelperFactory.getEJBAuthorizationHelper(securityContext);
             return helper.authorize(resource);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -265,9 +264,6 @@ public class SimpleSecurityManager implements ServerSecurityManager {
      * Must be called from within a privileged action.
      *
      * @param securityDomain
-     * @param runAs
-     * @param runAsPrincipal
-     * @param extraRoles
      */
     public void push(final String securityDomain) {
         // TODO - Handle a null securityDomain here? Yes I think so.
@@ -420,7 +416,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
      * Returns the alias role names for the passed <code>roleName</code>. Returns an empty set if the passed
      * role name doesn't have any aliases
      *
-     * @param roleName The role name
+     * @param roleName  The role name
      * @param roleLinks The role link map where the key is a alias role name and the value is the collection of
      *                  role names, that alias represents
      * @return
@@ -442,10 +438,10 @@ public class SimpleSecurityManager implements ServerSecurityManager {
 
     /**
      * Sends information to the {@code AuditManager}.
+     *
      * @param level
      * @param auditManager
      * @param userPrincipal
-     * @param entries
      */
     private void audit(String level, AuditManager auditManager, Principal userPrincipal) {
         AuditEvent auditEvent = new AuditEvent(AuditLevel.SUCCESS);
@@ -458,7 +454,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
     }
 
     private SubjectInfo getSubjectInfo(final SecurityContext context) {
-        if(System.getSecurityManager() == null) {
+        if (System.getSecurityManager() == null) {
             return context.getSubjectInfo();
         }
         return AccessController.doPrivileged(new PrivilegedAction<SubjectInfo>() {
@@ -470,4 +466,16 @@ public class SimpleSecurityManager implements ServerSecurityManager {
     }
 
 
+    private RoleGroup getSubjectRoles(final AuthorizationManager am, final SecurityContextCallbackHandler scb, final Subject authenticatedSubject) {
+
+        if (System.getSecurityManager() == null) {
+            return am.getSubjectRoles(authenticatedSubject, scb);
+        }
+        return AccessController.doPrivileged(new PrivilegedAction<RoleGroup>() {
+            @Override
+            public RoleGroup run() {
+                return am.getSubjectRoles(authenticatedSubject, scb);
+            }
+        });
+    }
 }
